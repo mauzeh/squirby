@@ -53,6 +53,35 @@
             .log-entries-table th {
                 background-color: #f2f2f2;
             }
+            .button {
+                display: inline-block;
+                background-color: #4CAF50;
+                color: white;
+                padding: 8px 15px;
+                border-radius: 5px;
+                text-decoration: none;
+                margin-top: 10px;
+                margin-right: 5px;
+                transition: background-color 0.3s ease;
+                border: none;
+                cursor: pointer;
+                font-size: 16px;
+            }
+            .button.edit {
+                background-color: #007bff;
+            }
+            .button.delete {
+                background-color: #dc3545;
+            }
+            .button:hover {
+                background-color: #45a049;
+            }
+            .button.edit:hover {
+                background-color: #0056b3;
+            }
+            .button.delete:hover {
+                background-color: #c82333;
+            }
         </style>
     </head>
     <body>
