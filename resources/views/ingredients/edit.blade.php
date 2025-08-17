@@ -67,7 +67,7 @@
                     @endforeach
                 </select>
             </div>
-            <button type="submit">Update Ingredient</button>
+            <button type="submit" class="button">Update Ingredient</button>
         </form>
         </div>
         </form>

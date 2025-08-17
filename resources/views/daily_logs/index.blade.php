@@ -45,7 +45,7 @@
                 <label for="quantity">Quantity:</label>
                 <input type="number" name="quantity" id="quantity" step="0.01" min="0.01" required>
             </div>
-            <button type="submit">Add Log Entry</button>
+            <button type="submit" class="button">Add Log Entry</button>
         </form>
         </div>
     </div>
