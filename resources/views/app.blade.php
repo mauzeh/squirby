@@ -32,6 +32,10 @@
                 background-color: #ddd;
                 color: black;
             }
+            .navbar a.active {
+                background-color: #04AA6D;
+                color: white;
+            }
             .content {
                 padding: 20px;
             }
@@ -53,8 +57,8 @@
     </head>
     <body>
         <div class="navbar">
-            <a href="{{ route('daily_logs.index') }}">Daily Log</a>
-            <a href="{{ route('ingredients.index') }}">Ingredient Admin</a>
+            <a href="{{ route('daily_logs.index') }}" class="{{ Request::routeIs('daily_logs.index') ? 'active' : '' }}">Daily Log</a>
+            <a href="{{ route('ingredients.index') }}" class="{{ Request::routeIs('ingredients.index') ? 'active' : '' }}">Ingredient Admin</a>
         </div>
         <div class="content">
             @yield('content')
