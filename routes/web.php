@@ -5,8 +5,11 @@ use App\Http\Controllers\IngredientController;
 use Illuminate\Support\Facades\Route;
 
 Route::resource('daily-logs', DailyLogController::class)->except(['show']);
-Route::get('/', [DailyLogController::class, 'index'])->name('daily_logs.index');
 
 Route::resource('ingredients', IngredientController::class)->except([
     'show'
 ]);
+
+Route::get('/', function () {
+    return redirect()->route('daily-logs.index');
+});

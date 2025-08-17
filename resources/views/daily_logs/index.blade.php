@@ -50,7 +50,7 @@
         <h2>Select Date</h2>
         <div class="date-navigation">
             @foreach ($availableDates as $date)
-                <a href="{{ route('daily_logs.index', ['date' => $date]) }}" class="date-link {{ $selectedDate->toDateString() == $date ? 'active' : '' }}">{{ \Carbon\Carbon::parse($date)->format('M d') }}</a>
+                <a href="{{ route('daily-logs.index', ['date' => $date]) }}" class="date-link {{ $selectedDate->toDateString() == $date ? 'active' : '' }}">{{ \Carbon\Carbon::parse($date)->format('M d') }}</a>
             @endforeach
         </div>
     </div>

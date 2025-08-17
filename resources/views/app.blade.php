@@ -173,7 +173,7 @@
     </head>
     <body>
         <div class="navbar">
-            <a href="{{ route('daily_logs.index') }}" class="{{ Request::routeIs('daily_logs.index') ? 'active' : '' }}">Daily Log</a>
+            <a href="{{ route('daily-logs.index') }}" class="{{ Request::routeIs('daily-logs.*') ? 'active' : '' }}">Daily Log</a>
             <a href="{{ route('ingredients.index') }}" class="{{ Request::routeIs('ingredients.*') ? 'active' : '' }}">Ingredient Admin</a>
         </div>
         <div class="content">
