@@ -16,5 +16,25 @@ class Ingredient extends Model
         'sodium',
         'iron',
         'potassium',
+        'base_quantity',
+        'base_unit_id',
     ];
+
+    public function baseUnit()
+    {
+        return $this->belongsTo(Unit::class, 'base_unit_id');
+    }
+
+    public function calculateCaloriesForQuantity(float $quantity, Unit $unit)
+    {
+        // Convert the provided quantity to the ingredient's base unit
+        $convertedQuantity = ($quantity * $unit->conversion_factor) / $this->baseUnit->conversion_factor;
+
+        // Calculate calories based on the ingredient's base quantity and converted quantity
+        return (
+            (9 * $this->fats) +
+            (4 * $this->carbs) +
+            (4 * $this->protein)
+        ) * ($convertedQuantity / $this->base_quantity);
+    }
 }

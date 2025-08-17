@@ -69,6 +69,7 @@
                         <th>Ingredient</th>
                         <th>Quantity</th>
                         <th>Unit</th>
+                        <th>Calories</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -78,6 +79,7 @@
                             <td>{{ $log->ingredient->name }}</td>
                             <td>{{ $log->quantity }}</td>
                             <td>{{ $log->unit->abbreviation }}</td>
+                            <td>{{ round($log->ingredient->calculateCaloriesForQuantity($log->quantity, $log->unit)) }}</td>
                         </tr>
                     @endforeach
                 </tbody>

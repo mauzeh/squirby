@@ -26,6 +26,7 @@ class DailyLogSeeder extends Seeder
         $g = $units->where('abbreviation', 'g')->first();
         $pc = $units->where('abbreviation', 'pc')->first();
         $cup = $units->where('abbreviation', 'cup')->first();
+        $ml = $units->where('abbreviation', 'ml')->first();
 
         $apple = $ingredients->where('name', 'Apple')->first();
         $banana = $ingredients->where('name', 'Banana')->first();
@@ -99,15 +100,15 @@ class DailyLogSeeder extends Seeder
             if ($i % 3 == 0) { // Every 3rd day, add an apple
                 DailyLog::create([
                     'ingredient_id' => $apple->id,
-                    'unit_id' => $g->id,
-                    'quantity' => 150.0,
+                    'unit_id' => $pc->id,
+                    'quantity' => 1.0,
                     'created_at' => $currentDate->copy()->setHour(10)->setMinute(0),
                 ]);
             }
             if ($i % 2 == 0) { // Every 2nd day, add some milk
                 DailyLog::create([
                     'ingredient_id' => $milk->id,
-                    'unit_id' => $g->id,
+                    'unit_id' => $ml->id,
                     'quantity' => 200.0,
                     'created_at' => $currentDate->copy()->setHour(16)->setMinute(30),
                 ]);

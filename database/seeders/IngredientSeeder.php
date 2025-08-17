@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use App\Models\Ingredient;
+use App\Models\Unit;
 use Illuminate\Database\Seeder;
 
 class IngredientSeeder extends Seeder
@@ -13,6 +14,10 @@ class IngredientSeeder extends Seeder
      */
     public function run(): void
     {
+        $gramUnit = Unit::where('abbreviation', 'g')->first();
+        $pieceUnit = Unit::where('abbreviation', 'pc')->first();
+        $mlUnit = Unit::where('abbreviation', 'ml')->first();
+
         Ingredient::create([
             'name' => 'Apple',
             'calories' => 52,
@@ -23,6 +28,8 @@ class IngredientSeeder extends Seeder
             'sodium' => 1,
             'iron' => 0,
             'potassium' => 107,
+            'base_quantity' => 1,
+            'base_unit_id' => $pieceUnit->id,
         ]);
 
         Ingredient::create([
@@ -35,6 +42,8 @@ class IngredientSeeder extends Seeder
             'sodium' => 1,
             'iron' => 0,
             'potassium' => 358,
+            'base_quantity' => 1,
+            'base_unit_id' => $pieceUnit->id,
         ]);
 
         Ingredient::create([
@@ -47,6 +56,8 @@ class IngredientSeeder extends Seeder
             'sodium' => 74,
             'iron' => 1,
             'potassium' => 256,
+            'base_quantity' => 100,
+            'base_unit_id' => $gramUnit->id,
         ]);
 
         Ingredient::create([
@@ -59,6 +70,8 @@ class IngredientSeeder extends Seeder
             'sodium' => 33,
             'iron' => 1,
             'potassium' => 316,
+            'base_quantity' => 100,
+            'base_unit_id' => $gramUnit->id,
         ]);
 
         Ingredient::create([
@@ -71,6 +84,8 @@ class IngredientSeeder extends Seeder
             'sodium' => 1,
             'iron' => 0,
             'potassium' => 55,
+            'base_quantity' => 100,
+            'base_unit_id' => $gramUnit->id,
         ]);
 
         Ingredient::create([
@@ -83,6 +98,8 @@ class IngredientSeeder extends Seeder
             'sodium' => 59,
             'iron' => 0,
             'potassium' => 363,
+            'base_quantity' => 100,
+            'base_unit_id' => $gramUnit->id,
         ]);
 
         Ingredient::create([
@@ -95,6 +112,8 @@ class IngredientSeeder extends Seeder
             'sodium' => 124,
             'iron' => 1,
             'potassium' => 138,
+            'base_quantity' => 1,
+            'base_unit_id' => $pieceUnit->id,
         ]);
 
         Ingredient::create([
@@ -107,6 +126,8 @@ class IngredientSeeder extends Seeder
             'sodium' => 43,
             'iron' => 0,
             'potassium' => 150,
+            'base_quantity' => 100,
+            'base_unit_id' => $mlUnit->id,
         ]);
 
         Ingredient::create([
@@ -119,6 +140,8 @@ class IngredientSeeder extends Seeder
             'sodium' => 400,
             'iron' => 2,
             'potassium' => 200,
+            'base_quantity' => 100,
+            'base_unit_id' => $gramUnit->id,
         ]);
 
         Ingredient::create([
@@ -131,6 +154,8 @@ class IngredientSeeder extends Seeder
             'sodium' => 79,
             'iron' => 3,
             'potassium' => 558,
+            'base_quantity' => 100,
+            'base_unit_id' => $gramUnit->id,
         ]);
     }
 }
