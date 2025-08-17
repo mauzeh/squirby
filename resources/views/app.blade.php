@@ -15,50 +15,39 @@
             body {
                 font-family: 'Figtree', sans-serif;
                 background-color: #f0f2f5;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                min-height: 100vh;
                 margin: 0;
+                padding: 0;
             }
-            .container {
-                background-color: #ffffff;
-                padding: 40px;
-                border-radius: 8px;
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            .navbar {
+                background-color: #333;
+                overflow: hidden;
+                width: 100%;
+            }
+            .navbar a {
+                float: left;
+                display: block;
+                color: #f2f2f2;
                 text-align: center;
-                max-width: 600px;
-                width: 90%;
-            }
-            h1 {
-                color: #333;
-                margin-bottom: 20px;
-            }
-            p {
-                color: #666;
-                line-height: 1.6;
-            }
-            .button {
-                display: inline-block;
-                background-color: #4CAF50;
-                color: white;
-                padding: 10px 20px;
-                border-radius: 5px;
+                padding: 14px 16px;
                 text-decoration: none;
-                margin-top: 20px;
-                transition: background-color 0.3s ease;
+                font-size: 17px;
             }
-            .button:hover {
-                background-color: #45a049;
+            .navbar a:hover {
+                background-color: #ddd;
+                color: black;
+            }
+            .content {
+                padding: 20px;
             }
         </style>
     </head>
     <body>
-        <div class="container">
-            <h1>Welcome to Your Nutrition Tracker!</h1>
-            <p>This is a basic Laravel application scaffolded for nutrition tracking. You have successfully set up the database with Ingredients, Units, and Daily Logs.</p>
-            <p>To build out the single-page application feel, you would typically integrate a JavaScript framework (like Vue.js or React) here to handle dynamic content and interactions without full page reloads.</p>
-            <a href="#" class="button">Get Started</a>
+        <div class="navbar">
+            <a href="{{ route('daily_logs.index') }}">Daily Log</a>
+            <a href="{{ route('ingredients.index') }}">Ingredient Admin</a>
+        </div>
+        <div class="content">
+            @yield('content')
         </div>
     </body>
 </html>
