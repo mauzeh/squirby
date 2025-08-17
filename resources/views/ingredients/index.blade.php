@@ -20,6 +20,7 @@
                         <th>Name</th>
                         <th>Base Quantity</th>
                         <th>Base Unit</th>
+                        <th>Cost Per Unit</th>
                         <th>Calories</th>
                         <th>Protein (g)</th>
                         <th>Carbs (g)</th>
@@ -37,6 +38,7 @@
                             <td>{{ $ingredient->name }}</td>
                             <td>{{ $ingredient->base_quantity }}</td>
                             <td>{{ $ingredient->baseUnit->abbreviation }}</td>
+                            <td>{{ number_format($ingredient->cost_per_unit, 2) }}</td>
                             <td>{{ $ingredient->calories }}</td>
                             <td>{{ $ingredient->protein }}</td>
                             <td>{{ $ingredient->carbs }}</td>

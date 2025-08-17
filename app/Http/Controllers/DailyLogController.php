@@ -73,12 +73,16 @@ class DailyLogController extends Controller
             'sodium' => 0,
             'iron' => 0,
             'potassium' => 0,
+            'cost' => 0,
         ];
 
+        $macroNutrients = ['calories', 'protein', 'carbs', 'added_sugars', 'fats', 'sodium', 'iron', 'potassium'];
+
         foreach ($logs as $log) {
-            foreach (array_keys($totals) as $nutrient) {
+            foreach ($macroNutrients as $nutrient) {
                 $totals[$nutrient] += $log->ingredient->calculateTotalMacro($nutrient, $log->quantity);
             }
+            $totals['cost'] += $log->ingredient->calculateCostForQuantity($log->quantity);
         }
 
         return $totals;

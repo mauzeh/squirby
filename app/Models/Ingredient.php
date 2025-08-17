@@ -18,6 +18,7 @@ class Ingredient extends Model
         'potassium',
         'base_quantity',
         'base_unit_id',
+        'cost_per_unit',
     ];
 
     public function baseUnit()
@@ -25,9 +26,9 @@ class Ingredient extends Model
         return $this->belongsTo(Unit::class, 'base_unit_id');
     }
 
-    public function calculateTotalMacro(string $macro, float $quantity)
+    public function calculateTotalMacro(string $nutrient, float $quantity)
     {
-        if ($macro === 'calories') {
+        if ($nutrient === 'calories') {
             return (
                 (9 * $this->fats) +
                 (4 * $this->carbs) +
@@ -35,16 +36,20 @@ class Ingredient extends Model
             ) * ($quantity / $this->base_quantity);
         }
 
-        // A list of fillable properties that are also macros
-        // This allows for easy extension if more macros are added in the future
-        $macros = [
+        // A list of fillable properties that are also nutrients
+        $nutrientProperties = [
             'protein', 'carbs', 'added_sugars', 'fats', 'sodium', 'iron', 'potassium'
         ];
 
-        if (in_array($macro, $macros)) {
-            return $this->$macro * ($quantity / $this->base_quantity);
+        if (in_array($nutrient, $nutrientProperties)) {
+            return $this->$nutrient * ($quantity / $this->base_quantity);
         }
 
         return 0;
+    }
+
+    public function calculateCostForQuantity(float $quantity)
+    {
+        return ($this->cost_per_unit / $this->base_quantity) * $quantity;
     }
 }

@@ -30,6 +30,7 @@ class IngredientSeeder extends Seeder
             'potassium' => 107,
             'base_quantity' => 1,
             'base_unit_id' => $pieceUnit->id,
+            'cost_per_unit' => 0.50,
         ]);
 
         Ingredient::create([
@@ -44,6 +45,7 @@ class IngredientSeeder extends Seeder
             'potassium' => 358,
             'base_quantity' => 1,
             'base_unit_id' => $pieceUnit->id,
+            'cost_per_unit' => 0.30,
         ]);
 
         Ingredient::create([
@@ -58,6 +60,7 @@ class IngredientSeeder extends Seeder
             'potassium' => 256,
             'base_quantity' => 100,
             'base_unit_id' => $gramUnit->id,
+            'cost_per_unit' => 8.00,
         ]);
 
         Ingredient::create([
@@ -72,6 +75,7 @@ class IngredientSeeder extends Seeder
             'potassium' => 316,
             'base_quantity' => 100,
             'base_unit_id' => $gramUnit->id,
+            'cost_per_unit' => 2.50,
         ]);
 
         Ingredient::create([
@@ -86,6 +90,7 @@ class IngredientSeeder extends Seeder
             'potassium' => 55,
             'base_quantity' => 100,
             'base_unit_id' => $gramUnit->id,
+            'cost_per_unit' => 1.00,
         ]);
 
         Ingredient::create([
@@ -100,6 +105,7 @@ class IngredientSeeder extends Seeder
             'potassium' => 363,
             'base_quantity' => 100,
             'base_unit_id' => $gramUnit->id,
+            'cost_per_unit' => 15.00,
         ]);
 
         Ingredient::create([
@@ -114,6 +120,7 @@ class IngredientSeeder extends Seeder
             'potassium' => 138,
             'base_quantity' => 1,
             'base_unit_id' => $pieceUnit->id,
+            'cost_per_unit' => 0.25,
         ]);
 
         Ingredient::create([
@@ -128,6 +135,7 @@ class IngredientSeeder extends Seeder
             'potassium' => 150,
             'base_quantity' => 100,
             'base_unit_id' => $mlUnit->id,
+            'cost_per_unit' => 1.20,
         ]);
 
         Ingredient::create([
@@ -142,6 +150,7 @@ class IngredientSeeder extends Seeder
             'potassium' => 200,
             'base_quantity' => 100,
             'base_unit_id' => $gramUnit->id,
+            'cost_per_unit' => 3.00,
         ]);
 
         Ingredient::create([
@@ -156,6 +165,7 @@ class IngredientSeeder extends Seeder
             'potassium' => 558,
             'base_quantity' => 100,
             'base_unit_id' => $gramUnit->id,
+            'cost_per_unit' => 2.00,
         ]);
     }
 }

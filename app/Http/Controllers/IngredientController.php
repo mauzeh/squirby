@@ -43,6 +43,7 @@ class IngredientController extends Controller
             'potassium' => 'required|numeric|min:0',
             'base_quantity' => 'required|numeric|min:0.01',
             'base_unit_id' => 'required|exists:units,id',
+            'cost_per_unit' => 'required|numeric|min:0',
         ]);
 
         Ingredient::create($request->all());
@@ -85,6 +86,7 @@ class IngredientController extends Controller
             'potassium' => 'required|numeric|min:0',
             'base_quantity' => 'required|numeric|min:0.01',
             'base_unit_id' => 'required|exists:units,id',
+            'cost_per_unit' => 'required|numeric|min:0',
         ]);
 
         $ingredient->update($request->all());

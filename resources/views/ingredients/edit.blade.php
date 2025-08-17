@@ -67,6 +67,10 @@
                     @endforeach
                 </select>
             </div>
+            <div class="form-group">
+                <label for="cost_per_unit">Cost Per Unit:</label>
+                <input type="number" name="cost_per_unit" id="cost_per_unit" step="0.01" value="{{ old('cost_per_unit', $ingredient->cost_per_unit) }}" required>
+            </div>
             <button type="submit" class="button">Update Ingredient</button>
         </form>
         </div>

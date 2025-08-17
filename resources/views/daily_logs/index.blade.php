@@ -71,6 +71,7 @@
                         <th>Protein (g)</th>
                         <th>Carbs (g)</th>
                         <th>Fats (g)</th>
+                        <th>Cost</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -84,6 +85,7 @@
                             <td>{{ round($log->ingredient->calculateTotalMacro('protein', $log->quantity), 1) }}</td>
                             <td>{{ round($log->ingredient->calculateTotalMacro('carbs', $log->quantity), 1) }}</td>
                             <td>{{ round($log->ingredient->calculateTotalMacro('fats', $log->quantity), 1) }}</td>
+                            <td>{{ number_format($log->ingredient->calculateCostForQuantity($log->quantity), 2) }}</td>
                         </tr>
                     @endforeach
                 </tbody>
@@ -94,6 +96,7 @@
                         <td style="font-weight:bold;">{{ round($dailyTotals['protein']) }}</td>
                         <td style="font-weight:bold;">{{ round($dailyTotals['carbs']) }}</td>
                         <td style="font-weight:bold;">{{ round($dailyTotals['fats']) }}</td>
+                        <td style="font-weight:bold;">{{ number_format($dailyTotals['cost'], 2) }}</td>
                     </tr>
                 </tfoot>
             </table>
@@ -135,6 +138,10 @@
                 <tr>
                     <th>Potassium (mg)</th>
                     <td>{{ round($dailyTotals['potassium']) }}</td>
+                </tr>
+                <tr>
+                    <th>Total Cost</th>
+                    <td>{{ number_format($dailyTotals['cost'], 2) }}</td>
                 </tr>
             </tbody>
         </table>
