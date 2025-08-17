@@ -25,12 +25,7 @@
             @csrf
             <div class="form-group">
                 <label for="ingredient_id">Ingredient:</label>
-                <select name="ingredient_id" id="ingredient_id" required>
-                    <option value="">Select an Ingredient</option>
-                    @foreach ($ingredients as $ingredient)
-                        <option value="{{ $ingredient->id }}">{{ $ingredient->name }} ({{ $ingredient->baseUnit->abbreviation }})</option>
-                    @endforeach
-                </select>
+                <x-ingredient-select name="ingredient_id" id="ingredient_id" :ingredients="$ingredients" :selected="old('ingredient_id')" required />
             </div>
             
             <div class="form-group">

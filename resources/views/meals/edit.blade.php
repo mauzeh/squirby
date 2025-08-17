@@ -28,12 +28,7 @@
                     @for ($i = 0; $i < 10; $i++)
                         <div class="form-group">
                             <label for="ingredients[{{ $i }}][ingredient_id]">Ingredient {{ $i + 1 }}:</label>
-                            <select name="ingredients[{{ $i }}][ingredient_id]">
-                                <option value="">Select an Ingredient</option>
-                                @foreach ($ingredients as $ingredient)
-                                    <option value="{{ $ingredient->id }}" {{ old('ingredients.' . $i . '.ingredient_id', $meal->ingredients->get($i)->id ?? '') == $ingredient->id ? 'selected' : '' }}>{{ $ingredient->name }}</option>
-                                @endforeach
-                            </select>
+                            <x-ingredient-select name="ingredients[{{ $i }}][ingredient_id]" id="ingredients_{{ $i }}_ingredient_id" :ingredients="$ingredients" :selected="old('ingredients.' . $i . '.ingredient_id', $meal->ingredients->get($i)->id ?? '')" />
                             <label for="ingredients[{{ $i }}][quantity]" style="margin-left: 10px;">Quantity:</label>
                             <input type="number" name="ingredients[{{ $i }}][quantity]" step="0.01" min="0.01" value="{{ old('ingredients.' . $i . '.quantity', $meal->ingredients->get($i)->pivot->quantity ?? '') }}" style="width: 80px;">
                         </div>

@@ -20,12 +20,7 @@
                 @method('PUT')
                 <div class="form-group">
                     <label for="ingredient_id">Ingredient:</label>
-                    <select name="ingredient_id" id="ingredient_id" required>
-                        <option value="">Select an Ingredient</option>
-                        @foreach ($ingredients as $ingredient)
-                            <option value="{{ $ingredient->id }}" {{ old('ingredient_id', $dailyLog->ingredient_id) == $ingredient->id ? 'selected' : '' }}>{{ $ingredient->name }} ({{ $ingredient->baseUnit->abbreviation }})</option>
-                        @endforeach
-                    </select>
+                    <x-ingredient-select name="ingredient_id" id="ingredient_id" :ingredients="$ingredients" :selected="old('ingredient_id', $dailyLog->ingredient_id)" required />
                 </div>
                 <div class="form-group">
                     <label for="logged_at">Time:</label>
