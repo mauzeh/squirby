@@ -42,12 +42,14 @@
                             <td>{{ $ingredient->iron }}</td>
                             <td>{{ $ingredient->potassium }}</td>
                             <td class="actions-column">
-                                <a href="{{ route('ingredients.edit', $ingredient->id) }}" class="button edit">Edit</a>
-                                <form action="{{ route('ingredients.destroy', $ingredient->id) }}" method="POST">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="button delete" onclick="return confirm('Are you sure you want to delete this ingredient?');">Delete</button>
-                                </form>
+                                <div style="display: flex; gap: 5px;">
+                                    <a href="{{ route('ingredients.edit', $ingredient->id) }}" class="button edit">Edit</a>
+                                    <form action="{{ route('ingredients.destroy', $ingredient->id) }}" method="POST">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="button delete" onclick="return confirm('Are you sure you want to delete this ingredient?');">Delete</button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                     @endforeach
