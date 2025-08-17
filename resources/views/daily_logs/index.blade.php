@@ -78,9 +78,8 @@
     </div>
 
     <div class="container">
-        <form action="{{ route('daily-logs.destroy-day') }}" method="POST" onsubmit="return confirm('Are you sure you want to delete all log entries for {{ $selectedDate->format('M d, Y') }}?');">
+        <form action="{{ url('daily-logs/destroy-day') }}" method="POST" onsubmit="return confirm('Are you sure you want to delete all log entries for {{ $selectedDate->format('M d, Y') }}?');">
             @csrf
-            @method('DELETE')
             <input type="hidden" name="date" value="{{ $selectedDate->toDateString() }}">
             <button type="submit" class="button delete" style="margin-bottom: 10px;">Delete All Logs for {{ $selectedDate->format('M d, Y') }}</button>
         </form>

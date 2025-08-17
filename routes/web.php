@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::resource('daily-logs', DailyLogController::class)->except(['show']);
 Route::post('daily-logs/add-meal', [DailyLogController::class, 'addMealToLog'])->name('daily-logs.add-meal');
-Route::delete('daily-logs/destroy-day', [DailyLogController::class, 'destroyDay'])->name('daily-logs.destroy-day');
+Route::post('daily-logs/destroy-day', [DailyLogController::class, 'destroyDay'])->name('daily-logs.destroy-day');
 
 Route::resource('ingredients', IngredientController::class)->except([
     'show'
