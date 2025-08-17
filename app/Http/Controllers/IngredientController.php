@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Ingredient;
+use App\Models\Unit;
 use Illuminate\Http\Request;
 
 class IngredientController extends Controller
@@ -21,7 +22,8 @@ class IngredientController extends Controller
      */
     public function create()
     {
-        return view('ingredients.create');
+        $units = Unit::all();
+        return view('ingredients.create', compact('units'));
     }
 
     /**
@@ -39,6 +41,8 @@ class IngredientController extends Controller
             'sodium' => 'required|numeric|min:0',
             'iron' => 'required|numeric|min:0',
             'potassium' => 'required|numeric|min:0',
+            'base_quantity' => 'required|numeric|min:0.01',
+            'base_unit_id' => 'required|exists:units,id',
         ]);
 
         Ingredient::create($request->all());
@@ -60,7 +64,8 @@ class IngredientController extends Controller
      */
     public function edit(Ingredient $ingredient)
     {
-        return view('ingredients.edit', compact('ingredient'));
+        $units = Unit::all();
+        return view('ingredients.edit', compact('ingredient', 'units'));
     }
 
     /**
@@ -78,6 +83,8 @@ class IngredientController extends Controller
             'sodium' => 'required|numeric|min:0',
             'iron' => 'required|numeric|min:0',
             'potassium' => 'required|numeric|min:0',
+            'base_quantity' => 'required|numeric|min:0.01',
+            'base_unit_id' => 'required|exists:units,id',
         ]);
 
         $ingredient->update($request->all());
