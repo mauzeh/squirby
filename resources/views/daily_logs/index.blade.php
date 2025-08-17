@@ -35,7 +35,9 @@
             
             <div class="form-group">
                 <label for="logged_at">Time:</label>
-                <input type="time" name="logged_at" id="logged_at" value="{{ now()->format('H:i') }}" required>
+                <input type="time" name="logged_at" id="logged_at" value="{{ now()->timezone(config('app.timezone'))->format('H:i') }}" required>
+                &nbsp;
+                <i>({{ config('app.timezone') }})</i>
             </div>
             <div class="form-group">
                 <label for="quantity">Quantity:</label>
@@ -82,11 +84,11 @@
                             <td>{{ $log->ingredient->name }}</td>
                             <td>{{ $log->quantity }}</td>
                             <td>{{ $log->unit->abbreviation }}</td>
-                            <td>{{ round($log->ingredient->calculateTotalMacro('calories', $log->quantity)) }}</td>
-                            <td>{{ round($log->ingredient->calculateTotalMacro('protein', $log->quantity), 1) }}</td>
-                            <td>{{ round($log->ingredient->calculateTotalMacro('carbs', $log->quantity), 1) }}</td>
-                            <td>{{ round($log->ingredient->calculateTotalMacro('fats', $log->quantity), 1) }}</td>
-                            <td>{{ number_format($log->ingredient->calculateCostForQuantity($log->quantity), 2) }}</td>
+                            <td>{{ round($nutritionService->calculateTotalMacro($log->ingredient, 'calories', $log->quantity)) }}</td>
+                            <td>{{ round($nutritionService->calculateTotalMacro($log->ingredient, 'protein', $log->quantity), 1) }}</td>
+                            <td>{{ round($nutritionService->calculateTotalMacro($log->ingredient, 'carbs', $log->quantity), 1) }}</td>
+                            <td>{{ round($nutritionService->calculateTotalMacro($log->ingredient, 'fats', $log->quantity), 1) }}</td>
+                            <td>{{ number_format($nutritionService->calculateCostForQuantity($log->ingredient, $log->quantity), 2) }}</td>
                             <td class="actions-column">
                                 <div style="display: flex; gap: 5px;">
                                     <a href="{{ route('daily-logs.edit', $log->id) }}" class="button edit">Edit</a>

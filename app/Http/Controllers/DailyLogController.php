@@ -7,17 +7,27 @@ use App\Models\Ingredient;
 use App\Models\Unit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Services\NutritionService;
 use Carbon\Carbon;
 
 class DailyLogController extends Controller
 {
+    protected $nutritionService;
+
+    public function __construct(NutritionService $nutritionService)
+    {
+        $this->nutritionService = $nutritionService;
+    }
+
     /**
      * Display a listing of the resource.
      */
     public function index(Request $request)
     {
+        // Needed for the compact function
         $ingredients = Ingredient::with('baseUnit')->get();
         $units = Unit::all();
+        $nutritionService = $this->nutritionService;
 
         $selectedDate = $request->input('date') ? Carbon::parse($request->input('date')) : Carbon::today();
 
@@ -26,7 +36,7 @@ class DailyLogController extends Controller
             ->orderBy('logged_at', 'desc')
             ->get();
 
-        $dailyTotals = $this->calculateDailyTotals($dailyLogs);
+        $dailyTotals = $nutritionService->calculateDailyTotals($dailyLogs);
 
         // Get all unique dates that have log entries, ordered descending
         $availableDates = DailyLog::select(DB::raw('DATE(logged_at) as date'))
@@ -34,7 +44,7 @@ class DailyLogController extends Controller
             ->orderBy('date', 'desc')
             ->pluck('date');
 
-        return view('daily_logs.index', compact('ingredients', 'units', 'dailyLogs', 'dailyTotals', 'selectedDate', 'availableDates'));
+        return view('daily_logs.index', compact('ingredients', 'units', 'dailyLogs', 'dailyTotals', 'selectedDate', 'availableDates', 'nutritionService'));
     }
 
     /**
@@ -57,35 +67,6 @@ class DailyLogController extends Controller
         $logEntry = DailyLog::create($validated);
 
         return redirect()->route('daily-logs.index')->with('success', 'Log entry added successfully!');
-    }
-
-    /**
-     * Calculate daily macro totals from a collection of DailyLog entries.
-     */
-    private function calculateDailyTotals($logs)
-    {
-        $totals = [
-            'calories' => 0,
-            'protein' => 0,
-            'carbs' => 0,
-            'added_sugars' => 0,
-            'fats' => 0,
-            'sodium' => 0,
-            'iron' => 0,
-            'potassium' => 0,
-            'cost' => 0,
-        ];
-
-        $macroNutrients = ['calories', 'protein', 'carbs', 'added_sugars', 'fats', 'sodium', 'iron', 'potassium'];
-
-        foreach ($logs as $log) {
-            foreach ($macroNutrients as $nutrient) {
-                $totals[$nutrient] += $log->ingredient->calculateTotalMacro($nutrient, $log->quantity);
-            }
-            $totals['cost'] += $log->ingredient->calculateCostForQuantity($log->quantity);
-        }
-
-        return $totals;
     }
 
     public function edit(DailyLog $dailyLog)
