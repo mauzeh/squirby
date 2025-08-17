@@ -35,6 +35,20 @@
             .content {
                 padding: 20px;
             }
+            .log-entries-table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 20px;
+            }
+            .log-entries-table th,
+            .log-entries-table td {
+                border: 1px solid #ddd;
+                padding: 8px;
+                text-align: left;
+            }
+            .log-entries-table th {
+                background-color: #f2f2f2;
+            }
         </style>
     </head>
     <body>

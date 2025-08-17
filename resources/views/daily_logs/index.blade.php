@@ -53,13 +53,26 @@
         @if ($todayLogs->isEmpty())
             <p>No entries for today yet. Add some above!</p>
         @else
-            @foreach ($todayLogs as $log)
-                <div class="log-entry">
-                    <span>{{ $log->ingredient->name }}</span>
-                    <span class="quantity">{{ $log->quantity }} {{ $log->unit->abbreviation }}</span>
-                    <span class="timestamp">{{ $log->created_at->format('M d, Y H:i') }}</span>
-                </div>
-            @endforeach
+            <table class="log-entries-table">
+                <thead>
+                    <tr>
+                        <th>Ingredient</th>
+                        <th>Quantity</th>
+                        <th>Unit</th>
+                        <th>Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach ($todayLogs as $log)
+                        <tr>
+                            <td>{{ $log->ingredient->name }}</td>
+                            <td>{{ $log->quantity }}</td>
+                            <td>{{ $log->unit->abbreviation }}</td>
+                            <td>{{ $log->created_at->format('M d, Y H:i') }}</td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
         @endif
     </div>
 
