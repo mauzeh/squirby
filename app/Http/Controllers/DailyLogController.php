@@ -22,14 +22,14 @@ class DailyLogController extends Controller
         $selectedDate = $request->input('date') ? Carbon::parse($request->input('date')) : Carbon::today();
 
         $dailyLogs = DailyLog::with(['ingredient', 'unit'])
-            ->whereDate('created_at', $selectedDate->toDateString())
-            ->orderBy('created_at', 'desc')
+            ->whereDate('logged_at', $selectedDate->toDateString())
+            ->orderBy('logged_at', 'desc')
             ->get();
 
         $dailyTotals = $this->calculateDailyTotals($dailyLogs);
 
         // Get all unique dates that have log entries, ordered descending
-        $availableDates = DailyLog::select(DB::raw('DATE(created_at) as date'))
+        $availableDates = DailyLog::select(DB::raw('DATE(logged_at) as date'))
             ->distinct()
             ->orderBy('date', 'desc')
             ->pluck('date');
@@ -45,10 +45,14 @@ class DailyLogController extends Controller
         $validated = $request->validate([
             'ingredient_id' => 'required|exists:ingredients,id',
             'quantity' => 'required|numeric|min:0.01',
+            'logged_at' => 'required|date_format:H:i',
         ]);
 
         $ingredient = Ingredient::find($validated['ingredient_id']);
         $validated['unit_id'] = $ingredient->base_unit_id;
+
+        $selectedDate = $request->input('date') ? Carbon::parse($request->input('date')) : Carbon::today();
+        $validated['logged_at'] = $selectedDate->setTimeFromTimeString($validated['logged_at']);
 
         $logEntry = DailyLog::create($validated);
 

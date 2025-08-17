@@ -10,6 +10,11 @@ class DailyLog extends Model
         'ingredient_id',
         'unit_id',
         'quantity',
+        'logged_at',
+    ];
+
+    protected $casts = [
+        'logged_at' => 'datetime',
     ];
 
     public function ingredient()

@@ -57,60 +57,60 @@ class DailyLogSeeder extends Seeder
             // Breakfast
             DailyLog::create([
                 'ingredient_id' => $egg->id,
-                'unit_id' => $pc->id,
+                'unit_id' => $egg->base_unit_id,
                 'quantity' => 2.0,
-                'created_at' => $currentDate->copy()->setHour(7)->setMinute(0),
+                'logged_at' => $currentDate->copy()->setHour(7)->setMinute(0),
             ]);
             DailyLog::create([
                 'ingredient_id' => $bread->id,
-                'unit_id' => $g->id,
+                'unit_id' => $bread->base_unit_id,
                 'quantity' => 50.0,
-                'created_at' => $currentDate->copy()->setHour(7)->setMinute(15),
+                'logged_at' => $currentDate->copy()->setHour(7)->setMinute(15),
             ]);
 
             // Lunch
             DailyLog::create([
                 'ingredient_id' => $chicken->id,
-                'unit_id' => $g->id,
+                'unit_id' => $chicken->base_unit_id,
                 'quantity' => 120.0,
-                'created_at' => $currentDate->copy()->setHour(13)->setMinute(0),
+                'logged_at' => $currentDate->copy()->setHour(13)->setMinute(0),
             ]);
             DailyLog::create([
                 'ingredient_id' => $rice->id,
-                'unit_id' => $g->id,
+                'unit_id' => $rice->base_unit_id,
                 'quantity' => 100.0,
-                'created_at' => $currentDate->copy()->setHour(13)->setMinute(15),
+                'logged_at' => $currentDate->copy()->setHour(13)->setMinute(15),
             ]);
 
             // Dinner
             DailyLog::create([
                 'ingredient_id' => $salmon->id,
-                'unit_id' => $g->id,
+                'unit_id' => $salmon->base_unit_id,
                 'quantity' => 180.0,
-                'created_at' => $currentDate->copy()->setHour(19)->setMinute(0),
+                'logged_at' => $currentDate->copy()->setHour(19)->setMinute(0),
             ]);
             DailyLog::create([
                 'ingredient_id' => $spinach->id,
-                'unit_id' => $g->id,
+                'unit_id' => $spinach->base_unit_id,
                 'quantity' => 100.0,
-                'created_at' => $currentDate->copy()->setHour(19)->setMinute(15),
+                'logged_at' => $currentDate->copy()->setHour(19)->setMinute(15),
             ]);
 
             // Add some random snacks
             if ($i % 3 == 0) { // Every 3rd day, add an apple
                 DailyLog::create([
                     'ingredient_id' => $apple->id,
-                    'unit_id' => $pc->id,
+                    'unit_id' => $apple->base_unit_id,
                     'quantity' => 1.0,
-                    'created_at' => $currentDate->copy()->setHour(10)->setMinute(0),
+                    'logged_at' => $currentDate->copy()->setHour(10)->setMinute(0),
                 ]);
             }
             if ($i % 2 == 0) { // Every 2nd day, add some milk
                 DailyLog::create([
                     'ingredient_id' => $milk->id,
-                    'unit_id' => $ml->id,
+                    'unit_id' => $milk->base_unit_id,
                     'quantity' => 200.0,
-                    'created_at' => $currentDate->copy()->setHour(16)->setMinute(30),
+                    'logged_at' => $currentDate->copy()->setHour(16)->setMinute(30),
                 ]);
             }
         }

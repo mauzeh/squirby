@@ -34,6 +34,10 @@
             </div>
             
             <div class="form-group">
+                <label for="logged_at">Time:</label>
+                <input type="time" name="logged_at" id="logged_at" value="{{ now()->format('H:i') }}" required>
+            </div>
+            <div class="form-group">
                 <label for="quantity">Quantity:</label>
                 <input type="number" name="quantity" id="quantity" step="0.01" min="0.01" required>
             </div>
@@ -72,7 +76,7 @@
                 <tbody>
                     @foreach ($dailyLogs as $log)
                         <tr>
-                            <td>{{ $log->created_at->format('H:i') }}</td>
+                            <td>{{ $log->logged_at->format('H:i') }}</td>
                             <td>{{ $log->ingredient->name }}</td>
                             <td>{{ $log->quantity }}</td>
                             <td>{{ $log->unit->abbreviation }}</td>
