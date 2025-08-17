@@ -10,12 +10,13 @@
         <style>
             body {
                 font-family: sans-serif;
-                background-color: #f0f2f5;
+                background-color: #1a1a1a; /* Dark background */
+                color: #f2f2f2; /* Light text */
                 margin: 0;
                 padding: 0;
             }
             .navbar {
-                background-color: #333;
+                background-color: #333; /* Darker navbar */
                 overflow: hidden;
                 width: 100%;
             }
@@ -29,15 +30,31 @@
                 font-size: 17px;
             }
             .navbar a:hover {
-                background-color: #ddd;
-                color: black;
+                background-color: #555; /* Lighter hover for dark theme */
+                color: white;
             }
             .navbar a.active {
-                background-color: #04AA6D;
+                background-color: #007bff; /* A blue for active, stands out on dark */
                 color: white;
             }
             .content {
                 padding: 20px;
+            }
+            .container {
+                background-color: #2c2c2c; /* Darker container background */
+                color: #f2f2f2; /* Light text */
+                padding: 30px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); /* Darker shadow */
+                width: 100%;
+                max-width: 800px; /* Adjusted max-width for better layout */
+                margin-bottom: 20px;
+            }
+            h1, h2 {
+                color: #f2f2f2; /* Light headings */
+            }
+            p {
+                color: #ccc; /* Slightly darker light text for paragraphs */
             }
             .log-entries-table {
                 width: 100%;
@@ -46,16 +63,17 @@
             }
             .log-entries-table th,
             .log-entries-table td {
-                border: 1px solid #ddd;
+                border: 1px solid #444; /* Darker borders */
                 padding: 8px;
                 text-align: left;
             }
             .log-entries-table th {
-                background-color: #f2f2f2;
+                background-color: #3a3a3a; /* Darker table header */
+                color: #f2f2f2; /* Light text */
             }
             .button {
                 display: inline-block;
-                background-color: #4CAF50;
+                background-color: #007bff; /* Blue for primary actions */
                 color: white;
                 padding: 8px 15px;
                 border-radius: 5px;
@@ -68,22 +86,72 @@
                 font-size: 16px;
             }
             .button.edit {
-                background-color: #007bff;
+                background-color: #ffc107; /* Yellow for edit */
+                color: #333; /* Dark text for yellow button */
             }
             .button.delete {
-                background-color: #dc3545;
+                background-color: #dc3545; /* Red for delete */
             }
             .button:hover {
-                background-color: #45a049;
+                background-color: #0056b3; /* Darker blue on hover */
             }
             .button.edit:hover {
-                background-color: #0056b3;
+                background-color: #e0a800; /* Darker yellow on hover */
             }
             .button.delete:hover {
-                background-color: #c82333;
+                background-color: #c82333; /* Darker red on hover */
             }
             .actions-column {
                 width: 150px;
+            }
+            /* Form specific styles for dark theme */
+            .form-group label {
+                color: #f2f2f2;
+            }
+            input[type="text"],
+            input[type="number"],
+            select {
+                background-color: #3a3a3a;
+                color: #f2f2f2;
+                border: 1px solid #555;
+            }
+            input[type="text"]:focus,
+            input[type="number"]:focus,
+            select:focus {
+                border-color: #007bff;
+                outline: none;
+            }
+            .error-message {
+                color: #ff4d4d; /* Lighter red for errors */
+            }
+            .back-button {
+                background-color: #6c757d;
+                color: white;
+            }
+            .back-button:hover {
+                background-color: #5a6268;
+            }
+            .date-navigation {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 10px;
+                margin-top: 10px;
+                justify-content: center;
+            }
+            .date-link {
+                background-color: #3a3a3a;
+                color: #f2f2f2;
+                padding: 8px 12px;
+                border-radius: 5px;
+                text-decoration: none;
+                transition: background-color 0.3s ease;
+            }
+            .date-link:hover {
+                background-color: #555;
+            }
+            .date-link.active {
+                background-color: #007bff;
+                color: white;
             }
         </style>
     </head>
