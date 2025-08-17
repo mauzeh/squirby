@@ -62,6 +62,27 @@
     </div>
 
     <div class="container">
+        <h2>Add Meal to Log</h2>
+        <form action="{{ route('daily-logs.add-meal') }}" method="POST">
+            @csrf
+            <div class="form-group">
+                <label for="meal_id">Meal:</label>
+                <select name="meal_id" id="meal_id" required>
+                    <option value="">Select a Meal</option>
+                    @foreach ($meals as $meal)
+                        <option value="{{ $meal->id }}">{{ $meal->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="portion">Portion:</label>
+                <input type="number" name="portion" id="portion" step="0.05" min="0.05" value="1.0" required>
+            </div>
+            <button type="submit" class="button">Add Meal to Log</button>
+        </form>
+    </div>
+
+    <div class="container">
         <h2>Select Date</h2>
         <div class="date-navigation">
             @foreach ($availableDates as $date)

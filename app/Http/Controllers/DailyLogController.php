@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\DailyLog;
 use App\Models\Ingredient;
+use App\Models\Meal;
 use App\Models\Unit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -27,6 +28,8 @@ class DailyLogController extends Controller
         // Needed for the compact function
         $ingredients = Ingredient::with('baseUnit')->get();
         $units = Unit::all();
+
+        $meals = Meal::all();
         $nutritionService = $this->nutritionService;
 
         $selectedDate = $request->input('date') ? Carbon::parse($request->input('date')) : Carbon::today();
@@ -44,7 +47,7 @@ class DailyLogController extends Controller
             ->orderBy('date', 'desc')
             ->pluck('date');
 
-        return view('daily_logs.index', compact('ingredients', 'units', 'dailyLogs', 'dailyTotals', 'selectedDate', 'availableDates', 'nutritionService'));
+        return view('daily_logs.index', compact('ingredients', 'units', 'dailyLogs', 'dailyTotals', 'selectedDate', 'availableDates', 'nutritionService', 'meals'));
     }
 
     /**
@@ -99,6 +102,27 @@ class DailyLogController extends Controller
         $dailyLog->delete();
 
         return redirect()->route('daily-logs.index')->with('success', 'Log entry deleted successfully!');
+    }
+
+    public function addMealToLog(Request $request)
+    {
+        $validated = $request->validate([
+            'meal_id' => 'required|exists:meals,id',
+            'portion' => 'required|numeric|min:0.01',
+        ]);
+
+        $meal = Meal::with('ingredients')->find($validated['meal_id']);
+
+        foreach ($meal->ingredients as $ingredient) {
+            DailyLog::create([
+                'ingredient_id' => $ingredient->id,
+                'unit_id' => $ingredient->base_unit_id,
+                'quantity' => $ingredient->pivot->quantity * $validated['portion'],
+                'logged_at' => now()->timezone(config('app.timezone')),
+            ]);
+        }
+
+        return redirect()->route('daily-logs.index')->with('success', 'Meal added to log successfully!');
     }
 }
 
