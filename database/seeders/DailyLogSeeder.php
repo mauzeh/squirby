@@ -23,24 +23,33 @@ class DailyLogSeeder extends Seeder
 
         DailyLog::truncate();
 
-        $startDate = Carbon::now()->subDays(30);
+        // Always create logs for today and tomorrow
+        $this->createMealPlanForDate(Carbon::today(), $ingredients);
+        $this->createMealPlanForDate(Carbon::tomorrow(), $ingredients);
 
-        for ($i = 0; $i < 30; $i++) {
+        // Create logs for the past 28 days
+        $startDate = Carbon::now()->subDays(28);
+
+        for ($i = 0; $i < 28; $i++) {
             $currentDate = $startDate->copy()->addDays($i);
+            $this->createMealPlanForDate($currentDate, $ingredients);
+        }
+    }
 
-            // Breakfast
-            $this->createBreakfast($currentDate, $ingredients);
+    private function createMealPlanForDate(Carbon $date, $ingredients)
+    {
+        // Breakfast
+        $this->createBreakfast($date, $ingredients);
 
-            // Lunch
-            $this->createLunch($currentDate, $ingredients);
+        // Lunch
+        $this->createLunch($date, $ingredients);
 
-            // Dinner
-            $this->createDinner($currentDate, $ingredients);
+        // Dinner
+        $this->createDinner($date, $ingredients);
 
-            // Snack
-            if (rand(0, 1)) {
-                $this->createSnack($currentDate, $ingredients);
-            }
+        // Snack
+        if (rand(0, 1)) {
+            $this->createSnack($date, $ingredients);
         }
     }
 
