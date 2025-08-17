@@ -41,13 +41,7 @@ class DailyLogController extends Controller
 
         $dailyTotals = $nutritionService->calculateDailyTotals($dailyLogs);
 
-        // Get all unique dates that have log entries, ordered descending
-        $availableDates = DailyLog::select(DB::raw('DATE(logged_at) as date'))
-            ->distinct()
-            ->orderBy('date', 'desc')
-            ->pluck('date');
-
-        return view('daily_logs.index', compact('ingredients', 'units', 'dailyLogs', 'dailyTotals', 'selectedDate', 'availableDates', 'nutritionService', 'meals'));
+        return view('daily_logs.index', compact('ingredients', 'units', 'dailyLogs', 'dailyTotals', 'selectedDate', 'nutritionService', 'meals'));
     }
 
     /**
@@ -70,7 +64,7 @@ class DailyLogController extends Controller
 
         $logEntry = DailyLog::create($validated);
 
-        return redirect()->route('daily-logs.index')->with('success', 'Log entry added successfully!');
+        return redirect()->route('daily-logs.index', ['date' => $validated['date']])->with('success', 'Log entry added successfully!');
     }
 
     public function edit(DailyLog $dailyLog)
@@ -141,6 +135,6 @@ class DailyLogController extends Controller
             ]);
         }
 
-        return redirect()->route('daily-logs.index')->with('success', 'Meal added to log successfully!');
+        return redirect()->route('daily-logs.index', ['date' => $validated['meal_date']])->with('success', 'Meal added to log successfully!');
     }
 }

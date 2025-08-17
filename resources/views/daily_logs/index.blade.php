@@ -64,9 +64,22 @@
     <div class="container">
         <h2>Select Date</h2>
         <div class="date-navigation">
-            @foreach ($availableDates as $date)
-                <a href="{{ route('daily-logs.index', ['date' => $date]) }}" class="date-link {{ $selectedDate->toDateString() == $date ? 'active' : '' }}">{{ \Carbon\Carbon::parse($date)->format('M d') }}</a>
-            @endforeach
+            @php
+                $today = \Carbon\Carbon::today();
+            @endphp
+            @for ($i = -6; $i <= 1; $i++) {{-- Last 6 days, today, and tomorrow --}}
+                @php
+                    $date = $today->copy()->addDays($i);
+                    $dateString = $date->toDateString();
+                @endphp
+                <a href="{{ route('daily-logs.index', ['date' => $dateString]) }}" class="date-link {{ $selectedDate->toDateString() == $dateString ? 'active' : '' }}">
+                    {{ $date->format('M d') }}
+                </a>
+            @endfor
+            <div class="form-group" style="margin-left: 20px;">
+                <label for="date_picker">Or Pick a Date:</label>
+                <input type="date" id="date_picker" onchange="window.location.href = '{{ route('daily-logs.index') }}?date=' + this.value;" value="{{ $selectedDate->format('Y-m-d') }}">
+            </div>
         </div>
     </div>
 
