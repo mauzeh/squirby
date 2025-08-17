@@ -56,19 +56,19 @@
             <table class="log-entries-table">
                 <thead>
                     <tr>
+                        <th>Time</th>
                         <th>Ingredient</th>
                         <th>Quantity</th>
                         <th>Unit</th>
-                        <th>Time</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach ($todayLogs as $log)
                         <tr>
+                            <td>{{ $log->created_at->format('M d, Y H:i') }}</td>
                             <td>{{ $log->ingredient->name }}</td>
                             <td>{{ $log->quantity }}</td>
                             <td>{{ $log->unit->abbreviation }}</td>
-                            <td>{{ $log->created_at->format('M d, Y H:i') }}</td>
                         </tr>
                     @endforeach
                 </tbody>
