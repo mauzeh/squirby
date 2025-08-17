@@ -10,6 +10,10 @@ Route::resource('ingredients', IngredientController::class)->except([
     'show'
 ]);
 
+Route::resource('meals', MealController::class)->except([
+    'show'
+]);
+
 Route::get('/', function () {
     return redirect()->route('daily-logs.index');
 });

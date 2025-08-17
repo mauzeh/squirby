@@ -26,4 +26,8 @@ class Ingredient extends Model
         return $this->belongsTo(Unit::class, 'base_unit_id');
     }
 
+    public function meals()
+    {
+        return $this->belongsToMany(Meal::class, 'meal_ingredients')->withPivot('quantity');
     }
+}
