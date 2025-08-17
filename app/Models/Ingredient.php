@@ -37,4 +37,31 @@ class Ingredient extends Model
             (4 * $this->protein)
         ) * ($convertedQuantity / $this->base_quantity);
     }
+
+    public function calculateProteinForQuantity(float $quantity, Unit $unit)
+    {
+        // Convert the provided quantity to the ingredient's base unit
+        $convertedQuantity = ($quantity * $unit->conversion_factor) / $this->baseUnit->conversion_factor;
+
+        // Calculate protein based on the ingredient's base quantity and converted quantity
+        return $this->protein * ($convertedQuantity / $this->base_quantity);
+    }
+
+    public function calculateCarbsForQuantity(float $quantity, Unit $unit)
+    {
+        // Convert the provided quantity to the ingredient's base unit
+        $convertedQuantity = ($quantity * $unit->conversion_factor) / $this->baseUnit->conversion_factor;
+
+        // Calculate carbs based on the ingredient's base quantity and converted quantity
+        return $this->carbs * ($convertedQuantity / $this->base_quantity);
+    }
+
+    public function calculateFatsForQuantity(float $quantity, Unit $unit)
+    {
+        // Convert the provided quantity to the ingredient's base unit
+        $convertedQuantity = ($quantity * $unit->conversion_factor) / $this->baseUnit->conversion_factor;
+
+        // Calculate fats based on the ingredient's base quantity and converted quantity
+        return $this->fats * ($convertedQuantity / $this->base_quantity);
+    }
 }

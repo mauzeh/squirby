@@ -72,6 +72,9 @@
                         <th>Quantity</th>
                         <th>Unit</th>
                         <th>Calories</th>
+                        <th>Protein (g)</th>
+                        <th>Carbs (g)</th>
+                        <th>Fats (g)</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -82,9 +85,21 @@
                             <td>{{ $log->quantity }}</td>
                             <td>{{ $log->unit->abbreviation }}</td>
                             <td>{{ round($log->ingredient->calculateCaloriesForQuantity($log->quantity, $log->unit)) }}</td>
+                            <td>{{ round($log->ingredient->calculateProteinForQuantity($log->quantity, $log->unit), 1) }}</td>
+                            <td>{{ round($log->ingredient->calculateCarbsForQuantity($log->quantity, $log->unit), 1) }}</td>
+                            <td>{{ round($log->ingredient->calculateFatsForQuantity($log->quantity, $log->unit), 1) }}</td>
                         </tr>
                     @endforeach
                 </tbody>
+                <tfoot>
+                    <tr>
+                        <th colspan="4" style="text-align:right; font-weight:bold;">Total:</th>
+                        <td style="font-weight:bold;">{{ round($dailyTotals['calories']) }}</td>
+                        <td style="font-weight:bold;">{{ round($dailyTotals['protein']) }}</td>
+                        <td style="font-weight:bold;">{{ round($dailyTotals['carbs']) }}</td>
+                        <td style="font-weight:bold;">{{ round($dailyTotals['fats']) }}</td>
+                    </tr>
+                </tfoot>
             </table>
         @endif
     </div>
