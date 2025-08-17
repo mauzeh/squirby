@@ -140,6 +140,11 @@
                 flex: 1;
                 min-width: 300px; /* Adjust as needed */
             }
+            .form-container h3 {
+                margin-top: 0; /* Remove top margin */
+                margin-bottom: 15px; /* Add some bottom margin for spacing */
+                color: #f2f2f2; /* Ensure consistent heading color */
+            }
             .form-row {
                 display: flex;
                 align-items: center;

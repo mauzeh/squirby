@@ -99,7 +99,6 @@
                         <th>Time</th>
                         <th>Ingredient</th>
                         <th>Quantity</th>
-                        <th>Unit</th>
                         <th>Calories</th>
                         <th>Protein (g)</th>
                         <th>Carbs (g)</th>
@@ -113,8 +112,7 @@
                         <tr>
                             <td>{{ $log->logged_at->format('H:i') }}</td>
                             <td>{{ $log->ingredient->name }}</td>
-                            <td>{{ $log->quantity }}</td>
-                            <td>{{ $log->unit->abbreviation }}</td>
+                            <td>{{ $log->quantity }} {{ $log->unit->abbreviation }}</td>
                             <td>{{ round($nutritionService->calculateTotalMacro($log->ingredient, 'calories', $log->quantity)) }}</td>
                             <td>{{ round($nutritionService->calculateTotalMacro($log->ingredient, 'protein', $log->quantity), 1) }}</td>
                             <td>{{ round($nutritionService->calculateTotalMacro($log->ingredient, 'carbs', $log->quantity), 1) }}</td>
@@ -135,7 +133,7 @@
                 </tbody>
                 <tfoot>
                     <tr>
-                        <th colspan="4" style="text-align:right; font-weight:bold;">Total:</th>
+                        <th colspan="3" style="text-align:right; font-weight:bold;">Total:</th>
                         <td style="font-weight:bold;">{{ round($dailyTotals['calories']) }}</td>
                         <td style="font-weight:bold;">{{ round($dailyTotals['protein']) }}</td>
                         <td style="font-weight:bold;">{{ round($dailyTotals['carbs']) }}</td>
