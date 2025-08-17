@@ -27,10 +27,10 @@ class DailyLogSeeder extends Seeder
         $this->createMealPlanForDate(Carbon::today(), $ingredients);
         $this->createMealPlanForDate(Carbon::tomorrow(), $ingredients);
 
-        // Create logs for the past 28 days
-        $startDate = Carbon::now()->subDays(28);
+        // Create logs for the past 7 days
+        $startDate = Carbon::now()->subDays(7);
 
-        for ($i = 0; $i < 28; $i++) {
+        for ($i = 0; $i < 7; $i++) {
             $currentDate = $startDate->copy()->addDays($i);
             $this->createMealPlanForDate($currentDate, $ingredients);
         }

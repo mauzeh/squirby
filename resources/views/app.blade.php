@@ -70,7 +70,6 @@
                 margin-right: auto;
             }
             .form-container {
-                max-width: 500px; /* Adjust as needed */
                 margin: 20px 0; /* Left-align the form and add vertical margin */
                 padding: 20px;
                 background-color: #2a2a2a; /* Slightly lighter background for the form */
