@@ -87,7 +87,7 @@
 
     <div class="container">
         <h2>Daily Macro Totals for {{ $selectedDate->format('M d, Y') }}</h2>
-        <table class="totals-table">
+        <table class="log-entries-table">
             <tbody>
                 <tr>
                     <th>Calories</th>
