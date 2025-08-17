@@ -38,7 +38,7 @@
                 color: white;
             }
             .content {
-                padding: 20px 0; /* Add horizontal padding */
+                padding: 20px; /* Add horizontal padding */
             }
             .container {
             }

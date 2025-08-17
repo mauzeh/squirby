@@ -88,27 +88,37 @@
     <div class="container">
         <h2>Daily Macro Totals for {{ $selectedDate->format('M d, Y') }}</h2>
         <table class="totals-table">
-            <thead>
-                <tr>
-                    <th>Calories</th>
-                    <th>Protein (g)</th>
-                    <th>Carbs (g)</th>
-                    <th>Added Sugars (g)</th>
-                    <th>Fats (g)</th>
-                    <th>Sodium (mg)</th>
-                    <th>Iron (mg)</th>
-                    <th>Potassium (mg)</th>
-                </tr>
-            </thead>
             <tbody>
                 <tr>
+                    <th>Calories</th>
                     <td>{{ round($dailyTotals['calories']) }}</td>
+                </tr>
+                <tr>
+                    <th>Protein (g)</th>
                     <td>{{ round($dailyTotals['protein']) }}</td>
+                </tr>
+                <tr>
+                    <th>Carbs (g)</th>
                     <td>{{ round($dailyTotals['carbs']) }}</td>
+                </tr>
+                <tr>
+                    <th>Added Sugars (g)</th>
                     <td>{{ round($dailyTotals['added_sugars']) }}</td>
+                </tr>
+                <tr>
+                    <th>Fats (g)</th>
                     <td>{{ round($dailyTotals['fats']) }}</td>
+                </tr>
+                <tr>
+                    <th>Sodium (mg)</th>
                     <td>{{ round($dailyTotals['sodium']) }}</td>
+                </tr>
+                <tr>
+                    <th>Iron (mg)</th>
                     <td>{{ round($dailyTotals['iron']) }}</td>
+                </tr>
+                <tr>
+                    <th>Potassium (mg)</th>
                     <td>{{ round($dailyTotals['potassium']) }}</td>
                 </tr>
             </tbody>
