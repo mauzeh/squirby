@@ -52,13 +52,7 @@ class IngredientController extends Controller
                          ->with('success', 'Ingredient created successfully.');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Ingredient $ingredient)
-    {
-        return view('ingredients.show', compact('ingredient'));
-    }
+    
 
     /**
      * Show the form for editing the specified resource.

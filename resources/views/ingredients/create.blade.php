@@ -74,6 +74,6 @@
         </form>
         </div>
         </form>
-        <a href="{{ route('ingredients.index') }}" class="back-button">Back to Ingredients List</a>
+        <a href="{{ route('ingredients.index') }}" class="button">Back to Ingredients List</a>
     </div>
 @endsection

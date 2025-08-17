@@ -6,6 +6,7 @@ use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use App\Models\Ingredient;
 use App\Models\Unit;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Log;
 
 class IngredientSeeder extends Seeder
 {
@@ -14,158 +15,60 @@ class IngredientSeeder extends Seeder
      */
     public function run(): void
     {
-        $gramUnit = Unit::where('abbreviation', 'g')->first();
-        $pieceUnit = Unit::where('abbreviation', 'pc')->first();
-        $mlUnit = Unit::where('abbreviation', 'ml')->first();
+        $csvFile = file(database_path('seeders/csv/ingredients_from_real_world.csv'));
+        $header = str_getcsv(array_shift($csvFile));
 
-        Ingredient::create([
-            'name' => 'Apple',
-            'calories' => 52,
-            'protein' => 0,
-            'carbs' => 14,
-            'added_sugars' => 10,
-            'fats' => 0,
-            'sodium' => 1,
-            'iron' => 0,
-            'potassium' => 107,
-            'base_quantity' => 1,
-            'base_unit_id' => $pieceUnit->id,
-            'cost_per_unit' => 0.50,
-        ]);
+        $units = Unit::all()->keyBy('abbreviation');
 
-        Ingredient::create([
-            'name' => 'Banana',
-            'calories' => 89,
-            'protein' => 1,
-            'carbs' => 23,
-            'added_sugars' => 12,
-            'fats' => 0,
-            'sodium' => 1,
-            'iron' => 0,
-            'potassium' => 358,
-            'base_quantity' => 1,
-            'base_unit_id' => $pieceUnit->id,
-            'cost_per_unit' => 0.30,
-        ]);
+        $unitMapping = [
+            'gram' => 'g',
+            'tbsp' => 'tbsp',
+            'tsp' => 'tsp',
+            'ml' => 'ml',
+            'egg (L)' => 'pc',
+            'apple (S)' => 'pc',
+            'slice' => 'pc',
+            'Pita' => 'pc',
+            'can' => 'pc',
+            'bottle' => 'pc',
+            'shot' => 'pc',
+            'raspberries' => 'pc',
+        ];
 
-        Ingredient::create([
-            'name' => 'Chicken Breast',
-            'calories' => 165,
-            'protein' => 31,
-            'carbs' => 0,
-            'added_sugars' => 0,
-            'fats' => 3,
-            'sodium' => 74,
-            'iron' => 1,
-            'potassium' => 256,
-            'base_quantity' => 100,
-            'base_unit_id' => $gramUnit->id,
-            'cost_per_unit' => 8.00,
-        ]);
+        foreach ($csvFile as $row) {
+            if (empty(trim($row))) {
+                continue;
+            }
+            $values = str_getcsv($row);
+            if (count($header) !== count($values)) {
+                Log::info('Row with different number of columns:');
+                Log::info($row);
+                continue;
+            }
 
-        Ingredient::create([
-            'name' => 'Broccoli',
-            'calories' => 55,
-            'protein' => 4,
-            'carbs' => 11,
-            'added_sugars' => 2,
-            'fats' => 1,
-            'sodium' => 33,
-            'iron' => 1,
-            'potassium' => 316,
-            'base_quantity' => 100,
-            'base_unit_id' => $gramUnit->id,
-            'cost_per_unit' => 2.50,
-        ]);
+            $rowData = array_combine($header, $values);
 
-        Ingredient::create([
-            'name' => 'Rice (cooked)',
-            'calories' => 130,
-            'protein' => 3,
-            'carbs' => 28,
-            'added_sugars' => 0,
-            'fats' => 0,
-            'sodium' => 1,
-            'iron' => 0,
-            'potassium' => 55,
-            'base_quantity' => 100,
-            'base_unit_id' => $gramUnit->id,
-            'cost_per_unit' => 1.00,
-        ]);
+            if (empty($rowData['Ingredient'])) {
+                continue;
+            }
 
-        Ingredient::create([
-            'name' => 'Salmon',
-            'calories' => 208,
-            'protein' => 20,
-            'carbs' => 0,
-            'added_sugars' => 0,
-            'fats' => 13,
-            'sodium' => 59,
-            'iron' => 0,
-            'potassium' => 363,
-            'base_quantity' => 100,
-            'base_unit_id' => $gramUnit->id,
-            'cost_per_unit' => 15.00,
-        ]);
+            $unitAbbreviation = $unitMapping[$rowData['Type']] ?? 'pc';
+            $unit = $units[$unitAbbreviation] ?? $units['pc'];
 
-        Ingredient::create([
-            'name' => 'Egg',
-            'calories' => 155,
-            'protein' => 13,
-            'carbs' => 1,
-            'added_sugars' => 0,
-            'fats' => 11,
-            'sodium' => 124,
-            'iron' => 1,
-            'potassium' => 138,
-            'base_quantity' => 1,
-            'base_unit_id' => $pieceUnit->id,
-            'cost_per_unit' => 0.25,
-        ]);
-
-        Ingredient::create([
-            'name' => 'Milk (whole)',
-            'calories' => 61,
-            'protein' => 3,
-            'carbs' => 5,
-            'added_sugars' => 0,
-            'fats' => 3,
-            'sodium' => 43,
-            'iron' => 0,
-            'potassium' => 150,
-            'base_quantity' => 100,
-            'base_unit_id' => $mlUnit->id,
-            'cost_per_unit' => 1.20,
-        ]);
-
-        Ingredient::create([
-            'name' => 'Bread (whole wheat)',
-            'calories' => 265,
-            'protein' => 13,
-            'carbs' => 49,
-            'added_sugars' => 5,
-            'fats' => 4,
-            'sodium' => 400,
-            'iron' => 2,
-            'potassium' => 200,
-            'base_quantity' => 100,
-            'base_unit_id' => $gramUnit->id,
-            'cost_per_unit' => 3.00,
-        ]);
-
-        Ingredient::create([
-            'name' => 'Spinach',
-            'calories' => 23,
-            'protein' => 3,
-            'carbs' => 4,
-            'added_sugars' => 0,
-            'fats' => 0,
-            'sodium' => 79,
-            'iron' => 3,
-            'potassium' => 558,
-            'base_quantity' => 100,
-            'base_unit_id' => $gramUnit->id,
-            'cost_per_unit' => 2.00,
-        ]);
+            Ingredient::create([
+                'name' => $rowData['Ingredient'],
+                'calories' => (float)($rowData['Calories'] ?? 0),
+                'protein' => (float)($rowData['Protein (g)'] ?? 0),
+                'carbs' => (float)($rowData['Carb (g)'] ?? 0),
+                'added_sugars' => (float)($rowData['Added Sugar (g)'] ?? 0),
+                'fats' => (float)($rowData['Fat (g)'] ?? 0),
+                'sodium' => (float)($rowData['Sodium (mg)'] ?? 0),
+                'iron' => (float)($rowData['Iron (mg)'] ?? 0),
+                'potassium' => (float)($rowData['Potassium (mg)'] ?? 0),
+                'base_quantity' => (float)($rowData['Amount'] ?? 1),
+                'base_unit_id' => $unit->id,
+                'cost_per_unit' => (float)(str_replace('$', '', $rowData['Cost ($)']) ?? 0),
+            ]);
+        }
     }
 }
