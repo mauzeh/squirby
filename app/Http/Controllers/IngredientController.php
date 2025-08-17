@@ -12,7 +12,7 @@ class IngredientController extends Controller
      */
     public function index()
     {
-        $ingredients = Ingredient::all();
+        $ingredients = Ingredient::orderBy('name')->get();
         return view('ingredients.index', compact('ingredients'));
     }
 
