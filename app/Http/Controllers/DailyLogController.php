@@ -44,7 +44,12 @@ class DailyLogController extends Controller
     {
         $validated = $request->validate([
             'ingredient_id' => 'required|exists:ingredients,id',
-            'unit_id' => 'required|exists:units,id',
+            'unit_id' => ['required', 'exists:units,id', function ($attribute, $value, $fail) use ($request) {
+                $ingredient = Ingredient::find($request->input('ingredient_id'));
+                if ($ingredient && $ingredient->base_unit_id != $value) {
+                    $fail('The selected unit must be the base unit for the ingredient.');
+                }
+            }],
             'quantity' => 'required|numeric|min:0.01',
         ]);
 
