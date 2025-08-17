@@ -23,6 +23,10 @@
                     <x-ingredient-select name="ingredient_id" id="ingredient_id" :ingredients="$ingredients" :selected="old('ingredient_id', $dailyLog->ingredient_id)" required />
                 </div>
                 <div class="form-group">
+                    <label for="date">Date:</label>
+                    <x-date-select name="date" id="date" :selectedDate="$dailyLog->logged_at->format('Y-m-d')" required />
+                </div>
+                <div class="form-group">
                     <label for="logged_at">Time:</label>
                     <x-time-select name="logged_at" id="logged_at" :selectedTime="$dailyLog->logged_at->format('H:i')" required />
                 </div>

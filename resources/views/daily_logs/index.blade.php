@@ -29,6 +29,10 @@
             </div>
             
             <div class="form-group">
+                <label for="date">Date:</label>
+                <x-date-select name="date" id="date" :selectedDate="$selectedDate->format('Y-m-d')" required />
+            </div>
+            <div class="form-group">
                 <label for="logged_at">Time:</label>
                 <x-time-select name="logged_at" id="logged_at" required />
             </div>
@@ -54,6 +58,10 @@
                         <option value="{{ $meal->id }}">{{ $meal->name }}</option>
                     @endforeach
                 </select>
+            </div>
+            <div class="form-group">
+                <label for="meal_date">Date:</label>
+                <x-date-select name="meal_date" id="meal_date" :selectedDate="$selectedDate->format('Y-m-d')" required />
             </div>
             <div class="form-group">
                 <label for="logged_at_meal">Time:</label>
