@@ -75,14 +75,9 @@ class DailyLogController extends Controller
         ];
 
         foreach ($logs as $log) {
-            $totals['calories'] += $log->ingredient->calculateCaloriesForQuantity($log->quantity, $log->unit);
-            $totals['protein'] += $log->ingredient->calculateProteinForQuantity($log->quantity, $log->unit);
-            $totals['carbs'] += $log->ingredient->calculateCarbsForQuantity($log->quantity, $log->unit);
-            $totals['added_sugars'] += $log->ingredient->calculateAddedSugarsForQuantity($log->quantity, $log->unit);
-            $totals['fats'] += $log->ingredient->calculateFatsForQuantity($log->quantity, $log->unit);
-            $totals['sodium'] += $log->ingredient->calculateSodiumForQuantity($log->quantity, $log->unit);
-            $totals['iron'] += $log->ingredient->calculateIronForQuantity($log->quantity, $log->unit);
-            $totals['potassium'] += $log->ingredient->calculatePotassiumForQuantity($log->quantity, $log->unit);
+            foreach (array_keys($totals) as $nutrient) {
+                $totals[$nutrient] += $log->ingredient->calculateTotalMacro($nutrient, $log->quantity);
+            }
         }
 
         return $totals;

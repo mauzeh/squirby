@@ -84,10 +84,10 @@
                             <td>{{ $log->ingredient->name }}</td>
                             <td>{{ $log->quantity }}</td>
                             <td>{{ $log->unit->abbreviation }}</td>
-                            <td>{{ round($log->ingredient->calculateCaloriesForQuantity($log->quantity, $log->unit)) }}</td>
-                            <td>{{ round($log->ingredient->calculateProteinForQuantity($log->quantity, $log->unit), 1) }}</td>
-                            <td>{{ round($log->ingredient->calculateCarbsForQuantity($log->quantity, $log->unit), 1) }}</td>
-                            <td>{{ round($log->ingredient->calculateFatsForQuantity($log->quantity, $log->unit), 1) }}</td>
+                            <td>{{ round($log->ingredient->calculateTotalMacro('calories', $log->quantity)) }}</td>
+                            <td>{{ round($log->ingredient->calculateTotalMacro('protein', $log->quantity), 1) }}</td>
+                            <td>{{ round($log->ingredient->calculateTotalMacro('carbs', $log->quantity), 1) }}</td>
+                            <td>{{ round($log->ingredient->calculateTotalMacro('fats', $log->quantity), 1) }}</td>
                         </tr>
                     @endforeach
                 </tbody>
