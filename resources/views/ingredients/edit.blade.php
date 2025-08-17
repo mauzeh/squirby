@@ -17,43 +17,47 @@
         <form action="{{ route('ingredients.update', $ingredient->id) }}" method="POST">
             @csrf
             @method('PUT')
-            <div class="form-group">
-                <label for="name">Name:</label>
-                <input type="text" name="name" id="name" value="{{ old('name', $ingredient->name) }}" required>
-            </div>
-            <div class="form-group">
-                <label for="calories">Calories:</label>
-                <input type="number" name="calories" id="calories" step="0.01" value="{{ old('calories', $ingredient->calories) }}" required>
-            </div>
-            <div class="form-group">
-                <label for="protein">Protein (g):</label>
-                <input type="number" name="protein" id="protein" step="0.01" value="{{ old('protein', $ingredient->protein) }}" required>
-            </div>
-            <div class="form-group">
-                <label for="carbs">Carbs (g):</label>
-                <input type="number" name="carbs" id="carbs" step="0.01" value="{{ old('carbs', $ingredient->carbs) }}" required>
-            </div>
-            <div class="form-group">
-                <label for="added_sugars">Added Sugars (g):</label>
-                <input type="number" name="added_sugars" id="added_sugars" step="0.01" value="{{ old('added_sugars', $ingredient->added_sugars) }}" required>
-            </div>
-            <div class="form-group">
-                <label for="fats">Fats (g):</label>
-                <input type="number" name="fats" id="fats" step="0.01" value="{{ old('fats', $ingredient->fats) }}" required>
-            </div>
-            <div class="form-group">
-                <label for="sodium">Sodium (mg):</label>
-                <input type="number" name="sodium" id="sodium" step="0.01" value="{{ old('sodium', $ingredient->sodium) }}" required>
-            </div>
-            <div class="form-group">
-                <label for="iron">Iron (mg):</label>
-                <input type="number" name="iron" id="iron" step="0.01" value="{{ old('iron', $ingredient->iron) }}" required>
-            </div>
-            <div class="form-group">
-                <label for="potassium">Potassium (mg):</label>
-                <input type="number" name="potassium" id="potassium" step="0.01" value="{{ old('potassium', $ingredient->potassium) }}" required>
-            </div>
-            <button type="submit">Update Ingredient</button>
+            <table>
+                <tr>
+                    <td><label for="name">Name:</label></td>
+                    <td><input type="text" name="name" id="name" value="{{ old('name', $ingredient->name) }}" required></td>
+                </tr>
+                <tr>
+                    <td><label for="calories">Calories:</label></td>
+                    <td><input type="number" name="calories" id="calories" step="0.01" value="{{ old('calories', $ingredient->calories) }}" required></td>
+                </tr>
+                <tr>
+                    <td><label for="protein">Protein (g):</label></td>
+                    <td><input type="number" name="protein" id="protein" step="0.01" value="{{ old('protein', $ingredient->protein) }}" required></td>
+                </tr>
+                <tr>
+                    <td><label for="carbs">Carbs (g):</label></td>
+                    <td><input type="number" name="carbs" id="carbs" step="0.01" value="{{ old('carbs', $ingredient->carbs) }}" required></td>
+                </tr>
+                <tr>
+                    <td><label for="added_sugars">Added Sugars (g):</label></td>
+                    <td><input type="number" name="added_sugars" id="added_sugars" step="0.01" value="{{ old('added_sugars', $ingredient->added_sugars) }}" required></td>
+                </tr>
+                <tr>
+                    <td><label for="fats">Fats (g):</label></td>
+                    <td><input type="number" name="fats" id="fats" step="0.01" value="{{ old('fats', $ingredient->fats) }}" required></td>
+                </tr>
+                <tr>
+                    <td><label for="sodium">Sodium (mg):</label></td>
+                    <td><input type="number" name="sodium" id="sodium" step="0.01" value="{{ old('sodium', $ingredient->sodium) }}" required></td>
+                </tr>
+                <tr>
+                    <td><label for="iron">Iron (mg):</label></td>
+                    <td><input type="number" name="iron" id="iron" step="0.01" value="{{ old('iron', $ingredient->iron) }}" required></td>
+                </tr>
+                <tr>
+                    <td><label for="potassium">Potassium (mg):</label></td>
+                    <td><input type="number" name="potassium" id="potassium" step="0.01" value="{{ old('potassium', $ingredient->potassium) }}" required></td>
+                </tr>
+                <tr>
+                    <td colspan="2"><button type="submit">Update Ingredient</button></td>
+                </tr>
+            </table>
         </form>
         <a href="{{ route('ingredients.index') }}" class="back-button">Back to Ingredients List</a>
     </div>
