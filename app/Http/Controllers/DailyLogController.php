@@ -23,7 +23,7 @@ class DailyLogController extends Controller
 
         $dailyLogs = DailyLog::with(['ingredient', 'unit'])
             ->whereDate('created_at', $selectedDate->toDateString())
-            ->orderBy('created_at', 'asc')
+            ->orderBy('created_at', 'desc')
             ->get();
 
         $dailyTotals = $this->calculateDailyTotals($dailyLogs);
