@@ -160,6 +160,14 @@
                 color: #f2f2f2;
                 border: 1px solid #555;
             }
+            .success-message-box {
+                background-color: #28a745; /* Darker green for success */
+                color: white; /* White text */
+                border: 1px solid #218838; /* Slightly darker green border */
+                padding: 15px; /* Add padding */
+                margin-bottom: 20px;
+                border-radius: 5px; /* Slightly rounded corners */
+            }
             input[type="text"]:focus,
             input[type="number"]:focus,
             select:focus {

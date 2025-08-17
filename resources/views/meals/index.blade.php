@@ -2,7 +2,7 @@
 
 @section('content')
     @if (session('success'))
-        <div class="container" style="background-color: #d4edda; color: #155724; border-color: #c3e6cb; margin-bottom: 20px;">
+        <div class="container success-message-box">
             {{ session('success') }}
         </div>
     @endif
