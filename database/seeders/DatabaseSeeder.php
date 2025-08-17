@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
             UnitSeeder::class,
             IngredientSeeder::class,
             DailyLogSeeder::class,
+            MealSeeder::class,
         ]);
     }
 }
