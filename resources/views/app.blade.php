@@ -63,6 +63,12 @@
                 background-color: #3a3a3a; /* Darker table header */
                 color: #f2f2f2; /* Light text */
             }
+            .macro-totals-table {
+                float: left;
+                width: auto;
+                margin-left: auto;
+                margin-right: auto;
+            }
             .button {
                 display: inline-block;
                 background-color: #007bff; /* Blue for primary actions */
