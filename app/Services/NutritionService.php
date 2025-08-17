@@ -8,7 +8,7 @@ use Carbon\Carbon;
 
 class NutritionService
 {
-    public function calculateDailyTotals($logs)
+    public function calculateDailyTotals($items)
     {
         $totals = [
             'calories' => 0,
@@ -24,11 +24,14 @@ class NutritionService
 
         $macroNutrients = ['calories', 'protein', 'carbs', 'added_sugars', 'fats', 'sodium', 'iron', 'potassium'];
 
-        foreach ($logs as $log) {
+        foreach ($items as $item) {
+            $ingredient = $item instanceof DailyLog ? $item->ingredient : $item;
+            $quantity = $item instanceof DailyLog ? $item->quantity : $item->pivot->quantity;
+
             foreach ($macroNutrients as $nutrient) {
-                $totals[$nutrient] += $this->calculateTotalMacro($log->ingredient, $nutrient, $log->quantity);
+                $totals[$nutrient] += $this->calculateTotalMacro($ingredient, $nutrient, $quantity);
             }
-            $totals['cost'] += $this->calculateCostForQuantity($log->ingredient, $log->quantity);
+            $totals['cost'] += $this->calculateCostForQuantity($ingredient, $quantity);
         }
 
         return $totals;

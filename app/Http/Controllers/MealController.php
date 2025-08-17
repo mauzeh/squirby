@@ -4,16 +4,29 @@ namespace App\Http\Controllers;
 
 use App\Models\Meal;
 use App\Models\Ingredient;
+use App\Services\NutritionService;
 use Illuminate\Http\Request;
 
 class MealController extends Controller
 {
+    protected $nutritionService;
+
+    public function __construct(NutritionService $nutritionService)
+    {
+        $this->nutritionService = $nutritionService;
+    }
+
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        $meals = Meal::all();
+        $meals = Meal::with('ingredients')->get();
+
+        foreach ($meals as $meal) {
+            $meal->total_macros = $this->nutritionService->calculateDailyTotals($meal->ingredients);
+        }
+
         return view('meals.index', compact('meals'));
     }
 
