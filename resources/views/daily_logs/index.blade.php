@@ -30,27 +30,7 @@
             
             <div class="form-group">
                 <label for="logged_at">Time:</label>
-                <select name="logged_at" id="logged_at" required>
-                    @php
-                        $currentTime = now()->timezone(config('app.timezone'));
-                        $minutes = $currentTime->minute;
-                        $remainder = $minutes % 15;
-
-                        if ($remainder !== 0) {
-                            $currentTime->addMinutes(15 - $remainder);
-                        }
-                        $selectedTime = old('logged_at', $currentTime->format('H:i'));
-                        for ($h = 0; $h < 24; $h++) {
-                            for ($m = 0; $m < 60; $m += 15) {
-                                $time = sprintf('%02d:%02d', $h, $m);
-                                $isSelected = ($time === $selectedTime) ? 'selected' : '';
-                                echo "<option value=\"" . $time . "\" " . $isSelected . ">" . $time . "</option>";
-                            }
-                        }
-                    @endphp
-                </select>
-                &nbsp;
-                <i>({{ config('app.timezone') }})</i>
+                <x-time-select name="logged_at" id="logged_at" required />
             </div>
             <div class="form-group">
                 <label for="quantity">Quantity:</label>
@@ -62,6 +42,7 @@
     </div>
 
     <div class="container">
+        <div class="form-container">
         <h2>Add Meal to Log</h2>
         <form action="{{ route('daily-logs.add-meal') }}" method="POST">
             @csrf
@@ -75,11 +56,16 @@
                 </select>
             </div>
             <div class="form-group">
+                <label for="logged_at_meal">Time:</label>
+                <x-time-select name="logged_at_meal" id="logged_at_meal" required />
+            </div>
+            <div class="form-group">
                 <label for="portion">Portion:</label>
                 <input type="number" name="portion" id="portion" step="0.05" min="0.05" value="1.0" required>
             </div>
             <button type="submit" class="button">Add Meal to Log</button>
         </form>
+        </div>
     </div>
 
     <div class="container">
@@ -92,6 +78,12 @@
     </div>
 
     <div class="container">
+        <form action="{{ route('daily-logs.destroy-day') }}" method="POST" onsubmit="return confirm('Are you sure you want to delete all log entries for {{ $selectedDate->format('M d, Y') }}?');">
+            @csrf
+            @method('DELETE')
+            <input type="hidden" name="date" value="{{ $selectedDate->toDateString() }}">
+            <button type="submit" class="button delete" style="margin-bottom: 10px;">Delete All Logs for {{ $selectedDate->format('M d, Y') }}</button>
+        </form>
         <h2>Log Entries for {{ $selectedDate->format('M d, Y') }}</h2>
         @if ($dailyLogs->isEmpty())
             <p>No entries for this day.</p>

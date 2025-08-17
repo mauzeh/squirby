@@ -108,21 +108,36 @@ class DailyLogController extends Controller
     {
         $validated = $request->validate([
             'meal_id' => 'required|exists:meals,id',
-            'portion' => 'required|numeric|min:0.01',
+            'portion' => 'required|numeric|min:0.05',
+            'logged_at_meal' => 'required|date_format:H:i',
         ]);
 
         $meal = Meal::with('ingredients')->find($validated['meal_id']);
+
+        $selectedDate = $request->input('date') ? Carbon::parse($request->input('date')) : Carbon::today();
+        $loggedAt = $selectedDate->setTimeFromTimeString($validated['logged_at_meal']);
 
         foreach ($meal->ingredients as $ingredient) {
             DailyLog::create([
                 'ingredient_id' => $ingredient->id,
                 'unit_id' => $ingredient->base_unit_id,
                 'quantity' => $ingredient->pivot->quantity * $validated['portion'],
-                'logged_at' => now()->timezone(config('app.timezone')),
+                'logged_at' => $loggedAt,
             ]);
         }
 
         return redirect()->route('daily-logs.index')->with('success', 'Meal added to log successfully!');
+    }
+
+    public function destroyDay(Request $request)
+    {
+        $validated = $request->validate([
+            'date' => 'required|date',
+        ]);
+
+        DailyLog::whereDate('logged_at', $validated['date'])->delete();
+
+        return redirect()->route('daily-logs.index', ['date' => $validated['date']])->with('success', 'All logs for the day deleted successfully!');
     }
 }
 
