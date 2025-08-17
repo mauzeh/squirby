@@ -38,17 +38,9 @@
                 color: white;
             }
             .content {
-                padding: 20px;
+                padding: 20px 0; /* Add horizontal padding */
             }
             .container {
-                background-color: #2c2c2c; /* Darker container background */
-                color: #f2f2f2; /* Light text */
-                padding: 30px;
-                border-radius: 8px;
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); /* Darker shadow */
-                width: 100%;
-                max-width: 800px; /* Adjusted max-width for better layout */
-                margin-bottom: 20px;
             }
             h1, h2 {
                 color: #f2f2f2; /* Light headings */
