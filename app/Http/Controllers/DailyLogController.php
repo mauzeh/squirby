@@ -56,7 +56,7 @@ class DailyLogController extends Controller
 
         $logEntry = DailyLog::create($validated);
 
-        return redirect()->route('daily_logs.index')->with('success', 'Log entry added successfully!');
+        return redirect()->route('daily-logs.index')->with('success', 'Log entry added successfully!');
     }
 
     /**
@@ -87,4 +87,37 @@ class DailyLogController extends Controller
 
         return $totals;
     }
+
+    public function edit(DailyLog $dailyLog)
+    {
+        $ingredients = Ingredient::with('baseUnit')->get();
+        return view('daily_logs.edit', compact('dailyLog', 'ingredients'));
+    }
+
+    public function update(Request $request, DailyLog $dailyLog)
+    {
+        $validated = $request->validate([
+            'ingredient_id' => 'required|exists:ingredients,id',
+            'quantity' => 'required|numeric|min:0.01',
+            'logged_at' => 'required|date_format:H:i',
+        ]);
+
+        $ingredient = Ingredient::find($validated['ingredient_id']);
+        $validated['unit_id'] = $ingredient->base_unit_id;
+
+        $loggedAt = Carbon::parse($dailyLog->logged_at);
+        $validated['logged_at'] = $loggedAt->setTimeFromTimeString($validated['logged_at']);
+
+        $dailyLog->update($validated);
+
+        return redirect()->route('daily-logs.index')->with('success', 'Log entry updated successfully!');
+    }
+
+    public function destroy(DailyLog $dailyLog)
+    {
+        $dailyLog->delete();
+
+        return redirect()->route('daily-logs.index')->with('success', 'Log entry deleted successfully!');
+    }
 }
+

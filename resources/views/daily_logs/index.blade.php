@@ -21,7 +21,7 @@
 
         <div class="form-container">
         <h2>Add New Entry</h2>
-        <form action="{{ route('daily_logs.store') }}" method="POST">
+        <form action="{{ route('daily-logs.store') }}" method="POST">
             @csrf
             <div class="form-group">
                 <label for="ingredient_id">Ingredient:</label>
@@ -72,6 +72,7 @@
                         <th>Carbs (g)</th>
                         <th>Fats (g)</th>
                         <th>Cost</th>
+                        <th class="actions-column">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -86,6 +87,16 @@
                             <td>{{ round($log->ingredient->calculateTotalMacro('carbs', $log->quantity), 1) }}</td>
                             <td>{{ round($log->ingredient->calculateTotalMacro('fats', $log->quantity), 1) }}</td>
                             <td>{{ number_format($log->ingredient->calculateCostForQuantity($log->quantity), 2) }}</td>
+                            <td class="actions-column">
+                                <div style="display: flex; gap: 5px;">
+                                    <a href="{{ route('daily-logs.edit', $log->id) }}" class="button edit">Edit</a>
+                                    <form action="{{ route('daily-logs.destroy', $log->id) }}" method="POST">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="button delete" onclick="return confirm('Are you sure you want to delete this log entry?');">Delete</button>
+                                    </form>
+                                </div>
+                            </td>
                         </tr>
                     @endforeach
                 </tbody>
