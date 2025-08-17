@@ -1,60 +1,100 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Nutrition Tracker Application
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+## Overview
 
-## About Laravel
+This is a simple web application built with Laravel that allows users to track their daily nutrition intake. It provides features for managing a list of ingredients and logging daily food consumption, with a focus on macro and micronutrient tracking.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Features
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+-   **Daily Nutrition Logging:** Users can add daily log entries, specifying the ingredient, quantity, and unit consumed.
+-   **Ingredient Management (CRUD):** A full Create, Read, Update, and Delete (CRUD) interface for managing a comprehensive list of ingredients, including their nutritional values (calories, protein, carbs, fats, sodium, iron, potassium, added sugars).
+-   **Date-Based Log Viewing:** View daily log entries and calculated macro totals for specific dates, with easy navigation between days.
+-   **Nutrient Totals:** Automatically calculates and displays daily totals for various macronutrients and micronutrients based on logged entries.
+-   **Responsive Navigation:** A clear navigation menu allows switching between the Daily Log and Ingredient Admin sections, with the active menu item highlighted.
+-   **Alphabetical Ingredient Listing:** Ingredients are displayed alphabetically for easy browsing and management.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Technologies Used
 
-## Learning Laravel
+-   **Backend:** Laravel (PHP Framework)
+-   **Database:** SQLite (for simplicity in development, easily configurable for others like MySQL, PostgreSQL)
+-   **Frontend:** Blade Templates (Laravel's templating engine) with basic CSS for styling.
+-   **Date Handling:** Carbon (PHP API extension for DateTime)
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## Setup Instructions
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+Follow these steps to get the application up and running on your local machine.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### Prerequisites
 
-## Laravel Sponsors
+-   PHP >= 8.2
+-   Composer
+-   Node.js & npm (or Yarn)
+-   Git
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### Installation
 
-### Premium Partners
+1.  **Clone the repository:**
+    ```bash
+    git clone <repository_url>
+    cd nutrition
+    ```
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+2.  **Install Composer dependencies:**
+    ```bash
+    composer install
+    ```
+
+3.  **Install Node.js dependencies:**
+    ```bash
+    npm install
+    # OR yarn install
+    ```
+
+4.  **Create a copy of your environment file:**
+    ```bash
+    cp .env.example .env
+    ```
+
+5.  **Generate an application key:**
+    ```bash
+    php artisan key:generate
+    ```
+
+6.  **Configure your database:**
+    By default, the application uses SQLite. Ensure the `database.sqlite` file exists in the `database` directory. If not, create it:
+    ```bash
+    touch database/database.sqlite
+    ```
+    If you wish to use a different database (e.g., MySQL), update your `.env` file accordingly.
+
+7.  **Run database migrations and seed the database:**
+    This will create the necessary tables and populate them with initial data (ingredients, units, and sample daily logs).
+    ```bash
+    php artisan migrate:fresh --seed
+    ```
+
+8.  **Compile frontend assets:**
+    ```bash
+    npm run dev
+    # OR yarn dev
+    ```
+
+9.  **Start the Laravel development server:**
+    ```bash
+    php artisan serve
+    ```
+
+## Usage
+
+After starting the development server, open your web browser and navigate to `http://127.0.0.1:8000` (or the address displayed in your terminal).
+
+-   Use the navigation bar at the top to switch between **Daily Log** and **Ingredient Admin**.
+-   In the **Daily Log** section, you can add new entries and view logs and macro totals for different dates.
+-   In the **Ingredient Admin** section, you can manage your list of ingredients (add, edit, delete).
 
 ## Contributing
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Feel free to fork the repository, make improvements, and submit pull requests. For major changes, please open an issue first to discuss what you would like to change.
 
 ## License
 
