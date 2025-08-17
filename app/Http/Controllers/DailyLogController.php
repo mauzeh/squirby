@@ -7,23 +7,34 @@ use App\Models\Ingredient;
 use App\Models\Unit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class DailyLogController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         $ingredients = Ingredient::all();
         $units = Unit::all();
-        $todayLogs = DailyLog::with(['ingredient', 'unit'])
-            ->whereDate('created_at', today())
+
+        $selectedDate = $request->input('date') ? Carbon::parse($request->input('date')) : Carbon::today();
+
+        $dailyLogs = DailyLog::with(['ingredient', 'unit'])
+            ->whereDate('created_at', $selectedDate->toDateString())
+            ->orderBy('created_at', 'asc')
             ->get();
 
-        $dailyTotals = $this->calculateDailyTotals($todayLogs);
+        $dailyTotals = $this->calculateDailyTotals($dailyLogs);
 
-        return view('daily_logs.index', compact('ingredients', 'units', 'todayLogs', 'dailyTotals'));
+        // Get all unique dates that have log entries, ordered descending
+        $availableDates = DailyLog::select(DB::raw('DATE(created_at) as date'))
+            ->distinct()
+            ->orderBy('date', 'desc')
+            ->pluck('date');
+
+        return view('daily_logs.index', compact('ingredients', 'units', 'dailyLogs', 'dailyTotals', 'selectedDate', 'availableDates'));
     }
 
     /**

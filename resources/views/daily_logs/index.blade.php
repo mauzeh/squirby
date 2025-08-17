@@ -49,9 +49,18 @@
     </div>
 
     <div class="container">
-        <h2>Today's Log Entries</h2>
-        @if ($todayLogs->isEmpty())
-            <p>No entries for today yet. Add some above!</p>
+        <h2>Select Date</h2>
+        <div class="date-navigation">
+            @foreach ($availableDates as $date)
+                <a href="{{ route('daily_logs.index', ['date' => $date]) }}" class="date-link {{ $selectedDate->toDateString() == $date ? 'active' : '' }}">{{ \Carbon\Carbon::parse($date)->format('M d') }}</a>
+            @endforeach
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>Log Entries for {{ $selectedDate->format('M d, Y') }}</h2>
+        @if ($dailyLogs->isEmpty())
+            <p>No entries for this day.</p>
         @else
             <table class="log-entries-table">
                 <thead>
@@ -63,9 +72,9 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach ($todayLogs as $log)
+                    @foreach ($dailyLogs as $log)
                         <tr>
-                            <td>{{ $log->created_at->format('M d, Y H:i') }}</td>
+                            <td>{{ $log->created_at->format('H:i') }}</td>
                             <td>{{ $log->ingredient->name }}</td>
                             <td>{{ $log->quantity }}</td>
                             <td>{{ $log->unit->abbreviation }}</td>
@@ -77,7 +86,7 @@
     </div>
 
     <div class="container">
-        <h2>Daily Macro Totals</h2>
+        <h2>Daily Macro Totals for {{ $selectedDate->format('M d, Y') }}</h2>
         <table class="totals-table">
             <thead>
                 <tr>
