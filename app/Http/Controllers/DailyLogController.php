@@ -75,28 +75,14 @@ class DailyLogController extends Controller
         ];
 
         foreach ($logs as $log) {
-            $ingredient = $log->ingredient;
-            $quantityInGrams = $log->quantity; // Assuming quantity is already in grams or can be converted
-
-            // For simplicity, assuming 1 unit of quantity is 1 gram for now.
-            // A more robust solution would involve unit conversions.
-            // For example, if unit is 'cups', convert cups to grams for the ingredient.
-            // For this task, I will assume 'quantity' is directly proportional to 100g nutritional values.
-            // If 'quantity' is in grams, then (quantity / 100) * nutritional_value.
-            // If 'quantity' is in 'pieces', then it's more complex and depends on average weight per piece.
-
-            // Let's assume 'quantity' is in grams for calculation purposes.
-            // Nutritional values are per 100 grams.
-            $factor = $quantityInGrams / 100;
-
-            $totals['calories'] += $ingredient->calories * $factor;
-            $totals['protein'] += $ingredient->protein * $factor;
-            $totals['carbs'] += $ingredient->carbs * $factor;
-            $totals['added_sugars'] += $ingredient->added_sugars * $factor;
-            $totals['fats'] += $ingredient->fats * $factor;
-            $totals['sodium'] += $ingredient->sodium * $factor;
-            $totals['iron'] += $ingredient->iron * $factor;
-            $totals['potassium'] += $ingredient->potassium * $factor;
+            $totals['calories'] += $log->ingredient->calculateCaloriesForQuantity($log->quantity, $log->unit);
+            $totals['protein'] += $log->ingredient->calculateProteinForQuantity($log->quantity, $log->unit);
+            $totals['carbs'] += $log->ingredient->calculateCarbsForQuantity($log->quantity, $log->unit);
+            $totals['added_sugars'] += $log->ingredient->calculateAddedSugarsForQuantity($log->quantity, $log->unit);
+            $totals['fats'] += $log->ingredient->calculateFatsForQuantity($log->quantity, $log->unit);
+            $totals['sodium'] += $log->ingredient->calculateSodiumForQuantity($log->quantity, $log->unit);
+            $totals['iron'] += $log->ingredient->calculateIronForQuantity($log->quantity, $log->unit);
+            $totals['potassium'] += $log->ingredient->calculatePotassiumForQuantity($log->quantity, $log->unit);
         }
 
         return $totals;
