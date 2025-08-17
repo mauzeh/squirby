@@ -34,14 +34,16 @@ class MealController extends Controller
         $request->validate([
             'name' => 'required|string|max:255|unique:meals,name',
             'ingredients' => 'array',
-            'ingredients.*.ingredient_id' => 'required|exists:ingredients,id',
-            'ingredients.*.quantity' => 'required|numeric|min:0.01',
+            'ingredients.*.ingredient_id' => 'nullable|exists:ingredients,id',
+            'ingredients.*.quantity' => 'nullable|numeric|min:0.01',
         ]);
 
         $meal = Meal::create(['name' => $request->name]);
 
         foreach ($request->ingredients as $item) {
-            $meal->ingredients()->attach($item['ingredient_id'], ['quantity' => $item['quantity']]);
+            if (isset($item['ingredient_id']) && isset($item['quantity'])) {
+                $meal->ingredients()->attach($item['ingredient_id'], ['quantity' => $item['quantity']]);
+            }
         }
 
         return redirect()->route('meals.index')->with('success', 'Meal created successfully.');
@@ -73,15 +75,17 @@ class MealController extends Controller
         $request->validate([
             'name' => 'required|string|max:255|unique:meals,name,' . $meal->id,
             'ingredients' => 'array',
-            'ingredients.*.ingredient_id' => 'required|exists:ingredients,id',
-            'ingredients.*.quantity' => 'required|numeric|min:0.01',
+            'ingredients.*.ingredient_id' => 'nullable|exists:ingredients,id',
+            'ingredients.*.quantity' => 'nullable|numeric|min:0.01',
         ]);
 
         $meal->update(['name' => $request->name]);
 
         $syncData = [];
         foreach ($request->ingredients as $item) {
-            $syncData[$item['ingredient_id']] = ['quantity' => $item['quantity']];
+            if (isset($item['ingredient_id']) && isset($item['quantity'])) {
+                $syncData[$item['ingredient_id']] = ['quantity' => $item['quantity']];
+            }
         }
         $meal->ingredients()->sync($syncData);
 

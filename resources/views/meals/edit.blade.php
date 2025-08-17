@@ -25,67 +25,27 @@
 
                 <h2>Ingredients</h2>
                 <div id="ingredients-container">
-                    @foreach ($meal->ingredients as $index => $mealIngredient)
+                    @for ($i = 0; $i < 10; $i++)
                         <div class="ingredient-item">
+                            <h3>Ingredient {{ $i + 1 }}</h3>
                             <div class="form-group">
-                                <label for="ingredients[{{ $index }}][ingredient_id]">Ingredient:</label>
-                                <select name="ingredients[{{ $index }}][ingredient_id]" required>
+                                <label for="ingredients[{{ $i }}][ingredient_id]">Ingredient:</label>
+                                <select name="ingredients[{{ $i }}][ingredient_id]">
                                     <option value="">Select an Ingredient</option>
                                     @foreach ($ingredients as $ingredient)
-                                        <option value="{{ $ingredient->id }}" {{ old('ingredients.' . $index . '.ingredient_id', $mealIngredient->id) == $ingredient->id ? 'selected' : '' }}>{{ $ingredient->name }}</option>
+                                        <option value="{{ $ingredient->id }}" {{ old('ingredients.' . $i . '.ingredient_id', $meal->ingredients->get($i)->id ?? '') == $ingredient->id ? 'selected' : '' }}>{{ $ingredient->name }}</option>
                                     @endforeach
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label for="ingredients[{{ $index }}][quantity]">Quantity:</label>
-                                <input type="number" name="ingredients[{{ $index }}][quantity]" step="0.01" min="0.01" value="{{ old('ingredients.' . $index . '.quantity', $mealIngredient->pivot->quantity) }}" required>
+                                <label for="ingredients[{{ $i }}][quantity]">Quantity:</label>
+                                <input type="number" name="ingredients[{{ $i }}][quantity]" step="0.01" min="0.01" value="{{ old('ingredients.' . $i . '.quantity', $meal->ingredients->get($i)->pivot->quantity ?? '') }}">
                             </div>
-                            <button type="button" class="remove-ingredient button delete">Remove</button>
                         </div>
-                    @endforeach
+                    @endfor
                 </div>
-                <button type="button" id="add-ingredient" class="button">Add Another Ingredient</button>
                 <button type="submit" class="button">Update Meal</button>
             </form>
         </div>
     </div>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            let ingredientIndex = {{ count($meal->ingredients) }};
-            document.getElementById('add-ingredient').addEventListener('click', function () {
-                const container = document.getElementById('ingredients-container');
-                const newItem = document.createElement('div');
-                newItem.classList.add('ingredient-item');
-                newItem.innerHTML = `
-                    <div class="form-group">
-                        <label for="ingredients[${ingredientIndex}][ingredient_id]">Ingredient:</label>
-                        <select name="ingredients[${ingredientIndex}][ingredient_id]" required>
-                            <option value="">Select an Ingredient</option>
-                            @foreach ($ingredients as $ingredient)
-                                <option value="{{ $ingredient->id }}">{{ $ingredient->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="ingredients[${ingredientIndex}][quantity]">Quantity:</label>
-                        <input type="number" name="ingredients[${ingredientIndex}][quantity]" step="0.01" min="0.01" required>
-                    </div>
-                    <button type="button" class="remove-ingredient button delete">Remove</button>
-                `;
-                container.appendChild(newItem);
-                ingredientIndex++;
-
-                newItem.querySelector('.remove-ingredient').addEventListener('click', function () {
-                    newItem.remove();
-                });
-            });
-
-            document.querySelectorAll('.remove-ingredient').forEach(button => {
-                button.addEventListener('click', function () {
-                    button.closest('.ingredient-item').remove();
-                });
-            });
-        });
-    </script>
 @endsection
