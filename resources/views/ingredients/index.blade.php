@@ -26,7 +26,7 @@
                         <th>Sodium (mg)</th>
                         <th>Iron (mg)</th>
                         <th>Potassium (mg)</th>
-                        <th>Actions</th>
+                        <th class="actions-column">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -41,7 +41,7 @@
                             <td>{{ $ingredient->sodium }}</td>
                             <td>{{ $ingredient->iron }}</td>
                             <td>{{ $ingredient->potassium }}</td>
-                            <td>
+                            <td class="actions-column">
                                 <a href="{{ route('ingredients.edit', $ingredient->id) }}" class="button edit">Edit</a>
                                 <form action="{{ route('ingredients.destroy', $ingredient->id) }}" method="POST">
                                     @csrf

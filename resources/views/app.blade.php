@@ -82,6 +82,9 @@
             .button.delete:hover {
                 background-color: #c82333;
             }
+            .actions-column {
+                width: 150px;
+            }
         </style>
     </head>
     <body>
