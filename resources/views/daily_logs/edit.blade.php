@@ -29,7 +29,18 @@
                 </div>
                 <div class="form-group">
                     <label for="logged_at">Time:</label>
-                    <input type="time" name="logged_at" id="logged_at" value="{{ old('logged_at', $dailyLog->logged_at->format('H:i')) }}" required>
+                    <select name="logged_at" id="logged_at" required>
+                    @php
+                        $selectedTime = old('logged_at', $dailyLog->logged_at->format('H:i'));
+                        for ($h = 0; $h < 24; $h++) {
+                            for ($m = 0; $m < 60; $m += 15) {
+                                $time = sprintf('%02d:%02d', $h, $m);
+                                $isSelected = ($time === $selectedTime) ? 'selected' : '';
+                                echo "<option value=\"" . $time . "\" " . $isSelected . ">" . $time . "</option>";
+                            }
+                        }
+                    @endphp
+                </select>
                 </div>
                 <div class="form-group">
                     <label for="quantity">Quantity:</label>

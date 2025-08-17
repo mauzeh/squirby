@@ -35,7 +35,25 @@
             
             <div class="form-group">
                 <label for="logged_at">Time:</label>
-                <input type="time" name="logged_at" id="logged_at" value="{{ now()->timezone(config('app.timezone'))->format('H:i') }}" required>
+                <select name="logged_at" id="logged_at" required>
+                    @php
+                        $currentTime = now()->timezone(config('app.timezone'));
+                        $minutes = $currentTime->minute;
+                        $remainder = $minutes % 15;
+
+                        if ($remainder !== 0) {
+                            $currentTime->addMinutes(15 - $remainder);
+                        }
+                        $selectedTime = old('logged_at', $currentTime->format('H:i'));
+                        for ($h = 0; $h < 24; $h++) {
+                            for ($m = 0; $m < 60; $m += 15) {
+                                $time = sprintf('%02d:%02d', $h, $m);
+                                $isSelected = ($time === $selectedTime) ? 'selected' : '';
+                                echo "<option value=\"" . $time . "\" " . $isSelected . ">" . $time . "</option>";
+                            }
+                        }
+                    @endphp
+                </select>
                 &nbsp;
                 <i>({{ config('app.timezone') }})</i>
             </div>

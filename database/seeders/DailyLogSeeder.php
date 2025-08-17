@@ -55,7 +55,7 @@ class DailyLogSeeder extends Seeder
 
     private function createBreakfast(Carbon $date, $ingredients)
     {
-        $breakfastTime = $date->copy()->setHour(rand(7, 9))->setMinute(rand(0, 59));
+        $breakfastTime = $date->copy()->setHour(rand(7, 9))->setMinute(rand(0, 3) * 15);
         $mealType = rand(1, 3);
 
         switch ($mealType) {
@@ -78,7 +78,7 @@ class DailyLogSeeder extends Seeder
 
     private function createLunch(Carbon $date, $ingredients)
     {
-        $lunchTime = $date->copy()->setHour(rand(12, 14))->setMinute(rand(0, 59));
+        $lunchTime = $date->copy()->setHour(rand(12, 14))->setMinute(rand(0, 3) * 15);
         $mealType = rand(1, 3);
 
         switch ($mealType) {
@@ -103,7 +103,7 @@ class DailyLogSeeder extends Seeder
 
     private function createDinner(Carbon $date, $ingredients)
     {
-        $dinnerTime = $date->copy()->setHour(rand(18, 20))->setMinute(rand(0, 59));
+        $dinnerTime = $date->copy()->setHour(rand(18, 20))->setMinute(rand(0, 3) * 15);
         $mealType = rand(1, 3);
 
         switch ($mealType) {
@@ -128,7 +128,7 @@ class DailyLogSeeder extends Seeder
 
     private function createSnack(Carbon $date, $ingredients)
     {
-        $snackTime = $date->copy()->setHour(rand(15, 17))->setMinute(rand(0, 59));
+        $snackTime = $date->copy()->setHour(rand(15, 17))->setMinute(rand(0, 3) * 15);
         $snackType = rand(1, 4);
 
         switch ($snackType) {
