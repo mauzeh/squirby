@@ -57,6 +57,7 @@
                 <div class="log-entry">
                     <span>{{ $log->ingredient->name }}</span>
                     <span class="quantity">{{ $log->quantity }} {{ $log->unit->abbreviation }}</span>
+                    <span class="timestamp">{{ $log->created_at->format('M d, Y H:i') }}</span>
                 </div>
             @endforeach
         @endif
