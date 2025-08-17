@@ -130,6 +130,36 @@
                 color: #f2f2f2;
                 border: 1px solid #555;
             }
+            .forms-container-wrapper {
+                display: flex;
+                justify-content: space-around;
+                gap: 20px;
+                flex-wrap: wrap;
+            }
+            .form-container {
+                flex: 1;
+                min-width: 300px; /* Adjust as needed */
+            }
+            .form-row {
+                display: flex;
+                align-items: center;
+                margin-bottom: 10px;
+            }
+            .form-row label {
+                flex: 0 0 80px; /* Adjust label width */
+                margin-right: 10px;
+                text-align: right;
+            }
+            .form-row input[type="text"],
+            .form-row input[type="number"],
+            .form-row select {
+                flex: 1;
+                padding: 8px;
+                border-radius: 5px;
+                background-color: #3a3a3a;
+                color: #f2f2f2;
+                border: 1px solid #555;
+            }
             input[type="text"]:focus,
             input[type="number"]:focus,
             select:focus {

@@ -107,6 +107,17 @@ class DailyLogController extends Controller
         return redirect()->route('daily-logs.index', ['date' => $date])->with('success', 'Log entry deleted successfully!');
     }
 
+    public function destroyDay(Request $request)
+    {
+        $validated = $request->validate([
+            'date' => 'required|date',
+        ]);
+
+        DailyLog::whereDate('logged_at', $validated['date'])->delete();
+
+        return redirect()->route('daily-logs.index', ['date' => $validated['date']])->with('success', 'All logs for the day deleted successfully!');
+    }
+
     public function addMealToLog(Request $request)
     {
         $validated = $request->validate([

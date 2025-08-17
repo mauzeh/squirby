@@ -6,73 +6,58 @@
             {{ session('success') }}
         </div>
     @endif
-    <div class="container">
-        <h1>Daily Nutrition Log</h1>
-
-        @if ($errors->any())
-            <div class="error-message">
-                <ul>
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
-
+    <div class="container forms-container-wrapper">
         <div class="form-container">
-        <h2>Add New Entry</h2>
-        <form action="{{ route('daily-logs.store') }}" method="POST">
-            @csrf
-            <div class="form-group">
-                <label for="ingredient_id">Ingredient:</label>
-                <x-ingredient-select name="ingredient_id" id="ingredient_id" :ingredients="$ingredients" :selected="old('ingredient_id')" required />
-            </div>
-            
-            <div class="form-group">
-                <label for="date">Date:</label>
-                <x-date-select name="date" id="date" :selectedDate="$selectedDate->format('Y-m-d')" required />
-            </div>
-            <div class="form-group">
-                <label for="logged_at">Time:</label>
-                <x-time-select name="logged_at" id="logged_at" required />
-            </div>
-            <div class="form-group">
-                <label for="quantity">Quantity:</label>
-                <input type="number" name="quantity" id="quantity" step="0.01" min="0.01" required>
-            </div>
-            <button type="submit" class="button">Add Log Entry</button>
-        </form>
+            <h3>Add New Entry</h3>
+            <form action="{{ route('daily-logs.store') }}" method="POST">
+                @csrf
+                <div class="form-row">
+                    <label for="date">Date:</label>
+                    <x-date-select name="date" id="date" :selectedDate="$selectedDate->format('Y-m-d')" required />
+                </div>
+                <div class="form-row">
+                    <label for="logged_at">Time:</label>
+                    <x-time-select name="logged_at" id="logged_at" required />
+                </div>
+                <div class="form-row">
+                    <label for="ingredient_id">Ingredient:</label>
+                    <x-ingredient-select name="ingredient_id" id="ingredient_id" :ingredients="$ingredients" :selected="old('ingredient_id')" required />
+                </div>
+                <div class="form-row">
+                    <label for="quantity">Quantity:</label>
+                    <input type="number" name="quantity" id="quantity" step="0.01" min="0.01" required>
+                </div>
+                <button type="submit" class="button">Add Log Entry</button>
+            </form>
         </div>
-    </div>
 
-    <div class="container">
         <div class="form-container">
-        <h2>Add Meal to Log</h2>
-        <form action="{{ route('daily-logs.add-meal') }}" method="POST">
-            @csrf
-            <div class="form-group">
-                <label for="meal_id">Meal:</label>
-                <select name="meal_id" id="meal_id" required>
-                    <option value="">Select a Meal</option>
-                    @foreach ($meals as $meal)
-                        <option value="{{ $meal->id }}">{{ $meal->name }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="meal_date">Date:</label>
-                <x-date-select name="meal_date" id="meal_date" :selectedDate="$selectedDate->format('Y-m-d')" required />
-            </div>
-            <div class="form-group">
-                <label for="logged_at_meal">Time:</label>
-                <x-time-select name="logged_at_meal" id="logged_at_meal" required />
-            </div>
-            <div class="form-group">
-                <label for="portion">Portion:</label>
-                <input type="number" name="portion" id="portion" step="0.05" min="0.05" value="1.0" required>
-            </div>
-            <button type="submit" class="button">Add Meal to Log</button>
-        </form>
+            <h3>Add Meal to Log</h3>
+            <form action="{{ route('daily-logs.add-meal') }}" method="POST">
+                @csrf
+                <div class="form-row">
+                    <label for="meal_date">Date:</label>
+                    <x-date-select name="meal_date" id="meal_date" :selectedDate="$selectedDate->format('Y-m-d')" required />
+                </div>
+                <div class="form-row">
+                    <label for="logged_at_meal">Time:</label>
+                    <x-time-select name="logged_at_meal" id="logged_at_meal" required />
+                </div>
+                <div class="form-row">
+                    <label for="meal_id">Meal:</label>
+                    <select name="meal_id" id="meal_id" required>
+                        <option value="">Select a Meal</option>
+                        @foreach ($meals as $meal)
+                            <option value="{{ $meal->id }}">{{ $meal->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="form-row">
+                    <label for="portion">Portion:</label>
+                    <input type="number" name="portion" id="portion" step="0.05" min="0.05" value="1.0" required>
+                </div>
+                <button type="submit" class="button">Add Meal to Log</button>
+            </form>
         </div>
     </div>
 
