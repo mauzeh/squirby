@@ -16,7 +16,7 @@ class DailyLogController extends Controller
      */
     public function index(Request $request)
     {
-        $ingredients = Ingredient::all();
+        $ingredients = Ingredient::with('baseUnit')->get();
         $units = Unit::all();
 
         $selectedDate = $request->input('date') ? Carbon::parse($request->input('date')) : Carbon::today();
@@ -44,14 +44,11 @@ class DailyLogController extends Controller
     {
         $validated = $request->validate([
             'ingredient_id' => 'required|exists:ingredients,id',
-            'unit_id' => ['required', 'exists:units,id', function ($attribute, $value, $fail) use ($request) {
-                $ingredient = Ingredient::find($request->input('ingredient_id'));
-                if ($ingredient && $ingredient->base_unit_id != $value) {
-                    $fail('The selected unit must be the base unit for the ingredient.');
-                }
-            }],
             'quantity' => 'required|numeric|min:0.01',
         ]);
+
+        $ingredient = Ingredient::find($validated['ingredient_id']);
+        $validated['unit_id'] = $ingredient->base_unit_id;
 
         $logEntry = DailyLog::create($validated);
 

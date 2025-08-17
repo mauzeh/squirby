@@ -28,19 +28,11 @@
                 <select name="ingredient_id" id="ingredient_id" required>
                     <option value="">Select an Ingredient</option>
                     @foreach ($ingredients as $ingredient)
-                        <option value="{{ $ingredient->id }}">{{ $ingredient->name }}</option>
+                        <option value="{{ $ingredient->id }}">{{ $ingredient->name }} ({{ $ingredient->baseUnit->abbreviation }})</option>
                     @endforeach
                 </select>
             </div>
-            <div class="form-group">
-                <label for="unit_id">Unit:</label>
-                <select name="unit_id" id="unit_id" required>
-                    <option value="">Select a Unit</option>
-                    @foreach ($units as $unit)
-                        <option value="{{ $unit->id }}">{{ $unit->name }} ({{ $unit->abbreviation }})</option>
-                    @endforeach
-                </select>
-            </div>
+            
             <div class="form-group">
                 <label for="quantity">Quantity:</label>
                 <input type="number" name="quantity" id="quantity" step="0.01" min="0.01" required>
