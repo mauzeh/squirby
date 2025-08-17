@@ -19,6 +19,7 @@
             </div>
         @endif
 
+        <div class="form-container">
         <h2>Add New Entry</h2>
         <form action="{{ route('daily_logs.store') }}" method="POST">
             @csrf
@@ -46,6 +47,7 @@
             </div>
             <button type="submit">Add Log Entry</button>
         </form>
+        </div>
     </div>
 
     <div class="container">

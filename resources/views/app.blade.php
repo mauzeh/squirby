@@ -69,6 +69,13 @@
                 margin-left: auto;
                 margin-right: auto;
             }
+            .form-container {
+                max-width: 500px; /* Adjust as needed */
+                margin: 20px 0; /* Left-align the form and add vertical margin */
+                padding: 20px;
+                background-color: #2a2a2a; /* Slightly lighter background for the form */
+                border-radius: 8px;
+            }
             .button {
                 display: inline-block;
                 background-color: #007bff; /* Blue for primary actions */
@@ -103,12 +110,23 @@
                 width: 150px;
             }
             /* Form specific styles for dark theme */
+            .form-group {
+                display: flex;
+                align-items: center;
+                margin-bottom: 10px;
+            }
             .form-group label {
+                flex: 0 0 120px; /* Fixed width for labels */
+                margin-right: 10px;
+                text-align: right;
                 color: #f2f2f2;
             }
-            input[type="text"],
-            input[type="number"],
-            select {
+            .form-group input[type="text"],
+            .form-group input[type="number"],
+            .form-group select {
+                flex: 1; /* Take remaining space */
+                padding: 8px;
+                border-radius: 5px;
                 background-color: #3a3a3a;
                 color: #f2f2f2;
                 border: 1px solid #555;
