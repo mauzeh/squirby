@@ -18,6 +18,8 @@
                 <thead>
                     <tr>
                         <th>Name</th>
+                        <th>Base Quantity</th>
+                        <th>Base Unit</th>
                         <th>Calories</th>
                         <th>Protein (g)</th>
                         <th>Carbs (g)</th>
@@ -33,6 +35,8 @@
                     @foreach ($ingredients as $ingredient)
                         <tr>
                             <td>{{ $ingredient->name }}</td>
+                            <td>{{ $ingredient->base_quantity }}</td>
+                            <td>{{ $ingredient->baseUnit->abbreviation }}</td>
                             <td>{{ $ingredient->calories }}</td>
                             <td>{{ $ingredient->protein }}</td>
                             <td>{{ $ingredient->carbs }}</td>
