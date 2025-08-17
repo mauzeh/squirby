@@ -108,6 +108,7 @@
                         <td style="font-weight:bold;">{{ round($dailyTotals['carbs']) }}</td>
                         <td style="font-weight:bold;">{{ round($dailyTotals['fats']) }}</td>
                         <td style="font-weight:bold;">{{ number_format($dailyTotals['cost'], 2) }}</td>
+                        <td>
                     </tr>
                 </tfoot>
             </table>
