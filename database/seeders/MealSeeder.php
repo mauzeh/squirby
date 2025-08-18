@@ -27,10 +27,15 @@ class MealSeeder extends Seeder
         $meal2->ingredients()->attach($ingredients['Blueberries (fresh)']->id, ['quantity' => 65]);
         $meal2->ingredients()->attach($ingredients['Honey']->id, ['quantity' => 15]);
 
-        // Meal 3: Salmon Dinner
-        $meal3 = Meal::create(['name' => 'Salmon Dinner']);
-        $meal3->ingredients()->attach($ingredients['Atlantic Salmon (Skin On - Trader Joe\'s)']->id, ['quantity' => 180]);
-        $meal3->ingredients()->attach($ingredients['Rice, Brown Jasmine (Cooked - Trader Joe\'s)']->id, ['quantity' => 120]);
+        // Meal 3: Nasi Goreng
+        $meal3 = Meal::create(['name' => 'Nasi Goreng (Vegetarian Fried Rice)']);
+        $meal3->ingredients()->attach($ingredients['Olive oil']->id, ['quantity' => 1]);
         $meal3->ingredients()->attach($ingredients['Broccoli (dry)']->id, ['quantity' => 100]);
+        $meal3->ingredients()->attach($ingredients['Rice, Brown Jasmine (Dry - Trader Joe\'s)']->id, ['quantity' => 100]);
+        $meal3->ingredients()->attach($ingredients['Salt for Life (Nature\'s Alternative Salt)']->id, ['quantity' => .125]);
+        $meal3->ingredients()->attach($ingredients['Multi-Purpose Umami Seasoning Blend (Trader Joe\'s)']->id, ['quantity' => .25]);
+        $meal3->ingredients()->attach($ingredients['Sriracha (Trader Joe\'s)']->id, ['quantity' => 1]);
+        $meal3->ingredients()->attach($ingredients['Egg (L) whole']->id, ['quantity' => 2]);
+
     }
 }
