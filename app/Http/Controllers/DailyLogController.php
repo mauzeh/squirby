@@ -26,7 +26,7 @@ class DailyLogController extends Controller
     public function index(Request $request)
     {
         // Needed for the compact function
-        $ingredients = Ingredient::with('baseUnit')->get();
+        $ingredients = Ingredient::with('baseUnit')->orderBy('name')->get();
         $units = Unit::all();
 
         $meals = Meal::all();
@@ -69,7 +69,7 @@ class DailyLogController extends Controller
 
     public function edit(DailyLog $dailyLog)
     {
-        $ingredients = Ingredient::with('baseUnit')->get();
+        $ingredients = Ingredient::with('baseUnit')->orderBy('name')->get();
         return view('daily_logs.edit', compact('dailyLog', 'ingredients'));
     }
 
