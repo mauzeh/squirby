@@ -84,11 +84,6 @@
     </div>
 
     <div class="container">
-        <form action="{{ url('daily-logs/destroy-day') }}" method="POST" onsubmit="return confirm('Are you sure you want to delete all log entries for {{ $selectedDate->format('M d, Y') }}?');">
-            @csrf
-            <input type="hidden" name="date" value="{{ $selectedDate->toDateString() }}">
-            <button type="submit" class="button delete" style="margin-bottom: 10px;">Delete All Logs for {{ $selectedDate->format('M d, Y') }}</button>
-        </form>
         <h2>Log Entries for {{ $selectedDate->format('M d, Y') }}</h2>
         @if ($dailyLogs->isEmpty())
             <p>No entries for this day.</p>
@@ -133,7 +128,14 @@
                 </tbody>
                 <tfoot>
                     <tr>
-                        <th colspan="3" style="text-align:right; font-weight:bold;">Total:</th>
+                        <th colspan="2" style="text-align:left; font-weight:normal;">
+                            <form action="{{ url('daily-logs/destroy-day') }}" method="POST" onsubmit="return confirm('Are you sure you want to delete all log entries for {{ $selectedDate->format('M d, Y') }}?');">
+                                @csrf
+                                <input type="hidden" name="date" value="{{ $selectedDate->toDateString() }}">
+                                <button type="submit" class="button delete">Delete All Logs for {{ $selectedDate->format('M d, Y') }}</button>
+                            </form>
+                        </th>
+                        <th colspan="1" style="text-align:right; font-weight:bold;">Total:</th>
                         <td style="font-weight:bold;">{{ round($dailyTotals['calories']) }}</td>
                         <td style="font-weight:bold;">{{ round($dailyTotals['protein']) }}</td>
                         <td style="font-weight:bold;">{{ round($dailyTotals['carbs']) }}</td>
