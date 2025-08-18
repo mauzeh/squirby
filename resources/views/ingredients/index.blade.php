@@ -20,7 +20,7 @@
                         <th>Name</th>
                         <th>Base Quantity</th>
                         <th>Base Unit</th>
-                        <th>Cost Per Unit</th>
+                        <th>Cost</th>
                         <th>Calories</th>
                         <th>Protein (g)</th>
                         <th>Carbs (g)</th>
@@ -29,6 +29,9 @@
                         <th>Sodium (mg)</th>
                         <th>Iron (mg)</th>
                         <th>Potassium (mg)</th>
+                        <th>Fiber (g)</th>
+                        <th>Calcium (mg)</th>
+                        <th>Caffeine (mg)</th>
                         <th class="actions-column">Actions</th>
                     </tr>
                 </thead>
@@ -47,6 +50,9 @@
                             <td>{{ $ingredient->sodium }}</td>
                             <td>{{ $ingredient->iron }}</td>
                             <td>{{ $ingredient->potassium }}</td>
+                            <td>{{ $ingredient->fiber }}</td>
+                            <td>{{ $ingredient->calcium }}</td>
+                            <td>{{ $ingredient->caffeine }}</td>
                             <td class="actions-column">
                                 <div style="display: flex; gap: 5px;">
                                     <a href="{{ route('ingredients.edit', $ingredient->id) }}" class="button edit">Edit</a>
