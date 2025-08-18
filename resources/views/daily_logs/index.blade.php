@@ -26,6 +26,9 @@
                 <div class="form-row">
                     <label for="quantity">Quantity:</label>
                     <x-quantity-input name="quantity" id="quantity" :value="old('quantity')" required />
+                    @error('quantity')
+                        <span class="error-message">{{ $message }}</span>
+                    @enderror
                 </div>
                 <button type="submit" class="button">Add Log Entry</button>
             </form>
