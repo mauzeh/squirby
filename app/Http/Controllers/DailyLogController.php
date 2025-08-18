@@ -107,7 +107,7 @@ class DailyLogController extends Controller
             'date' => 'required|date',
         ]);
 
-        DailyLog::whereDate('logged_at', $validated['date'])->delete();
+        $deletedCount = DailyLog::whereDate('logged_at', $validated['date'])->delete();
 
         return redirect()->route('daily-logs.index', ['date' => $validated['date']])->with('success', 'All logs for the day deleted successfully!');
     }
