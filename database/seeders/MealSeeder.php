@@ -37,5 +37,12 @@ class MealSeeder extends Seeder
         $meal3->ingredients()->attach($ingredients['Sriracha (Trader Joe\'s)']->id, ['quantity' => 1]);
         $meal3->ingredients()->attach($ingredients['Egg (L) whole']->id, ['quantity' => 2]);
 
+        // Meal 4: Carb Loading Shake
+        $meal3 = Meal::create(['name' => 'Carb Loading Shake']);
+        $meal3->ingredients()->attach($ingredients['Oats']->id, ['quantity' => 100]);
+        $meal3->ingredients()->attach($ingredients['Trader Joe\'s - Frozen Fruits (Average)']->id, ['quantity' => 75]);
+        $meal3->ingredients()->attach($ingredients['Milk (2%, Clover Sonoma)']->id, ['quantity' => 480]);
+        $meal3->ingredients()->attach($ingredients['Whole Psyllium Husks']->id, ['quantity' => 1]);
+
     }
 }
