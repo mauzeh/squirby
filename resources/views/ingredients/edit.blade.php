@@ -55,6 +55,18 @@
                 <input type="number" name="potassium" id="potassium" step="0.01" value="{{ old('potassium', $ingredient->potassium) }}" required>
             </div>
             <div class="form-group">
+                <label for="fiber">Fiber (g):</label>
+                <input type="number" name="fiber" id="fiber" step="0.01" value="{{ old('fiber', $ingredient->fiber) }}" required>
+            </div>
+            <div class="form-group">
+                <label for="calcium">Calcium (mg):</label>
+                <input type="number" name="calcium" id="calcium" step="0.01" value="{{ old('calcium', $ingredient->calcium) }}" required>
+            </div>
+            <div class="form-group">
+                <label for="caffeine">Caffeine (mg):</label>
+                <input type="number" name="caffeine" id="caffeine" step="0.01" value="{{ old('caffeine', $ingredient->caffeine) }}" required>
+            </div>
+            <div class="form-group">
                 <label for="base_quantity">Base Quantity:</label>
                 <input type="number" name="base_quantity" id="base_quantity" step="0.01" value="{{ old('base_quantity', $ingredient->base_quantity) }}" required>
             </div>

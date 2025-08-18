@@ -15,6 +15,7 @@ class IngredientSeeder extends Seeder
      */
     public function run(): void
     {
+        Ingredient::truncate();
         $csvFile = file(database_path('seeders/csv/ingredients_from_real_world.csv'));
         $header = str_getcsv(array_shift($csvFile));
 
@@ -65,9 +66,12 @@ class IngredientSeeder extends Seeder
                 'sodium' => (float)($rowData['Sodium (mg)'] ?? 0),
                 'iron' => (float)($rowData['Iron (mg)'] ?? 0),
                 'potassium' => (float)($rowData['Potassium (mg)'] ?? 0),
+                'fiber' => (float)($rowData['Fiber (g)'] ?? 0),
+                'calcium' => (float)($rowData['Calcium (mg)'] ?? 0),
+                'caffeine' => (float)($rowData['Caffeine (mg)'] ?? 0),
                 'base_quantity' => (float)($rowData['Amount'] ?? 1),
                 'base_unit_id' => $unit->id,
-                'cost_per_unit' => (float)(str_replace('$', '', $rowData['Cost ($)']) ?? 0),
+                'cost_per_unit' => (float)($rowData['Cost ($)'] ?? 0)
             ]);
         }
     }

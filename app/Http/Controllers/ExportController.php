@@ -45,7 +45,7 @@ class ExportController extends Controller
             "Expires"             => "0"
         );
 
-        $columns = array('Date', 'Time', 'Ingredient', 'Quantity', 'Unit', 'Calories', 'Protein (g)', 'Carbs (g)', 'Fats (g)', 'Added Sugars (g)', 'Sodium (mg)', 'Iron (mg)', 'Potassium (mg)', 'Cost');
+        $columns = array('Date', 'Time', 'Ingredient', 'Quantity', 'Unit', 'Calories', 'Protein (g)', 'Carbs (g)', 'Fats (g)', 'Added Sugars (g)', 'Sodium (mg)', 'Iron (mg)', 'Potassium (mg)', 'Fiber (g)', 'Calcium (mg)', 'Caffeine (mg)', 'Cost');
 
         $callback = function() use($dailyLogs, $columns) {
             $file = fopen('php://output', 'w');
@@ -65,9 +65,12 @@ class ExportController extends Controller
                 $row['Sodium (mg)'] = round($this->nutritionService->calculateTotalMacro($log->ingredient, 'sodium', $log->quantity), 1);
                 $row['Iron (mg)'] = round($this->nutritionService->calculateTotalMacro($log->ingredient, 'iron', $log->quantity), 1);
                 $row['Potassium (mg)'] = round($this->nutritionService->calculateTotalMacro($log->ingredient, 'potassium', $log->quantity), 1);
+                $row['Fiber (g)'] = round($this->nutritionService->calculateTotalMacro($log->ingredient, 'fiber', $log->quantity), 1);
+                $row['Calcium (mg)'] = round($this->nutritionService->calculateTotalMacro($log->ingredient, 'calcium', $log->quantity), 1);
+                $row['Caffeine (mg)'] = round($this->nutritionService->calculateTotalMacro($log->ingredient, 'caffeine', $log->quantity), 1);
                 $row['Cost'] = number_format($this->nutritionService->calculateCostForQuantity($log->ingredient, $log->quantity), 2);
 
-                fputcsv($file, array($row['Date'], $row['Time'], $row['Ingredient'], $row['Quantity'], $row['Unit'], $row['Calories'], $row['Protein (g)'], $row['Carbs (g)'], $row['Fats (g)'], $row['Added Sugars (g)'], $row['Sodium (mg)'], $row['Iron (mg)'], $row['Potassium (mg)'], $row['Cost']));
+                fputcsv($file, array($row['Date'], $row['Time'], $row['Ingredient'], $row['Quantity'], $row['Unit'], $row['Calories'], $row['Protein (g)'], $row['Carbs (g)'], $row['Fats (g)'], $row['Added Sugars (g)'], $row['Sodium (mg)'], $row['Iron (mg)'], $row['Potassium (mg)'], $row['Fiber (g)'], $row['Calcium (mg)'], $row['Caffeine (mg)'], $row['Cost']));
             }
 
             fclose($file);
@@ -91,7 +94,7 @@ class ExportController extends Controller
             "Expires"             => "0"
         );
 
-        $columns = array('Date', 'Time', 'Ingredient', 'Quantity', 'Unit', 'Calories', 'Protein (g)', 'Carbs (g)', 'Fats (g)', 'Added Sugars (g)', 'Sodium (mg)', 'Iron (mg)', 'Potassium (mg)', 'Cost');
+        $columns = array('Date', 'Time', 'Ingredient', 'Quantity', 'Unit', 'Calories', 'Protein (g)', 'Carbs (g)', 'Fats (g)', 'Added Sugars (g)', 'Sodium (mg)', 'Iron (mg)', 'Potassium (mg)', 'Fiber (g)', 'Calcium (mg)', 'Caffeine (mg)', 'Cost');
 
         $callback = function() use($dailyLogs, $columns) {
             $file = fopen('php://output', 'w');
@@ -111,9 +114,12 @@ class ExportController extends Controller
                 $row['Sodium (mg)'] = round($this->nutritionService->calculateTotalMacro($log->ingredient, 'sodium', $log->quantity), 1);
                 $row['Iron (mg)'] = round($this->nutritionService->calculateTotalMacro($log->ingredient, 'iron', $log->quantity), 1);
                 $row['Potassium (mg)'] = round($this->nutritionService->calculateTotalMacro($log->ingredient, 'potassium', $log->quantity), 1);
+                $row['Fiber (g)'] = round($this->nutritionService->calculateTotalMacro($log->ingredient, 'fiber', $log->quantity), 1);
+                $row['Calcium (mg)'] = round($this->nutritionService->calculateTotalMacro($log->ingredient, 'calcium', $log->quantity), 1);
+                $row['Caffeine (mg)'] = round($this->nutritionService->calculateTotalMacro($log->ingredient, 'caffeine', $log->quantity), 1);
                 $row['Cost'] = number_format($this->nutritionService->calculateCostForQuantity($log->ingredient, $log->quantity), 2);
 
-                fputcsv($file, array($row['Date'], $row['Time'], $row['Ingredient'], $row['Quantity'], $row['Unit'], $row['Calories'], $row['Protein (g)'], $row['Carbs (g)'], $row['Fats (g)'], $row['Added Sugars (g)'], $row['Sodium (mg)'], $row['Iron (mg)'], $row['Potassium (mg)'], $row['Cost']));
+                fputcsv($file, array($row['Date'], $row['Time'], $row['Ingredient'], $row['Quantity'], $row['Unit'], $row['Calories'], $row['Protein (g)'], $row['Carbs (g)'], $row['Fats (g)'], $row['Added Sugars (g)'], $row['Sodium (mg)'], $row['Iron (mg)'], $row['Potassium (mg)'], $row['Fiber (g)'], $row['Calcium (mg)'], $row['Caffeine (mg)'], $row['Cost']));
             }
 
             fclose($file);

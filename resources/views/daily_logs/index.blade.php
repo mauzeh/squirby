@@ -232,6 +232,18 @@
                     <td>{{ round($dailyTotals['potassium']) }}</td>
                 </tr>
                 <tr>
+                    <th>Fiber (g)</th>
+                    <td>{{ round($dailyTotals['fiber']) }}</td>
+                </tr>
+                <tr>
+                    <th>Calcium (mg)</th>
+                    <td>{{ round($dailyTotals['calcium']) }}</td>
+                </tr>
+                <tr>
+                    <th>Caffeine (mg)</th>
+                    <td>{{ round($dailyTotals['caffeine']) }}</td>
+                </tr>
+                <tr>
                     <th>Total Cost</th>
                     <td>{{ number_format($dailyTotals['cost'], 2) }}</td>
                 </tr>

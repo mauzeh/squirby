@@ -19,10 +19,13 @@ class NutritionService
             'sodium' => 0,
             'iron' => 0,
             'potassium' => 0,
+            'fiber' => 0,
+            'calcium' => 0,
+            'caffeine' => 0,
             'cost' => 0,
         ];
 
-        $macroNutrients = ['calories', 'protein', 'carbs', 'added_sugars', 'fats', 'sodium', 'iron', 'potassium'];
+        $macroNutrients = ['calories', 'protein', 'carbs', 'added_sugars', 'fats', 'sodium', 'iron', 'potassium', 'fiber', 'calcium', 'caffeine'];
 
         foreach ($items as $item) {
             $ingredient = $item instanceof DailyLog ? $item->ingredient : $item;
@@ -41,7 +44,7 @@ class NutritionService
     {
         // A list of fillable properties that are also nutrients
         $nutrientProperties = [
-            'calories', 'protein', 'carbs', 'added_sugars', 'fats', 'sodium', 'iron', 'potassium'
+            'calories', 'protein', 'carbs', 'added_sugars', 'fats', 'sodium', 'iron', 'potassium', 'fiber', 'calcium', 'caffeine'
         ];
 
         if (in_array($nutrient, $nutrientProperties)) {
