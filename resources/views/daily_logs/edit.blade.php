@@ -32,7 +32,7 @@
                 </div>
                 <div class="form-group">
                     <label for="quantity">Quantity:</label>
-                    <input type="number" name="quantity" id="quantity" step="0.01" min="0.01" value="{{ old('quantity', $dailyLog->quantity) }}" required>
+                    <x-quantity-input name="quantity" id="quantity" :value="old('quantity', $dailyLog->quantity)" required />
                 </div>
                 <button type="submit" class="button">Update Log Entry</button>
             </form>

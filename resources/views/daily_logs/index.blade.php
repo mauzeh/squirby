@@ -25,7 +25,7 @@
                 </div>
                 <div class="form-row">
                     <label for="quantity">Quantity:</label>
-                    <input type="number" name="quantity" id="quantity" step="0.01" min="0.01" required>
+                    <x-quantity-input name="quantity" id="quantity" :value="old('quantity')" required />
                 </div>
                 <button type="submit" class="button">Add Log Entry</button>
             </form>

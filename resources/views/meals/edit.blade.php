@@ -30,7 +30,7 @@
                             <label for="ingredients[{{ $i }}][ingredient_id]">Ingredient {{ $i + 1 }}:</label>
                             <x-ingredient-select name="ingredients[{{ $i }}][ingredient_id]" id="ingredients_{{ $i }}_ingredient_id" :ingredients="$ingredients" :selected="old('ingredients.' . $i . '.ingredient_id', $meal->ingredients->get($i)->id ?? '')" />
                             <label for="ingredients[{{ $i }}][quantity]" style="margin-left: 10px;">Quantity:</label>
-                            <input type="number" name="ingredients[{{ $i }}][quantity]" step="0.01" min="0.01" value="{{ old('ingredients.' . $i . '.quantity', $meal->ingredients->get($i)->pivot->quantity ?? '') }}" style="width: 80px;">
+                            <x-quantity-input name="ingredients[{{ $i }}][quantity]" id="ingredients_{{ $i }}_quantity" :value="old('ingredients.' . $i . '.quantity', $meal->ingredients->get($i)->pivot->quantity ?? '')" />
                         </div>
                     @endfor
                 </div>
