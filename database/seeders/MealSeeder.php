@@ -44,5 +44,12 @@ class MealSeeder extends Seeder
         $meal3->ingredients()->attach($ingredients['Milk (2%, Clover Sonoma)']->id, ['quantity' => 480]);
         $meal3->ingredients()->attach($ingredients['Whole Psyllium Husks']->id, ['quantity' => 1]);
 
+        // Meal 4: Red Sauce for Pasta
+        $meal3 = Meal::create(['name' => 'Red Sauce for Pasta (5 servings)']);
+        $meal3->ingredients()->attach($ingredients['Beef, Ground (90% Lean, 10% Fat)']->id, ['quantity' => 452]);
+        $meal3->ingredients()->attach($ingredients['Multi-Purpose Umami Seasoning Blend (Trader Joe\'s)']->id, ['quantity' => 2]);
+        $meal3->ingredients()->attach($ingredients['Tomato Sauce (Muir Glen)']->id, ['quantity' => 1]);
+        $meal3->ingredients()->attach($ingredients['Tomato Paste (Organic, Trader Joe\'s)']->id, ['quantity' => 1]);
+
     }
 }
