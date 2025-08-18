@@ -27,6 +27,12 @@ class DailyLogControllerTest extends TestCase
             'logged_at' => Carbon::yesterday()->format('Y-m-d H:i:s'),
         ]);
 
+        // Explicitly check that the DELETE operation does not work
+        $response = $this->delete(route('daily-logs.destroy-day', [
+            'date' => $dateToDestroy->format('Y-m-d')
+        ]));
+        $response->assertStatus(404); // Page not found
+
         // Make a POST request to the destroyDay route
         $response = $this->post(route('daily-logs.destroy-day'), [
             'date' => $dateToDestroy->format('Y-m-d'),

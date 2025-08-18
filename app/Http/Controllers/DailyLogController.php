@@ -41,7 +41,7 @@ class DailyLogController extends Controller
 
         $dailyTotals = $nutritionService->calculateDailyTotals($dailyLogs);
 
-        return "OK";
+        return view('daily_logs.index', compact('dailyLogs', 'dailyTotals', 'ingredients', 'units', 'meals', 'selectedDate', 'nutritionService'));
     }
 
     /**
