@@ -130,7 +130,7 @@
                 </tbody>
                 <tfoot>
                     <tr>
-                        <th colspan="2" style="text-align:left; font-weight:normal;">
+                        <th colspan="3" style="text-align:left; font-weight:normal;">
                             <form action="{{ url('daily-logs/destroy-day') }}" method="POST" onsubmit="return confirm('Are you sure you want to delete all log entries for {{ $selectedDate->format('M d, Y') }}?');" style="display:inline;">
                                 @csrf
                                 <input type="hidden" name="date" value="{{ $selectedDate->toDateString() }}">
