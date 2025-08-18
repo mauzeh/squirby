@@ -25,11 +25,19 @@ class NutritionService
             'cost' => 0,
         ];
 
+        if (empty($items)) {
+            return $totals;
+        }
+
         $macroNutrients = ['calories', 'protein', 'carbs', 'added_sugars', 'fats', 'sodium', 'iron', 'potassium', 'fiber', 'calcium', 'caffeine'];
 
         foreach ($items as $item) {
             $ingredient = $item instanceof DailyLog ? $item->ingredient : $item;
             $quantity = $item instanceof DailyLog ? $item->quantity : $item->pivot->quantity;
+
+            if (empty($quantity)) {
+                continue;
+            }
 
             foreach ($macroNutrients as $nutrient) {
                 $totals[$nutrient] += $this->calculateTotalMacro($ingredient, $nutrient, $quantity);
