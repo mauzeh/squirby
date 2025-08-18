@@ -34,7 +34,7 @@ class MealSeeder extends Seeder
         $meal3->ingredients()->attach($ingredients['Rice, Brown Jasmine (Dry - Trader Joe\'s)']->id, ['quantity' => 100]);
         $meal3->ingredients()->attach($ingredients['Salt for Life (Nature\'s Alternative Salt)']->id, ['quantity' => .125]);
         $meal3->ingredients()->attach($ingredients['Multi-Purpose Umami Seasoning Blend (Trader Joe\'s)']->id, ['quantity' => .25]);
-        $meal3->ingredients()->attach($ingredients['Sriracha (Trader Joe\'s)']->id, ['quantity' => 1]);
+        $meal3->ingredients()->attach($ingredients['Sriracha (Trader Joe\'s)']->id, ['quantity' => 2]);
         $meal3->ingredients()->attach($ingredients['Egg (L) whole']->id, ['quantity' => 2]);
 
         // Meal 4: Carb Loading Shake
