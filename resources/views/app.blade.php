@@ -219,7 +219,7 @@
             <a href="{{ route('daily-logs.index') }}" class="{{ Request::routeIs('daily-logs.*') ? 'active' : '' }}">Daily Log</a>
             <a href="{{ route('meals.index') }}" class="{{ Request::routeIs('meals.*') ? 'active' : '' }}">Meals</a>
             <a href="{{ route('ingredients.index') }}" class="{{ Request::routeIs('ingredients.*') ? 'active' : '' }}">Ingredients</a>
-            <a href="{{ route('daily-logs.export-form') }}" class="{{ Request::routeIs('daily-logs.export-form') ? 'active' : '' }}">Export</a>
+            <a href="{{ route('export-form') }}" class="{{ Request::routeIs('export-form') ? 'active' : '' }}">Export</a>
         </div>
         <div class="content">
             @yield('content')

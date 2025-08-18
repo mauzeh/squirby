@@ -15,7 +15,7 @@
         @endif
 
         <div class="form-container">
-            <form action="{{ route('daily-logs.export') }}" method="POST" id="export-form">
+            <form action="{{ route('export') }}" method="POST" id="export-form">
                 @csrf
                 <div class="form-group">
                     <label for="start_date">Start Date:</label>
