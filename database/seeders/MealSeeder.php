@@ -21,12 +21,11 @@ class MealSeeder extends Seeder
         $meal1->ingredients()->attach($ingredients['Greek Yogurt (Whole Milk - Chobani)']->id, ['quantity' => 250]);
         $meal1->ingredients()->attach($ingredients['Granola (Chocolate Coffee, Trader Joe\'s)']->id, ['quantity' => 50]);
 
-        // Meal 2: Chicken Salad
-        $meal2 = Meal::create(['name' => 'Chicken Salad']);
-        $meal2->ingredients()->attach($ingredients['Chicken Breast (Raw)']->id, ['quantity' => 150]);
-        $meal2->ingredients()->attach($ingredients['Brussels sprouts (steamed, no oil)']->id, ['quantity' => 100]);
-        $meal2->ingredients()->attach($ingredients['Bell Pepper (Fresh)']->id, ['quantity' => 50]);
-        $meal2->ingredients()->attach($ingredients['Olive oil']->id, ['quantity' => 10]);
+        // Meal 2: Evening Yogurt
+        $meal2 = Meal::create(['name' => 'Evening Yogurt']);
+        $meal2->ingredients()->attach($ingredients['Greek Yogurt (Whole Milk - Chobani)']->id, ['quantity' => 250]);
+        $meal2->ingredients()->attach($ingredients['Blueberries (fresh)']->id, ['quantity' => 65]);
+        $meal2->ingredients()->attach($ingredients['Honey']->id, ['quantity' => 15]);
 
         // Meal 3: Salmon Dinner
         $meal3 = Meal::create(['name' => 'Salmon Dinner']);

@@ -152,10 +152,11 @@
                 <h3>Create Meal from Selection</h3>
                 <form action="{{ route('meals.create-from-logs') }}" method="POST" id="create-meal-form">
                     @csrf
-                    <div class="form-row">
+                    <div class="form-group">
+                        <label for="meal_name">Meal Name:</label>
                         <input type="text" name="meal_name" id="meal_name" placeholder="Enter meal name" required>
-                        <button type="submit" class="button">Create Meal</button>
                     </div>
+                    <button type="submit" class="button">Create Meal</button>
                 </form>
             </div>
 
