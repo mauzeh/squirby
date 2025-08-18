@@ -17,6 +17,8 @@ Route::resource('meals', MealController::class)->except([
     'show'
 ]);
 
+Route::post('meals/create-from-logs', [MealController::class, 'createFromLogs'])->name('meals.create-from-logs');
+
 Route::get('/', function () {
     return redirect()->route('daily-logs.index');
 });

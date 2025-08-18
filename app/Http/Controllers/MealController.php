@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Meal;
 use App\Models\Ingredient;
+use App\Models\DailyLog;
 use App\Services\NutritionService;
 use Illuminate\Http\Request;
 
@@ -112,5 +113,24 @@ class MealController extends Controller
     {
         $meal->delete();
         return redirect()->route('meals.index')->with('success', 'Meal deleted successfully.');
+    }
+
+    public function createFromLogs(Request $request)
+    {
+        $request->validate([
+            'daily_log_ids' => 'required|array',
+            'daily_log_ids.*' => 'exists:daily_logs,id',
+            'meal_name' => 'required|string|max:255|unique:meals,name',
+        ]);
+
+        $meal = Meal::create(['name' => $request->meal_name]);
+
+        $dailyLogs = DailyLog::whereIn('id', $request->daily_log_ids)->get();
+
+        foreach ($dailyLogs as $log) {
+            $meal->ingredients()->attach($log->ingredient_id, ['quantity' => $log->quantity]);
+        }
+
+        return redirect()->route('meals.index')->with('success', 'Meal created successfully from log entries.');
     }
 }

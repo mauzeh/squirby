@@ -18,9 +18,8 @@ class MealSeeder extends Seeder
 
         // Meal 1: Breakfast Bowl
         $meal1 = Meal::create(['name' => 'Breakfast Bowl']);
-        $meal1->ingredients()->attach($ingredients['Oats']->id, ['quantity' => 50]);
-        $meal1->ingredients()->attach($ingredients['Milk (2%, Clover Sonoma)']->id, ['quantity' => 200]);
-        $meal1->ingredients()->attach($ingredients['Blueberries (fresh)']->id, ['quantity' => 75]);
+        $meal1->ingredients()->attach($ingredients['Greek Yogurt (Whole Milk - Chobani)']->id, ['quantity' => 250]);
+        $meal1->ingredients()->attach($ingredients['Granola (Chocolate Coffee, Trader Joe\'s)']->id, ['quantity' => 50]);
 
         // Meal 2: Chicken Salad
         $meal2 = Meal::create(['name' => 'Chicken Salad']);

@@ -91,6 +91,7 @@
             <table class="log-entries-table">
                 <thead>
                     <tr>
+                        <th><input type="checkbox" id="select-all-logs"></th>
                         <th>Time</th>
                         <th>Ingredient</th>
                         <th>Quantity</th>
@@ -105,6 +106,7 @@
                 <tbody>
                     @foreach ($dailyLogs as $log)
                         <tr>
+                            <td><input type="checkbox" name="daily_log_ids[]" value="{{ $log->id }}" class="log-checkbox"></td>
                             <td>{{ $log->logged_at->format('H:i') }}</td>
                             <td>{{ $log->ingredient->name }}</td>
                             <td>{{ $log->quantity }} {{ $log->unit->abbreviation }}</td>
@@ -116,7 +118,7 @@
                             <td class="actions-column">
                                 <div style="display: flex; gap: 5px;">
                                     <a href="{{ route('daily-logs.edit', $log->id) }}" class="button edit">Edit</a>
-                                    <form action="{{ route('daily-logs.destroy', $log->id) }}" method="POST">
+                                    <form action="{{ route('daily-logs.destroy', $log->id) }}" method="POST" style="display:inline;">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="button delete" onclick="return confirm('Are you sure you want to delete this log entry?');">Delete</button>
@@ -129,7 +131,7 @@
                 <tfoot>
                     <tr>
                         <th colspan="2" style="text-align:left; font-weight:normal;">
-                            <form action="{{ url('daily-logs/destroy-day') }}" method="POST" onsubmit="return confirm('Are you sure you want to delete all log entries for {{ $selectedDate->format('M d, Y') }}?');">
+                            <form action="{{ url('daily-logs/destroy-day') }}" method="POST" onsubmit="return confirm('Are you sure you want to delete all log entries for {{ $selectedDate->format('M d, Y') }}?');" style="display:inline;">
                                 @csrf
                                 <input type="hidden" name="date" value="{{ $selectedDate->toDateString() }}">
                                 <button type="submit" class="button delete">Delete All Logs for {{ $selectedDate->format('M d, Y') }}</button>
@@ -140,11 +142,52 @@
                         <td style="font-weight:bold;">{{ round($dailyTotals['protein']) }}</td>
                         <td style="font-weight:bold;">{{ round($dailyTotals['carbs']) }}</td>
                         <td style="font-weight:bold;">{{ round($dailyTotals['fats']) }}</td>
-                        <td style="font-weight:bold;">{{ number_format($dailyTotals['cost'], 2) }}</td>
-                        <td>
+                        <td style-="font-weight:bold;">{{ number_format($dailyTotals['cost'], 2) }}</td>
+                        <td></td>
                     </tr>
                 </tfoot>
             </table>
+
+            <div class="form-container">
+                <h3>Create Meal from Selection</h3>
+                <form action="{{ route('meals.create-from-logs') }}" method="POST" id="create-meal-form">
+                    @csrf
+                    <div class="form-row">
+                        <input type="text" name="meal_name" id="meal_name" placeholder="Enter meal name" required>
+                        <button type="submit" class="button">Create Meal</button>
+                    </div>
+                </form>
+            </div>
+
+            <script>
+                document.getElementById('select-all-logs').addEventListener('change', function(e) {
+                    document.querySelectorAll('.log-checkbox').forEach(function(checkbox) {
+                        checkbox.checked = e.target.checked;
+                    });
+                });
+
+                document.getElementById('create-meal-form').addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    var form = e.target;
+                    var checkedLogs = document.querySelectorAll('.log-checkbox:checked');
+
+                    if (checkedLogs.length === 0) {
+                        alert('Please select at least one log entry to create a meal.');
+                        return;
+                    }
+
+                    checkedLogs.forEach(function(checkbox) {
+                        var input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = 'daily_log_ids[]';
+                        input.value = checkbox.value;
+                        form.appendChild(input);
+                    });
+
+                    form.submit();
+                });
+            </script>
         @endif
     </div>
 
