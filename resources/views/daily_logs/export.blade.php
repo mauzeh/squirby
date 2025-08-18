@@ -28,6 +28,13 @@
                 <button type="submit" class="button">Export</button>
             </form>
         </div>
+
+        <div class="form-container">
+            <form action="{{ route('export-all') }}" method="POST" id="export-all-form">
+                @csrf
+                <button type="submit" class="button">Export All Logs</button>
+            </form>
+        </div>
     </div>
 
     @push('scripts')
@@ -51,6 +58,31 @@
                 var a = document.createElement('a');
                 a.href = url;
                 a.download = 'daily_log_' + formData.get('start_date') + '_to_' + formData.get('end_date') + '.csv';
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+            });
+        });
+
+        document.getElementById('export-all-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            var form = e.target;
+            var formData = new FormData(form);
+
+            fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            })
+            .then(response => response.blob())
+            .then(blob => {
+                var url = window.URL.createObjectURL(blob);
+                var a = document.createElement('a');
+                a.href = url;
+                a.download = 'daily_log_all.csv';
                 document.body.appendChild(a);
                 a.click();
                 a.remove();

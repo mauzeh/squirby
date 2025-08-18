@@ -12,6 +12,7 @@ Route::post('daily-logs/destroy-day', [DailyLogController::class, 'destroyDay'])
 
 Route::get('export', [ExportController::class, 'showExportForm'])->name('export-form');
 Route::post('export', [ExportController::class, 'export'])->name('export');
+Route::post('export-all', [ExportController::class, 'exportAll'])->name('export-all');
 
 Route::resource('ingredients', IngredientController::class)->except([
     'show'
