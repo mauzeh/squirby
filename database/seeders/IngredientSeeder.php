@@ -71,7 +71,7 @@ class IngredientSeeder extends Seeder
                 'caffeine' => (float)($rowData['Caffeine (mg)'] ?? 0),
                 'base_quantity' => (float)($rowData['Amount'] ?? 1),
                 'base_unit_id' => $unit->id,
-                'cost_per_unit' => (float)($rowData['Cost ($)'] ?? 0)
+                'cost_per_unit' => (float)(str_replace("$", "", $rowData['Cost ($)']) ?? 0)
             ]);
         }
     }
