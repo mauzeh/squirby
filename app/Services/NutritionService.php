@@ -39,16 +39,9 @@ class NutritionService
 
     public function calculateTotalMacro(Ingredient $ingredient, string $nutrient, float $quantity)
     {
-        if ($nutrient === 'calories') {
-            return (
-                (9 * $ingredient->fats) +
-                (4 * $ingredient->carbs) +
-                (4 * $ingredient->protein)
-            ) * ($quantity / $ingredient->base_quantity);
-        }
-
+        // A list of fillable properties that are also nutrients
         $nutrientProperties = [
-            'protein', 'carbs', 'added_sugars', 'fats', 'sodium', 'iron', 'potassium'
+            'calories', 'protein', 'carbs', 'added_sugars', 'fats', 'sodium', 'iron', 'potassium'
         ];
 
         if (in_array($nutrient, $nutrientProperties)) {
