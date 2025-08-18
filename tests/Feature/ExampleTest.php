@@ -14,6 +14,8 @@ class ExampleTest extends TestCase
     {
         $response = $this->get('/');
 
-        $response->assertStatus(200);
+        // We are redirecting to the daily logs index route
+        $response->assertRedirect(route('daily-logs.index'));
+        $response->assertStatus(302);
     }
 }
