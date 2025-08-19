@@ -113,6 +113,7 @@
                         <th class="hide-on-mobile">Fats (g)</th>
                         <th class="hide-on-mobile">Carbs (g)</th>
                         <th class="hide-on-mobile">Protein (g)</th>
+                        <th class="hide-on-mobile">Sodium (mg)</th>
                         <th class="hide-on-mobile">Cost</th>
                         <th class="actions-column">Actions</th>
                     </tr>
@@ -128,6 +129,7 @@
                             <td class="hide-on-mobile">{{ round($nutritionService->calculateTotalMacro($log->ingredient, 'fats', (float)$log->quantity), 1) }}</td>
                             <td class="hide-on-mobile">{{ round($nutritionService->calculateTotalMacro($log->ingredient, 'carbs', (float)$log->quantity), 1) }}</td>
                             <td class="hide-on-mobile">{{ round($nutritionService->calculateTotalMacro($log->ingredient, 'protein', (float)$log->quantity), 1) }}</td>
+                            <td class="hide-on-mobile">{{ round($nutritionService->calculateTotalMacro($log->ingredient, 'sodium', (float)$log->quantity), 1) }}</td>
                             <td class="hide-on-mobile">{{ number_format($nutritionService->calculateCostForQuantity($log->ingredient, (float)$log->quantity), 2) }}</td>
                             <td class="actions-column">
                                 <div style="display: flex; gap: 5px;">
@@ -155,6 +157,7 @@
                         <td class="hide-on-mobile" style="font-weight:bold;">{{ round($dailyTotals['fats']) }}</td>
                         <td class="hide-on-mobile" style="font-weight:bold;">{{ round($dailyTotals['carbs']) }}</td>
                         <td class="hide-on-mobile" style="font-weight:bold;">{{ round($dailyTotals['protein']) }}</td>
+                        <td class="hide-on-mobile" style="font-weight:bold;">{{ round($dailyTotals['sodium']) }}</td>
                         <td class="hide-on-mobile" style-="font-weight:bold;">{{ number_format($dailyTotals['cost'], 2) }}</td>
                         <td class="hide-on-mobile"></td>
                     </tr>
