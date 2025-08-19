@@ -140,13 +140,13 @@
                                 <button type="submit" class="button delete">Delete All Logs for {{ $selectedDate->format('M d, Y') }}</button>
                             </form>
                         </th>
-                        <th colspan="1" style="text-align:right; font-weight:bold;">Total:</th>
+                        <th style="text-align:right; font-weight:bold;">Total:</th>
                         <td style="font-weight:bold;">{{ round($dailyTotals['calories']) }}</td>
-                        <td style="font-weight:bold;">{{ round($dailyTotals['protein']) }}</td>
-                        <td style="font-weight:bold;">{{ round($dailyTotals['carbs']) }}</td>
-                        <td style="font-weight:bold;">{{ round($dailyTotals['fats']) }}</td>
-                        <td style-="font-weight:bold;">{{ number_format($dailyTotals['cost'], 2) }}</td>
-                        <td></td>
+                        <td class="hide-on-mobile" style="font-weight:bold;">{{ round($dailyTotals['protein']) }}</td>
+                        <td class="hide-on-mobile" style="font-weight:bold;">{{ round($dailyTotals['carbs']) }}</td>
+                        <td class="hide-on-mobile" style="font-weight:bold;">{{ round($dailyTotals['fats']) }}</td>
+                        <td class="hide-on-mobile" style-="font-weight:bold;">{{ number_format($dailyTotals['cost'], 2) }}</td>
+                        <td class="hide-on-mobile"></td>
                     </tr>
                 </tfoot>
             </table>
