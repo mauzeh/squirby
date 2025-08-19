@@ -30,6 +30,13 @@
                         <span class="error-message">{{ $message }}</span>
                     @enderror
                 </div>
+                <div class="form-row">
+                    <label for="notes">Notes:</label>
+                    <input type="text" name="notes" id="notes" value="{{ old('notes') }}">
+                    @error('notes')
+                        <span class="error-message">{{ $message }}</span>
+                    @enderror
+                </div>
                 <button type="submit" class="button">Add Log Entry</button>
             </form>
         </div>
@@ -58,6 +65,10 @@
                 <div class="form-row">
                     <label for="portion">Portion:</label>
                     <input type="number" name="portion" id="portion" step="0.05" min="0.05" value="1.0" required>
+                </div>
+                <div class="form-row">
+                    <label for="notes_meal">Notes:</label>
+                    <input type="text" name="notes" id="notes_meal" value="{{ old('notes') }}">
                 </div>
                 <button type="submit" class="button">Add Meal to Log</button>
             </form>

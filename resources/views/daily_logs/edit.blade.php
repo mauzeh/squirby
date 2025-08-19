@@ -34,6 +34,13 @@
                     <label for="quantity">Quantity:</label>
                     <x-quantity-input name="quantity" id="quantity" :value="old('quantity', $dailyLog->quantity)" required />
                 </div>
+                <div class="form-group">
+                    <label for="notes">Notes:</label>
+                    <input type="text" name="notes" id="notes" value="{{ old('notes', $dailyLog->notes) }}">
+                    @error('notes')
+                        <span class="error-message">{{ $message }}</span>
+                    @enderror
+                </div>
                 <button type="submit" class="button">Update Log Entry</button>
             </form>
         </div>

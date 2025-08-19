@@ -32,6 +32,7 @@ class DailyLogSeeder extends Seeder
                         'unit_id' => $ingredient->base_unit_id,
                         'quantity' => $data[5],
                         'logged_at' => $loggedAt,
+                        'notes' => $data[4],
                     ]);
                 }
             }

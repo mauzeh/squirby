@@ -12,6 +12,7 @@ class DailyLog extends Model
         'unit_id',
         'quantity',
         'logged_at',
+        'notes',
     ];
 
     protected $casts = [

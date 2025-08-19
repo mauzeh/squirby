@@ -54,6 +54,7 @@ class DailyLogController extends Controller
             'quantity' => 'required|numeric|min:0.01',
             'logged_at' => 'required|date_format:H:i',
             'date' => 'required|date',
+            'notes' => 'nullable|string',
         ]);
 
         $ingredient = Ingredient::find($validated['ingredient_id']);
@@ -80,6 +81,7 @@ class DailyLogController extends Controller
             'quantity' => 'required|numeric|min:0.01',
             'logged_at' => 'required|date_format:H:i',
             'date' => 'required|date',
+            'notes' => 'nullable|string',
         ]);
 
         $ingredient = Ingredient::find($validated['ingredient_id']);
@@ -119,6 +121,7 @@ class DailyLogController extends Controller
             'portion' => 'required|numeric|min:0.05',
             'logged_at_meal' => 'required|date_format:H:i',
             'meal_date' => 'required|date',
+            'notes' => 'nullable|string',
         ]);
 
         $meal = Meal::with('ingredients')->find($validated['meal_id']);
@@ -132,6 +135,7 @@ class DailyLogController extends Controller
                 'unit_id' => $ingredient->base_unit_id,
                 'quantity' => $ingredient->pivot->quantity * $validated['portion'],
                 'logged_at' => $loggedAt,
+                'notes' => $validated['notes'] ?? null,
             ]);
         }
 
