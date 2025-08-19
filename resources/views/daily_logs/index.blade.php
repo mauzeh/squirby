@@ -190,6 +190,16 @@
                 <button id="copy-tsv-button" class="button">Copy to Clipboard</button>
             </div>
 
+            <div class="form-container">
+                <h3>TSV Import</h3>
+                <form action="{{ route('daily-logs.import-tsv') }}" method="POST">
+                    @csrf
+                    <input type="hidden" name="date" value="{{ $selectedDate->format('Y-m-d') }}">
+                    <textarea name="tsv_data" rows="10" style="width: 100%; background-color: #3a3a3a; color: #f2f2f2; border: 1px solid #555;"></textarea>
+                    <button type="submit" class="button">Import TSV</button>
+                </form>
+            </div>
+
             <script>
                 document.getElementById('select-all-logs').addEventListener('change', function(e) {
                     document.querySelectorAll('.log-checkbox').forEach(function(checkbox) {

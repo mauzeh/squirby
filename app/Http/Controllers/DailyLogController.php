@@ -149,4 +149,46 @@ class DailyLogController extends Controller
 
         return redirect()->route('daily-logs.index', ['date' => $validated['meal_date']])->with('success', 'Meal added to log successfully!');
     }
+
+    public function importTsv(Request $request)
+    {
+        $validated = $request->validate([
+            'tsv_data' => 'required|string',
+            'date' => 'required|date',
+        ]);
+
+        $tsvData = $validated['tsv_data'];
+        $date = Carbon::parse($validated['date']);
+
+        $rows = explode("\n", $tsvData);
+
+        foreach ($rows as $row) {
+            if (empty($row)) {
+                continue;
+            }
+
+            $columns = str_getcsv($row, "\t");
+
+            // Skip row if it doesn't have the expected number of columns
+            if (count($columns) < 5) {
+                continue;
+            }
+
+            $ingredient = Ingredient::where('name', $columns[2])->first();
+
+            if ($ingredient) {
+                $loggedAt = Carbon::parse($date->format('Y-m-d') . ' ' . $columns[1]);
+
+                DailyLog::create([
+                    'ingredient_id' => $ingredient->id,
+                    'unit_id' => $ingredient->base_unit_id,
+                    'quantity' => $columns[4],
+                    'logged_at' => $loggedAt,
+                    'notes' => $columns[3],
+                ]);
+            }
+        }
+
+        return redirect()->route('daily-logs.index', ['date' => $date->format('Y-m-d')])->with('success', 'TSV data imported successfully!');
+    }
 }

@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Route;
 Route::resource('daily-logs', DailyLogController::class)->except(['show']);
 Route::post('daily-logs/add-meal', [DailyLogController::class, 'addMealToLog'])->name('daily-logs.add-meal');
 Route::post('daily-logs/destroy-selected', [DailyLogController::class, 'destroySelected'])->name('daily-logs.destroy-selected');
+Route::post('daily-logs/import-tsv', [DailyLogController::class, 'importTsv'])->name('daily-logs.import-tsv');
 
 Route::get('export', [ExportController::class, 'showExportForm'])->name('export-form');
 Route::post('export', [ExportController::class, 'export'])->name('export');
