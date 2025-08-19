@@ -21,7 +21,7 @@ class DailyLogSeeder extends Seeder
         $firstline = true;
         while (($data = fgetcsv($csvFile, 2000, ",")) !== FALSE) {
             if (!$firstline) {
-                $ingredientName = $data[3];
+                $ingredientName = $data[2];
                 $ingredient = Ingredient::where('name', $ingredientName)->first();
 
                 if ($ingredient) {
@@ -30,9 +30,9 @@ class DailyLogSeeder extends Seeder
                     DailyLog::create([
                         'ingredient_id' => $ingredient->id,
                         'unit_id' => $ingredient->base_unit_id,
-                        'quantity' => $data[5],
+                        'quantity' => $data[4],
                         'logged_at' => $loggedAt,
-                        'notes' => $data[4],
+                        'notes' => $data[3],
                     ]);
                 }
             }
