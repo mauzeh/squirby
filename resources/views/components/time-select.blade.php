@@ -15,9 +15,8 @@
             for ($m = 0; $m < 60; $m += 15) {
                 $time = sprintf('%02d:%02d', $h, $m);
                 $isSelected = ($time === $actualSelectedTime) ? 'selected' : '';
-                echo "<option value=\"" . $time . "\" " . $isSelected . ">" . $time . "</option>";
+                echo "<option value=\"" . $time . "\" " . $isSelected . ">" . $time . " (" . now()->timezone(config('app.timezone'))->format('T') . ")</option>";
             }
         }
     @endphp
 </select>
-<span style="margin-left: 10px; color: #ccc;">({{ now()->timezone(config('app.timezone'))->format('T') }})</span>

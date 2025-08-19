@@ -148,18 +148,20 @@
             }
             .form-row {
                 display: flex;
-                align-items: center;
+                flex-wrap: wrap; /* Allow items to wrap */
+                align-items: flex-start; /* Align items to the top */
                 margin-bottom: 10px;
             }
             .form-row label {
-                flex: 0 0 80px; /* Adjust label width */
+                flex: 0; /* Adjust label width */
                 margin-right: 10px;
                 text-align: right;
             }
             .form-row input[type="text"],
             .form-row input[type="number"],
             .form-row select {
-                flex: 1;
+                width: 100%; /* Take full width of parent */
+                box-sizing: border-box; /* Include padding and border in width */
                 padding: 8px;
                 border-radius: 5px;
                 background-color: #3a3a3a;
