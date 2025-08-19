@@ -33,7 +33,7 @@ class ExportController extends Controller
 
         $dailyLogs = DailyLog::with(['ingredient', 'unit'])
             ->whereBetween('logged_at', [$startDate, $endDate])
-            ->orderBy('logged_at', 'desc')
+            ->orderBy('logged_at', 'asc')
             ->get();
 
         $fileName = 'daily_log_' . $startDate->format('Y-m-d') . '_to_' . $endDate->format('Y-m-d') . '_' . Carbon::now()->format('Y-m-d_H-i-s') . '.csv';
@@ -52,7 +52,7 @@ class ExportController extends Controller
             fputcsv($file, $columns);
 
             foreach ($dailyLogs as $log) {
-                $row['Date']  = $log->logged_at->format('Y-m-d');
+                $row['Date']  = $log->logged_at->format('m/d/Y');
                 $row['Time']  = $log->logged_at->format('H:i');
                 $row['Ingredient']    = $log->ingredient->name;
                 $row['Quantity']    = $log->quantity;
@@ -83,7 +83,7 @@ class ExportController extends Controller
     public function exportAll(Request $request)
     {
         $dailyLogs = DailyLog::with(['ingredient', 'unit'])
-            ->orderBy('logged_at', 'desc')
+            ->orderBy('logged_at', 'asc')
             ->get();
 
         $fileName = 'daily_log_all_' . Carbon::now()->format('Y-m-d_H-i-s') . '.csv';
@@ -102,7 +102,7 @@ class ExportController extends Controller
             fputcsv($file, $columns);
 
             foreach ($dailyLogs as $log) {
-                $row['Date']  = $log->logged_at->format('Y-m-d');
+                $row['Date']  = $log->logged_at->format('m/d/Y');
                 $row['Time']  = $log->logged_at->format('H:i');
                 $row['Ingredient']    = $log->ingredient->name;
                 $row['Quantity']    = $log->quantity;
