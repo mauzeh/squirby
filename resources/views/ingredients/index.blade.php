@@ -18,20 +18,20 @@
                 <thead>
                     <tr>
                         <th>Name</th>
-                        <th>Base Quantity</th>
-                        <th>Base Unit</th>
-                        <th>Cost</th>
-                        <th>Calories</th>
-                        <th>Protein (g)</th>
-                        <th>Carbs (g)</th>
-                        <th>Added Sugars (g)</th>
-                        <th>Fats (g)</th>
-                        <th>Sodium (mg)</th>
-                        <th>Iron (mg)</th>
-                        <th>Potassium (mg)</th>
-                        <th>Fiber (g)</th>
-                        <th>Calcium (mg)</th>
-                        <th>Caffeine (mg)</th>
+                        <th class="hide-on-mobile">Base Quantity</th>
+                        <th class="hide-on-mobile">Base Unit</th>
+                        <th class="hide-on-mobile">Cost</th>
+                        <th class="hide-on-mobile">Calories</th>
+                        <th class="hide-on-mobile">Protein (g)</th>
+                        <th class="hide-on-mobile">Carbs (g)</th>
+                        <th class="hide-on-mobile">Added Sugars (g)</th>
+                        <th class="hide-on-mobile">Fats (g)</th>
+                        <th class="hide-on-mobile">Sodium (mg)</th>
+                        <th class="hide-on-mobile">Iron (mg)</th>
+                        <th class="hide-on-mobile">Potassium (mg)</th>
+                        <th class="hide-on-mobile">Fiber (g)</th>
+                        <th class="hide-on-mobile">Calcium (mg)</th>
+                        <th class="hide-on-mobile">Caffeine (mg)</th>
                         <th class="actions-column">Actions</th>
                     </tr>
                 </thead>
@@ -39,20 +39,20 @@
                     @foreach ($ingredients as $ingredient)
                         <tr>
                             <td>{{ $ingredient->name }}</td>
-                            <td>{{ $ingredient->base_quantity }}</td>
-                            <td>{{ $ingredient->baseUnit->abbreviation }}</td>
-                            <td>{{ number_format($ingredient->cost_per_unit, 2) }}</td>
-                            <td>{{ $ingredient->calories }}</td>
-                            <td>{{ $ingredient->protein }}</td>
-                            <td>{{ $ingredient->carbs }}</td>
-                            <td>{{ $ingredient->added_sugars }}</td>
-                            <td>{{ $ingredient->fats }}</td>
-                            <td>{{ $ingredient->sodium }}</td>
-                            <td>{{ $ingredient->iron }}</td>
-                            <td>{{ $ingredient->potassium }}</td>
-                            <td>{{ $ingredient->fiber }}</td>
-                            <td>{{ $ingredient->calcium }}</td>
-                            <td>{{ $ingredient->caffeine }}</td>
+                            <td class="hide-on-mobile">{{ $ingredient->base_quantity }}</td>
+                            <td class="hide-on-mobile">{{ $ingredient->baseUnit->abbreviation }}</td>
+                            <td class="hide-on-mobile">{{ number_format($ingredient->cost_per_unit, 2) }}</td>
+                            <td class="hide-on-mobile">{{ $ingredient->calories }}</td>
+                            <td class="hide-on-mobile">{{ $ingredient->protein }}</td>
+                            <td class="hide-on-mobile">{{ $ingredient->carbs }}</td>
+                            <td class="hide-on-mobile">{{ $ingredient->added_sugars }}</td>
+                            <td class="hide-on-mobile">{{ $ingredient->fats }}</td>
+                            <td class="hide-on-mobile">{{ $ingredient->sodium }}</td>
+                            <td class="hide-on-mobile">{{ $ingredient->iron }}</td>
+                            <td class="hide-on-mobile">{{ $ingredient->potassium }}</td>
+                            <td class="hide-on-mobile">{{ $ingredient->fiber }}</td>
+                            <td class="hide-on-mobile">{{ $ingredient->calcium }}</td>
+                            <td class="hide-on-mobile">{{ $ingredient->caffeine }}</td>
                             <td class="actions-column">
                                 <div style="display: flex; gap: 5px;">
                                     <a href="{{ route('ingredients.edit', $ingredient->id) }}" class="button edit">Edit</a>

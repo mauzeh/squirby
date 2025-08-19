@@ -18,8 +18,8 @@
                 <thead>
                     <tr>
                         <th>Name</th>
-                        <th>Summary</th>
-                        <th>Macros</th>
+                        <th class="hide-on-mobile">Summary</th>
+                        <th class="hide-on-mobile">Macros</th>
                         <th class="actions-column">Actions</th>
                     </tr>
                 </thead>
@@ -27,12 +27,12 @@
                     @foreach ($meals as $meal)
                         <tr>
                             <td>{{ $meal->name }}</td>
-                            <td>
+                            <td class="hide-on-mobile">
                                 @foreach ($meal->ingredients as $ingredient)
                                     {{ $ingredient->pivot->quantity }} {{ $ingredient->baseUnit->abbreviation }} {{ $ingredient->name }}<br>
                                 @endforeach
                             </td>
-                            <td>
+                            <td class="hide-on-mobile">
                                 Calories: {{ round($meal->total_macros['calories']) }}<br>
                                 Protein: {{ round($meal->total_macros['protein']) }}g<br>
                                 Carbs: {{ round($meal->total_macros['carbs']) }}g<br>
