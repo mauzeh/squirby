@@ -223,6 +223,15 @@
         </style>
     </head>
     <body>
+        @if(app()->environment('production'))
+            <div style="background-color: red; color: white; text-align: center; padding: 10px; font-size: 20px; font-weight: bold;">
+                PRODUCTION ENVIRONMENT
+            </div>
+        @else
+            <div style="background-color: green; color: white; text-align: center; padding: 10px; font-size: 20px; font-weight: bold;">
+                DEV ENVIRONMENT
+            </div>
+        @endif
         <div class="navbar">
             <a href="{{ route('daily-logs.index') }}" class="{{ Request::routeIs('daily-logs.*') ? 'active' : '' }}">Daily Log</a>
             <a href="{{ route('meals.index') }}" class="{{ Request::routeIs('meals.*') ? 'active' : '' }}">Meals</a>
