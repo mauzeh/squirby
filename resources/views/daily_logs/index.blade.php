@@ -145,10 +145,9 @@
                 <tfoot>
                     <tr>
                         <th colspan="3" style="text-align:left; font-weight:normal;">
-                            <form action="{{ url('daily-logs/destroy-day') }}" method="POST" onsubmit="return confirm('Are you sure you want to delete all log entries for {{ $selectedDate->format('M d, Y') }}?');" style="display:inline;">
+                            <form action="{{ route('daily-logs.destroy-selected') }}" method="POST" id="delete-selected-form" onsubmit="return confirm('Are you sure you want to delete the selected log entries?');" style="display:inline;">
                                 @csrf
-                                <input type="hidden" name="date" value="{{ $selectedDate->toDateString() }}">
-                                <button type="submit" class="button delete">Delete All Logs for {{ $selectedDate->format('M d, Y') }}</button>
+                                <button type="submit" class="button delete">Delete Selected Logs</button>
                             </form>
                         </th>
                         <th style="text-align:right; font-weight:bold;">Total:</th>
@@ -189,6 +188,28 @@
 
                     if (checkedLogs.length === 0) {
                         alert('Please select at least one log entry to create a meal.');
+                        return;
+                    }
+
+                    checkedLogs.forEach(function(checkbox) {
+                        var input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = 'daily_log_ids[]';
+                        input.value = checkbox.value;
+                        form.appendChild(input);
+                    });
+
+                    form.submit();
+                });
+
+                document.getElementById('delete-selected-form').addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    var form = e.target;
+                    var checkedLogs = document.querySelectorAll('.log-checkbox:checked');
+
+                    if (checkedLogs.length === 0) {
+                        alert('Please select at least one log entry to delete.');
                         return;
                     }
 
