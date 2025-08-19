@@ -80,10 +80,10 @@ unit",Calories,Fat (g),Sodium (mg),Carb (g),Fiber (g),Added Sugar (g),Protein (g
 8/6/2025,19:15,05 - Dinner,Direct Entry - Added Sugar (g) - ZERO calories,"Whole Foods Hot Bar - 200g Potatoes, 2 meatballs (80g beef), 15ml sour cream",5,gram,0,0,0,0,0,5,0,0,0,0,0,$ 0.00,Processed Foods
 8/6/2025,20:00,06 - Before Bed Snack,"Cheese, Gouda Double Cream (Trader Joe's)",,50,gram,195,16,357,4,0,0,9,670,0,0,0,$ 0.00,Dairy
 8/6/2025,20:00,06 - Before Bed Snack,"Peanut butter with Honey (organic, Justin's)",,35,gram,224,19,98,7,1,4,8,0,98,0,0,$ 0.00,Bulk ingredients
-8/6/2025,21:00,06 - Before Bed Snack,Greek Yogurt (Whole Milk - Chobani),,250,gram,249,13,88,10,0,0,22,250,338,0,0,$ 0.00,Dairy
+8/6/2025,21:00,06 - Before Bed Snack,Greek Yogurt (Whole Milk - Chobani),,250,gram,249,13,88,10,0,0,22,250,338,0,0,$ 2.03,Dairy
 8/6/2025,21:00,06 - Before Bed Snack,Honey,,15,gram,55,0,0,14,0,0,0,0,0,0,0,$ 0.00,Sweets
 8/6/2025,21:00,06 - Before Bed Snack,Blueberries (fresh),,65,gram,42,0,1,10,2,0,0,4,50,0,0,$ 0.00,Plants
-8/7/2025,08:45,00 - Breakfast,Greek Yogurt (Whole Milk - Chobani),,200,gram,199,11,71,8,0,0,18,200,271,0,0,$ 0.00,Dairy
+8/7/2025,08:45,00 - Breakfast,Greek Yogurt (Whole Milk - Chobani),,200,gram,199,11,71,8,0,0,18,200,271,0,0,$ 1.62,Dairy
 8/7/2025,08:45,00 - Breakfast,"Granola (Chocolate Coffee, Trader Joe's)",,50,gram,224,7,69,36,4,13,4,17,207,0,0,$ 0.00,Carbs
 8/7/2025,10:30,01 - Second Breakfast,Oats,,75,gram,282,5,0,51,8,0,9,0,263,0,3,$ 0.00,Bulk ingredients
 8/7/2025,10:30,01 - Second Breakfast,Levels - Grass Fed Whey Protein,,1,Scoop,131,3,125,3,0,0,24,100,160,0,0,$ 0.00,Bulk ingredients
@@ -106,7 +106,7 @@ unit",Calories,Fat (g),Sodium (mg),Carb (g),Fiber (g),Added Sugar (g),Protein (g
 8/7/2025,19:30,05 - Dinner,"Butter (unsalted, Clover)",,20,gram,141,16,0,0,0,0,0,0,0,0,0,$ 0.00,Oils and butters
 8/7/2025,19:30,05 - Dinner,Olive oil,,1,tbsp,126,14,0,0,0,0,0,0,0,0,0,$ 0.00,Oils and butters
 8/7/2025,19:30,05 - Dinner,Direct Entry - Sodium (mg),"Hans salted our food, this is an estimation",500,mg,0,0,500,0,0,0,0,0,0,0,0,$ 0.00,Processed Foods
-8/7/2025,21:30,06 - Before Bed Snack,Greek Yogurt (Whole Milk - Chobani),,250,gram,249,13,88,10,0,0,22,250,338,0,0,$ 0.00,Dairy
+8/7/2025,21:30,06 - Before Bed Snack,Greek Yogurt (Whole Milk - Chobani),,250,gram,249,13,88,10,0,0,22,250,338,0,0,$ 2.03,Dairy
 8/7/2025,21:30,06 - Before Bed Snack,Blueberries (fresh),,65,gram,42,0,1,10,2,0,0,4,50,0,0,$ 0.00,Plants
 8/7/2025,21:30,06 - Before Bed Snack,Honey,,15,gram,55,0,0,14,0,0,0,0,0,0,0,$ 0.00,Sweets
 8/8/2025,08:00,00 - Breakfast,Greek Yogurt (0% Fat - Trader Joe's),,200,gram,113,0,88,8,0,0,20,224,282,0,0,$ 0.00,Dairy
@@ -132,7 +132,7 @@ unit",Calories,Fat (g),Sodium (mg),Carb (g),Fiber (g),Added Sugar (g),Protein (g
 8/8/2025,19:15,05 - Dinner,Olive oil,,2,tbsp,252,28,0,0,0,0,0,0,0,0,0,$ 0.00,Oils and butters
 8/8/2025,19:15,05 - Dinner,Chicken Breast (Whole Foods Hot Bar - Estimation),,120,gram,203,6,180,0,0,0,37,0,300,0,0,$ 0.00,Proteins
 8/8/2025,21:15,06 - Before Bed Snack,"Milk (2%, Clover Sonoma)",,400,ml,228,8,233,22,0,0,17,583,767,0,0,$ 0.00,Bulk ingredients
-8/8/2025,22:30,06 - Before Bed Snack,Greek Yogurt (Whole Milk - Chobani),,260,gram,258,14,92,11,0,0,23,260,352,0,0,$ 0.00,Dairy
+8/8/2025,22:30,06 - Before Bed Snack,Greek Yogurt (Whole Milk - Chobani),,260,gram,258,14,92,11,0,0,23,260,352,0,0,$ 2.11,Dairy
 8/8/2025,22:30,06 - Before Bed Snack,Blueberries (fresh),,65,gram,42,0,1,10,2,0,0,4,50,0,0,$ 0.00,Plants
 8/8/2025,22:30,06 - Before Bed Snack,Honey,,15,gram,55,0,0,14,0,0,0,0,0,0,0,$ 0.00,Sweets
 8/9/2025,07:40,00 - Breakfast,Greek Yogurt (0% Fat - Trader Joe's),,200,gram,113,0,88,8,0,0,20,224,282,0,0,$ 0.00,Dairy
@@ -164,10 +164,10 @@ unit",Calories,Fat (g),Sodium (mg),Carb (g),Fiber (g),Added Sugar (g),Protein (g
 8/9/2025,19:15,05 - Dinner,Direct Entry - Carbohydrate (g),Super Duper Burger with Cheddar + Fries,80,gram,320,0,0,80,0,0,0,0,0,0,0,$ 0.00,Processed Foods
 8/9/2025,19:15,05 - Dinner,Direct Entry - Protein (g),Super Duper Burger with Cheddar + Fries,20,gram,80,0,0,0,0,0,20,0,0,0,0,$ 0.00,Processed Foods
 8/9/2025,19:15,05 - Dinner,Direct Entry - Sodium (mg),Super Duper Burger with Cheddar + Fries,2000,mg,0,0,"2,000",0,0,0,0,0,0,0,0,$ 0.00,Processed Foods
-8/9/2025,21:30,06 - Before Bed Snack,Greek Yogurt (Whole Milk - Chobani),,260,gram,258,14,92,11,0,0,23,260,352,0,0,$ 0.00,Dairy
+8/9/2025,21:30,06 - Before Bed Snack,Greek Yogurt (Whole Milk - Chobani),,260,gram,258,14,92,11,0,0,23,260,352,0,0,$ 2.11,Dairy
 8/9/2025,21:30,06 - Before Bed Snack,Blueberries (fresh),,65,gram,42,0,1,10,2,0,0,4,50,0,0,$ 0.00,Plants
 8/9/2025,21:30,06 - Before Bed Snack,Honey,,15,gram,55,0,0,14,0,0,0,0,0,0,0,$ 0.00,Sweets
-8/10/2025,10:00,00 - Breakfast,Greek Yogurt (Whole Milk - Chobani),,200,gram,199,11,71,8,0,0,18,200,271,0,0,$ 0.00,Dairy
+8/10/2025,10:00,00 - Breakfast,Greek Yogurt (Whole Milk - Chobani),,200,gram,199,11,71,8,0,0,18,200,271,0,0,$ 1.62,Dairy
 8/10/2025,10:00,00 - Breakfast,"Granola (Chocolate Coffee, Trader Joe's)",,60,gram,269,8,83,43,5,16,5,21,248,0,0,$ 0.00,Carbs
 8/10/2025,11:15,XX - Random Snack / Beverage,"Cappuccino (Medium, Peet's, 2% Milk)",,1,Medium,141,5,130,15,0,11,9,325,450,126,0,$ 0.00,Dairy
 8/10/2025,12:40,03 - Lunch,Broccoli (dry),,150,gram,61,0,0,10,4,0,4,71,420,0,1,$ 1.45,Plants
@@ -199,7 +199,7 @@ unit",Calories,Fat (g),Sodium (mg),Carb (g),Fiber (g),Added Sugar (g),Protein (g
 8/10/2025,21:40,06 - Before Bed Snack,Greek Yogurt (0% Fat - Trader Joe's),,175,gram,99,0,77,7,0,0,18,196,247,0,0,$ 0.00,Dairy
 8/10/2025,21:40,06 - Before Bed Snack,Blueberries (fresh),,65,gram,42,0,1,10,2,0,0,4,50,0,0,$ 0.00,Plants
 8/10/2025,21:40,06 - Before Bed Snack,Honey,,15,gram,55,0,0,14,0,0,0,0,0,0,0,$ 0.00,Sweets
-8/11/2025,07:30,00 - Breakfast,Greek Yogurt (Whole Milk - Chobani),,200,gram,199,11,71,8,0,0,18,200,271,0,0,$ 0.00,Dairy
+8/11/2025,07:30,00 - Breakfast,Greek Yogurt (Whole Milk - Chobani),,200,gram,199,11,71,8,0,0,18,200,271,0,0,$ 1.62,Dairy
 8/11/2025,07:30,00 - Breakfast,"Granola (Chocolate Coffee, Trader Joe's)",,50,gram,224,7,69,36,4,13,4,17,207,0,0,$ 0.00,Carbs
 8/11/2025,09:15,01 - Second Breakfast,Banana,,100,gram,95,0,1,22,3,0,1,6,350,0,0,$ 0.00,Plants
 8/11/2025,09:15,01 - Second Breakfast,Levels - Grass Fed Whey Protein,,0.5,Scoop,65,1,63,2,0,0,12,50,80,0,0,$ 0.00,Bulk ingredients
@@ -231,7 +231,7 @@ unit",Calories,Fat (g),Sodium (mg),Carb (g),Fiber (g),Added Sugar (g),Protein (g
 8/11/2025,21:00,06 - Before Bed Snack,Greek Yogurt (0% Fat - Trader Joe's),,200,gram,113,0,88,8,0,0,20,224,282,0,0,$ 0.00,Dairy
 8/11/2025,21:00,06 - Before Bed Snack,Blueberries (fresh),,65,gram,42,0,1,10,2,0,0,4,50,0,0,$ 0.00,Plants
 8/11/2025,21:00,06 - Before Bed Snack,Honey,,15,gram,55,0,0,14,0,0,0,0,0,0,0,$ 0.00,Sweets
-8/12/2025,08:00,00 - Breakfast,Greek Yogurt (Whole Milk - Chobani),,200,gram,199,11,71,8,0,0,18,200,271,0,0,$ 0.00,Dairy
+8/12/2025,08:00,00 - Breakfast,Greek Yogurt (Whole Milk - Chobani),,200,gram,199,11,71,8,0,0,18,200,271,0,0,$ 1.62,Dairy
 8/12/2025,08:00,00 - Breakfast,"Granola (Chocolate Coffee, Trader Joe's)",,50,gram,224,7,69,36,4,13,4,17,207,0,0,$ 0.00,Carbs
 8/12/2025,09:30,XX - Random Snack / Beverage,Banana,,100,gram,95,0,1,22,3,0,1,6,350,0,0,$ 0.00,Plants
 8/12/2025,09:30,XX - Random Snack / Beverage,Nespresso,,,shot,0,0,0,0,0,0,0,0,0,0,0,$ 0.00,Supplements
@@ -266,10 +266,10 @@ unit",Calories,Fat (g),Sodium (mg),Carb (g),Fiber (g),Added Sugar (g),Protein (g
 8/12/2025,19:00,05 - Dinner,"Brussels sprouts (steamed, no oil)",,100,gram,53,0,25,9,4,0,3,42,389,0,1,$ 0.00,Plants
 8/12/2025,19:00,05 - Dinner,"Seasoning, Salt for Life (Nature's Alternative Salt)",,0.25,tsp,0,0,140,0,0,0,0,0,470,0,0,$ 0.00,Condiments
 8/12/2025,19:00,05 - Dinner,"Seasoning, Umami Multi-Purpose (Trader Joe's)",,0.25,tsp,0,0,140,0,0,0,0,0,0,0,0,$ 0.00,Condiments
-8/12/2025,21:00,06 - Before Bed Snack,Greek Yogurt (Whole Milk - Chobani),,250,gram,249,13,88,10,0,0,22,250,338,0,0,$ 0.00,Dairy
+8/12/2025,21:00,06 - Before Bed Snack,Greek Yogurt (Whole Milk - Chobani),,250,gram,249,13,88,10,0,0,22,250,338,0,0,$ 2.03,Dairy
 8/12/2025,21:00,06 - Before Bed Snack,Blueberries (fresh),,65,gram,42,0,1,10,2,0,0,4,50,0,0,$ 0.00,Plants
 8/12/2025,21:00,06 - Before Bed Snack,Honey,,15,gram,55,0,0,14,0,0,0,0,0,0,0,$ 0.00,Sweets
-8/13/2025,08:00,00 - Breakfast,Greek Yogurt (Whole Milk - Chobani),,200,gram,199,11,71,8,0,0,18,200,271,0,0,$ 0.00,Dairy
+8/13/2025,08:00,00 - Breakfast,Greek Yogurt (Whole Milk - Chobani),,200,gram,199,11,71,8,0,0,18,200,271,0,0,$ 1.62,Dairy
 8/13/2025,08:00,00 - Breakfast,"Granola (Chocolate Coffee, Trader Joe's)",,50,gram,224,7,69,36,4,13,4,17,207,0,0,$ 0.00,Carbs
 8/13/2025,09:30,XX - Random Snack / Beverage,Banana,,100,gram,95,0,1,22,3,0,1,6,350,0,0,$ 0.00,Plants
 8/13/2025,09:30,XX - Random Snack / Beverage,Nespresso,,,shot,0,0,0,0,0,0,0,0,0,0,0,$ 0.00,Supplements
@@ -304,10 +304,10 @@ unit",Calories,Fat (g),Sodium (mg),Carb (g),Fiber (g),Added Sugar (g),Protein (g
 8/13/2025,19:15,05 - Dinner,Avocado,,45,gram,80,7,2,4,3,0,1,0,218,0,0,$ 0.00,Plants
 8/13/2025,19:15,05 - Dinner,"Cheese, Feta Crumbled (Trader Joe's)",,10,gram,24,1,121,1,0,0,2,36,0,0,0,$ 0.00,Dairy
 8/13/2025,19:15,05 - Dinner,"Seasoning, Salt for Life (Nature's Alternative Salt)",,0.25,tsp,0,0,140,0,0,0,0,0,470,0,0,$ 0.00,Condiments
-8/13/2025,21:00,06 - Before Bed Snack,Greek Yogurt (Whole Milk - Chobani),,250,gram,249,13,88,10,0,0,22,250,338,0,0,$ 0.00,Dairy
+8/13/2025,21:00,06 - Before Bed Snack,Greek Yogurt (Whole Milk - Chobani),,250,gram,249,13,88,10,0,0,22,250,338,0,0,$ 2.03,Dairy
 8/13/2025,21:00,06 - Before Bed Snack,Blueberries (fresh),,65,gram,42,0,1,10,2,0,0,4,50,0,0,$ 0.00,Plants
 8/13/2025,21:00,06 - Before Bed Snack,Honey,,15,gram,55,0,0,14,0,0,0,0,0,0,0,$ 0.00,Sweets
-8/14/2025,08:00,00 - Breakfast,Greek Yogurt (Whole Milk - Chobani),,200,gram,199,11,71,8,0,0,18,200,271,0,0,$ 0.00,Dairy
+8/14/2025,08:00,00 - Breakfast,Greek Yogurt (Whole Milk - Chobani),,200,gram,199,11,71,8,0,0,18,200,271,0,0,$ 1.62,Dairy
 8/14/2025,08:00,00 - Breakfast,"Granola (Chocolate Coffee, Trader Joe's)",,50,gram,224,7,69,36,4,13,4,17,207,0,0,$ 0.00,Carbs
 8/14/2025,08:15,XX - Random Snack / Beverage,Nespresso,,1,shot,0,0,0,0,0,0,0,0,0,65,0,$ 0.99,Supplements
 8/14/2025,10:00,02 - Morning snack,Banana,Large,150,gram,143,0,2,33,5,0,2,9,525,0,0,$ 0.00,Plants
@@ -338,11 +338,11 @@ unit",Calories,Fat (g),Sodium (mg),Carb (g),Fiber (g),Added Sugar (g),Protein (g
 8/14/2025,19:00,05 - Dinner,Mashed Potatoes (Whole Foods Hot Bar - Estimation),,500,gram,465,1,750,105,10,0,10,60,"2,300",0,0,$ 0.00,Carbs
 8/14/2025,19:00,05 - Dinner,"Beef, Ground (90% Lean, 10% Fat)",,100,gram,169,10,66,0,0,0,20,0,319,0,2,$ 1.55,Proteins
 8/14/2025,19:00,05 - Dinner,Direct Entry - Fat (g),Sauce and oils,20,gram,180,20,0,0,0,0,0,0,0,0,0,$ 0.00,Processed Foods
-8/14/2025,23:55,06 - Before Bed Snack,Greek Yogurt (Whole Milk - Chobani),,200,gram,199,11,71,8,0,0,18,200,271,0,0,$ 0.00,Dairy
+8/14/2025,23:55,06 - Before Bed Snack,Greek Yogurt (Whole Milk - Chobani),,200,gram,199,11,71,8,0,0,18,200,271,0,0,$ 1.62,Dairy
 8/14/2025,23:55,06 - Before Bed Snack,Blueberries (fresh),,65,gram,42,0,1,10,2,0,0,4,50,0,0,$ 0.00,Plants
 8/14/2025,23:55,06 - Before Bed Snack,Honey,,15,gram,55,0,0,14,0,0,0,0,0,0,0,$ 0.00,Sweets
 8/15/2025,09:00,00 - Breakfast,Banana,Large,145,gram,138,0,1,32,4,0,2,9,508,0,0,$ 0.00,Plants
-8/15/2025,09:00,00 - Breakfast,Greek Yogurt (Whole Milk - Chobani),,200,gram,199,11,71,8,0,0,18,200,271,0,0,$ 0.00,Dairy
+8/15/2025,09:00,00 - Breakfast,Greek Yogurt (Whole Milk - Chobani),,200,gram,199,11,71,8,0,0,18,200,271,0,0,$ 1.62,Dairy
 8/15/2025,09:00,00 - Breakfast,"Granola (Chocolate Coffee, Trader Joe's)",,50,gram,224,7,69,36,4,13,4,17,207,0,0,$ 0.00,Carbs
 8/15/2025,09:00,XX - Random Snack / Beverage,Nespresso,,1,shot,0,0,0,0,0,0,0,0,0,65,0,$ 0.99,Supplements
 8/15/2025,11:00,01 - Second Breakfast,Olive oil,,1,tbsp,126,14,0,0,0,0,0,0,0,0,0,$ 0.00,Oils and butters
@@ -371,12 +371,12 @@ unit",Calories,Fat (g),Sodium (mg),Carb (g),Fiber (g),Added Sugar (g),Protein (g
 8/15/2025,20:30,05 - Dinner,"Pita Bread (Turlock, Whole Foods)",,2,Pita,369,1,420,78,2,0,12,4,112,0,4,$ 0.00,Carbs
 8/15/2025,20:30,05 - Dinner,Olive oil,,2,tbsp,252,28,0,0,0,0,0,0,0,0,0,$ 0.00,Oils and butters
 8/15/2025,20:30,05 - Dinner,Bell Pepper (Fresh),,100,gram,28,0,0,7,1,0,0,10,200,0,0,$ 0.81,Plants
-8/15/2025,20:30,05 - Dinner,Greek Yogurt (Whole Milk - Chobani),For the garlic sauce,35,gram,35,2,12,1,0,0,3,35,47,0,0,$ 0.00,Dairy
+8/15/2025,20:30,05 - Dinner,Greek Yogurt (Whole Milk - Chobani),For the garlic sauce,35,gram,35,2,12,1,0,0,3,35,47,0,0,$ 0.28,Dairy
 8/15/2025,20:30,05 - Dinner,"Seasoning, Salt for Life (Nature's Alternative Salt)",,0.5,tsp,0,0,280,0,0,0,0,0,940,0,0,$ 0.00,Condiments
-8/15/2025,23:00,06 - Before Bed Snack,Greek Yogurt (Whole Milk - Chobani),,250,gram,249,13,88,10,0,0,22,250,338,0,0,$ 0.00,Dairy
+8/15/2025,23:00,06 - Before Bed Snack,Greek Yogurt (Whole Milk - Chobani),,250,gram,249,13,88,10,0,0,22,250,338,0,0,$ 2.03,Dairy
 8/15/2025,23:00,06 - Before Bed Snack,Blueberries (fresh),,65,gram,42,0,1,10,2,0,0,4,50,0,0,$ 0.00,Plants
 8/15/2025,23:00,06 - Before Bed Snack,Honey,,15,gram,55,0,0,14,0,0,0,0,0,0,0,$ 0.00,Sweets
-8/16/2025,07:00,00 - Breakfast,Greek Yogurt (Whole Milk - Chobani),,240,gram,239,13,85,10,0,0,21,240,325,0,0,$ 0.00,Dairy
+8/16/2025,07:00,00 - Breakfast,Greek Yogurt (Whole Milk - Chobani),,240,gram,239,13,85,10,0,0,21,240,325,0,0,$ 1.95,Dairy
 8/16/2025,07:00,00 - Breakfast,"Granola (Chocolate Coffee, Trader Joe's)",,50,gram,224,7,69,36,4,13,4,17,207,0,0,$ 0.00,Carbs
 8/16/2025,09:30,01 - Second Breakfast,Banana,,150,gram,143,0,2,33,5,0,2,9,525,0,0,$ 0.00,Plants
 8/16/2025,09:30,01 - Second Breakfast,Nespresso,,1,shot,0,0,0,0,0,0,0,0,0,65,0,$ 0.99,Supplements
@@ -405,12 +405,12 @@ unit",Calories,Fat (g),Sodium (mg),Carb (g),Fiber (g),Added Sugar (g),Protein (g
 8/16/2025,19:00,05 - Dinner,"Pita Bread (Turlock, Whole Foods)",,2,Pita,369,1,420,78,2,0,12,4,112,0,4,$ 0.00,Carbs
 8/16/2025,19:00,05 - Dinner,Olive oil,,2,tbsp,252,28,0,0,0,0,0,0,0,0,0,$ 0.00,Oils and butters
 8/16/2025,19:00,05 - Dinner,Bell Pepper (Fresh),,100,gram,28,0,0,7,1,0,0,10,200,0,0,$ 0.81,Plants
-8/16/2025,19:00,05 - Dinner,Greek Yogurt (Whole Milk - Chobani),For the garlic sauce,35,gram,35,2,12,1,0,0,3,35,47,0,0,$ 0.00,Dairy
+8/16/2025,19:00,05 - Dinner,Greek Yogurt (Whole Milk - Chobani),For the garlic sauce,35,gram,35,2,12,1,0,0,3,35,47,0,0,$ 0.28,Dairy
 8/16/2025,19:00,05 - Dinner,"Seasoning, Salt for Life (Nature's Alternative Salt)",,0.5,tsp,0,0,280,0,0,0,0,0,940,0,0,$ 0.00,Condiments
-8/16/2025,23:00,06 - Before Bed Snack,Greek Yogurt (Whole Milk - Chobani),,250,gram,249,13,88,10,0,0,22,250,338,0,0,$ 0.00,Dairy
+8/16/2025,23:00,06 - Before Bed Snack,Greek Yogurt (Whole Milk - Chobani),,250,gram,249,13,88,10,0,0,22,250,338,0,0,$ 2.03,Dairy
 8/16/2025,23:00,06 - Before Bed Snack,Blueberries (fresh),,65,gram,42,0,1,10,2,0,0,4,50,0,0,$ 0.00,Plants
 8/16/2025,23:00,06 - Before Bed Snack,Honey,,15,gram,55,0,0,14,0,0,0,0,0,0,0,$ 0.00,Sweets
-8/17/2025,09:30,00 - Breakfast,Greek Yogurt (Whole Milk - Chobani),,200,gram,199,11,71,8,0,0,18,200,271,0,0,$ 0.00,Dairy
+8/17/2025,09:30,00 - Breakfast,Greek Yogurt (Whole Milk - Chobani),,200,gram,199,11,71,8,0,0,18,200,271,0,0,$ 1.62,Dairy
 8/17/2025,09:30,00 - Breakfast,"Granola (Chocolate Coffee, Trader Joe's)",,50,gram,224,7,69,36,4,13,4,17,207,0,0,$ 0.00,Carbs
 8/17/2025,11:45,01 - Second Breakfast,Broccoli (dry),,100,gram,41,0,0,7,2,0,3,47,280,0,1,$ 0.97,Plants
 8/17/2025,11:45,01 - Second Breakfast,Olive oil,,1.5,tbsp,189,21,0,0,0,0,0,0,0,0,0,$ 0.00,Oils and butters
@@ -422,7 +422,7 @@ unit",Calories,Fat (g),Sodium (mg),Carb (g),Fiber (g),Added Sugar (g),Protein (g
 8/17/2025,14:00,02 - Morning snack,Oats,,100,gram,376,6,0,68,10,0,13,0,350,0,4,$ 0.00,Bulk ingredients
 8/17/2025,14:00,02 - Morning snack,Trader Joe's - Frozen Fruits (Average),,60,gram,31,0,0,8,1,0,0,9,90,0,0,$ 0.00,Plants
 8/17/2025,14:00,02 - Morning snack,"Milk (2%, Clover Sonoma)",,480,ml,274,10,280,26,0,0,20,700,920,0,0,$ 0.00,Bulk ingredients
-8/18/2025,08:30,00 - Breakfast,Greek Yogurt (Whole Milk - Chobani),,250,gram,249,13,88,10,0,0,22,250,338,0,0,$ 0.00,Dairy
+8/18/2025,08:30,00 - Breakfast,Greek Yogurt (Whole Milk - Chobani),,250,gram,249,13,88,10,0,0,22,250,338,0,0,$ 2.03,Dairy
 8/18/2025,08:30,00 - Breakfast,"Granola (Chocolate Coffee, Trader Joe's)",,50,gram,224,7,69,36,4,13,4,17,207,0,0,$ 0.00,Carbs
 8/18/2025,09:00,00 - Breakfast,Nespresso,,1,shot,0,0,0,0,0,0,0,0,0,65,0,$ 0.99,Supplements
 8/18/2025,10:15,XX - Random Snack / Beverage,Oats,,100,gram,376,6,0,68,10,0,13,0,350,0,4,$ 0.00,Bulk ingredients
@@ -445,17 +445,17 @@ unit",Calories,Fat (g),Sodium (mg),Carb (g),Fiber (g),Added Sugar (g),Protein (g
 8/18/2025,16:00,04 - Afternoon Snack,Bell Pepper (Fresh),,80,gram,22,0,0,6,1,0,0,8,160,0,0,$ 0.65,Plants
 8/18/2025,16:00,04 - Afternoon Snack,"Seasoning, Umami Multi-Purpose (Trader Joe's)",Flavoring for vegetables,0.25,tsp,0,0,140,0,0,0,0,0,0,0,0,$ 0.00,Condiments
 8/18/2025,16:00,04 - Afternoon Snack,Olive oil,Oil for vegetables,1,tbsp,126,14,0,0,0,0,0,0,0,0,0,$ 0.00,Oils and butters
-,,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
-,,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
-,,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
-,,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
-,,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
-,,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
-,,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
-,,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
-,,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
-,,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
-,,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
+8/18/2025,17:30,04 - Afternoon Snack,"Apple (small, around 150g in total)",,1.5,apple (S),126,0,3,32,5,0,0,15,293,0,0,$ 1.98,Plants
+8/18/2025,17:30,04 - Afternoon Snack,"Cashews, Whole (Salted, 50% Less Sodium, Trader Joe's)",,35,gram,212,16,64,11,1,0,6,12,222,0,2,$ 0.00,"Nuts, seeds, legumes"
+8/18/2025,19:00,05 - Dinner,Sweet Potato,,400,gram,375,1,144,84,13,0,8,152,"1,900",0,0,$ 0.00,Carbs
+8/18/2025,19:00,05 - Dinner,Olive oil,"1 for potatoes, 1 for chicken, 1 for brussels",3,tbsp,378,42,0,0,0,0,0,0,0,0,0,$ 0.00,Oils and butters
+8/18/2025,19:00,05 - Dinner,Chicken Cutlet (Pistachio Panko),,100,gram,149,4,118,8,0,0,21,11,341,0,0,$ 0.00,Proteins
+8/18/2025,19:00,05 - Dinner,"Brussels sprouts (steamed, no oil)",,100,gram,53,0,25,9,4,0,3,42,389,0,1,$ 0.00,Plants
+8/18/2025,19:00,05 - Dinner,"Seasoning, Umami Multi-Purpose (Trader Joe's)",,0.5,tsp,0,0,280,0,0,0,0,0,0,0,0,$ 0.00,Condiments
+8/18/2025,19:00,05 - Dinner,"Seasoning, Salt for Life (Nature's Alternative Salt)",,0.25,tsp,0,0,140,0,0,0,0,0,470,0,0,$ 0.00,Condiments
+8/18/2025,21:30,06 - Before Bed Snack,Greek Yogurt (Whole Milk - Chobani),,250,gram,249,13,88,10,0,0,22,250,338,0,0,$ 2.03,Dairy
+8/18/2025,21:30,06 - Before Bed Snack,Blueberries (fresh),,65,gram,42,0,1,10,2,0,0,4,50,0,0,$ 0.00,Plants
+8/18/2025,21:30,06 - Before Bed Snack,Honey,,15,gram,55,0,0,14,0,0,0,0,0,0,0,$ 0.00,Sweets
 ,,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
 ,,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
 ,,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
