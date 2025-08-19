@@ -69,6 +69,17 @@ class MealSeeder extends Seeder
         // Additional seasoning in the pasta water
         $meal4->ingredients()->attach($ingredients["Seasoning, Salt for Life (Nature's Alternative Salt)"]->id, ['quantity' => .25]);
 
+        // Meal 5: Direct Entry Template (1000 cal, 35g fat, 1500mg sodium)
+        $meal5 = Meal::create(['name' => 'Direct Entry Template (1000 cal, 35g fat, 1500mg sodium)']);
+        $meal5->ingredients()->attach($ingredients['Direct Entry - Fat (g)']->id, ['quantity' => 50]);
+        $meal5->ingredients()->attach($ingredients["Direct Entry - Carbohydrate (g)"]->id, ['quantity' => 100]);
+        $meal5->ingredients()->attach($ingredients['Direct Entry - Protein (g)']->id, ['quantity' => 35]);
+        $meal5->ingredients()->attach($ingredients['Direct Entry - Sodium (mg)']->id, ['quantity' => 2000]);
+
+        // Meal 6: Apple & Cashews
+        $meal5 = Meal::create(['name' => 'Apple & Cashews']);
+        $meal5->ingredients()->attach($ingredients['Apple (small, around 150g in total)']->id, ['quantity' => 1]);
+        $meal5->ingredients()->attach($ingredients["Cashews, Whole (Salted, 50% Less Sodium, Trader Joe's)"]->id, ['quantity' => 35]);
 
     }
 }

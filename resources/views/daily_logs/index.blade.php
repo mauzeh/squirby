@@ -123,7 +123,12 @@
                         <tr>
                             <td><input type="checkbox" name="daily_log_ids[]" value="{{ $log->id }}" class="log-checkbox"></td>
                             <td>{{ $log->logged_at->format('H:i') }}</td>
-                            <td>{{ $log->ingredient->name }}</td>
+                            <td>
+                                {{ $log->ingredient->name }}
+                                @if($log->notes)
+                                    <br><small style="font-size: 0.8em; color: #aaa;">{{ $log->notes }}</small>
+                                @endif
+                            </td>
                             <td>{{ $log->quantity }} {{ $log->unit->abbreviation }}</td>
                             <td class="hide-on-mobile">{{ round($nutritionService->calculateTotalMacro($log->ingredient, 'calories', (float)$log->quantity)) }}</td>
                             <td class="hide-on-mobile">{{ round($nutritionService->calculateTotalMacro($log->ingredient, 'fats', (float)$log->quantity), 1) }}</td>
