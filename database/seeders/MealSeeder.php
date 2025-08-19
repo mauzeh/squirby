@@ -47,9 +47,28 @@ class MealSeeder extends Seeder
         // Meal 4: Red Sauce for Pasta
         $meal3 = Meal::create(['name' => 'Red Sauce for Pasta (5 servings)']);
         $meal3->ingredients()->attach($ingredients['Beef, Ground (90% Lean, 10% Fat)']->id, ['quantity' => 452]);
-        $meal3->ingredients()->attach($ingredients["Seasoning, Umami Multi-Purpose (Trader Joe's)"]->id, ['quantity' => 2]);
+        $meal3->ingredients()->attach($ingredients["Seasoning, Umami Multi-Purpose (Trader Joe's)"]->id, ['quantity' => .25]);
         $meal3->ingredients()->attach($ingredients['Tomato Sauce (Muir Glen)']->id, ['quantity' => 1]);
         $meal3->ingredients()->attach($ingredients['Tomato Paste (Organic, Trader Joe\'s)']->id, ['quantity' => 1]);
+
+        // Meal 5: Fusili with Veggies & Red Sauce (1 serving)
+        $meal4 = Meal::create(['name' => 'Fusili with Veggies & Red Sauce (1 serving)']);
+        // The original sauce (see above)
+        $meal4->ingredients()->attach($ingredients['Beef, Ground (90% Lean, 10% Fat)']->id, ['quantity' => 452/5]);
+        $meal4->ingredients()->attach($ingredients["Seasoning, Umami Multi-Purpose (Trader Joe's)"]->id, ['quantity' => .25/5]);
+        $meal4->ingredients()->attach($ingredients['Tomato Sauce (Muir Glen)']->id, ['quantity' => 1/5]);
+        $meal4->ingredients()->attach($ingredients['Tomato Paste (Organic, Trader Joe\'s)']->id, ['quantity' => 1/5]);
+        // What I add to make it a full meal
+        $meal4->ingredients()->attach($ingredients['Fusilli, Whole Wheat (De Cecco)']->id, ['quantity' => 125]);
+        $meal4->ingredients()->attach($ingredients['Green Beans']->id, ['quantity' => 50]);
+        $meal4->ingredients()->attach($ingredients['Bell Pepper (Fresh)']->id, ['quantity' => 50]);
+        // From frying the veggies
+        $meal4->ingredients()->attach($ingredients['Olive oil']->id, ['quantity' => 1]);
+        // Additional seasoning of the veggies
+        $meal4->ingredients()->attach($ingredients["Seasoning, Umami Multi-Purpose (Trader Joe's)"]->id, ['quantity' => .25]);
+        // Additional seasoning in the pasta water
+        $meal4->ingredients()->attach($ingredients["Seasoning, Salt for Life (Nature's Alternative Salt)"]->id, ['quantity' => .25]);
+
 
     }
 }
