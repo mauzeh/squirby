@@ -133,12 +133,17 @@ class DailyLogController extends Controller
         $loggedAt = $selectedDate->setTimeFromTimeString($validated['logged_at_meal']);
 
         foreach ($meal->ingredients as $ingredient) {
+            $notes = $meal->name . ' (Portion: ' . (float)$validated['portion'] . ')';
+            if (!empty($validated['notes'])) {
+                $notes .= ': ' . $validated['notes'];
+            }
+
             DailyLog::create([
                 'ingredient_id' => $ingredient->id,
                 'unit_id' => $ingredient->base_unit_id,
                 'quantity' => $ingredient->pivot->quantity * $validated['portion'],
                 'logged_at' => $loggedAt,
-                'notes' => $validated['notes'] ?? null,
+                'notes' => $notes,
             ]);
         }
 
