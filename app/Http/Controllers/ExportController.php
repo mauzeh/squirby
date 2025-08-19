@@ -36,7 +36,7 @@ class ExportController extends Controller
             ->orderBy('logged_at', 'desc')
             ->get();
 
-        $fileName = 'daily_log_' . $startDate->format('Y-m-d') . '_to_' . $endDate->format('Y-m-d') . '.csv';
+        $fileName = 'daily_log_' . $startDate->format('Y-m-d') . '_to_' . $endDate->format('Y-m-d') . '_' . Carbon::now()->format('Y-m-d_H-i-s') . '.csv';
         $headers = array(
             "Content-type"        => "text/csv",
             "Content-Disposition" => "attachment; filename=$fileName",
@@ -85,7 +85,7 @@ class ExportController extends Controller
             ->orderBy('logged_at', 'desc')
             ->get();
 
-        $fileName = 'daily_log_all.csv';
+        $fileName = 'daily_log_all_' . Carbon::now()->format('Y-m-d_H-i-s') . '.csv';
         $headers = array(
             "Content-type"        => "text/csv",
             "Content-Disposition" => "attachment; filename=$fileName",
