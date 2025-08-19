@@ -98,11 +98,11 @@
                         <th>Time</th>
                         <th>Ingredient</th>
                         <th>Quantity</th>
-                        <th>Calories</th>
-                        <th>Protein (g)</th>
-                        <th>Carbs (g)</th>
-                        <th>Fats (g)</th>
-                        <th>Cost</th>
+                        <th class="hide-on-mobile">Calories</th>
+                        <th class="hide-on-mobile">Protein (g)</th>
+                        <th class="hide-on-mobile">Carbs (g)</th>
+                        <th class="hide-on-mobile">Fats (g)</th>
+                        <th class="hide-on-mobile">Cost</th>
                         <th class="actions-column">Actions</th>
                     </tr>
                 </thead>
@@ -113,11 +113,11 @@
                             <td>{{ $log->logged_at->format('H:i') }}</td>
                             <td>{{ $log->ingredient->name }}</td>
                             <td>{{ $log->quantity }} {{ $log->unit->abbreviation }}</td>
-                            <td>{{ round($nutritionService->calculateTotalMacro($log->ingredient, 'calories', (float)$log->quantity)) }}</td>
-                            <td>{{ round($nutritionService->calculateTotalMacro($log->ingredient, 'protein', (float)$log->quantity), 1) }}</td>
-                            <td>{{ round($nutritionService->calculateTotalMacro($log->ingredient, 'carbs', (float)$log->quantity), 1) }}</td>
-                            <td>{{ round($nutritionService->calculateTotalMacro($log->ingredient, 'fats', (float)$log->quantity), 1) }}</td>
-                            <td>{{ number_format($nutritionService->calculateCostForQuantity($log->ingredient, (float)$log->quantity), 2) }}</td>
+                            <td class="hide-on-mobile">{{ round($nutritionService->calculateTotalMacro($log->ingredient, 'calories', (float)$log->quantity)) }}</td>
+                            <td class="hide-on-mobile">{{ round($nutritionService->calculateTotalMacro($log->ingredient, 'protein', (float)$log->quantity), 1) }}</td>
+                            <td class="hide-on-mobile">{{ round($nutritionService->calculateTotalMacro($log->ingredient, 'carbs', (float)$log->quantity), 1) }}</td>
+                            <td class="hide-on-mobile">{{ round($nutritionService->calculateTotalMacro($log->ingredient, 'fats', (float)$log->quantity), 1) }}</td>
+                            <td class="hide-on-mobile">{{ number_format($nutritionService->calculateCostForQuantity($log->ingredient, (float)$log->quantity), 2) }}</td>
                             <td class="actions-column">
                                 <div style="display: flex; gap: 5px;">
                                     <a href="{{ route('daily-logs.edit', $log->id) }}" class="button edit">Edit</a>

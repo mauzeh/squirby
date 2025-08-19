@@ -212,6 +212,12 @@
                 background-color: #007bff;
                 color: white;
             }
+
+            @media (max-width: 768px) {
+                .hide-on-mobile {
+                    display: none;
+                }
+            }
         </style>
     </head>
     <body>
