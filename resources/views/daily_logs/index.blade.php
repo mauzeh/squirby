@@ -173,6 +173,15 @@
                 </form>
             </div>
 
+            <div class="form-container">
+                <h3>TSV Export</h3>
+                <textarea id="tsv-output" rows="10" style="width: 100%; background-color: #3a3a3a; color: #f2f2f2; border: 1px solid #555;">@foreach ($dailyLogs->reverse() as $log)
+{{ $log->logged_at->format('m/d/Y') }}	{{ $log->logged_at->format('H:i') }}	{{ $log->ingredient->name }}	{{ $log->notes }}	{{ $log->quantity }}
+@endforeach
+                </textarea>
+                <button id="copy-tsv-button" class="button">Copy to Clipboard</button>
+            </div>
+
             <script>
                 document.getElementById('select-all-logs').addEventListener('change', function(e) {
                     document.querySelectorAll('.log-checkbox').forEach(function(checkbox) {
@@ -222,6 +231,13 @@
                     });
 
                     form.submit();
+                });
+
+                document.getElementById('copy-tsv-button').addEventListener('click', function() {
+                    var tsvOutput = document.getElementById('tsv-output');
+                    tsvOutput.select();
+                    document.execCommand('copy');
+                    alert('TSV data copied to clipboard!');
                 });
             </script>
         @endif
