@@ -266,15 +266,13 @@
 
     <div class="container meal-groups-container">
         @foreach($groupedLogs->sortKeys() as $time => $logs)
-            @if(count($logs) > 1)
                 <div class="meal-group">
                     @php
                         $mealTotals = $nutritionService->calculateDailyTotals($logs);
                     @endphp
                     <x-nutrition-facts-label :totals="$mealTotals" :title="\Carbon\Carbon::parse($time)->format('H:i') . ':'" />
                 </div>
-            @endif
-        @endforeach
+            @endforeach
     </div>
 
     <div class="container">
