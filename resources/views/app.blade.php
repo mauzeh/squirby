@@ -220,6 +220,52 @@
                     display: none;
                 }
             }
+
+            .nutrition-facts-label {
+                border: 1px solid #555;
+                padding: 10px;
+                width: 300px;
+                background-color: #2a2a2a;
+                color: #f2f2f2;
+                font-family: sans-serif;
+            }
+            .nutrition-facts-label h2 {
+                font-size: 24px;
+                margin: 0 0 5px 0;
+                font-weight: bold;
+                color: #f2f2f2;
+            }
+            .nutrition-facts-label .header {
+                border-bottom: 10px solid #f2f2f2;
+                padding-bottom: 5px;
+            }
+            .nutrition-facts-label .nutrient {
+                display: flex;
+                justify-content: space-between;
+                padding: 2px 0;
+                border-top: 1px solid #ccc;
+            }
+            .nutrition-facts-label .nutrient.main {
+                font-weight: bold;
+            }
+            .nutrition-facts-label .nutrient.indented {
+                margin-left: 20px;
+            }
+            .nutrition-facts-label .nutrient .label {
+                font-weight: normal;
+            }
+            .nutrition-facts-label .nutrient .value {
+                font-weight: bold;
+            }
+
+            .calories-label,
+            .calories-value {
+                font-size: 1.5em;
+                font-weight: bold;
+            }
+            .cost-nutrient {
+                background-color: #3a3a3a;
+            }
         </style>
     </head>
     <body>

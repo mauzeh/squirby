@@ -264,58 +264,58 @@
     </div>
 
     <div class="container">
-        <h2>Daily Macro Totals for {{ $selectedDate->format('M d, Y') }}</h2>
-        <table class="log-entries-table macro-totals-table">
-            <tbody>
-                <tr>
-                    <th>Calories</th>
-                    <td>{{ round($dailyTotals['calories']) }}</td>
-                </tr>
-                <tr>
-                    <th>Protein (g)</th>
-                    <td>{{ round($dailyTotals['protein']) }}</td>
-                </tr>
-                <tr>
-                    <th>Carbs (g)</th>
-                    <td>{{ round($dailyTotals['carbs']) }}</td>
-                </tr>
-                <tr>
-                    <th>Added Sugars (g)</th>
-                    <td>{{ round($dailyTotals['added_sugars']) }}</td>
-                </tr>
-                <tr>
-                    <th>Fats (g)</th>
-                    <td>{{ round($dailyTotals['fats']) }}</td>
-                </tr>
-                <tr>
-                    <th>Sodium (mg)</th>
-                    <td>{{ round($dailyTotals['sodium']) }}</td>
-                </tr>
-                <tr>
-                    <th>Iron (mg)</th>
-                    <td>{{ round($dailyTotals['iron']) }}</td>
-                </tr>
-                <tr>
-                    <th>Potassium (mg)</th>
-                    <td>{{ round($dailyTotals['potassium']) }}</td>
-                </tr>
-                <tr>
-                    <th>Fiber (g)</th>
-                    <td>{{ round($dailyTotals['fiber']) }}</td>
-                </tr>
-                <tr>
-                    <th>Calcium (mg)</th>
-                    <td>{{ round($dailyTotals['calcium']) }}</td>
-                </tr>
-                <tr>
-                    <th>Caffeine (mg)</th>
-                    <td>{{ round($dailyTotals['caffeine']) }}</td>
-                </tr>
-                <tr>
-                    <th>Total Cost</th>
-                    <td>{{ number_format($dailyTotals['cost'], 2) }}</td>
-                </tr>
-            </tbody>
-        </table>
+        <div class="nutrition-facts-label">
+            <div class="header">
+                <h2>Totals:</h2>
+            </div>
+            <div class="nutrient main">
+                <span class="label calories-label">Calories</span>
+                <span class="value calories-value">{{ round($dailyTotals['calories']) }}</span>
+            </div>
+            <div class="nutrient main">
+                <span class="label">Fat</span>
+                <span class="value">{{ round($dailyTotals['fats']) }}g</span>
+            </div>
+            <div class="nutrient main">
+                <span class="label">Carbohydrates</span>
+                <span class="value">{{ round($dailyTotals['carbs']) }}g</span>
+            </div>
+            <div class="nutrient indented">
+                <span class="label">Added Sugars</span>
+                <span class="value">{{ round($dailyTotals['added_sugars']) }}g</span>
+            </div>
+            <div class="nutrient indented">
+                <span class="label">Fiber</span>
+                <span class="value">{{ round($dailyTotals['fiber']) }}g</span>
+            </div>
+            <div class="nutrient main">
+                <span class="label">Protein</span>
+                <span class="value">{{ round($dailyTotals['protein']) }}g</span>
+            </div>
+            <div class="nutrient main">
+                <span class="label">Sodium</span>
+                <span class="value">{{ round($dailyTotals['sodium']) }}mg</span>
+            </div>
+            <div class="nutrient">
+                <span class="label">Iron</span>
+                <span class="value">{{ round($dailyTotals['iron']) }}mg</span>
+            </div>
+            <div class="nutrient">
+                <span class="label">Potassium</span>
+                <span class="value">{{ round($dailyTotals['potassium']) }}mg</span>
+            </div>
+            <div class="nutrient">
+                <span class="label">Calcium</span>
+                <span class="value">{{ round($dailyTotals['calcium']) }}mg</span>
+            </div>
+            <div class="nutrient">
+                <span class="label">Caffeine</span>
+                <span class="value">{{ round($dailyTotals['caffeine']) }}mg</span>
+            </div>
+            <div class="nutrient main cost-nutrient">
+                <span class="label">Cost</span>
+                <span class="value">${{ number_format($dailyTotals['cost'], 2) }}</span>
+            </div>
+        </div>
     </div>
 @endsection
