@@ -270,6 +270,12 @@
             .meal-group {
                 margin-bottom: 20px;
             }
+
+            .meal-groups-container {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 20px;
+            }
         </style>
     </head>
     <body>

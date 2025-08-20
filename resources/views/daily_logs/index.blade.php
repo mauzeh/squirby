@@ -250,9 +250,8 @@
             </script>
         @endif
 
-        <div class="container">
-            <h2>Meal Groups</h2>
-            @foreach($groupedLogs as $time => $logs)
+        <div class="container meal-groups-container">
+            @foreach($groupedLogs->sortKeys() as $time => $logs)
                 @if(count($logs) > 1)
                     <div class="meal-group">
                         @php
