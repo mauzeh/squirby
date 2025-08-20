@@ -276,6 +276,21 @@
                 flex-wrap: wrap;
                 gap: 20px;
             }
+
+            .nutrition-facts-label.main-totals {
+                border: 2px solid #00ff00;
+                box-shadow: 0 0 15px rgba(0, 255, 0, 0.2);
+                background-color: #1a1a1a;
+            }
+
+            .nutrition-facts-label.main-totals h2,
+            .nutrition-facts-label.main-totals .nutrient {
+                color: #00ff00;
+            }
+
+            .nutrition-facts-label.main-totals .header {
+                border-bottom: 10px solid #00ff00;
+            }
         </style>
     </head>
     <body>

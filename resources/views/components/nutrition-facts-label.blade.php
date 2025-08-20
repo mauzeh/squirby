@@ -1,6 +1,6 @@
-@props(['totals', 'title'])
+@props(['totals', 'title', 'class' => ''])
 
-<div class="nutrition-facts-label">
+<div class="nutrition-facts-label {{ $class }}">
     <div class="header">
         <h2>{{ $title }}</h2>
     </div>

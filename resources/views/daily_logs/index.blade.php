@@ -249,19 +249,6 @@
                 });
             </script>
         @endif
-
-        <div class="container meal-groups-container">
-            @foreach($groupedLogs->sortKeys() as $time => $logs)
-                @if(count($logs) > 1)
-                    <div class="meal-group">
-                        @php
-                            $mealTotals = $nutritionService->calculateDailyTotals($logs);
-                        @endphp
-                        <x-nutrition-facts-label :totals="$mealTotals" :title="\Carbon\Carbon::parse($time)->format('H:i') . ':'" />
-                    </div>
-                @endif
-            @endforeach
-        </div>
     </div>
 
     <div class="container">
@@ -276,7 +263,21 @@
         </div>
     </div>
 
+
+    <div class="container meal-groups-container">
+        @foreach($groupedLogs->sortKeys() as $time => $logs)
+            @if(count($logs) > 1)
+                <div class="meal-group">
+                    @php
+                        $mealTotals = $nutritionService->calculateDailyTotals($logs);
+                    @endphp
+                    <x-nutrition-facts-label :totals="$mealTotals" :title="\Carbon\Carbon::parse($time)->format('H:i') . ':'" />
+                </div>
+            @endif
+        @endforeach
+    </div>
+
     <div class="container">
-        <x-nutrition-facts-label :totals="$dailyTotals" title="Today's Totals:" />
+        <x-nutrition-facts-label :totals="$dailyTotals" title="Today's Totals:" class="main-totals" />
     </div>
 @endsection
