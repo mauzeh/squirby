@@ -291,6 +291,10 @@
             .nutrition-facts-label.main-totals .header {
                 border-bottom: 10px solid #00ff00;
             }
+
+            .nutrition-facts-label.main-totals .nutrient {
+                border-top-color: #00ff00;
+            }
         </style>
     </head>
     <body>
