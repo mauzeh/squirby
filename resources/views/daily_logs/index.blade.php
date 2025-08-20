@@ -81,13 +81,13 @@
             @php
                 $today = \Carbon\Carbon::today();
             @endphp
-            @for ($i = -6; $i <= 1; $i++) {{-- Last 6 days, today, and tomorrow --}}
+            @for ($i = -3; $i <= 1; $i++)
                 @php
                     $date = $today->copy()->addDays($i);
                     $dateString = $date->toDateString();
                 @endphp
                 <a href="{{ route('daily-logs.index', ['date' => $dateString]) }}" class="date-link {{ $selectedDate->toDateString() == $dateString ? 'active' : '' }}">
-                    {{ $date->format('M d') }}
+                    {{ $date->format('D M d') }}
                 </a>
             @endfor
             <div class="form-group" style="margin-left: 20px;">
