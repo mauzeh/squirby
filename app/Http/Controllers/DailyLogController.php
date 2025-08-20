@@ -39,9 +39,13 @@ class DailyLogController extends Controller
             ->orderBy('logged_at', 'desc')
             ->get();
 
+        $groupedLogs = $dailyLogs->groupBy(function ($log) {
+            return $log->logged_at->format('Y-m-d H:i:s');
+        });
+
         $dailyTotals = $nutritionService->calculateDailyTotals($dailyLogs);
 
-        return view('daily_logs.index', compact('dailyLogs', 'dailyTotals', 'ingredients', 'units', 'meals', 'selectedDate', 'nutritionService'));
+        return view('daily_logs.index', compact('dailyLogs', 'groupedLogs', 'dailyTotals', 'ingredients', 'units', 'meals', 'selectedDate', 'nutritionService'));
     }
 
     /**

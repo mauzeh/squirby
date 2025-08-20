@@ -266,6 +266,10 @@
             .cost-nutrient {
                 background-color: #3a3a3a;
             }
+
+            .meal-group {
+                margin-bottom: 20px;
+            }
         </style>
     </head>
     <body>
