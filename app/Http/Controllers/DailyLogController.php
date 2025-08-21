@@ -35,8 +35,11 @@ class DailyLogController extends Controller
         $selectedDate = $request->input('date') ? Carbon::parse($request->input('date')) : Carbon::today();
 
         $dailyLogs = DailyLog::with(['ingredient', 'unit'])
+            ->join('ingredients', 'daily_logs.ingredient_id', '=', 'ingredients.id')
             ->whereDate('logged_at', $selectedDate->toDateString())
             ->orderBy('logged_at', 'desc')
+            ->orderBy('ingredients.name', 'asc')
+            ->select('daily_logs.*')
             ->get();
 
         $groupedLogs = $dailyLogs->groupBy(function ($log) {
