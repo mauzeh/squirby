@@ -319,6 +319,7 @@
             }
             .git-log {
                 white-space: pre-wrap;
+                margin: 0 20px;
                 font-size: 0.8em;
             }
         </style>

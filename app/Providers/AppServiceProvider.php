@@ -22,7 +22,7 @@ class AppServiceProvider extends ServiceProvider
     {
         if (config('app.env') !== 'production') {
             try {
-                $gitLog = shell_exec('git log -n 5 --pretty=format:"%h - %s (%cr)"');
+                $gitLog = shell_exec('git log -n 25 --pretty=format:"%h - %s (%cr)"');
                 View::share('gitLog', $gitLog);
             } catch (\Exception $e) {
                 View::share('gitLog', 'Could not retrieve git log.');
