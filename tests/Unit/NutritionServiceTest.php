@@ -207,7 +207,7 @@ class NutritionServiceTest extends TestCase
 
         $expectedTotals = [
             'calories' => 0, 'protein' => 0, 'carbs' => 0, 'added_sugars' => 0, 'fats' => 0,
-            'sodium' => 0, 'iron' => 0, 'potassium' => 0, 'cost' => 0,
+            'sodium' => 0, 'iron' => 0, 'potassium' => 0, 'cost' => 0, 'fiber' => 0, 'calcium' => 0, 'caffeine' => 0,
         ];
 
         $this->assertEquals($expectedTotals, $totals);
