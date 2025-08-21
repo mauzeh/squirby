@@ -161,10 +161,17 @@ class DailyLogController extends Controller
             'date' => 'required|date',
         ]);
 
-        $tsvData = $validated['tsv_data'];
+        $tsvData = trim($validated['tsv_data']);
+        if (empty($tsvData)) {
+            return redirect()
+                ->route('daily-logs.index', ['date' => $validated['date']])
+                ->with('error', 'TSV data cannot be empty.');
+        }
         $date = Carbon::parse($validated['date']);
 
         $rows = explode("\n", $tsvData);
+        $importedCount = 0;
+        $notFound = [];
 
         foreach ($rows as $row) {
             if (empty($row)) {
@@ -190,9 +197,20 @@ class DailyLogController extends Controller
                     'logged_at' => $loggedAt,
                     'notes' => $columns[3],
                 ]);
+                $importedCount++;
+            } else {
+                $notFound[] = $columns[2];
             }
         }
 
-        return redirect()->route('daily-logs.index', ['date' => $date->format('Y-m-d')])->with('success', 'TSV data imported successfully!');
+        if ($importedCount === 0 && !empty($notFound)) {
+            return redirect()
+                ->route('daily-logs.index', ['date' => $date->format('Y-m-d')])
+                ->with('error', 'No ingredients found for: ' . implode(', ', $notFound));
+        }
+
+        return redirect()
+            ->route('daily-logs.index', ['date' => $date->format('Y-m-d')])
+            ->with('success', 'TSV data imported successfully!');
     }
 }

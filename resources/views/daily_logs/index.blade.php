@@ -6,6 +6,11 @@
             {{ session('success') }}
         </div>
     @endif
+    @if (session('error'))
+        <div class="container error-message-box">
+            {{ session('error') }}
+        </div>
+    @endif
     <div class="container forms-container-wrapper">
         <div class="form-container">
             <h3>Add New Entry</h3>

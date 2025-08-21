@@ -182,6 +182,15 @@
                 margin-bottom: 20px;
                 border-radius: 5px; /* Slightly rounded corners */
             }
+
+            .error-message-box {
+                background-color: #dc3545; /* Red for error */
+                color: white; /* White text */
+                border: 1px solid #c82333; /* Slightly darker red border */
+                padding: 15px; /* Add padding */
+                margin-bottom: 20px;
+                border-radius: 5px; /* Slightly rounded corners */
+            }
             input[type="text"]:focus,
             input[type="number"]:focus,
             select:focus {
