@@ -9,15 +9,18 @@ use App\Models\Unit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Services\NutritionService;
+use App\Services\TsvImporterService;
 use Carbon\Carbon;
 
 class DailyLogController extends Controller
 {
     protected $nutritionService;
+    protected $tsvImporterService;
 
-    public function __construct(NutritionService $nutritionService)
+    public function __construct(NutritionService $nutritionService, TsvImporterService $tsvImporterService)
     {
         $this->nutritionService = $nutritionService;
+        $this->tsvImporterService = $tsvImporterService;
     }
 
     /**
@@ -170,50 +173,17 @@ class DailyLogController extends Controller
                 ->route('daily-logs.index', ['date' => $validated['date']])
                 ->with('error', 'TSV data cannot be empty.');
         }
-        $date = Carbon::parse($validated['date']);
 
-        $rows = explode("\n", $tsvData);
-        $importedCount = 0;
-        $notFound = [];
+        $result = $this->tsvImporterService->import($tsvData, $validated['date']);
 
-        foreach ($rows as $row) {
-            if (empty($row)) {
-                continue;
-            }
-
-            $columns = str_getcsv($row, "\t");
-
-            // Skip row if it doesn't have the expected number of columns
-            if (count($columns) < 5) {
-                continue;
-            }
-
-            $ingredient = Ingredient::where('name', $columns[2])->first();
-
-            if ($ingredient) {
-                $loggedAt = Carbon::parse($date->format('Y-m-d') . ' ' . $columns[1]);
-
-                DailyLog::create([
-                    'ingredient_id' => $ingredient->id,
-                    'unit_id' => $ingredient->base_unit_id,
-                    'quantity' => $columns[4],
-                    'logged_at' => $loggedAt,
-                    'notes' => $columns[3],
-                ]);
-                $importedCount++;
-            } else {
-                $notFound[] = $columns[2];
-            }
-        }
-
-        if ($importedCount === 0 && !empty($notFound)) {
+        if ($result['importedCount'] === 0 && !empty($result['notFound'])) {
             return redirect()
-                ->route('daily-logs.index', ['date' => $date->format('Y-m-d')])
-                ->with('error', 'No ingredients found for: ' . implode(', ', $notFound));
+                ->route('daily-logs.index', ['date' => $validated['date']])
+                ->with('error', 'No ingredients found for: ' . implode(', ', $result['notFound']));
         }
 
         return redirect()
-            ->route('daily-logs.index', ['date' => $date->format('Y-m-d')])
+            ->route('daily-logs.index', ['date' => $validated['date']])
             ->with('success', 'TSV data imported successfully!');
     }
 }
