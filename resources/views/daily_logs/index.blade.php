@@ -270,7 +270,7 @@
                     @php
                         $mealTotals = $nutritionService->calculateDailyTotals($logs);
                     @endphp
-                    <x-nutrition-facts-label :totals="$mealTotals" :title="\Carbon\Carbon::parse($time)->format('H:i') . ':'" />
+                    <x-nutrition-facts-label :totals="$mealTotals" :title="\Carbon\Carbon::parse($time)->format('H:i')" />
                 </div>
             @endforeach
     </div>
