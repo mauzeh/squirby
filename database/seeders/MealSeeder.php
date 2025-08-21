@@ -42,7 +42,7 @@ class MealSeeder extends Seeder
         $meal3->ingredients()->attach($ingredients['Oats']->id, ['quantity' => 100]);
         $meal3->ingredients()->attach($ingredients['Trader Joe\'s - Frozen Fruits (Average)']->id, ['quantity' => 75]);
         $meal3->ingredients()->attach($ingredients['Milk (2%, Clover Sonoma)']->id, ['quantity' => 480]);
-        $meal3->ingredients()->attach($ingredients['Whole Psyllium Husks']->id, ['quantity' => 1]);
+        $meal3->ingredients()->attach($ingredients['Husks (Whole Psyllium)']->id, ['quantity' => 1]);
 
         // Meal 4: Red Sauce for Pasta
         $meal3 = Meal::create(['name' => 'Red Sauce for Pasta (5 servings)']);
@@ -59,7 +59,7 @@ class MealSeeder extends Seeder
         $meal4->ingredients()->attach($ingredients['Tomato Sauce (Muir Glen)']->id, ['quantity' => 1/5]);
         $meal4->ingredients()->attach($ingredients['Tomato Paste (Organic, Trader Joe\'s)']->id, ['quantity' => 1/5]);
         // What I add to make it a full meal
-        $meal4->ingredients()->attach($ingredients['Fusilli, Whole Wheat (De Cecco)']->id, ['quantity' => 125]);
+        $meal4->ingredients()->attach($ingredients['Pasta, Fusilli, Whole Wheat (De Cecco)']->id, ['quantity' => 125]);
         $meal4->ingredients()->attach($ingredients['Green Beans']->id, ['quantity' => 50]);
         $meal4->ingredients()->attach($ingredients['Bell Pepper (Fresh)']->id, ['quantity' => 50]);
         // From frying the veggies
