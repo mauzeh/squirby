@@ -64,7 +64,7 @@
                 </div>
                 <div class="form-row">
                     <label for="portion">Portion:</label>
-                    <input type="number" name="portion" id="portion" step="0.05" min="0.05" value="1.0" required>
+                    <input type="number" name="portion" id="portion" step="0.05" min="0.05" value="1.0" required inputmode="decimal">
                 </div>
                 <div class="form-row">
                     <label for="notes_meal">Notes:</label>
