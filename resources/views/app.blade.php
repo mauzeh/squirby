@@ -310,16 +310,27 @@
             .nutrition-facts-label.main-totals .nutrient {
                 border-top-color: #00ff00;
             }
+
+            footer {
+                background-color: #333;
+                color: #ccc;
+                padding: 20px 0;
+                margin-top: 40px;
+            }
+            .git-log {
+                white-space: pre-wrap;
+                font-size: 0.8em;
+            }
         </style>
     </head>
     <body>
-        @if(app()->environment('production'))
+        @if(app()->environment('production') || app()->environment('staging'))
             <div style="background-color: red; color: white; text-align: center; padding: 10px; font-size: 20px; font-weight: bold;">
-                PRODUCTION ENVIRONMENT
+                PRODUCTION / STAGING
             </div>
         @else
             <div style="background-color: green; color: white; text-align: center; padding: 10px; font-size: 20px; font-weight: bold;">
-                DEV ENVIRONMENT
+                LOCAL DEV ENVIRONMENT
             </div>
         @endif
         <div class="navbar">
@@ -331,5 +342,12 @@
         <div class="content">
             @yield('content')
         </div>
+        <footer>
+            <div class="container">
+                @if(isset($gitLog))
+                    <pre class="git-log">{{ $gitLog }}</pre>
+                @endif
+            </div>
+        </footer>
     </body>
 </html>
