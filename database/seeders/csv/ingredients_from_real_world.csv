@@ -22,6 +22,8 @@ Chicken Breast (Raw),100,gram,127,3,60,0,0,0,25,10,250,0,,,Proteins
 Chicken Breast (Whole Foods Hot Bar - Estimation),100,gram,169,5,150,0,0,0,31,0,250,0,,,Proteins
 Chicken Cutlet (Pistachio Panko),85,gram,127,3,100,7,0,0,18,9,290,0,,,Proteins
 "Chicken Thigh (Skinless, Boneless)",100,gram,214,13.5,174,0.1,0,0,23,11,254,0,1.00,$2.31,Proteins
+"Corn, Roasted Frozen (Trader Joe's)",100,gram,86,1.5,0,15,3,0,3,0,210,0,0.30,,Plants
+Cucumber,100,gram,25,0.1,0,5,1,0,1,0,140,0,0.00,,Plants
 Direct Entry - Added Sugar (g) - ZERO calories,1,gram,0,0,0,0,0,1,0,0,0,0,,,Processed Foods
 Direct Entry - Carbohydrate (g),1,gram,4,0,0,1,0,0,0,0,0,0,,,Processed Foods
 Direct Entry - Fat (g),1,gram,9,1,0,0,0,0,0,0,0,0,,,Processed Foods
@@ -33,6 +35,7 @@ Egg (L) yolk only,1,egg (L),54,4.5,8,0.6,0,0,2.7,22,19,0,0.60,$0.62,Proteins
 "Flour, Unbleached All Purpose (Trader Joe's)",30,gram,104,0,0,23,0,0,3,0,30,0,,,Carbs
 Garlic Powder,1,gram,0,0,0,0,0,0,0,0,0,0,,,Condiments
 "Granola (Chocolate Coffee, Trader Joe's)",58,gram,260,8,80,42,5,15,5,20,240,0,,$0.68,Carbs
+Grape Tomato,100,gram,22,0.2,5,4,1,0,1,10,237,0,0.30,,Plants
 Greek Yogurt (0% Fat - Trader Joe's),170,gram,96,0,75,7,0,0,17,190,240,0,,,Dairy
 "Greek Yogurt (Drinkable, Pillars)",1,bottle,112,0,70,8,3,0,20,260,329,0,,,Dairy
 Greek Yogurt (Whole Milk - Chobani),170,gram,169,9,60,7,0,0,15,170,230,0,,$1.38,Dairy
@@ -65,13 +68,14 @@ Protein Bar (Think! Any Flavor),1,bar,257,9,230,24,0,0,20,90,110,0,,,Processed F
 Raspberries (Driscoll's),10,raspberries,11,0.1,0,2.3,1.2,0,0.2,0,29,0,,,Plants
 "Rice, Brown Jasmine (Cooked - Trader Joe's)",170,gram,166,1.5,0,34,2,0,4,0,100,0,1.10,,Carbs
 "Rice, Brown Jasmine (Dry - Trader Joe's)",45,gram,166,1.5,0,34,2,0,4,0,100,0,1.10,,Carbs
+"Rice, White Jasmine (Dry - Trader Joe's)",45,gram,152,0,0,35,0.5,0,3,0,30,0,0.00,,Carbs
 "Salmon, Atlantic (Skin On - Trader Joe's)",113,gram,227,15,65,0,0,0,23,10,410,0,,,Proteins
 "Seasoning, Salt for Life (Nature's Alternative Salt)",1,tsp,0,0,560,0,0,0,0,0,1880,0,,,Condiments
 "Seasoning, Umami Multi-Purpose (Trader Joe's)",0.25,tsp,0,0,140,0,0,0,0,0,0,0,,,Condiments
 Sriracha (Trader Joe's),1,tsp,4,0,75,1,0,1,0,0,10,0,,,Condiments
 Strawberries (fresh),100,gram,28,0.22,0.72,6,1.4,0,0.48,11.52,110,0,,,Plants
 Sweet Chili Sauce (Trader Joe's),1,tbsp,20,0,125,5,3,5,0,2,5,0,,,Condiments
-Sweet Potato,100,gram,94,0.2,36,21,3.3,0,2,38,475,0,,,Carbs
+Sweet Potato,100,gram,94,0.2,36,21,3.3,0,2,38,475,0,,$0.66,Carbs
 "Tomato Paste (Organic, Trader Joe's)",1,can,152,0,125,35,10,20,3,0,290,0,,$0.99,Condiments
 Tomato Sauce (Muir Glen),1,can,196,0,140,42,7,0,7,0,1120,0,,$3.69,Plants
 Trader Joe's - Frozen Fruits (Average),140,gram,72,0,0,18,3,0,0,20,210,0,,$1.23,Plants

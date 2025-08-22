@@ -69,17 +69,26 @@ class MealSeeder extends Seeder
         // Additional seasoning in the pasta water
         $meal4->ingredients()->attach($ingredients["Seasoning, Salt for Life (Nature's Alternative Salt)"]->id, ['quantity' => .25]);
 
-        // Meal 5: Direct Entry Template (1000 cal, 35g fat, 1500mg sodium)
-        $meal5 = Meal::create(['name' => 'Direct Entry Template (1000 cal, 35g fat, 1500mg sodium)']);
-        $meal5->ingredients()->attach($ingredients['Direct Entry - Fat (g)']->id, ['quantity' => 50]);
-        $meal5->ingredients()->attach($ingredients["Direct Entry - Carbohydrate (g)"]->id, ['quantity' => 100]);
-        $meal5->ingredients()->attach($ingredients['Direct Entry - Protein (g)']->id, ['quantity' => 35]);
-        $meal5->ingredients()->attach($ingredients['Direct Entry - Sodium (mg)']->id, ['quantity' => 2000]);
+        // Meal 5: Hans made Rice Bowl with Chicken and Veggies
+        $meal5 = Meal::create(['name' => 'Hans made Rice Bowl with Chicken and Veggies']);
+        $meal5->ingredients()->attach($ingredients['Rice, White Jasmine (Dry - Trader Joe\'s)']->id, ['quantity' => 125]);
+        $meal5->ingredients()->attach($ingredients['Olive oil']->id, ['quantity' => 3]);
+        $meal5->ingredients()->attach($ingredients["Chicken Thigh (Skinless, Boneless)"]->id, ['quantity' => 125]);
+        $meal5->ingredients()->attach($ingredients['Cucumber']->id, ['quantity' => 75]);
+        $meal5->ingredients()->attach($ingredients['Corn, Roasted Frozen (Trader Joe\'s)']->id, ['quantity' => 100]);
+        $meal5->ingredients()->attach($ingredients['Grape Tomato']->id, ['quantity' => 75]);
 
-        // Meal 6: Apple & Cashews
-        $meal5 = Meal::create(['name' => 'Apple & Cashews']);
-        $meal5->ingredients()->attach($ingredients['Apple (small, around 150g in total)']->id, ['quantity' => 1]);
-        $meal5->ingredients()->attach($ingredients["Cashews, Whole (Salted, 50% Less Sodium, Trader Joe's)"]->id, ['quantity' => 35]);
+        // Meal 6: Direct Entry Template (1000 cal, 35g fat, 1500mg sodium)
+        $meal6 = Meal::create(['name' => 'Direct Entry Template (1000 cal, 35g fat, 1500mg sodium)']);
+        $meal6->ingredients()->attach($ingredients['Direct Entry - Fat (g)']->id, ['quantity' => 50]);
+        $meal6->ingredients()->attach($ingredients["Direct Entry - Carbohydrate (g)"]->id, ['quantity' => 100]);
+        $meal6->ingredients()->attach($ingredients['Direct Entry - Protein (g)']->id, ['quantity' => 35]);
+        $meal6->ingredients()->attach($ingredients['Direct Entry - Sodium (mg)']->id, ['quantity' => 2000]);
+
+        // Meal 7: Apple & Cashews
+        $meal7 = Meal::create(['name' => 'Apple & Cashews']);
+        $meal7->ingredients()->attach($ingredients['Apple (small, around 150g in total)']->id, ['quantity' => 1]);
+        $meal7->ingredients()->attach($ingredients["Cashews, Whole (Salted, 50% Less Sodium, Trader Joe's)"]->id, ['quantity' => 35]);
 
     }
 }

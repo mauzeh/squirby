@@ -222,7 +222,7 @@ unit",Calories,Fat (g),Sodium (mg),Carb (g),Fiber (g),Added Sugar (g),Protein (g
 8/11/2025,15:30,"Milk (2%, Clover Sonoma)",,500,ml,285,10,292,27,0,0,21,729,958,0,0,$ 0.92,Bulk ingredients
 8/11/2025,15:30,Oats,,75,gram,282,5,0,51,8,0,9,0,263,0,3,$ 0.33,Bulk ingredients
 8/11/2025,15:30,Husks (Whole Psyllium),,1,tbsp,16,0,5,4,4,0,0,0,49,0,0,$ 0.00,Fibers
-8/11/2025,18:30,Sweet Potato,,540,gram,507,1,194,113,18,0,11,205,"2,565",0,0,$ 0.00,Carbs
+8/11/2025,18:30,Sweet Potato,,540,gram,507,1,194,113,18,0,11,205,"2,565",0,0,$ 3.56,Carbs
 8/11/2025,18:30,Olive oil,,1,tbsp,126,14,0,0,0,0,0,0,0,0,0,$ 0.20,Oils and butters
 8/11/2025,18:30,"Ketchup (Organic, Trader Joe's)",,15,gram,18,0,132,4,0,3,0,0,0,0,0,$ 0.00,Condiments
 8/11/2025,18:30,"Seasoning, Umami Multi-Purpose (Trader Joe's)",,0.125,tsp,0,0,70,0,0,0,0,0,0,0,0,$ 0.00,Condiments
@@ -297,7 +297,7 @@ unit",Calories,Fat (g),Sodium (mg),Carb (g),Fiber (g),Added Sugar (g),Protein (g
 8/13/2025,17:15,Husks (Whole Psyllium),,1,tbsp,16,0,5,4,4,0,0,0,49,0,0,$ 0.00,Fibers
 8/13/2025,17:15,"Cashews, Whole (Salted, 50% Less Sodium, Trader Joe's)",,35,gram,212,16,64,11,1,0,6,12,222,0,2,$ 0.65,"Nuts, seeds, legumes"
 8/13/2025,17:15,"Apple (small, around 150g in total)",,1,apple (S),84,0,2,21,4,0,0,10,195,0,0,$ 1.32,Plants
-8/13/2025,19:15,Sweet Potato,,400,gram,375,1,144,84,13,0,8,152,"1,900",0,0,$ 0.00,Carbs
+8/13/2025,19:15,Sweet Potato,,400,gram,375,1,144,84,13,0,8,152,"1,900",0,0,$ 2.63,Carbs
 8/13/2025,19:15,Olive oil,"For with the potato, 2 in total in the mixing bowl",1,tbsp,126,14,0,0,0,0,0,0,0,0,0,$ 0.20,Oils and butters
 8/13/2025,19:15,Olive oil,For the salad,0.5,tbsp,63,7,0,0,0,0,0,0,0,0,0,$ 0.10,Oils and butters
 8/13/2025,19:15,Chicken Cutlet (Pistachio Panko),,80,gram,120,3,94,7,0,0,17,8,273,0,0,$ 0.00,Proteins
@@ -447,7 +447,7 @@ unit",Calories,Fat (g),Sodium (mg),Carb (g),Fiber (g),Added Sugar (g),Protein (g
 8/18/2025,16:00,Olive oil,Oil for vegetables,1,tbsp,126,14,0,0,0,0,0,0,0,0,0,$ 0.20,Oils and butters
 8/18/2025,17:30,"Apple (small, around 150g in total)",,1.5,apple (S),126,0,3,32,5,0,0,15,293,0,0,$ 1.98,Plants
 8/18/2025,17:30,"Cashews, Whole (Salted, 50% Less Sodium, Trader Joe's)",,35,gram,212,16,64,11,1,0,6,12,222,0,2,$ 0.65,"Nuts, seeds, legumes"
-8/18/2025,19:00,Sweet Potato,,400,gram,375,1,144,84,13,0,8,152,"1,900",0,0,$ 0.00,Carbs
+8/18/2025,19:00,Sweet Potato,,400,gram,375,1,144,84,13,0,8,152,"1,900",0,0,$ 2.63,Carbs
 8/18/2025,19:00,Olive oil,"1 for potatoes, 1 for chicken, 1 for brussels",3,tbsp,378,42,0,0,0,0,0,0,0,0,0,$ 0.59,Oils and butters
 8/18/2025,19:00,Chicken Cutlet (Pistachio Panko),,100,gram,149,4,118,8,0,0,21,11,341,0,0,$ 0.00,Proteins
 8/18/2025,19:00,"Brussels sprouts (steamed, no oil)",,100,gram,53,0,25,9,4,0,3,42,389,0,1,$ 0.00,Plants
@@ -519,6 +519,56 @@ unit",Calories,Fat (g),Sodium (mg),Carb (g),Fiber (g),Added Sugar (g),Protein (g
 8/20/2025,21:30,Honey,Evening Yogurt (Portion: 1),15,gram,55,0,0,14,0,0,0,0,0,0,0,$ 0.36,Sweets
 8/20/2025,21:30,Blueberries (fresh),Evening Yogurt (Portion: 1),65,gram,42,0,1,10,2,0,0,4,50,0,0,$ 0.89,Plants
 8/20/2025,21:30,Greek Yogurt (Whole Milk - Chobani),Evening Yogurt (Portion: 1),250,gram,249,13,88,10,0,0,22,250,338,0,0,$ 2.03,Dairy
+8/21/2025,08:15,Greek Yogurt (Whole Milk - Chobani),Breakfast Bowl (Portion: 1),250,gram,249,13,88,10,0,0,22,250,338,0,0,$ 2.03,Dairy
+8/21/2025,08:15,"Granola (Chocolate Coffee, Trader Joe's)",Breakfast Bowl (Portion: 1),50,gram,224,7,69,36,4,13,4,17,207,0,0,$ 0.59,Carbs
+8/21/2025,10:15,"Cappuccino (Medium, Peet's, 2% Milk)",,1,Medium,141,5,130,15,0,11,9,325,450,126,0,$ 0.00,Dairy
+8/21/2025,12:15,Sriracha (Trader Joe's),Nasi Goreng (Vegetarian Fried Rice) (Portion: 1),2,tsp,8,0,150,2,0,2,0,0,20,0,0,$ 0.00,Condiments
+8/21/2025,12:15,"Seasoning, Umami Multi-Purpose (Trader Joe's)",Nasi Goreng (Vegetarian Fried Rice) (Portion: 1),0.25,tsp,0,0,140,0,0,0,0,0,0,0,0,$ 0.00,Condiments
+8/21/2025,12:15,"Seasoning, Salt for Life (Nature's Alternative Salt)",Nasi Goreng (Vegetarian Fried Rice) (Portion: 1),0.125,tsp,0,0,70,0,0,0,0,0,235,0,0,$ 0.00,Condiments
+8/21/2025,12:15,"Rice, Brown Jasmine (Dry - Trader Joe's)",Nasi Goreng (Vegetarian Fried Rice) (Portion: 1),100,gram,368,3,0,76,4,0,9,0,222,0,2,$ 0.00,Carbs
+8/21/2025,12:15,Olive oil,Nasi Goreng (Vegetarian Fried Rice) (Portion: 1),1,tbsp,126,14,0,0,0,0,0,0,0,0,0,$ 0.20,Oils and butters
+8/21/2025,12:15,Egg (L) whole,Nasi Goreng (Vegetarian Fried Rice) (Portion: 1),2,egg (L),140,9,126,2,0,0,13,48,146,0,1,$ 1.25,Proteins
+8/21/2025,12:15,Broccoli (dry),Nasi Goreng (Vegetarian Fried Rice) (Portion: 1),100,gram,41,0,0,7,2,0,3,47,280,0,1,$ 0.97,Plants
+8/21/2025,14:00,Trader Joe's - Frozen Fruits (Average),Carb Loading Shake (Portion: 1),75,gram,39,0,0,10,2,0,0,11,113,0,0,$ 0.66,Plants
+8/21/2025,14:00,Oats,Carb Loading Shake (Portion: 1),100,gram,376,6,0,68,10,0,13,0,350,0,4,$ 0.44,Bulk ingredients
+8/21/2025,14:00,"Milk (2%, Clover Sonoma)",Carb Loading Shake (Portion: 1),480,ml,274,10,280,26,0,0,20,700,920,0,0,$ 0.89,Bulk ingredients
+8/21/2025,14:00,Husks (Whole Psyllium),Carb Loading Shake (Portion: 1),1,tbsp,16,0,5,4,4,0,0,0,49,0,0,$ 0.00,Fibers
+8/21/2025,15:30,Tomato Sauce (Muir Glen),Red Sauce for Pasta (5 servings) (Portion: 0.2),0.2,can,39,0,28,8,1,0,1,0,224,0,0,$ 0.74,Plants
+8/21/2025,15:30,"Tomato Paste (Organic, Trader Joe's)",Red Sauce for Pasta (5 servings) (Portion: 0.2),0.2,can,30,0,25,7,2,4,1,0,58,0,0,$ 0.20,Condiments
+8/21/2025,15:30,"Seasoning, Umami Multi-Purpose (Trader Joe's)",Red Sauce for Pasta (5 servings) (Portion: 0.2),0.05,tsp,0,0,28,0,0,0,0,0,0,0,0,$ 0.00,Condiments
+8/21/2025,15:30,"Pasta, Fusilli, Whole Wheat (De Cecco)",,125,gram,460,4,0,87,9,2,18,60,375,0,0,$ 0.83,Carbs
+8/21/2025,15:30,Green Beans,,70,gram,25,0,4,5,2,0,1,21,105,0,0,$ 0.51,Plants
+8/21/2025,15:30,Bell Pepper (Fresh),,70,gram,20,0,0,5,1,0,0,7,140,0,0,$ 0.57,Plants
+8/21/2025,15:30,"Beef, Ground (90% Lean, 10% Fat)",Red Sauce for Pasta (5 servings) (Portion: 0.2),90.4,gram,153,9,60,0,0,0,18,0,288,0,2,$ 1.40,Proteins
+8/21/2025,17:00,"Cashews, Whole (Salted, 50% Less Sodium, Trader Joe's)",Apple & Cashews (Portion: 1),35,gram,212,16,64,11,1,0,6,12,222,0,2,$ 0.65,"Nuts, seeds, legumes"
+8/21/2025,17:00,"Apple (small, around 150g in total)",Apple & Cashews (Portion: 1),1,apple (S),84,0,2,21,4,0,0,10,195,0,0,$ 1.32,Plants
+8/21/2025,22:00,Honey,Evening Yogurt (Portion: 1),15,gram,55,0,0,14,0,0,0,0,0,0,0,$ 0.36,Sweets
+8/21/2025,22:00,Greek Yogurt (Whole Milk - Chobani),Evening Yogurt (Portion: 1),250,gram,249,13,88,10,0,0,22,250,338,0,0,$ 2.03,Dairy
+8/21/2025,22:00,Blueberries (fresh),Evening Yogurt (Portion: 1),65,gram,42,0,1,10,2,0,0,4,50,0,0,$ 0.89,Plants
+8/22/2025,08:00,Greek Yogurt (Whole Milk - Chobani),Breakfast Bowl (Portion: 1),250,gram,249,13,88,10,0,0,22,250,338,0,0,$ 2.03,Dairy
+8/22/2025,08:00,"Granola (Chocolate Coffee, Trader Joe's)",Breakfast Bowl (Portion: 1),50,gram,224,7,69,36,4,13,4,17,207,0,0,$ 0.59,Carbs
+8/22/2025,08:15,Nespresso,,1,shot,0,0,0,0,0,0,0,0,0,65,0,$ 0.99,Supplements
+,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
+,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
+,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
+,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
+,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
+,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
+,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
+,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
+,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
+,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
+,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
+,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
+,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
+,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
+,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
+,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
+,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
+,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
+,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
+,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
+,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
 ,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
 ,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
 ,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
