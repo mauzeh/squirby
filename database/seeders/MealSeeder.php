@@ -45,11 +45,12 @@ class MealSeeder extends Seeder
         $meal3->ingredients()->attach($ingredients['Husks (Whole Psyllium)']->id, ['quantity' => 1]);
 
         // Meal 4: Red Sauce for Pasta
-        $meal3 = Meal::create(['name' => 'Red Sauce for Pasta (5 servings)']);
-        $meal3->ingredients()->attach($ingredients['Beef, Ground (90% Lean, 10% Fat)']->id, ['quantity' => 452]);
-        $meal3->ingredients()->attach($ingredients["Seasoning, Umami Multi-Purpose (Trader Joe's)"]->id, ['quantity' => .25]);
-        $meal3->ingredients()->attach($ingredients['Tomato Sauce (Muir Glen)']->id, ['quantity' => 1]);
-        $meal3->ingredients()->attach($ingredients['Tomato Paste (Organic, Trader Joe\'s)']->id, ['quantity' => 1]);
+        $meal3 = Meal::create(['name' => 'Red Sauce for Pasta (1 serving / 5 total)']);
+        $meal3->ingredients()->attach($ingredients['Beef, Ground (90% Lean, 10% Fat)']->id, ['quantity' => 452/5]);
+        $meal3->ingredients()->attach($ingredients["Seasoning, Umami Multi-Purpose (Trader Joe's)"]->id, ['quantity' => .25/5]);
+        $meal3->ingredients()->attach($ingredients['Tomato Sauce (Muir Glen)']->id, ['quantity' => 1/5]);
+        $meal3->ingredients()->attach($ingredients['Tomato Paste (Organic, Trader Joe\'s)']->id, ['quantity' => 1/5]);
+        $meal3->ingredients()->attach($ingredients["Seasoning, Salt for Life (Nature's Alternative Salt)"]->id, ['quantity' => .25/5]);
 
         // Meal 5: Fusili with Veggies & Red Sauce (1 serving)
         $meal4 = Meal::create(['name' => 'Fusili with Veggies & Red Sauce (1 serving)']);
