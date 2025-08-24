@@ -41,7 +41,7 @@ class WorkoutSeeder extends Seeder
             'working_set_reps' => 5,
             'working_set_rounds' => 1,
             'comments' => "135x5\n185x3",
-            'logged_at' => now(),
+            'logged_at' => now()->subDays(1),
         ]);
 
         \App\Models\Workout::create([
@@ -50,7 +50,7 @@ class WorkoutSeeder extends Seeder
             'working_set_reps' => 5,
             'working_set_rounds' => 3,
             'comments' => "45x10\n135x5",
-            'logged_at' => now()->addDays(1),
+            'logged_at' => now()->subDays(1),
         ]);
     }
 }

@@ -14,17 +14,11 @@ class WorkoutController extends Controller
     public function index()
     {
         $workouts = Workout::with('exercise')->orderBy('logged_at', 'desc')->get();
-        return view('workouts.index', compact('workouts'));
+        $exercises = Exercise::all();
+        return view('workouts.index', compact('workouts', 'exercises'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        $exercises = Exercise::all();
-        return view('workouts.create', compact('exercises'));
-    }
+    
 
     /**
      * Store a newly created resource in storage.
