@@ -19,36 +19,36 @@ class WorkoutSeeder extends Seeder
 
         \App\Models\Workout::create([
             'exercise_id' => $benchPress->id,
-            'working_set_weight' => 135,
-            'working_set_reps' => 5,
-            'working_set_rounds' => 3,
+            'weight' => 135,
+            'reps' => 5,
+            'rounds' => 3,
             'comments' => "45x10\n95x5",
             'logged_at' => now()->subDays(2),
         ]);
 
         \App\Models\Workout::create([
             'exercise_id' => $strictPress->id,
-            'working_set_weight' => 95,
-            'working_set_reps' => 5,
-            'working_set_rounds' => 3,
+            'weight' => 95,
+            'reps' => 5,
+            'rounds' => 3,
             'comments' => "45x10\n65x5",
             'logged_at' => now()->subDays(1),
         ]);
 
         \App\Models\Workout::create([
             'exercise_id' => $deadlift->id,
-            'working_set_weight' => 225,
-            'working_set_reps' => 5,
-            'working_set_rounds' => 1,
+            'weight' => 225,
+            'reps' => 5,
+            'rounds' => 1,
             'comments' => "135x5\n185x3",
             'logged_at' => now()->subDays(1),
         ]);
 
         \App\Models\Workout::create([
             'exercise_id' => $backSquat->id,
-            'working_set_weight' => 185,
-            'working_set_reps' => 5,
-            'working_set_rounds' => 3,
+            'weight' => 185,
+            'reps' => 5,
+            'rounds' => 3,
             'comments' => "45x10\n135x5",
             'logged_at' => now()->subDays(1),
         ]);

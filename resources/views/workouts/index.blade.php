@@ -15,16 +15,16 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="working_set_weight">Working Set Weight (lbs):</label>
-                    <input type="number" name="working_set_weight" id="working_set_weight" class="form-control" required inputmode="decimal">
+                    <label for="weight">Weight (lbs):</label>
+                    <input type="number" name="weight" id="weight" class="form-control" required inputmode="decimal">
                 </div>
                 <div class="form-group">
-                    <label for="working_set_reps">Working Set Reps:</label>
-                    <input type="number" name="working_set_reps" id="working_set_reps" class="form-control" required inputmode="numeric">
+                    <label for="reps">Reps:</label>
+                    <input type="number" name="reps" id="reps" class="form-control" required inputmode="numeric">
                 </div>
                 <div class="form-group">
-                    <label for="working_set_rounds">Working Set Rounds:</label>
-                    <input type="number" name="working_set_rounds" id="working_set_rounds" class="form-control" required inputmode="numeric">
+                    <label for="rounds">Rounds:</label>
+                    <input type="number" name="rounds" id="rounds" class="form-control" required inputmode="numeric">
                 </div>
                 <div class="form-group">
                     <label for="comments">Comments:</label>
@@ -53,7 +53,7 @@
                     <tr>
                         <td>{{ $workout->logged_at->format('Y-m-d H:i') }}</td>
                         <td>{{ $workout->exercise->title }}</td>
-                        <td>{{ $workout->working_set_weight }} lbs x {{ $workout->working_set_reps }} reps x {{ $workout->working_set_rounds }} rounds</td>
+                        <td>{{ $workout->weight }} lbs x {{ $workout->reps }} reps x {{ $workout->rounds }} rounds</td>
                         <td>{{ $workout->comments }}</td>
                         <td class="actions-column">
                             <div style="display: flex; gap: 5px;">

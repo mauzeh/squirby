@@ -11,9 +11,9 @@ class Workout extends Model
 
     protected $fillable = [
         'exercise_id',
-        'working_set_weight',
-        'working_set_reps',
-        'working_set_rounds',
+        'weight',
+        'reps',
+        'rounds',
         'comments',
         'logged_at',
     ];

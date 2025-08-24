@@ -15,16 +15,16 @@
                 </select>
             </div>
             <div class="form-group">
-                <label for="working_set_weight">Working Set Weight (lbs):</label>
-                <input type="number" name="working_set_weight" id="working_set_weight" class="form-control" value="{{ $workout->working_set_weight }}" required inputmode="decimal">
+                <label for="weight">Weight (lbs):</label>
+                <input type="number" name="weight" id="weight" class="form-control" value="{{ $workout->weight }}" required inputmode="decimal">
             </div>
             <div class="form-group">
-                <label for="working_set_reps">Working Set Reps:</label>
-                <input type="number" name="working_set_reps" id="working_set_reps" class="form-control" value="{{ $workout->working_set_reps }}" required inputmode="numeric">
+                <label for="reps">Reps:</label>
+                <input type="number" name="reps" id="reps" class="form-control" value="{{ $workout->reps }}" required inputmode="numeric">
             </div>
             <div class="form-group">
-                <label for="working_set_rounds">Working Set Rounds:</label>
-                <input type="number" name="working_set_rounds" id="working_set_rounds" class="form-control" value="{{ $workout->working_set_rounds }}" required inputmode="numeric">
+                <label for="rounds">Rounds:</label>
+                <input type="number" name="rounds" id="rounds" class="form-control" value="{{ $workout->rounds }}" required inputmode="numeric">
             </div>
             <div class="form-group">
                 <label for="comments">Comments:</label>

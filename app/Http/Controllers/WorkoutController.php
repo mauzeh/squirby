@@ -27,9 +27,9 @@ class WorkoutController extends Controller
     {
         $request->validate([
             'exercise_id' => 'required|exists:exercises,id',
-            'working_set_weight' => 'required|numeric',
-            'working_set_reps' => 'required|integer',
-            'working_set_rounds' => 'required|integer',
+            'weight' => 'required|numeric',
+            'reps' => 'required|integer',
+            'rounds' => 'required|integer',
             'comments' => 'nullable|string',
             'logged_at' => 'required|date',
         ]);
@@ -63,9 +63,9 @@ class WorkoutController extends Controller
     {
         $request->validate([
             'exercise_id' => 'required|exists:exercises,id',
-            'working_set_weight' => 'required|numeric',
-            'working_set_reps' => 'required|integer',
-            'working_set_rounds' => 'required|integer',
+            'weight' => 'required|numeric',
+            'reps' => 'required|integer',
+            'rounds' => 'required|integer',
             'comments' => 'nullable|string',
             'logged_at' => 'required|date',
         ]);
