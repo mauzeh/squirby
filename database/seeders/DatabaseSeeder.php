@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             DailyLogSeeder::class,
             MealSeeder::class,
             ExerciseSeeder::class,
+            WorkoutSeeder::class,
         ]);
     }
 }

@@ -129,7 +129,8 @@
             }
             .form-group input[type="text"],
             .form-group input[type="number"],
-            .form-group select {
+            .form-group select,
+            .form-group textarea {
                 flex: 1; /* Take remaining space */
                 padding: 8px;
                 border-radius: 5px;
@@ -340,6 +341,7 @@
             <a href="{{ route('ingredients.index') }}" class="{{ Request::routeIs('ingredients.*') ? 'active' : '' }}">Ingredients</a>
             <a href="{{ route('export-form') }}" class="{{ Request::routeIs('export-form') ? 'active' : '' }}">Export</a>
             <a href="{{ route('exercises.index') }}" class="{{ Request::routeIs('exercises.*') ? 'active' : '' }}">Exercises</a>
+            <a href="{{ route('workouts.index') }}" class="{{ Request::routeIs('workouts.*') ? 'active' : '' }}">Workouts</a>
         </div>
         <div class="content">
             @yield('content')
