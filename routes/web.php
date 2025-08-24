@@ -4,6 +4,7 @@ use App\Http\Controllers\DailyLogController;
 use App\Http\Controllers\IngredientController;
 use App\Http\Controllers\MealController;
 use App\Http\Controllers\ExportController;
+use App\Http\Controllers\ExerciseController;
 use Illuminate\Support\Facades\Route;
 
 Route::resource('daily-logs', DailyLogController::class)->except(['show']);
@@ -24,6 +25,8 @@ Route::resource('meals', MealController::class)->except([
 ]);
 
 Route::post('meals/create-from-logs', [MealController::class, 'createFromLogs'])->name('meals.create-from-logs');
+
+Route::resource('exercises', ExerciseController::class);
 
 Route::get('/', function () {
     return redirect()->route('daily-logs.index');
