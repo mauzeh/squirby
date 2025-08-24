@@ -27,8 +27,8 @@
                 <input type="number" name="working_set_rounds" id="working_set_rounds" class="form-control" value="{{ $workout->working_set_rounds }}" required inputmode="numeric">
             </div>
             <div class="form-group">
-                <label for="warmup_sets_comments">Warmup Sets:</label>
-                <textarea name="warmup_sets_comments" id="warmup_sets_comments" class="form-control" rows="5">{{ $workout->warmup_sets_comments }}</textarea>
+                <label for="comments">Comments:</label>
+                <textarea name="comments" id="comments" class="form-control" rows="5">{{ $workout->comments }}</textarea>
             </div>
             <div class="form-group">
                 <label for="logged_at">Date:</label>

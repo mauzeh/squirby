@@ -11,7 +11,7 @@
                     <th>Exercise</th>
                     <th>Working Set</th>
                     <th>Rounds</th>
-                    <th>Warmup Sets</th>
+                    <th>Comments</th>
                     <th class="actions-column">Actions</th>
                 </tr>
             </thead>
@@ -22,7 +22,7 @@
                         <td>{{ $workout->exercise->title }}</td>
                         <td>{{ $workout->working_set_weight }} lbs x {{ $workout->working_set_reps }} reps</td>
                         <td>{{ $workout->working_set_rounds }}</td>
-                        <td>{{ $workout->warmup_sets_comments }}</td>
+                        <td>{{ $workout->comments }}</td>
                         <td class="actions-column">
                             <div style="display: flex; gap: 5px;">
                                 <a href="{{ route('workouts.edit', $workout->id) }}" class="button edit">Edit</a>

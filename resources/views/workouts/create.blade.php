@@ -26,8 +26,8 @@
                 <input type="number" name="working_set_rounds" id="working_set_rounds" class="form-control" required inputmode="numeric">
             </div>
             <div class="form-group">
-                <label for="warmup_sets_comments">Warmup Sets:</label>
-                <textarea name="warmup_sets_comments" id="warmup_sets_comments" class="form-control" rows="5"></textarea>
+                <label for="comments">Comments:</label>
+                <textarea name="comments" id="comments" class="form-control" rows="5"></textarea>
             </div>
             <div class="form-group">
                 <label for="logged_at">Date:</label>

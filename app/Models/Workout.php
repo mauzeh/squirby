@@ -14,7 +14,7 @@ class Workout extends Model
         'working_set_weight',
         'working_set_reps',
         'working_set_rounds',
-        'warmup_sets_comments',
+        'comments',
         'logged_at',
     ];
 

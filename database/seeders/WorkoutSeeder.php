@@ -22,7 +22,7 @@ class WorkoutSeeder extends Seeder
             'working_set_weight' => 135,
             'working_set_reps' => 5,
             'working_set_rounds' => 3,
-            'warmup_sets_comments' => "45x10\n95x5",
+            'comments' => "45x10\n95x5",
             'logged_at' => now()->subDays(2),
         ]);
 
@@ -31,7 +31,7 @@ class WorkoutSeeder extends Seeder
             'working_set_weight' => 95,
             'working_set_reps' => 5,
             'working_set_rounds' => 3,
-            'warmup_sets_comments' => "45x10\n65x5",
+            'comments' => "45x10\n65x5",
             'logged_at' => now()->subDays(1),
         ]);
 
@@ -40,7 +40,7 @@ class WorkoutSeeder extends Seeder
             'working_set_weight' => 225,
             'working_set_reps' => 5,
             'working_set_rounds' => 1,
-            'warmup_sets_comments' => "135x5\n185x3",
+            'comments' => "135x5\n185x3",
             'logged_at' => now(),
         ]);
 
@@ -49,7 +49,7 @@ class WorkoutSeeder extends Seeder
             'working_set_weight' => 185,
             'working_set_reps' => 5,
             'working_set_rounds' => 3,
-            'warmup_sets_comments' => "45x10\n135x5",
+            'comments' => "45x10\n135x5",
             'logged_at' => now()->addDays(1),
         ]);
     }

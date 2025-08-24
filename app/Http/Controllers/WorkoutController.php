@@ -36,7 +36,7 @@ class WorkoutController extends Controller
             'working_set_weight' => 'required|numeric',
             'working_set_reps' => 'required|integer',
             'working_set_rounds' => 'required|integer',
-            'warmup_sets_comments' => 'nullable|string',
+            'comments' => 'nullable|string',
             'logged_at' => 'required|date',
         ]);
 
@@ -72,7 +72,7 @@ class WorkoutController extends Controller
             'working_set_weight' => 'required|numeric',
             'working_set_reps' => 'required|integer',
             'working_set_rounds' => 'required|integer',
-            'warmup_sets_comments' => 'nullable|string',
+            'comments' => 'nullable|string',
             'logged_at' => 'required|date',
         ]);
 
