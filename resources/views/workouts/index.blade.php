@@ -51,7 +51,7 @@
         @if ($workouts->isEmpty())
             <p>No workouts found. Add one to get started!</p>
         @else
-            <table class="log-entries-table">
+        <table class="log-entries-table">
             <thead>
                 <tr>
                     <th><input type="checkbox" id="select-all-workouts"></th>
@@ -104,16 +104,6 @@
             <button id="copy-tsv-button" class="button">Copy to Clipboard</button>
         </div>
 
-        <div class="form-container">
-            <h3>TSV Import</h3>
-            <form action="{{ route('workouts.import-tsv') }}" method="POST">
-                @csrf
-                <input type="hidden" name="date" value="{{ now()->format('Y-m-d') }}">
-                <textarea name="tsv_data" rows="10" style="width: 100%; background-color: #3a3a3a; color: #f2f2f2; border: 1px solid #555;"></textarea>
-                <button type="submit" class="button">Import TSV</button>
-            </form>
-        </div>
-
         <script>
             document.getElementById('select-all-workouts').addEventListener('change', function(e) {
                 document.querySelectorAll('.workout-checkbox').forEach(function(checkbox) {
@@ -151,5 +141,16 @@
             });
         </script>
         @endif
+
+        <div class="form-container">
+            <h3>TSV Import</h3>
+            <form action="{{ route('workouts.import-tsv') }}" method="POST">
+                @csrf
+                <input type="hidden" name="date" value="{{ now()->format('Y-m-d') }}">
+                <textarea name="tsv_data" rows="10" style="width: 100%; background-color: #3a3a3a; color: #f2f2f2; border: 1px solid #555;"></textarea>
+                <button type="submit" class="button">Import TSV</button>
+            </form>
+        </div>
+
     </div>
 @endsection
