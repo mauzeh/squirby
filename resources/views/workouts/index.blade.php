@@ -48,7 +48,10 @@
             </form>
         </div>
 
-        <table class="log-entries-table">
+        @if ($workouts->isEmpty())
+            <p>No workouts found. Add one to get started!</p>
+        @else
+            <table class="log-entries-table">
             <thead>
                 <tr>
                     <th><input type="checkbox" id="select-all-workouts"></th>
@@ -147,5 +150,6 @@
                 alert('TSV data copied to clipboard!');
             });
         </script>
+        @endif
     </div>
 @endsection
