@@ -12,45 +12,26 @@ class WorkoutSeeder extends Seeder
      */
     public function run(): void
     {
-        $benchPress = \App\Models\Exercise::where('title', 'Bench Press')->first();
-        $strictPress = \App\Models\Exercise::where('title', 'Strict Press')->first();
-        $deadlift = \App\Models\Exercise::where('title', 'Deadlift')->first();
-        $backSquat = \App\Models\Exercise::where('title', 'Back Squat')->first();
+        $csvFile = fopen(base_path('database/seeders/csv/workouts_from_real_world.csv'), 'r');
+        $firstline = true;
+        while (($data = fgetcsv($csvFile, 2000, ",")) !== FALSE) {
+            if (!$firstline) {
+                $exerciseTitle = $data[1];
+                $exercise = \App\Models\Exercise::where('title', $exerciseTitle)->first();
 
-        \App\Models\Workout::create([
-            'exercise_id' => $benchPress->id,
-            'weight' => 135,
-            'reps' => 5,
-            'rounds' => 3,
-            'comments' => "45x10\n95x5",
-            'logged_at' => now()->subDays(2),
-        ]);
-
-        \App\Models\Workout::create([
-            'exercise_id' => $strictPress->id,
-            'weight' => 95,
-            'reps' => 5,
-            'rounds' => 3,
-            'comments' => "45x10\n65x5",
-            'logged_at' => now()->subDays(1),
-        ]);
-
-        \App\Models\Workout::create([
-            'exercise_id' => $deadlift->id,
-            'weight' => 225,
-            'reps' => 5,
-            'rounds' => 1,
-            'comments' => "135x5\n185x3",
-            'logged_at' => now()->subDays(1),
-        ]);
-
-        \App\Models\Workout::create([
-            'exercise_id' => $backSquat->id,
-            'weight' => 185,
-            'reps' => 5,
-            'rounds' => 3,
-            'comments' => "45x10\n135x5",
-            'logged_at' => now()->subDays(1),
-        ]);
+                if ($exercise) {
+                    \App\Models\Workout::create([
+                        'exercise_id' => $exercise->id,
+                        'weight' => $data[2],
+                        'reps' => $data[3],
+                        'rounds' => $data[4],
+                        'comments' => $data[5],
+                        'logged_at' => \Carbon\Carbon::parse($data[0])->ceilMinute(15),
+                    ]);
+                }
+            }
+            $firstline = false;
+        }
+        fclose($csvFile);
     }
 }
