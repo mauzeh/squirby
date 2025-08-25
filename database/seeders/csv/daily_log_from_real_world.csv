@@ -542,29 +542,107 @@ unit",Calories,Fat (g),Sodium (mg),Carb (g),Fiber (g),Added Sugar (g),Protein (g
 8/21/2025,15:30,"Beef, Ground (90% Lean, 10% Fat)",Red Sauce for Pasta (5 servings) (Portion: 0.2),90.4,gram,153,9,60,0,0,0,18,0,288,0,2,$ 1.40,Proteins
 8/21/2025,17:00,"Cashews, Whole (Salted, 50% Less Sodium, Trader Joe's)",Apple & Cashews (Portion: 1),35,gram,212,16,64,11,1,0,6,12,222,0,2,$ 0.65,"Nuts, seeds, legumes"
 8/21/2025,17:00,"Apple (small, around 150g in total)",Apple & Cashews (Portion: 1),1,apple (S),84,0,2,21,4,0,0,10,195,0,0,$ 1.32,Plants
+8/21/2025,19:30,"Rice, White Jasmine (Dry - Trader Joe's)",Hans made Rice Bowl with Chicken and Veggies (Portion: 1),125,gram,422,0,0,97,1,0,8,0,83,0,0,$ 0.00,Carbs
+8/21/2025,19:30,Olive oil,Hans made Rice Bowl with Chicken and Veggies (Portion: 1),3,tbsp,378,42,0,0,0,0,0,0,0,0,0,$ 0.59,Oils and butters
+8/21/2025,19:30,Grape Tomato,Hans made Rice Bowl with Chicken and Veggies (Portion: 1),75,gram,16,0,4,3,1,0,1,8,178,0,0,$ 0.00,Plants
+8/21/2025,19:30,Cucumber,Hans made Rice Bowl with Chicken and Veggies (Portion: 1),75,gram,19,0,0,4,1,0,1,0,105,0,0,$ 0.00,Plants
+8/21/2025,19:30,"Corn, Roasted Frozen (Trader Joe's)",Hans made Rice Bowl with Chicken and Veggies (Portion: 1),100,gram,86,2,0,15,3,0,3,0,210,0,0,$ 0.00,Plants
+8/21/2025,19:30,"Chicken Thigh (Skinless, Boneless)",Hans made Rice Bowl with Chicken and Veggies (Portion: 1),125,gram,267,17,218,0,0,0,29,14,318,0,1,$ 2.89,Proteins
 8/21/2025,22:00,Honey,Evening Yogurt (Portion: 1),15,gram,55,0,0,14,0,0,0,0,0,0,0,$ 0.36,Sweets
 8/21/2025,22:00,Greek Yogurt (Whole Milk - Chobani),Evening Yogurt (Portion: 1),250,gram,249,13,88,10,0,0,22,250,338,0,0,$ 2.03,Dairy
 8/21/2025,22:00,Blueberries (fresh),Evening Yogurt (Portion: 1),65,gram,42,0,1,10,2,0,0,4,50,0,0,$ 0.89,Plants
 8/22/2025,08:00,Greek Yogurt (Whole Milk - Chobani),Breakfast Bowl (Portion: 1),250,gram,249,13,88,10,0,0,22,250,338,0,0,$ 2.03,Dairy
 8/22/2025,08:00,"Granola (Chocolate Coffee, Trader Joe's)",Breakfast Bowl (Portion: 1),50,gram,224,7,69,36,4,13,4,17,207,0,0,$ 0.59,Carbs
 8/22/2025,08:15,Nespresso,,1,shot,0,0,0,0,0,0,0,0,0,65,0,$ 0.99,Supplements
-,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
-,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
-,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
-,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
-,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
-,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
-,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
-,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
-,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
-,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
-,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
-,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
-,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
-,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
-,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
-,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
-,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
+8/22/2025,11:30,Sriracha (Trader Joe's),Nasi Goreng (Vegetarian Fried Rice) (Portion: 1),2,tsp,8,0,150,2,0,2,0,0,20,0,0,$ 0.00,Condiments
+8/22/2025,11:30,"Seasoning, Umami Multi-Purpose (Trader Joe's)",Nasi Goreng (Vegetarian Fried Rice) (Portion: 1),0.25,tsp,0,0,140,0,0,0,0,0,0,0,0,$ 0.00,Condiments
+8/22/2025,11:30,"Seasoning, Salt for Life (Nature's Alternative Salt)",Nasi Goreng (Vegetarian Fried Rice) (Portion: 1),0.125,tsp,0,0,70,0,0,0,0,0,235,0,0,$ 0.00,Condiments
+8/22/2025,11:30,"Rice, Brown Jasmine (Dry - Trader Joe's)",Nasi Goreng (Vegetarian Fried Rice) (Portion: 1),100,gram,368,3,0,76,4,0,9,0,222,0,2,$ 0.00,Carbs
+8/22/2025,11:30,Olive oil,Nasi Goreng (Vegetarian Fried Rice) (Portion: 1),1,tbsp,126,14,0,0,0,0,0,0,0,0,0,$ 0.20,Oils and butters
+8/22/2025,11:30,Egg (L) whole,Nasi Goreng (Vegetarian Fried Rice) (Portion: 1),2,egg (L),140,9,126,2,0,0,13,48,146,0,1,$ 1.25,Proteins
+8/22/2025,11:30,Broccoli (dry),Nasi Goreng (Vegetarian Fried Rice) (Portion: 1),100,gram,41,0,0,7,2,0,3,47,280,0,1,$ 0.97,Plants
+8/22/2025,14:15,Trader Joe's - Frozen Fruits (Average),Carb Loading Shake (Portion: 1),75,gram,39,0,0,10,2,0,0,11,113,0,0,$ 0.66,Plants
+8/22/2025,14:15,Oats,Carb Loading Shake (Portion: 1),100,gram,376,6,0,68,10,0,13,0,350,0,4,$ 0.44,Bulk ingredients
+8/22/2025,14:15,"Milk (2%, Clover Sonoma)",Carb Loading Shake (Portion: 1),480,ml,274,10,280,26,0,0,20,700,920,0,0,$ 0.89,Bulk ingredients
+8/22/2025,14:15,Husks (Whole Psyllium),Carb Loading Shake (Portion: 1),1,tbsp,16,0,5,4,4,0,0,0,49,0,0,$ 0.00,Fibers
+8/22/2025,16:00,Tomato Sauce (Muir Glen),Fusili with Veggies & Red Sauce (1 serving) (Portion: 1),0.2,can,39,0,28,8,1,0,1,0,224,0,0,$ 0.74,Plants
+8/22/2025,16:00,"Tomato Paste (Organic, Trader Joe's)",Fusili with Veggies & Red Sauce (1 serving) (Portion: 1),0.2,can,30,0,25,7,2,4,1,0,58,0,0,$ 0.20,Condiments
+8/22/2025,16:00,"Seasoning, Umami Multi-Purpose (Trader Joe's)",Fusili with Veggies & Red Sauce (1 serving) (Portion: 1),0.25,tsp,0,0,140,0,0,0,0,0,0,0,0,$ 0.00,Condiments
+8/22/2025,16:00,"Seasoning, Umami Multi-Purpose (Trader Joe's)",Fusili with Veggies & Red Sauce (1 serving) (Portion: 1),0.05,tsp,0,0,28,0,0,0,0,0,0,0,0,$ 0.00,Condiments
+8/22/2025,16:00,"Seasoning, Salt for Life (Nature's Alternative Salt)",Fusili with Veggies & Red Sauce (1 serving) (Portion: 1),0.25,tsp,0,0,140,0,0,0,0,0,470,0,0,$ 0.00,Condiments
+8/22/2025,16:00,"Pasta, Fusilli, Whole Wheat (De Cecco)",Fusili with Veggies & Red Sauce (1 serving) (Portion: 1),125,gram,460,4,0,87,9,2,18,60,375,0,0,$ 0.83,Carbs
+8/22/2025,16:00,Olive oil,Fusili with Veggies & Red Sauce (1 serving) (Portion: 1),1,tbsp,126,14,0,0,0,0,0,0,0,0,0,$ 0.20,Oils and butters
+8/22/2025,16:00,Green Beans,Fusili with Veggies & Red Sauce (1 serving) (Portion: 1),50,gram,18,0,3,4,2,0,1,15,75,0,0,$ 0.36,Plants
+8/22/2025,16:00,Bell Pepper (Fresh),Fusili with Veggies & Red Sauce (1 serving) (Portion: 1),50,gram,14,0,0,4,1,0,0,5,100,0,0,$ 0.41,Plants
+8/22/2025,16:00,"Beef, Ground (90% Lean, 10% Fat)",Fusili with Veggies & Red Sauce (1 serving) (Portion: 1),90.4,gram,153,9,60,0,0,0,18,0,288,0,2,$ 1.40,Proteins
+8/22/2025,19:30,Direct Entry - Sodium (mg),"Direct Entry Template (1000 cal, 35g fat, 1500mg sodium) (Portion: 1)",2000,mg,0,0,"2,000",0,0,0,0,0,0,0,0,$ 0.00,Processed Foods
+8/22/2025,19:30,Direct Entry - Protein (g),"Direct Entry Template (1000 cal, 35g fat, 1500mg sodium) (Portion: 1)",35,gram,140,0,0,0,0,0,35,0,0,0,0,$ 0.00,Processed Foods
+8/22/2025,19:30,Direct Entry - Fat (g),"Direct Entry Template (1000 cal, 35g fat, 1500mg sodium) (Portion: 1)",50,gram,450,50,0,0,0,0,0,0,0,0,0,$ 0.00,Processed Foods
+8/22/2025,19:30,Direct Entry - Carbohydrate (g),"Direct Entry Template (1000 cal, 35g fat, 1500mg sodium) (Portion: 1)",125,gram,500,0,0,125,0,0,0,0,0,0,0,$ 0.00,Processed Foods
+8/22/2025,20:00,"Apple (small, around 150g in total)",,1,apple (S),84,0,2,21,4,0,0,10,195,0,0,$ 1.32,Plants
+8/22/2025,20:15,"Milk (2%, Clover Sonoma)",,240,ml,137,5,140,13,0,0,10,350,460,0,0,$ 0.44,Bulk ingredients
+8/22/2025,22:00,Honey,Evening Yogurt (Portion: 1),15,gram,55,0,0,14,0,0,0,0,0,0,0,$ 0.36,Sweets
+8/22/2025,22:00,Greek Yogurt (Whole Milk - Chobani),Evening Yogurt (Portion: 1),250,gram,249,13,88,10,0,0,22,250,338,0,0,$ 2.03,Dairy
+8/22/2025,22:00,Blueberries (fresh),Evening Yogurt (Portion: 1),65,gram,42,0,1,10,2,0,0,4,50,0,0,$ 0.89,Plants
+8/23/2025,07:30,Greek Yogurt (Whole Milk - Chobani),Breakfast Bowl (Portion: 1),250,gram,249,13,88,10,0,0,22,250,338,0,0,$ 2.03,Dairy
+8/23/2025,07:30,"Granola (Chocolate Coffee, Trader Joe's)",Breakfast Bowl (Portion: 1),50,gram,224,7,69,36,4,13,4,17,207,0,0,$ 0.59,Carbs
+8/23/2025,09:30,Sriracha (Trader Joe's),Nasi Goreng (Vegetarian Fried Rice) (Portion: 1),2,tsp,8,0,150,2,0,2,0,0,20,0,0,$ 0.00,Condiments
+8/23/2025,09:30,"Seasoning, Umami Multi-Purpose (Trader Joe's)",Nasi Goreng (Vegetarian Fried Rice) (Portion: 1),0.25,tsp,0,0,140,0,0,0,0,0,0,0,0,$ 0.00,Condiments
+8/23/2025,09:30,"Seasoning, Salt for Life (Nature's Alternative Salt)",Nasi Goreng (Vegetarian Fried Rice) (Portion: 1),0.125,tsp,0,0,70,0,0,0,0,0,235,0,0,$ 0.00,Condiments
+8/23/2025,09:30,"Rice, Brown Jasmine (Dry - Trader Joe's)",Nasi Goreng (Vegetarian Fried Rice) (Portion: 1),100,gram,368,3,0,76,4,0,9,0,222,0,2,$ 0.00,Carbs
+8/23/2025,09:30,Olive oil,Nasi Goreng (Vegetarian Fried Rice) (Portion: 1),1,tbsp,126,14,0,0,0,0,0,0,0,0,0,$ 0.20,Oils and butters
+8/23/2025,09:30,Egg (L) whole,Nasi Goreng (Vegetarian Fried Rice) (Portion: 1),2,egg (L),140,9,126,2,0,0,13,48,146,0,1,$ 1.25,Proteins
+8/23/2025,09:30,Broccoli (dry),Nasi Goreng (Vegetarian Fried Rice) (Portion: 1),100,gram,41,0,0,7,2,0,3,47,280,0,1,$ 0.97,Plants
+8/23/2025,13:00,Direct Entry - Sodium (mg),"Direct Entry Template (1000 cal, 35g fat, 1500mg sodium) (Portion: 1): Whole Foods Lunch (Mashed Potatoes + Meatballs + Vegetables)",2000,mg,0,0,"2,000",0,0,0,0,0,0,0,0,$ 0.00,Processed Foods
+8/23/2025,13:00,Direct Entry - Protein (g),"Direct Entry Template (1000 cal, 35g fat, 1500mg sodium) (Portion: 1): Whole Foods Lunch (Mashed Potatoes + Meatballs + Vegetables)",35,gram,140,0,0,0,0,0,35,0,0,0,0,$ 0.00,Processed Foods
+8/23/2025,13:00,Direct Entry - Fat (g),"Direct Entry Template (1000 cal, 35g fat, 1500mg sodium) (Portion: 1): Whole Foods Lunch (Mashed Potatoes + Meatballs + Vegetables)",50,gram,450,50,0,0,0,0,0,0,0,0,0,$ 0.00,Processed Foods
+8/23/2025,13:00,Direct Entry - Carbohydrate (g),"Direct Entry Template (1000 cal, 35g fat, 1500mg sodium) (Portion: 1): Whole Foods Lunch (Mashed Potatoes + Meatballs + Vegetables)",100,gram,400,0,0,100,0,0,0,0,0,0,0,$ 0.00,Processed Foods
+8/23/2025,16:00,Direct Entry - Sodium (mg),"Direct Entry Template (1000 cal, 35g fat, 1500mg sodium) (Portion: 1): BBQ at Whittney's",2000,mg,0,0,"2,000",0,0,0,0,0,0,0,0,$ 0.00,Processed Foods
+8/23/2025,16:00,Direct Entry - Protein (g),"Direct Entry Template (1000 cal, 35g fat, 1500mg sodium) (Portion: 1): BBQ at Whittney's",40,gram,160,0,0,0,0,0,40,0,0,0,0,$ 0.00,Processed Foods
+8/23/2025,16:00,Direct Entry - Fat (g),"Direct Entry Template (1000 cal, 35g fat, 1500mg sodium) (Portion: 1): BBQ at Whittney's",50,gram,450,50,0,0,0,0,0,0,0,0,0,$ 0.00,Processed Foods
+8/23/2025,16:00,Direct Entry - Carbohydrate (g),"Direct Entry Template (1000 cal, 35g fat, 1500mg sodium) (Portion: 1): BBQ at Whittney's",100,gram,400,0,0,100,0,0,0,0,0,0,0,$ 0.00,Processed Foods
+8/23/2025,21:00,Honey,Evening Yogurt (Portion: 1),15,gram,55,0,0,14,0,0,0,0,0,0,0,$ 0.36,Sweets
+8/23/2025,21:00,Greek Yogurt (Whole Milk - Chobani),Evening Yogurt (Portion: 1),250,gram,249,13,88,10,0,0,22,250,338,0,0,$ 2.03,Dairy
+8/23/2025,21:00,Blueberries (fresh),Evening Yogurt (Portion: 1),65,gram,42,0,1,10,2,0,0,4,50,0,0,$ 0.89,Plants
+8/24/2025,09:00,Greek Yogurt (Whole Milk - Chobani),Breakfast Bowl (Portion: 1),250,gram,249,13,88,10,0,0,22,250,338,0,0,$ 2.03,Dairy
+8/24/2025,09:00,"Granola (Chocolate Coffee, Trader Joe's)",Breakfast Bowl (Portion: 1),50,gram,224,7,69,36,4,13,4,17,207,0,0,$ 0.59,Carbs
+8/24/2025,09:30,Nespresso,,1,shot,0,0,0,0,0,0,0,0,0,65,0,$ 0.99,Supplements
+8/24/2025,10:30,Sriracha (Trader Joe's),Nasi Goreng (Vegetarian Fried Rice) (Portion: 1),2,tsp,8,0,150,2,0,2,0,0,20,0,0,$ 0.00,Condiments
+8/24/2025,10:30,"Seasoning, Umami Multi-Purpose (Trader Joe's)",Nasi Goreng (Vegetarian Fried Rice) (Portion: 1),0.25,tsp,0,0,140,0,0,0,0,0,0,0,0,$ 0.00,Condiments
+8/24/2025,10:30,"Seasoning, Salt for Life (Nature's Alternative Salt)",Nasi Goreng (Vegetarian Fried Rice) (Portion: 1),0.125,tsp,0,0,70,0,0,0,0,0,235,0,0,$ 0.00,Condiments
+8/24/2025,10:30,"Rice, Brown Jasmine (Dry - Trader Joe's)",Nasi Goreng (Vegetarian Fried Rice) (Portion: 1),100,gram,368,3,0,76,4,0,9,0,222,0,2,$ 0.00,Carbs
+8/24/2025,10:30,Olive oil,Nasi Goreng (Vegetarian Fried Rice) (Portion: 1),1,tbsp,126,14,0,0,0,0,0,0,0,0,0,$ 0.20,Oils and butters
+8/24/2025,10:30,Green Beans,Nasi Goreng (Vegetarian Fried Rice) (Portion: 1),100,gram,36,0,6,7,3,0,2,30,150,0,1,$ 0.72,Plants
+8/24/2025,10:30,Egg (L) whole,Nasi Goreng (Vegetarian Fried Rice) (Portion: 1),2,egg (L),140,9,126,2,0,0,13,48,146,0,1,$ 1.25,Proteins
+8/24/2025,10:30,Bell Pepper (Fresh),Extra veggies in Nasi Goreng,50,gram,14,0,0,4,1,0,0,5,100,0,0,$ 0.41,Plants
+8/24/2025,14:15,Tomato Sauce (Muir Glen),Fusili with Veggies & Red Sauce (1 serving) (Portion: 1),0.2,can,39,0,28,8,1,0,1,0,224,0,0,$ 0.74,Plants
+8/24/2025,14:15,"Tomato Paste (Organic, Trader Joe's)",Fusili with Veggies & Red Sauce (1 serving) (Portion: 1),0.2,can,30,0,25,7,2,4,1,0,58,0,0,$ 0.20,Condiments
+8/24/2025,14:15,"Seasoning, Umami Multi-Purpose (Trader Joe's)",Fusili with Veggies & Red Sauce (1 serving) (Portion: 1),0.25,tsp,0,0,140,0,0,0,0,0,0,0,0,$ 0.00,Condiments
+8/24/2025,14:15,"Seasoning, Umami Multi-Purpose (Trader Joe's)",Fusili with Veggies & Red Sauce (1 serving) (Portion: 1),0.05,tsp,0,0,28,0,0,0,0,0,0,0,0,$ 0.00,Condiments
+8/24/2025,14:15,"Seasoning, Salt for Life (Nature's Alternative Salt)",Fusili with Veggies & Red Sauce (1 serving) (Portion: 1),0.25,tsp,0,0,140,0,0,0,0,0,470,0,0,$ 0.00,Condiments
+8/24/2025,14:15,"Pasta, Fusilli, Whole Wheat (De Cecco)",Fusili with Veggies & Red Sauce (1 serving) (Portion: 1),125,gram,460,4,0,87,9,2,18,60,375,0,0,$ 0.83,Carbs
+8/24/2025,14:15,Olive oil,Fusili with Veggies & Red Sauce (1 serving) (Portion: 1),1,tbsp,126,14,0,0,0,0,0,0,0,0,0,$ 0.20,Oils and butters
+8/24/2025,14:15,Green Beans,Fusili with Veggies & Red Sauce (1 serving) (Portion: 1),50,gram,18,0,3,4,2,0,1,15,75,0,0,$ 0.36,Plants
+8/24/2025,14:15,Bell Pepper (Fresh),Fusili with Veggies & Red Sauce (1 serving) (Portion: 1),50,gram,14,0,0,4,1,0,0,5,100,0,0,$ 0.41,Plants
+8/24/2025,14:15,"Beef, Ground (90% Lean, 10% Fat)",Fusili with Veggies & Red Sauce (1 serving) (Portion: 1),90.4,gram,153,9,60,0,0,0,18,0,288,0,2,$ 1.40,Proteins
+8/24/2025,16:15,"Cashews, Whole (Salted, 50% Less Sodium, Trader Joe's)",Apple & Cashews (Portion: 1),35,gram,212,16,64,11,1,0,6,12,222,0,2,$ 0.65,"Nuts, seeds, legumes"
+8/24/2025,16:15,"Apple (small, around 150g in total)",Apple & Cashews (Portion: 1),1,apple (S),84,0,2,21,4,0,0,10,195,0,0,$ 1.32,Plants
+8/24/2025,17:00,Trader Joe's - Frozen Fruits (Average),Carb Loading Shake (Portion: 1),85,gram,44,0,0,11,2,0,0,12,128,0,0,$ 0.75,Plants
+8/24/2025,17:00,Oats,Carb Loading Shake (Portion: 1),100,gram,376,6,0,68,10,0,13,0,350,0,4,$ 0.44,Bulk ingredients
+8/24/2025,17:00,"Milk (2%, Clover Sonoma)",Carb Loading Shake (Portion: 1),480,ml,274,10,280,26,0,0,20,700,920,0,0,$ 0.89,Bulk ingredients
+8/24/2025,17:00,Husks (Whole Psyllium),Carb Loading Shake (Portion: 1),1,tbsp,16,0,5,4,4,0,0,0,49,0,0,$ 0.00,Fibers
+8/24/2025,19:00,Sweet Potato,Japanese Sweet Potato (500g) from the Oven (Portion: 0.5),250,gram,235,1,90,53,8,0,5,95,"1,188",0,0,$ 1.65,Carbs
+8/24/2025,19:00,"Seasoning, Umami Multi-Purpose (Trader Joe's)",Broccoli from the Oven (100g portion) (Portion: 1),0.125,tsp,0,0,70,0,0,0,0,0,0,0,0,$ 0.00,Condiments
+8/24/2025,19:00,"Seasoning, Umami Multi-Purpose (Trader Joe's)",Roasted Chicken from the Oven (Portion: 0.2),0.1,tsp,0,0,56,0,0,0,0,0,0,0,0,$ 0.00,Condiments
+8/24/2025,19:00,"Seasoning, Umami Multi-Purpose (Trader Joe's)",Japanese Sweet Potato (500g) from the Oven (Portion: 0.5),0.25,tsp,0,0,140,0,0,0,0,0,0,0,0,$ 0.00,Condiments
+8/24/2025,19:00,Olive oil,Broccoli from the Oven (100g portion) (Portion: 1),0.5,tbsp,63,7,0,0,0,0,0,0,0,0,0,$ 0.10,Oils and butters
+8/24/2025,19:00,Olive oil,Roasted Chicken from the Oven (Portion: 0.2),0.4,tbsp,50,6,0,0,0,0,0,0,0,0,0,$ 0.08,Oils and butters
+8/24/2025,19:00,Olive oil,Japanese Sweet Potato (500g) from the Oven (Portion: 0.5),1,tbsp,126,14,0,0,0,0,0,0,0,0,0,$ 0.20,Oils and butters
+8/24/2025,19:00,"Chicken Thigh (Skinless, Boneless)",Roasted Chicken from the Oven (Portion: 0.2),140,gram,299,19,244,0,0,0,32,15,356,0,1,$ 3.23,Proteins
+8/24/2025,19:00,Broccoli (dry),Broccoli from the Oven (100g portion) (Portion: 1),100,gram,41,0,0,7,2,0,3,47,280,0,1,$ 0.97,Plants
+8/24/2025,22:00,Honey,Evening Yogurt (Portion: 1),15,gram,55,0,0,14,0,0,0,0,0,0,0,$ 0.36,Sweets
+8/24/2025,22:00,Greek Yogurt (Whole Milk - Chobani),Evening Yogurt (Portion: 1),250,gram,249,13,88,10,0,0,22,250,338,0,0,$ 2.03,Dairy
+8/24/2025,22:00,Blueberries (fresh),Evening Yogurt (Portion: 1),65,gram,42,0,1,10,2,0,0,4,50,0,0,$ 0.89,Plants
 ,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
 ,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
 ,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A

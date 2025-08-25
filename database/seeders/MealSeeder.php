@@ -44,13 +44,23 @@ class MealSeeder extends Seeder
         $meal3->ingredients()->attach($ingredients['Milk (2%, Clover Sonoma)']->id, ['quantity' => 480]);
         $meal3->ingredients()->attach($ingredients['Husks (Whole Psyllium)']->id, ['quantity' => 1]);
 
-        // Meal 4: Red Sauce for Pasta
-        $meal3 = Meal::create(['name' => 'Red Sauce for Pasta (1 serving / 5 total)']);
-        $meal3->ingredients()->attach($ingredients['Beef, Ground (90% Lean, 10% Fat)']->id, ['quantity' => 452/5]);
-        $meal3->ingredients()->attach($ingredients["Seasoning, Umami Multi-Purpose (Trader Joe's)"]->id, ['quantity' => .25/5]);
-        $meal3->ingredients()->attach($ingredients['Tomato Sauce (Muir Glen)']->id, ['quantity' => 1/5]);
-        $meal3->ingredients()->attach($ingredients['Tomato Paste (Organic, Trader Joe\'s)']->id, ['quantity' => 1/5]);
-        $meal3->ingredients()->attach($ingredients["Seasoning, Salt for Life (Nature's Alternative Salt)"]->id, ['quantity' => .25/5]);
+        // Meal 4: Roasted Chicken from the Oven (1 serving of 140g chicken)
+        $meal3 = Meal::create(['name' => 'Roasted Chicken from the Oven (1 serving of 140g chicken)']);
+        $meal3->ingredients()->attach($ingredients['Chicken Thigh (Skinless, Boneless)']->id, ['quantity' => 700/5]);
+        $meal3->ingredients()->attach($ingredients["Seasoning, Umami Multi-Purpose (Trader Joe's)"]->id, ['quantity' => .5/5]);
+        $meal3->ingredients()->attach($ingredients['Olive oil']->id, ['quantity' => 2/5]);
+
+        // Meal 4: Japanese Sweet Potato (500g) from the Oven
+        $meal3 = Meal::create(['name' => 'Japanese Sweet Potato (250g) from the Oven']);
+        $meal3->ingredients()->attach($ingredients['Sweet Potato']->id, ['quantity' => 500/2]);
+        $meal3->ingredients()->attach($ingredients["Seasoning, Umami Multi-Purpose (Trader Joe's)"]->id, ['quantity' => .5/2]);
+        $meal3->ingredients()->attach($ingredients['Olive oil']->id, ['quantity' => 2/2]);
+
+        // Meal 4: Broccoli from the Oven (100g portion)
+        $meal3 = Meal::create(['name' => 'Roasted Chicken from the Oven (5 servings @ 140g chicken/serving)']);
+        $meal3->ingredients()->attach($ingredients['Broccoli (dry)']->id, ['quantity' => 100]);
+        $meal3->ingredients()->attach($ingredients["Seasoning, Umami Multi-Purpose (Trader Joe's)"]->id, ['quantity' => .125]);
+        $meal3->ingredients()->attach($ingredients['Olive oil']->id, ['quantity' => .5]);
 
         // Meal 5: Fusili with Veggies & Red Sauce (1 serving)
         $meal4 = Meal::create(['name' => 'Fusili with Veggies & Red Sauce (1 serving)']);
