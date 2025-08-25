@@ -72,8 +72,7 @@
 
         <div class="form-container">
             <h3>TSV Export</h3>
-            <textarea id="tsv-output" rows="10" style="width: 100%; background-color: #3a3a3a; color: #f2f2f2; border: 1px solid #555;">Date	Time	Exercise	Weight (lbs)	Reps	Rounds	Comments
-@foreach ($workouts as $workout)
+            <textarea id="tsv-output" rows="10" style="width: 100%; background-color: #3a3a3a; color: #f2f2f2; border: 1px solid #555;">@foreach ($workouts as $workout)
 {{ $workout->logged_at->format('Y-m-d') }}	{{ $workout->logged_at->format('H:i') }}	{{ $workout->exercise->title }}	{{ $workout->weight }}	{{ $workout->reps }}	{{ $workout->rounds }}	{{ preg_replace('/(\n|\r)+/', ' ', $workout->comments) }}
 @endforeach
             </textarea>
