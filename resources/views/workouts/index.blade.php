@@ -1,6 +1,16 @@
 @extends('app')
 
 @section('content')
+    @if (session('success'))
+        <div class="container success-message-box">
+            {{ session('success') }}
+        </div>
+    @endif
+    @if (session('error'))
+        <div class="container error-message-box">
+            {{ session('error') }}
+        </div>
+    @endif
     <div class="container">
         <div class="form-container">
             <h3>Add Workout</h3>
@@ -41,6 +51,7 @@
         <table class="log-entries-table">
             <thead>
                 <tr>
+                    <th><input type="checkbox" id="select-all-workouts"></th>
                     <th>Date</th>
                     <th>Exercise</th>
                     <th>Working Set</th>
@@ -51,6 +62,7 @@
             <tbody>
                 @foreach ($workouts as $workout)
                     <tr>
+                        <td><input type="checkbox" name="workout_ids[]" value="{{ $workout->id }}" class="workout-checkbox"></td>
                         <td>{{ $workout->logged_at->format('Y-m-d H:i') }}</td>
                         <td>{{ $workout->exercise->title }}</td>
                         <td>{{ $workout->weight }} lbs x {{ $workout->reps }} reps x {{ $workout->rounds }} rounds</td>
@@ -68,6 +80,16 @@
                     </tr>
                 @endforeach
             </tbody>
+            <tfoot>
+                <tr>
+                    <th colspan="6" style="text-align:left; font-weight:normal;">
+                        <form action="{{ route('workouts.destroy-selected') }}" method="POST" id="delete-selected-form" onsubmit="return confirm('Are you sure you want to delete the selected workouts?');" style="display:inline;">
+                            @csrf
+                            <button type="submit" class="button delete">Delete Selected</button>
+                        </form>
+                    </th>
+                </tr>
+            </tfoot>
         </table>
 
         <div class="form-container">
@@ -90,6 +112,34 @@
         </div>
 
         <script>
+            document.getElementById('select-all-workouts').addEventListener('change', function(e) {
+                document.querySelectorAll('.workout-checkbox').forEach(function(checkbox) {
+                    checkbox.checked = e.target.checked;
+                });
+            });
+
+            document.getElementById('delete-selected-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                var form = e.target;
+                var checkedLogs = document.querySelectorAll('.workout-checkbox:checked');
+
+                if (checkedLogs.length === 0) {
+                    alert('Please select at least one workout to delete.');
+                    return;
+                }
+
+                checkedLogs.forEach(function(checkbox) {
+                    var input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'workout_ids[]';
+                    input.value = checkbox.value;
+                    form.appendChild(input);
+                });
+
+                form.submit();
+            });
+
             document.getElementById('copy-tsv-button').addEventListener('click', function() {
                 var tsvOutput = document.getElementById('tsv-output');
                 tsvOutput.select();

@@ -92,6 +92,18 @@ class WorkoutController extends Controller
         return redirect()->route('workouts.index')->with('success', 'Workout deleted successfully.');
     }
 
+    public function destroySelected(Request $request)
+    {
+        $validated = $request->validate([
+            'workout_ids' => 'required|array',
+            'workout_ids.*' => 'exists:workouts,id',
+        ]);
+
+        Workout::destroy($validated['workout_ids']);
+
+        return redirect()->route('workouts.index')->with('success', 'Selected workouts deleted successfully!');
+    }
+
     public function importTsv(Request $request)
     {
         $validated = $request->validate([

@@ -33,6 +33,8 @@ Route::resource('workouts', WorkoutController::class);
 
 Route::post('workouts/import-tsv', [WorkoutController::class, 'importTsv'])->name('workouts.import-tsv');
 
+Route::post('workouts/destroy-selected', [WorkoutController::class, 'destroySelected'])->name('workouts.destroy-selected');
+
 Route::get('/', function () {
     return redirect()->route('daily-logs.index');
 });
