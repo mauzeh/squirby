@@ -61,8 +61,8 @@
                     <th><input type="checkbox" id="select-all-workouts"></th>
                     <th>Date</th>
                     <th>Exercise</th>
-                    <th>Working Set</th>
-                    <th>Comments</th>
+                    <th>Weight (reps x rounds)</th>
+                    <th class="hide-on-mobile" style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Comments</th>
                     <th class="actions-column">Actions</th>
                 </tr>
             </thead>
@@ -70,10 +70,13 @@
                 @foreach ($workouts as $workout)
                     <tr>
                         <td><input type="checkbox" name="workout_ids[]" value="{{ $workout->id }}" class="workout-checkbox"></td>
-                        <td>{{ $workout->logged_at->format('Y-m-d H:i') }}</td>
+                        <td>{{ $workout->logged_at->format('m/d') }}</td>
                         <td>{{ $workout->exercise->title }}</td>
-                        <td>{{ $workout->weight }} lbs x {{ $workout->reps }} reps x {{ $workout->rounds }} rounds</td>
-                        <td>{{ $workout->comments }}</td>
+                        <td>
+                            <span style="font-weight: bold; font-size: 1.2em;">{{ $workout->weight }}&nbsp;lbs</span><br>
+                            {{ $workout->reps }}&nbsp;x&nbsp;{{ $workout->rounds }}
+                        </td>
+                        <td class="hide-on-mobile" style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ $workout->comments }}">{{ $workout->comments }}</td>
                         <td class="actions-column">
                             <div style="display: flex; gap: 5px;">
                                 <a href="{{ route('workouts.edit', $workout->id) }}" class="button edit">Edit</a>
