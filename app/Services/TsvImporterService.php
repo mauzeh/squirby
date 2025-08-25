@@ -49,4 +49,47 @@ class TsvImporterService
             'notFound' => $notFound,
         ];
     }
+
+    public function importWorkouts(string $tsvData, string $date): array
+    {
+        $date = Carbon::parse($date);
+        $rows = explode("\n", $tsvData);
+        $importedCount = 0;
+        $notFound = [];
+
+        foreach ($rows as $row) {
+            if (empty($row)) {
+                continue;
+            }
+
+            $columns = str_getcsv($row, "\t");
+
+            if (count($columns) < 7) {
+                continue;
+            }
+
+            $exercise = \App\Models\Exercise::where('title', $columns[2])->first();
+
+            if ($exercise) {
+                $loggedAt = Carbon::parse($date->format('Y-m-d') . ' ' . $columns[1]);
+
+                \App\Models\Workout::create([
+                    'exercise_id' => $exercise->id,
+                    'weight' => $columns[3],
+                    'reps' => $columns[4],
+                    'rounds' => $columns[5],
+                    'comments' => $columns[6],
+                    'logged_at' => $loggedAt,
+                ]);
+                $importedCount++;
+            } else {
+                $notFound[] = $columns[2];
+            }
+        }
+
+        return [
+            'importedCount' => $importedCount,
+            'notFound' => $notFound,
+        ];
+    }
 }

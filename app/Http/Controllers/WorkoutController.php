@@ -4,10 +4,17 @@ namespace App\Http\Controllers;
 
 use App\Models\Exercise;
 use App\Models\Workout;
+use App\Services\TsvImporterService;
 use Illuminate\Http\Request;
 
 class WorkoutController extends Controller
 {
+    protected $tsvImporterService;
+
+    public function __construct(TsvImporterService $tsvImporterService)
+    {
+        $this->tsvImporterService = $tsvImporterService;
+    }
     /**
      * Display a listing of the resource.
      */
@@ -83,5 +90,32 @@ class WorkoutController extends Controller
         $workout->delete();
 
         return redirect()->route('workouts.index')->with('success', 'Workout deleted successfully.');
+    }
+
+    public function importTsv(Request $request)
+    {
+        $validated = $request->validate([
+            'tsv_data' => 'required|string',
+            'date' => 'required|date',
+        ]);
+
+        $tsvData = trim($validated['tsv_data']);
+        if (empty($tsvData)) {
+            return redirect()
+                ->route('workouts.index')
+                ->with('error', 'TSV data cannot be empty.');
+        }
+
+        $result = $this->tsvImporterService->importWorkouts($tsvData, $validated['date']);
+
+        if ($result['importedCount'] === 0 && !empty($result['notFound'])) {
+            return redirect()
+                ->route('workouts.index')
+                ->with('error', 'No exercises found for: ' . implode(', ', $result['notFound']));
+        }
+
+        return redirect()
+            ->route('workouts.index')
+            ->with('success', 'TSV data imported successfully!');
     }
 }
