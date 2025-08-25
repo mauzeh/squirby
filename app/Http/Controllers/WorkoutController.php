@@ -6,6 +6,7 @@ use App\Models\Exercise;
 use App\Models\Workout;
 use App\Services\TsvImporterService;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 
 class WorkoutController extends Controller
 {
@@ -38,7 +39,13 @@ class WorkoutController extends Controller
             'reps' => 'required|integer',
             'rounds' => 'required|integer',
             'comments' => 'nullable|string',
-            'logged_at' => 'required|date',
+            'date' => 'required|date',
+            'logged_at' => 'required|date_format:H:i',
+        ]);
+
+        $loggedAtDate = Carbon::parse($request->input('date'));
+        $request->merge([
+            'logged_at' => $loggedAtDate->setTimeFromTimeString($request->input('logged_at')),
         ]);
 
         Workout::create($request->all());
@@ -74,7 +81,13 @@ class WorkoutController extends Controller
             'reps' => 'required|integer',
             'rounds' => 'required|integer',
             'comments' => 'nullable|string',
-            'logged_at' => 'required|date',
+            'date' => 'required|date',
+            'logged_at' => 'required|date_format:H:i',
+        ]);
+
+        $loggedAtDate = Carbon::parse($request->input('date'));
+        $request->merge([
+            'logged_at' => $loggedAtDate->setTimeFromTimeString($request->input('logged_at')),
         ]);
 
         $workout->update($request->all());

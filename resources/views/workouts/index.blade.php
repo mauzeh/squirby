@@ -41,8 +41,12 @@
                     <textarea name="comments" id="comments" class="form-control" rows="5"></textarea>
                 </div>
                 <div class="form-group">
-                    <label for="logged_at">Date:</label>
-                    <input type="datetime-local" name="logged_at" id="logged_at" class="form-control" value="{{ now()->format('Y-m-d\\TH:i') }}" required>
+                    <label for="date">Date:</label>
+                    <x-date-select name="date" id="date" :selectedDate="now()->format('Y-m-d')" required />
+                </div>
+                <div class="form-group">
+                    <label for="logged_at">Time:</label>
+                    <x-time-select name="logged_at" id="logged_at" required />
                 </div>
                 <button type="submit" class="button">Add Workout</button>
             </form>

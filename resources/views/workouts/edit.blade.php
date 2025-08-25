@@ -31,8 +31,12 @@
                 <textarea name="comments" id="comments" class="form-control" rows="5">{{ $workout->comments }}</textarea>
             </div>
             <div class="form-group">
-                <label for="logged_at">Date:</label>
-                <input type="datetime-local" name="logged_at" id="logged_at" class="form-control" value="{{ $workout->logged_at->format('Y-m-d\TH:i') }}" required>
+                <label for="date">Date:</label>
+                <x-date-select name="date" id="date" :selectedDate="$workout->logged_at->format('Y-m-d')" required />
+            </div>
+            <div class="form-group">
+                <label for="logged_at">Time:</label>
+                <x-time-select name="logged_at" id="logged_at" :selectedTime="$workout->logged_at->ceilMinute(15)->format('H:i')" required />
             </div>
             <button type="submit" class="button">Update Workout</button>
         </form>
