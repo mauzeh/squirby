@@ -1,9 +1,9 @@
 Ingredient,Amount,Type,Calories,Fat (g),Sodium (mg),Carb (g),Fiber (g),Added Sugar (g),Protein (g),Calcium (mg),Potassium (mg),Caffeine (mg),Iron (mg),Cost ($),Food Source
-"Apple (small, around 150g in total)",1,apple (S),84,0,2,21,3.6,0,0,10,195,0,,$1.32,Plants
+"Apple (small, around 150g in total)",1,pc,84,0,2,21,3.6,0,0,10,195,0,,$1.32,Plants
 Avocado,100,gram,177,15,5,8.5,6.7,0,2,0,485,0,1.02,,Plants
 Bacon,100,gram,264,24,1162,0,0,0,12,0,0,0,,,Proteins
 Balsamic Glaze (Trader Joe's),1,tbsp,28,0,15,7,0,4,0,0,40,0,,,Condiments
-Banana,100,gram,95,0.3,1,22,3.1,0,1.1,6,350,0,,,Plants
+"Banana (medium, around 150g with skin)",1,pc,95,0.3,1,22,3.1,0,1.1,6,350,0,,,Plants
 "Beef, Ground (90% Lean, 10% Fat)",113,gram,191,11,75,0,0,0,23,0,360,0,2.20,$1.75,Proteins
 Bell Pepper (Fresh),100,gram,28,0,0,7,1,0,0,10,200,0,,$0.81,Plants
 Blueberries (fresh),74,gram,48,0.24,0.74,11,1.8,0,0.55,4.44,57,0,0.21,$1.01,Plants
