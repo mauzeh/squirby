@@ -174,7 +174,7 @@ class DailyLogController extends Controller
                 ->with('error', 'TSV data cannot be empty.');
         }
 
-        $result = $this->tsvImporterService->import($tsvData, $validated['date']);
+        $result = $this->tsvImporterService->importDailyLogs($tsvData, $validated['date']);
 
         if ($result['importedCount'] === 0 && !empty($result['notFound'])) {
             return redirect()

@@ -8,7 +8,7 @@ use Carbon\Carbon;
 
 class TsvImporterService
 {
-    public function import(string $tsvData, string $date): array
+    public function importDailyLogs(string $tsvData, string $date): array
     {
         $date = Carbon::parse($date);
         $rows = explode("\n", $tsvData);
