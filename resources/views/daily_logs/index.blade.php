@@ -30,7 +30,7 @@
                 </div>
                 <div class="form-row">
                     <label for="quantity">Quantity:</label>
-                    <x-quantity-input name="quantity" id="quantity" :value="old('quantity')" required />
+                    <x-quantity-input name="quantity" id="quantity" :value="old('quantity', 1)" required />
                     @error('quantity')
                         <span class="error-message">{{ $message }}</span>
                     @enderror
