@@ -16,17 +16,17 @@ class WorkoutSeeder extends Seeder
         $firstline = true;
         while (($data = fgetcsv($csvFile, 2000, ",")) !== FALSE) {
             if (!$firstline) {
-                $exerciseTitle = $data[1];
+                $exerciseTitle = $data[2];
                 $exercise = \App\Models\Exercise::where('title', $exerciseTitle)->first();
 
                 if ($exercise) {
                     \App\Models\Workout::create([
                         'exercise_id' => $exercise->id,
-                        'weight' => $data[2],
-                        'reps' => $data[3],
-                        'rounds' => $data[4],
-                        'comments' => $data[5],
-                        'logged_at' => \Carbon\Carbon::parse($data[0])->ceilMinute(15),
+                        'weight' => $data[3],
+                        'reps' => $data[4],
+                        'rounds' => $data[5],
+                        'comments' => $data[6],
+                        'logged_at' => \Carbon\Carbon::parse($data[0] . ' ' . $data[1])->ceilMinute(15),
                     ]);
                 }
             }
