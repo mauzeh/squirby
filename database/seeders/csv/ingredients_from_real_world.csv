@@ -33,6 +33,7 @@ Egg (L) white only,1,egg (L),16,0.1,55,0.2,0,0,3.6,2,54,0,,$0.62,Proteins
 Egg (L) whole,1,egg (L),70,4.6,63,0.8,0,0,6.3,24,73,0,0.60,$0.62,Proteins
 Egg (L) yolk only,1,egg (L),54,4.5,8,0.6,0,0,2.7,22,19,0,0.60,$0.62,Proteins
 "Flour, Unbleached All Purpose (Trader Joe's)",30,gram,104,0,0,23,0,0,3,0,30,0,,,Carbs
+"Fruits, Frozen (Average, Trader Joe's)",140,gram,72,0,0,18,3,0,0,20,210,0,,$1.23,Plants
 Garlic Powder,1,gram,0,0,0,0,0,0,0,0,0,0,,,Condiments
 "Granola (Chocolate Coffee, Trader Joe's)",58,gram,260,8,80,42,5,15,5,20,240,0,,$0.68,Carbs
 Grape Tomato,100,gram,22,0.2,5,4,1,0,1,10,237,0,0.30,,Plants
@@ -78,7 +79,6 @@ Sweet Chili Sauce (Trader Joe's),1,tbsp,20,0,125,5,3,5,0,2,5,0,,,Condiments
 Sweet Potato,100,gram,94,0.2,36,21,3.3,0,2,38,475,0,,$0.66,Carbs
 "Tomato Paste (Organic, Trader Joe's)",1,can,152,0,125,35,10,20,3,0,290,0,,$0.99,Condiments
 Tomato Sauce (Muir Glen),1,can,196,0,140,42,7,0,7,0,1120,0,,$3.69,Plants
-Trader Joe's - Frozen Fruits (Average),140,gram,72,0,0,18,3,0,0,20,210,0,,$1.23,Plants
 "Turkey (Sliced, Honey Roasted)",85,gram,105,1,380,4,0,999,20,0,0,0,0.88,,Proteins
 "Turkey Meatballs (Whole Foods, Frozen)",4,meatballs,155,7,370,6,1,999,17,20,0,0,,,Proteins
 "Walnuts (Organic, Unroasted & Unsalted, Trader Joe's)",28,gram,194,18,0,4,2,0,4,30,120,0,,,"Nuts, seeds, legumes"

@@ -5,7 +5,7 @@ unit",Calories,Fat (g),Sodium (mg),Carb (g),Fiber (g),Added Sugar (g),Protein (g
 8/4/2025,09:30,"Granola (Chocolate Coffee, Trader Joe's)",,60,gram,269,8,83,43,5,16,5,21,248,0,0,$ 0.70,Carbs
 8/4/2025,09:30,Banana,,100,gram,95,0,1,22,3,0,1,6,350,0,0,$ 0.00,Plants
 8/4/2025,11:00,"Protein Powder, Grass Fed (Levels)",,1,Scoop,131,3,125,3,0,0,24,100,160,0,0,$ 0.00,Bulk ingredients
-8/4/2025,11:00,Trader Joe's - Frozen Fruits (Average),,120,gram,62,0,0,15,3,0,0,17,180,0,0,$ 1.06,Plants
+8/4/2025,11:00,"Fruits, Frozen (Average, Trader Joe's)",,120,gram,62,0,0,15,3,0,0,17,180,0,0,$ 1.06,Plants
 8/4/2025,11:00,Oats,,60,gram,226,4,0,41,6,0,8,0,210,0,3,$ 0.26,Bulk ingredients
 8/4/2025,11:00,Husks (Whole Psyllium),,1,tbsp,16,0,5,4,4,0,0,0,49,0,0,$ 0.00,Fibers
 8/4/2025,11:30,"Cheese, Gouda Double Cream (Trader Joe's)",,45,gram,175,14,321,3,0,0,8,603,0,0,0,$ 0.00,Dairy
@@ -61,7 +61,7 @@ unit",Calories,Fat (g),Sodium (mg),Carb (g),Fiber (g),Added Sugar (g),Protein (g
 8/6/2025,13:30,"Protein Powder, Grass Fed (Levels)",,1,Scoop,131,3,125,3,0,0,24,100,160,0,0,$ 0.00,Bulk ingredients
 8/6/2025,13:30,Oats,,50,gram,188,3,0,34,5,0,6,0,175,0,2,$ 0.22,Bulk ingredients
 8/6/2025,13:30,Husks (Whole Psyllium),,1,tbsp,16,0,5,4,4,0,0,0,49,0,0,$ 0.00,Fibers
-8/6/2025,13:30,Trader Joe's - Frozen Fruits (Average),,100,gram,51,0,0,13,2,0,0,14,150,0,0,$ 0.88,Plants
+8/6/2025,13:30,"Fruits, Frozen (Average, Trader Joe's)",,100,gram,51,0,0,13,2,0,0,14,150,0,0,$ 0.88,Plants
 8/6/2025,14:00,Banana,,100,gram,95,0,1,22,3,0,1,6,350,0,0,$ 0.00,Plants
 8/6/2025,15:45,"Beef, Ground (90% Lean, 10% Fat)",,113,gram,191,11,75,0,0,0,23,0,360,0,2,$ 1.75,Proteins
 8/6/2025,15:45,"Pasta, Fusilli, Whole Wheat (De Cecco)",,100,gram,368,4,0,70,7,2,14,48,300,0,0,$ 0.67,Carbs
@@ -87,7 +87,7 @@ unit",Calories,Fat (g),Sodium (mg),Carb (g),Fiber (g),Added Sugar (g),Protein (g
 8/7/2025,08:45,"Granola (Chocolate Coffee, Trader Joe's)",,50,gram,224,7,69,36,4,13,4,17,207,0,0,$ 0.59,Carbs
 8/7/2025,10:30,Oats,,75,gram,282,5,0,51,8,0,9,0,263,0,3,$ 0.33,Bulk ingredients
 8/7/2025,10:30,"Protein Powder, Grass Fed (Levels)",,1,Scoop,131,3,125,3,0,0,24,100,160,0,0,$ 0.00,Bulk ingredients
-8/7/2025,10:30,Trader Joe's - Frozen Fruits (Average),,150,gram,77,0,0,19,3,0,0,21,225,0,0,$ 1.32,Plants
+8/7/2025,10:30,"Fruits, Frozen (Average, Trader Joe's)",,150,gram,77,0,0,19,3,0,0,21,225,0,0,$ 1.32,Plants
 8/7/2025,10:30,Husks (Whole Psyllium),,1,tbsp,16,0,5,4,4,0,0,0,49,0,0,$ 0.00,Fibers
 8/7/2025,10:30,"Peanut butter with Honey (organic, Justin's)",,30,gram,192,16,84,6,1,4,7,0,84,0,0,$ 0.00,Bulk ingredients
 8/7/2025,11:15,"Cappuccino (Medium, Peet's, 2% Milk)",,1,Medium,141,5,130,15,0,11,9,325,450,126,0,$ 0.00,Dairy
@@ -115,7 +115,7 @@ unit",Calories,Fat (g),Sodium (mg),Carb (g),Fiber (g),Added Sugar (g),Protein (g
 8/8/2025,11:00,Oats,,75,gram,282,5,0,51,8,0,9,0,263,0,3,$ 0.33,Bulk ingredients
 8/8/2025,11:00,JOI - Cashew Milk Concentrate,,35,gram,208,15,4,11,0,0,7,0,0,0,2,$ 0.00,Bulk ingredients
 8/8/2025,11:00,"Protein Powder, Grass Fed (Levels)",,1,Scoop,131,3,125,3,0,0,24,100,160,0,0,$ 0.00,Bulk ingredients
-8/8/2025,11:00,Trader Joe's - Frozen Fruits (Average),,100,gram,51,0,0,13,2,0,0,14,150,0,0,$ 0.88,Plants
+8/8/2025,11:00,"Fruits, Frozen (Average, Trader Joe's)",,100,gram,51,0,0,13,2,0,0,14,150,0,0,$ 0.88,Plants
 8/8/2025,11:00,Husks (Whole Psyllium),,1,tbsp,16,0,5,4,4,0,0,0,49,0,0,$ 0.00,Fibers
 8/8/2025,12:00,Banana,Very ripe banana,100,gram,95,0,1,22,3,0,1,6,350,0,0,$ 0.00,Plants
 8/8/2025,13:30,"Beef, Ground (90% Lean, 10% Fat)",,113,gram,191,11,75,0,0,0,23,0,360,0,2,$ 1.75,Proteins
@@ -141,7 +141,7 @@ unit",Calories,Fat (g),Sodium (mg),Carb (g),Fiber (g),Added Sugar (g),Protein (g
 8/9/2025,11:00,"Milk (2%, Clover Sonoma)",,480,ml,274,10,280,26,0,0,20,700,920,0,0,$ 0.89,Bulk ingredients
 8/9/2025,11:00,"Protein Powder, Grass Fed (Levels)",,0.5,Scoop,65,1,63,2,0,0,12,50,80,0,0,$ 0.00,Bulk ingredients
 8/9/2025,11:00,Oats,,75,gram,282,5,0,51,8,0,9,0,263,0,3,$ 0.33,Bulk ingredients
-8/9/2025,11:00,Trader Joe's - Frozen Fruits (Average),,100,gram,51,0,0,13,2,0,0,14,150,0,0,$ 0.88,Plants
+8/9/2025,11:00,"Fruits, Frozen (Average, Trader Joe's)",,100,gram,51,0,0,13,2,0,0,14,150,0,0,$ 0.88,Plants
 8/9/2025,11:00,Husks (Whole Psyllium),,1,tbsp,16,0,5,4,4,0,0,0,49,0,0,$ 0.00,Fibers
 8/9/2025,12:45,Olive oil,,1,tbsp,126,14,0,0,0,0,0,0,0,0,0,$ 0.20,Oils and butters
 8/9/2025,12:45,Broccoli (dry),,150,gram,61,0,0,10,4,0,4,71,420,0,1,$ 1.45,Plants
@@ -178,7 +178,7 @@ unit",Calories,Fat (g),Sodium (mg),Carb (g),Fiber (g),Added Sugar (g),Protein (g
 8/10/2025,12:40,Sriracha (Trader Joe's),,1,tsp,4,0,75,1,0,1,0,0,10,0,0,$ 0.00,Condiments
 8/10/2025,14:45,"Milk (2%, Clover Sonoma)",,480,ml,274,10,280,26,0,0,20,700,920,0,0,$ 0.89,Bulk ingredients
 8/10/2025,14:45,"Protein Powder, Grass Fed (Levels)",,0.5,Scoop,65,1,63,2,0,0,12,50,80,0,0,$ 0.00,Bulk ingredients
-8/10/2025,14:45,Trader Joe's - Frozen Fruits (Average),,100,gram,51,0,0,13,2,0,0,14,150,0,0,$ 0.88,Plants
+8/10/2025,14:45,"Fruits, Frozen (Average, Trader Joe's)",,100,gram,51,0,0,13,2,0,0,14,150,0,0,$ 0.88,Plants
 8/10/2025,14:45,Oats,,75,gram,282,5,0,51,8,0,9,0,263,0,3,$ 0.33,Bulk ingredients
 8/10/2025,14:45,Husks (Whole Psyllium),,1,tbsp,16,0,5,4,4,0,0,0,49,0,0,$ 0.00,Fibers
 8/10/2025,16:30,Protein Bar (Think! Any Flavor),,1,bar,257,9,230,24,0,0,20,90,110,0,0,$ 0.00,Processed Foods
@@ -205,7 +205,7 @@ unit",Calories,Fat (g),Sodium (mg),Carb (g),Fiber (g),Added Sugar (g),Protein (g
 8/11/2025,09:15,"Protein Powder, Grass Fed (Levels)",,0.5,Scoop,65,1,63,2,0,0,12,50,80,0,0,$ 0.00,Bulk ingredients
 8/11/2025,09:15,"Milk (2%, Clover Sonoma)",,480,ml,274,10,280,26,0,0,20,700,920,0,0,$ 0.89,Bulk ingredients
 8/11/2025,09:15,Oats,,75,gram,282,5,0,51,8,0,9,0,263,0,3,$ 0.33,Bulk ingredients
-8/11/2025,09:15,Trader Joe's - Frozen Fruits (Average),,50,gram,26,0,0,6,1,0,0,7,75,0,0,$ 0.44,Plants
+8/11/2025,09:15,"Fruits, Frozen (Average, Trader Joe's)",,50,gram,26,0,0,6,1,0,0,7,75,0,0,$ 0.44,Plants
 8/11/2025,09:15,Husks (Whole Psyllium),,1,tbsp,16,0,5,4,4,0,0,0,49,0,0,$ 0.00,Fibers
 8/11/2025,10:00,Nespresso,,1,shot,0,0,0,0,0,0,0,0,0,65,0,$ 0.99,Supplements
 8/11/2025,12:15,Olive oil,,1,tbsp,126,14,0,0,0,0,0,0,0,0,0,$ 0.20,Oils and butters
@@ -251,7 +251,7 @@ unit",Calories,Fat (g),Sodium (mg),Carb (g),Fiber (g),Added Sugar (g),Protein (g
 8/12/2025,13:30,"Seasoning, Umami Multi-Purpose (Trader Joe's)",Full .25 tsp in pan with broccoli,0.25,tsp,0,0,140,0,0,0,0,0,0,0,0,$ 0.00,Condiments
 8/12/2025,13:30,Broccoli (dry),,100,gram,41,0,0,7,2,0,3,47,280,0,1,$ 0.97,Plants
 8/12/2025,16:15,"Milk (2%, Clover Sonoma)",,450,ml,257,9,263,24,0,0,19,656,863,0,0,$ 0.83,Bulk ingredients
-8/12/2025,16:15,Trader Joe's - Frozen Fruits (Average),,50,gram,26,0,0,6,1,0,0,7,75,0,0,$ 0.44,Plants
+8/12/2025,16:15,"Fruits, Frozen (Average, Trader Joe's)",,50,gram,26,0,0,6,1,0,0,7,75,0,0,$ 0.44,Plants
 8/12/2025,16:15,Oats,,100,gram,376,6,0,68,10,0,13,0,350,0,4,$ 0.44,Bulk ingredients
 8/12/2025,16:15,JOI - Cashew Milk Concentrate,,35,gram,208,15,4,11,0,0,7,0,0,0,2,$ 0.00,Bulk ingredients
 8/12/2025,16:15,Husks (Whole Psyllium),,1,tbsp,16,0,5,4,4,0,0,0,49,0,0,$ 0.00,Fibers
@@ -291,7 +291,7 @@ unit",Calories,Fat (g),Sodium (mg),Carb (g),Fiber (g),Added Sugar (g),Protein (g
 8/13/2025,14:40,"Seasoning, Umami Multi-Purpose (Trader Joe's)",Full .25 tsp in pan with broccoli,0.25,tsp,0,0,140,0,0,0,0,0,0,0,0,$ 0.00,Condiments
 8/13/2025,14:40,Broccoli (dry),,80,gram,33,0,0,5,2,0,2,38,224,0,1,$ 0.77,Plants
 8/13/2025,17:15,"Milk (2%, Clover Sonoma)",,450,ml,257,9,263,24,0,0,19,656,863,0,0,$ 0.83,Bulk ingredients
-8/13/2025,17:15,Trader Joe's - Frozen Fruits (Average),,50,gram,26,0,0,6,1,0,0,7,75,0,0,$ 0.44,Plants
+8/13/2025,17:15,"Fruits, Frozen (Average, Trader Joe's)",,50,gram,26,0,0,6,1,0,0,7,75,0,0,$ 0.44,Plants
 8/13/2025,17:15,Oats,,100,gram,376,6,0,68,10,0,13,0,350,0,4,$ 0.44,Bulk ingredients
 8/13/2025,17:15,JOI - Cashew Milk Concentrate,,35,gram,208,15,4,11,0,0,7,0,0,0,2,$ 0.00,Bulk ingredients
 8/13/2025,17:15,Husks (Whole Psyllium),,1,tbsp,16,0,5,4,4,0,0,0,49,0,0,$ 0.00,Fibers
@@ -321,7 +321,7 @@ unit",Calories,Fat (g),Sodium (mg),Carb (g),Fiber (g),Added Sugar (g),Protein (g
 8/14/2025,10:45,"Mango Chutney (Sri Lankan Organic, Trader Joe's)",,1,tbsp,56,0,125,14,0,7,0,0,0,0,0,$ 0.00,Condiments
 8/14/2025,11:30,"Cappuccino (Medium, Peet's, 2% Milk)",,1,Medium,141,5,130,15,0,11,9,325,450,126,0,$ 0.00,Dairy
 8/14/2025,13:45,"Milk (2%, Clover Sonoma)",,450,ml,257,9,263,24,0,0,19,656,863,0,0,$ 0.83,Bulk ingredients
-8/14/2025,13:45,Trader Joe's - Frozen Fruits (Average),,100,gram,51,0,0,13,2,0,0,14,150,0,0,$ 0.88,Plants
+8/14/2025,13:45,"Fruits, Frozen (Average, Trader Joe's)",,100,gram,51,0,0,13,2,0,0,14,150,0,0,$ 0.88,Plants
 8/14/2025,13:45,Oats,,100,gram,376,6,0,68,10,0,13,0,350,0,4,$ 0.44,Bulk ingredients
 8/14/2025,13:45,Husks (Whole Psyllium),,1,tbsp,16,0,5,4,4,0,0,0,49,0,0,$ 0.00,Fibers
 8/14/2025,15:45,Olive oil,To stir-fry the broccoli,1,tbsp,126,14,0,0,0,0,0,0,0,0,0,$ 0.20,Oils and butters
@@ -354,7 +354,7 @@ unit",Calories,Fat (g),Sodium (mg),Carb (g),Fiber (g),Added Sugar (g),Protein (g
 8/15/2025,11:00,Egg (L) whole,,3,egg (L),209,14,189,2,0,0,19,72,219,0,2,$ 1.87,Proteins
 8/15/2025,13:30,Oats,,100,gram,376,6,0,68,10,0,13,0,350,0,4,$ 0.44,Bulk ingredients
 8/15/2025,13:30,"Milk (2%, Clover Sonoma)",,480,ml,274,10,280,26,0,0,20,700,920,0,0,$ 0.89,Bulk ingredients
-8/15/2025,13:30,Trader Joe's - Frozen Fruits (Average),,50,gram,26,0,0,6,1,0,0,7,75,0,0,$ 0.44,Plants
+8/15/2025,13:30,"Fruits, Frozen (Average, Trader Joe's)",,50,gram,26,0,0,6,1,0,0,7,75,0,0,$ 0.44,Plants
 8/15/2025,16:00,Olive oil,To stir-fry the vegetables,1,tbsp,126,14,0,0,0,0,0,0,0,0,0,$ 0.20,Oils and butters
 8/15/2025,16:00,"Pasta, Fusilli, Whole Wheat (De Cecco)",,125,gram,460,4,0,87,9,2,18,60,375,0,0,$ 0.83,Carbs
 8/15/2025,16:00,"Beef, Ground (90% Lean, 10% Fat)",452g for 5 servings,90.4,gram,153,9,60,0,0,0,18,0,288,0,2,$ 1.40,Proteins
@@ -388,7 +388,7 @@ unit",Calories,Fat (g),Sodium (mg),Carb (g),Fiber (g),Added Sugar (g),Protein (g
 8/16/2025,11:15,Egg (L) whole,,2,egg (L),140,9,126,2,0,0,13,48,146,0,1,$ 1.25,Proteins
 8/16/2025,14:00,Oats,,100,gram,376,6,0,68,10,0,13,0,350,0,4,$ 0.44,Bulk ingredients
 8/16/2025,14:00,"Milk (2%, Clover Sonoma)",,480,ml,274,10,280,26,0,0,20,700,920,0,0,$ 0.89,Bulk ingredients
-8/16/2025,14:00,Trader Joe's - Frozen Fruits (Average),,100,gram,51,0,0,13,2,0,0,14,150,0,0,$ 0.88,Plants
+8/16/2025,14:00,"Fruits, Frozen (Average, Trader Joe's)",,100,gram,51,0,0,13,2,0,0,14,150,0,0,$ 0.88,Plants
 8/16/2025,14:00,Husks (Whole Psyllium),,1,tbsp,16,0,5,4,4,0,0,0,49,0,0,$ 0.00,Fibers
 8/16/2025,14:45,"Apple (small, around 150g in total)",,1,apple (S),84,0,2,21,4,0,0,10,195,0,0,$ 1.32,Plants
 8/16/2025,14:45,"Cashews, Whole (Salted, 50% Less Sodium, Trader Joe's)",,35,gram,212,16,64,11,1,0,6,12,222,0,2,$ 0.65,"Nuts, seeds, legumes"
@@ -420,13 +420,13 @@ unit",Calories,Fat (g),Sodium (mg),Carb (g),Fiber (g),Added Sugar (g),Protein (g
 8/17/2025,11:45,Sriracha (Trader Joe's),,2,tsp,8,0,150,2,0,2,0,0,20,0,0,$ 0.00,Condiments
 8/17/2025,13:45,Banana,,150,gram,143,0,2,33,5,0,2,9,525,0,0,$ 0.00,Plants
 8/17/2025,14:00,Oats,,100,gram,376,6,0,68,10,0,13,0,350,0,4,$ 0.44,Bulk ingredients
-8/17/2025,14:00,Trader Joe's - Frozen Fruits (Average),,60,gram,31,0,0,8,1,0,0,9,90,0,0,$ 0.53,Plants
+8/17/2025,14:00,"Fruits, Frozen (Average, Trader Joe's)",,60,gram,31,0,0,8,1,0,0,9,90,0,0,$ 0.53,Plants
 8/17/2025,14:00,"Milk (2%, Clover Sonoma)",,480,ml,274,10,280,26,0,0,20,700,920,0,0,$ 0.89,Bulk ingredients
 8/18/2025,08:30,Greek Yogurt (Whole Milk - Chobani),,250,gram,249,13,88,10,0,0,22,250,338,0,0,$ 2.03,Dairy
 8/18/2025,08:30,"Granola (Chocolate Coffee, Trader Joe's)",,50,gram,224,7,69,36,4,13,4,17,207,0,0,$ 0.59,Carbs
 8/18/2025,09:00,Nespresso,,1,shot,0,0,0,0,0,0,0,0,0,65,0,$ 0.99,Supplements
 8/18/2025,10:15,Oats,,100,gram,376,6,0,68,10,0,13,0,350,0,4,$ 0.44,Bulk ingredients
-8/18/2025,10:15,Trader Joe's - Frozen Fruits (Average),,75,gram,39,0,0,10,2,0,0,11,113,0,0,$ 0.66,Plants
+8/18/2025,10:15,"Fruits, Frozen (Average, Trader Joe's)",,75,gram,39,0,0,10,2,0,0,11,113,0,0,$ 0.66,Plants
 8/18/2025,10:15,"Milk (2%, Clover Sonoma)",,480,ml,274,10,280,26,0,0,20,700,920,0,0,$ 0.89,Bulk ingredients
 8/18/2025,10:15,Husks (Whole Psyllium),,1,tbsp,16,0,5,4,4,0,0,0,49,0,0,$ 0.00,Fibers
 8/18/2025,12:45,Olive oil,,1,tbsp,126,14,0,0,0,0,0,0,0,0,0,$ 0.20,Oils and butters
@@ -482,7 +482,7 @@ unit",Calories,Fat (g),Sodium (mg),Carb (g),Fiber (g),Added Sugar (g),Protein (g
 8/19/2025,16:00,"Cashews, Whole (Salted, 50% Less Sodium, Trader Joe's)",Apple & Cashews (Portion: 1),35,gram,212,16,64,11,1,0,6,12,222,0,2,$ 0.65,"Nuts, seeds, legumes"
 8/19/2025,17:00,Husks (Whole Psyllium),Carb Loading Shake (Portion: 1),1,tbsp,16,0,5,4,4,0,0,0,49,0,0,$ 0.00,Fibers
 8/19/2025,17:00,"Milk (2%, Clover Sonoma)",Carb Loading Shake (Portion: 1),480,ml,274,10,280,26,0,0,20,700,920,0,0,$ 0.89,Bulk ingredients
-8/19/2025,17:00,Trader Joe's - Frozen Fruits (Average),Carb Loading Shake (Portion: 1),75,gram,39,0,0,10,2,0,0,11,113,0,0,$ 0.66,Plants
+8/19/2025,17:00,"Fruits, Frozen (Average, Trader Joe's)",Carb Loading Shake (Portion: 1),75,gram,39,0,0,10,2,0,0,11,113,0,0,$ 0.66,Plants
 8/19/2025,17:00,Oats,Carb Loading Shake (Portion: 1),100,gram,376,6,0,68,10,0,13,0,350,0,4,$ 0.44,Bulk ingredients
 8/19/2025,18:30,Direct Entry - Fat (g),"Direct Entry Template (1000 cal, 35g fat, 1500mg sodium) (Portion: 1): Dinner with Alejandro & Kristen",50,gram,450,50,0,0,0,0,0,0,0,0,0,$ 0.00,Processed Foods
 8/19/2025,18:30,Direct Entry - Carbohydrate (g),"Direct Entry Template (1000 cal, 35g fat, 1500mg sodium) (Portion: 1): Dinner with Alejandro & Kristen",100,gram,400,0,0,100,0,0,0,0,0,0,0,$ 0.00,Processed Foods
@@ -497,7 +497,7 @@ unit",Calories,Fat (g),Sodium (mg),Carb (g),Fiber (g),Added Sugar (g),Protein (g
 8/20/2025,11:00,Nespresso,,1,shot,0,0,0,0,0,0,0,0,0,65,0,$ 0.99,Supplements
 8/20/2025,11:00,Husks (Whole Psyllium),Carb Loading Shake (Portion: 1): Before training session,1,tbsp,16,0,5,4,4,0,0,0,49,0,0,$ 0.00,Fibers
 8/20/2025,11:00,"Milk (2%, Clover Sonoma)",Carb Loading Shake (Portion: 1): Before training session,480,ml,274,10,280,26,0,0,20,700,920,0,0,$ 0.89,Bulk ingredients
-8/20/2025,11:00,Trader Joe's - Frozen Fruits (Average),Carb Loading Shake (Portion: 1): Before training session,75,gram,39,0,0,10,2,0,0,11,113,0,0,$ 0.66,Plants
+8/20/2025,11:00,"Fruits, Frozen (Average, Trader Joe's)",Carb Loading Shake (Portion: 1): Before training session,75,gram,39,0,0,10,2,0,0,11,113,0,0,$ 0.66,Plants
 8/20/2025,11:00,Oats,Carb Loading Shake (Portion: 1): Before training session,100,gram,376,6,0,68,10,0,13,0,350,0,4,$ 0.44,Bulk ingredients
 8/20/2025,13:45,Direct Entry - Sodium (mg),"Direct Entry Template (1000 cal, 35g fat, 1500mg sodium) (Portion: 1.25): Kasa Big Lunch (Thali Platter Vegetarian)",1500,mg,0,0,"1,500",0,0,0,0,0,0,0,0,$ 0.00,Processed Foods
 8/20/2025,13:45,Direct Entry - Protein (g),"Direct Entry Template (1000 cal, 35g fat, 1500mg sodium) (Portion: 1.25): Kasa Big Lunch (Thali Platter Vegetarian)",35,gram,140,0,0,0,0,0,35,0,0,0,0,$ 0.00,Processed Foods
@@ -529,7 +529,7 @@ unit",Calories,Fat (g),Sodium (mg),Carb (g),Fiber (g),Added Sugar (g),Protein (g
 8/21/2025,12:15,Olive oil,Nasi Goreng (Vegetarian Fried Rice) (Portion: 1),1,tbsp,126,14,0,0,0,0,0,0,0,0,0,$ 0.20,Oils and butters
 8/21/2025,12:15,Egg (L) whole,Nasi Goreng (Vegetarian Fried Rice) (Portion: 1),2,egg (L),140,9,126,2,0,0,13,48,146,0,1,$ 1.25,Proteins
 8/21/2025,12:15,Broccoli (dry),Nasi Goreng (Vegetarian Fried Rice) (Portion: 1),100,gram,41,0,0,7,2,0,3,47,280,0,1,$ 0.97,Plants
-8/21/2025,14:00,Trader Joe's - Frozen Fruits (Average),Carb Loading Shake (Portion: 1),75,gram,39,0,0,10,2,0,0,11,113,0,0,$ 0.66,Plants
+8/21/2025,14:00,"Fruits, Frozen (Average, Trader Joe's)",Carb Loading Shake (Portion: 1),75,gram,39,0,0,10,2,0,0,11,113,0,0,$ 0.66,Plants
 8/21/2025,14:00,Oats,Carb Loading Shake (Portion: 1),100,gram,376,6,0,68,10,0,13,0,350,0,4,$ 0.44,Bulk ingredients
 8/21/2025,14:00,"Milk (2%, Clover Sonoma)",Carb Loading Shake (Portion: 1),480,ml,274,10,280,26,0,0,20,700,920,0,0,$ 0.89,Bulk ingredients
 8/21/2025,14:00,Husks (Whole Psyllium),Carb Loading Shake (Portion: 1),1,tbsp,16,0,5,4,4,0,0,0,49,0,0,$ 0.00,Fibers
@@ -561,7 +561,7 @@ unit",Calories,Fat (g),Sodium (mg),Carb (g),Fiber (g),Added Sugar (g),Protein (g
 8/22/2025,11:30,Olive oil,Nasi Goreng (Vegetarian Fried Rice) (Portion: 1),1,tbsp,126,14,0,0,0,0,0,0,0,0,0,$ 0.20,Oils and butters
 8/22/2025,11:30,Egg (L) whole,Nasi Goreng (Vegetarian Fried Rice) (Portion: 1),2,egg (L),140,9,126,2,0,0,13,48,146,0,1,$ 1.25,Proteins
 8/22/2025,11:30,Broccoli (dry),Nasi Goreng (Vegetarian Fried Rice) (Portion: 1),100,gram,41,0,0,7,2,0,3,47,280,0,1,$ 0.97,Plants
-8/22/2025,14:15,Trader Joe's - Frozen Fruits (Average),Carb Loading Shake (Portion: 1),75,gram,39,0,0,10,2,0,0,11,113,0,0,$ 0.66,Plants
+8/22/2025,14:15,"Fruits, Frozen (Average, Trader Joe's)",Carb Loading Shake (Portion: 1),75,gram,39,0,0,10,2,0,0,11,113,0,0,$ 0.66,Plants
 8/22/2025,14:15,Oats,Carb Loading Shake (Portion: 1),100,gram,376,6,0,68,10,0,13,0,350,0,4,$ 0.44,Bulk ingredients
 8/22/2025,14:15,"Milk (2%, Clover Sonoma)",Carb Loading Shake (Portion: 1),480,ml,274,10,280,26,0,0,20,700,920,0,0,$ 0.89,Bulk ingredients
 8/22/2025,14:15,Husks (Whole Psyllium),Carb Loading Shake (Portion: 1),1,tbsp,16,0,5,4,4,0,0,0,49,0,0,$ 0.00,Fibers
@@ -627,7 +627,7 @@ unit",Calories,Fat (g),Sodium (mg),Carb (g),Fiber (g),Added Sugar (g),Protein (g
 8/24/2025,14:15,"Beef, Ground (90% Lean, 10% Fat)",Fusili with Veggies & Red Sauce (1 serving) (Portion: 1),90.4,gram,153,9,60,0,0,0,18,0,288,0,2,$ 1.40,Proteins
 8/24/2025,16:15,"Cashews, Whole (Salted, 50% Less Sodium, Trader Joe's)",Apple & Cashews (Portion: 1),35,gram,212,16,64,11,1,0,6,12,222,0,2,$ 0.65,"Nuts, seeds, legumes"
 8/24/2025,16:15,"Apple (small, around 150g in total)",Apple & Cashews (Portion: 1),1,apple (S),84,0,2,21,4,0,0,10,195,0,0,$ 1.32,Plants
-8/24/2025,17:00,Trader Joe's - Frozen Fruits (Average),Carb Loading Shake (Portion: 1),85,gram,44,0,0,11,2,0,0,12,128,0,0,$ 0.75,Plants
+8/24/2025,17:00,"Fruits, Frozen (Average, Trader Joe's)",Carb Loading Shake (Portion: 1),85,gram,44,0,0,11,2,0,0,12,128,0,0,$ 0.75,Plants
 8/24/2025,17:00,Oats,Carb Loading Shake (Portion: 1),100,gram,376,6,0,68,10,0,13,0,350,0,4,$ 0.44,Bulk ingredients
 8/24/2025,17:00,"Milk (2%, Clover Sonoma)",Carb Loading Shake (Portion: 1),480,ml,274,10,280,26,0,0,20,700,920,0,0,$ 0.89,Bulk ingredients
 8/24/2025,17:00,Husks (Whole Psyllium),Carb Loading Shake (Portion: 1),1,tbsp,16,0,5,4,4,0,0,0,49,0,0,$ 0.00,Fibers
@@ -663,7 +663,7 @@ unit",Calories,Fat (g),Sodium (mg),Carb (g),Fiber (g),Added Sugar (g),Protein (g
 8/25/2025,14:30,Green Beans,Fusili with Veggies & Red Sauce (1 serving) (Portion: 1),50,gram,18,0,3,4,2,0,1,15,75,0,0,$ 0.36,Plants
 8/25/2025,14:30,Bell Pepper (Fresh),Fusili with Veggies & Red Sauce (1 serving) (Portion: 1),50,gram,14,0,0,4,1,0,0,5,100,0,0,$ 0.41,Plants
 8/25/2025,14:30,"Beef, Ground (90% Lean, 10% Fat)",Fusili with Veggies & Red Sauce (1 serving) (Portion: 1),90.4,gram,153,9,60,0,0,0,18,0,288,0,2,$ 1.40,Proteins
-8/25/2025,16:00,Trader Joe's - Frozen Fruits (Average),Carb Loading Shake (Portion: 1),75,gram,39,0,0,10,2,0,0,11,113,0,0,$ 0.66,Plants
+8/25/2025,16:00,"Fruits, Frozen (Average, Trader Joe's)",Carb Loading Shake (Portion: 1),75,gram,39,0,0,10,2,0,0,11,113,0,0,$ 0.66,Plants
 8/25/2025,16:00,Oats,Carb Loading Shake (Portion: 1),100,gram,376,6,0,68,10,0,13,0,350,0,4,$ 0.44,Bulk ingredients
 8/25/2025,16:00,"Milk (2%, Clover Sonoma)",Carb Loading Shake (Portion: 1),480,ml,274,10,280,26,0,0,20,700,920,0,0,$ 0.89,Bulk ingredients
 8/25/2025,16:00,Husks (Whole Psyllium),Carb Loading Shake (Portion: 1),1,tbsp,16,0,5,4,4,0,0,0,49,0,0,$ 0.00,Fibers
@@ -679,9 +679,9 @@ unit",Calories,Fat (g),Sodium (mg),Carb (g),Fiber (g),Added Sugar (g),Protein (g
 8/25/2025,22:00,Honey,Evening Yogurt (Portion: 1),15,gram,55,0,0,14,0,0,0,0,0,0,0,$ 0.36,Sweets
 8/25/2025,22:00,Greek Yogurt (Whole Milk - Chobani),Evening Yogurt (Portion: 1),250,gram,249,13,88,10,0,0,22,250,338,0,0,$ 2.03,Dairy
 8/25/2025,22:00,Blueberries (fresh),Evening Yogurt (Portion: 1),65,gram,42,0,1,10,2,0,0,4,50,0,0,$ 0.89,Plants
-,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
-,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
-,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
+8/26/2025,07:00,Greek Yogurt (Whole Milk - Chobani),Breakfast Bowl (Portion: 1),250,gram,249,13,88,10,0,0,22,250,338,0,0,$ 2.03,Dairy
+8/26/2025,07:00,"Granola (Chocolate Coffee, Trader Joe's)",Breakfast Bowl (Portion: 1),50,gram,224,7,69,36,4,13,4,17,207,0,0,$ 0.59,Carbs
+8/26/2025,09:15,Banana,,1,gram,1,0,0,0,0,0,0,0,4,0,0,$ 0.00,Plants
 ,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
 ,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
 ,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
