@@ -30,11 +30,11 @@
                 </div>
                 <div class="form-group">
                     <label for="reps">Reps:</label>
-                    <input type="number" name="reps" id="reps" class="form-control" required inputmode="numeric">
+                    <input type="number" name="reps" id="reps" class="form-control" value="5" required inputmode="numeric">
                 </div>
                 <div class="form-group">
                     <label for="rounds">Rounds:</label>
-                    <input type="number" name="rounds" id="rounds" class="form-control" required inputmode="numeric">
+                    <input type="number" name="rounds" id="rounds" class="form-control" value="3" required inputmode="numeric">
                 </div>
                 <div class="form-group">
                     <label for="comments">Comments:</label>
