@@ -40,7 +40,7 @@ class MealSeeder extends Seeder
         // Meal 4: Carb Loading Shake
         $meal3 = Meal::create(['name' => 'Carb Loading Shake']);
         $meal3->ingredients()->attach($ingredients['Oats']->id, ['quantity' => 100]);
-        $meal3->ingredients()->attach($ingredients['Trader Joe\'s - Frozen Fruits (Average)']->id, ['quantity' => 75]);
+        $meal3->ingredients()->attach($ingredients['Fruits, Frozen (Average, Trader Joe\'s)']->id, ['quantity' => 75]);
         $meal3->ingredients()->attach($ingredients['Milk (2%, Clover Sonoma)']->id, ['quantity' => 480]);
         $meal3->ingredients()->attach($ingredients['Husks (Whole Psyllium)']->id, ['quantity' => 1]);
 
