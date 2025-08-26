@@ -2,17 +2,17 @@
 
 namespace Database\Factories;
 
-use App\Models\Unit;
+use App\Models\Exercise;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-class UnitFactory extends Factory
+class ExerciseFactory extends Factory
 {
     /**
      * The name of the factory's corresponding model.
      *
      * @var string
      */
-    protected $model = Unit::class;
+    protected $model = Exercise::class;
 
     /**
      * Define the model's default state.
@@ -22,9 +22,8 @@ class UnitFactory extends Factory
     public function definition()
     {
         return [
-            'name' => $this->faker->word,
-            'abbreviation' => $this->faker->lexify('??'),
-            'conversion_factor' => 1.0,
+            'title' => $this->faker->sentence(3),
+            'description' => $this->faker->paragraph,
         ];
     }
 }
