@@ -21,7 +21,7 @@ class WorkoutController extends Controller
      */
     public function index()
     {
-        $workouts = Workout::with('exercise')->orderBy('logged_at', 'desc')->get();
+        $workouts = Workout::with('exercise')->orderBy('logged_at', 'asc')->get();
         $exercises = Exercise::all();
         return view('workouts.index', compact('workouts', 'exercises'));
     }
