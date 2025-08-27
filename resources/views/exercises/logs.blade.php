@@ -18,6 +18,11 @@
         @if ($workouts->isEmpty())
             <p>No workouts found for this exercise.</p>
         @else
+        <div class="form-container">
+            <h3>1RM Progress</h3>
+            <canvas id="oneRepMaxChart"></canvas>
+        </div>
+
         <table class="log-entries-table">
             <thead>
                 <tr>
@@ -65,38 +70,59 @@
             </tfoot>
         </table>
 
-        
-
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script>
-            document.getElementById('select-all-workouts').addEventListener('change', function(e) {
-                document.querySelectorAll('.workout-checkbox').forEach(function(checkbox) {
-                    checkbox.checked = e.target.checked;
-                });
-            });
-
-            document.getElementById('delete-selected-form').addEventListener('submit', function(e) {
-                e.preventDefault();
-                
-                var form = e.target;
-                var checkedLogs = document.querySelectorAll('.workout-checkbox:checked');
-
-                if (checkedLogs.length === 0) {
-                    alert('Please select at least one workout to delete.');
-                    return;
-                }
-
-                checkedLogs.forEach(function(checkbox) {
-                    var input = document.createElement('input');
-                    input.type = 'hidden';
-                    input.name = 'workout_ids[]';
-                    input.value = checkbox.value;
-                    form.appendChild(input);
+            document.addEventListener('DOMContentLoaded', function() {
+                var ctx = document.getElementById('oneRepMaxChart').getContext('2d');
+                var oneRepMaxChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: @json($chartData['labels']),
+                        datasets: [{
+                            label: '1RM (est.)',
+                            data: @json($chartData['data']),
+                            backgroundColor: 'rgba(0, 123, 255, 0.5)',
+                            borderColor: 'rgba(0, 123, 255, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
                 });
 
-                form.submit();
-            });
+                document.getElementById('select-all-workouts').addEventListener('change', function(e) {
+                    document.querySelectorAll('.workout-checkbox').forEach(function(checkbox) {
+                        checkbox.checked = e.target.checked;
+                    });
+                });
 
-            
+                document.getElementById('delete-selected-form').addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    var form = e.target;
+                    var checkedLogs = document.querySelectorAll('.workout-checkbox:checked');
+
+                    if (checkedLogs.length === 0) {
+                        alert('Please select at least one workout to delete.');
+                        return;
+                    }
+
+                    checkedLogs.forEach(function(checkbox) {
+                        var input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = 'workout_ids[]';
+                        input.value = checkbox.value;
+                        form.appendChild(input);
+                    });
+
+                    form.submit();
+                });
+            });
         </script>
         @endif
     </div>
