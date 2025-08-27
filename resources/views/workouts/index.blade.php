@@ -131,7 +131,6 @@
                     options: {
                         scales: {
                             y: {
-                                beginAtZero: true
                             }
                         },
                         plugins: {
