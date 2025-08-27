@@ -186,7 +186,7 @@ unit",Calories,Fat (g),Sodium (mg),Carb (g),Fiber (g),Added Sugar (g),Protein (g
 8/10/2025,16:30,"Apple (small, around 150g in total)",,1.25,pc,105,0,3,26,5,0,0,13,244,0,0,$ 1.65,Plants
 8/10/2025,17:30,"Banana (medium, around 150g with skin)",,1,pc,95,0,1,22,3,0,1,6,350,0,0,$ 0.00,Plants
 8/10/2025,18:45,"Butter (unsalted, Clover)",,42,gram,297,33,0,0,0,0,0,0,0,0,0,$ 0.00,Oils and butters
-8/10/2025,18:45,Potato (Cooked),50% of the total of 600 gram,300,gram,264,0,0,60,5,0,6,21,"1,050",0,0,$ 0.00,Carbs
+8/10/2025,18:45,"Potato, Yellow (Dry)",50% of the total of 600 gram,300,gram,264,0,0,60,5,0,6,21,"1,050",0,1,$ 0.00,Carbs
 8/10/2025,18:45,"Flour, Unbleached All Purpose (Trader Joe's)",50% of the total of 130 gram (1.2 cups),65,gram,225,0,0,50,0,0,7,0,65,0,0,$ 0.00,Carbs
 8/10/2025,18:45,"Seasoning, Salt for Life (Nature's Alternative Salt)",50% of the total (1/2 tsp),0.25,tsp,0,0,140,0,0,0,0,0,470,0,0,$ 0.00,Condiments
 8/10/2025,18:45,Egg (L) whole,50% of the total (1 egg),0.5,egg (L),35,2,32,0,0,0,3,12,37,0,0,$ 0.31,Proteins
@@ -670,7 +670,7 @@ unit",Calories,Fat (g),Sodium (mg),Carb (g),Fiber (g),Added Sugar (g),Protein (g
 8/25/2025,18:00,"Cashews, Whole (Salted, 50% Less Sodium, Trader Joe's)",Apple & Cashews (Portion: 1),35,gram,212,16,64,11,1,0,6,12,222,0,2,$ 0.65,"Nuts, seeds, legumes"
 8/25/2025,18:00,"Apple (small, around 150g in total)",Apple & Cashews (Portion: 1),1,pc,84,0,2,21,4,0,0,10,195,0,0,$ 1.32,Plants
 8/25/2025,19:15,"Seasoning, Umami Multi-Purpose (Trader Joe's)","Mashed Potatoes, Bell Pepper, Broccoli and Beef (Portion: 1)",1,tsp,0,0,560,0,0,0,0,0,0,0,0,$ 0.00,Condiments
-8/25/2025,19:15,Potato (Cooked),"Mashed Potatoes, Bell Pepper, Broccoli and Beef (Portion: 1)",400,gram,352,0,0,80,6,0,8,28,"1,400",0,0,$ 0.00,Carbs
+8/25/2025,19:15,"Potato, Yellow (Dry)","Mashed Potatoes, Bell Pepper, Broccoli and Beef (Portion: 1)",400,gram,352,0,0,80,6,0,8,28,"1,400",0,1,$ 0.00,Carbs
 8/25/2025,19:15,Olive oil,"Mashed Potatoes, Bell Pepper, Broccoli and Beef (Portion: 1)",1,tbsp,126,14,0,0,0,0,0,0,0,0,0,$ 0.20,Oils and butters
 8/25/2025,19:15,"Butter (unsalted, Clover)","Mashed Potatoes, Bell Pepper, Broccoli and Beef (Portion: 1)",20,gram,141,16,0,0,0,0,0,0,0,0,0,$ 0.00,Oils and butters
 8/25/2025,19:15,Broccoli (dry),"Mashed Potatoes, Bell Pepper, Broccoli and Beef (Portion: 1)",50,gram,20,0,0,3,1,0,1,24,140,0,0,$ 0.48,Plants
@@ -691,21 +691,21 @@ unit",Calories,Fat (g),Sodium (mg),Carb (g),Fiber (g),Added Sugar (g),Protein (g
 8/26/2025,11:15,"Chicken Thigh (Skinless, Boneless)",,100,gram,214,14,174,0,0,0,23,11,254,0,1,$ 2.31,Proteins
 8/26/2025,11:15,Broccoli (dry),Nasi Goreng (Vegetarian Fried Rice) (Portion: 1),100,gram,41,0,0,7,2,0,3,47,280,0,1,$ 0.97,Plants
 8/26/2025,11:30,"Banana (medium, around 150g with skin)",,1,pc,95,0,1,22,3,0,1,6,350,0,0,$ 0.00,Plants
-,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
-,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
-,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
-,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
-,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
-,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
-,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
-,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
-,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
-,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
-,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
-,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
-,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
-,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
-,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
+8/26/2025,14:00,"Cappuccino (Medium, Peet's, 2% Milk)",,1,Medium,141,5,130,15,0,11,9,325,450,126,0,$ 0.00,Dairy
+8/26/2025,15:00,Tomato Sauce (Muir Glen),Fusili with Veggies & Red Sauce (1 serving) (Portion: 1),0.2,can,39,0,28,8,1,0,1,0,224,0,0,$ 0.74,Plants
+8/26/2025,15:00,"Tomato Paste (Organic, Trader Joe's)",Fusili with Veggies & Red Sauce (1 serving) (Portion: 1),0.2,can,30,0,25,7,2,4,1,0,58,0,0,$ 0.20,Condiments
+8/26/2025,15:00,"Seasoning, Umami Multi-Purpose (Trader Joe's)",Fusili with Veggies & Red Sauce (1 serving) (Portion: 1),0.25,tsp,0,0,140,0,0,0,0,0,0,0,0,$ 0.00,Condiments
+8/26/2025,15:00,"Seasoning, Umami Multi-Purpose (Trader Joe's)",Fusili with Veggies & Red Sauce (1 serving) (Portion: 1),0.05,tsp,0,0,28,0,0,0,0,0,0,0,0,$ 0.00,Condiments
+8/26/2025,15:00,"Seasoning, Salt for Life (Nature's Alternative Salt)",Fusili with Veggies & Red Sauce (1 serving) (Portion: 1),0.25,tsp,0,0,140,0,0,0,0,0,470,0,0,$ 0.00,Condiments
+8/26/2025,15:00,"Pasta, Fusilli, Whole Wheat (De Cecco)",Fusili with Veggies & Red Sauce (1 serving) (Portion: 1),125,gram,460,4,0,87,9,2,18,60,375,0,0,$ 0.83,Carbs
+8/26/2025,15:00,Olive oil,Fusili with Veggies & Red Sauce (1 serving) (Portion: 1),1,tbsp,126,14,0,0,0,0,0,0,0,0,0,$ 0.20,Oils and butters
+8/26/2025,15:00,Green Beans,Fusili with Veggies & Red Sauce (1 serving) (Portion: 1),50,gram,18,0,3,4,2,0,1,15,75,0,0,$ 0.36,Plants
+8/26/2025,15:00,Bell Pepper (Fresh),Fusili with Veggies & Red Sauce (1 serving) (Portion: 1),50,gram,14,0,0,4,1,0,0,5,100,0,0,$ 0.41,Plants
+8/26/2025,15:00,"Beef, Ground (90% Lean, 10% Fat)",Fusili with Veggies & Red Sauce (1 serving) (Portion: 1),90.4,gram,153,9,60,0,0,0,18,0,288,0,2,$ 1.40,Proteins
+8/26/2025,17:15,Oats,Carb Loading Shake (Portion: 1),100,gram,376,6,0,68,10,0,13,0,350,0,4,$ 0.44,Bulk ingredients
+8/26/2025,17:15,"Milk (2%, Clover Sonoma)",Carb Loading Shake (Portion: 1),480,ml,274,10,280,26,0,0,20,700,920,0,0,$ 0.89,Bulk ingredients
+8/26/2025,17:15,Husks (Whole Psyllium),Carb Loading Shake (Portion: 1),1,tbsp,16,0,5,4,4,0,0,0,49,0,0,$ 0.00,Fibers
+8/26/2025,17:15,"Fruits, Frozen (Average, Trader Joe's)",Carb Loading Shake (Portion: 1),75,gram,39,0,0,10,2,0,0,11,113,0,0,$ 0.66,Plants
 ,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
 ,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
 ,,,,,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A,#N/A
