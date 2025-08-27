@@ -26,4 +26,9 @@ class Workout extends Model
     {
         return $this->belongsTo(Exercise::class);
     }
+
+    public function getOneRepMaxAttribute()
+    {
+        return $this->weight * (1 + (0.0333 * $this->reps));
+    }
 }
