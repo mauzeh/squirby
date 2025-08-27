@@ -82,13 +82,15 @@ class ExerciseController extends Controller
 
     public function showLogs(Exercise $exercise)
     {
-        $workouts = $exercise->workouts()->orderBy('logged_at', 'asc')->get();
+        $workouts = $exercise->workouts()->orderBy('logged_at', 'desc')->get();
+
+        $chartWorkouts = $workouts->reverse();
 
         $chartData = [
-            'labels' => $workouts->pluck('logged_at')->map(function ($date) {
+            'labels' => $chartWorkouts->pluck('logged_at')->map(function ($date) {
                 return $date->format('m/d/Y');
             }),
-            'data' => $workouts->pluck('one_rep_max'),
+            'data' => $chartWorkouts->pluck('one_rep_max'),
         ];
 
         return view('exercises.logs', compact('exercise', 'workouts', 'chartData'));
