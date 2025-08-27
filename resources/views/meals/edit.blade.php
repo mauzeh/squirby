@@ -23,6 +23,11 @@
                     <input type="text" name="name" id="name" value="{{ old('name', $meal->name) }}" required>
                 </div>
 
+                <div class="form-group">
+                    <label for="comments">Comments:</label>
+                    <textarea name="comments" id="comments" rows="3">{{ old('comments', $meal->comments) }}</textarea>
+                </div>
+
                 <h2>Ingredients</h2>
                 <div id="ingredients-container">
                     @for ($i = 0; $i < 10; $i++)

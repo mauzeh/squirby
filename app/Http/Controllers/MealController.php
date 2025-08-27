@@ -88,12 +88,13 @@ class MealController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255|unique:meals,name,' . $meal->id,
+            'comments' => 'nullable|string',
             'ingredients' => 'array',
             'ingredients.*.ingredient_id' => 'nullable|exists:ingredients,id',
             'ingredients.*.quantity' => 'nullable|numeric|min:0.01',
         ]);
 
-        $meal->update(['name' => $request->name]);
+        $meal->update(['name' => $request->name, 'comments' => $request->comments]);
 
         $syncData = [];
         foreach ($request->ingredients as $item) {

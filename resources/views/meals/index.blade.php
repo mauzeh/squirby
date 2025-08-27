@@ -26,7 +26,12 @@
                 <tbody>
                     @foreach ($meals as $meal)
                         <tr>
-                            <td>{{ $meal->name }}</td>
+                            <td>
+                                {{ $meal->name }}
+                                @if($meal->comments)
+                                    <br><small>{{ $meal->comments }}</small>
+                                @endif
+                            </td>
                             <td class="hide-on-mobile">
                                 @foreach ($meal->ingredients as $ingredient)
                                     {{ $ingredient->pivot->quantity }} {{ $ingredient->baseUnit->abbreviation }} {{ $ingredient->name }}<br>
