@@ -13,7 +13,7 @@
     @endif
     <div class="container">
         <h1>Logs for {{ $exercise->title }}</h1>
-        <a href="{{ route('workouts.index') }}" class="button">Back to Workouts</a>
+        
 
         @if ($workouts->isEmpty())
             <p>No workouts found for this exercise.</p>
