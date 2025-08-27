@@ -71,7 +71,7 @@ class TsvImporterService
             $exercise = \App\Models\Exercise::where('title', $columns[2])->first();
 
             if ($exercise) {
-                $loggedAt = Carbon::parse($columns[0] . ' ' . $columns[1]);
+                $loggedAt = Carbon::createFromFormat('m/d/Y H:i', $columns[0] . ' ' . $columns[1]);
 
                 \App\Models\Workout::create([
                     'exercise_id' => $exercise->id,
