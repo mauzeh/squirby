@@ -15,7 +15,7 @@
             <tbody>
                 @foreach ($exercises as $exercise)
                     <tr>
-                        <td>{{ $exercise->title }}</td>
+                        <td><a href="{{ route('exercises.show-logs', $exercise) }}" class="text-white">{{ $exercise->title }}</a></td>
                         <td>{{ $exercise->description }}</td>
                         <td class="actions-column">
                             <div style="display: flex; gap: 5px;">

@@ -22,6 +22,9 @@
                 margin: 0;
                 padding: 0;
             }
+            a {
+                color: #b3d7ffff; /* Light Blue links */
+            }
             .navbar {
                 background-color: #333; /* Darker navbar */
                 overflow: hidden;
