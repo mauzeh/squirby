@@ -23,6 +23,11 @@ class WorkoutController extends Controller
     {
         $workouts = Workout::with('exercise')->orderBy('logged_at', 'asc')->get();
         $exercises = Exercise::all();
+
+        foreach ($workouts as $workout) {
+            $workout->one_rep_max = $workout->weight * (1 + (0.0333 * $workout->reps));
+        }
+
         return view('workouts.index', compact('workouts', 'exercises'));
     }
 

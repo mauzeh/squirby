@@ -62,6 +62,7 @@
                     <th>Date</th>
                     <th>Exercise</th>
                     <th>Weight (reps x rounds)</th>
+                    <th>1RM</th>
                     <th class="hide-on-mobile" style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Comments</th>
                     <th class="actions-column">Actions</th>
                 </tr>
@@ -76,6 +77,7 @@
                             <span style="font-weight: bold; font-size: 1.2em;">{{ $workout->weight }}&nbsp;lbs</span><br>
                             {{ $workout->reps }}&nbsp;x&nbsp;{{ $workout->rounds }}
                         </td>
+                        <td>{{ round($workout->one_rep_max) }} lbs</td>
                         <td class="hide-on-mobile" style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ $workout->comments }}">{{ $workout->comments }}</td>
                         <td class="actions-column">
                             <div style="display: flex; gap: 5px;">
@@ -92,7 +94,7 @@
             </tbody>
             <tfoot>
                 <tr>
-                    <th colspan="6" style="text-align:left; font-weight:normal;">
+                    <th colspan="7" style="text-align:left; font-weight:normal;">
                         <form action="{{ route('workouts.destroy-selected') }}" method="POST" id="delete-selected-form" onsubmit="return confirm('Are you sure you want to delete the selected workouts?');" style="display:inline;">
                             @csrf
                             <button type="submit" class="button delete">Delete Selected</button>
