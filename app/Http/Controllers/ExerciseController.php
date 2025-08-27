@@ -82,16 +82,26 @@ class ExerciseController extends Controller
 
     public function showLogs(Exercise $exercise)
     {
-        $workouts = $exercise->workouts()->orderBy('logged_at', 'desc')->get();
-
-        $chartWorkouts = $workouts->reverse();
+        $workouts = $exercise->workouts()->orderBy('logged_at', 'asc')->get();
 
         $chartData = [
-            'labels' => $chartWorkouts->pluck('logged_at')->map(function ($date) {
-                return $date->format('m/d/Y');
-            }),
-            'data' => $chartWorkouts->pluck('one_rep_max'),
+            'datasets' => [
+                [
+                    'label' => '1RM (est.)',
+                    'data' => $workouts->map(function ($workout) {
+                        return [
+                            'x' => $workout->logged_at->toIso8601String(),
+                            'y' => $workout->one_rep_max,
+                        ];
+                    }),
+                    'backgroundColor' => 'rgba(0, 123, 255, 0.5)',
+                    'borderColor' => 'rgba(0, 123, 255, 1)',
+                    'borderWidth' => 1
+                ]
+            ]
         ];
+
+        $workouts = $workouts->reverse();
 
         return view('exercises.logs', compact('exercise', 'workouts', 'chartData'));
     }

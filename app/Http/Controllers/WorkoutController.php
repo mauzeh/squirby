@@ -24,11 +24,6 @@ class WorkoutController extends Controller
         $workouts = Workout::with('exercise')->orderBy('logged_at', 'asc')->get();
         $exercises = Exercise::all();
 
-        $chartData = [];
-        $labels = $workouts->pluck('logged_at')->map(function ($date) {
-            return $date->format('m/d/Y');
-        })->unique()->values();
-
         $datasets = [];
         $groupedWorkouts = $workouts->groupBy('exercise.title');
 
@@ -43,26 +38,21 @@ class WorkoutController extends Controller
         $colorIndex = 0;
 
         foreach ($groupedWorkouts as $exerciseName => $exerciseWorkouts) {
-            $data = [];
-            foreach ($labels as $label) {
-                $workout = $exerciseWorkouts->first(function ($w) use ($label) {
-                    return $w->logged_at->format('m/d/Y') === $label;
-                });
-                $data[] = $workout ? $workout->one_rep_max : null;
-            }
-
             $datasets[] = [
                 'label' => $exerciseName,
-                'data' => $data,
+                'data' => $exerciseWorkouts->map(function ($workout) {
+                    return [
+                        'x' => $workout->logged_at->toIso8601String(),
+                        'y' => $workout->one_rep_max,
+                    ];
+                }),
                 'borderColor' => $colors[$colorIndex % count($colors)],
                 'backgroundColor' => $colors[$colorIndex % count($colors)],
                 'fill' => false,
-                'spanGaps' => true,
             ];
             $colorIndex++;
         }
 
-        $chartData['labels'] = $labels;
         $chartData['datasets'] = $datasets;
 
         return view('workouts.index', compact('workouts', 'exercises', 'chartData'));

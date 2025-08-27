@@ -71,23 +71,23 @@
         </table>
 
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
         <script>
             document.addEventListener('DOMContentLoaded', function() {
                 var ctx = document.getElementById('oneRepMaxChart').getContext('2d');
                 var oneRepMaxChart = new Chart(ctx, {
                     type: 'line',
                     data: {
-                        labels: @json($chartData['labels']),
-                        datasets: [{
-                            label: '1RM (est.)',
-                            data: @json($chartData['data']),
-                            backgroundColor: 'rgba(0, 123, 255, 0.5)',
-                            borderColor: 'rgba(0, 123, 255, 1)',
-                            borderWidth: 1
-                        }]
+                        datasets: @json($chartData['datasets'])
                     },
                     options: {
                         scales: {
+                            x: {
+                                type: 'time',
+                                time: {
+                                    unit: 'day'
+                                }
+                            },
                             y: {
                             }
                         }
