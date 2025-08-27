@@ -13,6 +13,11 @@
     @endif
     <div class="container">
         <div class="form-container">
+            <h3>1RM Progress</h3>
+            <canvas id="oneRepMaxChart"></canvas>
+        </div>
+
+        <div class="form-container">
             <h3>Add Workout</h3>
             <form action="{{ route('workouts.store') }}" method="POST">
                 @csrf
@@ -113,40 +118,65 @@
             <button id="copy-tsv-button" class="button">Copy to Clipboard</button>
         </div>
 
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script>
-            document.getElementById('select-all-workouts').addEventListener('change', function(e) {
-                document.querySelectorAll('.workout-checkbox').forEach(function(checkbox) {
-                    checkbox.checked = e.target.checked;
-                });
-            });
-
-            document.getElementById('delete-selected-form').addEventListener('submit', function(e) {
-                e.preventDefault();
-                
-                var form = e.target;
-                var checkedLogs = document.querySelectorAll('.workout-checkbox:checked');
-
-                if (checkedLogs.length === 0) {
-                    alert('Please select at least one workout to delete.');
-                    return;
-                }
-
-                checkedLogs.forEach(function(checkbox) {
-                    var input = document.createElement('input');
-                    input.type = 'hidden';
-                    input.name = 'workout_ids[]';
-                    input.value = checkbox.value;
-                    form.appendChild(input);
+            document.addEventListener('DOMContentLoaded', function() {
+                var ctx = document.getElementById('oneRepMaxChart').getContext('2d');
+                var oneRepMaxChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: @json($chartData['labels']),
+                        datasets: @json($chartData['datasets'])
+                    },
+                    options: {
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        },
+                        plugins: {
+                            tooltip: {
+                                mode: 'index',
+                                intersect: false
+                            }
+                        },
+                    }
                 });
 
-                form.submit();
-            });
+                document.getElementById('select-all-workouts').addEventListener('change', function(e) {
+                    document.querySelectorAll('.workout-checkbox').forEach(function(checkbox) {
+                        checkbox.checked = e.target.checked;
+                    });
+                });
 
-            document.getElementById('copy-tsv-button').addEventListener('click', function() {
-                var tsvOutput = document.getElementById('tsv-output');
-                tsvOutput.select();
-                document.execCommand('copy');
-                alert('TSV data copied to clipboard!');
+                document.getElementById('delete-selected-form').addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    var form = e.target;
+                    var checkedLogs = document.querySelectorAll('.workout-checkbox:checked');
+
+                    if (checkedLogs.length === 0) {
+                        alert('Please select at least one workout to delete.');
+                        return;
+                    }
+
+                    checkedLogs.forEach(function(checkbox) {
+                        var input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = 'workout_ids[]';
+                        input.value = checkbox.value;
+                        form.appendChild(input);
+                    });
+
+                    form.submit();
+                });
+
+                document.getElementById('copy-tsv-button').addEventListener('click', function() {
+                    var tsvOutput = document.getElementById('tsv-output');
+                    tsvOutput.select();
+                    document.execCommand('copy');
+                    alert('TSV data copied to clipboard!');
+                });
             });
         </script>
         @endif
