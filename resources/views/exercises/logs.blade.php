@@ -65,14 +65,7 @@
             </tfoot>
         </table>
 
-        <div class="form-container">
-            <h3>TSV Export</h3>
-            <textarea id="tsv-output" rows="10" style="width: 100%; background-color: #3a3a3a; color: #f2f2f2; border: 1px solid #555;">@foreach ($workouts as $workout)
-{{ $workout->logged_at->format('Y-m-d') }}\t{{ $workout->logged_at->format('H:i') }}\t{{ $workout->exercise->title }}\t{{ $workout->weight }}\t{{ $workout->reps }}\t{{ $workout->rounds }}\t{{ preg_replace('/(\n|\r)+/', ' ', $workout->comments) }}
-@endforeach
-            </textarea>
-            <button id="copy-tsv-button" class="button">Copy to Clipboard</button>
-        </div>
+        
 
         <script>
             document.getElementById('select-all-workouts').addEventListener('change', function(e) {
@@ -103,12 +96,7 @@
                 form.submit();
             });
 
-            document.getElementById('copy-tsv-button').addEventListener('click', function() {
-                var tsvOutput = document.getElementById('tsv-output');
-                tsvOutput.select();
-                document.execCommand('copy');
-                alert('TSV data copied to clipboard!');
-            });
+            
         </script>
         @endif
     </div>
