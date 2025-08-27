@@ -28,6 +28,7 @@ Route::resource('meals', MealController::class)->except([
 Route::post('meals/create-from-logs', [MealController::class, 'createFromLogs'])->name('meals.create-from-logs');
 
 Route::resource('exercises', ExerciseController::class);
+Route::get('exercises/{exercise}/logs', [ExerciseController::class, 'showLogs'])->name('exercises.show-logs');
 
 Route::resource('workouts', WorkoutController::class);
 

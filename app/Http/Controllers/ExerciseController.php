@@ -79,4 +79,10 @@ class ExerciseController extends Controller
 
         return redirect()->route('exercises.index')->with('success', 'Exercise deleted successfully.');
     }
+
+    public function showLogs(Exercise $exercise)
+    {
+        $workouts = $exercise->workouts()->orderBy('logged_at', 'desc')->get();
+        return view('exercises.logs', compact('exercise', 'workouts'));
+    }
 }

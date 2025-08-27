@@ -13,4 +13,9 @@ class Exercise extends Model
         'title',
         'description',
     ];
+
+    public function workouts()
+    {
+        return $this->hasMany(Workout::class);
+    }
 }
