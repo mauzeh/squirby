@@ -144,6 +144,9 @@ class DailyLogController extends Controller
 
         foreach ($meal->ingredients as $ingredient) {
             $notes = $meal->name . ' (Portion: ' . (float)$validated['portion'] . ')';
+            if (!empty($meal->comments)) {
+                $notes .= ' - ' . $meal->comments;
+            }
             if (!empty($validated['notes'])) {
                 $notes .= ': ' . $validated['notes'];
             }

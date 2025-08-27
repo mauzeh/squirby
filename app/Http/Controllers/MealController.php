@@ -47,12 +47,13 @@ class MealController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255|unique:meals,name',
+            'comments' => 'nullable|string',
             'ingredients' => 'array',
             'ingredients.*.ingredient_id' => 'nullable|exists:ingredients,id',
             'ingredients.*.quantity' => 'nullable|numeric|min:0.01',
         ]);
 
-        $meal = Meal::create(['name' => $request->name]);
+        $meal = Meal::create(['name' => $request->name, 'comments' => $request->comments]);
 
         foreach ($request->ingredients as $item) {
             if (isset($item['ingredient_id']) && isset($item['quantity'])) {
