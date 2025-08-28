@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\DailyLog;
 use App\Models\Ingredient;
+use App\Models\Measurement;
 use Carbon\Carbon;
 
 class TsvImporterService
@@ -90,6 +91,39 @@ class TsvImporterService
         return [
             'importedCount' => $importedCount,
             'notFound' => $notFound,
+        ];
+    }
+
+    public function importMeasurements(string $tsvData): array
+    {
+        $rows = explode("\n", $tsvData);
+        $importedCount = 0;
+
+        foreach ($rows as $row) {
+            if (empty($row)) {
+                continue;
+            }
+
+            $columns = str_getcsv($row, "	");
+
+            if (count($columns) < 5) {
+                continue;
+            }
+
+            $loggedAt = Carbon::createFromFormat('m/d/Y H:i', $columns[0] . ' ' . $columns[1]);
+
+            Measurement::create([
+                'name' => $columns[2],
+                'value' => $columns[3],
+                'unit' => $columns[4],
+                'comments' => $columns[5] ?? null,
+                'logged_at' => $loggedAt,
+            ]);
+            $importedCount++;
+        }
+
+        return [
+            'importedCount' => $importedCount,
         ];
     }
 }

@@ -3,12 +3,19 @@
 namespace App\Http\Controllers;
 
 use App\Models\Measurement;
+use App\Services\TsvImporterService;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Carbon\Carbon;
 
 class MeasurementController extends Controller
 {
+    protected $tsvImporterService;
+
+    public function __construct(TsvImporterService $tsvImporterService)
+    {
+        $this->tsvImporterService = $tsvImporterService;
+    }
     /**
      * Display a listing of the resource.
      */
@@ -126,5 +133,31 @@ class MeasurementController extends Controller
         Measurement::destroy($validated['measurement_ids']);
 
         return redirect()->route('measurements.index')->with('success', 'Selected measurements deleted successfully!');
+    }
+
+    public function importTsv(Request $request)
+    {
+        $validated = $request->validate([
+            'tsv_data' => 'required|string',
+        ]);
+
+        $tsvData = trim($validated['tsv_data']);
+        if (empty($tsvData)) {
+            return redirect()
+                ->route('measurements.index')
+                ->with('error', 'TSV data cannot be empty.');
+        }
+
+        $result = $this->tsvImporterService->importMeasurements($tsvData);
+
+        if ($result['importedCount'] === 0) {
+            return redirect()
+                ->route('measurements.index')
+                ->with('error', 'No measurements were imported.');
+        }
+
+        return redirect()
+            ->route('measurements.index')
+            ->with('success', 'TSV data imported successfully!');
     }
 }
