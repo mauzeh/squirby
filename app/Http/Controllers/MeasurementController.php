@@ -171,15 +171,16 @@ class MeasurementController extends Controller
         ];
 
         if ($measurements->isNotEmpty()) {
-            $startDate = $measurements->first()->logged_at->startOfDay();
-            $endDate = $measurements->last()->logged_at->endOfDay();
+            // Get the earliest and latest dates from the measurements
+            $earliestDate = $measurements->last()->logged_at->startOfDay();
+            $latestDate = $measurements->first()->logged_at->endOfDay();
 
-            $currentDate = $startDate->copy();
+            $currentDate = $earliestDate->copy();
             $dataMap = $measurements->keyBy(function ($item) {
                 return $item->logged_at->format('Y-m-d');
             });
 
-            while ($currentDate->lte($endDate)) {
+            while ($currentDate->lte($latestDate)) {
                 $dateString = $currentDate->format('Y-m-d');
                 $chartData['labels'][] = $currentDate->format('m/d');
                 $chartData['datasets'][0]['data'][] = $dataMap->has($dateString) ? $dataMap[$dateString]->value : null;
