@@ -71,14 +71,6 @@ class MeasurementController extends Controller
     }
 
     /**
-     * Display the specified resource.
-     */
-    public function show(Measurement $measurement)
-    {
-        //
-    }
-
-    /**
      * Show the form for editing the specified resource.
      */
     public function edit(Measurement $measurement)

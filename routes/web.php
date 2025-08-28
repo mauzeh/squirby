@@ -34,8 +34,6 @@ Route::get('measurements/{name}', [MeasurementController::class, 'showByName'])-
 
 Route::resource('measurements', MeasurementController::class)->except(['create', 'show']);
 
-Route::get('measurements/{measurement}', [MeasurementController::class, 'show'])->name('measurements.show');
-
 Route::post('measurements/destroy-selected', [MeasurementController::class, 'destroySelected'])->name('measurements.destroy-selected');
 Route::post('measurements/import-tsv', [MeasurementController::class, 'importTsv'])->name('measurements.import-tsv');
 
