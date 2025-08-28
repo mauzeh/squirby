@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Measurement;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Carbon\Carbon;
 
 class MeasurementController extends Controller
 {
@@ -34,10 +35,13 @@ class MeasurementController extends Controller
             'name' => ['required', Rule::in(['Waist', 'Arm', 'Chest', 'Bodyweight'])],
             'value' => 'required|numeric',
             'unit' => ['required', Rule::in(['lbs', 'in', 'cm'])],
-            'logged_at' => 'required|date',
+            'date' => 'required|date',
+            'logged_at' => 'required|date_format:H:i',
         ]);
 
-        Measurement::create($request->all());
+        $loggedAt = \Carbon\Carbon::parse($request->date)->setTimeFromTimeString($request->logged_at);
+
+        Measurement::create($request->except(['date', 'logged_at']) + ['logged_at' => $loggedAt]);
 
         return redirect()->route('measurements.index')->with('success', 'Measurement created successfully.');
     }
@@ -71,7 +75,7 @@ class MeasurementController extends Controller
             'logged_at' => 'required|date_format:H:i',
         ]);
 
-        $loggedAt = Carbon::parse($request->date)->setTimeFromTimeString($request->logged_at);
+        $loggedAt = \Carbon\Carbon::parse($request->date)->setTimeFromTimeString($request->logged_at);
 
         $measurement->update($request->except(['date', 'logged_at']) + ['logged_at' => $loggedAt]);
 
