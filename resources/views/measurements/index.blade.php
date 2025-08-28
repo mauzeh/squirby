@@ -4,7 +4,10 @@
     <div class="container">
         <h1>Measurements</h1>
         <a href="{{ route('measurements.create') }}" class="button">Add Measurement</a>
-        <table class="log-entries-table">
+        @if ($measurements->isEmpty())
+            <p>No measurements found. Add one to get started!</p>
+        @else
+            <table class="log-entries-table">
             <thead>
                 <tr>
                     <th>Name</th>
@@ -35,5 +38,6 @@
                 @endforeach
             </tbody>
         </table>
+        @endif
     </div>
 @endsection

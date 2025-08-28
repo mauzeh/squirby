@@ -20,7 +20,12 @@
                 @method('PUT')
                 <div class="form-group">
                     <label for="name">Name:</label>
-                    <input type="text" name="name" id="name" value="{{ old('name', $measurement->name) }}" required>
+                    <select name="name" id="name" required>
+                        <option value="Waist" @if(old('name', $measurement->name) == 'Waist') selected @endif>Waist</option>
+                        <option value="Arm" @if(old('name', $measurement->name) == 'Arm') selected @endif>Arm</option>
+                        <option value="Chest" @if(old('name', $measurement->name) == 'Chest') selected @endif>Chest</option>
+                        <option value="Bodyweight" @if(old('name', $measurement->name) == 'Bodyweight') selected @endif>Bodyweight</option>
+                    </select>
                 </div>
                 <div class="form-group">
                     <label for="value">Value:</label>
@@ -35,8 +40,12 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="logged_at">Date:</label>
-                    <input type="date" name="logged_at" id="logged_at" value="{{ old('logged_at', $measurement->logged_at->format('Y-m-d')) }}" required>
+                    <label for="date">Date:</label>
+                    <input type="date" name="date" id="date" value="{{ old('date', $measurement->logged_at->format('Y-m-d')) }}" required>
+                </div>
+                <div class="form-group">
+                    <label for="logged_at">Time:</label>
+                    <x-time-select name="logged_at" id="logged_at" :selectedTime="$measurement->logged_at->format('H:i')" required />
                 </div>
                 <button type="submit" class="button">Update Measurement</button>
             </form>

@@ -67,10 +67,13 @@ class MeasurementController extends Controller
             'name' => ['required', Rule::in(['Waist', 'Arm', 'Chest', 'Bodyweight'])],
             'value' => 'required|numeric',
             'unit' => ['required', Rule::in(['lbs', 'in', 'cm'])],
-            'logged_at' => 'required|date',
+            'date' => 'required|date',
+            'logged_at' => 'required|date_format:H:i',
         ]);
 
-        $measurement->update($request->all());
+        $loggedAt = Carbon::parse($request->date)->setTimeFromTimeString($request->logged_at);
+
+        $measurement->update($request->except(['date', 'logged_at']) + ['logged_at' => $loggedAt]);
 
         return redirect()->route('measurements.index')->with('success', 'Measurement updated successfully.');
     }
