@@ -10,6 +10,7 @@
             <table class="log-entries-table">
             <thead>
                 <tr>
+                    <th><input type="checkbox" id="select-all-measurements"></th>
                     <th>Name</th>
                     <th>Value</th>
                     <th>Date</th>
@@ -19,6 +20,7 @@
             <tbody>
                 @foreach ($measurements as $measurement)
                     <tr>
+                        <td><input type="checkbox" name="measurement_ids[]" value="{{ $measurement->id }}" class="measurement-checkbox"></td>
                         <td>{{ $measurement->name }}</td>
                         <td>{{ $measurement->value }} {{ $measurement->unit }}</td>
                         <td>{{ $measurement->logged_at->format('m/d/Y H:i') }}</td>
@@ -36,6 +38,46 @@
                 @endforeach
             </tbody>
         </table>
+        <tfoot>
+            <tr>
+                <th colspan="5" style="text-align:left; font-weight:normal;">
+                    <form action="{{ route('measurements.destroy-selected') }}" method="POST" id="delete-selected-form" onsubmit="return confirm('Are you sure you want to delete the selected measurements?');" style="display:inline;">
+                        @csrf
+                        <button type="submit" class="button delete">Delete Selected</button>
+                    </form>
+                </th>
+            </tr>
+        </tfoot>
         @endif
     </div>
+
+    <script>
+        document.getElementById('select-all-measurements').addEventListener('change', function(e) {
+            document.querySelectorAll('.measurement-checkbox').forEach(function(checkbox) {
+                checkbox.checked = e.target.checked;
+            });
+        });
+
+        document.getElementById('delete-selected-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            var form = e.target;
+            var checkedLogs = document.querySelectorAll('.measurement-checkbox:checked');
+
+            if (checkedLogs.length === 0) {
+                alert('Please select at least one measurement to delete.');
+                return;
+            }
+
+            checkedLogs.forEach(function(checkbox) {
+                var input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'measurement_ids[]';
+                input.value = checkbox.value;
+                form.appendChild(input);
+            });
+
+            form.submit();
+        });
+    </script>
 @endsection

@@ -91,4 +91,16 @@ class MeasurementController extends Controller
 
         return redirect()->route('measurements.index')->with('success', 'Measurement deleted successfully.');
     }
+
+    public function destroySelected(Request $request)
+    {
+        $validated = $request->validate([
+            'measurement_ids' => 'required|array',
+            'measurement_ids.*' => 'exists:measurements,id',
+        ]);
+
+        Measurement::destroy($validated['measurement_ids']);
+
+        return redirect()->route('measurements.index')->with('success', 'Selected measurements deleted successfully!');
+    }
 }
