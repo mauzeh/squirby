@@ -12,7 +12,6 @@
                 <tr>
                     <th>Name</th>
                     <th>Value</th>
-                    <th>Unit</th>
                     <th>Date</th>
                     <th class="actions-column">Actions</th>
                 </tr>
@@ -21,9 +20,8 @@
                 @foreach ($measurements as $measurement)
                     <tr>
                         <td>{{ $measurement->name }}</td>
-                        <td>{{ $measurement->value }}</td>
-                        <td>{{ $measurement->unit }}</td>
-                        <td>{{ $measurement->logged_at->format('m/d/Y') }}</td>
+                        <td>{{ $measurement->value }} {{ $measurement->unit }}</td>
+                        <td>{{ $measurement->logged_at->format('m/d/Y H:i') }}</td>
                         <td class="actions-column">
                             <div style="display: flex; gap: 5px;">
                                 <a href="{{ route('measurements.edit', $measurement->id) }}" class="button edit">Edit</a>
