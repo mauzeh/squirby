@@ -345,6 +345,7 @@
             <a href="{{ route('export-form') }}" class="{{ Request::routeIs('export-form') ? 'active' : '' }}">Export</a>
             <a href="{{ route('exercises.index') }}" class="{{ Request::routeIs('exercises.*') ? 'active' : '' }}">Exercises</a>
             <a href="{{ route('workouts.index') }}" class="{{ Request::routeIs('workouts.*') ? 'active' : '' }}">Workouts</a>
+            <a href="{{ route('measurements.index') }}" class="{{ Request::routeIs('measurements.*') ? 'active' : '' }}">Measurements</a>
         </div>
         <div class="content">
             @yield('content')

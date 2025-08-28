@@ -6,6 +6,7 @@ use App\Http\Controllers\MealController;
 use App\Http\Controllers\ExportController;
 use App\Http\Controllers\ExerciseController;
 use App\Http\Controllers\WorkoutController;
+use App\Http\Controllers\MeasurementController;
 use Illuminate\Support\Facades\Route;
 
 Route::resource('daily-logs', DailyLogController::class)->except(['show']);
@@ -27,6 +28,7 @@ Route::resource('meals', MealController::class)->except([
 
 Route::post('meals/create-from-logs', [MealController::class, 'createFromLogs'])->name('meals.create-from-logs');
 
+Route::resource('measurements', MeasurementController::class);
 Route::resource('exercises', ExerciseController::class);
 Route::get('exercises/{exercise}/logs', [ExerciseController::class, 'showLogs'])->name('exercises.show-logs');
 
