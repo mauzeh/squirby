@@ -14,6 +14,7 @@
                     <th>Name</th>
                     <th>Value</th>
                     <th>Date</th>
+                    <th class="hide-on-mobile">Comments</th>
                     <th class="actions-column">Actions</th>
                 </tr>
             </thead>
@@ -24,6 +25,7 @@
                         <td>{{ $measurement->name }}</td>
                         <td>{{ $measurement->value }} {{ $measurement->unit }}</td>
                         <td>{{ $measurement->logged_at->format('m/d/Y H:i') }}</td>
+                        <td class="hide-on-mobile" style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ $measurement->comments }}">{{ $measurement->comments }}</td>
                         <td class="actions-column">
                             <div style="display: flex; gap: 5px;">
                                 <a href="{{ route('measurements.edit', $measurement->id) }}" class="button edit">Edit</a>
@@ -40,7 +42,7 @@
         </table>
         <tfoot>
             <tr>
-                <th colspan="5" style="text-align:left; font-weight:normal;">
+                <th colspan="6" style="text-align:left; font-weight:normal;">
                     <form action="{{ route('measurements.destroy-selected') }}" method="POST" id="delete-selected-form" onsubmit="return confirm('Are you sure you want to delete the selected measurements?');" style="display:inline;">
                         @csrf
                         <button type="submit" class="button delete">Delete Selected</button>

@@ -14,6 +14,7 @@ class Measurement extends Model
         'value',
         'unit',
         'logged_at',
+        'comments',
     ];
 
     protected $casts = [

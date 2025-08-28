@@ -21,7 +21,8 @@ class MeasurementController extends Controller
             $tsv .= $measurement->logged_at->format('H:i') . "	";
             $tsv .= $measurement->name . "	";
             $tsv .= $measurement->value . "	";
-            $tsv .= $measurement->unit . "
+            $tsv .= $measurement->unit . "	";
+            $tsv .= $measurement->comments . "
 ";
         }
         return view('measurements.index', compact('measurements', 'tsv'));
@@ -46,11 +47,18 @@ class MeasurementController extends Controller
             'unit' => ['required', Rule::in(['lbs', 'kg', 'in', 'cm'])],
             'date' => 'required|date',
             'logged_at' => 'required|date_format:H:i',
+            'comments' => 'nullable|string',
         ]);
 
         $loggedAt = \Carbon\Carbon::parse($request->date)->setTimeFromTimeString($request->logged_at);
 
-        Measurement::create($request->except(['date', 'logged_at']) + ['logged_at' => $loggedAt]);
+        Measurement::create([
+            'name' => $request->name,
+            'value' => $request->value,
+            'unit' => $request->unit,
+            'logged_at' => $loggedAt,
+            'comments' => $request->comments,
+        ]);
 
         return redirect()->route('measurements.index')->with('success', 'Measurement created successfully.');
     }
@@ -82,11 +90,18 @@ class MeasurementController extends Controller
             'unit' => ['required', Rule::in(['lbs', 'kg', 'in', 'cm'])],
             'date' => 'required|date',
             'logged_at' => 'required|date_format:H:i',
+            'comments' => 'nullable|string',
         ]);
 
         $loggedAt = \Carbon\Carbon::parse($request->date)->setTimeFromTimeString($request->logged_at);
 
-        $measurement->update($request->except(['date', 'logged_at']) + ['logged_at' => $loggedAt]);
+        $measurement->update([
+            'name' => $request->name,
+            'value' => $request->value,
+            'unit' => $request->unit,
+            'logged_at' => $loggedAt,
+            'comments' => $request->comments,
+        ]);
 
         return redirect()->route('measurements.index')->with('success', 'Measurement updated successfully.');
     }

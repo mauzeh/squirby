@@ -48,6 +48,10 @@
                     <label for="logged_at">Time:</label>
                     <x-time-select name="logged_at" id="logged_at" :selectedTime="$measurement->logged_at->format('H:i')" required />
                 </div>
+                <div class="form-group">
+                    <label for="comments">Comments:</label>
+                    <textarea name="comments" id="comments" class="form-control" rows="5">{{ old('comments', $measurement->comments) }}</textarea>
+                </div>
                 <button type="submit" class="button">Update Measurement</button>
             </form>
         </div>

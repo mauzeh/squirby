@@ -47,6 +47,10 @@
                     <label for="logged_at">Time:</label>
                     <x-time-select name="logged_at" id="logged_at" required />
                 </div>
+                <div class="form-group">
+                    <label for="comments">Comments:</label>
+                    <textarea name="comments" id="comments" class="form-control" rows="5">{{ old('comments') }}</textarea>
+                </div>
                 <button type="submit" class="button">Add Measurement</button>
             </form>
         </div>
