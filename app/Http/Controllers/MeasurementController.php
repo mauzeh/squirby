@@ -14,8 +14,17 @@ class MeasurementController extends Controller
      */
     public function index()
     {
-        $measurements = Measurement::orderBy('logged_at', 'desc')->get();
-        return view('measurements.index', compact('measurements'));
+        $measurements = Measurement::orderBy('logged_at', 'asc')->get();
+        $tsv = '';
+        foreach ($measurements as $measurement) {
+            $tsv .= $measurement->logged_at->format('m/d/Y') . "	";
+            $tsv .= $measurement->logged_at->format('H:i') . "	";
+            $tsv .= $measurement->name . "	";
+            $tsv .= $measurement->value . "	";
+            $tsv .= $measurement->unit . "
+";
+        }
+        return view('measurements.index', compact('measurements', 'tsv'));
     }
 
     /**
