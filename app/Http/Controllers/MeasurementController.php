@@ -160,4 +160,41 @@ class MeasurementController extends Controller
             ->route('measurements.index')
             ->with('success', 'TSV data imported successfully!');
     }
+
+    public function showByName($name)
+    {
+        $measurements = Measurement::where('name', $name)->orderBy('logged_at', 'asc')->get();
+
+        $chartData = [
+            'labels' => [],
+            'datasets' => [
+                [
+                    'label' => $name,
+                    'data' => [],
+                    'borderColor' => 'rgba(255, 99, 132, 1)',
+                    'backgroundColor' => 'rgba(255, 99, 132, 1)',
+                    'fill' => false,
+                ],
+            ],
+        ];
+
+        if ($measurements->isNotEmpty()) {
+            $startDate = $measurements->first()->logged_at->startOfDay();
+            $endDate = $measurements->last()->logged_at->endOfDay();
+
+            $currentDate = $startDate->copy();
+            $dataMap = $measurements->keyBy(function ($item) {
+                return $item->logged_at->format('Y-m-d');
+            });
+
+            while ($currentDate->lte($endDate)) {
+                $dateString = $currentDate->format('Y-m-d');
+                $chartData['labels'][] = $currentDate->format('m/d');
+                $chartData['datasets'][0]['data'][] = $dataMap->has($dateString) ? $dataMap[$dateString]->value : null;
+                $currentDate->addDay();
+            }
+        }
+
+        return view('measurements.show-by-name', compact('measurements', 'chartData', 'name'));
+    }
 }

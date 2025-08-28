@@ -2,16 +2,19 @@
 
 @section('content')
     <div class="container">
-        <h1>Measurements</h1>
-        <a href="{{ route('measurements.create') }}" class="button">Add Measurement</a>
+        <h1>{{ $name }}</h1>
+
+        <div class="form-container">
+            <canvas id="measurementChart"></canvas>
+        </div>
+
         @if ($measurements->isEmpty())
-            <p>No measurements found. Add one to get started!</p>
+            <p>No measurements found for {{ $name }}.</p>
         @else
             <table class="log-entries-table">
             <thead>
                 <tr>
                     <th><input type="checkbox" id="select-all-measurements"></th>
-                    <th>Name</th>
                     <th>Value</th>
                     <th>Date</th>
                     <th class="hide-on-mobile">Comments</th>
@@ -22,7 +25,6 @@
                 @foreach ($measurements as $measurement)
                     <tr>
                         <td><input type="checkbox" name="measurement_ids[]" value="{{ $measurement->id }}" class="measurement-checkbox"></td>
-                        <td><a href="{{ route('measurements.show-by-name', ['name' => $measurement->name]) }}">{{ $measurement->name }}</a></td>
                         <td>{{ $measurement->value }} {{ $measurement->unit }}</td>
                         <td>{{ $measurement->logged_at->format('m/d/Y H:i') }}</td>
                         <td class="hide-on-mobile" style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ $measurement->comments }}">{{ $measurement->comments }}</td>
@@ -41,7 +43,7 @@
             </tbody>
             <tfoot>
                 <tr>
-                    <th colspan="6" style="text-align:left; font-weight:normal;">
+                    <th colspan="5" style="text-align:left; font-weight:normal;">
                         <form action="{{ route('measurements.destroy-selected') }}" method="POST" id="delete-selected-form" onsubmit="return confirm('Are you sure you want to delete the selected measurements?');" style="display:inline;">
                             @csrf
                             <button type="submit" class="button delete">Delete Selected</button>
@@ -51,59 +53,54 @@
             </tfoot>
         </table>
         @endif
-
-        @if (!$measurements->isEmpty())
-        <div class="form-container">
-            <h3>TSV Export</h3>
-            <textarea id="tsv-output" rows="10" style="width: 100%; background-color: #3a3a3a; color: #f2f2f2; border: 1px solid #555;">{{ $tsv }}</textarea>
-            <button id="copy-tsv-button" class="button">Copy to Clipboard</button>
-        </div>
-        @endif
-
-        <div class="form-container">
-            <h3>TSV Import</h3>
-            <form action="{{ route('measurements.import-tsv') }}" method="POST">
-                @csrf
-                <textarea name="tsv_data" rows="10" style="width: 100%; background-color: #3a3a3a; color: #f2f2f2; border: 1px solid #555;"></textarea>
-                <button type="submit" class="button">Import TSV</button>
-            </form>
-        </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        document.getElementById('select-all-measurements').addEventListener('change', function(e) {
-            document.querySelectorAll('.measurement-checkbox').forEach(function(checkbox) {
-                checkbox.checked = e.target.checked;
-            });
-        });
-
-        document.getElementById('delete-selected-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            var form = e.target;
-            var checkedLogs = document.querySelectorAll('.measurement-checkbox:checked');
-
-            if (checkedLogs.length === 0) {
-                alert('Please select at least one measurement to delete.');
-                return;
-            }
-
-            checkedLogs.forEach(function(checkbox) {
-                var input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = 'measurement_ids[]';
-                input.value = checkbox.value;
-                form.appendChild(input);
+        document.addEventListener('DOMContentLoaded', function() {
+            var ctx = document.getElementById('measurementChart').getContext('2d');
+            var measurementChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: @json($chartData['labels']),
+                    datasets: @json($chartData['datasets'])
+                },
+                options: {
+                    scales: {
+                        y: {
+                        }
+                    },
+                    spanGaps: true
+                }
             });
 
-            form.submit();
-        });
+            document.getElementById('select-all-measurements').addEventListener('change', function(e) {
+                document.querySelectorAll('.measurement-checkbox').forEach(function(checkbox) {
+                    checkbox.checked = e.target.checked;
+                });
+            });
 
-        document.getElementById('copy-tsv-button').addEventListener('click', function() {
-            var tsvOutput = document.getElementById('tsv-output');
-            tsvOutput.select();
-            document.execCommand('copy');
-            alert('TSV data copied to clipboard!');
+            document.getElementById('delete-selected-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                var form = e.target;
+                var checkedLogs = document.querySelectorAll('.measurement-checkbox:checked');
+
+                if (checkedLogs.length === 0) {
+                    alert('Please select at least one measurement to delete.');
+                    return;
+                }
+
+                checkedLogs.forEach(function(checkbox) {
+                    var input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'measurement_ids[]';
+                    input.value = checkbox.value;
+                    form.appendChild(input);
+                });
+
+                form.submit();
+            });
         });
     </script>
 @endsection

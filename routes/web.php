@@ -28,9 +28,11 @@ Route::resource('meals', MealController::class)->except([
 
 Route::post('meals/create-from-logs', [MealController::class, 'createFromLogs'])->name('meals.create-from-logs');
 
+Route::get('measurements/{name}', [MeasurementController::class, 'showByName'])->name('measurements.show-by-name');
 Route::resource('measurements', MeasurementController::class);
 Route::post('measurements/destroy-selected', [MeasurementController::class, 'destroySelected'])->name('measurements.destroy-selected');
 Route::post('measurements/import-tsv', [MeasurementController::class, 'importTsv'])->name('measurements.import-tsv');
+
 Route::resource('exercises', ExerciseController::class);
 Route::get('exercises/{exercise}/logs', [ExerciseController::class, 'showLogs'])->name('exercises.show-logs');
 
