@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
             MealSeeder::class,
             ExerciseSeeder::class,
             WorkoutSeeder::class,
+            MeasurementSeeder::class,
         ]);
     }
 }
