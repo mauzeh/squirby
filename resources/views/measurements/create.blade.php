@@ -34,6 +34,7 @@
                     <label for="unit">Unit:</label>
                     <select name="unit" id="unit" required>
                         <option value="lbs" @if(old('unit') == 'lbs') selected @endif>lbs</option>
+                        <option value="kg" @if(old('unit') == 'kg') selected @endif>kg</option>
                         <option value="in" @if(old('unit') == 'in') selected @endif>in</option>
                         <option value="cm" @if(old('unit') == 'cm') selected @endif>cm</option>
                     </select>

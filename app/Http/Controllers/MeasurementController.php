@@ -34,7 +34,7 @@ class MeasurementController extends Controller
         $request->validate([
             'name' => ['required', Rule::in(['Waist', 'Arm', 'Chest', 'Bodyweight'])],
             'value' => 'required|numeric',
-            'unit' => ['required', Rule::in(['lbs', 'in', 'cm'])],
+            'unit' => ['required', Rule::in(['lbs', 'kg', 'in', 'cm'])],
             'date' => 'required|date',
             'logged_at' => 'required|date_format:H:i',
         ]);
@@ -70,7 +70,7 @@ class MeasurementController extends Controller
         $request->validate([
             'name' => ['required', Rule::in(['Waist', 'Arm', 'Chest', 'Bodyweight'])],
             'value' => 'required|numeric',
-            'unit' => ['required', Rule::in(['lbs', 'in', 'cm'])],
+            'unit' => ['required', Rule::in(['lbs', 'kg', 'in', 'cm'])],
             'date' => 'required|date',
             'logged_at' => 'required|date_format:H:i',
         ]);
