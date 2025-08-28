@@ -21,7 +21,7 @@ class MeasurementController extends Controller
      */
     public function index()
     {
-        $measurements = Measurement::orderBy('logged_at', 'asc')->get();
+        $measurements = Measurement::orderBy('logged_at', 'desc')->get();
         $tsv = '';
         foreach ($measurements as $measurement) {
             $tsv .= $measurement->logged_at->format('m/d/Y') . "	";
@@ -155,7 +155,7 @@ class MeasurementController extends Controller
 
     public function showByName($name)
     {
-        $measurements = Measurement::where('name', $name)->orderBy('logged_at', 'asc')->get();
+        $measurements = Measurement::where('name', $name)->orderBy('logged_at', 'desc')->get();
 
         $chartData = [
             'labels' => [],
