@@ -39,17 +39,17 @@
                     </tr>
                 @endforeach
             </tbody>
+            <tfoot>
+                <tr>
+                    <th colspan="6" style="text-align:left; font-weight:normal;">
+                        <form action="{{ route('measurements.destroy-selected') }}" method="POST" id="delete-selected-form" onsubmit="return confirm('Are you sure you want to delete the selected measurements?');" style="display:inline;">
+                            @csrf
+                            <button type="submit" class="button delete">Delete Selected</button>
+                        </form>
+                    </th>
+                </tr>
+            </tfoot>
         </table>
-        <tfoot>
-            <tr>
-                <th colspan="6" style="text-align:left; font-weight:normal;">
-                    <form action="{{ route('measurements.destroy-selected') }}" method="POST" id="delete-selected-form" onsubmit="return confirm('Are you sure you want to delete the selected measurements?');" style="display:inline;">
-                        @csrf
-                        <button type="submit" class="button delete">Delete Selected</button>
-                    </form>
-                </th>
-            </tr>
-        </tfoot>
         @endif
 
         <div class="form-container">
