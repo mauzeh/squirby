@@ -12,7 +12,10 @@
         </div>
     @endif
     <div class="container">
-        <h1>{{ $exercise->title }}</h1>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h1>{{ $exercise->title }}</h1>
+            <a href="{{ route('workouts.index', ['exercise_id' => $exercise->id]) }}" class="button">Add Workout</a>
+        </div>
         
 
         @if ($workouts->isEmpty())

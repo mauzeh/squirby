@@ -122,6 +122,11 @@
         <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
         <script>
             document.addEventListener('DOMContentLoaded', function() {
+                const urlParams = new URLSearchParams(window.location.search);
+                const exerciseId = urlParams.get('exercise_id');
+                if (exerciseId) {
+                    document.getElementById('exercise_id').value = exerciseId;
+                }
                 var ctx = document.getElementById('oneRepMaxChart').getContext('2d');
                 var oneRepMaxChart = new Chart(ctx, {
                     type: 'line',
