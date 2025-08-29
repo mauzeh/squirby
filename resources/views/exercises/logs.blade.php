@@ -12,7 +12,7 @@
         </div>
     @endif
     <div class="container">
-        <h1>Logs for {{ $exercise->title }}</h1>
+        <h1>{{ $exercise->title }}</h1>
         
 
         @if ($workouts->isEmpty())
