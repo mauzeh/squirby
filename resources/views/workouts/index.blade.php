@@ -73,7 +73,7 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach ($workouts as $workout)
+                @foreach ($workouts->reverse() as $workout)
                     <tr>
                         <td><input type="checkbox" name="workout_ids[]" value="{{ $workout->id }}" class="workout-checkbox"></td>
                         <td>{{ $workout->logged_at->format('m/d') }}</td>
