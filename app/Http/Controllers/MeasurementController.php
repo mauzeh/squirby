@@ -23,14 +23,13 @@ class MeasurementController extends Controller
     {
         $measurements = Measurement::orderBy('logged_at', 'desc')->get();
         $tsv = '';
-        foreach ($measurements as $measurement) {
-            $tsv .= $measurement->logged_at->format('m/d/Y') . "	";
-            $tsv .= $measurement->logged_at->format('H:i') . "	";
-            $tsv .= $measurement->name . "	";
-            $tsv .= $measurement->value . "	";
-            $tsv .= $measurement->unit . "	";
-            $tsv .= $measurement->comments . "
-";
+        foreach ($measurements->reverse() as $measurement) {
+            $tsv .= $measurement->logged_at->format('m/d/Y') . "\t";
+            $tsv .= $measurement->logged_at->format('H:i') . "\t";
+            $tsv .= $measurement->name . "\t";
+            $tsv .= $measurement->value . "\t";
+            $tsv .= $measurement->unit . "\t";
+            $tsv .= $measurement->comments . "\n";
         }
         return view('measurements.index', compact('measurements', 'tsv'));
     }
