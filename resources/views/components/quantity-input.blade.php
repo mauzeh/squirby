@@ -1,8 +1,1 @@
-<input 
-    type="text" 
-    name="{{ $name }}" 
-    id="{{ $id }}" 
-    step="0.001" 
-    min="0.001" 
-    value="{{ $value ?? '' }}" {{ isset($required) && $required ? 'required' : '' }} 
-    inputmode="decimal">
+<input type="number" name="{{ $name }}" id="{{ $id }}" step="0.001" min="0.001" value="{{ $value ?? '' }}" {{ isset($required) && $required ? 'required' : '' }} inputmode="decimal">
