@@ -58,6 +58,23 @@
             </tfoot>
         </table>
         @endif
+
+        @if (!$measurementLogs->isEmpty())
+        <div class="form-container">
+            <h3>TSV Export</h3>
+            <textarea id="tsv-output" rows="10" style="width: 100%; background-color: #3a3a3a; color: #f2f2f2; border: 1px solid #555;">{{ $tsv }}</textarea>
+            <button id="copy-tsv-button" class="button">Copy to Clipboard</button>
+        </div>
+        @endif
+
+        <div class="form-container">
+            <h3>TSV Import</h3>
+            <form action="{{ route('measurement-logs.import-tsv') }}" method="POST">
+                @csrf
+                <textarea name="tsv_data" rows="10" style="width: 100%; background-color: #3a3a3a; color: #f2f2f2; border: 1px solid #555;"></textarea>
+                <button type="submit" class="button">Import TSV</button>
+            </form>
+        </div>
     </div>
 
     <script>
@@ -87,6 +104,13 @@
             });
 
             form.submit();
+        });
+
+        document.getElementById('copy-tsv-button').addEventListener('click', function() {
+            var tsvOutput = document.getElementById('tsv-output');
+            tsvOutput.select();
+            document.execCommand('copy');
+            alert('TSV data copied to clipboard!');
         });
     </script>
 @endsection

@@ -31,6 +31,7 @@ Route::post('meals/create-from-logs', [MealController::class, 'createFromLogs'])
 
 Route::resource('measurement-logs', MeasurementLogController::class)->except(['show']);
 Route::post('measurement-logs/destroy-selected', [MeasurementLogController::class, 'destroySelected'])->name('measurement-logs.destroy-selected');
+Route::post('measurement-logs/import-tsv', [MeasurementLogController::class, 'importTsv'])->name('measurement-logs.import-tsv');
 Route::get('measurement-logs/type/{measurementType}', [MeasurementLogController::class, 'showByType'])->name('measurement-logs.show-by-type');
 
 Route::resource('measurement-types', MeasurementTypeController::class)->except(['show']);

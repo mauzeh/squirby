@@ -4,14 +4,31 @@ namespace App\Http\Controllers;
 
 use App\Models\MeasurementLog;
 use App\Models\MeasurementType;
+use App\Services\TsvImporterService;
 use Illuminate\Http\Request;
 
 class MeasurementLogController extends Controller
 {
+    protected $tsvImporterService;
+
+    public function __construct(TsvImporterService $tsvImporterService)
+    {
+        $this->tsvImporterService = $tsvImporterService;
+    }
+
     public function index()
     {
         $measurementLogs = MeasurementLog::with('measurementType')->orderBy('logged_at', 'desc')->get();
-        return view('measurement-logs.index', compact('measurementLogs'));
+        $tsv = '';
+        foreach ($measurementLogs->reverse() as $measurementLog) {
+            $tsv .= $measurementLog->logged_at->format('m/d/Y') . "\t";
+            $tsv .= $measurementLog->logged_at->format('H:i') . "\t";
+            $tsv .= $measurementLog->measurementType->name . "\t";
+            $tsv .= $measurementLog->value . "\t";
+            $tsv .= $measurementLog->measurementType->default_unit . "\t";
+            $tsv .= $measurementLog->comments . "\n";
+        }
+        return view('measurement-logs.index', compact('measurementLogs', 'tsv'));
     }
 
     public function create()
@@ -87,6 +104,32 @@ class MeasurementLogController extends Controller
         MeasurementLog::destroy($validated['measurement_log_ids']);
 
         return redirect()->route('measurement-logs.index')->with('success', 'Selected measurement logs deleted successfully!');
+    }
+
+    public function importTsv(Request $request)
+    {
+        $validated = $request->validate([
+            'tsv_data' => 'required|string',
+        ]);
+
+        $tsvData = trim($validated['tsv_data']);
+        if (empty($tsvData)) {
+            return redirect()
+                ->route('measurement-logs.index')
+                ->with('error', 'TSV data cannot be empty.');
+        }
+
+        $result = $this->tsvImporterService->importMeasurements($tsvData);
+
+        if ($result['importedCount'] === 0) {
+            return redirect()
+                ->route('measurement-logs.index')
+                ->with('error', 'No measurements were imported.');
+        }
+
+        return redirect()
+            ->route('measurement-logs.index')
+            ->with('success', 'TSV data imported successfully!');
     }
 
     public function showByType(MeasurementType $measurementType)
