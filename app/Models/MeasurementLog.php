@@ -5,14 +5,15 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Measurement extends Model
+class MeasurementLog extends Model
 {
     use HasFactory;
 
+    protected $table = 'measurement_logs';
+
     protected $fillable = [
-        'name',
+        'measurement_type_id',
         'value',
-        'unit',
         'logged_at',
         'comments',
     ];
@@ -20,4 +21,9 @@ class Measurement extends Model
     protected $casts = [
         'logged_at' => 'datetime',
     ];
+
+    public function measurementType()
+    {
+        return $this->belongsTo(MeasurementType::class);
+    }
 }

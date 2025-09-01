@@ -2,14 +2,14 @@
 
 @section('content')
     <div class="container">
-        <h1>{{ $name }}</h1>
+        <h1>{{ $measurementType->name }}</h1>
 
         <div class="form-container">
             <canvas id="measurementChart"></canvas>
         </div>
 
-        @if ($measurements->isEmpty())
-            <p>No measurements found for {{ $name }}.</p>
+        @if ($measurementLogs->isEmpty())
+            <p>No measurements found for {{ $measurementType->name }}.</p>
         @else
             <table class="log-entries-table">
             <thead>
@@ -22,16 +22,16 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach ($measurements as $measurement)
+                @foreach ($measurementLogs as $measurementLog)
                     <tr>
-                        <td><input type="checkbox" name="measurement_ids[]" value="{{ $measurement->id }}" class="measurement-checkbox"></td>
-                        <td>{{ $measurement->value }} {{ $measurement->unit }}</td>
-                        <td>{{ $measurement->logged_at->format('m/d/Y H:i') }}</td>
-                        <td class="hide-on-mobile" style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ $measurement->comments }}">{{ $measurement->comments }}</td>
+                        <td><input type="checkbox" name="measurement_log_ids[]" value="{{ $measurementLog->id }}" class="measurement-checkbox"></td>
+                        <td>{{ $measurementLog->value }} {{ $measurementLog->measurementType->default_unit }}</td>
+                        <td>{{ $measurementLog->logged_at->format('m/d/Y H:i') }}</td>
+                        <td class="hide-on-mobile" style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ $measurementLog->comments }}">{{ $measurementLog->comments }}</td>
                         <td class="actions-column">
                             <div style="display: flex; gap: 5px;">
-                                <a href="{{ route('measurements.edit', $measurement->id) }}" class="button edit">Edit</a>
-                                <form action="{{ route('measurements.destroy', $measurement->id) }}" method="POST" style="display:inline;">
+                                <a href="{{ route('measurement-logs.edit', $measurementLog->id) }}" class="button edit">Edit</a>
+                                <form action="{{ route('measurement-logs.destroy', $measurementLog->id) }}" method="POST" style="display:inline;">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="button delete" onclick="return confirm('Are you sure you want to delete this measurement?');">Delete</button>
@@ -44,7 +44,7 @@
             <tfoot>
                 <tr>
                     <th colspan="5" style="text-align:left; font-weight:normal;">
-                        <form action="{{ route('measurements.destroy-selected') }}" method="POST" id="delete-selected-form" onsubmit="return confirm('Are you sure you want to delete the selected measurements?');" style="display:inline;">
+                        <form action="{{ route('measurement-logs.destroy-selected') }}" method="POST" id="delete-selected-form" onsubmit="return confirm('Are you sure you want to delete the selected measurements?');" style="display:inline;">
                             @csrf
                             <button type="submit" class="button delete">Delete Selected</button>
                         </form>
@@ -94,7 +94,7 @@
                 checkedLogs.forEach(function(checkbox) {
                     var input = document.createElement('input');
                     input.type = 'hidden';
-                    input.name = 'measurement_ids[]';
+                    input.name = 'measurement_log_ids[]';
                     input.value = checkbox.value;
                     form.appendChild(input);
                 });

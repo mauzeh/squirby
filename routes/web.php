@@ -6,7 +6,8 @@ use App\Http\Controllers\MealController;
 use App\Http\Controllers\ExportController;
 use App\Http\Controllers\ExerciseController;
 use App\Http\Controllers\WorkoutController;
-use App\Http\Controllers\MeasurementController;
+use App\Http\Controllers\MeasurementLogController;
+use App\Http\Controllers\MeasurementTypeController;
 use Illuminate\Support\Facades\Route;
 
 Route::resource('daily-logs', DailyLogController::class)->except(['show']);
@@ -28,14 +29,11 @@ Route::resource('meals', MealController::class)->except([
 
 Route::post('meals/create-from-logs', [MealController::class, 'createFromLogs'])->name('meals.create-from-logs');
 
-Route::get('measurements/create', [MeasurementController::class, 'create'])->name('measurements.create');
+Route::resource('measurement-logs', MeasurementLogController::class)->except(['show']);
+Route::post('measurement-logs/destroy-selected', [MeasurementLogController::class, 'destroySelected'])->name('measurement-logs.destroy-selected');
+Route::get('measurement-logs/type/{measurementType}', [MeasurementLogController::class, 'showByType'])->name('measurement-logs.show-by-type');
 
-Route::get('measurements/{name}', [MeasurementController::class, 'showByName'])->name('measurements.show-by-name');
-
-Route::resource('measurements', MeasurementController::class)->except(['create', 'show']);
-
-Route::post('measurements/destroy-selected', [MeasurementController::class, 'destroySelected'])->name('measurements.destroy-selected');
-Route::post('measurements/import-tsv', [MeasurementController::class, 'importTsv'])->name('measurements.import-tsv');
+Route::resource('measurement-types', MeasurementTypeController::class)->except(['show']);
 
 Route::resource('exercises', ExerciseController::class);
 Route::get('exercises/{exercise}/logs', [ExerciseController::class, 'showLogs'])->name('exercises.show-logs');
