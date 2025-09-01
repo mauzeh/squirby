@@ -4,7 +4,8 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use App\Models\Measurement;
+use App\Models\MeasurementLog;
+use App\Models\MeasurementType;
 use Carbon\Carbon;
 
 class MeasurementSeeder extends Seeder
@@ -18,10 +19,14 @@ class MeasurementSeeder extends Seeder
         $firstline = true;
         while (($data = fgetcsv($csvFile, 2000, ",")) !== FALSE) {
             if (!$firstline) {
-                Measurement::create([
+                $measurementType = MeasurementType::firstOrCreate([
                     'name' => $data[2],
+                    'default_unit' => $data[4],
+                ]);
+
+                MeasurementLog::create([
+                    'measurement_type_id' => $measurementType->id,
                     'value' => $data[3],
-                    'unit' => $data[4],
                     'comments' => $data[5] ?? null,
                     'logged_at' => Carbon::parse($data[0] . ' ' . $data[1]),
                 ]);

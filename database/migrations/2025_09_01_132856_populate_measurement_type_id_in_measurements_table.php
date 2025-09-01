@@ -16,11 +16,12 @@ return new class extends Migration
                 return $type->name . '_' . $type->default_unit;
             });
 
-            \App\Models\Measurement::all()->each(function ($measurement) use ($measurementTypes) {
+            DB::table('measurements')->get()->each(function ($measurement) use ($measurementTypes) {
                 $key = $measurement->name . '_' . $measurement->unit;
                 if (isset($measurementTypes[$key])) {
-                    $measurement->measurement_type_id = $measurementTypes[$key]->id;
-                    $measurement->save();
+                    DB::table('measurements')
+                        ->where('id', $measurement->id)
+                        ->update(['measurement_type_id' => $measurementTypes[$key]->id]);
                 }
             });
         }
@@ -32,7 +33,7 @@ return new class extends Migration
     public function down(): void
     {
         if (Schema::hasTable('measurements')) {
-            \App\Models\Measurement::query()->update(['measurement_type_id' => null]);
+            DB::table('measurements')->update(['measurement_type_id' => null]);
         }
     }
 };
