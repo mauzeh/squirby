@@ -11,13 +11,13 @@ class MeasurementLogController extends Controller
     public function index()
     {
         $measurementLogs = MeasurementLog::with('measurementType')->orderBy('logged_at', 'desc')->get();
-        return view('measurements.index', compact('measurementLogs'));
+        return view('measurement-logs.index', compact('measurementLogs'));
     }
 
     public function create()
     {
         $measurementTypes = MeasurementType::all();
-        return view('measurements.create', compact('measurementTypes'));
+        return view('measurement-logs.create', compact('measurementTypes'));
     }
 
     public function store(Request $request)
@@ -39,13 +39,13 @@ class MeasurementLogController extends Controller
             'comments' => $request->comments,
         ]);
 
-        return redirect()->route('measurements.index')->with('success', 'Measurement log created successfully.');
+        return redirect()->route('measurement-logs.index')->with('success', 'Measurement log created successfully.');
     }
 
     public function edit(MeasurementLog $measurementLog)
     {
         $measurementTypes = MeasurementType::all();
-        return view('measurements.edit', compact('measurementLog', 'measurementTypes'));
+        return view('measurement-logs.edit', compact('measurementLog', 'measurementTypes'));
     }
 
     public function update(Request $request, MeasurementLog $measurementLog)
@@ -67,14 +67,14 @@ class MeasurementLogController extends Controller
             'comments' => $request->comments,
         ]);
 
-        return redirect()->route('measurements.index')->with('success', 'Measurement log updated successfully.');
+        return redirect()->route('measurement-logs.index')->with('success', 'Measurement log updated successfully.');
     }
 
     public function destroy(MeasurementLog $measurementLog)
     {
         $measurementLog->delete();
 
-        return redirect()->route('measurements.index')->with('success', 'Measurement log deleted successfully.');
+        return redirect()->route('measurement-logs.index')->with('success', 'Measurement log deleted successfully.');
     }
 
     public function destroySelected(Request $request)
@@ -86,7 +86,7 @@ class MeasurementLogController extends Controller
 
         MeasurementLog::destroy($validated['measurement_log_ids']);
 
-        return redirect()->route('measurements.index')->with('success', 'Selected measurement logs deleted successfully!');
+        return redirect()->route('measurement-logs.index')->with('success', 'Selected measurement logs deleted successfully!');
     }
 
     public function showByType(MeasurementType $measurementType)
@@ -123,6 +123,6 @@ class MeasurementLogController extends Controller
             }
         }
 
-        return view('measurements.show-by-type', compact('measurementLogs', 'chartData', 'measurementType'));
+        return view('measurement-logs.show-by-type', compact('measurementLogs', 'chartData', 'measurementType'));
     }
 }
