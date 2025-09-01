@@ -81,3 +81,9 @@ After the initial implementation of this plan, we encountered a few issues that 
     1.  We updated the migration to use `DB::table('measurements')` instead of the Eloquent model.
     2.  We updated the `MeasurementSeeder` to use the new `MeasurementLog` and `MeasurementType` models.
 *   **Takeaway:** When writing migrations that depend on the state of the database at a specific point in time, it's often safer to use raw database queries to avoid issues with model name changes or other schema modifications that might occur in later migrations. Seeders should always be kept in sync with the latest model architecture.
+
+### 4. Holistic Feature Consideration
+
+*   **Problem:** The initial refactoring plan was focused on the core CRUD functionality and overlooked the TSV import/export feature. This resulted in the feature being broken after the refactoring was complete.
+*   **Solution:** We had to go back and reinstate the TSV functionality by updating the controller, service, view, and routes.
+*   **Takeaway:** When planning a refactoring effort, it's crucial to consider the entire feature set, not just the core functionality. This includes any secondary actions like import/export, reporting, or other related components. A more holistic initial plan can prevent features from being inadvertently broken and reduce the need for follow-up fixes.
