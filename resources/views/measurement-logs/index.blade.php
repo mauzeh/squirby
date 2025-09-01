@@ -23,8 +23,14 @@
                 @foreach ($measurementLogs as $measurementLog)
                     <tr>
                         <td><input type="checkbox" name="measurement_log_ids[]" value="{{ $measurementLog->id }}" class="measurement-checkbox"></td>
-                        <td><a href="{{ route('measurement-logs.show-by-type', ['measurementType' => $measurementLog->measurementType->id]) }}">{{ $measurementLog->measurementType->name }}</a></td>
-                        <td>{{ $measurementLog->value }} {{ $measurementLog->measurementType->default_unit }}</td>
+                        <td>
+                            @if ($measurementLog->measurementType)
+                                <a href="{{ route('measurement-logs.show-by-type', ['measurementType' => $measurementLog->measurementType->id]) }}">{{ $measurementLog->measurementType->name }}</a>
+                            @else
+                                N/A
+                            @endif
+                        </td>
+                        <td>{{ $measurementLog->value }} {{ $measurementLog->measurementType ? $measurementLog->measurementType->default_unit : '' }}</td>
                         <td>{{ $measurementLog->logged_at->format('m/d/Y H:i') }}</td>
                         <td class="hide-on-mobile" style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ $measurementLog->comments }}">{{ $measurementLog->comments }}</td>
                         <td class="actions-column">
