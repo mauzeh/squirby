@@ -4,7 +4,7 @@
     <div class="container">
         <h1>Measurement Logs</h1>
         <a href="{{ route('measurement-logs.create') }}" class="button">Add Measurement Log</a>
-        <a href="{{ route('measurement-types.index') }}" class="button">Manage Measurement Types</a>
+        <a href="{{ route('measurement_types.index') }}" class="button">Manage Measurement Types</a>
         @if ($measurementLogs->isEmpty())
             <p>No measurement logs found. Add one to get started!</p>
         @else
