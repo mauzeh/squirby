@@ -346,6 +346,8 @@
             <a href="{{ route('exercises.index') }}" class="{{ Request::routeIs('exercises.*') ? 'active' : '' }}">Exercises</a>
             <a href="{{ route('workouts.index') }}" class="{{ Request::routeIs('workouts.*') ? 'active' : '' }}">Workouts</a>
             <a href="{{ route('measurement-logs.index') }}" class="{{ Request::routeIs(['measurement-logs.*', 'measurement-types.*']) ? 'active' : '' }}">Measurements</a>
+            <a href="{{ route('profile.edit') }}" class="{{ Request::routeIs('profile.edit') ? 'active' : '' }}">Profile</a>
+
             {{-- Logout Button --}}
             <form method="POST" action="{{ route('logout') }}" style="float: right; display: block; color: #f2f2f2; text-align: center; padding: 14px 16px; text-decoration: none; font-size: 17px;">
                 @csrf

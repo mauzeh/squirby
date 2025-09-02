@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use Illuminate\Support\Facades\Hash;
 
 class ProfileTest extends TestCase
 {
@@ -95,5 +96,95 @@ class ProfileTest extends TestCase
             ->assertRedirect('/profile');
 
         $this->assertNotNull($user->fresh());
+    }
+
+    /** @test */
+    public function test_password_can_be_updated_and_shows_success_message(): void
+    {
+        $user = User::factory()->create(['password' => Hash::make('password')]);
+
+        $response = $this
+            ->actingAs($user)
+            ->from('/profile')
+            ->put(route('password.update'), [
+                'current_password' => 'password',
+                'password' => 'new-password',
+                'password_confirmation' => 'new-password',
+            ]);
+
+        $response
+            ->assertSessionHasNoErrors()
+            ->assertRedirect('/profile');
+
+        // Follow the redirect and assert the success message on the page
+        $response = $this->actingAs($user)->get('/profile'); // Re-fetch the profile page after redirect
+        $response->assertSee('Saved.'); // Assert that the success message is visible
+    }
+
+    /** @test */
+    public function test_password_update_shows_validation_errors(): void
+    {
+        $user = User::factory()->create(['password' => Hash::make('password')]);
+
+        $response = $this
+            ->actingAs($user)
+            ->from('/profile')
+            ->put(route('password.update'), [
+                'current_password' => 'password',
+                'password' => 'short',
+                'password_confirmation' => 'short',
+            ]);
+
+        $response
+            ->assertSessionHasErrorsIn('updatePassword', ['password'])
+            ->assertRedirect('/profile');
+
+        // Follow the redirect and assert the error message on the page
+        $response = $this->actingAs($user)->get('/profile'); // Re-fetch the profile page after redirect
+        $response->assertSee('The password field must be at least 8 characters.');
+    }
+
+    /** @test */
+    public function test_profile_information_can_be_updated_and_shows_success_message(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this
+            ->actingAs($user)
+            ->patch('/profile', [
+                'name' => 'Updated Name',
+                'email' => 'updated@example.com',
+            ]);
+
+        $response
+            ->assertSessionHasNoErrors()
+            ->assertRedirect('/profile');
+
+        // Follow the redirect and assert the success message on the page
+        $response = $this->actingAs($user)->get('/profile');
+        $response->assertSee('Saved.');
+    }
+
+    /** @test */
+    public function test_profile_information_update_shows_validation_errors(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this
+            ->actingAs($user)
+            ->from('/profile')
+            ->patch('/profile', [
+                'name' => '', // Invalid name
+                'email' => 'invalid-email', // Invalid email
+            ]);
+
+        $response
+            ->assertSessionHasErrors(['name', 'email'])
+            ->assertRedirect('/profile');
+
+        // Follow the redirect and assert the error messages on the page
+        $response = $this->actingAs($user)->get('/profile');
+        $response->assertSee('The name field is required.');
+        $response->assertSee('The email field must be a valid email address.');
     }
 }
