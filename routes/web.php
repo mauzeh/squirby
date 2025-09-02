@@ -84,7 +84,7 @@ Route::middleware('auth')->group(function () {
     Route::post('workouts/destroy-selected', [WorkoutController::class, 'destroySelected'])->name('workouts.destroy-selected')->middleware('permission:workouts.delete');
 });
 
-Route::middleware(['auth', 'role:admin'])->name('admin.')->prefix('admin')->group(function () {
+Route::middleware(['auth'])->name('admin.')->prefix('admin')->group(function () {
     Route::resource('users', UserController::class)->middleware([
         'permission:users.view|users.create|users.update|users.delete'
     ]);

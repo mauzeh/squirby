@@ -6,28 +6,72 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Spatie\Permission\Models\Role;
+use Spatie\Permission\Models\Permission;
 use Tests\TestCase;
 
 class UserManagementTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected $adminUser;
+    protected $userWithUserViewPermission;
+    protected $userWithoutUserViewPermission;
+    protected $userWithUserCreatePermission;
+    protected $userWithoutUserCreatePermission;
+    protected $userWithUserUpdatePermission;
+    protected $userWithoutUserUpdatePermission;
+    protected $userWithUserDeletePermission;
+    protected $userWithoutUserDeletePermission;
+
     public function setUp(): void
     {
         parent::setUp();
-        $this->seed();
+        $this->seed('RolesAndPermissionsSeeder');
+
+        $this->adminUser = User::factory()->create();
+        $this->adminUser->assignRole('admin');
+
+        $this->userWithUserViewPermission = User::factory()->create();
+        $this->userWithUserViewPermission->givePermissionTo('users.view');
+
+        $this->userWithoutUserViewPermission = User::factory()->create();
+
+        $this->userWithUserCreatePermission = User::factory()->create();
+        $this->userWithUserCreatePermission->givePermissionTo('users.create');
+
+        $this->userWithoutUserCreatePermission = User::factory()->create();
+
+        $this->userWithUserUpdatePermission = User::factory()->create();
+        $this->userWithUserUpdatePermission->givePermissionTo('users.update');
+
+        $this->userWithoutUserUpdatePermission = User::factory()->create();
+
+        $this->userWithUserDeletePermission = User::factory()->create();
+        $this->userWithUserDeletePermission->givePermissionTo('users.delete');
+
+        $this->userWithoutUserDeletePermission = User::factory()->create();
     }
 
     /** @test */
     public function admin_can_view_user_management_page()
     {
-        $admin = User::whereHas('roles', function ($query) {
-            $query->where('name', 'admin');
-        })->first();
-
-        $response = $this->actingAs($admin)->get(route('admin.users.index'));
+        $response = $this->actingAs($this->adminUser)->get(route('admin.users.index'));
 
         $response->assertStatus(200);
+    }
+
+    /** @test */
+    public function user_with_users_view_permission_can_view_users()
+    {
+        $response = $this->actingAs($this->userWithUserViewPermission)->get(route('admin.users.index'));
+        $response->assertStatus(200);
+    }
+
+    /** @test */
+    public function user_without_users_view_permission_cannot_view_users()
+    {
+        $response = $this->actingAs($this->userWithoutUserViewPermission)->get(route('admin.users.index'));
+        $response->assertStatus(403);
     }
 
     /** @test */
@@ -447,5 +491,93 @@ class UserManagementTest extends TestCase
         ]);
 
         $response->assertInvalid('roles.0');
+    }
+
+    /** @test */
+    public function user_with_users_create_permission_can_create_user()
+    {
+        $response = $this->actingAs($this->userWithUserCreatePermission)->post(route('admin.users.store'), [
+            'name' => 'New User',
+            'email' => 'newuser@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+            'roles' => [Role::findByName('athlete')->id],
+        ]);
+
+        $response->assertRedirect(route('admin.users.index'));
+        $this->assertDatabaseHas('users', [
+            'email' => 'newuser@example.com',
+        ]);
+    }
+
+    /** @test */
+    public function user_without_users_create_permission_cannot_create_user()
+    {
+        $response = $this->actingAs($this->userWithoutUserCreatePermission)->post(route('admin.users.store'), [
+            'name' => 'Unauthorized User',
+            'email' => 'unauthorized@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+            'roles' => [Role::findByName('athlete')->id],
+        ]);
+
+        $response->assertStatus(403);
+        $this->assertDatabaseMissing('users', [
+            'email' => 'unauthorized@example.com',
+        ]);
+    }
+
+    /** @test */
+    public function user_with_users_update_permission_can_update_user()
+    {
+        $userToUpdate = User::factory()->create();
+        $response = $this->actingAs($this->userWithUserUpdatePermission)->put(route('admin.users.update', $userToUpdate->id), [
+            'name' => 'Updated Name',
+            'email' => 'updated@example.com',
+            'roles' => [Role::findByName('athlete')->id],
+        ]);
+
+        $response->assertRedirect(route('admin.users.index'));
+        $this->assertDatabaseHas('users', [
+            'id' => $userToUpdate->id,
+            'name' => 'Updated Name',
+            'email' => 'updated@example.com',
+        ]);
+    }
+
+    /** @test */
+    public function user_without_users_update_permission_cannot_update_user()
+    {
+        $userToUpdate = User::factory()->create();
+        $response = $this->actingAs($this->userWithoutUserUpdatePermission)->put(route('admin.users.update', $userToUpdate->id), [
+            'name' => 'Unauthorized Updated Name',
+            'email' => 'unauthorized_updated@example.com',
+            'roles' => [Role::findByName('athlete')->id],
+        ]);
+
+        $response->assertStatus(403);
+        $this->assertDatabaseMissing('users', [
+            'email' => 'unauthorized_updated@example.com',
+        ]);
+    }
+
+    /** @test */
+    public function user_with_users_delete_permission_can_delete_user()
+    {
+        $userToDelete = User::factory()->create();
+        $response = $this->actingAs($this->userWithUserDeletePermission)->delete(route('admin.users.destroy', $userToDelete->id));
+
+        $response->assertRedirect(route('admin.users.index'));
+        $this->assertDatabaseMissing('users', ['id' => $userToDelete->id]);
+    }
+
+    /** @test */
+    public function user_without_users_delete_permission_cannot_delete_user()
+    {
+        $userToDelete = User::factory()->create();
+        $response = $this->actingAs($this->userWithoutUserDeletePermission)->delete(route('admin.users.destroy', $userToDelete->id));
+
+        $response->assertStatus(403);
+        $this->assertDatabaseHas('users', ['id' => $userToDelete->id]);
     }
 }
