@@ -66,3 +66,10 @@ To ensure a smooth refactoring process, we need to consider the following relate
 
 *   The `showLogs` method in the `ExerciseController` and the `index` method in the `WorkoutController` will be updated to work with the new `WorkoutSet` model.
 *   The one-rep max calculation will be moved to the `WorkoutSet` model. For charts that show the one-rep max progression, we will use the highest `one_rep_max` from all the sets in a workout.
+
+### 3. Maintaining UI Consistency
+
+To ensure the user interface remains unchanged, we will implement the following:
+
+*   **`Workout` Model Accessors:** We will add `getDisplayRepsAttribute`, `getDisplayRoundsAttribute`, and `getDisplayWeightAttribute` methods to the `Workout` model. These accessors will compute the values for display by using the first set's reps and weight, and the total count of sets for rounds.
+*   **View Updates:** The `workouts/index.blade.php` and `exercises/logs.blade.php` views will be updated to use these new accessors (`$workout->display_reps`, `$workout->display_rounds`, `$workout->display_weight`) to continue showing the workout information in the "weight (reps x rounds)" format.
