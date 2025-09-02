@@ -48,5 +48,14 @@
         </div>
         <button type="submit" class="button">Update</button>
     </form>
+
+    @can('impersonate.start')
+        @if (Auth::user()->id !== $user->id)
+            <form action="{{ route('impersonate', $user->id) }}" method="POST" style="margin-top: 20px;">
+                @csrf
+                <button type="submit" class="button button-impersonate">Impersonate User</button>
+            </form>
+        @endif
+    @endcan
 </div>
 @endsection
