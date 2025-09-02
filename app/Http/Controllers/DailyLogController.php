@@ -30,10 +30,10 @@ class DailyLogController extends Controller
     public function index(Request $request)
     {
         // Needed for the compact function
-        $ingredients = Ingredient::with('baseUnit')->orderBy('name')->get();
+        $ingredients = Ingredient::where('user_id', auth()->id())->with('baseUnit')->orderBy('name')->get();
         $units = Unit::all();
 
-        $meals = Meal::all();
+        $meals = Meal::where('user_id', auth()->id())->get();
         $nutritionService = $this->nutritionService;
 
         $selectedDate = $request->input('date') ? Carbon::parse($request->input('date')) : Carbon::today();
@@ -157,6 +157,10 @@ class DailyLogController extends Controller
         ]);
 
         $meal = Meal::with('ingredients')->find($validated['meal_id']);
+
+        if ($meal->user_id !== auth()->id()) {
+            abort(403, 'Unauthorized action.');
+        }
 
         $selectedDate = Carbon::parse($validated['meal_date']);
         $loggedAt = $selectedDate->setTimeFromTimeString($validated['logged_at_meal']);

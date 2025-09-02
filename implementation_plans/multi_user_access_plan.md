@@ -39,19 +39,6 @@
         *   **UI/UX:** Design intuitive forms and clear feedback for profile updates.
         *   **Testing:** Test profile update functionality thoroughly.
 
-2.  **Integrate Role-Based Access Control (If Applicable):**
-    *   **Action:** Define roles (e.g., admin, regular user) and implement Laravel's authorization features (Gates/Policies) to control access to specific actions or resources.
-    *   **Considerations:**
-        *   **Granularity:** Determine the level of access control needed (e.g., entire routes, specific model actions).
-        *   **Testing:** Write tests to verify that users with different roles have the correct access permissions.
-
-3.  **Develop Data Sharing Capabilities (If Applicable):**
-    *   **Action:** Design and implement a mechanism for users to explicitly share data with others.
-    *   **Considerations:**
-        *   **Security:** Ensure shared data remains secure and only accessible to authorized users.
-        *   **UI/UX:** Provide clear controls for sharing and managing shared data.
-        *   **Testing:** Test sharing functionality rigorously, including revocation of access.
-
 **Phase 3: Holistic Integration & Security Hardening**
 
 1.  **Review and Update All Related Features:**
@@ -63,8 +50,11 @@
 2.  **Implement Production-Ready Security Measures:**
     *   **Action:** Enforce HTTPS, implement rate limiting on critical endpoints, and ensure robust input validation across the application.
     *   **Considerations:**
-        *   **Session Security:** Configure secure session settings (`httponly`, `secure` flags).
-        *   **Environment Variables:** Verify all production `.env` variables are correctly configured.
+        *   **HTTPS Enforcement:** Configure web server (Nginx/Apache) to redirect all HTTP traffic to HTTPS. In Laravel, consider using `URL::forceScheme('https')` in `AppServiceProvider`'s `boot` method for production environments.
+        *   **Rate Limiting:** Review and apply Laravel's built-in rate limiting middleware to critical routes (e.g., login, registration, password reset) to prevent brute-force attacks. Breeze already provides some default rate limiting.
+        *   **Input Validation:** Maintain rigorous input validation on all user-submitted data to prevent common vulnerabilities like XSS and SQL injection.
+        *   **Session Security:** Configure secure session settings in `config/session.php`. Ensure `secure` (for HTTPS only), `httponly` (prevents JavaScript access), and `samesite` (CSRF protection) attributes are appropriately set for production.
+        *   **Environment Variables:** Verify all production `.env` variables are correctly configured, especially `APP_KEY`, database credentials, mail settings, and any API keys. Never commit sensitive information to version control.
 
 **Testing Strategy (Integrated):**
 
