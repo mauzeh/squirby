@@ -13,6 +13,9 @@ use App\Http\Controllers\ExerciseController;
 use App\Http\Controllers\WorkoutController;
 use App\Http\Controllers\MeasurementLogController;
 use App\Http\Controllers\MeasurementTypeController;
+use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\RoleController;
+use App\Http\Controllers\Admin\PermissionController;
 
 // Breeze Routes
 Route::get('/', function () {
@@ -67,4 +70,12 @@ Route::middleware('auth')->group(function () {
     Route::post('workouts/destroy-selected', [WorkoutController::class, 'destroySelected'])->name('workouts.destroy-selected');
 });
 
+Route::middleware(['auth', 'role:admin'])->name('admin.')->prefix('admin')->group(function () {
+    Route::resource('users', UserController::class);
+    Route::resource('roles', RoleController::class);
+    Route::resource('permissions', PermissionController::class);
+});
+
 require __DIR__.'/auth.php';
+
+Route::impersonate();

@@ -23,7 +23,6 @@ class DailyLogFactory extends Factory
      */
     public function definition(): array
     {
-        // Ensure an Ingredient and Unit exist for foreign keys
         $ingredient = IngredientFactory::new()->create();
         $unit = UnitFactory::new()->create();
 
@@ -32,6 +31,7 @@ class DailyLogFactory extends Factory
             'unit_id' => $unit->id,
             'quantity' => $this->faker->randomFloat(2, 0.1, 100),
             'logged_at' => $this->faker->dateTimeThisMonth(),
+            'user_id' => $ingredient->user_id,
         ];
     }
 }

@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Ingredient;
+use App\Models\User;
 use Database\Factories\UnitFactory;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -38,6 +39,7 @@ class IngredientFactory extends Factory
             'base_quantity' => $this->faker->randomFloat(2, 1, 100),
             'base_unit_id' => $unit->id,
             'cost_per_unit' => $this->faker->randomFloat(2, 0.1, 10),
+            'user_id' => User::factory(),
         ];
     }
 }

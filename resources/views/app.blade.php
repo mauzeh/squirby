@@ -329,6 +329,7 @@
         </style>
     </head>
     <body>
+        <x-impersonation-bar />
         @if(app()->environment('production') || app()->environment('staging'))
             <div style="background-color: red; color: white; text-align: center; padding: 10px; font-size: 20px; font-weight: bold;">
                 PRODUCTION / STAGING
@@ -346,6 +347,9 @@
             <a href="{{ route('exercises.index') }}" class="{{ Request::routeIs('exercises.*') ? 'active' : '' }}">Exercises</a>
             <a href="{{ route('workouts.index') }}" class="{{ Request::routeIs('workouts.*') ? 'active' : '' }}">Workouts</a>
             <a href="{{ route('measurement-logs.index') }}" class="{{ Request::routeIs(['measurement-logs.*', 'measurement-types.*']) ? 'active' : '' }}">Measurements</a>
+            @can('view-dashboard')
+                <a href="{{ route('admin.users.index') }}" class="{{ Request::routeIs('admin.*') ? 'active' : '' }}">Admin</a>
+            @endcan
             <a href="{{ route('profile.edit') }}" class="{{ Request::routeIs('profile.edit') ? 'active' : '' }}">Profile</a>
 
             {{-- Logout Button --}}
