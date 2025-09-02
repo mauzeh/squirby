@@ -93,23 +93,35 @@ class TsvImporterServiceTest extends TestCase
         $this->assertEmpty($result['notFound']);
 
         $this->assertDatabaseCount('workouts', 2);
+        $this->assertDatabaseCount('workout_sets', 25); // 15 for Push Ups + 10 for Squats
+
+        $workout1 = \App\Models\Workout::where('exercise_id', $exercise1->id)->first();
+        $workout2 = \App\Models\Workout::where('exercise_id', $exercise2->id)->first();
 
         $this->assertDatabaseHas('workouts', [
             'exercise_id' => $exercise1->id,
-            'weight' => 10,
-            'reps' => 3,
-            'rounds' => 15,
             'comments' => 'Warm up',
             'logged_at' => '2025-08-26 08:00:00',
         ]);
 
+        $this->assertDatabaseHas('workout_sets', [
+            'workout_id' => $workout1->id,
+            'weight' => 10,
+            'reps' => 3,
+            'notes' => 'Warm up',
+        ]);
+
         $this->assertDatabaseHas('workouts', [
             'exercise_id' => $exercise2->id,
-            'weight' => 50,
-            'reps' => 5,
-            'rounds' => 10,
             'comments' => 'Main set',
             'logged_at' => '2025-08-26 08:30:00',
+        ]);
+
+        $this->assertDatabaseHas('workout_sets', [
+            'workout_id' => $workout2->id,
+            'weight' => 50,
+            'reps' => 5,
+            'notes' => 'Main set',
         ]);
     }
 

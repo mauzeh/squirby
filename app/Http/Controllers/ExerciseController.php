@@ -82,7 +82,7 @@ class ExerciseController extends Controller
 
     public function showLogs(Exercise $exercise)
     {
-        $workouts = $exercise->workouts()->orderBy('logged_at', 'asc')->get();
+        $workouts = $exercise->workouts()->with('workoutSets')->orderBy('logged_at', 'asc')->get();
 
         $chartData = [
             'datasets' => [
@@ -91,7 +91,7 @@ class ExerciseController extends Controller
                     'data' => $workouts->map(function ($workout) {
                         return [
                             'x' => $workout->logged_at->toIso8601String(),
-                            'y' => $workout->one_rep_max,
+                            'y' => $workout->best_one_rep_max,
                         ];
                     }),
                     'backgroundColor' => 'rgba(0, 123, 255, 0.5)',

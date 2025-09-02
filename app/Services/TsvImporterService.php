@@ -53,7 +53,6 @@ class TsvImporterService
 
     public function importWorkouts(string $tsvData, string $date): array
     {
-        $date = Carbon::parse($date);
         $rows = explode("\n", $tsvData);
         $importedCount = 0;
         $notFound = [];
@@ -72,16 +71,27 @@ class TsvImporterService
             $exercise = \App\Models\Exercise::where('title', $columns[2])->first();
 
             if ($exercise) {
-                $loggedAt = Carbon::createFromFormat('m/d/Y H:i', $columns[0] . ' ' . $columns[1]);
+                $loggedAt = Carbon::createFromFormat('Y-m-d H:i', $columns[0] . ' ' . $columns[1]);
 
-                \App\Models\Workout::create([
+                $workout = \App\Models\Workout::create([
                     'exercise_id' => $exercise->id,
-                    'weight' => $columns[3],
-                    'reps' => $columns[4],
-                    'rounds' => $columns[5],
                     'comments' => $columns[6],
                     'logged_at' => $loggedAt,
                 ]);
+
+                // Create WorkoutSet records based on rounds
+                $weight = $columns[3];
+                $reps = $columns[4];
+                $rounds = $columns[5];
+                $notes = $columns[6];
+
+                for ($i = 0; $i < $rounds; $i++) {
+                    $workout->workoutSets()->create([
+                        'weight' => $weight,
+                        'reps' => $reps,
+                        'notes' => $notes,
+                    ]);
+                }
                 $importedCount++;
             } else {
                 $notFound[] = $columns[2];

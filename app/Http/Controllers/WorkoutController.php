@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Exercise;
 use App\Models\Workout;
+use App\Models\WorkoutSet;
 use App\Services\TsvImporterService;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
@@ -43,7 +44,7 @@ class WorkoutController extends Controller
                 'data' => $exerciseWorkouts->map(function ($workout) {
                     return [
                         'x' => $workout->logged_at->toIso8601String(),
-                        'y' => $workout->one_rep_max,
+                        'y' => $workout->best_one_rep_max,
                     ];
                 }),
                 'borderColor' => $colors[$colorIndex % count($colors)],
@@ -68,29 +69,33 @@ class WorkoutController extends Controller
         $request->validate([
             'exercise_id' => 'required|exists:exercises,id',
             'weight' => 'required|numeric',
-            'reps' => 'required|integer',
-            'rounds' => 'required|integer',
             'comments' => 'nullable|string',
             'date' => 'required|date',
             'logged_at' => 'required|date_format:H:i',
         ]);
 
         $loggedAtDate = Carbon::parse($request->input('date'));
-        $request->merge([
-            'logged_at' => $loggedAtDate->setTimeFromTimeString($request->input('logged_at')),
+        $loggedAt = $loggedAtDate->setTimeFromTimeString($request->input('logged_at'));
+
+        $workout = Workout::create([
+            'exercise_id' => $request->input('exercise_id'),
+            'comments' => $request->input('comments'),
+            'logged_at' => $loggedAt,
         ]);
 
-        Workout::create($request->all());
+        $weight = $request->input('weight');
+        $reps = $request->input('reps');
+        $rounds = $request->input('rounds');
+
+        for ($i = 0; $i < $rounds; $i++) {
+            $workout->workoutSets()->create([
+                'weight' => $weight,
+                'reps' => $reps,
+                'notes' => $request->input('comments'),
+            ]);
+        }
 
         return redirect()->route('workouts.index')->with('success', 'Workout created successfully.');
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(Workout $workout)
-    {
-        return view('workouts.show', compact('workout'));
     }
 
     /**
@@ -118,11 +123,29 @@ class WorkoutController extends Controller
         ]);
 
         $loggedAtDate = Carbon::parse($request->input('date'));
-        $request->merge([
-            'logged_at' => $loggedAtDate->setTimeFromTimeString($request->input('logged_at')),
+        $loggedAt = $loggedAtDate->setTimeFromTimeString($request->input('logged_at'));
+
+        $workout->update([
+            'exercise_id' => $request->input('exercise_id'),
+            'comments' => $request->input('comments'),
+            'logged_at' => $loggedAt,
         ]);
 
-        $workout->update($request->all());
+        // Delete existing workout sets
+        $workout->workoutSets()->delete();
+
+        // Create new workout sets
+        $weight = $request->input('weight');
+        $reps = $request->input('reps');
+        $rounds = $request->input('rounds');
+
+        for ($i = 0; $i < $rounds; $i++) {
+            $workout->workoutSets()->create([
+                'weight' => $weight,
+                'reps' => $reps,
+                'notes' => $request->input('comments'),
+            ]);
+        }
 
         return redirect()->route('workouts.index')->with('success', 'Workout updated successfully.');
     }
