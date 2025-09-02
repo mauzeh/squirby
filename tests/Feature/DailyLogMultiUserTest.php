@@ -27,8 +27,8 @@ class DailyLogMultiUserTest extends TestCase
         $this->user2 = User::factory()->create();
 
         // Create some common data for testing
-        $this->ingredient1 = IngredientFactory::new()->create(['user_id' => $this->user1->id]);
-        $this->ingredient2 = IngredientFactory::new()->create(['user_id' => $this->user2->id]);
+        $this->ingredient1 = IngredientFactory::new()->create(['user_id' => $this->user1->id, 'name' => 'Ingredient A for User 1']);
+        $this->ingredient2 = IngredientFactory::new()->create(['user_id' => $this->user2->id, 'name' => 'Ingredient B for User 2']);
         $this->meal1 = MealFactory::new()->create(['user_id' => $this->user1->id]);
         $this->meal2 = MealFactory::new()->create(['user_id' => $this->user2->id]);
     }
