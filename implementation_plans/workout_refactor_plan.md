@@ -1,6 +1,6 @@
 # Workout Logging Refactor Plan
 
-This document outlines the plan to refactor the workout logging feature to allow for logging each round of a workout individually.
+This document outlines the plan to refactor the workout logging feature to allow for logging each round of a workout individually, while keeping the user interface unchanged.
 
 ## Current Architecture
 
@@ -10,11 +10,11 @@ This document outlines the plan to refactor the workout logging feature to allow
 
 ## Proposed Architecture
 
-We will introduce a new model to store the details of each individual set:
+We will introduce a new model to store the details of each individual set, but the user will continue to interact with the application as if they are logging rounds and reps.
 
 1.  **`Workout` Model:**
     *   Represents a specific workout session for a given exercise on a given day.
-    *   Will no longer have `reps` and `rounds` columns.
+    *   Will no longer have `reps` and `rounds` columns in the database table.
 
 2.  **`WorkoutSet` Model:**
     *   Represents a single set within a workout.
@@ -24,8 +24,8 @@ We will introduce a new model to store the details of each individual set:
 
 ## Benefits
 
-*   **Granular Data:** Allows for tracking the exact reps and weight for each individual set.
-*   **Flexibility:** Accommodates different training styles, such as pyramid sets, drop sets, etc.
+*   **Granular Data:** Allows for tracking the exact reps and weight for each individual set in the backend.
+*   **Future Flexibility:** Paves the way for a more advanced UI in the future that can take advantage of the new data model.
 *   **Improved Analysis:** Enables more detailed analysis of workout performance over time.
 
 ## Implementation Steps
@@ -44,12 +44,10 @@ We will introduce a new model to store the details of each individual set:
         *   This will ensure that no data is lost during the refactoring.
 
 4.  **Update Controllers:**
-    *   Update `WorkoutController` to work with the new `Workout` and `WorkoutSet` models.
-    *   The `store` and `update` methods will now need to handle creating and updating multiple `WorkoutSet` records for a single `Workout`.
+    *   Update `WorkoutController`'s `store` and `update` methods to accept `rounds` and `reps` from the form and then create the corresponding `WorkoutSet` records in the background.
 
-5.  **Update Views:**
-    *   Update the workout logging form to allow users to add and remove individual sets with different `reps` and `weight` values, similar to the provided prototype.
-    *   Update the workout display to show the details of each individual set.
+5.  **Views:**
+    *   The user interface will remain unchanged. The existing workout logging form with `rounds` and `reps` fields will be preserved.
 
 6.  **Update Seeder:**
     *   Update the `WorkoutSeeder` to work with the new `Workout` and `WorkoutSet` models.
@@ -61,7 +59,7 @@ To ensure a smooth refactoring process, we need to consider the following relate
 ### 1. TSV Import/Export
 
 *   **Import:** The TSV import file format will remain the same. The `importTsv` method in the `WorkoutController` will be updated to parse the old format and create the new `Workout` and `WorkoutSet` records accordingly.
-*   **Export:** The TSV export format will be updated to reflect the new data structure, with each row representing a single set.
+*   **Export:** The TSV export format will be updated to generate the old format from the new data structure.
 
 ### 2. Workout Analysis and Charting
 
