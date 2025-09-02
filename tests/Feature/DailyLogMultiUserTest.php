@@ -23,7 +23,22 @@ class DailyLogMultiUserTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->seed('RolesAndPermissionsSeeder');
         $this->user1 = User::factory()->create();
+        $this->user1->givePermissionTo([
+            'daily-logs.view',
+            'daily-logs.create',
+            'daily-logs.update',
+            'daily-logs.delete',
+            'meals.view',
+            'meals.create',
+            'meals.update',
+            'meals.delete',
+            'ingredients.view',
+            'ingredients.create',
+            'ingredients.update',
+            'ingredients.delete',
+        ]);
         $this->user2 = User::factory()->create();
 
         // Create some common data for testing

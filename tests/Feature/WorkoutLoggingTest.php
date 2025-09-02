@@ -14,7 +14,18 @@ class WorkoutLoggingTest extends TestCase
     {
         parent::setUp();
         $this->artisan('migrate:fresh');
+        $this->seed('RolesAndPermissionsSeeder');
         $this->user = User::factory()->create();
+        $this->user->givePermissionTo([
+            'workouts.view',
+            'workouts.create',
+            'workouts.update',
+            'workouts.delete',
+            'exercises.view',
+            'exercises.create',
+            'exercises.update',
+            'exercises.delete',
+        ]);
         $this->actingAs($this->user);
     }
 
