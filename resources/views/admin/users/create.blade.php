@@ -29,6 +29,9 @@
         <div class="form-group">
             <label for="password_confirmation">Confirm Password</label>
             <input type="password" name="password_confirmation" id="password_confirmation" class="form-control">
+            @error('password_confirmation')
+                <span class="text-danger">{{ $message }}</span>
+            @enderror
         </div>
         <div class="form-group">
             <label for="roles">Roles</label>
