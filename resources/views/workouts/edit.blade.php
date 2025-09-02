@@ -16,15 +16,15 @@
             </div>
             <div class="form-group">
                 <label for="weight">Weight (lbs):</label>
-                <input type="number" name="weight" id="weight" class="form-control" value="{{ $workout->weight }}" required inputmode="decimal">
+                <input type="number" name="weight" id="weight" class="form-control" value="{{ $workout->display_weight }}" required inputmode="decimal">
             </div>
             <div class="form-group">
                 <label for="reps">Reps:</label>
-                <input type="number" name="reps" id="reps" class="form-control" value="{{ $workout->reps }}" required inputmode="numeric">
+                <input type="number" name="reps" id="reps" class="form-control" value="{{ $workout->display_reps }}" required inputmode="numeric">
             </div>
             <div class="form-group">
                 <label for="rounds">Rounds:</label>
-                <input type="number" name="rounds" id="rounds" class="form-control" value="{{ $workout->rounds }}" required inputmode="numeric">
+                <input type="number" name="rounds" id="rounds" class="form-control" value="{{ $workout->display_rounds }}" required inputmode="numeric">
             </div>
             <div class="form-group">
                 <label for="comments">Comments:</label>

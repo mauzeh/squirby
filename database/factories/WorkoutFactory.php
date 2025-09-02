@@ -18,9 +18,6 @@ class WorkoutFactory extends Factory
     {
         return [
             'exercise_id' => \App\Models\Exercise::factory(),
-            'weight' => $this->faker->randomFloat(2, 50, 300),
-            'reps' => $this->faker->numberBetween(1, 15),
-            'rounds' => $this->faker->numberBetween(1, 5),
             'comments' => $this->faker->sentence(),
             'logged_at' => $this->faker->dateTimeBetween('-1 year', 'now'),
         ];

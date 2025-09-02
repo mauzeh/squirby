@@ -79,8 +79,8 @@
                         <td>{{ $workout->logged_at->format('m/d') }}</td>
                         <td><a href="{{ route('exercises.show-logs', $workout->exercise) }}">{{ $workout->exercise->title }}</a></td>
                         <td>
-                            <span style="font-weight: bold; font-size: 1.2em;">{{ $workout->weight }} lbs</span><br>
-                            {{ $workout->reps }} x {{ $workout->rounds }}
+                            <span style="font-weight: bold; font-size: 1.2em;">{{ $workout->display_weight }} lbs</span><br>
+                            {{ $workout->display_reps }} x {{ $workout->display_rounds }}
                         </td>
                         <td>{{ round($workout->one_rep_max) }} lbs</td>
                         <td class="hide-on-mobile" style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ $workout->comments }}">{{ $workout->comments }}</td>
@@ -112,7 +112,8 @@
         <div class="form-container">
             <h3>TSV Export</h3>
             <textarea id="tsv-output" rows="10" style="width: 100%; background-color: #3a3a3a; color: #f2f2f2; border: 1px solid #555;">@foreach ($workouts as $workout)
-{{ $workout->logged_at->format('m/d/Y') }}	{{ $workout->logged_at->format('H:i') }}	{{ $workout->exercise->title }}	{{ $workout->weight }}	{{ $workout->reps }}	{{ $workout->rounds }}	{{ preg_replace('/(\n|\r)+/', ' ', $workout->comments) }}
+{{ $workout->logged_at->format('m/d/Y') }} 	 {{ $workout->logged_at->format('H:i') }} 	 {{ $workout->exercise->title }} 	 {{ $workout->display_weight }} 	 {{ $workout->display_reps }} 	 {{ $workout->display_rounds }} 	 {{ preg_replace('/(
+|)+/', ' ', $workout->comments) }}
 @endforeach
             </textarea>
             <button id="copy-tsv-button" class="button">Copy to Clipboard</button>

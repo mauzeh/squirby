@@ -50,18 +50,18 @@ We will introduce a new model to store the details of each individual set, but t
         *   For each existing `Workout` record, create multiple `WorkoutSet` records based on the `rounds` and `reps` values.
         *   This will ensure that no data is lost during the refactoring.
 
-5.  **Update Controllers:**
+5.  **Update Seeder:**
+    *   Update the `WorkoutSeeder` to work with the new `Workout` and `WorkoutSet` models.
+
+6.  **Update Controllers:**
     *   Update `WorkoutController`'s `store` and `update` methods to accept `rounds` and `reps` from the form and then create the corresponding `WorkoutSet` records in the background.
 
-6.  **Update Tests:**
+7.  **Update Tests:**
     *   The test suite will be updated to reflect the new architecture (e.g., asserting the creation of `WorkoutSet` records instead of checking the `reps` and `rounds` columns on the `Workout` model).
     *   All tests must be passing before proceeding to the next step.
 
-7.  **Views:**
+8.  **Views:**
     *   The user interface will remain unchanged. The existing workout logging form with `rounds` and `reps` fields will be preserved.
-
-8.  **Update Seeder:**
-    *   Update the `WorkoutSeeder` to work with the new `Workout` and `WorkoutSet` models.
 
 ## Holistic Feature Consideration
 
@@ -75,7 +75,7 @@ To ensure a smooth refactoring process, we need to consider the following relate
 ### 2. Workout Analysis and Charting
 
 *   The `showLogs` method in the `ExerciseController` and the `index` method in the `WorkoutController` will be updated to work with the new `WorkoutSet` model.
-*   The one-rep max calculation will be moved to the `WorkoutSet` model. For charts that show the one-rep max progression, we will use the best set of each workout.
+*   The one-rep max calculation will be performed on the `Workout` model. If all `WorkoutSet` records for a `Workout` are uniform (same weight and reps), the 1RM will be calculated using the traditional formula based on those uniform values. Otherwise, it will be calculated using the weight and reps of the first `WorkoutSet` record. The formula used for 1RM estimation is a common simplified linear regression formula, often a variation of the Epley formula. For charts that show the one-rep max progression, we will use the best set of each workout.
 
 ### 3. Maintaining UI Consistency
 
@@ -83,3 +83,28 @@ To ensure the user interface remains unchanged, we will implement the following:
 
 *   **`Workout` Model Accessors:** We will add `getDisplayRepsAttribute`, `getDisplayRoundsAttribute`, and `getDisplayWeightAttribute` methods to the `Workout` model. These accessors will compute the values for display by using the first set's reps and weight, and the total count of sets for rounds.
 *   **View Updates:** The `workouts/index.blade.php` and `exercises/logs.blade.php` views will be updated to use these new accessors (`$workout->display_reps`, `$workout->display_rounds`, `$workout->display_weight`) to continue showing the workout information in the "weight (reps x rounds)" format.
+
+## Learnings from Implementation
+
+This refactoring process provided several key insights:
+
+1.  **Importance of a Detailed Refactor Plan:** A structured plan, even if it evolves, is crucial for guiding the process and identifying dependencies.
+
+2.  **Testing is Paramount (and needs to evolve with the code):**
+    *   **Initial Safety Net:** Building a comprehensive testing safety net *before* major refactoring provides a vital baseline.
+    *   **Tests as Documentation:** Tests clearly document the system's expected behavior before and after changes.
+    *   **Updating Tests is Part of Refactoring:** Tests themselves must be refactored and updated to accurately reflect the new architecture and assert against the current system's structure and behavior.
+    *   **Test Data Consistency:** Ensuring test data matches expected input formats is critical, especially when parsing external data.
+
+3.  **Database Schema Changes and Migrations:**
+    *   **Impact on Existing Data:** Removing columns and introducing new tables requires careful migration planning, including data migration to preserve existing information.
+    *   **Nullability:** Errors related to `NOT NULL` constraints highlight the need to consider column nullability when changing schema, particularly when data is being moved.
+
+4.  **Model Relationships and Accessors:**
+    *   Introducing new models and relationships (e.g., `WorkoutSet` and `hasMany`) is a core architectural change.
+    *   **Display Accessors:** Using display accessors in the `Workout` model effectively maintains UI consistency without exposing underlying data model changes to the views.
+    *   **Calculated Attributes:** Deriving values from relationships (like 1RM from `WorkoutSet` data) demonstrates how to leverage calculated attributes.
+
+5.  **Iterative Development and Debugging:** The process of making changes, running tests, analyzing failures, and iteratively fixing them is a realistic and essential part of software development.
+
+6.  **Attention to Detail:** Small details, such as date formats in TSV imports or precise string matching for replacements, can significantly impact the success of the implementation.

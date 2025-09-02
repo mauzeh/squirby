@@ -48,11 +48,18 @@ class WorkoutLoggingTest extends TestCase
 
         $this->assertDatabaseHas('workouts', [
             'exercise_id' => $exercise->id,
-            'weight' => 100,
-            'reps' => 5,
-            'rounds' => 3,
             'comments' => 'Test workout comments',
             'logged_at' => \Carbon\Carbon::parse($now->format('Y-m-d H:i'))->format('Y-m-d H:i:s'),
+        ]);
+
+        $workout = \App\Models\Workout::where('exercise_id', $exercise->id)->first();
+
+        $this->assertDatabaseCount('workout_sets', 3);
+        $this->assertDatabaseHas('workout_sets', [
+            'workout_id' => $workout->id,
+            'weight' => 100,
+            'reps' => 5,
+            'notes' => 'Test workout comments',
         ]);
 
         $response->assertRedirect(route('workouts.index'));
@@ -68,10 +75,12 @@ class WorkoutLoggingTest extends TestCase
         $exercise = \App\Models\Exercise::factory()->create();
         $workout = \App\Models\Workout::factory()->create([
             'exercise_id' => $exercise->id,
+            'comments' => 'Original comments',
+        ]);
+        $workout->workoutSets()->create([
             'weight' => 100,
             'reps' => 5,
-            'rounds' => 3,
-            'comments' => 'Original comments',
+            'notes' => 'Original comments',
         ]);
 
         $updatedExercise = \App\Models\Exercise::factory()->create();
@@ -90,10 +99,15 @@ class WorkoutLoggingTest extends TestCase
         $this->assertDatabaseHas('workouts', [
             'id' => $workout->id,
             'exercise_id' => $updatedExercise->id,
+            'comments' => 'Updated comments',
+        ]);
+
+        $this->assertDatabaseCount('workout_sets', 4);
+        $this->assertDatabaseHas('workout_sets', [
+            'workout_id' => $workout->id,
             'weight' => 120,
             'reps' => 6,
-            'rounds' => 4,
-            'comments' => 'Updated comments',
+            'notes' => 'Updated comments',
         ]);
 
         $response->assertRedirect(route('workouts.index'));
@@ -111,18 +125,32 @@ class WorkoutLoggingTest extends TestCase
 
         $workout1 = \App\Models\Workout::factory()->create([
             'exercise_id' => $backSquat->id,
+            'comments' => 'Squat comments',
+        ]);
+        $workout1->workoutSets()->create([
             'weight' => 200,
             'reps' => 5,
-            'rounds' => 3,
-            'comments' => 'Squat comments',
+            'notes' => 'Squat comments',
+        ]);
+        $workout1->workoutSets()->create([
+            'weight' => 200,
+            'reps' => 5,
+            'notes' => 'Squat comments',
+        ]);
+        $workout1->workoutSets()->create([
+            'weight' => 200,
+            'reps' => 5,
+            'notes' => 'Squat comments',
         ]);
 
         $workout2 = \App\Models\Workout::factory()->create([
             'exercise_id' => $deadlift->id,
+            'comments' => 'Deadlift comments',
+        ]);
+        $workout2->workoutSets()->create([
             'weight' => 300,
             'reps' => 3,
-            'rounds' => 1,
-            'comments' => 'Deadlift comments',
+            'notes' => 'Deadlift comments',
         ]);
 
         $response = $this->get(route('workouts.index'));
@@ -130,14 +158,14 @@ class WorkoutLoggingTest extends TestCase
 
         // Assert Back Squat workout details
         $response->assertSee($backSquat->title);
-        $response->assertSee($workout1->weight . ' lbs');
-        $response->assertSee($workout1->reps . ' x ' . $workout1->rounds);
+        $response->assertSee($workout1->display_weight . ' lbs');
+        $response->assertSee($workout1->display_reps . ' x ' . $workout1->display_rounds);
         $response->assertSee($workout1->comments);
 
         // Assert Deadlift workout details
         $response->assertSee($deadlift->title);
-        $response->assertSee($workout2->weight . ' lbs');
-        $response->assertSee($workout2->reps . ' x ' . $workout2->rounds);
+        $response->assertSee($workout2->display_weight . ' lbs');
+        $response->assertSee($workout2->display_reps . ' x ' . $workout2->display_rounds);
         $response->assertSee($workout2->comments);
     }
 
@@ -164,18 +192,32 @@ class WorkoutLoggingTest extends TestCase
 
         $workout1 = \App\Models\Workout::factory()->create([
             'exercise_id' => $backSquat->id,
+            'comments' => 'Squat workout 1 comments',
+        ]);
+        $workout1->workoutSets()->create([
             'weight' => 200,
             'reps' => 5,
-            'rounds' => 3,
-            'comments' => 'Squat workout 1 comments',
+            'notes' => 'Squat workout 1 comments',
+        ]);
+        $workout1->workoutSets()->create([
+            'weight' => 200,
+            'reps' => 5,
+            'notes' => 'Squat workout 1 comments',
+        ]);
+        $workout1->workoutSets()->create([
+            'weight' => 200,
+            'reps' => 5,
+            'notes' => 'Squat workout 1 comments',
         ]);
 
         $workout2 = \App\Models\Workout::factory()->create([
             'exercise_id' => $backSquat->id,
+            'comments' => 'Squat workout 2 comments',
+        ]);
+        $workout2->workoutSets()->create([
             'weight' => 300,
             'reps' => 3,
-            'rounds' => 1,
-            'comments' => 'Squat workout 2 comments',
+            'notes' => 'Squat workout 2 comments',
         ]);
 
         $response = $this->get('/exercises/' . $backSquat->id . '/logs');
@@ -183,11 +225,11 @@ class WorkoutLoggingTest extends TestCase
 
         // Assert Back Squat workout details
         $response->assertSee($backSquat->title);
-        $response->assertSee($workout1->weight . ' lbs');
-        $response->assertSee($workout1->reps . ' x ' . $workout1->rounds);
+        $response->assertSee($workout1->display_weight . ' lbs');
+        $response->assertSee($workout1->display_reps . ' x ' . $workout1->display_rounds);
         $response->assertSee($workout1->comments);
-        $response->assertSee($workout2->weight . ' lbs');
-        $response->assertSee($workout2->reps . ' x ' . $workout2->rounds);
+        $response->assertSee($workout2->display_weight . ' lbs');
+        $response->assertSee($workout2->display_reps . ' x ' . $workout2->display_rounds);
         $response->assertSee($workout2->comments);
     }
 }
