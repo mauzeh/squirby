@@ -346,6 +346,13 @@
             <a href="{{ route('exercises.index') }}" class="{{ Request::routeIs('exercises.*') ? 'active' : '' }}">Exercises</a>
             <a href="{{ route('workouts.index') }}" class="{{ Request::routeIs('workouts.*') ? 'active' : '' }}">Workouts</a>
             <a href="{{ route('measurement-logs.index') }}" class="{{ Request::routeIs(['measurement-logs.*', 'measurement-types.*']) ? 'active' : '' }}">Measurements</a>
+            {{-- Logout Button --}}
+            <form method="POST" action="{{ route('logout') }}" style="float: right; display: block; color: #f2f2f2; text-align: center; padding: 14px 16px; text-decoration: none; font-size: 17px;">
+                @csrf
+                <button type="submit" style="background: none; border: none; color: inherit; font: inherit; cursor: pointer; padding: 0;">
+                    Log Out
+                </button>
+            </form>
         </div>
         <div class="content">
             @yield('content')

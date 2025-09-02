@@ -1,7 +1,7 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
 
 // Custom Controllers
 use App\Http\Controllers\DailyLogController;
@@ -15,12 +15,13 @@ use App\Http\Controllers\MeasurementTypeController;
 
 // Breeze Routes
 Route::get('/', function () {
-    return view('welcome'); // This will be handled by Breeze's redirect logic
+    if (Auth::check()) {
+        return redirect()->route('daily-logs.index');
+    }
+    return redirect()->route('login');
 });
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+
 
 Route::middleware('auth')->group(function () {
     // Breeze Profile Routes
