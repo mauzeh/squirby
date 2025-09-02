@@ -185,4 +185,267 @@ class UserManagementTest extends TestCase
         $response->assertSessionHas('success', 'User deleted successfully.');
         $this->assertDatabaseMissing('users', ['id' => $user->id]);
     }
+
+    /** @test */
+    public function name_is_required_when_adding_user()
+    {
+        $admin = User::whereHas('roles', function ($query) {
+            $query->where('name', 'admin');
+        })->first();
+
+        $role = Role::findByName('athlete');
+
+        $userData = [
+            'name' => '',
+            'email' => 'test@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+            'roles' => [$role->id],
+        ];
+
+        $response = $this->actingAs($admin)->post(route('admin.users.store'), $userData);
+
+        $response->assertInvalid('name');
+    }
+
+    /** @test */
+    public function email_is_required_when_adding_user()
+    {
+        $admin = User::whereHas('roles', function ($query) {
+            $query->where('name', 'admin');
+        })->first();
+
+        $role = Role::findByName('athlete');
+
+        $userData = [
+            'name' => 'Test User',
+            'email' => '',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+            'roles' => [$role->id],
+        ];
+
+        $response = $this->actingAs($admin)->post(route('admin.users.store'), $userData);
+
+        $response->assertInvalid('email');
+    }
+
+    /** @test */
+    public function email_must_be_unique_when_adding_user()
+    {
+        $admin = User::whereHas('roles', function ($query) {
+            $query->where('name', 'admin');
+        })->first();
+
+        User::factory()->create(['email' => 'existing@example.com']);
+        $role = Role::findByName('athlete');
+
+        $userData = [
+            'name' => 'Test User',
+            'email' => 'existing@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+            'roles' => [$role->id],
+        ];
+
+        $response = $this->actingAs($admin)->post(route('admin.users.store'), $userData);
+
+        $response->assertInvalid('email');
+    }
+
+    /** @test */
+    public function email_must_be_valid_format_when_adding_user()
+    {
+        $admin = User::whereHas('roles', function ($query) {
+            $query->where('name', 'admin');
+        })->first();
+
+        $role = Role::findByName('athlete');
+
+        $userData = [
+            'name' => 'Test User',
+            'email' => 'invalid-email',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+            'roles' => [$role->id],
+        ];
+
+        $response = $this->actingAs($admin)->post(route('admin.users.store'), $userData);
+
+        $response->assertInvalid('email');
+    }
+
+    /** @test */
+    public function password_is_required_when_adding_user()
+    {
+        $admin = User::whereHas('roles', function ($query) {
+            $query->where('name', 'admin');
+        })->first();
+
+        $role = Role::findByName('athlete');
+
+        $userData = [
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+            'password' => '',
+            'password_confirmation' => '',
+            'roles' => [$role->id],
+        ];
+
+        $response = $this->actingAs($admin)->post(route('admin.users.store'), $userData);
+
+        $response->assertInvalid('password');
+    }
+
+    /** @test */
+    public function password_must_be_at_least_8_characters_when_adding_user()
+    {
+        $admin = User::whereHas('roles', function ($query) {
+            $query->where('name', 'admin');
+        })->first();
+
+        $role = Role::findByName('athlete');
+
+        $userData = [
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+            'password' => 'short',
+            'password_confirmation' => 'short',
+            'roles' => [$role->id],
+        ];
+
+        $response = $this->actingAs($admin)->post(route('admin.users.store'), $userData);
+
+        $response->assertInvalid('password');
+    }
+
+    /** @test */
+    public function password_must_be_confirmed_when_adding_user()
+    {
+        $admin = User::whereHas('roles', function ($query) {
+            $query->where('name', 'admin');
+        })->first();
+
+        $role = Role::findByName('athlete');
+
+        $userData = [
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'wrongpassword',
+            'roles' => [$role->id],
+        ];
+
+        $response = $this->actingAs($admin)->post(route('admin.users.store'), $userData);
+
+        $response->assertInvalid('password');
+    }
+
+    /** @test */
+    public function roles_must_exist_when_adding_user()
+    {
+        $admin = User::whereHas('roles', function ($query) {
+            $query->where('name', 'admin');
+        })->first();
+
+        $userData = [
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+            'roles' => [9999], // Non-existent role ID
+        ];
+
+        $response = $this->actingAs($admin)->post(route('admin.users.store'), $userData);
+
+        $response->assertInvalid('roles.0');
+    }
+
+    /** @test */
+    public function email_is_required_when_updating_user()
+    {
+        $admin = User::whereHas('roles', function ($query) {
+            $query->where('name', 'admin');
+        })->first();
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($admin)->put(route('admin.users.update', $user), [
+            'name' => $user->name,
+            'email' => '',
+            'roles' => [Role::findByName('athlete')->id],
+        ]);
+
+        $response->assertInvalid('email');
+    }
+
+    /** @test */
+    public function email_must_be_unique_when_updating_user()
+    {
+        $admin = User::whereHas('roles', function ($query) {
+            $query->where('name', 'admin');
+        })->first();
+        $user1 = User::factory()->create();
+        $user2 = User::factory()->create();
+
+        $response = $this->actingAs($admin)->put(route('admin.users.update', $user1), [
+            'name' => $user1->name,
+            'email' => $user2->email,
+            'roles' => [Role::findByName('athlete')->id],
+        ]);
+
+        $response->assertInvalid('email');
+    }
+
+    /** @test */
+    public function email_must_be_valid_format_when_updating_user()
+    {
+        $admin = User::whereHas('roles', function ($query) {
+            $query->where('name', 'admin');
+        })->first();
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($admin)->put(route('admin.users.update', $user), [
+            'name' => $user->name,
+            'email' => 'invalid-email',
+            'roles' => [Role::findByName('athlete')->id],
+        ]);
+
+        $response->assertInvalid('email');
+    }
+
+    /** @test */
+    public function password_must_be_confirmed_when_updating_user()
+    {
+        $admin = User::whereHas('roles', function ($query) {
+            $query->where('name', 'admin');
+        })->first();
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($admin)->put(route('admin.users.update', $user), [
+            'name' => $user->name,
+            'email' => $user->email,
+            'password' => 'newpassword',
+            'password_confirmation' => 'wrongpassword',
+            'roles' => [Role::findByName('athlete')->id],
+        ]);
+
+        $response->assertInvalid('password');
+    }
+
+    /** @test */
+    public function roles_must_exist_when_updating_user()
+    {
+        $admin = User::whereHas('roles', function ($query) {
+            $query->where('name', 'admin');
+        })->first();
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($admin)->put(route('admin.users.update', $user), [
+            'name' => $user->name,
+            'email' => $user->email,
+            'roles' => [9999], // Non-existent role ID
+        ]);
+
+        $response->assertInvalid('roles.0');
+    }
 }
