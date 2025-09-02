@@ -86,14 +86,6 @@ class WorkoutController extends Controller
     }
 
     /**
-     * Display the specified resource.
-     */
-    public function show(Workout $workout)
-    {
-        return view('workouts.show', compact('workout'));
-    }
-
-    /**
      * Show the form for editing the specified resource.
      */
     public function edit(Workout $workout)
