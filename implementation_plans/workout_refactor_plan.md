@@ -20,6 +20,7 @@ We will introduce a new model to store the details of each individual set:
     *   Represents a single set within a workout.
     *   Attributes: `id`, `workout_id`, `weight`, `reps`, `notes` (optional).
     *   A `belongsTo` relationship to `Workout`.
+    *   Will have a `one_rep_max` calculated attribute.
 
 ## Benefits
 
@@ -38,7 +39,7 @@ We will introduce a new model to store the details of each individual set:
     *   Update the `Workout` model to have a `hasMany` relationship with the `WorkoutSet` model.
 
 3.  **Data Migration:**
-    *   Create a data migration script to:
+    *   Create a data migration script using raw DB queries to:
         *   For each existing `Workout` record, create multiple `WorkoutSet` records based on the `rounds` and `reps` values.
         *   This will ensure that no data is lost during the refactoring.
 
@@ -49,3 +50,20 @@ We will introduce a new model to store the details of each individual set:
 5.  **Update Views:**
     *   Update the workout logging form to allow users to add and remove individual sets with different `reps` and `weight` values, similar to the provided prototype.
     *   Update the workout display to show the details of each individual set.
+
+6.  **Update Seeder:**
+    *   Update the `WorkoutSeeder` to work with the new `Workout` and `WorkoutSet` models.
+
+## Holistic Feature Consideration
+
+To ensure a smooth refactoring process, we need to consider the following related features:
+
+### 1. TSV Import/Export
+
+*   **Import:** The TSV import file format will remain the same. The `importTsv` method in the `WorkoutController` will be updated to parse the old format and create the new `Workout` and `WorkoutSet` records accordingly.
+*   **Export:** The TSV export format will be updated to reflect the new data structure, with each row representing a single set.
+
+### 2. Workout Analysis and Charting
+
+*   The `showLogs` method in the `ExerciseController` and the `index` method in the `WorkoutController` will be updated to work with the new `WorkoutSet` model.
+*   The one-rep max calculation will be moved to the `WorkoutSet` model. For charts that show the one-rep max progression, we will use the best set of each workout.
