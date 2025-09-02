@@ -29,59 +29,38 @@ We will introduce a new model to store the details of each individual set, but t
 *   **Future Flexibility:** Paves the way for a more advanced UI in the future that can take advantage of the new data model.
 *   **Improved Analysis:** Enables more detailed analysis of workout performance over time.
 
-## Building a Testing Safety Net
-
-To ensure the stability and correctness of the application before, during, and after the refactoring, we will build a comprehensive testing safety net. This is a mandatory prerequisite to any code changes.
-
-### 1. Create a New Feature Test
-
-*   A new feature test file will be created at `tests/Feature/WorkoutLoggingTest.php`.
-
-### 2. Write "Happy Path" Tests
-
-We will write tests to cover the main, successful user flows:
-
-*   **Test Workout Creation:** Simulate a user successfully submitting the workout form and assert that the data is correctly stored in the database.
-*   **Test Workout Index View:** Create workout records and assert that they are displayed correctly on the main workout index page.
-*   **Test Exercise Logs View:** Assert that workouts are displayed correctly on the exercise-specific log page.
-*   **Test Workout Update:** Simulate a user successfully updating an existing workout and assert that the changes are saved.
-*   **Test Workout Deletion:** Simulate a user successfully deleting a workout and assert that it is removed from the database.
-
-### 3. Write "Unhappy Path" and Edge Case Tests
-
-We will write tests to ensure the application handles errors and edge cases gracefully:
-
-*   **Test Form Validation:** Submit the workout form with invalid data (e.g., missing fields, non-numeric values) and assert that the correct validation errors are returned.
-*   **Test Deleting a Non-Existent Workout:** Attempt to delete a workout that does not exist and assert that the application returns a 404 error.
-
-### 4. The Refactoring Process
-
-*   All tests must be passing before any refactoring work begins.
-*   After each step of the refactoring, the entire test suite will be run to ensure that no existing functionality has been broken.
-*   The test suite itself will be updated to reflect the new architecture (e.g., asserting the creation of `WorkoutSet` records instead of checking the `reps` and `rounds` columns on the `Workout` model).
-
 ## Implementation Steps
 
-1.  **Create `WorkoutSet` Model and Migration:**
+1.  **Build a Testing Safety Net:**
+    *   Before any other changes are made, we will create a comprehensive feature test for the existing workout functionality. This is a mandatory prerequisite to any code changes.
+    *   A new feature test file will be created at `tests/Feature/WorkoutLoggingTest.php`.
+    *   We will write tests for all "happy path" and "unhappy path" scenarios, including workout creation, viewing, updating, deletion, and form validation.
+    *   All tests must be passing before proceeding to the next step.
+
+2.  **Create `WorkoutSet` Model and Migration:**
     *   Create a new model `WorkoutSet`.
     *   Create a migration for the `workout_sets` table with `workout_id`, `weight`, `reps`, and `notes` (optional) columns.
 
-2.  **Update `Workout` Model and Migration:**
+3.  **Update `Workout` Model and Migration:**
     *   Create a migration to remove the `reps` and `rounds` columns from the `workouts` table.
     *   Update the `Workout` model to have a `hasMany` relationship with the `WorkoutSet` model.
 
-3.  **Data Migration:**
+4.  **Data Migration:**
     *   Create a data migration script using raw DB queries to:
         *   For each existing `Workout` record, create multiple `WorkoutSet` records based on the `rounds` and `reps` values.
         *   This will ensure that no data is lost during the refactoring.
 
-4.  **Update Controllers:**
+5.  **Update Controllers:**
     *   Update `WorkoutController`'s `store` and `update` methods to accept `rounds` and `reps` from the form and then create the corresponding `WorkoutSet` records in the background.
 
-5.  **Views:**
+6.  **Update Tests:**
+    *   The test suite will be updated to reflect the new architecture (e.g., asserting the creation of `WorkoutSet` records instead of checking the `reps` and `rounds` columns on the `Workout` model).
+    *   All tests must be passing before proceeding to the next step.
+
+7.  **Views:**
     *   The user interface will remain unchanged. The existing workout logging form with `rounds` and `reps` fields will be preserved.
 
-6.  **Update Seeder:**
+8.  **Update Seeder:**
     *   Update the `WorkoutSeeder` to work with the new `Workout` and `WorkoutSet` models.
 
 ## Holistic Feature Consideration
