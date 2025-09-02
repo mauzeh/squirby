@@ -8,7 +8,6 @@ use Tests\TestCase;
 
 class WorkoutLoggingTest extends TestCase
 {
-    use RefreshDatabase;
 
     protected function setUp(): void
     {
@@ -30,12 +29,6 @@ class WorkoutLoggingTest extends TestCase
     {
         $user = \App\Models\User::factory()->create();
         $this->actingAs($user);
-        $this->withHeaders([
-            'Accept' => 'application/json',
-        ]);
-
-        // Define the route directly within the test
-        \Illuminate\Support\Facades\Route::post('/workouts', [\App\Http\Controllers\WorkoutController::class, 'store']);
 
         $exercise = \App\Models\Exercise::factory()->create();
 
