@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Services\OneRepMaxCalculatorService;
 
 class Workout extends Model
 {
@@ -11,7 +12,6 @@ class Workout extends Model
 
     protected $fillable = [
         'exercise_id',
-        'weight',
         'comments',
         'logged_at',
     ];
@@ -32,27 +32,8 @@ class Workout extends Model
 
     public function getOneRepMaxAttribute()
     {
-        if ($this->workoutSets->isEmpty()) {
-            return 0;
-        }
-
-        // Check for uniformity
-        $isUniform = true;
-        $firstSet = $this->workoutSets->first();
-        foreach ($this->workoutSets as $set) {
-            if ($set->weight !== $firstSet->weight || $set->reps !== $firstSet->reps) {
-                $isUniform = false;
-                break;
-            }
-        }
-
-        if ($isUniform) {
-            // Use the old calculation if uniform
-            return $firstSet->weight * (1 + (0.0333 * $firstSet->reps));
-        } else {
-            // If not uniform, use the first set's data (as per current implementation)
-            return $firstSet->weight * (1 + (0.0333 * $firstSet->reps));
-        }
+        $calculator = new OneRepMaxCalculatorService();
+        return $calculator->getWorkoutOneRepMax($this);
     }
 
     public function getDisplayRepsAttribute()
@@ -73,12 +54,7 @@ class Workout extends Model
 
     public function getBestOneRepMaxAttribute()
     {
-        if ($this->workoutSets->isEmpty()) {
-            return 0;
-        }
-
-        return $this->workoutSets->max(function ($workoutSet) {
-            return $workoutSet->one_rep_max;
-        });
+        $calculator = new OneRepMaxCalculatorService();
+        return $calculator->getBestWorkoutOneRepMax($this);
     }
 }

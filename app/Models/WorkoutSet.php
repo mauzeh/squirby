@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Services\OneRepMaxCalculatorService;
 
 class WorkoutSet extends Model
 {
@@ -23,6 +24,7 @@ class WorkoutSet extends Model
 
     public function getOneRepMaxAttribute()
     {
-        return $this->weight * (1 + (0.0333 * $this->reps));
+        $calculator = new OneRepMaxCalculatorService();
+        return $calculator->calculateOneRepMax($this->weight, $this->reps);
     }
 }
