@@ -79,8 +79,8 @@
                         <td>{{ $workout->logged_at->format('m/d') }}</td>
                         <td><a href="{{ route('exercises.show-logs', $workout->exercise) }}">{{ $workout->exercise->title }}</a></td>
                         <td>
-                            <span style="font-weight: bold; font-size: 1.2em;">{{ $workout->weight }}&nbsp;lbs</span><br>
-                            {{ $workout->reps }}&nbsp;x&nbsp;{{ $workout->rounds }}
+                            <span style="font-weight: bold; font-size: 1.2em;">{{ $workout->weight }} lbs</span><br>
+                            {{ $workout->reps }} x {{ $workout->rounds }}
                         </td>
                         <td>{{ round($workout->one_rep_max) }} lbs</td>
                         <td class="hide-on-mobile" style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ $workout->comments }}">{{ $workout->comments }}</td>

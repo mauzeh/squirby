@@ -58,4 +58,45 @@ class WorkoutLoggingTest extends TestCase
         $response->assertRedirect(route('workouts.index'));
         $response->assertSessionHas('success', 'Workout created successfully.');
     }
+
+    /** @test */
+    public function a_user_can_view_workouts_on_index_page()
+    {
+        $user = \App\Models\User::factory()->create();
+        $this->actingAs($user);
+
+        $backSquat = \App\Models\Exercise::factory()->create(['title' => 'Back Squat']);
+        $deadlift = \App\Models\Exercise::factory()->create(['title' => 'Deadlift']);
+
+        $workout1 = \App\Models\Workout::factory()->create([
+            'exercise_id' => $backSquat->id,
+            'weight' => 200,
+            'reps' => 5,
+            'rounds' => 3,
+            'comments' => 'Squat comments',
+        ]);
+
+        $workout2 = \App\Models\Workout::factory()->create([
+            'exercise_id' => $deadlift->id,
+            'weight' => 300,
+            'reps' => 3,
+            'rounds' => 1,
+            'comments' => 'Deadlift comments',
+        ]);
+
+        $response = $this->get(route('workouts.index'));
+        $response->assertStatus(200);
+
+        // Assert Back Squat workout details
+        $response->assertSee($backSquat->title);
+        $response->assertSee($workout1->weight . ' lbs');
+        $response->assertSee($workout1->reps . ' x ' . $workout1->rounds);
+        $response->assertSee($workout1->comments);
+
+        // Assert Deadlift workout details
+        $response->assertSee($deadlift->title);
+        $response->assertSee($workout2->weight . ' lbs');
+        $response->assertSee($workout2->reps . ' x ' . $workout2->rounds);
+        $response->assertSee($workout2->comments);
+    }
 }
