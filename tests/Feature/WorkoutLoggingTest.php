@@ -140,4 +140,54 @@ class WorkoutLoggingTest extends TestCase
         $response->assertSee($workout2->reps . ' x ' . $workout2->rounds);
         $response->assertSee($workout2->comments);
     }
+
+    /** @test */
+    public function a_user_can_view_exercise_logs_page(): void
+    {
+        $user = \App\Models\User::factory()->create();
+        $this->actingAs($user);
+        $exercise = \App\Models\Exercise::factory()->create();
+
+        $response = $this->get('/exercises/' . $exercise->id . '/logs');
+
+        $response->assertStatus(200);
+        $response->assertSee($exercise->name);
+    }
+
+    /** @test */
+    public function a_user_can_view_workouts_on_exercise_logs_page()
+    {
+        $user = \App\Models\User::factory()->create();
+        $this->actingAs($user);
+
+        $backSquat = \App\Models\Exercise::factory()->create(['title' => 'Back Squat']);
+
+        $workout1 = \App\Models\Workout::factory()->create([
+            'exercise_id' => $backSquat->id,
+            'weight' => 200,
+            'reps' => 5,
+            'rounds' => 3,
+            'comments' => 'Squat workout 1 comments',
+        ]);
+
+        $workout2 = \App\Models\Workout::factory()->create([
+            'exercise_id' => $backSquat->id,
+            'weight' => 300,
+            'reps' => 3,
+            'rounds' => 1,
+            'comments' => 'Squat workout 2 comments',
+        ]);
+
+        $response = $this->get('/exercises/' . $backSquat->id . '/logs');
+        $response->assertStatus(200);
+
+        // Assert Back Squat workout details
+        $response->assertSee($backSquat->title);
+        $response->assertSee($workout1->weight . ' lbs');
+        $response->assertSee($workout1->reps . ' x ' . $workout1->rounds);
+        $response->assertSee($workout1->comments);
+        $response->assertSee($workout2->weight . ' lbs');
+        $response->assertSee($workout2->reps . ' x ' . $workout2->rounds);
+        $response->assertSee($workout2->comments);
+    }
 }
