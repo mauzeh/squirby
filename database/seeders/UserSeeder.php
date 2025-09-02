@@ -20,14 +20,22 @@ class UserSeeder extends Seeder
             'password' => Hash::make('password'),
             'email_verified_at' => now(),
         ]);
-        $admin->assignRole('admin');
+        $admin->assignRole('Admin');
 
         $athlete = User::create([
-            'name' => 'Another User',
-            'email' => 'another@example.com',
+            'name' => 'Athlete User',
+            'email' => 'athlete@example.com',
             'password' => Hash::make('password'),
             'email_verified_at' => now(),
         ]);
-        $athlete->assignRole('athlete');
+        $athlete->assignRole('Athlete');
+
+        $nutritionNinja = User::create([
+            'name' => 'Nutrition Ninja User',
+            'email' => 'nutrition.ninja@example.com',
+            'password' => Hash::make('password'),
+            'email_verified_at' => now(),
+        ]);
+        $nutritionNinja->assignRole('Nutrition Ninja');
     }
 }

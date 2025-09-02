@@ -67,7 +67,19 @@ class RolesAndPermissionsSeeder extends Seeder
 
         // create roles and assign created permissions
 
-        $role = Role::create(['name' => 'athlete'])
+        $role = Role::create(['name' => 'Athlete'])
+            ->givePermissionTo([
+                'workouts.view',
+                'workouts.create',
+                'workouts.update',
+                'workouts.delete',
+                'exercises.view',
+                'exercises.create',
+                'exercises.update',
+                'exercises.delete',
+            ]);
+
+        $role = Role::create(['name' => 'Nutrition Ninja'])
             ->givePermissionTo([
                 'daily-logs.view',
                 'daily-logs.create',
@@ -81,14 +93,6 @@ class RolesAndPermissionsSeeder extends Seeder
                 'ingredients.create',
                 'ingredients.update',
                 'ingredients.delete',
-                'workouts.view',
-                'workouts.create',
-                'workouts.update',
-                'workouts.delete',
-                'exercises.view',
-                'exercises.create',
-                'exercises.update',
-                'exercises.delete',
                 'measurement-logs.view',
                 'measurement-logs.create',
                 'measurement-logs.update',
@@ -99,7 +103,7 @@ class RolesAndPermissionsSeeder extends Seeder
                 'measurement-types.delete',
             ]);
 
-        $role = Role::create(['name' => 'admin']);
+        $role = Role::create(['name' => 'Admin']);
         $role->givePermissionTo(Permission::all());
     }
 }
