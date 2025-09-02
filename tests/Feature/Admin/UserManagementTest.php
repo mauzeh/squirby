@@ -151,4 +151,38 @@ class UserManagementTest extends TestCase
         $response->assertSessionHasErrors('roles');
         $response->assertInvalid('roles');
     }
+
+    /** @test */
+    public function admin_sees_success_message_after_updating_user()
+    {
+        $admin = User::whereHas('roles', function ($query) {
+            $query->where('name', 'admin');
+        })->first();
+        $user = User::factory()->create();
+        $role = Role::findByName('athlete');
+
+        $response = $this->actingAs($admin)->put(route('admin.users.update', $user), [
+            'name' => 'Updated Name',
+            'email' => 'updated@example.com',
+            'roles' => [$role->id],
+        ]);
+
+        $response->assertRedirect(route('admin.users.index'));
+        $response->assertSessionHas('success', 'User updated successfully.');
+    }
+
+    /** @test */
+    public function admin_sees_success_message_after_deleting_user()
+    {
+        $admin = User::whereHas('roles', function ($query) {
+            $query->where('name', 'admin');
+        })->first();
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($admin)->delete(route('admin.users.destroy', $user));
+
+        $response->assertRedirect(route('admin.users.index'));
+        $response->assertSessionHas('success', 'User deleted successfully.');
+        $this->assertDatabaseMissing('users', ['id' => $user->id]);
+    }
 }

@@ -1,6 +1,16 @@
 @extends('app')
 
 @section('content')
+    @if (session('success'))
+        <div class="container success-message-box">
+            {{ session('success') }}
+        </div>
+    @endif
+    @if (session('error'))
+        <div class="container error-message-box">
+            {{ session('error') }}
+        </div>
+    @endif
 <div class="container">
     <h1>Users</h1>
     <a href="{{ route('admin.users.create') }}" class="button">Create User</a>
