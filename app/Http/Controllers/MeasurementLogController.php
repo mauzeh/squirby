@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\MeasurementLog;
 use App\Models\MeasurementType;
 use App\Services\TsvImporterService;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 
 class MeasurementLogController extends Controller
@@ -18,7 +19,7 @@ class MeasurementLogController extends Controller
 
     public function index()
     {
-        $measurementLogs = MeasurementLog::with('measurementType')->orderBy('logged_at', 'desc')->get();
+        $measurementLogs = MeasurementLog::with('measurementType')->where('user_id', auth()->id())->orderBy('logged_at', 'desc')->get();
         $tsv = '';
         foreach ($measurementLogs->reverse() as $measurementLog) {
             $tsv .= $measurementLog->logged_at->format('m/d/Y') . "\t";
@@ -54,6 +55,7 @@ class MeasurementLogController extends Controller
             'value' => $request->value,
             'logged_at' => $loggedAt,
             'comments' => $request->comments,
+            'user_id' => auth()->id(),
         ]);
 
         return redirect()->route('measurement-logs.index')->with('success', 'Measurement log created successfully.');
@@ -61,12 +63,18 @@ class MeasurementLogController extends Controller
 
     public function edit(MeasurementLog $measurementLog)
     {
+        if ($measurementLog->user_id !== auth()->id()) {
+            abort(403, 'Unauthorized action.');
+        }
         $measurementTypes = MeasurementType::all();
         return view('measurement-logs.edit', compact('measurementLog', 'measurementTypes'));
     }
 
     public function update(Request $request, MeasurementLog $measurementLog)
     {
+        if ($measurementLog->user_id !== auth()->id()) {
+            abort(403, 'Unauthorized action.');
+        }
         $request->validate([
             'measurement_type_id' => 'required|exists:measurement_types,id',
             'value' => 'required|numeric',
@@ -89,6 +97,9 @@ class MeasurementLogController extends Controller
 
     public function destroy(MeasurementLog $measurementLog)
     {
+        if ($measurementLog->user_id !== auth()->id()) {
+            abort(403, 'Unauthorized action.');
+        }
         $measurementLog->delete();
 
         return redirect()->route('measurement-logs.index')->with('success', 'Measurement log deleted successfully.');
@@ -100,6 +111,14 @@ class MeasurementLogController extends Controller
             'measurement_log_ids' => 'required|array',
             'measurement_log_ids.*' => 'exists:measurement_logs,id',
         ]);
+
+        $measurementLogs = MeasurementLog::whereIn('id', $validated['measurement_log_ids'])->get();
+
+        foreach ($measurementLogs as $measurementLog) {
+            if ($measurementLog->user_id !== auth()->id()) {
+                abort(403, 'Unauthorized action.');
+            }
+        }
 
         MeasurementLog::destroy($validated['measurement_log_ids']);
 
@@ -119,7 +138,7 @@ class MeasurementLogController extends Controller
                 ->with('error', 'TSV data cannot be empty.');
         }
 
-        $result = $this->tsvImporterService->importMeasurements($tsvData);
+        $result = $this->tsvImporterService->importMeasurements($tsvData, auth()->id());
 
         if ($result['importedCount'] === 0) {
             return redirect()
@@ -134,7 +153,7 @@ class MeasurementLogController extends Controller
 
     public function showByType(MeasurementType $measurementType)
     {
-        $measurementLogs = MeasurementLog::where('measurement_type_id', $measurementType->id)->orderBy('logged_at', 'desc')->get();
+        $measurementLogs = MeasurementLog::where('measurement_type_id', $measurementType->id)->where('user_id', auth()->id())->orderBy('logged_at', 'desc')->get();
 
         $chartData = [
             'labels' => [],

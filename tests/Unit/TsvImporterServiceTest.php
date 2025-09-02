@@ -9,6 +9,7 @@ use App\Models\Exercise;
 use App\Models\DailyLog;
 use App\Models\Workout;
 use App\Models\Unit;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Carbon\Carbon;
 
@@ -17,11 +18,13 @@ class TsvImporterServiceTest extends TestCase
     use RefreshDatabase;
 
     protected $tsvImporterService;
+    protected $user;
 
     protected function setUp(): void
     {
         parent::setUp();
         $this->tsvImporterService = new TsvImporterService();
+        $this->user = User::factory()->create();
     }
 
     /** @test */
@@ -34,7 +37,7 @@ class TsvImporterServiceTest extends TestCase
         $tsvData = "2025-08-26\t10:00\tApple\tNote 1\t100\n" .
                    "2025-08-26\t12:00\tBanana\tNote 2\t150";
 
-        $result = $this->tsvImporterService->importDailyLogs($tsvData, '2025-08-26');
+        $result = $this->tsvImporterService->importDailyLogs($tsvData, '2025-08-26', $this->user->id);
 
         $this->assertEquals(2, $result['importedCount']);
         $this->assertEmpty($result['notFound']);
@@ -42,6 +45,7 @@ class TsvImporterServiceTest extends TestCase
         $this->assertDatabaseCount('daily_logs', 2);
 
         $this->assertDatabaseHas('daily_logs', [
+            'user_id' => $this->user->id,
             'ingredient_id' => $ingredient1->id,
             'quantity' => 100,
             'notes' => 'Note 1',
@@ -49,6 +53,7 @@ class TsvImporterServiceTest extends TestCase
         ]);
 
         $this->assertDatabaseHas('daily_logs', [
+            'user_id' => $this->user->id,
             'ingredient_id' => $ingredient2->id,
             'quantity' => 150,
             'notes' => 'Note 2',
@@ -61,7 +66,7 @@ class TsvImporterServiceTest extends TestCase
     {
         $tsvData = "2025-08-26\t10:00\tNonExistentIngredient\tNote 1\t100";
 
-        $result = $this->tsvImporterService->importDailyLogs($tsvData, '2025-08-26');
+        $result = $this->tsvImporterService->importDailyLogs($tsvData, '2025-08-26', $this->user->id);
 
         $this->assertEquals(0, $result['importedCount']);
         $this->assertEquals(['NonExistentIngredient'], $result['notFound']);
@@ -71,7 +76,7 @@ class TsvImporterServiceTest extends TestCase
     /** @test */
     public function it_handles_empty_tsv_data_for_daily_logs()
     {
-        $result = $this->tsvImporterService->importDailyLogs('', '2025-08-26');
+        $result = $this->tsvImporterService->importDailyLogs('', '2025-08-26', $this->user->id);
 
         $this->assertEquals(0, $result['importedCount']);
         $this->assertEmpty($result['notFound']);
@@ -87,7 +92,7 @@ class TsvImporterServiceTest extends TestCase
         $tsvData = "2025-08-26\t08:00\tPush Ups\t10\t3\t15\tWarm up\n" .
                    "2025-08-26\t08:30\tSquats\t50\t5\t10\tMain set";
 
-        $result = $this->tsvImporterService->importWorkouts($tsvData, '2025-08-26');
+        $result = $this->tsvImporterService->importWorkouts($tsvData, '2025-08-26', $this->user->id);
 
         $this->assertEquals(2, $result['importedCount']);
         $this->assertEmpty($result['notFound']);
@@ -99,6 +104,7 @@ class TsvImporterServiceTest extends TestCase
         $workout2 = \App\Models\Workout::where('exercise_id', $exercise2->id)->first();
 
         $this->assertDatabaseHas('workouts', [
+            'user_id' => $this->user->id,
             'exercise_id' => $exercise1->id,
             'comments' => 'Warm up',
             'logged_at' => '2025-08-26 08:00:00',
@@ -112,6 +118,7 @@ class TsvImporterServiceTest extends TestCase
         ]);
 
         $this->assertDatabaseHas('workouts', [
+            'user_id' => $this->user->id,
             'exercise_id' => $exercise2->id,
             'comments' => 'Main set',
             'logged_at' => '2025-08-26 08:30:00',
@@ -130,7 +137,7 @@ class TsvImporterServiceTest extends TestCase
     {
         $tsvData = "2025-08-26\t08:00\tNonExistentExercise\t10\t3\t15\tWarm up";
 
-        $result = $this->tsvImporterService->importWorkouts($tsvData, '2025-08-26');
+        $result = $this->tsvImporterService->importWorkouts($tsvData, '2025-08-26', $this->user->id);
 
         $this->assertEquals(0, $result['importedCount']);
         $this->assertEquals(['NonExistentExercise'], $result['notFound']);
@@ -140,7 +147,7 @@ class TsvImporterServiceTest extends TestCase
     /** @test */
     public function it_handles_empty_tsv_data_for_workouts()
     {
-        $result = $this->tsvImporterService->importWorkouts('', '2025-08-26');
+        $result = $this->tsvImporterService->importWorkouts('', '2025-08-26', $this->user->id);
 
         $this->assertEquals(0, $result['importedCount']);
         $this->assertEmpty($result['notFound']);

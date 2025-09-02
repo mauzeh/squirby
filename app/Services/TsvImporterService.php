@@ -9,7 +9,7 @@ use Carbon\Carbon;
 
 class TsvImporterService
 {
-    public function importDailyLogs(string $tsvData, string $date): array
+    public function importDailyLogs(string $tsvData, string $date, int $userId): array
     {
         $date = Carbon::parse($date);
         $rows = explode("\n", $tsvData);
@@ -33,6 +33,7 @@ class TsvImporterService
                 $loggedAt = Carbon::parse($date->format('Y-m-d') . ' ' . $columns[1]);
 
                 DailyLog::create([
+                    'user_id' => $userId,
                     'ingredient_id' => $ingredient->id,
                     'unit_id' => $ingredient->base_unit_id,
                     'quantity' => $columns[4],
@@ -51,7 +52,7 @@ class TsvImporterService
         ];
     }
 
-    public function importWorkouts(string $tsvData, string $date): array
+    public function importWorkouts(string $tsvData, string $date, int $userId): array
     {
         $rows = explode("\n", $tsvData);
         $importedCount = 0;
@@ -74,6 +75,7 @@ class TsvImporterService
                 $loggedAt = Carbon::createFromFormat('Y-m-d H:i', $columns[0] . ' ' . $columns[1]);
 
                 $workout = \App\Models\Workout::create([
+                    'user_id' => $userId,
                     'exercise_id' => $exercise->id,
                     'comments' => $columns[6],
                     'logged_at' => $loggedAt,
@@ -104,7 +106,7 @@ class TsvImporterService
         ];
     }
 
-    public function importMeasurements(string $tsvData): array
+    public function importMeasurements(string $tsvData, int $userId): array
     {
         $rows = explode("\n", $tsvData);
         $importedCount = 0;
@@ -128,6 +130,7 @@ class TsvImporterService
             $loggedAt = Carbon::createFromFormat('m/d/Y H:i', $columns[0] . ' ' . $columns[1]);
 
             \App\Models\MeasurementLog::create([
+                'user_id' => $userId,
                 'measurement_type_id' => $measurementType->id,
                 'value' => $columns[3],
                 'comments' => $columns[5] ?? null,

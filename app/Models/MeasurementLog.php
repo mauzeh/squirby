@@ -26,4 +26,9 @@ class MeasurementLog extends Model
     {
         return $this->belongsTo(MeasurementType::class);
     }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

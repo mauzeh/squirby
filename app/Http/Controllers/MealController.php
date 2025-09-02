@@ -6,6 +6,7 @@ use App\Models\Meal;
 use App\Models\Ingredient;
 use App\Models\DailyLog;
 use App\Services\NutritionService;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 
 class MealController extends Controller
@@ -22,7 +23,7 @@ class MealController extends Controller
      */
     public function index()
     {
-        $meals = Meal::with('ingredients')->get();
+        $meals = Meal::with('ingredients')->where('user_id', auth()->id())->get();
 
         foreach ($meals as $meal) {
             $meal->total_macros = $this->nutritionService->calculateDailyTotals($meal->ingredients);
@@ -53,7 +54,7 @@ class MealController extends Controller
             'ingredients.*.quantity' => 'nullable|numeric|min:0.01',
         ]);
 
-        $meal = Meal::create(['name' => $request->name, 'comments' => $request->comments]);
+        $meal = Meal::create(array_merge(['name' => $request->name, 'comments' => $request->comments], ['user_id' => auth()->id()]));
 
         foreach ($request->ingredients as $item) {
             if (isset($item['ingredient_id']) && isset($item['quantity'])) {
@@ -77,6 +78,9 @@ class MealController extends Controller
      */
     public function edit(Meal $meal)
     {
+        if ($meal->user_id !== auth()->id()) {
+            abort(403, 'Unauthorized action.');
+        }
         $meal->load('ingredients');
         $ingredients = Ingredient::orderBy('name')->get();
         return view('meals.edit', compact('meal', 'ingredients'));
@@ -87,6 +91,9 @@ class MealController extends Controller
      */
     public function update(Request $request, Meal $meal)
     {
+        if ($meal->user_id !== auth()->id()) {
+            abort(403, 'Unauthorized action.');
+        }
         $request->validate([
             'name' => 'required|string|max:255|unique:meals,name,' . $meal->id,
             'comments' => 'nullable|string',
@@ -113,6 +120,9 @@ class MealController extends Controller
      */
     public function destroy(Meal $meal)
     {
+        if ($meal->user_id !== auth()->id()) {
+            abort(403, 'Unauthorized action.');
+        }
         $meal->delete();
         return redirect()->route('meals.index')->with('success', 'Meal deleted successfully.');
     }
@@ -125,9 +135,9 @@ class MealController extends Controller
             'meal_name' => 'required|string|max:255|unique:meals,name',
         ]);
 
-        $meal = Meal::create(['name' => $request->meal_name]);
+        $meal = Meal::create(array_merge(['name' => $request->meal_name], ['user_id' => auth()->id()]));
 
-        $dailyLogs = DailyLog::whereIn('id', $request->daily_log_ids)->get();
+        $dailyLogs = DailyLog::whereIn('id', $request->daily_log_ids)->where('user_id', auth()->id())->get();
 
         foreach ($dailyLogs as $log) {
             $meal->ingredients()->attach($log->ingredient_id, ['quantity' => $log->quantity]);

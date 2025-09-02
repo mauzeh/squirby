@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Workout;
 use App\Models\WorkoutSet;
+use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Carbon\Carbon;
@@ -15,6 +16,8 @@ class WorkoutSeeder extends Seeder
      */
     public function run(): void
     {
+        $adminUser = User::where('email', 'admin@example.com')->first();
+
         $csvFile = fopen(base_path('database/seeders/csv/workouts_from_real_world.csv'), 'r');
         $firstline = true;
         while (($data = fgetcsv($csvFile, 2000, ",")) !== FALSE) {
@@ -24,6 +27,7 @@ class WorkoutSeeder extends Seeder
 
                 if ($exercise) {
                     $workout = Workout::create([
+                        'user_id' => $adminUser->id,
                         'exercise_id' => $exercise->id,
                         'logged_at' => Carbon::parse($data[0] . ' ' . $data[1])->ceilMinute(15),
                         'comments' => $data[6]

@@ -8,6 +8,7 @@ use App\Models\Meal;
 use App\Models\Unit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 use App\Services\NutritionService;
 use App\Services\TsvImporterService;
 use Carbon\Carbon;
@@ -38,6 +39,7 @@ class DailyLogController extends Controller
         $selectedDate = $request->input('date') ? Carbon::parse($request->input('date')) : Carbon::today();
 
         $dailyLogs = DailyLog::with(['ingredient', 'unit'])
+            ->where('daily_logs.user_id', auth()->id())
             ->join('ingredients', 'daily_logs.ingredient_id', '=', 'ingredients.id')
             ->whereDate('logged_at', $selectedDate->toDateString())
             ->orderBy('logged_at', 'desc')
@@ -73,19 +75,25 @@ class DailyLogController extends Controller
         $loggedAtDate = Carbon::parse($validated['date']);
         $validated['logged_at'] = $loggedAtDate->setTimeFromTimeString($validated['logged_at']);
 
-        $logEntry = DailyLog::create($validated);
+        $logEntry = DailyLog::create(array_merge($validated, ['user_id' => auth()->id()]));
 
         return redirect()->route('daily-logs.index', ['date' => $validated['date']])->with('success', 'Log entry added successfully!');
     }
 
     public function edit(DailyLog $dailyLog)
     {
+        if ($dailyLog->user_id !== auth()->id()) {
+            abort(403, 'Unauthorized action.');
+        }
         $ingredients = Ingredient::with('baseUnit')->orderBy('name')->get();
         return view('daily_logs.edit', compact('dailyLog', 'ingredients'));
     }
 
     public function update(Request $request, DailyLog $dailyLog)
     {
+        if ($dailyLog->user_id !== auth()->id()) {
+            abort(403, 'Unauthorized action.');
+        }
         $validated = $request->validate([
             'ingredient_id' => 'required|exists:ingredients,id',
             'quantity' => 'required|numeric|min:0.01',
@@ -107,6 +115,9 @@ class DailyLogController extends Controller
 
     public function destroy(DailyLog $dailyLog)
     {
+        if ($dailyLog->user_id !== auth()->id()) {
+            abort(403, 'Unauthorized action.');
+        }
         $date = $dailyLog->logged_at->format('Y-m-d');
         $dailyLog->delete();
 
@@ -120,7 +131,15 @@ class DailyLogController extends Controller
             'daily_log_ids.*' => 'exists:daily_logs,id',
         ]);
 
-        $date = DailyLog::find($validated['daily_log_ids'][0])->logged_at->format('Y-m-d');
+        $dailyLogs = DailyLog::whereIn('id', $validated['daily_log_ids'])->get();
+
+        foreach ($dailyLogs as $dailyLog) {
+            if ($dailyLog->user_id !== auth()->id()) {
+                abort(403, 'Unauthorized action.');
+            }
+        }
+
+        $date = $dailyLogs->first()->logged_at->format('Y-m-d');
 
         DailyLog::destroy($validated['daily_log_ids']);
 
@@ -157,6 +176,7 @@ class DailyLogController extends Controller
                 'quantity' => $ingredient->pivot->quantity * $validated['portion'],
                 'logged_at' => $loggedAt,
                 'notes' => $notes,
+                'user_id' => auth()->id(),
             ]);
         }
 
@@ -177,7 +197,7 @@ class DailyLogController extends Controller
                 ->with('error', 'TSV data cannot be empty.');
         }
 
-        $result = $this->tsvImporterService->importDailyLogs($tsvData, $validated['date']);
+        $result = $this->tsvImporterService->importDailyLogs($tsvData, $validated['date'], auth()->id());
 
         if ($result['importedCount'] === 0 && !empty($result['notFound'])) {
             return redirect()

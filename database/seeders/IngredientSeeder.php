@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use App\Models\Ingredient;
 use App\Models\Unit;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Log;
 
@@ -15,6 +16,8 @@ class IngredientSeeder extends Seeder
      */
     public function run(): void
     {
+        $adminUser = User::where('email', 'admin@example.com')->first();
+
         Ingredient::truncate();
         $csvFile = file(database_path('seeders/csv/ingredients_from_real_world.csv'));
         $header = str_getcsv(array_shift($csvFile));
@@ -57,6 +60,7 @@ class IngredientSeeder extends Seeder
             $unit = $units[$unitAbbreviation] ?? $units['pc'];
 
             Ingredient::create([
+                'user_id' => $adminUser->id,
                 'name' => $rowData['Ingredient'],
                 'calories' => (float)($rowData['Calories'] ?? 0),
                 'protein' => (float)($rowData['Protein (g)'] ?? 0),

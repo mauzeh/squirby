@@ -14,4 +14,9 @@ class MeasurementType extends Model
         'name',
         'default_unit',
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

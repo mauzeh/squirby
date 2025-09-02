@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use App\Models\DailyLog;
 use App\Models\Ingredient;
+use App\Models\User;
 use Carbon\Carbon;
 
 class DailyLogSeeder extends Seeder
@@ -16,6 +17,8 @@ class DailyLogSeeder extends Seeder
      */
     public function run()
     {
+        $adminUser = User::where('email', 'admin@example.com')->first();
+
         $csvFile = fopen(database_path("seeders/csv/daily_log_from_real_world.csv"), "r");
 
         $firstline = true;
@@ -28,6 +31,7 @@ class DailyLogSeeder extends Seeder
                     $loggedAt = Carbon::createFromFormat('m/d/Y H:i', $data[0] . ' ' . $data[1]);
                     
                     DailyLog::create([
+                        'user_id' => $adminUser->id,
                         'ingredient_id' => $ingredient->id,
                         'unit_id' => $ingredient->base_unit_id,
                         'quantity' => $data[4],

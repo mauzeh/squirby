@@ -13,6 +13,7 @@ class DailyLog extends Model
         'quantity',
         'logged_at',
         'notes',
+        'user_id',
     ];
 
     protected $casts = [
@@ -27,5 +28,10 @@ class DailyLog extends Model
     public function unit()
     {
         return $this->belongsTo(Unit::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 }

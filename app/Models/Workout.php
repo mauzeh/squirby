@@ -14,6 +14,7 @@ class Workout extends Model
         'exercise_id',
         'comments',
         'logged_at',
+        'user_id',
     ];
 
     protected $casts = [
@@ -56,5 +57,10 @@ class Workout extends Model
     {
         $calculator = new OneRepMaxCalculatorService();
         return $calculator->getBestWorkoutOneRepMax($this);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 }

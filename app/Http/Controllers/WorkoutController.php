@@ -7,6 +7,7 @@ use App\Models\Workout;
 use App\Models\WorkoutSet;
 use App\Services\TsvImporterService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 
 class WorkoutController extends Controller
@@ -22,7 +23,7 @@ class WorkoutController extends Controller
      */
     public function index()
     {
-        $workouts = Workout::with('exercise')->orderBy('logged_at', 'asc')->get();
+        $workouts = Workout::with('exercise')->where('user_id', auth()->id())->orderBy('logged_at', 'asc')->get();
         $exercises = Exercise::all();
 
         $datasets = [];
@@ -81,6 +82,7 @@ class WorkoutController extends Controller
             'exercise_id' => $request->input('exercise_id'),
             'comments' => $request->input('comments'),
             'logged_at' => $loggedAt,
+            'user_id' => auth()->id(),
         ]);
 
         $weight = $request->input('weight');
@@ -103,6 +105,9 @@ class WorkoutController extends Controller
      */
     public function edit(Workout $workout)
     {
+        if ($workout->user_id !== auth()->id()) {
+            abort(403, 'Unauthorized action.');
+        }
         $exercises = Exercise::all();
         return view('workouts.edit', compact('workout', 'exercises'));
     }
@@ -112,11 +117,11 @@ class WorkoutController extends Controller
      */
     public function update(Request $request, Workout $workout)
     {
+        if ($workout->user_id !== auth()->id()) {
+            abort(403, 'Unauthorized action.');
+        }
         $request->validate([
             'exercise_id' => 'required|exists:exercises,id',
-            'weight' => 'required|numeric',
-            'reps' => 'required|integer',
-            'rounds' => 'required|integer',
             'comments' => 'nullable|string',
             'date' => 'required|date',
             'logged_at' => 'required|date_format:H:i',
@@ -155,6 +160,9 @@ class WorkoutController extends Controller
      */
     public function destroy(Workout $workout)
     {
+        if ($workout->user_id !== auth()->id()) {
+            abort(403, 'Unauthorized action.');
+        }
         $workout->delete();
 
         return redirect()->route('workouts.index')->with('success', 'Workout deleted successfully.');
@@ -166,6 +174,14 @@ class WorkoutController extends Controller
             'workout_ids' => 'required|array',
             'workout_ids.*' => 'exists:workouts,id',
         ]);
+
+        $workouts = Workout::whereIn('id', $validated['workout_ids'])->get();
+
+        foreach ($workouts as $workout) {
+            if ($workout->user_id !== auth()->id()) {
+                abort(403, 'Unauthorized action.');
+            }
+        }
 
         Workout::destroy($validated['workout_ids']);
 
@@ -186,7 +202,7 @@ class WorkoutController extends Controller
                 ->with('error', 'TSV data cannot be empty.');
         }
 
-        $result = $this->tsvImporterService->importWorkouts($tsvData, $validated['date']);
+        $result = $this->tsvImporterService->importWorkouts($tsvData, $validated['date'], auth()->id());
 
         if ($result['importedCount'] === 0 && !empty($result['notFound'])) {
             return redirect()

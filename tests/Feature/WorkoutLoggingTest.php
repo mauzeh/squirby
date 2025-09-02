@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
+use App\Models\User;
 
 class WorkoutLoggingTest extends TestCase
 {
@@ -13,6 +14,8 @@ class WorkoutLoggingTest extends TestCase
     {
         parent::setUp();
         $this->artisan('migrate:fresh');
+        $this->user = User::factory()->create();
+        $this->actingAs($this->user);
     }
 
     /** @test */
@@ -27,10 +30,7 @@ class WorkoutLoggingTest extends TestCase
     /** @test */
     public function a_user_can_create_a_workout()
     {
-        $user = \App\Models\User::factory()->create();
-        $this->actingAs($user);
-
-        $exercise = \App\Models\Exercise::factory()->create();
+        $exercise = \App\Models\Exercise::factory()->create(['user_id' => $this->user->id]);
 
         $now = now();
 
@@ -47,6 +47,7 @@ class WorkoutLoggingTest extends TestCase
         $response = $this->post(route('workouts.store'), $workoutData);
 
         $this->assertDatabaseHas('workouts', [
+            'user_id' => $this->user->id,
             'exercise_id' => $exercise->id,
             'comments' => 'Test workout comments',
             'logged_at' => \Carbon\Carbon::parse($now->format('Y-m-d H:i'))->format('Y-m-d H:i:s'),
@@ -69,11 +70,9 @@ class WorkoutLoggingTest extends TestCase
     /** @test */
     public function a_user_can_update_a_workout()
     {
-        $user = \App\Models\User::factory()->create();
-        $this->actingAs($user);
-
-        $exercise = \App\Models\Exercise::factory()->create();
+        $exercise = \App\Models\Exercise::factory()->create(['user_id' => $this->user->id]);
         $workout = \App\Models\Workout::factory()->create([
+            'user_id' => $this->user->id,
             'exercise_id' => $exercise->id,
             'comments' => 'Original comments',
         ]);
@@ -83,7 +82,9 @@ class WorkoutLoggingTest extends TestCase
             'notes' => 'Original comments',
         ]);
 
-        $updatedExercise = \App\Models\Exercise::factory()->create();
+        // dd($workout->toArray()); // Inspect initial workout data
+
+        $updatedExercise = \App\Models\Exercise::factory()->create(['user_id' => $this->user->id]);
         $updatedWorkoutData = [
             'exercise_id' => $updatedExercise->id,
             'weight' => 120,
@@ -96,8 +97,11 @@ class WorkoutLoggingTest extends TestCase
 
         $response = $this->put(route('workouts.update', $workout->id), $updatedWorkoutData);
 
+        // dd(\App\Models\Workout::find($workout->id)->toArray()); // Inspect workout data after update
+
         $this->assertDatabaseHas('workouts', [
             'id' => $workout->id,
+            'user_id' => $this->user->id,
             'exercise_id' => $updatedExercise->id,
             'comments' => 'Updated comments',
         ]);
@@ -117,13 +121,11 @@ class WorkoutLoggingTest extends TestCase
     /** @test */
     public function a_user_can_view_workouts_on_index_page()
     {
-        $user = \App\Models\User::factory()->create();
-        $this->actingAs($user);
-
-        $backSquat = \App\Models\Exercise::factory()->create(['title' => 'Back Squat']);
-        $deadlift = \App\Models\Exercise::factory()->create(['title' => 'Deadlift']);
+        $backSquat = \App\Models\Exercise::factory()->create(['user_id' => $this->user->id, 'title' => 'Back Squat']);
+        $deadlift = \App\Models\Exercise::factory()->create(['user_id' => $this->user->id, 'title' => 'Deadlift']);
 
         $workout1 = \App\Models\Workout::factory()->create([
+            'user_id' => $this->user->id,
             'exercise_id' => $backSquat->id,
             'comments' => 'Squat comments',
         ]);
@@ -144,6 +146,7 @@ class WorkoutLoggingTest extends TestCase
         ]);
 
         $workout2 = \App\Models\Workout::factory()->create([
+            'user_id' => $this->user->id,
             'exercise_id' => $deadlift->id,
             'comments' => 'Deadlift comments',
         ]);
@@ -172,9 +175,7 @@ class WorkoutLoggingTest extends TestCase
     /** @test */
     public function a_user_can_view_exercise_logs_page(): void
     {
-        $user = \App\Models\User::factory()->create();
-        $this->actingAs($user);
-        $exercise = \App\Models\Exercise::factory()->create();
+        $exercise = \App\Models\Exercise::factory()->create(['user_id' => $this->user->id]);
 
         $response = $this->get('/exercises/' . $exercise->id . '/logs');
 
@@ -185,12 +186,10 @@ class WorkoutLoggingTest extends TestCase
     /** @test */
     public function a_user_can_view_workouts_on_exercise_logs_page()
     {
-        $user = \App\Models\User::factory()->create();
-        $this->actingAs($user);
-
-        $backSquat = \App\Models\Exercise::factory()->create(['title' => 'Back Squat']);
+        $backSquat = \App\Models\Exercise::factory()->create(['user_id' => $this->user->id, 'title' => 'Back Squat']);
 
         $workout1 = \App\Models\Workout::factory()->create([
+            'user_id' => $this->user->id,
             'exercise_id' => $backSquat->id,
             'comments' => 'Squat workout 1 comments',
         ]);
@@ -211,6 +210,7 @@ class WorkoutLoggingTest extends TestCase
         ]);
 
         $workout2 = \App\Models\Workout::factory()->create([
+            'user_id' => $this->user->id,
             'exercise_id' => $backSquat->id,
             'comments' => 'Squat workout 2 comments',
         ]);

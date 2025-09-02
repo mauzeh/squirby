@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Ingredient;
 use App\Models\Unit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class IngredientController extends Controller
 {
@@ -13,7 +14,7 @@ class IngredientController extends Controller
      */
     public function index()
     {
-        $ingredients = Ingredient::with('baseUnit')->orderBy('name')->get();
+        $ingredients = Ingredient::with('baseUnit')->where('user_id', auth()->id())->orderBy('name')->get();
         return view('ingredients.index', compact('ingredients'));
     }
 
@@ -49,7 +50,7 @@ class IngredientController extends Controller
             'cost_per_unit' => 'required|numeric|min:0',
         ]);
 
-        Ingredient::create($request->all());
+        Ingredient::create(array_merge($request->all(), ['user_id' => auth()->id()]));
 
         return redirect()->route('ingredients.index')
                          ->with('success', 'Ingredient created successfully.');
@@ -62,6 +63,9 @@ class IngredientController extends Controller
      */
     public function edit(Ingredient $ingredient)
     {
+        if ($ingredient->user_id !== auth()->id()) {
+            abort(403, 'Unauthorized action.');
+        }
         $units = Unit::all();
         return view('ingredients.edit', compact('ingredient', 'units'));
     }
@@ -71,6 +75,9 @@ class IngredientController extends Controller
      */
     public function update(Request $request, Ingredient $ingredient)
     {
+        if ($ingredient->user_id !== auth()->id()) {
+            abort(403, 'Unauthorized action.');
+        }
         $request->validate([
             'name' => 'required|string|max:255',
             'calories' => 'required|numeric|min:0',
@@ -100,6 +107,9 @@ class IngredientController extends Controller
      */
     public function destroy(Ingredient $ingredient)
     {
+        if ($ingredient->user_id !== auth()->id()) {
+            abort(403, 'Unauthorized action.');
+        }
         $ingredient->delete();
 
         return redirect()->route('ingredients.index')

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Exercise;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ExerciseController extends Controller
 {
@@ -12,7 +13,7 @@ class ExerciseController extends Controller
      */
     public function index()
     {
-        $exercises = Exercise::all();
+        $exercises = Exercise::where('user_id', auth()->id())->get();
         return view('exercises.index', compact('exercises'));
     }
 
@@ -34,7 +35,7 @@ class ExerciseController extends Controller
             'description' => 'nullable|string',
         ]);
 
-        Exercise::create($request->all());
+        Exercise::create(array_merge($request->all(), ['user_id' => auth()->id()]));
 
         return redirect()->route('exercises.index')->with('success', 'Exercise created successfully.');
     }
@@ -52,6 +53,9 @@ class ExerciseController extends Controller
      */
     public function edit(Exercise $exercise)
     {
+        if ($exercise->user_id !== auth()->id()) {
+            abort(403, 'Unauthorized action.');
+        }
         return view('exercises.edit', compact('exercise'));
     }
 
@@ -60,6 +64,9 @@ class ExerciseController extends Controller
      */
     public function update(Request $request, Exercise $exercise)
     {
+        if ($exercise->user_id !== auth()->id()) {
+            abort(403, 'Unauthorized action.');
+        }
         $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -75,6 +82,9 @@ class ExerciseController extends Controller
      */
     public function destroy(Exercise $exercise)
     {
+        if ($exercise->user_id !== auth()->id()) {
+            abort(403, 'Unauthorized action.');
+        }
         $exercise->delete();
 
         return redirect()->route('exercises.index')->with('success', 'Exercise deleted successfully.');
@@ -82,7 +92,10 @@ class ExerciseController extends Controller
 
     public function showLogs(Exercise $exercise)
     {
-        $workouts = $exercise->workouts()->with('workoutSets')->orderBy('logged_at', 'asc')->get();
+        if ($exercise->user_id !== auth()->id()) {
+            abort(403, 'Unauthorized action.');
+        }
+        $workouts = $exercise->workouts()->with('workoutSets')->where('user_id', auth()->id())->orderBy('logged_at', 'asc')->get();
 
         $chartData = [
             'datasets' => [
