@@ -54,7 +54,7 @@ class MealController extends Controller
             'ingredients.*.quantity' => 'nullable|numeric|min:0.01',
         ]);
 
-        $meal = Meal::create(array_merge(['name' => $request->name, 'comments' => $request->comments], ['user_id' => auth()->id()]));
+        $meal = Meal::create(array_merge(['name' => $request->name, 'comments' => $request->comments], ['user_id' => Auth::id()]));
 
         foreach ($request->ingredients as $item) {
             if (isset($item['ingredient_id']) && isset($item['quantity'])) {
