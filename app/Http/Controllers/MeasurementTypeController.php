@@ -27,7 +27,7 @@ class MeasurementTypeController extends Controller
 
         MeasurementType::create($request->all());
 
-        return redirect()->route('measurement_types.index')->with('success', 'Measurement type created successfully.');
+        return redirect()->route('measurement-types.index')->with('success', 'Measurement type created successfully.');
     }
 
     public function edit(MeasurementType $measurementType)
@@ -44,13 +44,13 @@ class MeasurementTypeController extends Controller
 
         $measurementType->update($request->all());
 
-        return redirect()->route('measurement_types.index')->with('success', 'Measurement type updated successfully.');
+        return redirect()->route('measurement-types.index')->with('success', 'Measurement type updated successfully.');
     }
 
     public function destroy(MeasurementType $measurementType)
     {
         $measurementType->delete();
 
-        return redirect()->route('measurement_types.index')->with('success', 'Measurement type deleted successfully.');
+        return redirect()->route('measurement-types.index')->with('success', 'Measurement type deleted successfully.');
     }
 }
