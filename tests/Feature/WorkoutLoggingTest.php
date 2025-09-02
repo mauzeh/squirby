@@ -60,6 +60,47 @@ class WorkoutLoggingTest extends TestCase
     }
 
     /** @test */
+    public function a_user_can_update_a_workout()
+    {
+        $user = \App\Models\User::factory()->create();
+        $this->actingAs($user);
+
+        $exercise = \App\Models\Exercise::factory()->create();
+        $workout = \App\Models\Workout::factory()->create([
+            'exercise_id' => $exercise->id,
+            'weight' => 100,
+            'reps' => 5,
+            'rounds' => 3,
+            'comments' => 'Original comments',
+        ]);
+
+        $updatedExercise = \App\Models\Exercise::factory()->create();
+        $updatedWorkoutData = [
+            'exercise_id' => $updatedExercise->id,
+            'weight' => 120,
+            'reps' => 6,
+            'rounds' => 4,
+            'comments' => 'Updated comments',
+            'date' => $workout->logged_at->format('Y-m-d'),
+            'logged_at' => $workout->logged_at->format('H:i'),
+        ];
+
+        $response = $this->put(route('workouts.update', $workout->id), $updatedWorkoutData);
+
+        $this->assertDatabaseHas('workouts', [
+            'id' => $workout->id,
+            'exercise_id' => $updatedExercise->id,
+            'weight' => 120,
+            'reps' => 6,
+            'rounds' => 4,
+            'comments' => 'Updated comments',
+        ]);
+
+        $response->assertRedirect(route('workouts.index'));
+        $response->assertSessionHas('success', 'Workout updated successfully.');
+    }
+
+    /** @test */
     public function a_user_can_view_workouts_on_index_page()
     {
         $user = \App\Models\User::factory()->create();
