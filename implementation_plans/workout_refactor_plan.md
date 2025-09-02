@@ -15,6 +15,7 @@ We will introduce a new model to store the details of each individual set, but t
 1.  **`Workout` Model:**
     *   Represents a specific workout session for a given exercise on a given day.
     *   Will no longer have `reps` and `rounds` columns in the database table.
+    *   Will have a method to get the highest `one_rep_max` from its sets.
 
 2.  **`WorkoutSet` Model:**
     *   Represents a single set within a workout.
@@ -64,4 +65,4 @@ To ensure a smooth refactoring process, we need to consider the following relate
 ### 2. Workout Analysis and Charting
 
 *   The `showLogs` method in the `ExerciseController` and the `index` method in the `WorkoutController` will be updated to work with the new `WorkoutSet` model.
-*   The one-rep max calculation will be moved to the `WorkoutSet` model. For charts that show the one-rep max progression, we will use the best set of each workout.
+*   The one-rep max calculation will be moved to the `WorkoutSet` model. For charts that show the one-rep max progression, we will use the highest `one_rep_max` from all the sets in a workout.
