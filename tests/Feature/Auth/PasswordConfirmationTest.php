@@ -27,7 +27,7 @@ class PasswordConfirmationTest extends TestCase
             'password' => 'password',
         ]);
 
-        $response->assertRedirect();
+        $response->assertRedirect(route('daily-logs.index'));
         $response->assertSessionHasNoErrors();
     }
 

@@ -13,16 +13,17 @@ class ExampleTest extends TestCase
     use RefreshDatabase;
 
     /**
-     * A basic test example.
+     * Test that the root URL redirects correctly based on authentication status.
      */
     public function test_the_application_returns_a_successful_response(): void
     {
-        $user = User::factory()->create();
-        $this->actingAs($user);
-
+        // Test unauthenticated redirection
         $response = $this->get('/');
+        $response->assertRedirect('/login');
 
-        // We are redirecting to the daily logs index route
-        $response->assertStatus(200);
+        // Test authenticated redirection
+        $user = User::factory()->create();
+        $response = $this->actingAs($user)->get('/');
+        $response->assertRedirect(route('daily-logs.index'));
     }
 }
