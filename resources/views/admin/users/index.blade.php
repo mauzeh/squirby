@@ -15,7 +15,7 @@
     <h1>Users</h1>
     <a href="{{ route('admin.users.create') }}" class="button">Create User</a>
     <a href="{{ route('admin.roles.index') }}" class="button">Manage Roles</a>
-    <a href="{{ route('admin.permissions.index') }}" class="button">Manage Permissions</a>
+    
     <table class="log-entries-table">
         <thead>
             <tr>

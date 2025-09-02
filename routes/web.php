@@ -15,7 +15,7 @@ use App\Http\Controllers\MeasurementLogController;
 use App\Http\Controllers\MeasurementTypeController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\RoleController;
-use App\Http\Controllers\Admin\PermissionController;
+
 
 // Breeze Routes
 Route::get('/', function () {
@@ -91,9 +91,7 @@ Route::middleware(['auth'])->name('admin.')->prefix('admin')->group(function () 
     Route::resource('roles', RoleController::class)->middleware([
         'permission:roles.view|roles.create|roles.update|roles.delete'
     ]);
-    Route::resource('permissions', PermissionController::class)->middleware([
-        'permission:permissions.view|permissions.assign'
-    ]);
+    
 });
 
 require __DIR__.'/auth.php';

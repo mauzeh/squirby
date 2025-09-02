@@ -5,7 +5,7 @@
     <h1>Roles</h1>
     <a href="{{ route('admin.users.index') }}" class="button">Manage Users</a>
     <a href="{{ route('admin.roles.create') }}" class="button">Create Role</a>
-    <a href="{{ route('admin.permissions.index') }}" class="button">Manage Permissions</a>
+    
     <table class="log-entries-table">
         <thead>
             <tr>
