@@ -21,7 +21,7 @@ class RoleManagementTest extends TestCase
         $this->seed('RolesAndPermissionsSeeder');
 
         $this->adminUser = User::factory()->create();
-        $this->adminUser->assignRole('admin');
+        $this->adminUser->assignRole('Admin');
 
         $this->nonAdminUser = User::factory()->create();
     }

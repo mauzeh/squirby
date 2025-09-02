@@ -21,7 +21,7 @@ class ImpersonationTest extends TestCase
         $this->seed('RolesAndPermissionsSeeder');
 
         $this->adminUser = User::factory()->create();
-        $this->adminUser->assignRole('admin');
+        $this->adminUser->assignRole('Admin');
         $this->adminUser->givePermissionTo('impersonate.start');
 
         $this->userToImpersonate = User::factory()->create();

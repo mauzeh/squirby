@@ -29,7 +29,7 @@ class UserManagementTest extends TestCase
         $this->seed('RolesAndPermissionsSeeder');
 
         $this->adminUser = User::factory()->create();
-        $this->adminUser->assignRole('admin');
+        $this->adminUser->assignRole('Admin');
 
         $this->userWithUserViewPermission = User::factory()->create();
         $this->userWithUserViewPermission->givePermissionTo('users.view');
@@ -78,7 +78,7 @@ class UserManagementTest extends TestCase
     public function password_must_be_at_least_8_characters_when_updating_user()
     {
         $admin = User::whereHas('roles', function ($query) {
-            $query->where('name', 'admin');
+            $query->where('name', 'Admin');
         })->first();
         $user = User::factory()->create();
 
@@ -86,7 +86,7 @@ class UserManagementTest extends TestCase
             'name' => $user->name,
             'email' => $user->email,
             'password' => '123',
-            'roles' => [Role::findByName('athlete')->id],
+            'roles' => [Role::findByName('Athlete')->id],
         ]);
 
         $response->assertSessionHasErrors('password');
@@ -96,7 +96,7 @@ class UserManagementTest extends TestCase
     public function roles_are_required_when_updating_user()
     {
         $admin = User::whereHas('roles', function ($query) {
-            $query->where('name', 'admin');
+            $query->where('name', 'Admin');
         })->first();
         $user = User::factory()->create();
 
@@ -112,14 +112,14 @@ class UserManagementTest extends TestCase
     public function name_is_required_when_updating_user()
     {
         $admin = User::whereHas('roles', function ($query) {
-            $query->where('name', 'admin');
+            $query->where('name', 'Admin');
         })->first();
         $user = User::factory()->create();
 
         $response = $this->actingAs($admin)->put(route('admin.users.update', $user), [
             'name' => '',
             'email' => $user->email,
-            'roles' => [Role::findByName('athlete')->id],
+            'roles' => [Role::findByName('Athlete')->id],
         ]);
 
         $response->assertSessionHasErrors('name');
@@ -129,10 +129,10 @@ class UserManagementTest extends TestCase
     public function admin_can_add_new_user()
     {
         $admin = User::whereHas('roles', function ($query) {
-            $query->where('name', 'admin');
+            $query->where('name', 'Admin');
         })->first();
 
-        $role = Role::findByName('athlete');
+        $role = Role::findByName('Athlete');
 
         $userData = [
             'name' => 'New User',
@@ -150,17 +150,17 @@ class UserManagementTest extends TestCase
         ]);
 
         $newUser = User::where('email', 'newuser@example.com')->first();
-        $this->assertTrue($newUser->hasRole('athlete'));
+        $this->assertTrue($newUser->hasRole('Athlete'));
     }
 
     /** @test */
     public function admin_sees_success_message_after_adding_user()
     {
         $admin = User::whereHas('roles', function ($query) {
-            $query->where('name', 'admin');
+            $query->where('name', 'Admin');
         })->first();
 
-        $role = Role::findByName('athlete');
+        $role = Role::findByName('Athlete');
 
         $userData = [
             'name' => 'Another User',
@@ -180,7 +180,7 @@ class UserManagementTest extends TestCase
     public function roles_are_required_when_adding_user()
     {
         $admin = User::whereHas('roles', function ($query) {
-            $query->where('name', 'admin');
+            $query->where('name', 'Admin');
         })->first();
 
         $userData = [
@@ -200,10 +200,10 @@ class UserManagementTest extends TestCase
     public function admin_sees_success_message_after_updating_user()
     {
         $admin = User::whereHas('roles', function ($query) {
-            $query->where('name', 'admin');
+            $query->where('name', 'Admin');
         })->first();
         $user = User::factory()->create();
-        $role = Role::findByName('athlete');
+        $role = Role::findByName('Athlete');
 
         $response = $this->actingAs($admin)->put(route('admin.users.update', $user), [
             'name' => 'Updated Name',
@@ -219,7 +219,7 @@ class UserManagementTest extends TestCase
     public function admin_sees_success_message_after_deleting_user()
     {
         $admin = User::whereHas('roles', function ($query) {
-            $query->where('name', 'admin');
+            $query->where('name', 'Admin');
         })->first();
         $user = User::factory()->create();
 
@@ -234,10 +234,10 @@ class UserManagementTest extends TestCase
     public function name_is_required_when_adding_user()
     {
         $admin = User::whereHas('roles', function ($query) {
-            $query->where('name', 'admin');
+            $query->where('name', 'Admin');
         })->first();
 
-        $role = Role::findByName('athlete');
+        $role = Role::findByName('Athlete');
 
         $userData = [
             'name' => '',
@@ -256,10 +256,10 @@ class UserManagementTest extends TestCase
     public function email_is_required_when_adding_user()
     {
         $admin = User::whereHas('roles', function ($query) {
-            $query->where('name', 'admin');
+            $query->where('name', 'Admin');
         })->first();
 
-        $role = Role::findByName('athlete');
+        $role = Role::findByName('Athlete');
 
         $userData = [
             'name' => 'Test User',
@@ -278,11 +278,11 @@ class UserManagementTest extends TestCase
     public function email_must_be_unique_when_adding_user()
     {
         $admin = User::whereHas('roles', function ($query) {
-            $query->where('name', 'admin');
+            $query->where('name', 'Admin');
         })->first();
 
         User::factory()->create(['email' => 'existing@example.com']);
-        $role = Role::findByName('athlete');
+        $role = Role::findByName('Athlete');
 
         $userData = [
             'name' => 'Test User',
@@ -301,10 +301,10 @@ class UserManagementTest extends TestCase
     public function email_must_be_valid_format_when_adding_user()
     {
         $admin = User::whereHas('roles', function ($query) {
-            $query->where('name', 'admin');
+            $query->where('name', 'Admin');
         })->first();
 
-        $role = Role::findByName('athlete');
+        $role = Role::findByName('Athlete');
 
         $userData = [
             'name' => 'Test User',
@@ -323,10 +323,10 @@ class UserManagementTest extends TestCase
     public function password_is_required_when_adding_user()
     {
         $admin = User::whereHas('roles', function ($query) {
-            $query->where('name', 'admin');
+            $query->where('name', 'Admin');
         })->first();
 
-        $role = Role::findByName('athlete');
+        $role = Role::findByName('Athlete');
 
         $userData = [
             'name' => 'Test User',
@@ -345,10 +345,10 @@ class UserManagementTest extends TestCase
     public function password_must_be_at_least_8_characters_when_adding_user()
     {
         $admin = User::whereHas('roles', function ($query) {
-            $query->where('name', 'admin');
+            $query->where('name', 'Admin');
         })->first();
 
-        $role = Role::findByName('athlete');
+        $role = Role::findByName('Athlete');
 
         $userData = [
             'name' => 'Test User',
@@ -367,10 +367,10 @@ class UserManagementTest extends TestCase
     public function password_must_be_confirmed_when_adding_user()
     {
         $admin = User::whereHas('roles', function ($query) {
-            $query->where('name', 'admin');
+            $query->where('name', 'Admin');
         })->first();
 
-        $role = Role::findByName('athlete');
+        $role = Role::findByName('Athlete');
 
         $userData = [
             'name' => 'Test User',
@@ -389,7 +389,7 @@ class UserManagementTest extends TestCase
     public function roles_must_exist_when_adding_user()
     {
         $admin = User::whereHas('roles', function ($query) {
-            $query->where('name', 'admin');
+            $query->where('name', 'Admin');
         })->first();
 
         $userData = [
@@ -409,14 +409,14 @@ class UserManagementTest extends TestCase
     public function email_is_required_when_updating_user()
     {
         $admin = User::whereHas('roles', function ($query) {
-            $query->where('name', 'admin');
+            $query->where('name', 'Admin');
         })->first();
         $user = User::factory()->create();
 
         $response = $this->actingAs($admin)->put(route('admin.users.update', $user), [
             'name' => $user->name,
             'email' => '',
-            'roles' => [Role::findByName('athlete')->id],
+            'roles' => [Role::findByName('Athlete')->id],
         ]);
 
         $response->assertInvalid('email');
@@ -426,7 +426,7 @@ class UserManagementTest extends TestCase
     public function email_must_be_unique_when_updating_user()
     {
         $admin = User::whereHas('roles', function ($query) {
-            $query->where('name', 'admin');
+            $query->where('name', 'Admin');
         })->first();
         $user1 = User::factory()->create();
         $user2 = User::factory()->create();
@@ -434,7 +434,7 @@ class UserManagementTest extends TestCase
         $response = $this->actingAs($admin)->put(route('admin.users.update', $user1), [
             'name' => $user1->name,
             'email' => $user2->email,
-            'roles' => [Role::findByName('athlete')->id],
+            'roles' => [Role::findByName('Athlete')->id],
         ]);
 
         $response->assertInvalid('email');
@@ -444,14 +444,14 @@ class UserManagementTest extends TestCase
     public function email_must_be_valid_format_when_updating_user()
     {
         $admin = User::whereHas('roles', function ($query) {
-            $query->where('name', 'admin');
+            $query->where('name', 'Admin');
         })->first();
         $user = User::factory()->create();
 
         $response = $this->actingAs($admin)->put(route('admin.users.update', $user), [
             'name' => $user->name,
             'email' => 'invalid-email',
-            'roles' => [Role::findByName('athlete')->id],
+            'roles' => [Role::findByName('Athlete')->id],
         ]);
 
         $response->assertInvalid('email');
@@ -461,7 +461,7 @@ class UserManagementTest extends TestCase
     public function password_must_be_confirmed_when_updating_user()
     {
         $admin = User::whereHas('roles', function ($query) {
-            $query->where('name', 'admin');
+            $query->where('name', 'Admin');
         })->first();
         $user = User::factory()->create();
 
@@ -470,7 +470,7 @@ class UserManagementTest extends TestCase
             'email' => $user->email,
             'password' => 'newpassword',
             'password_confirmation' => 'wrongpassword',
-            'roles' => [Role::findByName('athlete')->id],
+            'roles' => [Role::findByName('Athlete')->id],
         ]);
 
         $response->assertInvalid('password');
@@ -480,7 +480,7 @@ class UserManagementTest extends TestCase
     public function roles_must_exist_when_updating_user()
     {
         $admin = User::whereHas('roles', function ($query) {
-            $query->where('name', 'admin');
+            $query->where('name', 'Admin');
         })->first();
         $user = User::factory()->create();
 
@@ -501,7 +501,7 @@ class UserManagementTest extends TestCase
             'email' => 'newuser@example.com',
             'password' => 'password',
             'password_confirmation' => 'password',
-            'roles' => [Role::findByName('athlete')->id],
+            'roles' => [Role::findByName('Athlete')->id],
         ]);
 
         $response->assertRedirect(route('admin.users.index'));
@@ -518,7 +518,7 @@ class UserManagementTest extends TestCase
             'email' => 'unauthorized@example.com',
             'password' => 'password',
             'password_confirmation' => 'password',
-            'roles' => [Role::findByName('athlete')->id],
+            'roles' => [Role::findByName('Athlete')->id],
         ]);
 
         $response->assertStatus(403);
@@ -534,7 +534,7 @@ class UserManagementTest extends TestCase
         $response = $this->actingAs($this->userWithUserUpdatePermission)->put(route('admin.users.update', $userToUpdate->id), [
             'name' => 'Updated Name',
             'email' => 'updated@example.com',
-            'roles' => [Role::findByName('athlete')->id],
+            'roles' => [Role::findByName('Athlete')->id],
         ]);
 
         $response->assertRedirect(route('admin.users.index'));
@@ -552,7 +552,7 @@ class UserManagementTest extends TestCase
         $response = $this->actingAs($this->userWithoutUserUpdatePermission)->put(route('admin.users.update', $userToUpdate->id), [
             'name' => 'Unauthorized Updated Name',
             'email' => 'unauthorized_updated@example.com',
-            'roles' => [Role::findByName('athlete')->id],
+            'roles' => [Role::findByName('Athlete')->id],
         ]);
 
         $response->assertStatus(403);
