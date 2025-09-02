@@ -22,7 +22,7 @@ class MealFactory extends Factory
     public function definition()
     {
         return [
-            'name' => $this->faker->word,
+            'name' => $this->faker->unique()->word,
             'comments' => $this->faker->sentence,
             'user_id' => \App\Models\User::factory(),
         ];

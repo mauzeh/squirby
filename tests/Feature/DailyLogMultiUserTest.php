@@ -36,8 +36,14 @@ class DailyLogMultiUserTest extends TestCase
     /** @test */
     public function authenticated_user_can_view_their_daily_logs()
     {
-        $log1 = DailyLogFactory::new()->create(['user_id' => $this->user1->id]);
-        $log2 = DailyLogFactory::new()->create(['user_id' => $this->user2->id]);
+        $log1 = DailyLogFactory::new()->create([
+            'user_id' => $this->user1->id,
+            'ingredient_id' => $this->ingredient1->id,
+        ]);
+        $log2 = DailyLogFactory::new()->create([
+            'user_id' => $this->user2->id,
+            'ingredient_id' => $this->ingredient2->id,
+        ]);
 
         $response = $this->actingAs($this->user1)->get(route('daily-logs.index', ['date' => $log1->logged_at->toDateString()]));
 
@@ -49,8 +55,14 @@ class DailyLogMultiUserTest extends TestCase
     /** @test */
     public function authenticated_user_cannot_view_other_users_daily_logs()
     {
-        $log1 = DailyLogFactory::new()->create(['user_id' => $this->user1->id]);
-        $log2 = DailyLogFactory::new()->create(['user_id' => $this->user2->id]);
+        $log1 = DailyLogFactory::new()->create([
+            'user_id' => $this->user1->id,
+            'ingredient_id' => $this->ingredient1->id,
+        ]);
+        $log2 = DailyLogFactory::new()->create([
+            'user_id' => $this->user2->id,
+            'ingredient_id' => $this->ingredient2->id,
+        ]);
 
         $response = $this->actingAs($this->user1)->get(route('daily-logs.index', ['date' => $log2->logged_at->toDateString()]));
 

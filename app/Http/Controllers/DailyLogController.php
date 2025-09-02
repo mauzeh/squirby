@@ -38,7 +38,9 @@ class DailyLogController extends Controller
 
         $selectedDate = $request->input('date') ? Carbon::parse($request->input('date')) : Carbon::today();
 
-        $dailyLogs = DailyLog::with(['ingredient', 'unit'])
+        $dailyLogs = DailyLog::with(['ingredient' => function ($query) {
+                $query->where('user_id', auth()->id());
+            }, 'unit'])
             ->where('daily_logs.user_id', auth()->id())
             ->join('ingredients', 'daily_logs.ingredient_id', '=', 'ingredients.id')
             ->whereDate('logged_at', $selectedDate->toDateString())
