@@ -45,5 +45,11 @@ class ExerciseSeeder extends Seeder
             'description' => 'An explosive deadlift.'
         ]);
 
+        \App\Models\Exercise::create([
+            'user_id' => $adminUser->id,
+            'title' => 'Half-Kneeling DB Press',
+            'description' => 'A unilateral exercise that targets the shoulders and core.'
+        ]);
+
     }
 }
