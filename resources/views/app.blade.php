@@ -338,6 +338,7 @@
                 LOCAL DEV ENVIRONMENT
             </div>
         @endif
+        @auth
         <div class="navbar">
             <a href="{{ route('daily-logs.index') }}" class="{{ Request::routeIs('daily-logs.*') ? 'active' : '' }}">Daily Log</a>
             <a href="{{ route('meals.index') }}" class="{{ Request::routeIs('meals.*') ? 'active' : '' }}">Meals</a>
@@ -356,9 +357,11 @@
                 </button>
             </form>
         </div>
+        @endauth
         <div class="content">
             @yield('content')
         </div>
+        @auth
         <footer>
             <div class="container">
                 @if(isset($gitLog))
@@ -366,5 +369,6 @@
                 @endif
             </div>
         </footer>
+        @endauth
     </body>
 </html>
