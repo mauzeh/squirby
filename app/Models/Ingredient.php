@@ -25,6 +25,7 @@ class Ingredient extends Model
         'base_quantity',
         'base_unit_id',
         'cost_per_unit',
+        'user_id',
     ];
 
     public function baseUnit()
