@@ -2,7 +2,10 @@
 
 @section('content')
     <div class="container">
-        <h1>{{ $measurementType->name }}</h1>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h1>{{ $measurementType->name }}</h1>
+            <a href="{{ route('measurement-logs.create', ['measurement_type_id' => $measurementType->id]) }}" class="button">Add Measurement</a>
+        </div>
 
         <div class="form-container">
             <canvas id="measurementChart"></canvas>

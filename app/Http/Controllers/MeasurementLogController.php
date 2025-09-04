@@ -32,10 +32,11 @@ class MeasurementLogController extends Controller
         return view('measurement-logs.index', compact('measurementLogs', 'tsv'));
     }
 
-    public function create()
+    public function create(Request $request)
     {
         $measurementTypes = MeasurementType::where('user_id', auth()->id())->get();
-        return view('measurement-logs.create', compact('measurementTypes'));
+        $selectedMeasurementTypeId = $request->query('measurement_type_id');
+        return view('measurement-logs.create', compact('measurementTypes', 'selectedMeasurementTypeId'));
     }
 
     public function store(Request $request)

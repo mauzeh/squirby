@@ -53,4 +53,22 @@ class MeasurementLogManagementTest extends TestCase
         $response->assertSee($measurementType2->name);
         $response->assertDontSee($measurementType1->name);
     }
+
+    /** @test */
+    public function authenticated_user_can_pre_select_measurement_type_in_log_form()
+    {
+        $user = User::factory()->create();
+        $measurementType = MeasurementType::factory()->create(['user_id' => $user->id, 'name' => 'Pre-selected Type']);
+
+        $this->actingAs($user);
+
+        $response = $this->get(route('measurement-logs.create', ['measurement_type_id' => $measurementType->id]));
+
+        $response->assertOk();
+        $response->assertSeeInOrder([
+            '<option value="' . $measurementType->id . '"',
+            'selected',
+            '>' . $measurementType->name . '</option>'
+        ]);
+    }
 }
