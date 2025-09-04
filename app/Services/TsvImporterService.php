@@ -21,7 +21,7 @@ class TsvImporterService
                 continue;
             }
 
-            $columns = str_getcsv($row, "\t");
+            $columns = array_map('trim', str_getcsv($row, "\t"));
 
             if (count($columns) < 5) {
                 continue;
@@ -63,16 +63,16 @@ class TsvImporterService
                 continue;
             }
 
-            $columns = str_getcsv($row, "\t");
+            $columns = array_map('trim', str_getcsv($row, "\t"));
 
             if (count($columns) < 7) {
                 continue;
             }
 
-            $exercise = \App\Models\Exercise::where('title', $columns[2])->first();
+            $exercise = \App\Models\Exercise::whereRaw('LOWER(title) = ?', [strtolower($columns[2])])->first();
 
             if ($exercise) {
-                $loggedAt = Carbon::createFromFormat('Y-m-d H:i', $columns[0] . ' ' . $columns[1]);
+                $loggedAt = Carbon::createFromFormat('m/d/Y H:i', $columns[0] . ' ' . $columns[1]);
 
                 $workout = \App\Models\Workout::create([
                     'user_id' => $userId,
@@ -116,7 +116,7 @@ class TsvImporterService
                 continue;
             }
 
-            $columns = str_getcsv($row, "\t");
+            $columns = array_map('trim', str_getcsv($row, "\t"));
 
             if (count($columns) < 5) {
                 continue;
