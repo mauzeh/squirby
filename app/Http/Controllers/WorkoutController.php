@@ -204,10 +204,20 @@ class WorkoutController extends Controller
 
         $result = $this->tsvImporterService->importWorkouts($tsvData, $validated['date'], auth()->id());
 
+        $value=true;
+
         if ($result['importedCount'] === 0 && !empty($result['notFound'])) {
             return redirect()
                 ->route('workouts.index')
                 ->with('error', 'No exercises found for: ' . implode(', ', $result['notFound']));
+        } elseif ($result['importedCount'] === 0 && !empty($result['invalidRows'])) {
+            return redirect()
+                ->route('workouts.index')
+                ->with('error', 'No workouts imported due to invalid data in rows: ' . implode(', ', array_map(function($row) { return '"' . $row . '"' ; }, $result['invalidRows'])));
+        } elseif (!empty($result['importedCount']) && !empty($result['invalidRows'])) {
+            return redirect()
+                ->route('workouts.index')
+                ->with('success', 'TSV data imported successfully with some invalid rows. Invalid rows: ' . implode(', ', array_map(function($row) { return '"' . $row . '"' ; }, $result['invalidRows'])));
         }
 
         return redirect()
