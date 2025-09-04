@@ -13,6 +13,7 @@ class MeasurementType extends Model
     protected $fillable = [
         'name',
         'default_unit',
+        'user_id',
     ];
 
     public function user()
