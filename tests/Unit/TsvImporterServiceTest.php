@@ -86,8 +86,8 @@ class TsvImporterServiceTest extends TestCase
     /** @test */
     public function it_imports_workouts_correctly()
     {
-        $exercise1 = Exercise::factory()->create(['title' => 'Push Ups']);
-        $exercise2 = Exercise::factory()->create(['title' => 'Squats']);
+        $exercise1 = Exercise::factory()->create(['user_id' => $this->user->id, 'title' => 'Push Ups']);
+        $exercise2 = Exercise::factory()->create(['user_id' => $this->user->id, 'title' => 'Squats']);
 
         $tsvData = "2025-08-26\t08:00\tPush Ups\t10\t3\t15\tWarm up\n" .
                    "2025-08-26\t08:30\tSquats\t50\t5\t10\tMain set";
