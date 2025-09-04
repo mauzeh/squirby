@@ -27,8 +27,8 @@ class DailyLogMultiUserTest extends TestCase
         $this->user2 = User::factory()->create();
 
         // Create some common data for testing
-        $this->ingredient1 = IngredientFactory::new()->create(['user_id' => $this->user1->id]);
-        $this->ingredient2 = IngredientFactory::new()->create(['user_id' => $this->user2->id]);
+        $this->ingredient1 = IngredientFactory::new()->create(['user_id' => $this->user1->id, 'name' => 'Ingredient User 1: Oatmeal']);
+        $this->ingredient2 = IngredientFactory::new()->create(['user_id' => $this->user2->id, 'name' => 'Ingredient User 2: Brown Rice']);
         $this->meal1 = MealFactory::new()->create(['user_id' => $this->user1->id]);
         $this->meal2 = MealFactory::new()->create(['user_id' => $this->user2->id]);
     }
@@ -53,6 +53,8 @@ class DailyLogMultiUserTest extends TestCase
     {
         DailyLogFactory::new()->create(['user_id' => $this->user1->id, 'ingredient_id' => $this->ingredient1->id]);
         DailyLogFactory::new()->create(['user_id' => $this->user2->id, 'ingredient_id' => $this->ingredient2->id]);
+
+        $this->actingAs($this->user1);
 
         $response = $this->actingAs($this->user1)->get(route('daily-logs.index'));
 
