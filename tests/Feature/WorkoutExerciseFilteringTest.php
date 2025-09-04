@@ -102,4 +102,36 @@ class WorkoutExerciseFilteringTest extends TestCase
         $response->assertSessionHas('error', 'No workouts imported due to invalid data in rows: "08/04/2025	18:00	User Exercise	175	5"');
         $this->assertDatabaseCount('workouts', 0);
     }
+
+    /** @test */
+    public function authenticated_user_can_import_workouts_without_comments()
+    {
+        $user = User::factory()->create();
+        $exercise = Exercise::factory()->create(['user_id' => $user->id, 'title' => 'User Exercise No Comments']);
+
+        $this->actingAs($user);
+
+        // TSV data with 6 columns (no comments)
+        $tsvData = "08/05/2025\t10:00\tUser Exercise No Comments\t100\t10\t3";
+        $date = '2025-08-05';
+
+        $response = $this->post(route('workouts.import-tsv'), [
+            'tsv_data' => $tsvData,
+            'date' => $date,
+        ]);
+
+        $response->assertRedirect(route('workouts.index'));
+        $response->assertSessionHas('success', 'TSV data imported successfully!');
+        $this->assertDatabaseCount('workouts', 1);
+        $this->assertDatabaseHas('workouts', [
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'comments' => null, // Comments should be null
+        ]);
+
+        $response = $this->get(route('workouts.index'));
+        $response->assertSee($exercise->title);
+        $response->assertSee('100'); // Weight
+        $response->assertSee('10'); // Reps
+    }
 }

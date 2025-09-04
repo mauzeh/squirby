@@ -75,7 +75,7 @@ class TsvImporterService
 
             $columns = array_map('trim', str_getcsv($row, "\t"));
 
-            if (count($columns) < 7) {
+            if (count($columns) < 6) {
                 $invalidRows[] = $row;
                 continue;
             }
@@ -93,7 +93,7 @@ class TsvImporterService
                 $workout = \App\Models\Workout::create([
                     'user_id' => $userId,
                     'exercise_id' => $exercise->id,
-                    'comments' => $columns[6],
+                    'comments' => isset($columns[6]) ? $columns[6] : null,
                     'logged_at' => $loggedAt,
                 ]);
 
@@ -101,7 +101,7 @@ class TsvImporterService
                 $weight = $columns[3];
                 $reps = $columns[4];
                 $rounds = $columns[5];
-                $notes = $columns[6];
+                $notes = isset($columns[6]) ? $columns[6] : null;
 
                 for ($i = 0; $i < $rounds; $i++) {
                     $workout->workoutSets()->create([
