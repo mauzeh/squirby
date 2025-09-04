@@ -16,6 +16,7 @@ class MeasurementLog extends Model
         'value',
         'logged_at',
         'comments',
+        'user_id',
     ];
 
     protected $casts = [
