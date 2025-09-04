@@ -34,7 +34,7 @@ class MeasurementLogController extends Controller
 
     public function create()
     {
-        $measurementTypes = MeasurementType::all();
+        $measurementTypes = MeasurementType::where('user_id', auth()->id())->get();
         return view('measurement-logs.create', compact('measurementTypes'));
     }
 
@@ -66,7 +66,7 @@ class MeasurementLogController extends Controller
         if ($measurementLog->user_id !== auth()->id()) {
             abort(403, 'Unauthorized action.');
         }
-        $measurementTypes = MeasurementType::all();
+        $measurementTypes = MeasurementType::where('user_id', auth()->id())->get();
         return view('measurement-logs.edit', compact('measurementLog', 'measurementTypes'));
     }
 
