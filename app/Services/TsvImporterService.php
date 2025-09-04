@@ -80,7 +80,7 @@ class TsvImporterService
                 continue;
             }
 
-            $exercise = \App\Models\Exercise::whereRaw('LOWER(title) = ?', [strtolower($columns[2])])->first();
+            $exercise = \App\Models\Exercise::where('user_id', $userId)->whereRaw('LOWER(title) = ?', [strtolower($columns[2])])->first();
 
             if ($exercise) {
                 $loggedAt = $this->parseDate($columns[0] . ' ' . $columns[1]);
