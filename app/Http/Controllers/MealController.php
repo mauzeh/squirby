@@ -37,7 +37,7 @@ class MealController extends Controller
      */
     public function create()
     {
-        $ingredients = Ingredient::orderBy('name')->get();
+        $ingredients = Ingredient::where('user_id', auth()->id())->orderBy('name')->get();
         return view('meals.create', compact('ingredients'));
     }
 
@@ -82,7 +82,7 @@ class MealController extends Controller
             abort(403, 'Unauthorized action.');
         }
         $meal->load('ingredients');
-        $ingredients = Ingredient::orderBy('name')->get();
+        $ingredients = Ingredient::where('user_id', auth()->id())->orderBy('name')->get();
         return view('meals.edit', compact('meal', 'ingredients'));
     }
 
