@@ -6,6 +6,7 @@ use App\Models\DailyLog;
 use App\Models\Ingredient;
 use App\Models\MeasurementLog;
 use Carbon\Carbon;
+use Carbon\Exceptions\InvalidFormatException;
 
 class TsvImporterService
 {
@@ -15,6 +16,7 @@ class TsvImporterService
         $rows = explode("\n", $tsvData);
         $importedCount = 0;
         $notFound = [];
+        $invalidRows = [];
 
         foreach ($rows as $row) {
             if (empty($row)) {
@@ -24,13 +26,19 @@ class TsvImporterService
             $columns = array_map('trim', str_getcsv($row, "\t"));
 
             if (count($columns) < 5) {
+                $invalidRows[] = $row;
                 continue;
             }
 
             $ingredient = Ingredient::where('name', $columns[2])->first();
 
             if ($ingredient) {
-                $loggedAt = Carbon::parse($date->format('Y-m-d') . ' ' . $columns[1]);
+                $loggedAt = $this->parseDate($date->format('Y-m-d') . ' ' . $columns[1]);
+
+                if (!$loggedAt) {
+                    $invalidRows[] = $row;
+                    continue;
+                }
 
                 DailyLog::create([
                     'user_id' => $userId,
@@ -49,6 +57,7 @@ class TsvImporterService
         return [
             'importedCount' => $importedCount,
             'notFound' => $notFound,
+            'invalidRows' => $invalidRows,
         ];
     }
 
@@ -57,6 +66,7 @@ class TsvImporterService
         $rows = explode("\n", $tsvData);
         $importedCount = 0;
         $notFound = [];
+        $invalidRows = [];
 
         foreach ($rows as $row) {
             if (empty($row)) {
@@ -66,13 +76,19 @@ class TsvImporterService
             $columns = array_map('trim', str_getcsv($row, "\t"));
 
             if (count($columns) < 7) {
+                $invalidRows[] = $row;
                 continue;
             }
 
             $exercise = \App\Models\Exercise::whereRaw('LOWER(title) = ?', [strtolower($columns[2])])->first();
 
             if ($exercise) {
-                $loggedAt = Carbon::createFromFormat('m/d/Y H:i', $columns[0] . ' ' . $columns[1]);
+                $loggedAt = $this->parseDate($columns[0] . ' ' . $columns[1]);
+
+                if (!$loggedAt) {
+                    $invalidRows[] = $row;
+                    continue;
+                }
 
                 $workout = \App\Models\Workout::create([
                     'user_id' => $userId,
@@ -103,13 +119,28 @@ class TsvImporterService
         return [
             'importedCount' => $importedCount,
             'notFound' => $notFound,
+            'invalidRows' => $invalidRows,
         ];
+    }
+
+    private function parseDate(string $dateString): ?\Carbon\Carbon
+    {
+        try {
+            return \Carbon\Carbon::createFromFormat('m/d/Y H:i', $dateString);
+        } catch (\Exception $e) {
+            try {
+                return \Carbon\Carbon::createFromFormat('Y-m-d H:i', $dateString);
+            } catch (\Exception $e) {
+                return null;
+            }
+        }
     }
 
     public function importMeasurements(string $tsvData, int $userId): array
     {
         $rows = explode("\n", $tsvData);
         $importedCount = 0;
+        $invalidRows = [];
 
         foreach ($rows as $row) {
             if (empty($row)) {
@@ -119,6 +150,7 @@ class TsvImporterService
             $columns = array_map('trim', str_getcsv($row, "\t"));
 
             if (count($columns) < 5) {
+                $invalidRows[] = $row;
                 continue;
             }
 
@@ -127,7 +159,12 @@ class TsvImporterService
                 'default_unit' => $columns[4],
             ]);
 
-            $loggedAt = Carbon::createFromFormat('m/d/Y H:i', $columns[0] . ' ' . $columns[1]);
+            $loggedAt = $this->parseDate($columns[0] . ' ' . $columns[1]);
+
+            if (!$loggedAt) {
+                $invalidRows[] = $row;
+                continue;
+            }
 
             \App\Models\MeasurementLog::create([
                 'user_id' => $userId,
@@ -141,6 +178,7 @@ class TsvImporterService
 
         return [
             'importedCount' => $importedCount,
+            'invalidRows' => $invalidRows,
         ];
     }
 }
