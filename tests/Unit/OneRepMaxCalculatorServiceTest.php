@@ -31,6 +31,15 @@ class OneRepMaxCalculatorServiceTest extends TestCase
     }
 
     /** @test */
+    public function it_returns_the_weight_when_reps_is_one()
+    {
+        $weight = 100;
+        $reps = 1;
+
+        $this->assertEquals($weight, $this->calculator->calculateOneRepMax($weight, $reps));
+    }
+
+    /** @test */
     public function it_calculates_workout_one_rep_max_for_uniform_sets_correctly()
     {
         $workout = Workout::factory()->create();
@@ -67,11 +76,11 @@ class OneRepMaxCalculatorServiceTest extends TestCase
         $workout = Workout::factory()->create();
         $workout->workoutSets()->createMany([
             ['weight' => 100, 'reps' => 5, 'notes' => 'Set 1'], // 116.65
-            ['weight' => 110, 'reps' => 3, 'notes' => 'Set 2'], // 120.99
-            ['weight' => 120, 'reps' => 1, 'notes' => 'Set 3'], // 123.996
+            ['weight' => 110, 'reps' => 3, 'notes' => 'Set 2'], // 120.989
+            ['weight' => 120, 'reps' => 1, 'notes' => 'Set 3'], // 120
         ]);
 
-        $expectedBest1RM = 120 * (1 + (0.0333 * 1));
+        $expectedBest1RM = 110 * (1 + (0.0333 * 3));
 
         $this->assertEquals($expectedBest1RM, $this->calculator->getBestWorkoutOneRepMax($workout));
     }

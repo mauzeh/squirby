@@ -16,6 +16,9 @@ class OneRepMaxCalculatorService
      */
     public function calculateOneRepMax(float $weight, int $reps): float
     {
+        if ($reps === 1) {
+            return $weight;
+        }
         return $weight * (1 + (0.0333 * $reps));
     }
 
