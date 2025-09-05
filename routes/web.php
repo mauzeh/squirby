@@ -71,5 +71,5 @@ Route::middleware('auth')->group(function () {
 require __DIR__.'/auth.php';
 
 Route::middleware(['auth', 'admin'])->group(function () {
-    Route::resource('users', UserController::class)->except(['show', 'create', 'store', 'destroy']);
+    Route::resource('users', UserController::class);
 });
