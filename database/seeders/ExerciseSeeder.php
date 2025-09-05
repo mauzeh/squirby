@@ -51,5 +51,11 @@ class ExerciseSeeder extends Seeder
             'description' => 'A unilateral exercise that targets the shoulders and core.'
         ]);
 
+        \App\Models\Exercise::create([
+            'user_id' => $adminUser->id,
+            'title' => 'Cyclist Squat (Barbell, Front Rack)',
+            'description' => 'A squat variation that emphasizes the quadriceps by elevating the heels, performed with a barbell in the front rack position.'
+        ]);
+
     }
 }
