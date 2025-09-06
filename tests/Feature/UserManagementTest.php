@@ -133,4 +133,74 @@ class UserManagementTest extends TestCase
         ]);
         $this->assertTrue(Hash::check('newpassword', $userToUpdate->fresh()->password));
     }
+
+    public function test_password_confirmation_is_required_when_creating_a_user()
+    {
+        $role = Role::factory()->create();
+        $userData = [
+            'name' => 'New User',
+            'email' => 'newuser@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'wrongpassword',
+            'roles' => [$role->id],
+        ];
+
+        $response = $this->actingAs($this->admin)->post(route('users.store'), $userData);
+
+        $response->assertSessionHasErrors('password');
+    }
+
+    public function test_password_must_be_at_least_8_characters_when_creating_a_user()
+    {
+        $role = Role::factory()->create();
+        $userData = [
+            'name' => 'New User',
+            'email' => 'newuser@example.com',
+            'password' => '12345',
+            'password_confirmation' => '12345',
+            'roles' => [$role->id],
+        ];
+
+        $response = $this->actingAs($this->admin)->post(route('users.store'), $userData);
+
+        $response->assertSessionHasErrors('password');
+    }
+
+    public function test_password_confirmation_is_required_when_updating_a_user()
+    {
+        $userToUpdate = User::factory()->create();
+        $role = Role::factory()->create();
+        $userToUpdate->roles()->attach($role);
+
+        $updatedData = [
+            'name' => 'Updated Name',
+            'email' => 'updated@example.com',
+            'password' => 'newpassword',
+            'password_confirmation' => 'wrongpassword',
+            'roles' => [$role->id],
+        ];
+
+        $response = $this->actingAs($this->admin)->put(route('users.update', $userToUpdate), $updatedData);
+
+        $response->assertSessionHasErrors('password');
+    }
+
+    public function test_password_must_be_at_least_8_characters_when_updating_a_user()
+    {
+        $userToUpdate = User::factory()->create();
+        $role = Role::factory()->create();
+        $userToUpdate->roles()->attach($role);
+
+        $updatedData = [
+            'name' => 'Updated Name',
+            'email' => 'updated@example.com',
+            'password' => '12345',
+            'password_confirmation' => '12345',
+            'roles' => [$role->id],
+        ];
+
+        $response = $this->actingAs($this->admin)->put(route('users.update', $userToUpdate), $updatedData);
+
+        $response->assertSessionHasErrors('password');
+    }
 }
