@@ -72,4 +72,7 @@ require __DIR__.'/auth.php';
 
 Route::middleware(['auth', 'admin'])->group(function () {
     Route::resource('users', UserController::class);
+    Route::get('users/{user}/impersonate', [UserController::class, 'impersonate'])->name('users.impersonate');
 });
+
+Route::get('users/impersonate/leave', [UserController::class, 'leaveImpersonate'])->name('users.leave-impersonate');

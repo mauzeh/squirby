@@ -22,6 +22,7 @@
                         <td class="actions-column">
                             <div style="display: flex; gap: 5px;">
                                 <a href="{{ route('users.edit', $user->id) }}" class="button edit">Edit</a>
+                                <a href="{{ route('users.impersonate', $user->id) }}" class="button">Impersonate</a>
                                 <form action="{{ route('users.destroy', $user->id) }}" method="POST" style="display:inline;">
                                     @csrf
                                     @method('DELETE')

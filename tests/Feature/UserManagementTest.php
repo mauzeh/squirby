@@ -203,4 +203,38 @@ class UserManagementTest extends TestCase
 
         $response->assertSessionHasErrors('password');
     }
+
+    public function test_admin_can_impersonate_a_user()
+    {
+        $response = $this->actingAs($this->admin)->get(route('users.impersonate', $this->athlete));
+
+        $response->assertRedirect('/');
+        $this->assertEquals(auth()->id(), $this->athlete->id);
+    }
+
+    public function test_non_admin_cannot_impersonate_a_user()
+    {
+        $response = $this->actingAs($this->athlete)->get(route('users.impersonate', $this->admin));
+
+        $response->assertStatus(403);
+    }
+
+    public function test_switch_back_banner_is_visible_when_impersonating()
+    {
+        $this->actingAs($this->admin)->get(route('users.impersonate', $this->athlete));
+
+        $response = $this->get(route('daily-logs.index'));
+
+        $response->assertSee('Switch Back');
+    }
+
+    public function test_user_can_switch_back_to_admin_account()
+    {
+        $this->actingAs($this->admin)->get(route('users.impersonate', $this->athlete));
+
+        $response = $this->get(route('users.leave-impersonate'));
+
+        $response->assertRedirect(route('users.index'));
+        $this->assertEquals(auth()->id(), $this->admin->id);
+    }
 }

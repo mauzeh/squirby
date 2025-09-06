@@ -75,4 +75,18 @@ class UserController extends Controller
         $user->delete();
         return redirect()->route('users.index')->with('success', 'User deleted successfully.');
     }
+
+    public function impersonate(User $user)
+    {
+        session(['impersonator_id' => auth()->id()]);
+        auth()->login($user);
+        return redirect('/')->with('success', 'Impersonating user.');
+    }
+
+    public function leaveImpersonate()
+    {
+        auth()->loginUsingId(session('impersonator_id'));
+        session()->forget('impersonator_id');
+        return redirect()->route('users.index')->with('success', 'Stopped impersonating.');
+    }
 }
