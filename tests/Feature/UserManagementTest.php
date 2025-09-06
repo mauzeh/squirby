@@ -238,4 +238,29 @@ class UserManagementTest extends TestCase
         $response->assertRedirect(route('users.index'));
         $this->assertEquals(auth()->id(), $this->admin->id);
     }
+
+    public function test_new_user_is_seeded_with_default_exercises()
+    {
+        $role = Role::factory()->create();
+        $userData = [
+            'name' => 'New User',
+            'email' => 'newuser@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+            'roles' => [$role->id],
+        ];
+
+        $this->actingAs($this->admin)->post(route('users.store'), $userData);
+
+        $newUser = User::where('email', 'newuser@example.com')->first();
+
+        $this->assertCount(7, $newUser->exercises);
+        $this->assertDatabaseHas('exercises', ['user_id' => $newUser->id, 'title' => 'Back Squat']);
+        $this->assertDatabaseHas('exercises', ['user_id' => $newUser->id, 'title' => 'Bench Press']);
+        $this->assertDatabaseHas('exercises', ['user_id' => $newUser->id, 'title' => 'Deadlift']);
+        $this->assertDatabaseHas('exercises', ['user_id' => $newUser->id, 'title' => 'Strict Press']);
+        $this->assertDatabaseHas('exercises', ['user_id' => $newUser->id, 'title' => 'Power Clean']);
+        $this->assertDatabaseHas('exercises', ['user_id' => $newUser->id, 'title' => 'Half-Kneeling DB Press']);
+        $this->assertDatabaseHas('exercises', ['user_id' => $newUser->id, 'title' => 'Cyclist Squat (Barbell, Front Rack)']);
+    }
 }

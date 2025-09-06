@@ -56,4 +56,28 @@ class User extends Authenticatable
     {
         return $this->roles()->where('name', $role)->exists();
     }
+
+    public function exercises()
+    {
+        return $this->hasMany(Exercise::class);
+    }
+
+    protected static function booted()
+    {
+        static::created(function ($user) {
+            $exercises = [
+                ['title' => 'Back Squat', 'description' => 'A compound exercise that targets the muscles of the legs and core.'],
+                ['title' => 'Bench Press', 'description' => 'A compound exercise that targets the muscles of the upper body, including the chest, shoulders, and triceps.'],
+                ['title' => 'Deadlift', 'description' => 'A compound exercise that targets the muscles of the back, legs, and grip.'],
+                ['title' => 'Strict Press', 'description' => 'A compound exercise that targets the shoulders and triceps.'],
+                ['title' => 'Power Clean', 'description' => 'An explosive deadlift.'],
+                ['title' => 'Half-Kneeling DB Press', 'description' => 'A unilateral exercise that targets the shoulders and core.'],
+                ['title' => 'Cyclist Squat (Barbell, Front Rack)', 'description' => 'A squat variation that emphasizes the quadriceps by elevating the heels, performed with a barbell in the front rack position.'],
+            ];
+
+            foreach ($exercises as $exercise) {
+                $user->exercises()->create($exercise);
+            }
+        });
+    }
 }
