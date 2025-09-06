@@ -119,48 +119,67 @@
             <button id="copy-tsv-button" class="button">Copy to Clipboard</button>
         </div>
 
-        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                const urlParams = new URLSearchParams(window.location.search);
-                const exerciseId = urlParams.get('exercise_id');
-                if (exerciseId) {
-                    document.getElementById('exercise_id').value = exerciseId;
-                }
-                var ctx = document.getElementById('oneRepMaxChart').getContext('2d');
-                var oneRepMaxChart = new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        datasets: @json($chartData['datasets'])
-                    },
-                    options: {
-                        scales: {
-                            x: {
-                                type: 'time',
-                                time: {
-                                    unit: 'day'
-                                }
-                            },
-                            y: {
-                            }
-                        },
-                        plugins: {
-                            tooltip: {
-                                mode: 'index',
-                                intersect: false
-                            }
-                        },
-                    }
-                });
+        @endif
 
-                document.getElementById('select-all-workouts').addEventListener('change', function(e) {
+        <div class="form-container">
+            <h3>TSV Import</h3>
+            <form action="{{ route('workouts.import-tsv') }}" method="POST">
+                @csrf
+                <input type="hidden" name="date" value="{{ now()->format('Y-m-d') }}">
+                <textarea name="tsv_data" rows="10" style="width: 100%; background-color: #3a3a3a; color: #f2f2f2; border: 1px solid #555;"></textarea>
+                <button type="submit" class="button">Import TSV</button>
+            </form>
+        </div>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const exerciseId = urlParams.get('exercise_id');
+            if (exerciseId) {
+                document.getElementById('exercise_id').value = exerciseId;
+            }
+            var ctx = document.getElementById('oneRepMaxChart').getContext('2d');
+            var oneRepMaxChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    datasets: @json($chartData['datasets'])
+                },
+                options: {
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                unit: 'day'
+                            }
+                        },
+                        y: {
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false
+                        }
+                    },
+                }
+            });
+
+            const selectAllWorkouts = document.getElementById('select-all-workouts');
+            if (selectAllWorkouts) {
+                selectAllWorkouts.addEventListener('change', function(e) {
                     document.querySelectorAll('.workout-checkbox').forEach(function(checkbox) {
                         checkbox.checked = e.target.checked;
                     });
                 });
+            }
 
-                document.getElementById('delete-selected-form').addEventListener('submit', function(e) {
+            const deleteSelectedForm = document.getElementById('delete-selected-form');
+            if (deleteSelectedForm) {
+                deleteSelectedForm.addEventListener('submit', function(e) {
                     e.preventDefault();
                     
                     var form = e.target;
@@ -181,26 +200,17 @@
 
                     form.submit();
                 });
+            }
 
-                document.getElementById('copy-tsv-button').addEventListener('click', function() {
+            const copyTsvButton = document.getElementById('copy-tsv-button');
+            if (copyTsvButton) {
+                copyTsvButton.addEventListener('click', function() {
                     var tsvOutput = document.getElementById('tsv-output');
                     tsvOutput.select();
                     document.execCommand('copy');
                     alert('TSV data copied to clipboard!');
                 });
-            });
-        </script>
-        @endif
-
-        <div class="form-container">
-            <h3>TSV Import</h3>
-            <form action="{{ route('workouts.import-tsv') }}" method="POST">
-                @csrf
-                <input type="hidden" name="date" value="{{ now()->format('Y-m-d') }}">
-                <textarea name="tsv_data" rows="10" style="width: 100%; background-color: #3a3a3a; color: #f2f2f2; border: 1px solid #555;"></textarea>
-                <button type="submit" class="button">Import TSV</button>
-            </form>
-        </div>
-
-    </div>
+            }
+        });
+    </script>
 @endsection
