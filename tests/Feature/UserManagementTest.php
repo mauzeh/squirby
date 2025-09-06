@@ -225,6 +225,7 @@ class UserManagementTest extends TestCase
 
         $response = $this->get(route('daily-logs.index'));
 
+        $response->assertSee('You are currently impersonating ' . $this->athlete->name);
         $response->assertSee('Switch Back');
     }
 
