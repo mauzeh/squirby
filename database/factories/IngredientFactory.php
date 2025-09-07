@@ -27,7 +27,7 @@ class IngredientFactory extends Factory
 
         return [
             'name' => $this->faker->word(),
-            'calories' => $this->faker->randomFloat(2, 0, 1000),
+            
             'protein' => $this->faker->randomFloat(2, 0, 100),
             'carbs' => $this->faker->randomFloat(2, 0, 100),
             'added_sugars' => $this->faker->randomFloat(2, 0, 50),

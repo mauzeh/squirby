@@ -160,4 +160,25 @@ class IngredientManagementTest extends TestCase
         $response->assertSee($ingredient2->name);
         $response->assertDontSee($ingredient1->name);
     }
+
+    /** @test */
+    public function ingredients_are_sorted_alphabetically_on_index_page()
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $ingredientC = Ingredient::factory()->create(['user_id' => $user->id, 'name' => 'Cherry', 'base_unit_id' => $this->unit->id]);
+        $ingredientA = Ingredient::factory()->create(['user_id' => $user->id, 'name' => 'Apple', 'base_unit_id' => $this->unit->id]);
+        $ingredientB = Ingredient::factory()->create(['user_id' => $user->id, 'name' => 'Banana', 'base_unit_id' => $this->unit->id]);
+
+        $response = $this->get(route('ingredients.index'));
+
+        $response->assertOk();
+
+        $response->assertSeeInOrder([
+            $ingredientA->name,
+            $ingredientB->name,
+            $ingredientC->name,
+        ]);
+    }
 }
