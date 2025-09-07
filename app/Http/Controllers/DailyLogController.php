@@ -213,4 +213,113 @@ class DailyLogController extends Controller
             ->route('daily-logs.index', ['date' => $validated['date']])
             ->with('success', 'TSV data imported successfully!');
     }
+
+    public function export(Request $request)
+    {
+        $validated = $request->validate([
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after_or_equal:start_date',
+        ]);
+
+        $startDate = Carbon::parse($validated['start_date']);
+        $endDate = Carbon::parse($validated['end_date']);
+
+        $dailyLogs = DailyLog::with(['ingredient', 'unit'])
+            ->whereBetween('logged_at', [$startDate, $endDate])
+            ->orderBy('logged_at', 'asc')
+            ->get();
+
+        $fileName = 'daily_log_' . $startDate->format('Y-m-d') . '_to_' . $endDate->format('Y-m-d') . '_' . Carbon::now()->format('Y-m-d_H-i-s') . '.csv';
+        $headers = array(
+            "Content-type"        => "text/csv",
+            "Content-Disposition" => "attachment; filename=$fileName",
+            "Pragma"              => "no-cache",
+            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
+            "Expires"             => "0"
+        );
+
+        $columns = array('Date', 'Time', 'Ingredient', 'Notes', 'Quantity', 'Unit', 'Calories', 'Protein (g)', 'Carbs (g)', 'Fats (g)', 'Added Sugars (g)', 'Sodium (mg)', 'Iron (mg)', 'Potassium (mg)', 'Fiber (g)', 'Calcium (mg)', 'Caffeine (mg)', 'Cost');
+
+        $callback = function() use($dailyLogs, $columns) {
+            $file = fopen('php://output', 'w');
+            fputcsv($file, $columns);
+
+            foreach ($dailyLogs as $log) {
+                $row['Date']  = $log->logged_at->format('m/d/Y');
+                $row['Time']  = $log->logged_at->format('H:i');
+                $row['Ingredient']    = $log->ingredient->name;
+                $row['Quantity']    = $log->quantity;
+                $row['Unit']  = $log->unit->name;
+                $row['Calories'] = round($this->nutritionService->calculateTotalMacro($log->ingredient, 'calories', (float)$log->quantity));
+                $row['Protein (g)'] = round($this->nutritionService->calculateTotalMacro($log->ingredient, 'protein', (float)$log->quantity), 1);
+                $row['Carbs (g)'] = round($this->nutritionService->calculateTotalMacro($log->ingredient, 'carbs', (float)$log->quantity), 1);
+                $row['Fats (g)'] = round($this->nutritionService->calculateTotalMacro($log->ingredient, 'fats', (float)$log->quantity), 1);
+                $row['Added Sugars (g)'] = round($this->nutritionService->calculateTotalMacro($log->ingredient, 'added_sugars', (float)$log->quantity), 1);
+                $row['Sodium (mg)'] = round($this->nutritionService->calculateTotalMacro($log->ingredient, 'sodium', (float)$log->quantity), 1);
+                $row['Iron (mg)'] = round($this->nutritionService->calculateTotalMacro($log->ingredient, 'iron', (float)$log->quantity), 1);
+                $row['Potassium (mg)'] = round($this->nutritionService->calculateTotalMacro($log->ingredient, 'potassium', (float)$log->quantity), 1);
+                $row['Fiber (g)'] = round($this->nutritionService->calculateTotalMacro($log->ingredient, 'fiber', (float)$log->quantity), 1);
+                $row['Calcium (mg)'] = round($this->nutritionService->calculateTotalMacro($log->ingredient, 'calcium', (float)$log->quantity), 1);
+                $row['Caffeine (mg)'] = round($this->nutritionService->calculateTotalMacro($log->ingredient, 'caffeine', (float)$log->quantity), 1);
+                $row['Cost'] = number_format($this->nutritionService->calculateCostForQuantity($log->ingredient, (float)$log->quantity), 2);
+                $row['Notes'] = $log->notes;
+
+                fputcsv($file, array($row['Date'], $row['Time'], $row['Ingredient'], $row['Notes'], $row['Quantity'], $row['Unit'], $row['Calories'], $row['Protein (g)'], $row['Carbs (g)'], $row['Fats (g)'], $row['Added Sugars (g)'], $row['Sodium (mg)'], $row['Iron (mg)'], $row['Potassium (mg)'], 'Fiber (g)', 'Calcium (mg)', 'Caffeine (mg)', 'Cost'));
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    public function exportAll(Request $request)
+    {
+        $dailyLogs = DailyLog::with(['ingredient', 'unit'])
+            ->orderBy('logged_at', 'asc')
+            ->get();
+
+        $fileName = 'daily_log_all_' . Carbon::now()->format('Y-m-d_H-i-s') . '.csv';
+        $headers = array(
+            "Content-type"        => "text/csv",
+            "Content-Disposition" => "attachment; filename=$fileName",
+            "Pragma"              => "no-cache",
+            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
+            "Expires"             => "0"
+        );
+
+        $columns = array('Date', 'Time', 'Ingredient', 'Notes', 'Quantity', 'Unit', 'Calories', 'Protein (g)', 'Carbs (g)', 'Fats (g)', 'Added Sugars (g)', 'Sodium (mg)', 'Iron (mg)', 'Potassium (mg)', 'Fiber (g)', 'Calcium (mg)', 'Caffeine (mg)', 'Cost');
+
+        $callback = function() use($dailyLogs, $columns) {
+            $file = fopen('php://output', 'w');
+            fputcsv($file, $columns);
+
+            foreach ($dailyLogs as $log) {
+                $row['Date']  = $log->logged_at->format('m/d/Y');
+                $row['Time']  = $log->logged_at->format('H:i');
+                $row['Ingredient']    = $log->ingredient->name;
+                $row['Quantity']    = $log->quantity;
+                $row['Unit']  = $log->unit->name;
+                $row['Calories'] = round($this->nutritionService->calculateTotalMacro($log->ingredient, 'calories', (float)$log->quantity));
+                $row['Protein (g)'] = round($this->nutritionService->calculateTotalMacro($log->ingredient, 'protein', (float)$log->quantity), 1);
+                $row['Carbs (g)'] = round($this->nutritionService->calculateTotalMacro($log->ingredient, 'carbs', (float)$log->quantity), 1);
+                $row['Fats (g)'] = round($this->nutritionService->calculateTotalMacro($log->ingredient, 'fats', (float)$log->quantity), 1);
+                $row['Added Sugars (g)'] = round($this->nutritionService->calculateTotalMacro($log->ingredient, 'added_sugars', (float)$log->quantity), 1);
+                $row['Sodium (mg)'] = round($this->nutritionService->calculateTotalMacro($log->ingredient, 'sodium', (float)$log->quantity), 1);
+                $row['Iron (mg)'] = round($this->nutritionService->calculateTotalMacro($log->ingredient, 'iron', (float)$log->quantity), 1);
+                $row['Potassium (mg)'] = round($this->nutritionService->calculateTotalMacro($log->ingredient, 'potassium', (float)$log->quantity), 1);
+                $row['Fiber (g)'] = round($this->nutritionService->calculateTotalMacro($log->ingredient, 'fiber', (float)$log->quantity), 1);
+                $row['Calcium (mg)'] = round($this->nutritionService->calculateTotalMacro($log->ingredient, 'calcium', (float)$log->quantity), 1);
+                $row['Caffeine (mg)'] = round($this->nutritionService->calculateTotalMacro($log->ingredient, 'caffeine', (float)$log->quantity), 1);
+                $row['Cost'] = number_format($this->nutritionService->calculateCostForQuantity($log->ingredient, (float)$log->quantity), 2);
+                $row['Notes'] = $log->notes;
+
+                fputcsv($file, array($row['Date'], $row['Time'], $row['Ingredient'], $row['Notes'], 'Quantity', 'Unit', 'Calories', 'Protein (g)', 'Carbs (g)', 'Fats (g)', 'Added Sugars (g)', 'Sodium (mg)', 'Iron (mg)', 'Potassium (mg)', 'Fiber (g)', 'Calcium (mg)', 'Caffeine (mg)', 'Cost'));
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
 }

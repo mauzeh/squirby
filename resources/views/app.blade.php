@@ -348,7 +348,6 @@
             <a href="{{ route('daily-logs.index') }}" class="{{ Request::routeIs('daily-logs.*') ? 'active' : '' }}">Daily Log</a>
             <a href="{{ route('meals.index') }}" class="{{ Request::routeIs('meals.*') ? 'active' : '' }}">Meals</a>
             <a href="{{ route('ingredients.index') }}" class="{{ Request::routeIs('ingredients.*') ? 'active' : '' }}">Ingredients</a>
-            <a href="{{ route('export-form') }}" class="{{ Request::routeIs('export-form') ? 'active' : '' }}">Export</a>
             <a href="{{ route('exercises.index') }}" class="{{ Request::routeIs('exercises.*') ? 'active' : '' }}">Exercises</a>
             <a href="{{ route('workouts.index') }}" class="{{ Request::routeIs('workouts.*') ? 'active' : '' }}">Workouts</a>
             <a href="{{ route('measurement-logs.index') }}" class="{{ Request::routeIs(['measurement-logs.*', 'measurement-types.*']) ? 'active' : '' }}">Measurements</a>

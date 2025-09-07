@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\DailyLogController;
 use App\Http\Controllers\IngredientController;
 use App\Http\Controllers\MealController;
-use App\Http\Controllers\ExportController;
+
 use App\Http\Controllers\ExerciseController;
 use App\Http\Controllers\WorkoutController;
 use App\Http\Controllers\MeasurementLogController;
@@ -36,10 +36,10 @@ Route::middleware('auth')->group(function () {
     Route::post('daily-logs/add-meal', [DailyLogController::class, 'addMealToLog'])->name('daily-logs.add-meal');
     Route::post('daily-logs/destroy-selected', [DailyLogController::class, 'destroySelected'])->name('daily-logs.destroy-selected');
     Route::post('daily-logs/import-tsv', [DailyLogController::class, 'importTsv'])->name('daily-logs.import-tsv');
+    Route::post('daily-logs/export', [DailyLogController::class, 'export'])->name('export');
+    Route::post('daily-logs/export-all', [DailyLogController::class, 'exportAll'])->name('export-all');
 
-    Route::get('export', [ExportController::class, 'showExportForm'])->name('export-form');
-    Route::post('export', [ExportController::class, 'export'])->name('export');
-    Route::post('export-all', [ExportController::class, 'exportAll'])->name('export-all');
+    
 
     Route::resource('ingredients', IngredientController::class)->except([
         'show'
