@@ -108,7 +108,6 @@ class User extends Authenticatable
             $ingredients = [
                 [
                     'name' => 'Chicken Breast',
-                    'serving_unit' => 'g',
                     'base_quantity' => 100,
                     'protein' => 31,
                     'carbs' => 0,
@@ -124,7 +123,6 @@ class User extends Authenticatable
                 ],
                 [
                     'name' => 'Rice (dry, brown)',
-                    'serving_unit' => 'g',
                     'base_quantity' => 45,
                     'protein' => 4,
                     'carbs' => 34,
@@ -140,7 +138,6 @@ class User extends Authenticatable
                 ],
                 [
                     'name' => 'Broccoli (raw)',
-                    'serving_unit' => 'g',
                     'base_quantity' => 100,
                     'protein' => 2.8,
                     'carbs' => 6.6,
@@ -156,7 +153,6 @@ class User extends Authenticatable
                 ],
                 [
                     'name' => 'Olive Oil',
-                    'serving_unit' => 'ml',
                     'base_quantity' => 15,
                     'protein' => 0,
                     'carbs' => 0,
@@ -172,7 +168,6 @@ class User extends Authenticatable
                 ],
                 [
                     'name' => 'Egg (whole, large)',
-                    'serving_unit' => 'g',
                     'base_quantity' => 1,
                     'protein' => 6,
                     'carbs' => 0.6,
