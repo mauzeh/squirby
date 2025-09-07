@@ -6,6 +6,11 @@ use Tests\TestCase;
 use App\Services\OneRepMaxCalculatorService;
 use App\Models\Workout;
 use App\Models\WorkoutSet;
+use App\Models\Exercise;
+use App\Models\User;
+use App\Models\MeasurementType;
+use App\Models\MeasurementLog;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class OneRepMaxCalculatorServiceTest extends TestCase
@@ -13,11 +18,26 @@ class OneRepMaxCalculatorServiceTest extends TestCase
     use RefreshDatabase;
 
     protected $calculator;
+    protected $user;
+    protected $bodyweightType;
 
     protected function setUp(): void
     {
         parent::setUp();
         $this->calculator = new OneRepMaxCalculatorService();
+        $this->user = User::factory()->create();
+        $this->bodyweightType = MeasurementType::firstOrCreate(
+            ['name' => 'Bodyweight', 'user_id' => $this->user->id],
+            ['default_unit' => 'lbs']
+        );
+
+        // Log a bodyweight for the user
+        MeasurementLog::create([
+            'user_id' => $this->user->id,
+            'measurement_type_id' => $this->bodyweightType->id,
+            'value' => 180, // Example bodyweight in lbs
+            'logged_at' => Carbon::now(),
+        ]);
     }
 
     /** @test */
@@ -99,5 +119,46 @@ class OneRepMaxCalculatorServiceTest extends TestCase
         $workout = Workout::factory()->create();
 
         $this->assertEquals(0, $this->calculator->getBestWorkoutOneRepMax($workout));
+    }
+
+    /** @test */
+    public function it_calculates_one_rep_max_for_bodyweight_exercise_correctly()
+    {
+        $weight = 0; // Bodyweight exercise, no external weight
+        $reps = 5;
+        $expected1RM = 180 * (1 + (0.0333 * 5)); // Assuming bodyweight is 180
+
+        $this->assertEquals($expected1RM, $this->calculator->calculateOneRepMax($weight, $reps, true, $this->user->id, Carbon::now()));
+    }
+
+    /** @test */
+    public function it_calculates_workout_one_rep_max_for_bodyweight_exercise_correctly()
+    {
+        $exercise = Exercise::factory()->create(['user_id' => $this->user->id, 'is_bodyweight' => true]);
+        $workout = Workout::factory()->create(['user_id' => $this->user->id, 'exercise_id' => $exercise->id, 'logged_at' => Carbon::now()]);
+        $workout->workoutSets()->createMany([
+            ['weight' => 0, 'reps' => 5, 'notes' => 'Set 1'],
+            ['weight' => 0, 'reps' => 5, 'notes' => 'Set 2'],
+        ]);
+
+        $expected1RM = 180 * (1 + (0.0333 * 5)); // Assuming bodyweight is 180
+
+        $this->assertEquals($expected1RM, $this->calculator->getWorkoutOneRepMax($workout));
+    }
+
+    /** @test */
+    public function it_calculates_best_workout_one_rep_max_for_bodyweight_exercise_correctly()
+    {
+        $exercise = Exercise::factory()->create(['user_id' => $this->user->id, 'is_bodyweight' => true]);
+        $workout = Workout::factory()->create(['user_id' => $this->user->id, 'exercise_id' => $exercise->id, 'logged_at' => Carbon::now()]);
+        $workout->workoutSets()->createMany([
+            ['weight' => 0, 'reps' => 5, 'notes' => 'Set 1'], // 180 * (1 + (0.0333 * 5)) = 209.97
+            ['weight' => 0, 'reps' => 8, 'notes' => 'Set 2'], // 180 * (1 + (0.0333 * 8)) = 227.952
+            ['weight' => 0, 'reps' => 3, 'notes' => 'Set 3'], // 180 * (1 + (0.0333 * 3)) = 197.982
+        ]);
+
+        $expectedBest1RM = 180 * (1 + (0.0333 * 8)); // Best is from 8 reps
+
+        $this->assertEquals($expectedBest1RM, $this->calculator->getBestWorkoutOneRepMax($workout));
     }
 }

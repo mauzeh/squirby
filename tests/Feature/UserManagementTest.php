@@ -254,7 +254,7 @@ class UserManagementTest extends TestCase
 
         $newUser = User::where('email', 'newuser@example.com')->first();
 
-        $this->assertCount(7, $newUser->exercises);
+        $this->assertCount(8, $newUser->exercises);
         $this->assertDatabaseHas('exercises', ['user_id' => $newUser->id, 'title' => 'Back Squat']);
         $this->assertDatabaseHas('exercises', ['user_id' => $newUser->id, 'title' => 'Bench Press']);
         $this->assertDatabaseHas('exercises', ['user_id' => $newUser->id, 'title' => 'Deadlift']);
