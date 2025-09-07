@@ -108,6 +108,41 @@ class IngredientManagementTest extends TestCase
     }
 
     /** @test */
+    public function authenticated_user_can_create_ingredient_with_minimal_information()
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $ingredientData = [
+            'name' => $this->faker->word,
+            'protein' => $this->faker->randomFloat(2, 0, 100),
+            'carbs' => $this->faker->randomFloat(2, 0, 100),
+            'fats' => $this->faker->randomFloat(2, 0, 100),
+            'base_quantity' => $this->faker->randomFloat(2, 0.01, 100),
+            'base_unit_id' => $this->unit->id,
+            'cost_per_unit' => $this->faker->randomFloat(2, 0, 10),
+        ];
+
+        $response = $this->post(route('ingredients.store'), $ingredientData);
+
+        $response->assertRedirect(route('ingredients.index'));
+        $response->assertSessionHas('success', 'Ingredient created successfully.');
+
+        $expectedDatabaseData = array_merge($ingredientData, [
+            'user_id' => $user->id,
+            'added_sugars' => 0.0,
+            'sodium' => 0.0,
+            'iron' => 0.0,
+            'potassium' => 0.0,
+            'fiber' => 0.0,
+            'calcium' => 0.0,
+            'caffeine' => 0.0,
+        ]);
+
+        $this->assertDatabaseHas('ingredients', $expectedDatabaseData);
+    }
+
+    /** @test */
     public function authenticated_user_only_sees_their_ingredients()
     {
         $user1 = User::factory()->create();

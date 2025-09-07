@@ -27,6 +27,16 @@ class Ingredient extends Model
         'user_id',
     ];
 
+    protected $attributes = [
+        'added_sugars' => 0,
+        'sodium' => 0,
+        'iron' => 0,
+        'potassium' => 0,
+        'fiber' => 0,
+        'calcium' => 0,
+        'caffeine' => 0,
+    ];
+
     public function getCaloriesAttribute()
     {
         return ($this->protein * 4) + ($this->carbs * 4) + ($this->fats * 9);
