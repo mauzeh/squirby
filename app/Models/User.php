@@ -190,6 +190,31 @@ class User extends Authenticatable
             foreach ($ingredients as $ingredient) {
                 $user->ingredients()->create($ingredient);
             }
+
+            // Create a sample meal
+            $sampleMeal = $user->meals()->create([
+                'name' => 'Chicken, Rice & Broccoli - ' . $user->id,
+                'comments' => 'A balanced meal with protein, carbs, and vegetables.',
+            ]);
+
+            // Attach ingredients to the sample meal
+            $chickenBreast = $user->ingredients()->where('name', 'Chicken Breast')->first();
+            $rice = $user->ingredients()->where('name', 'Rice (dry, brown)')->first();
+            $broccoli = $user->ingredients()->where('name', 'Broccoli (raw)')->first();
+            $oliveOil = $user->ingredients()->where('name', 'Olive Oil')->first();
+
+            if ($chickenBreast) {
+                $sampleMeal->ingredients()->attach($chickenBreast->id, ['quantity' => 150]);
+            }
+            if ($rice) {
+                $sampleMeal->ingredients()->attach($rice->id, ['quantity' => 100]);
+            }
+            if ($broccoli) {
+                $sampleMeal->ingredients()->attach($broccoli->id, ['quantity' => 200]);
+            }
+            if ($oliveOil) {
+                $sampleMeal->ingredients()->attach($oliveOil->id, ['quantity' => 10]);
+            }
         });
     }
 
@@ -201,5 +226,10 @@ class User extends Authenticatable
     public function ingredients()
     {
         return $this->hasMany(Ingredient::class);
+    }
+
+    public function meals()
+    {
+        return $this->hasMany(Meal::class);
     }
 }
