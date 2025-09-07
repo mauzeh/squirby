@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Models\Unit;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -87,11 +88,118 @@ class User extends Authenticatable
             foreach ($measurementTypes as $measurementType) {
                 $user->measurementTypes()->create($measurementType);
             }
+
+            $gramUnit = Unit::firstOrCreate(
+                ['name' => 'Gram', 'abbreviation' => 'g'],
+                ['conversion_factor' => 1]
+            );
+
+            $milliliterUnit = Unit::firstOrCreate(
+                ['name' => 'Milliliter', 'abbreviation' => 'ml'],
+                ['conversion_factor' => 1]
+            );
+
+            $pieceUnit = Unit::firstOrCreate(
+                ['name' => 'Piece', 'abbreviation' => 'pc'],
+                ['conversion_factor' => 1]
+            );
+
+            $ingredients = [
+                [
+                    'name' => 'Chicken Breast',
+                    'serving_unit' => 'g',
+                    'base_quantity' => 100,
+                    'protein' => 31,
+                    'carbs' => 0,
+                    'added_sugars' => 0,
+                    'fats' => 3.6,
+                    'sodium' => 0,
+                    'iron' => 0,
+                    'potassium' => 0,
+                    'fiber' => 0,
+                    'calcium' => 0,
+                    'caffeine' => 0,
+                    'base_unit_id' => $gramUnit->id,
+                ],
+                [
+                    'name' => 'Rice (dry, brown)',
+                    'serving_unit' => 'g',
+                    'base_quantity' => 45,
+                    'protein' => 4,
+                    'carbs' => 34,
+                    'added_sugars' => 0,
+                    'fats' => 1.5,
+                    'sodium' => 0,
+                    'iron' => 0,
+                    'potassium' => 0,
+                    'fiber' => 0,
+                    'calcium' => 0,
+                    'caffeine' => 0,
+                    'base_unit_id' => $gramUnit->id,
+                ],
+                [
+                    'name' => 'Broccoli (raw)',
+                    'serving_unit' => 'g',
+                    'base_quantity' => 100,
+                    'protein' => 2.8,
+                    'carbs' => 6.6,
+                    'added_sugars' => 0,
+                    'fats' => 0.4,
+                    'sodium' => 0,
+                    'iron' => 0,
+                    'potassium' => 0,
+                    'fiber' => 0,
+                    'calcium' => 0,
+                    'caffeine' => 0,
+                    'base_unit_id' => $gramUnit->id,
+                ],
+                [
+                    'name' => 'Olive Oil',
+                    'serving_unit' => 'ml',
+                    'base_quantity' => 15,
+                    'protein' => 0,
+                    'carbs' => 0,
+                    'added_sugars' => 0,
+                    'fats' => 14,
+                    'sodium' => 0,
+                    'iron' => 0,
+                    'potassium' => 0,
+                    'fiber' => 0,
+                    'calcium' => 0,
+                    'caffeine' => 0,
+                    'base_unit_id' => $milliliterUnit->id,
+                ],
+                [
+                    'name' => 'Egg (whole, large)',
+                    'serving_unit' => 'g',
+                    'base_quantity' => 1,
+                    'protein' => 6,
+                    'carbs' => 0.6,
+                    'added_sugars' => 0,
+                    'fats' => 5,
+                    'sodium' => 0,
+                    'iron' => 0,
+                    'potassium' => 0,
+                    'fiber' => 0,
+                    'calcium' => 0,
+                    'caffeine' => 0,
+                    'base_unit_id' => $pieceUnit->id,
+                ],
+            ];
+
+            foreach ($ingredients as $ingredient) {
+                $user->ingredients()->create($ingredient);
+            }
         });
     }
 
     public function measurementTypes()
     {
         return $this->hasMany(MeasurementType::class);
+    }
+
+    public function ingredients()
+    {
+        return $this->hasMany(Ingredient::class);
     }
 }
