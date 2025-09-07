@@ -193,7 +193,7 @@ class User extends Authenticatable
 
             // Create a sample meal
             $sampleMeal = $user->meals()->create([
-                'name' => 'Chicken, Rice & Broccoli - ' . $user->id,
+                'name' => 'Chicken, Rice & Broccoli',
                 'comments' => 'A balanced meal with protein, carbs, and vegetables.',
             ]);
 
