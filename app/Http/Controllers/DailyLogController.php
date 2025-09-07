@@ -225,6 +225,7 @@ class DailyLogController extends Controller
         $endDate = Carbon::parse($validated['end_date'])->endOfDay();
 
         $dailyLogs = DailyLog::with(['ingredient', 'unit'])
+            ->where('user_id', auth()->id())
             ->whereBetween('logged_at', [$startDate, $endDate])
             ->orderBy('logged_at', 'asc')
             ->get();
@@ -276,6 +277,7 @@ class DailyLogController extends Controller
     public function exportAll(Request $request)
     {
         $dailyLogs = DailyLog::with(['ingredient', 'unit'])
+            ->where('user_id', auth()->id())
             ->orderBy('logged_at', 'asc')
             ->get();
 

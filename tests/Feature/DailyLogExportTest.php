@@ -122,4 +122,72 @@ class DailyLogExportTest extends TestCase
 
         $response->assertRedirect(route('login'));
     }
+
+    /** @test */
+    public function authenticated_user_cannot_export_other_users_daily_logs()
+    {
+        $user1 = User::factory()->create();
+        $user2 = User::factory()->create();
+
+        $this->actingAs($user1);
+
+        // Create logs for user1
+        DailyLog::factory()->create(['user_id' => $user1->id, 'ingredient_id' => $this->ingredient->id, 'unit_id' => $this->unit->id, 'logged_at' => Carbon::parse('2025-01-01 10:00:00')]);
+        DailyLog::factory()->create(['user_id' => $user1->id, 'ingredient_id' => $this->ingredient->id, 'unit_id' => $this->unit->id, 'logged_at' => Carbon::parse('2025-01-02 11:00:00')]);
+
+        // Create logs for user2
+        $ingredient2 = Ingredient::factory()->create(['user_id' => $user2->id, 'base_unit_id' => $this->unit->id]);
+        DailyLog::factory()->create(['user_id' => $user2->id, 'ingredient_id' => $ingredient2->id, 'unit_id' => $this->unit->id, 'logged_at' => Carbon::parse('2025-01-01 10:30:00')]);
+        DailyLog::factory()->create(['user_id' => $user2->id, 'ingredient_id' => $ingredient2->id, 'unit_id' => $this->unit->id, 'logged_at' => Carbon::parse('2025-01-02 11:30:00')]);
+
+        $response = $this->post(route('export-all'));
+
+        $response->assertOk();
+        $content = $response->streamedContent();
+        $lines = explode("\n", trim($content));
+
+        // Assert that user1's logs are present
+        $this->assertStringContainsString('01/01/2025', $lines[1]);
+        $this->assertStringContainsString('01/02/2025', $lines[2]);
+        $this->assertCount(3, $lines); // Header + 2 logs from user1
+
+        // Assert that user2's logs are NOT present
+        $this->assertStringNotContainsString($ingredient2->name, $content);
+    }
+
+    /** @test */
+    public function authenticated_user_cannot_export_other_users_daily_logs_for_date_range()
+    {
+        $user1 = User::factory()->create();
+        $user2 = User::factory()->create();
+
+        $this->actingAs($user1);
+
+        // Create logs for user1 within the date range
+        DailyLog::factory()->create(['user_id' => $user1->id, 'ingredient_id' => $this->ingredient->id, 'unit_id' => $this->unit->id, 'logged_at' => Carbon::parse('2025-01-01 10:00:00')]);
+        DailyLog::factory()->create(['user_id' => $user1->id, 'ingredient_id' => $this->ingredient->id, 'unit_id' => $this->unit->id, 'logged_at' => Carbon::parse('2025-01-02 11:00:00')]);
+
+        // Create logs for user2 within the date range
+        $ingredient2 = Ingredient::factory()->create(['user_id' => $user2->id, 'base_unit_id' => $this->unit->id]);
+        DailyLog::factory()->create(['user_id' => $user2->id, 'ingredient_id' => $ingredient2->id, 'unit_id' => $this->unit->id, 'logged_at' => Carbon::parse('2025-01-01 10:30:00')]);
+        DailyLog::factory()->create(['user_id' => $user2->id, 'ingredient_id' => $ingredient2->id, 'unit_id' => $this->unit->id, 'logged_at' => Carbon::parse('2025-01-02 11:30:00')]);
+
+        $response = $this->post(route('export'), [
+            'start_date' => '2025-01-01',
+            'end_date' => '2025-01-02',
+        ]);
+
+        $response->assertOk();
+        $content = $response->streamedContent();
+        $lines = explode("\n", trim($content));
+
+        // Assert that user1's logs are present
+        $this->assertStringContainsString('01/01/2025', $lines[1]);
+        $this->assertStringContainsString('01/02/2025', $lines[2]);
+        $this->assertCount(3, $lines); // Header + 2 logs from user1
+
+        // Assert that user2's logs are NOT present
+        $this->assertStringNotContainsString($ingredient2->name, $content);
+    }
+
 }
