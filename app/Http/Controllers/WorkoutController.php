@@ -24,7 +24,7 @@ class WorkoutController extends Controller
     public function index()
     {
         $workouts = Workout::with('exercise')->where('user_id', auth()->id())->orderBy('logged_at', 'asc')->get();
-        $exercises = Exercise::where('user_id', auth()->id())->get();
+        $exercises = Exercise::where('user_id', auth()->id())->orderBy('title', 'asc')->get();
 
         $datasets = [];
         $groupedWorkouts = $workouts->groupBy('exercise.title');
@@ -108,7 +108,7 @@ class WorkoutController extends Controller
         if ($workout->user_id !== auth()->id()) {
             abort(403, 'Unauthorized action.');
         }
-        $exercises = Exercise::where('user_id', auth()->id())->get();
+        $exercises = Exercise::where('user_id', auth()->id())->orderBy('title', 'asc')->get();
         return view('workouts.edit', compact('workout', 'exercises'));
     }
 

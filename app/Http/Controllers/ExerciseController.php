@@ -13,7 +13,7 @@ class ExerciseController extends Controller
      */
     public function index()
     {
-        $exercises = Exercise::where('user_id', auth()->id())->get();
+        $exercises = Exercise::where('user_id', auth()->id())->orderBy('title', 'asc')->get();
         return view('exercises.index', compact('exercises'));
     }
 
