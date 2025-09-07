@@ -221,8 +221,8 @@ class DailyLogController extends Controller
             'end_date' => 'required|date|after_or_equal:start_date',
         ]);
 
-        $startDate = Carbon::parse($validated['start_date']);
-        $endDate = Carbon::parse($validated['end_date']);
+        $startDate = Carbon::parse($validated['start_date'])->startOfDay();
+        $endDate = Carbon::parse($validated['end_date'])->endOfDay();
 
         $dailyLogs = DailyLog::with(['ingredient', 'unit'])
             ->whereBetween('logged_at', [$startDate, $endDate])

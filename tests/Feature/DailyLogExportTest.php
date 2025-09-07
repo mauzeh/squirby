@@ -36,7 +36,7 @@ class DailyLogExportTest extends TestCase
         // Create some daily logs within and outside the date range
         DailyLog::factory()->create(['user_id' => $this->user->id, 'ingredient_id' => $this->ingredient->id, 'unit_id' => $this->unit->id, 'logged_at' => Carbon::parse('2025-01-01 10:00:00')]);
         DailyLog::factory()->create(['user_id' => $this->user->id, 'ingredient_id' => $this->ingredient->id, 'unit_id' => $this->unit->id, 'logged_at' => Carbon::parse('2025-01-02 11:00:00')]);
-        DailyLog::factory()->create(['user_id' => $this->user->id, 'ingredient_id' => $this->ingredient->id, 'unit_id' => $this->unit->id, 'logged_at' => Carbon::parse('2025-01-03 12:00:00')]); // Outside range
+        DailyLog::factory()->create(['user_id' => $this->user->id, 'ingredient_id' => $this->ingredient->id, 'unit_id' => $this->unit->id, 'logged_at' => Carbon::parse('2025-01-03 12:00:00')]);
         DailyLog::factory()->create(['user_id' => $this->user->id, 'ingredient_id' => $this->ingredient->id, 'unit_id' => $this->unit->id, 'logged_at' => Carbon::parse('2025-01-04 13:00:00')]); // Outside range
 
         $response = $this->post(route('export'), [
@@ -51,11 +51,39 @@ class DailyLogExportTest extends TestCase
         $content = $response->streamedContent();
         $lines = explode("\n", trim($content));
 
-        $this->assertCount(3, $lines); // Header + 2 logs
+        $this->assertCount(4, $lines); // Header + 3 logs
         $this->assertStringContainsString('01/01/2025', $lines[1]);
         $this->assertStringContainsString('01/02/2025', $lines[2]);
-        $this->assertStringNotContainsString('01/03/2025', $content);
+        $this->assertStringContainsString('01/03/2025', $lines[3]);
         $this->assertStringNotContainsString('01/04/2025', $content);
+    }
+
+    /** @test */
+    public function authenticated_user_can_export_daily_logs_for_single_day_range()
+    {
+        $this->actingAs($this->user);
+
+        $logDate = Carbon::parse('2025-09-04 10:00:00');
+        DailyLog::factory()->create([
+            'user_id' => $this->user->id,
+            'ingredient_id' => $this->ingredient->id,
+            'unit_id' => $this->unit->id,
+            'logged_at' => $logDate
+        ]);
+
+        $response = $this->post(route('export'), [
+            'start_date' => '2025-09-04',
+            'end_date' => '2025-09-04',
+        ]);
+
+        $response->assertOk();
+        $response->assertHeader('Content-Type', 'text/csv; charset=UTF-8');
+
+        $content = $response->streamedContent();
+        $lines = explode("\n", trim($content));
+
+        $this->assertCount(2, $lines); // Header + 1 log
+        $this->assertStringContainsString('09/04/2025', $lines[1]);
     }
 
     /** @test */
