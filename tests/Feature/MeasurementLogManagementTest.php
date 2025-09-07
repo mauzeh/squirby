@@ -68,7 +68,7 @@ class MeasurementLogManagementTest extends TestCase
         $response->assertSeeInOrder([
             '<option value="' . $measurementType->id . '"',
             'selected',
-            '>' . $measurementType->name . '</option>'
+            '>' . $measurementType->name . ' (' . $measurementType->default_unit . ')</option>'
         ]);
     }
 }

@@ -21,7 +21,7 @@
                     <label for="measurement_type_id">Type:</label>
                     <select name="measurement_type_id" id="measurement_type_id" required>
                         @foreach ($measurementTypes as $type)
-                            <option value="{{ $type->id }}" @if(isset($selectedMeasurementTypeId) && $selectedMeasurementTypeId == $type->id) selected @endif>{{ $type->name }}</option>
+                            <option value="{{ $type->id }}" @if(isset($selectedMeasurementTypeId) && $selectedMeasurementTypeId == $type->id) selected @endif>{{ $type->name }} ({{ $type->default_unit }})</option>
                         @endforeach
                     </select>
                 </div>

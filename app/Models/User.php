@@ -80,7 +80,7 @@ class User extends Authenticatable
             }
 
             $measurementTypes = [
-                ['name' => 'Bodyweight', 'default_unit' => 'kg'],
+                ['name' => 'Bodyweight', 'default_unit' => 'lbs'],
                 ['name' => 'Waist', 'default_unit' => 'cm'],
             ];
 
