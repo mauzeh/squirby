@@ -25,11 +25,11 @@
                     <label for="exercise_id">Exercise:</label>
                     <select name="exercise_id" id="exercise_id" class="form-control" required>
                         @foreach ($exercises as $exercise)
-                            <option value="{{ $exercise->id }}">{{ $exercise->title }}</option>
+                            <option value="{{ $exercise->id }}" data-is-bodyweight="{{ $exercise->is_bodyweight ? 'true' : 'false' }}">{{ $exercise->title }}</option>
                         @endforeach
                     </select>
                 </div>
-                <div class="form-group">
+                <div class="form-group" id="weight-group">
                     <label for="weight">Weight (lbs):</label>
                     <input type="number" name="weight" id="weight" class="form-control" required inputmode="decimal">
                 </div>
@@ -142,6 +142,31 @@
             if (exerciseId) {
                 document.getElementById('exercise_id').value = exerciseId;
             }
+
+            const exerciseSelect = document.getElementById('exercise_id');
+            const weightGroup = document.getElementById('weight-group');
+            const weightInput = document.getElementById('weight');
+
+            function toggleWeightInput() {
+                const selectedOption = exerciseSelect.options[exerciseSelect.selectedIndex];
+                const isBodyweight = selectedOption.dataset.isBodyweight === 'true';
+
+                if (isBodyweight) {
+                    weightGroup.style.display = 'none';
+                    weightInput.removeAttribute('required');
+                    weightInput.value = 0; // Set weight to 0 for bodyweight exercises
+                } else {
+                    weightGroup.style.display = 'block';
+                    weightInput.setAttribute('required', 'required');
+                }
+            }
+
+            // Initial call to set state based on default selected option
+            toggleWeightInput();
+
+            // Listen for changes on the exercise select dropdown
+            exerciseSelect.addEventListener('change', toggleWeightInput);
+
             var ctx = document.getElementById('oneRepMaxChart').getContext('2d');
             var oneRepMaxChart = new Chart(ctx, {
                 type: 'line',
