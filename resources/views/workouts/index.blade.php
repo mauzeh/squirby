@@ -113,7 +113,8 @@
             <h3>TSV Export</h3>
             <textarea id="tsv-output" rows="10" style="width: 100%; background-color: #3a3a3a; color: #f2f2f2; border: 1px solid #555;">@foreach ($workouts as $workout)
 {{ $workout->logged_at->format('m/d/Y') }} 	 {{ $workout->logged_at->format('H:i') }} 	 {{ $workout->exercise->title }} 	 {{ $workout->display_weight }} 	 {{ $workout->display_reps }} 	 {{ $workout->display_rounds }} 	 {{ preg_replace('/(
-|)+/', ' ', $workout->comments) }}
+|
+)+/', ' ', $workout->comments) }}
 @endforeach
             </textarea>
             <button id="copy-tsv-button" class="button">Copy to Clipboard</button>
@@ -156,7 +157,7 @@
                     weightInput.removeAttribute('required');
                     weightInput.value = 0; // Set weight to 0 for bodyweight exercises
                 } else {
-                    weightGroup.style.display = 'block';
+                    weightGroup.style.display = 'flex';
                     weightInput.setAttribute('required', 'required');
                 }
             }

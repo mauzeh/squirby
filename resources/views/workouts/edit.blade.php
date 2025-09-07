@@ -56,7 +56,7 @@
                     weightInput.removeAttribute('required');
                     weightInput.value = 0; // Set weight to 0 for bodyweight exercises
                 } else {
-                    weightGroup.style.display = 'block';
+                    weightGroup.style.display = 'flex';
                     weightInput.setAttribute('required', 'required');
                 }
             }
