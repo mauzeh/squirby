@@ -212,12 +212,12 @@ class WorkoutLoggingTest extends TestCase
         $workout2 = \App\Models\Workout::factory()->create([
             'user_id' => $this->user->id,
             'exercise_id' => $backSquat->id,
-            'comments' => 'Squat workout 2 comments',
+            'comments' => 'Deadlift comments',
         ]);
         $workout2->workoutSets()->create([
             'weight' => 300,
             'reps' => 3,
-            'notes' => 'Squat workout 2 comments',
+            'notes' => 'Deadlift comments',
         ]);
 
         $response = $this->get('/exercises/' . $backSquat->id . '/logs');
@@ -231,5 +231,92 @@ class WorkoutLoggingTest extends TestCase
         $response->assertSee($workout2->display_weight . ' lbs');
         $response->assertSee($workout2->display_reps . ' x ' . $workout2->display_rounds);
         $response->assertSee($workout2->comments);
+    }
+
+    /** @test */
+    public function a_user_can_create_a_bodyweight_workout()
+    {
+        $exercise = \App\Models\Exercise::factory()->create(['user_id' => $this->user->id, 'is_bodyweight' => true]);
+
+        $now = now();
+
+        $workoutData = [
+            'exercise_id' => $exercise->id,
+            'weight' => 0, // Bodyweight exercise, weight should be 0
+            'reps' => 8,
+            'rounds' => 3,
+            'comments' => 'Bodyweight workout comments',
+            'date' => $now->format('Y-m-d'),
+            'logged_at' => $now->format('H:i'),
+        ];
+
+        $response = $this->post(route('workouts.store'), $workoutData);
+
+        $this->assertDatabaseHas('workouts', [
+            'user_id' => $this->user->id,
+            'exercise_id' => $exercise->id,
+            'comments' => 'Bodyweight workout comments',
+            'logged_at' => \Carbon\Carbon::parse($now->format('Y-m-d H:i'))->format('Y-m-d H:i:s'),
+        ]);
+
+        $workout = \App\Models\Workout::where('exercise_id', $exercise->id)->first();
+
+        $this->assertDatabaseCount('workout_sets', 3);
+        $this->assertDatabaseHas('workout_sets', [
+            'workout_id' => $workout->id,
+            'weight' => 0,
+            'reps' => 8,
+            'notes' => 'Bodyweight workout comments',
+        ]);
+
+        $response->assertRedirect(route('workouts.index'));
+        $response->assertSessionHas('success', 'Workout created successfully.');
+    }
+
+    /** @test */
+    public function a_user_can_update_a_bodyweight_workout()
+    {
+        $exercise = \App\Models\Exercise::factory()->create(['user_id' => $this->user->id, 'is_bodyweight' => true]);
+        $workout = \App\Models\Workout::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $exercise->id,
+            'comments' => 'Original bodyweight comments',
+        ]);
+        $workout->workoutSets()->create([
+            'weight' => 0,
+            'reps' => 5,
+            'notes' => 'Original bodyweight comments',
+        ]);
+
+        $updatedExercise = \App\Models\Exercise::factory()->create(['user_id' => $this->user->id, 'is_bodyweight' => true]);
+        $updatedWorkoutData = [
+            'exercise_id' => $updatedExercise->id,
+            'weight' => 0,
+            'reps' => 10,
+            'rounds' => 4,
+            'comments' => 'Updated bodyweight comments',
+            'date' => $workout->logged_at->format('Y-m-d'),
+            'logged_at' => $workout->logged_at->format('H:i'),
+        ];
+
+        $response = $this->put(route('workouts.update', $workout->id), $updatedWorkoutData);
+
+        $this->assertDatabaseHas('workouts', [
+            'id' => $workout->id,
+            'user_id' => $this->user->id,
+            'exercise_id' => $updatedExercise->id,
+            'comments' => 'Updated bodyweight comments',
+        ]);
+
+        $this->assertDatabaseCount('workout_sets', 4);
+        $this->assertDatabaseHas('workout_sets', [
+            'workout_id' => $workout->id,
+            'weight' => 0,
+            'reps' => 10,
+            'notes' => 'Updated bodyweight comments',
+        ]);
+
+        $response->assertRedirect(route('workouts.index'));
+        $response->assertSessionHas('success', 'Workout updated successfully.');
     }
 }

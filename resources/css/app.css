@@ -1,3 +1,14 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.form-group-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 5px; /* Space between checkbox and label */
+}
+
+.form-group-checkbox label {
+    flex: none; /* Override flex: 0 0 120px from .form-group label */
+    text-align: left; /* Align text to the left */
+}

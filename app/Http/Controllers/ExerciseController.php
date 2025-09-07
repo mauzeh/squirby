@@ -30,12 +30,13 @@ class ExerciseController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'is_bodyweight' => 'nullable|boolean',
         ]);
 
-        Exercise::create(array_merge($request->all(), ['user_id' => auth()->id()]));
+        Exercise::create(array_merge($validated, ['user_id' => auth()->id(), 'is_bodyweight' => $request->has('is_bodyweight')]));
 
         return redirect()->route('exercises.index')->with('success', 'Exercise created successfully.');
     }
@@ -67,12 +68,13 @@ class ExerciseController extends Controller
         if ($exercise->user_id !== auth()->id()) {
             abort(403, 'Unauthorized action.');
         }
-        $request->validate([
+        $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'is_bodyweight' => 'nullable|boolean',
         ]);
 
-        $exercise->update($request->all());
+        $exercise->update(array_merge($validated, ['is_bodyweight' => $request->boolean('is_bodyweight')]));
 
         return redirect()->route('exercises.index')->with('success', 'Exercise updated successfully.');
     }

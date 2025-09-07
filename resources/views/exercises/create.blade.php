@@ -13,6 +13,10 @@
                 <label for="description">Description:</label>
                 <textarea name="description" id="description" class="form-control" rows="5"></textarea>
             </div>
+            <div class="form-group form-group-checkbox">
+                <input type="checkbox" name="is_bodyweight" id="is_bodyweight" value="1">
+                <label for="is_bodyweight">Bodyweight Exercise</label>
+            </div>
             <button type="submit" class="button">Add Exercise</button>
         </form>
     </div>
