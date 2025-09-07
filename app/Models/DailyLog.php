@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class DailyLog extends Model
 {
+    use HasFactory;
     protected $fillable = [
         'ingredient_id',
         'unit_id',
