@@ -78,6 +78,20 @@ class User extends Authenticatable
             foreach ($exercises as $exercise) {
                 $user->exercises()->create($exercise);
             }
+
+            $measurementTypes = [
+                ['name' => 'Bodyweight', 'default_unit' => 'kg'],
+                ['name' => 'Waist', 'default_unit' => 'cm'],
+            ];
+
+            foreach ($measurementTypes as $measurementType) {
+                $user->measurementTypes()->create($measurementType);
+            }
         });
+    }
+
+    public function measurementTypes()
+    {
+        return $this->hasMany(MeasurementType::class);
     }
 }
