@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Models\Ingredient;
 use App\Models\Unit;
 use App\Models\Meal;
+use App\Models\Role;
 
 class MealManagementTest extends TestCase
 {
@@ -40,5 +41,59 @@ class MealManagementTest extends TestCase
         $response->assertOk();
         $response->assertSee($ingredient2->name);
         $response->assertDontSee($ingredient1->name);
+    }
+
+    /** @test */
+    public function impersonated_user_meal_is_not_visible_after_adding()
+    {
+        // Create an admin user and a regular user
+        $adminUser = User::factory()->create();
+        $adminRole = \App\Models\Role::where('name', 'Admin')->first();
+        $adminUser->roles()->attach($adminRole);
+
+        $regularUser = User::factory()->create();
+        $athleteRole = \App\Models\Role::where('name', 'Athlete')->first();
+        $regularUser->roles()->attach($athleteRole);
+
+        // Log in as admin
+        $this->actingAs($adminUser);
+
+        // Impersonate the regular user
+        $this->get(route('users.impersonate', $regularUser->id));
+        // After impersonating, explicitly set the authenticated user for subsequent requests
+        $this->actingAs($regularUser);
+        $this->assertAuthenticatedAs($regularUser);
+
+        // Create an ingredient for the regular user
+        $ingredient = Ingredient::factory()->create([
+            'user_id' => $regularUser->id,
+            'base_unit_id' => $this->unit->id
+        ]);
+
+        // Add a meal as the impersonated user
+        $mealName = 'Test Impersonated Meal';
+        $response = $this->post(route('meals.store'), [
+            'name' => $mealName,
+            'comments' => 'Meal added while impersonating',
+            'ingredients' => [
+                ['ingredient_id' => $ingredient->id, 'quantity' => 100]
+            ]
+        ]);
+
+        $response->assertRedirect(route('meals.index'));
+        $response->assertSessionHas('success', 'Meal created successfully.');
+
+        // Navigate to the meals index page as the impersonated user
+        $response = $this->get(route('meals.index'));
+        $response->assertOk();
+
+        // Assert that the newly added meal is NOT visible (this confirms the bug)
+        $response->assertSee($mealName);
+
+        // Stop impersonating
+        $this->get(route('users.leave-impersonate'));
+        // After leaving impersonation, explicitly set the authenticated user back to admin
+        $this->actingAs($adminUser);
+        $this->assertAuthenticatedAs($adminUser);
     }
 }
