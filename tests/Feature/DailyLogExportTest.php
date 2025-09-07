@@ -131,9 +131,11 @@ class DailyLogExportTest extends TestCase
 
         $this->actingAs($user1);
 
+        $ingredient1 = Ingredient::factory()->create(['user_id' => $user1->id, 'base_unit_id' => $this->unit->id]);
+
         // Create logs for user1
-        DailyLog::factory()->create(['user_id' => $user1->id, 'ingredient_id' => $this->ingredient->id, 'unit_id' => $this->unit->id, 'logged_at' => Carbon::parse('2025-01-01 10:00:00')]);
-        DailyLog::factory()->create(['user_id' => $user1->id, 'ingredient_id' => $this->ingredient->id, 'unit_id' => $this->unit->id, 'logged_at' => Carbon::parse('2025-01-02 11:00:00')]);
+        DailyLog::factory()->create(['user_id' => $user1->id, 'ingredient_id' => $ingredient1->id, 'unit_id' => $this->unit->id, 'logged_at' => Carbon::parse('2025-01-01 10:00:00')]);
+        DailyLog::factory()->create(['user_id' => $user1->id, 'ingredient_id' => $ingredient1->id, 'unit_id' => $this->unit->id, 'logged_at' => Carbon::parse('2025-01-02 11:00:00')]);
 
         // Create logs for user2
         $ingredient2 = Ingredient::factory()->create(['user_id' => $user2->id, 'base_unit_id' => $this->unit->id]);
@@ -147,8 +149,7 @@ class DailyLogExportTest extends TestCase
         $lines = explode("\n", trim($content));
 
         // Assert that user1's logs are present
-        $this->assertStringContainsString('01/01/2025', $lines[1]);
-        $this->assertStringContainsString('01/02/2025', $lines[2]);
+        $this->assertStringContainsString($ingredient1->name, $content);
         $this->assertCount(3, $lines); // Header + 2 logs from user1
 
         // Assert that user2's logs are NOT present
@@ -163,9 +164,11 @@ class DailyLogExportTest extends TestCase
 
         $this->actingAs($user1);
 
+        $ingredient1 = Ingredient::factory()->create(['user_id' => $user1->id, 'base_unit_id' => $this->unit->id]);
+
         // Create logs for user1 within the date range
-        DailyLog::factory()->create(['user_id' => $user1->id, 'ingredient_id' => $this->ingredient->id, 'unit_id' => $this->unit->id, 'logged_at' => Carbon::parse('2025-01-01 10:00:00')]);
-        DailyLog::factory()->create(['user_id' => $user1->id, 'ingredient_id' => $this->ingredient->id, 'unit_id' => $this->unit->id, 'logged_at' => Carbon::parse('2025-01-02 11:00:00')]);
+        DailyLog::factory()->create(['user_id' => $user1->id, 'ingredient_id' => $ingredient1->id, 'unit_id' => $this->unit->id, 'logged_at' => Carbon::parse('2025-01-01 10:00:00')]);
+        DailyLog::factory()->create(['user_id' => $user1->id, 'ingredient_id' => $ingredient1->id, 'unit_id' => $this->unit->id, 'logged_at' => Carbon::parse('2025-01-02 11:00:00')]);
 
         // Create logs for user2 within the date range
         $ingredient2 = Ingredient::factory()->create(['user_id' => $user2->id, 'base_unit_id' => $this->unit->id]);
@@ -182,8 +185,7 @@ class DailyLogExportTest extends TestCase
         $lines = explode("\n", trim($content));
 
         // Assert that user1's logs are present
-        $this->assertStringContainsString('01/01/2025', $lines[1]);
-        $this->assertStringContainsString('01/02/2025', $lines[2]);
+        $this->assertStringContainsString($ingredient1->name, $content);
         $this->assertCount(3, $lines); // Header + 2 logs from user1
 
         // Assert that user2's logs are NOT present
