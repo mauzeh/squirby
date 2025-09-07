@@ -319,4 +319,70 @@ class WorkoutLoggingTest extends TestCase
         $response->assertRedirect(route('workouts.index'));
         $response->assertSessionHas('success', 'Workout updated successfully.');
     }
+
+    /** @test */
+    public function a_user_can_view_bodyweight_exercise_logs_with_correct_weight_display()
+    {
+        $exercise = \App\Models\Exercise::factory()->create([
+            'user_id' => $this->user->id, 
+            'title' => 'Chin-Ups', 
+            'is_bodyweight' => true
+        ]);
+        $workout = \App\Models\Workout::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => now(),
+        ]);
+        $workout->workoutSets()->create([
+            'weight' => 0,
+            'reps' => 5,
+            'notes' => 'Bodyweight set',
+        ]);
+
+        $response = $this->get(route('exercises.show-logs', $exercise));
+
+        $response->assertStatus(200);
+        $response->assertSee('Bodyweight');
+        $response->assertSee('5 x ' . $workout->workoutSets->count());
+    }
+
+    /** @test */
+    public function a_user_can_view_bodyweight_exercise_logs_with_correct_1rm_display()
+    {
+        $bodyweightMeasurementType = \App\Models\MeasurementType::factory()->create([
+            'user_id' => $this->user->id,
+            'name' => 'Bodyweight',
+        ]);
+
+        \App\Models\MeasurementLog::factory()->create([
+            'user_id' => $this->user->id,
+            'measurement_type_id' => $bodyweightMeasurementType->id,
+            'value' => 180,
+            'logged_at' => now()->subDay(),
+        ]);
+
+        $exercise = \App\Models\Exercise::factory()->create([
+            'user_id' => $this->user->id,
+            'title' => 'Chin-Ups',
+            'is_bodyweight' => true
+        ]);
+        $workout = \App\Models\Workout::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => now(),
+        ]);
+        $workout->workoutSets()->create([
+            'weight' => 0,
+            'reps' => 5,
+            'notes' => 'Bodyweight set',
+        ]);
+
+        // Assuming user bodyweight is 180 from OneRepMaxCalculatorServiceTest setup
+        $expected1RM = round(180 * (1 + (0.0333 * 5)));
+
+        $response = $this->get(route('exercises.show-logs', $exercise));
+
+        $response->assertStatus(200);
+        $response->assertSee($expected1RM . ' lbs (est. incl. BW)');
+    }
 }

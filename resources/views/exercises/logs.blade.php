@@ -43,10 +43,24 @@
                         <td><input type="checkbox" name="workout_ids[]" value="{{ $workout->id }}" class="workout-checkbox"></td>
                         <td>{{ $workout->logged_at->format('m/d/y H:i') }}</td>
                         <td>
-                            <span style="font-weight: bold; font-size: 1.2em;">{{ $workout->display_weight }} lbs</span><br>
-                            {{ $workout->display_reps }} x {{ $workout->display_rounds }}
+                            @if ($exercise->is_bodyweight)
+                                <span style="font-weight: bold; font-size: 1.2em;">Bodyweight</span><br>
+                                {{ $workout->display_reps }} x {{ $workout->display_rounds }}
+                                @if ($workout->display_weight > 0)
+                                    <br>+ {{ $workout->display_weight }} lbs
+                                @endif
+                            @else
+                                <span style="font-weight: bold; font-size: 1.2em;">{{ $workout->display_weight }} lbs</span><br>
+                                {{ $workout->display_reps }} x {{ $workout->display_rounds }}
+                            @endif
                         </td>
-                        <td>{{ round($workout->one_rep_max) }} lbs</td>
+                        <td>
+                            @if ($exercise->is_bodyweight)
+                                {{ round($workout->one_rep_max) }} lbs (est. incl. BW)
+                            @else
+                                {{ round($workout->one_rep_max) }} lbs
+                            @endif
+                        </td>
                         <td class="hide-on-mobile" style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ $workout->comments }}">{{ $workout->comments }}</td>
                         <td class="actions-column">
                             <div style="display: flex; gap: 5px;">
