@@ -34,7 +34,6 @@ class IngredientController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'calories' => 'required|numeric|min:0',
             'protein' => 'required|numeric|min:0',
             'carbs' => 'required|numeric|min:0',
             'added_sugars' => 'required|numeric|min:0',
@@ -50,7 +49,8 @@ class IngredientController extends Controller
             'cost_per_unit' => 'required|numeric|min:0',
         ]);
 
-        Ingredient::create(array_merge($request->all(), ['user_id' => auth()->id()]));
+        $data = $request->except('calories');
+        Ingredient::create(array_merge($data, ['user_id' => auth()->id()]));
 
         return redirect()->route('ingredients.index')
                          ->with('success', 'Ingredient created successfully.');
@@ -80,7 +80,6 @@ class IngredientController extends Controller
         }
         $request->validate([
             'name' => 'required|string|max:255',
-            'calories' => 'required|numeric|min:0',
             'protein' => 'required|numeric|min:0',
             'carbs' => 'required|numeric|min:0',
             'added_sugars' => 'required|numeric|min:0',
@@ -96,7 +95,8 @@ class IngredientController extends Controller
             'cost_per_unit' => 'required|numeric|min:0',
         ]);
 
-        $ingredient->update($request->all());
+        $data = $request->except('calories');
+        $ingredient->update($data);
 
         return redirect()->route('ingredients.index')
                          ->with('success', 'Ingredient updated successfully.');

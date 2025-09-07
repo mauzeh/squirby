@@ -21,10 +21,7 @@
                 <label for="name">Name:</label>
                 <input type="text" name="name" id="name" value="{{ old('name') }}" required>
             </div>
-            <div class="form-group">
-                <label for="calories">Calories:</label>
-                <input type="number" name="calories" id="calories" step="0.01" value="{{ old('calories') }}" required>
-            </div>
+            
             <div class="form-group">
                 <label for="protein">Protein (g):</label>
                 <input type="number" name="protein" id="protein" step="0.01" value="{{ old('protein') }}" required>

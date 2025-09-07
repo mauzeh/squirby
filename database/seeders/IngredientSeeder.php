@@ -62,7 +62,7 @@ class IngredientSeeder extends Seeder
             Ingredient::create([
                 'user_id' => $adminUser->id,
                 'name' => $rowData['Ingredient'],
-                'calories' => (float)($rowData['Calories'] ?? 0),
+                
                 'protein' => (float)($rowData['Protein (g)'] ?? 0),
                 'carbs' => (float)($rowData['Carb (g)'] ?? 0),
                 'added_sugars' => (float)($rowData['Added Sugar (g)'] ?? 0),

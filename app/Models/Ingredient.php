@@ -11,7 +11,6 @@ class Ingredient extends Model
 
     protected $fillable = [
         'name',
-        'calories',
         'protein',
         'carbs',
         'added_sugars',
@@ -27,6 +26,11 @@ class Ingredient extends Model
         'cost_per_unit',
         'user_id',
     ];
+
+    public function getCaloriesAttribute()
+    {
+        return ($this->protein * 4) + ($this->carbs * 4) + ($this->fats * 9);
+    }
 
     public function baseUnit()
     {
