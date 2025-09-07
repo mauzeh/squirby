@@ -59,15 +59,15 @@
                 </div>
                 <div class="form-group">
                     <label for="sodium">Sodium (mg):</label>
-                    <input type="number" name="sodium" id="sodium" step="0.01" value="{{ old('sodium', $ingredient->sodium) }}" required>
+                    <input type="number" name="sodium" id="sodium" step="0.01" value="{{ old('sodium', $ingredient->sodium) }}">
                 </div>
                 <div class="form-group">
                     <label for="fiber">Fiber (g):</label>
-                    <input type="number" name="fiber" id="fiber" step="0.01" value="{{ old('fiber', $ingredient->fiber) }}" required>
+                    <input type="number" name="fiber" id="fiber" step="0.01" value="{{ old('fiber', $ingredient->fiber) }}">
                 </div>
                 <div class="form-group">
                     <label for="added_sugars">Added Sugars (g):</label>
-                    <input type="number" name="added_sugars" id="added_sugars" step="0.01" value="{{ old('added_sugars', $ingredient->added_sugars) }}" required>
+                    <input type="number" name="added_sugars" id="added_sugars" step="0.01" value="{{ old('added_sugars', $ingredient->added_sugars) }}">
                 </div>
             </div>
 
@@ -75,19 +75,19 @@
                 <h2>Micronutrients</h2>
                 <div class="form-group">
                     <label for="calcium">Calcium (mg):</label>
-                    <input type="number" name="calcium" id="calcium" step="0.01" value="{{ old('calcium', $ingredient->calcium) }}" required>
+                    <input type="number" name="calcium" id="calcium" step="0.01" value="{{ old('calcium', $ingredient->calcium) }}">
                 </div>
                 <div class="form-group">
                     <label for="iron">Iron (mg):</label>
-                    <input type="number" name="iron" id="iron" step="0.01" value="{{ old('iron', $ingredient->iron) }}" required>
+                    <input type="number" name="iron" id="iron" step="0.01" value="{{ old('iron', $ingredient->iron) }}">
                 </div>
                 <div class="form-group">
                     <label for="potassium">Potassium (mg):</label>
-                    <input type="number" name="potassium" id="potassium" step="0.01" value="{{ old('potassium', $ingredient->potassium) }}" required>
+                    <input type="number" name="potassium" id="potassium" step="0.01" value="{{ old('potassium', $ingredient->potassium) }}">
                 </div>
                 <div class="form-group">
                     <label for="caffeine">Caffeine (mg):</label>
-                    <input type="number" name="caffeine" id="caffeine" step="0.01" value="{{ old('caffeine', $ingredient->caffeine) }}" required>
+                    <input type="number" name="caffeine" id="caffeine" step="0.01" value="{{ old('caffeine', $ingredient->caffeine) }}">
                 </div>
             </div>
             <button type="submit" class="button">Update Ingredient</button>
