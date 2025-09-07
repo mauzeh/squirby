@@ -178,6 +178,22 @@
                 color: #f2f2f2;
                 border: 1px solid #555;
             }
+            .form-group-checkbox {
+                display: flex;
+                align-items: center;
+                gap: 5px; /* Space between checkbox and label */
+            }
+
+            .form-group-checkbox label {
+                flex: none; /* Override flex: 0 0 120px from .form-group label */
+                text-align: left; /* Align text to the left */
+                margin-left: 5px; /* Add some space between checkbox and label */
+            }
+
+            .form-group-checkbox input[type="checkbox"] {
+                /* Adjust checkbox alignment if needed */
+                margin-left: 140px; /* Align checkbox with text input fields */
+            }
             .success-message-box {
                 background-color: #28a745; /* Darker green for success */
                 color: white; /* White text */
