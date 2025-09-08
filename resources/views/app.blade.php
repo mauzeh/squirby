@@ -50,7 +50,7 @@
                 background-color: #007bff; /* A blue for active, stands out on dark */
                 color: white;
             }
-                        .navbar a.top-level-nav-item {
+            .navbar a.top-level-nav-item {
                 font-size: 145%;
                 font-weight: bold;
             }
@@ -376,11 +376,11 @@
             </div>
         @endif
         @if(app()->environment('production') || app()->environment('staging'))
-            <div style="background-color: red; color: white; text-align: center; padding: 10px; font-size: 20px; font-weight: bold;">
+            <div class="env-bar production">
                 PRODUCTION / STAGING
             </div>
         @else
-            <div style="background-color: green; color: white; text-align: center; padding: 5px; font-size: 15px; font-weight: bold;">
+            <div class="env-bar local">
                 LOCAL DEV ENVIRONMENT
             </div>
         @endif
