@@ -10,6 +10,7 @@
         <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('favicon/favicon-16x16.png') }}">
         <link rel="manifest" href="{{ asset('favicon/site.webmanifest') }}">
         <link rel="shortcut icon" href="{{ asset('favicon/favicon.ico') }}">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 
         <title>Nutrition Tracker</title>
 
@@ -367,19 +368,19 @@
             <a href="{{ route('exercises.index') }}" class="{{ Request::routeIs('exercises.*') ? 'active' : '' }}">Exercises</a>
             <a href="{{ route('workouts.index') }}" class="{{ Request::routeIs('workouts.*') ? 'active' : '' }}">Workouts</a>
             <a href="{{ route('measurement-logs.index') }}" class="{{ Request::routeIs(['measurement-logs.*', 'measurement-types.*']) ? 'active' : '' }}">Measurements</a>
-            <a href="{{ route('profile.edit') }}" class="{{ Request::routeIs('profile.edit') ? 'active' : '' }}">Profile</a>
-
             @if (Auth::user()->hasRole('Admin'))
                 <a href="{{ route('users.index') }}" class="{{ Request::routeIs('users.*') ? 'active' : '' }}">User Admin</a>
             @endif
 
-            {{-- Logout Button --}}
-            <form method="POST" action="{{ route('logout') }}" style="float: right; display: block; color: #f2f2f2; text-align: center; padding: 14px 16px; text-decoration: none; font-size: 17px;">
-                @csrf
-                <button type="submit" style="background: none; border: none; color: inherit; font: inherit; cursor: pointer; padding: 0;">
-                    Log Out
-                </button>
-            </form>
+            <div style="float: right;">
+                <a href="{{ route('profile.edit') }}" class="{{ Request::routeIs('profile.edit') ? 'active' : '' }}" style="padding: 14px 8px"><i class="fas fa-user"></i></a>
+                <form method="POST" action="{{ route('logout') }}" style="display: inline-block;">
+                    @csrf
+                    <button type="submit" style="background: none; border: none; color: #f2f2f2; text-align: center; padding: 14px 8px; text-decoration: none; font-size: 17px; cursor: pointer;">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
+                </form>
+            </div>
         </div>
         @endauth
         <div class="content">
