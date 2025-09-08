@@ -408,7 +408,7 @@
 
             <div style="margin-left: auto;">
                 @if (Auth::user()->hasRole('Admin'))
-                    <a href="{{ route('users.index') }}" class="{{ Request::routeIs('users.*') ? 'active' : '' }}" style="padding: 14px 8px"><i class="fas fa-user-cog"></i></a>
+                    <a href="{{ route('users.index') }}" class="{{ Request::routeIs('users.*') ? 'active' : '' }}" style="padding: 14px 8px"><i class="fas fa-cog"></i></a>
                 @endif
                 <a href="{{ route('profile.edit') }}" class="{{ Request::routeIs('profile.edit') ? 'active' : '' }}" style="padding: 14px 8px"><i class="fas fa-user"></i></a>
                 <form method="POST" action="{{ route('logout') }}" style="display: inline-block;">
