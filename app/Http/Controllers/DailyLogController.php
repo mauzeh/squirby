@@ -190,7 +190,7 @@ class DailyLogController extends Controller
     public function importTsv(Request $request)
     {
         $validated = $request->validate([
-            'tsv_data' => 'required|string',
+            'tsv_data' => 'nullable|string',
             'date' => 'required|date',
         ]);
 

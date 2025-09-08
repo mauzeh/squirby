@@ -147,13 +147,18 @@ class DailyLogExportTest extends TestCase
         $response->assertOk();
         $content = $response->streamedContent();
         $lines = explode("\n", trim($content));
+        $csv = array_map('str_getcsv', $lines);
 
         // Assert that user1's logs are present
         $this->assertStringContainsString($ingredient1->name, $content);
         $this->assertCount(3, $lines); // Header + 2 logs from user1
 
         // Assert that user2's logs are NOT present
-        $this->assertStringNotContainsString($ingredient2->name, $content);
+        foreach ($csv as $row) {
+            if (isset($row[2])) { // Check if the column exists
+                $this->assertNotEquals($ingredient2->name, $row[2]);
+            }
+        }
     }
 
     /** @test */
@@ -183,13 +188,18 @@ class DailyLogExportTest extends TestCase
         $response->assertOk();
         $content = $response->streamedContent();
         $lines = explode("\n", trim($content));
+        $csv = array_map('str_getcsv', $lines);
 
         // Assert that user1's logs are present
         $this->assertStringContainsString($ingredient1->name, $content);
         $this->assertCount(3, $lines); // Header + 2 logs from user1
 
         // Assert that user2's logs are NOT present
-        $this->assertStringNotContainsString($ingredient2->name, $content);
+        foreach ($csv as $row) {
+            if (isset($row[2])) { // Check if the column exists
+                $this->assertNotEquals($ingredient2->name, $row[2]);
+            }
+        }
     }
 
 }

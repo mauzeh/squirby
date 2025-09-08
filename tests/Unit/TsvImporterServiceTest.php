@@ -153,4 +153,50 @@ class TsvImporterServiceTest extends TestCase
         $this->assertEmpty($result['notFound']);
         $this->assertDatabaseCount('workouts', 0);
     }
+
+    /** @test */
+    public function it_imports_measurements_correctly()
+    {
+        $tsvData = "09/07/2025\t10:00\tBodyweight\t180\tlbs\tMorning weight\n"
+                 . "09/07/2025\t12:00\tWaist\t32\tin\tPost lunch";
+
+        $result = $this->tsvImporterService->importMeasurements($tsvData, $this->user->id);
+
+        $this->assertEquals(2, $result['importedCount']);
+        $this->assertEmpty($result['invalidRows']);
+
+        $this->assertDatabaseCount('measurement_logs', 2);
+        $this->assertDatabaseHas('measurement_logs', [
+            'user_id' => $this->user->id,
+            'value' => 180,
+            'comments' => 'Morning weight',
+        ]);
+        $this->assertDatabaseHas('measurement_logs', [
+            'user_id' => $this->user->id,
+            'value' => 32,
+            'comments' => 'Post lunch',
+        ]);
+    }
+
+    /** @test */
+    public function it_handles_empty_tsv_data_for_measurements()
+    {
+        $result = $this->tsvImporterService->importMeasurements('', $this->user->id);
+
+        $this->assertEquals(0, $result['importedCount']);
+        $this->assertEmpty($result['invalidRows']);
+        $this->assertDatabaseCount('measurement_logs', 0);
+    }
+
+    /** @test */
+    public function it_handles_invalid_rows_when_importing_measurements()
+    {
+        $tsvData = "invalid row";
+
+        $result = $this->tsvImporterService->importMeasurements($tsvData, $this->user->id);
+
+        $this->assertEquals(0, $result['importedCount']);
+        $this->assertEquals(['invalid row'], $result['invalidRows']);
+        $this->assertDatabaseCount('measurement_logs', 0);
+    }
 }
