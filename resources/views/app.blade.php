@@ -421,8 +421,8 @@
             @endif
 
             @if (Request::routeIs(['exercises.*', 'workouts.*']))
-                <a href="{{ route('exercises.index') }}" class="{{ Request::routeIs('exercises.*') ? 'active' : '' }}">Exercises</a>
                 <a href="{{ route('workouts.index') }}" class="{{ Request::routeIs('workouts.*') ? 'active' : '' }}">Workouts</a>
+                <a href="{{ route('exercises.index') }}" class="{{ Request::routeIs('exercises.*') ? 'active' : '' }}">Exercises</a>
             @endif
 
             @if (Request::routeIs(['measurement-logs.*', 'measurement-types.*']))
