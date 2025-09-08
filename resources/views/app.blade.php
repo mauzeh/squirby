@@ -30,6 +30,8 @@
                 background-color: #333; /* Darker navbar */
                 overflow: hidden;
                 width: 100%;
+                display: flex;
+                align-items: center;
             }
             .navbar a {
                 float: left;
@@ -375,7 +377,7 @@
             <a href="{{ route('workouts.index') }}" class="top-level-nav-item {{ Request::routeIs(['exercises.*', 'workouts.*']) ? 'active' : '' }}"><i class="fas fa-dumbbell" style="margin-right: 8px;"></i> Lifts</a>
             <a href="{{ route('measurement-logs.index') }}" class="top-level-nav-item {{ Request::routeIs(['measurement-logs.*', 'measurement-types.*']) ? 'active' : '' }}"><i class="fas fa-heartbeat" style="margin-right: 8px;"></i> Body</a>
 
-            <div style="float: right;">
+            <div style="margin-left: auto;">
                 @if (Auth::user()->hasRole('Admin'))
                     <a href="{{ route('users.index') }}" class="{{ Request::routeIs('users.*') ? 'active' : '' }}">User Admin</a>
                 @endif
