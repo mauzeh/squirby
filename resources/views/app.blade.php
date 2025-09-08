@@ -51,8 +51,16 @@
                 color: white;
             }
             .navbar a.top-level-nav-item {
-                font-size: 145%;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                padding: 15px;
+                font-size: 120%;
                 font-weight: bold;
+            }
+
+            .navbar a.top-level-nav-item i {
+                margin-bottom: 5px;
             }
             .env-bar {
                 color: white;
