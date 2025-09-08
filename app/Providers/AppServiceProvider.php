@@ -4,6 +4,8 @@ namespace App\Providers;
 
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
+use App\Models\MeasurementType;
+use Illuminate\Support\Facades\Auth;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -28,5 +30,12 @@ class AppServiceProvider extends ServiceProvider
                 View::share('gitLog', 'Could not retrieve git log.');
             }
         }
+
+        View::composer('app', function ($view) {
+            if (Auth::check()) {
+                $measurementTypes = MeasurementType::where('user_id', auth()->id())->orderBy('name')->get();
+                $view->with('measurementTypes', $measurementTypes);
+            }
+        });
     }
 }

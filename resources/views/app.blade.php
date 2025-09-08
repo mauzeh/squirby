@@ -412,7 +412,7 @@
             </div>
         </div>
 
-        @if (Request::routeIs(['daily-logs.*', 'meals.*', 'ingredients.*', 'exercises.*', 'workouts.*']))
+        @if (Request::routeIs(['daily-logs.*', 'meals.*', 'ingredients.*', 'exercises.*', 'workouts.*', 'measurement-logs.*', 'measurement-types.*']))
         <div class="navbar sub-navbar">
             @if (Request::routeIs(['daily-logs.*', 'meals.*', 'ingredients.*']))
                 <a href="{{ route('daily-logs.index') }}" class="{{ Request::routeIs('daily-logs.*') ? 'active' : '' }}">Daily Log</a>
@@ -423,6 +423,12 @@
             @if (Request::routeIs(['exercises.*', 'workouts.*']))
                 <a href="{{ route('exercises.index') }}" class="{{ Request::routeIs('exercises.*') ? 'active' : '' }}">Exercises</a>
                 <a href="{{ route('workouts.index') }}" class="{{ Request::routeIs('workouts.*') ? 'active' : '' }}">Workouts</a>
+            @endif
+
+            @if (Request::routeIs(['measurement-logs.*', 'measurement-types.*']))
+                @foreach ($measurementTypes as $measurementType)
+                    <a href="{{ route('measurement-logs.show-by-type', $measurementType) }}" class="{{ Request::is('measurement-logs/type/' . $measurementType->id) ? 'active' : '' }}">{{ $measurementType->name }}</a>
+                @endforeach
             @endif
         </div>
         @endif
