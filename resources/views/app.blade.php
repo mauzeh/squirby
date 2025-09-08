@@ -356,7 +356,7 @@
     </head>
     <body>
         @if(session()->has('impersonator_id'))
-            <div style="background-color: #ffc107; color: #212529; text-align: center; padding: 10px; font-size: 20px; font-weight: bold;">
+            <div style="background-color: #ffc107; color: #212529; text-align: center; padding: 5px; font-size: 15px; font-weight: bold;">
                 You are currently impersonating {{ auth()->user()->name }}. <a href="{{ route('users.leave-impersonate') }}" style="color: #000;">Switch Back</a>
             </div>
         @endif
