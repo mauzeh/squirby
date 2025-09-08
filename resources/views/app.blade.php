@@ -48,6 +48,15 @@
                 background-color: #007bff; /* A blue for active, stands out on dark */
                 color: white;
             }
+                        .navbar a.top-level-nav-item {
+                font-size: 145%;
+                font-weight: bold;
+            }
+            .sub-navbar {
+                background-color: #444; /* Slightly lighter than the main navbar */
+                overflow: hidden;
+                width: 100%;
+            }
             .content {
                 padding: 20px; /* Add horizontal padding */
             }
@@ -362,17 +371,14 @@
         @endif
         @auth
         <div class="navbar">
-            <a href="{{ route('daily-logs.index') }}" class="{{ Request::routeIs('daily-logs.*') ? 'active' : '' }}">Daily Log</a>
-            <a href="{{ route('meals.index') }}" class="{{ Request::routeIs('meals.*') ? 'active' : '' }}">Meals</a>
-            <a href="{{ route('ingredients.index') }}" class="{{ Request::routeIs('ingredients.*') ? 'active' : '' }}">Ingredients</a>
-            <a href="{{ route('exercises.index') }}" class="{{ Request::routeIs('exercises.*') ? 'active' : '' }}">Exercises</a>
-            <a href="{{ route('workouts.index') }}" class="{{ Request::routeIs('workouts.*') ? 'active' : '' }}">Workouts</a>
-            <a href="{{ route('measurement-logs.index') }}" class="{{ Request::routeIs(['measurement-logs.*', 'measurement-types.*']) ? 'active' : '' }}">Measurements</a>
-            @if (Auth::user()->hasRole('Admin'))
-                <a href="{{ route('users.index') }}" class="{{ Request::routeIs('users.*') ? 'active' : '' }}">User Admin</a>
-            @endif
+            <a href="{{ route('daily-logs.index') }}" class="top-level-nav-item {{ Request::routeIs(['daily-logs.*', 'meals.*', 'ingredients.*']) ? 'active' : '' }}"><i class="fas fa-utensils" style="margin-right: 8px;"></i> Food</a>
+            <a href="{{ route('workouts.index') }}" class="top-level-nav-item {{ Request::routeIs(['exercises.*', 'workouts.*']) ? 'active' : '' }}"><i class="fas fa-dumbbell" style="margin-right: 8px;"></i> Lifts</a>
+            <a href="{{ route('measurement-logs.index') }}" class="top-level-nav-item {{ Request::routeIs(['measurement-logs.*', 'measurement-types.*']) ? 'active' : '' }}"><i class="fas fa-heartbeat" style="margin-right: 8px;"></i> Body</a>
 
             <div style="float: right;">
+                @if (Auth::user()->hasRole('Admin'))
+                    <a href="{{ route('users.index') }}" class="{{ Request::routeIs('users.*') ? 'active' : '' }}">User Admin</a>
+                @endif
                 <a href="{{ route('profile.edit') }}" class="{{ Request::routeIs('profile.edit') ? 'active' : '' }}" style="padding: 14px 8px"><i class="fas fa-user"></i></a>
                 <form method="POST" action="{{ route('logout') }}" style="display: inline-block;">
                     @csrf
@@ -382,6 +388,21 @@
                 </form>
             </div>
         </div>
+
+        @if (Request::routeIs(['daily-logs.*', 'meals.*', 'ingredients.*', 'exercises.*', 'workouts.*']))
+        <div class="navbar sub-navbar">
+            @if (Request::routeIs(['daily-logs.*', 'meals.*', 'ingredients.*']))
+                <a href="{{ route('daily-logs.index') }}" class="{{ Request::routeIs('daily-logs.*') ? 'active' : '' }}">Daily Log</a>
+                <a href="{{ route('meals.index') }}" class="{{ Request::routeIs('meals.*') ? 'active' : '' }}">Meals</a>
+                <a href="{{ route('ingredients.index') }}" class="{{ Request::routeIs('ingredients.*') ? 'active' : '' }}">Ingredients</a>
+            @endif
+
+            @if (Request::routeIs(['exercises.*', 'workouts.*']))
+                <a href="{{ route('exercises.index') }}" class="{{ Request::routeIs('exercises.*') ? 'active' : '' }}">Exercises</a>
+                <a href="{{ route('workouts.index') }}" class="{{ Request::routeIs('workouts.*') ? 'active' : '' }}">Workouts</a>
+            @endif
+        </div>
+        @endif
         @endauth
         <div class="content">
             @yield('content')
