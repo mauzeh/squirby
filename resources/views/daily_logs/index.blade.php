@@ -1,7 +1,7 @@
 @extends('app')
 
 @section('content')
-    <div class="date-navigation">
+    <div class="date-navigation flex items-center">
         @php
             $today = \Carbon\Carbon::today();
         @endphp
@@ -14,10 +14,8 @@
                 {{ $date->format('D M d') }}
             </a>
         @endfor
-        <div class="form-group" style="margin-left: 20px;">
-            <label for="date_picker">Or Pick a Date:</label>
-            <input type="date" id="date_picker" onchange="window.location.href = '{{ route('daily-logs.index') }}?date=' + this.value;" value="{{ $selectedDate->format('Y-m-d') }}">
-        </div>
+        <label for="date_picker" class="date-pick-label ml-4 mr-2">Or Pick a Date:</label>
+        <input type="date" id="date_picker" onchange="window.location.href = '{{ route('daily-logs.index') }}?date=' + this.value;" value="{{ $selectedDate->format('Y-m-d') }}">
     </div>
     @if (session('success'))
         <div class="container success-message-box">

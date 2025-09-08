@@ -73,8 +73,6 @@ a {
 .content {
     padding: 20px; /* Add horizontal padding */
 }
-.container {
-}
 h1, h2 {
     color: #f2f2f2; /* Light headings */
 }
@@ -271,6 +269,9 @@ select:focus {
 .date-link.active {
     background-color: #007bff;
     color: white;
+}
+.date-pick-label {
+    padding: 8px 12px;
 }
 
 @media (max-width: 768px) {

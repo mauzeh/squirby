@@ -54,7 +54,7 @@
         @if (Request::routeIs(['daily-logs.*', 'meals.*', 'ingredients.*', 'exercises.*', 'workouts.*', 'measurement-logs.*', 'measurement-types.*']))
         <div class="navbar sub-navbar">
             @if (Request::routeIs(['daily-logs.*', 'meals.*', 'ingredients.*']))
-                <a href="{{ route('daily-logs.index') }}" class="{{ Request::routeIs('daily-logs.*') ? 'active' : '' }}">Daily Log</a>
+                <a href="{{ route('daily-logs.index') }}" class="{{ Request::routeIs('daily-logs.*') ? 'active' : '' }}">Log Entry</a>
                 <a href="{{ route('meals.index') }}" class="{{ Request::routeIs('meals.*') ? 'active' : '' }}">Meals</a>
                 <a href="{{ route('ingredients.index') }}" class="{{ Request::routeIs('ingredients.*') ? 'active' : '' }}">Ingredients</a>
             @endif
