@@ -16,7 +16,6 @@ class MealSeeder extends Seeder
     {
         $adminUser = User::where('email', 'admin@example.com')->first();
 
-        Meal::truncate();
         $ingredients = Ingredient::all()->keyBy('name');
 
         // Meal 1: Breakfast Bowl

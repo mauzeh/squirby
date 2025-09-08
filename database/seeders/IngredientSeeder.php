@@ -18,7 +18,7 @@ class IngredientSeeder extends Seeder
     {
         $adminUser = User::where('email', 'admin@example.com')->first();
 
-        Ingredient::truncate();
+        
         $csvFile = file(database_path('seeders/csv/ingredients_from_real_world.csv'));
         $header = str_getcsv(array_shift($csvFile));
 
