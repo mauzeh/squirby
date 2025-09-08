@@ -54,6 +54,19 @@
                 font-size: 145%;
                 font-weight: bold;
             }
+            .env-bar {
+                color: white;
+                text-align: center;
+                padding: 5px;
+                font-size: 15px;
+                font-weight: bold;
+            }
+            .env-bar.production, .env-bar.staging {
+                background-color: red;
+            }
+            .env-bar.local {
+                background-color: green;
+            }
             .sub-navbar {
                 background-color: #444; /* Slightly lighter than the main navbar */
                 overflow: hidden;
