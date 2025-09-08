@@ -365,7 +365,7 @@
                 PRODUCTION / STAGING
             </div>
         @else
-            <div style="background-color: green; color: white; text-align: center; padding: 10px; font-size: 20px; font-weight: bold;">
+            <div style="background-color: green; color: white; text-align: center; padding: 5px; font-size: 15px; font-weight: bold;">
                 LOCAL DEV ENVIRONMENT
             </div>
         @endif
