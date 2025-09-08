@@ -91,17 +91,17 @@ class User extends Authenticatable
             }
 
             $gramUnit = Unit::firstOrCreate(
-                ['name' => 'grams', 'abbreviation' => 'g'],
+                ['name' => 'Gram', 'abbreviation' => 'g'],
                 ['conversion_factor' => 1]
             );
 
             $milliliterUnit = Unit::firstOrCreate(
-                ['name' => 'milliliters', 'abbreviation' => 'ml'],
+                ['name' => 'Milliliter', 'abbreviation' => 'ml'],
                 ['conversion_factor' => 1]
             );
 
             $pieceUnit = Unit::firstOrCreate(
-                ['name' => 'pieces', 'abbreviation' => 'pc'],
+                ['name' => 'Piece', 'abbreviation' => 'pc'],
                 ['conversion_factor' => 1]
             );
 
