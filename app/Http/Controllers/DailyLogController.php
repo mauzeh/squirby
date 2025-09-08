@@ -61,6 +61,10 @@ class DailyLogController extends Controller
      */
     public function store(Request $request)
     {
+        $request->merge([
+            'quantity' => str_replace(',', '.', $request->input('quantity')),
+        ]);
+
         $validated = $request->validate([
             'ingredient_id' => 'required|exists:ingredients,id',
             'quantity' => 'required|numeric|min:0.01',
