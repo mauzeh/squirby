@@ -67,6 +67,14 @@
             .env-bar.local {
                 background-color: green;
             }
+            .impersonation-bar {
+                background-color: #ffc107;
+                color: #212529;
+                text-align: center;
+                padding: 5px;
+                font-size: 15px;
+                font-weight: bold;
+            }
             .sub-navbar {
                 background-color: #444; /* Slightly lighter than the main navbar */
                 overflow: hidden;
@@ -371,7 +379,7 @@
     </head>
     <body>
         @if(session()->has('impersonator_id'))
-            <div style="background-color: #ffc107; color: #212529; text-align: center; padding: 5px; font-size: 15px; font-weight: bold;">
+            <div class="impersonation-bar">
                 You are currently impersonating {{ auth()->user()->name }}. <a href="{{ route('users.leave-impersonate') }}" style="color: #000;">Switch Back</a>
             </div>
         @endif
