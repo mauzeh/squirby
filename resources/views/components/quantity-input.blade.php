@@ -1,1 +1,1 @@
-<input type="number" name="{{ $name }}" id="{{ $id }}" step="any" min="0.001" value="{{ $value ?? '' }}" {{ isset($required) && $required ? 'required' : '' }} inputmode="decimal">
+<input type="text" name="{{ $name }}" id="{{ $id }}" value="{{ $value ?? '' }}" {{ isset($required) && $required ? 'required' : '' }} inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*">

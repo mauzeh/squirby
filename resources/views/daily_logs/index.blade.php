@@ -87,7 +87,7 @@
                 </div>
                 <div class="form-row">
                     <label for="portion">Portion:</label>
-                    <input type="number" name="portion" id="portion" step="0.05" min="0.05" value="1.0" required inputmode="decimal">
+                    <input type="text" name="portion" id="portion" value="1.0" required inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*">
                 </div>
                 <div class="form-row">
                     <label for="notes_meal">Notes:</label>
@@ -352,4 +352,27 @@
     <div class="container">
         <x-nutrition-facts-label :totals="$dailyTotals" title="Today's Totals:" class="main-totals" />
     </div>
+
+<script>
+    /**
+     * This script addresses an issue on mobile devices where the numeric keyboard
+     * may only provide a comma for decimal separation, while the input field
+     * expects a period. To ensure a smooth user experience and prevent
+     * validation errors, this script dynamically replaces commas with periods
+     * in the quantity and portion input fields as the user types.
+     */
+    document.addEventListener('DOMContentLoaded', function() {
+        // Select both the quantity input for single entries and the portion input for meals.
+        const quantityInputs = document.querySelectorAll('#quantity, #portion');
+
+        // Add an event listener to each input field.
+        quantityInputs.forEach(function(input) {
+            // When the user types in the input field...
+            input.addEventListener('input', function(e) {
+                // ...replace any comma with a period.
+                e.target.value = e.target.value.replace(',', '.');
+            });
+        });
+    });
+</script>
 @endsection
