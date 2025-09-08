@@ -402,9 +402,9 @@
         @endif
         @auth
         <div class="navbar">
-            <a href="{{ route('daily-logs.index') }}" class="top-level-nav-item {{ Request::routeIs(['daily-logs.*', 'meals.*', 'ingredients.*']) ? 'active' : '' }}"><i class="fas fa-utensils" style="margin-right: 8px;"></i> Food</a>
-            <a href="{{ route('workouts.index') }}" class="top-level-nav-item {{ Request::routeIs(['exercises.*', 'workouts.*']) ? 'active' : '' }}"><i class="fas fa-dumbbell" style="margin-right: 8px;"></i> Lifts</a>
-            <a href="{{ route('measurement-logs.index') }}" class="top-level-nav-item {{ Request::routeIs(['measurement-logs.*', 'measurement-types.*']) ? 'active' : '' }}"><i class="fas fa-heartbeat" style="margin-right: 8px;"></i> Body</a>
+            <a href="{{ route('daily-logs.index') }}" class="top-level-nav-item {{ Request::routeIs(['daily-logs.*', 'meals.*', 'ingredients.*']) ? 'active' : '' }}"><i class="fas fa-utensils"></i> Food</a>
+            <a href="{{ route('workouts.index') }}" class="top-level-nav-item {{ Request::routeIs(['exercises.*', 'workouts.*']) ? 'active' : '' }}"><i class="fas fa-dumbbell"></i> Lifts</a>
+            <a href="{{ route('measurement-logs.index') }}" class="top-level-nav-item {{ Request::routeIs(['measurement-logs.*', 'measurement-types.*']) ? 'active' : '' }}"><i class="fas fa-heartbeat"></i> Body</a>
 
             <div style="margin-left: auto;">
                 @if (Auth::user()->hasRole('Admin'))
