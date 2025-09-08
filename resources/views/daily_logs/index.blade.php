@@ -1,6 +1,24 @@
 @extends('app')
 
 @section('content')
+    <div class="date-navigation">
+        @php
+            $today = \Carbon\Carbon::today();
+        @endphp
+        @for ($i = -3; $i <= 1; $i++)
+            @php
+                $date = $today->copy()->addDays($i);
+                $dateString = $date->toDateString();
+            @endphp
+            <a href="{{ route('daily-logs.index', ['date' => $dateString]) }}" class="date-link {{ $selectedDate->toDateString() == $dateString ? 'active' : '' }}">
+                {{ $date->format('D M d') }}
+            </a>
+        @endfor
+        <div class="form-group" style="margin-left: 20px;">
+            <label for="date_picker">Or Pick a Date:</label>
+            <input type="date" id="date_picker" onchange="window.location.href = '{{ route('daily-logs.index') }}?date=' + this.value;" value="{{ $selectedDate->format('Y-m-d') }}">
+        </div>
+    </div>
     @if (session('success'))
         <div class="container success-message-box">
             {{ session('success') }}
@@ -102,8 +120,6 @@
             </form>
         </div>
     </div>
-
-    
 
     <div class="container">
         <h2>Log Entries for {{ $selectedDate->format('M d, Y') }}</h2>
@@ -292,52 +308,6 @@
                         body: formData,
                         headers: {
                             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                        }
-                    })
-                    .then(response => response.blob())
-                    .then(blob => {
-                        var url = window.URL.createObjectURL(blob);
-                        var a = document.createElement('a');
-                        a.href = url;
-                        a.download = 'daily_log_' + formData.get('start_date') + '_to_' + formData.get('end_date') + '.csv';
-                        document.body.appendChild(a);
-                        a.click();
-                        a.remove();
-                    });
-                });
-            </script>
-        @endif
-    </div>
-
-    <div class="container">
-        <div class="form-container">
-            <h3>TSV Import</h3>
-            <form action="{{ route('daily-logs.import-tsv') }}" method="POST">
-                @csrf
-                <input type="hidden" name="date" value="{{ $selectedDate->format('Y-m-d') }}">
-                <textarea name="tsv_data" rows="10" style="width: 100%; background-color: #3a3a3a; color: #f2f2f2; border: 1px solid #555;"></textarea>
-                <button type="submit" class="button">Import TSV</button>
-            </form>
-        </div>
-    </div>
-
-
-    <div class="container meal-groups-container">
-        @foreach($groupedLogs->sortKeys() as $time => $logs)
-                <div class="meal-group">
-                    @php
-                        $mealTotals = $nutritionService->calculateDailyTotals($logs);
-                    @endphp
-                    <x-nutrition-facts-label :totals="$mealTotals" :title="\Carbon\Carbon::parse($time)->format('H:i')" />
-                </div>
-            @endforeach
-    </div>
-
-    <div class="container">
-        <x-nutrition-facts-label :totals="$dailyTotals" title="Today's Totals:" class="main-totals" />
-    </div>
-@endsection
-bute('content')
                         }
                     })
                     .then(response => response.blob())
