@@ -426,6 +426,7 @@
             @endif
 
             @if (Request::routeIs(['measurement-logs.*', 'measurement-types.*']))
+             <a href="{{ route('measurement-logs.index') }}" class="{{ Request::routeIs('measurement-logs.index') ? 'active' : '' }}">All</a>
                 @foreach ($measurementTypes as $measurementType)
                     <a href="{{ route('measurement-logs.show-by-type', $measurementType) }}" class="{{ Request::is('measurement-logs/type/' . $measurementType->id) ? 'active' : '' }}">{{ $measurementType->name }}</a>
                 @endforeach
