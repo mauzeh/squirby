@@ -12,7 +12,7 @@ use App\Http\Controllers\MealController;
 
 use App\Http\Controllers\ExerciseController;
 use App\Http\Controllers\WorkoutController;
-use App\Http\Controllers\MeasurementLogController;
+use App\Http\Controllers\BodyLogController;
 use App\Http\Controllers\MeasurementTypeController;
 
 // Breeze Routes
@@ -51,10 +51,10 @@ Route::middleware('auth')->group(function () {
 
     Route::post('meals/create-from-logs', [MealController::class, 'createFromLogs'])->name('meals.create-from-logs');
 
-    Route::resource('measurement-logs', MeasurementLogController::class)->except(['show']);
-    Route::post('measurement-logs/destroy-selected', [MeasurementLogController::class, 'destroySelected'])->name('measurement-logs.destroy-selected');
-    Route::post('measurement-logs/import-tsv', [MeasurementLogController::class, 'importTsv'])->name('measurement-logs.import-tsv');
-    Route::get('measurement-logs/type/{measurementType}', [MeasurementLogController::class, 'showByType'])->name('measurement-logs.show-by-type');
+    Route::resource('body-logs', BodyLogController::class)->except(['show']);
+    Route::post('body-logs/destroy-selected', [BodyLogController::class, 'destroySelected'])->name('body-logs.destroy-selected');
+    Route::post('body-logs/import-tsv', [BodyLogController::class, 'importTsv'])->name('body-logs.import-tsv');
+    Route::get('body-logs/type/{measurementType}', [BodyLogController::class, 'showByType'])->name('body-logs.show-by-type');
 
     Route::resource('measurement-types', MeasurementTypeController::class)->except(['show']);
 

@@ -4,7 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use App\Models\MeasurementLog;
+use App\Models\BodyLog;
 use App\Models\MeasurementType;
 use App\Models\User;
 use Carbon\Carbon;
@@ -28,7 +28,7 @@ class MeasurementSeeder extends Seeder
                     'default_unit' => $data[4],
                 ]);
 
-                MeasurementLog::create([
+                BodyLog::create([
                     'user_id' => $adminUser->id,
                     'measurement_type_id' => $measurementType->id,
                     'value' => $data[3],

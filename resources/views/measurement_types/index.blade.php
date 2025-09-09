@@ -22,7 +22,7 @@
                         <td>{{ $measurementType->default_unit }}</td>
                         <td class="actions-column">
                             <div style="display: flex; gap: 5px;">
-                                <a href="{{ route('measurement-logs.show-by-type', $measurementType->id) }}" class="button">View Logs</a>
+                                <a href="{{ route('body-logs.show-by-type', $measurementType->id) }}" class="button">View Logs</a>
                                 <a href="{{ route('measurement-types.edit', $measurementType->id) }}" class="button edit">Edit</a>
                                 <form action="{{ route('measurement-types.destroy', $measurementType->id) }}" method="POST" style="display:inline;">
                                     @csrf

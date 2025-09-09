@@ -165,13 +165,13 @@ class TsvImporterServiceTest extends TestCase
         $this->assertEquals(2, $result['importedCount']);
         $this->assertEmpty($result['invalidRows']);
 
-        $this->assertDatabaseCount('measurement_logs', 2);
-        $this->assertDatabaseHas('measurement_logs', [
+        $this->assertDatabaseCount('body_logs', 2);
+        $this->assertDatabaseHas('body_logs', [
             'user_id' => $this->user->id,
             'value' => 180,
             'comments' => 'Morning weight',
         ]);
-        $this->assertDatabaseHas('measurement_logs', [
+        $this->assertDatabaseHas('body_logs', [
             'user_id' => $this->user->id,
             'value' => 32,
             'comments' => 'Post lunch',
@@ -185,7 +185,7 @@ class TsvImporterServiceTest extends TestCase
 
         $this->assertEquals(0, $result['importedCount']);
         $this->assertEmpty($result['invalidRows']);
-        $this->assertDatabaseCount('measurement_logs', 0);
+        $this->assertDatabaseCount('body_logs', 0);
     }
 
     /** @test */
@@ -197,6 +197,6 @@ class TsvImporterServiceTest extends TestCase
 
         $this->assertEquals(0, $result['importedCount']);
         $this->assertEquals(['invalid row'], $result['invalidRows']);
-        $this->assertDatabaseCount('measurement_logs', 0);
+        $this->assertDatabaseCount('body_logs', 0);
     }
 }

@@ -5,7 +5,7 @@ namespace App\Services;
 use App\Models\Workout;
 use App\Models\WorkoutSet;
 use App\Models\User;
-use App\Models\MeasurementLog;
+use App\Models\BodyLog;
 use Carbon\Carbon;
 
 class OneRepMaxCalculatorService
@@ -24,7 +24,7 @@ class OneRepMaxCalculatorService
     {
         $bodyweight = 0;
         if ($isBodyweightExercise && $userId && $date) {
-            $bodyweightMeasurement = MeasurementLog::where('user_id', $userId)
+            $bodyweightMeasurement = BodyLog::where('user_id', $userId)
                 ->whereHas('measurementType', function ($query) {
                     $query->where('name', 'Bodyweight');
                 })

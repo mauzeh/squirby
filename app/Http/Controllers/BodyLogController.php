@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\MeasurementLog;
+use App\Models\BodyLog;
 use App\Models\MeasurementType;
 use App\Services\TsvImporterService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 
-class MeasurementLogController extends Controller
+class BodyLogController extends Controller
 {
     protected $tsvImporterService;
 
@@ -19,24 +19,24 @@ class MeasurementLogController extends Controller
 
     public function index()
     {
-        $measurementLogs = MeasurementLog::with('measurementType')->where('user_id', auth()->id())->orderBy('logged_at', 'desc')->get();
+        $bodyLogs = BodyLog::with('measurementType')->where('user_id', auth()->id())->orderBy('logged_at', 'desc')->get();
         $tsv = '';
-        foreach ($measurementLogs->reverse() as $measurementLog) {
-            $tsv .= $measurementLog->logged_at->format('m/d/Y') . "\t";
-            $tsv .= $measurementLog->logged_at->format('H:i') . "\t";
-            $tsv .= $measurementLog->measurementType->name . "\t";
-            $tsv .= $measurementLog->value . "\t";
-            $tsv .= $measurementLog->measurementType->default_unit . "\t";
-            $tsv .= $measurementLog->comments . "\n";
+        foreach ($bodyLogs->reverse() as $bodyLog) {
+            $tsv .= $bodyLog->logged_at->format('m/d/Y') . "\t";
+            $tsv .= $bodyLog->logged_at->format('H:i') . "\t";
+            $tsv .= $bodyLog->measurementType->name . "\t";
+            $tsv .= $bodyLog->value . "\t";
+            $tsv .= $bodyLog->measurementType->default_unit . "\t";
+            $tsv .= $bodyLog->comments . "\n";
         }
-        return view('measurement-logs.index', compact('measurementLogs', 'tsv'));
+        return view('body-logs.index', compact('bodyLogs', 'tsv'));
     }
 
     public function create(Request $request)
     {
         $measurementTypes = MeasurementType::where('user_id', auth()->id())->get();
         $selectedMeasurementTypeId = $request->query('measurement_type_id');
-        return view('measurement-logs.create', compact('measurementTypes', 'selectedMeasurementTypeId'));
+        return view('body-logs.create', compact('measurementTypes', 'selectedMeasurementTypeId'));
     }
 
     public function store(Request $request)
@@ -51,7 +51,7 @@ class MeasurementLogController extends Controller
 
         $loggedAt = \Carbon\Carbon::parse($request->date)->setTimeFromTimeString($request->logged_at);
 
-        MeasurementLog::create([
+        BodyLog::create([
             'measurement_type_id' => $request->measurement_type_id,
             'value' => $request->value,
             'logged_at' => $loggedAt,
@@ -59,21 +59,21 @@ class MeasurementLogController extends Controller
             'user_id' => auth()->id(),
         ]);
 
-        return redirect()->route('measurement-logs.index')->with('success', 'Measurement log created successfully.');
+        return redirect()->route('body-logs.index')->with('success', 'Body log created successfully.');
     }
 
-    public function edit(MeasurementLog $measurementLog)
+    public function edit(BodyLog $bodyLog)
     {
-        if ($measurementLog->user_id !== auth()->id()) {
+        if ($bodyLog->user_id !== auth()->id()) {
             abort(403, 'Unauthorized action.');
         }
         $measurementTypes = MeasurementType::where('user_id', auth()->id())->get();
-        return view('measurement-logs.edit', compact('measurementLog', 'measurementTypes'));
+        return view('body-logs.edit', compact('bodyLog', 'measurementTypes'));
     }
 
-    public function update(Request $request, MeasurementLog $measurementLog)
+    public function update(Request $request, BodyLog $bodyLog)
     {
-        if ($measurementLog->user_id !== auth()->id()) {
+        if ($bodyLog->user_id !== auth()->id()) {
             abort(403, 'Unauthorized action.');
         }
         $request->validate([
@@ -86,44 +86,44 @@ class MeasurementLogController extends Controller
 
         $loggedAt = \Carbon\Carbon::parse($request->date)->setTimeFromTimeString($request->logged_at);
 
-        $measurementLog->update([
+        $bodyLog->update([
             'measurement_type_id' => $request->measurement_type_id,
             'value' => $request->value,
             'logged_at' => $loggedAt,
             'comments' => $request->comments,
         ]);
 
-        return redirect()->route('measurement-logs.index')->with('success', 'Measurement log updated successfully.');
+        return redirect()->route('body-logs.index')->with('success', 'Body log updated successfully.');
     }
 
-    public function destroy(MeasurementLog $measurementLog)
+    public function destroy(BodyLog $bodyLog)
     {
-        if ($measurementLog->user_id !== auth()->id()) {
+        if ($bodyLog->user_id !== auth()->id()) {
             abort(403, 'Unauthorized action.');
         }
-        $measurementLog->delete();
+        $bodyLog->delete();
 
-        return redirect()->route('measurement-logs.index')->with('success', 'Measurement log deleted successfully.');
+        return redirect()->route('body-logs.index')->with('success', 'Body log deleted successfully.');
     }
 
     public function destroySelected(Request $request)
     {
         $validated = $request->validate([
-            'measurement_log_ids' => 'required|array',
-            'measurement_log_ids.*' => 'exists:measurement_logs,id',
+            'body_log_ids' => 'required|array',
+            'body_log_ids.*' => 'exists:body_logs,id',
         ]);
 
-        $measurementLogs = MeasurementLog::whereIn('id', $validated['measurement_log_ids'])->get();
+        $bodyLogs = BodyLog::whereIn('id', $validated['body_log_ids'])->get();
 
-        foreach ($measurementLogs as $measurementLog) {
-            if ($measurementLog->user_id !== auth()->id()) {
+        foreach ($bodyLogs as $bodyLog) {
+            if ($bodyLog->user_id !== auth()->id()) {
                 abort(403, 'Unauthorized action.');
             }
         }
 
-        MeasurementLog::destroy($validated['measurement_log_ids']);
+        BodyLog::destroy($validated['body_log_ids']);
 
-        return redirect()->route('measurement-logs.index')->with('success', 'Selected measurement logs deleted successfully!');
+        return redirect()->route('body-logs.index')->with('success', 'Selected body logs deleted successfully!');
     }
 
     public function importTsv(Request $request)
@@ -135,7 +135,7 @@ class MeasurementLogController extends Controller
         $tsvData = trim($validated['tsv_data']);
         if (empty($tsvData)) {
             return redirect()
-                ->route('measurement-logs.index')
+                ->route('body-logs.index')
                 ->with('error', 'TSV data cannot be empty.');
         }
 
@@ -143,18 +143,18 @@ class MeasurementLogController extends Controller
 
         if ($result['importedCount'] === 0) {
             return redirect()
-                ->route('measurement-logs.index')
+                ->route('body-logs.index')
                 ->with('error', 'No measurements were imported.');
         }
 
         return redirect()
-            ->route('measurement-logs.index')
+            ->route('body-logs.index')
             ->with('success', 'TSV data imported successfully!');
     }
 
     public function showByType(MeasurementType $measurementType)
     {
-        $measurementLogs = MeasurementLog::where('measurement_type_id', $measurementType->id)->where('user_id', auth()->id())->orderBy('logged_at', 'desc')->get();
+        $bodyLogs = BodyLog::where('measurement_type_id', $measurementType->id)->where('user_id', auth()->id())->orderBy('logged_at', 'desc')->get();
 
         $chartData = [
             'labels' => [],
@@ -169,12 +169,12 @@ class MeasurementLogController extends Controller
             ],
         ];
 
-        if ($measurementLogs->isNotEmpty()) {
-            $earliestDate = $measurementLogs->last()->logged_at->startOfDay();
-            $latestDate = $measurementLogs->first()->logged_at->endOfDay();
+        if ($bodyLogs->isNotEmpty()) {
+            $earliestDate = $bodyLogs->last()->logged_at->startOfDay();
+            $latestDate = $bodyLogs->first()->logged_at->endOfDay();
 
             $currentDate = $earliestDate->copy();
-            $dataMap = $measurementLogs->keyBy(function ($item) {
+            $dataMap = $bodyLogs->keyBy(function ($item) {
                 return $item->logged_at->format('Y-m-d');
             });
 
@@ -186,6 +186,6 @@ class MeasurementLogController extends Controller
             }
         }
 
-        return view('measurement-logs.show-by-type', compact('measurementLogs', 'chartData', 'measurementType'));
+        return view('body-logs.show-by-type', compact('bodyLogs', 'chartData', 'measurementType'));
     }
 }

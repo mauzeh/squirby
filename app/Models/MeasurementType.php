@@ -20,4 +20,9 @@ class MeasurementType extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function bodyLogs()
+    {
+        return $this->hasMany(BodyLog::class);
+    }
 }

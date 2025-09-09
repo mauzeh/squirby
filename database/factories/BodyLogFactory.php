@@ -8,9 +8,9 @@ use App\Models\MeasurementType;
 use Carbon\Carbon;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\MeasurementLog>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\BodyLog>
  */
-class MeasurementLogFactory extends Factory
+class BodyLogFactory extends Factory
 {
     /**
      * Define the model's default state.

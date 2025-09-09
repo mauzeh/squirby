@@ -9,7 +9,7 @@ use App\Models\WorkoutSet;
 use App\Models\Exercise;
 use App\Models\User;
 use App\Models\MeasurementType;
-use App\Models\MeasurementLog;
+use App\Models\BodyLog;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -32,7 +32,7 @@ class OneRepMaxCalculatorServiceTest extends TestCase
         );
 
         // Log a bodyweight for the user
-        MeasurementLog::create([
+        BodyLog::create([
             'user_id' => $this->user->id,
             'measurement_type_id' => $this->bodyweightType->id,
             'value' => 180, // Example bodyweight in lbs

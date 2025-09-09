@@ -2,16 +2,16 @@
 
 @section('content')
     <div class="container">
-        <h1>Measurement Logs</h1>
-        <a href="{{ route('measurement-logs.create') }}" class="button">Add Measurement Log</a>
+        <h1>Body Logs</h1>
+        <a href="{{ route('body-logs.create') }}" class="button">Add Body Log</a>
         <a href="{{ route('measurement-types.index') }}" class="button">Manage Measurement Types</a>
-        @if ($measurementLogs->isEmpty())
-            <p>No measurement logs found. Add one to get started!</p>
+        @if ($bodyLogs->isEmpty())
+            <p>No body logs found. Add one to get started!</p>
         @else
             <table class="log-entries-table">
             <thead>
                 <tr>
-                    <th><input type="checkbox" id="select-all-measurements"></th>
+                    <th><input type="checkbox" id="select-all-body-logs"></th>
                     <th>Type</th>
                     <th>Value</th>
                     <th>Date</th>
@@ -20,26 +20,26 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach ($measurementLogs as $measurementLog)
+                @foreach ($bodyLogs as $bodyLog)
                     <tr>
-                        <td><input type="checkbox" name="measurement_log_ids[]" value="{{ $measurementLog->id }}" class="measurement-checkbox"></td>
+                        <td><input type="checkbox" name="body_log_ids[]" value="{{ $bodyLog->id }}" class="body-checkbox"></td>
                         <td>
-                            @if ($measurementLog->measurementType)
-                                <a href="{{ route('measurement-logs.show-by-type', ['measurementType' => $measurementLog->measurementType->id]) }}">{{ $measurementLog->measurementType->name }}</a>
+                            @if ($bodyLog->measurementType)
+                                <a href="{{ route('body-logs.show-by-type', ['measurementType' => $bodyLog->measurementType->id]) }}">{{ $bodyLog->measurementType->name }}</a>
                             @else
                                 N/A
                             @endif
                         </td>
-                        <td>{{ $measurementLog->value }} {{ $measurementLog->measurementType ? $measurementLog->measurementType->default_unit : '' }}</td>
-                        <td>{{ $measurementLog->logged_at->format('m/d/Y H:i') }}</td>
-                        <td class="hide-on-mobile" style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ $measurementLog->comments }}">{{ $measurementLog->comments }}</td>
+                        <td>{{ $bodyLog->value }} {{ $bodyLog->measurementType ? $bodyLog->measurementType->default_unit : '' }}</td>
+                        <td>{{ $bodyLog->logged_at->format('m/d/Y H:i') }}</td>
+                        <td class="hide-on-mobile" style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ $bodyLog->comments }}">{{ $bodyLog->comments }}</td>
                         <td class="actions-column">
                             <div style="display: flex; gap: 5px;">
-                                <a href="{{ route('measurement-logs.edit', $measurementLog->id) }}" class="button edit">Edit</a>
-                                <form action="{{ route('measurement-logs.destroy', $measurementLog->id) }}" method="POST" style="display:inline;">
+                                <a href="{{ route('body-logs.edit', $bodyLog->id) }}" class="button edit">Edit</a>
+                                <form action="{{ route('body-logs.destroy', $bodyLog->id) }}" method="POST" style="display:inline;">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="button delete" onclick="return confirm('Are you sure you want to delete this measurement log?');">Delete</button>
+                                    <button type="submit" class="button delete" onclick="return confirm('Are you sure you want to delete this body log?');">Delete</button>
                                 </form>
                             </div>
                         </td>
@@ -49,7 +49,7 @@
             <tfoot>
                 <tr>
                     <th colspan="6" style="text-align:left; font-weight:normal;">
-                        <form action="{{ route('measurement-logs.destroy-selected') }}" method="POST" id="delete-selected-form" onsubmit="return confirm('Are you sure you want to delete the selected measurement logs?');" style="display:inline;">
+                        <form action="{{ route('body-logs.destroy-selected') }}" method="POST" id="delete-selected-form" onsubmit="return confirm('Are you sure you want to delete the selected body logs?');" style="display:inline;">
                             @csrf
                             <button type="submit" class="button delete">Delete Selected</button>
                         </form>
@@ -59,7 +59,7 @@
         </table>
         @endif
 
-        @if (!$measurementLogs->isEmpty())
+        @if (!$bodyLogs->isEmpty())
         <div class="form-container">
             <h3>TSV Export</h3>
             <textarea id="tsv-output" rows="10" style="width: 100%; background-color: #3a3a3a; color: #f2f2f2; border: 1px solid #555;">{{ $tsv }}</textarea>
@@ -69,7 +69,7 @@
 
         <div class="form-container">
             <h3>TSV Import</h3>
-            <form action="{{ route('measurement-logs.import-tsv') }}" method="POST">
+            <form action="{{ route('body-logs.import-tsv') }}" method="POST">
                 @csrf
                 <textarea name="tsv_data" rows="10" style="width: 100%; background-color: #3a3a3a; color: #f2f2f2; border: 1px solid #555;"></textarea>
                 <button type="submit" class="button">Import TSV</button>
@@ -78,8 +78,8 @@
     </div>
 
     <script>
-        document.getElementById('select-all-measurements').addEventListener('change', function(e) {
-            document.querySelectorAll('.measurement-checkbox').forEach(function(checkbox) {
+        document.getElementById('select-all-body-logs').addEventListener('change', function(e) {
+            document.querySelectorAll('.body-checkbox').forEach(function(checkbox) {
                 checkbox.checked = e.target.checked;
             });
         });
@@ -88,17 +88,17 @@
             e.preventDefault();
             
             var form = e.target;
-            var checkedLogs = document.querySelectorAll('.measurement-checkbox:checked');
+            var checkedLogs = document.querySelectorAll('.body-checkbox:checked');
 
             if (checkedLogs.length === 0) {
-                alert('Please select at least one measurement to delete.');
+                alert('Please select at least one body log to delete.');
                 return;
             }
 
             checkedLogs.forEach(function(checkbox) {
                 var input = document.createElement('input');
                 input.type = 'hidden';
-                input.name = 'measurement_log_ids[]';
+                input.name = 'body_log_ids[]';
                 input.value = checkbox.value;
                 form.appendChild(input);
             });

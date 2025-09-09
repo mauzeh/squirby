@@ -5,11 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class MeasurementLog extends Model
+class BodyLog extends Model
 {
     use HasFactory;
 
-    protected $table = 'measurement_logs';
+    protected $table = 'body_logs';
 
     protected $fillable = [
         'measurement_type_id',

@@ -233,4 +233,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(FoodLog::class);
     }
+
+    public function bodyLogs()
+    {
+        return $this->hasMany(BodyLog::class);
+    }
 }

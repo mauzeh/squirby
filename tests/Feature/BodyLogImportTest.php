@@ -7,7 +7,7 @@ use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 use App\Models\User;
 
-class MeasurementLogImportTest extends TestCase
+class BodyLogImportTest extends TestCase
 {
     use RefreshDatabase;
 
@@ -21,25 +21,25 @@ class MeasurementLogImportTest extends TestCase
     }
 
     /** @test */
-    public function authenticated_user_can_import_measurement_logs()
+    public function authenticated_user_can_import_body_logs()
     {
         $tsvData = "09/07/2025\t10:00\tBodyweight\t180\tlbs\tMorning weight\n" .
                  "09/07/2025\t12:00\tWaist\t32\tin\tPost lunch";
 
-        $response = $this->post(route('measurement-logs.import-tsv'), [
+        $response = $this->post(route('body-logs.import-tsv'), [
             'tsv_data' => $tsvData,
         ]);
 
-        $response->assertRedirect(route('measurement-logs.index'));
+        $response->assertRedirect(route('body-logs.index'));
         $response->assertSessionHas('success', 'TSV data imported successfully!');
 
-        $this->assertDatabaseCount('measurement_logs', 2);
-        $this->assertDatabaseHas('measurement_logs', [
+        $this->assertDatabaseCount('body_logs', 2);
+        $this->assertDatabaseHas('body_logs', [
             'user_id' => $this->user->id,
             'value' => 180,
             'comments' => 'Morning weight',
         ]);
-        $this->assertDatabaseHas('measurement_logs', [
+        $this->assertDatabaseHas('body_logs', [
             'user_id' => $this->user->id,
             'value' => 32,
             'comments' => 'Post lunch',
@@ -49,11 +49,11 @@ class MeasurementLogImportTest extends TestCase
     /** @test */
     public function it_returns_error_for_empty_tsv_data()
     {
-        $response = $this->post(route('measurement-logs.import-tsv'), [
+        $response = $this->post(route('body-logs.import-tsv'), [
             'tsv_data' => '',
         ]);
 
-        $response->assertRedirect(route('measurement-logs.index'));
+        $response->assertRedirect(route('body-logs.index'));
         $response->assertSessionHas('error', 'TSV data cannot be empty.');
     }
 }

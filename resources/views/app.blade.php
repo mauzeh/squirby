@@ -35,7 +35,7 @@
         <div class="navbar">
             <a href="{{ route('food-logs.index') }}" class="top-level-nav-item {{ Request::routeIs(['food-logs.*', 'meals.*', 'ingredients.*']) ? 'active' : '' }}"><i class="fas fa-utensils"></i> Food</a>
             <a href="{{ route('workouts.index') }}" class="top-level-nav-item {{ Request::routeIs(['exercises.*', 'workouts.*']) ? 'active' : '' }}"><i class="fas fa-dumbbell"></i> Lifts</a>
-            <a href="{{ route('measurement-logs.index') }}" class="top-level-nav-item {{ Request::routeIs(['measurement-logs.*', 'measurement-types.*']) ? 'active' : '' }}"><i class="fas fa-heartbeat"></i> Body</a>
+            <a href="{{ route('body-logs.index') }}" class="top-level-nav-item {{ Request::routeIs(['body-logs.*', 'measurement-types.*']) ? 'active' : '' }}"><i class="fas fa-heartbeat"></i> Body</a>
 
             <div style="margin-left: auto;">
                 @if (Auth::user()->hasRole('Admin'))
@@ -51,7 +51,7 @@
             </div>
         </div>
 
-        @if (Request::routeIs(['food-logs.*', 'meals.*', 'ingredients.*', 'exercises.*', 'workouts.*', 'measurement-logs.*', 'measurement-types.*']))
+        @if (Request::routeIs(['food-logs.*', 'meals.*', 'ingredients.*', 'exercises.*', 'workouts.*', 'body-logs.*', 'measurement-types.*']))
         <div class="navbar sub-navbar">
             @if (Request::routeIs(['food-logs.*', 'meals.*', 'ingredients.*']))
                 <a href="{{ route('food-logs.index') }}" class="{{ Request::routeIs('food-logs.*') ? 'active' : '' }}">Food Log Entry</a>
@@ -64,10 +64,10 @@
                 <a href="{{ route('exercises.index') }}" class="{{ Request::routeIs('exercises.*') ? 'active' : '' }}">Exercises</a>
             @endif
 
-            @if (Request::routeIs(['measurement-logs.*', 'measurement-types.*']))
-             <a href="{{ route('measurement-logs.index') }}" class="{{ Request::routeIs('measurement-logs.index') ? 'active' : '' }}">All</a>
+            @if (Request::routeIs(['body-logs.*', 'measurement-types.*']))
+             <a href="{{ route('body-logs.index') }}" class="{{ Request::routeIs('body-logs.index') ? 'active' : '' }}">All</a>
                 @foreach ($measurementTypes as $measurementType)
-                    <a href="{{ route('measurement-logs.show-by-type', $measurementType) }}" class="{{ Request::is('measurement-logs/type/' . $measurementType->id) ? 'active' : '' }}">{{ $measurementType->name }}</a>
+                    <a href="{{ route('body-logs.show-by-type', $measurementType) }}" class="{{ Request::is('body-logs/type/' . $measurementType->id) ? 'active' : '' }}">{{ $measurementType->name }}</a>
                 @endforeach
             @endif
         </div>

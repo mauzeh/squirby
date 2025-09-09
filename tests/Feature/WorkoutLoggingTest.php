@@ -354,7 +354,7 @@ class WorkoutLoggingTest extends TestCase
             'name' => 'Bodyweight',
         ]);
 
-        \App\Models\MeasurementLog::factory()->create([
+        \App\Models\BodyLog::factory()->create([
             'user_id' => $this->user->id,
             'measurement_type_id' => $bodyweightMeasurementType->id,
             'value' => 180,

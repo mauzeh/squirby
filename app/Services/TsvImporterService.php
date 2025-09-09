@@ -4,7 +4,7 @@ namespace App\Services;
 
 use App\Models\FoodLog;
 use App\Models\Ingredient;
-use App\Models\MeasurementLog;
+use App\Models\BodyLog;
 use Carbon\Carbon;
 use Carbon\Exceptions\InvalidFormatException;
 
@@ -166,7 +166,7 @@ class TsvImporterService
                 continue;
             }
 
-            \App\Models\MeasurementLog::create([
+            BodyLog::create([
                 'user_id' => $userId,
                 'measurement_type_id' => $measurementType->id,
                 'value' => $columns[3],
