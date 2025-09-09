@@ -238,4 +238,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(BodyLog::class);
     }
+
+    public function liftLogs()
+    {
+        return $this->hasMany(LiftLog::class);
+    }
 }

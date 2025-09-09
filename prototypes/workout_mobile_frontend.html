@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Workout Logger</title>
+    <title>Lift Log Logger</title>
     
     <!-- Tailwind CSS via CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -69,7 +69,7 @@
         <!-- Header Section -->
         <header class="text-center mb-8 flex-shrink-0">
             <h1 class="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary mb-2">
-                Workout Logger
+                Lift Log Logger
             </h1>
             <p class="text-gray-400">Track your progress, one rep at a time.</p>
         </header>
@@ -81,7 +81,7 @@
             <section class="bg-dark-card p-6 rounded-lg shadow-lg flex flex-col">
                 <h2 class="text-2xl font-semibold mb-6 border-l-4 border-primary pl-4">Log a New Exercise</h2>
                 
-                <form id="workout-form" class="space-y-4 flex flex-col flex-grow">
+                <form id="lift-log-form" class="space-y-4 flex flex-col flex-grow">
                     <!-- Exercise Name Input -->
                     <div>
                         <label for="exercise-name" class="block text-sm font-medium text-gray-300 mb-1">Exercise Name</label>
@@ -100,19 +100,19 @@
                             + Add Set
                         </button>
                         <!-- Submit Button -->
-                        <button type="submit" id="log-workout-btn" class="w-full bg-primary hover:bg-primary/80 text-white font-bold py-4 px-4 rounded-md transition duration-300 shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-dark-card focus:ring-primary text-lg">
+                        <button type="submit" id="log-lift-log-btn" class="w-full bg-primary hover:bg-primary/80 text-white font-bold py-4 px-4 rounded-md transition duration-300 shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-dark-card focus:ring-primary text-lg">
                             Log Exercise
                         </button>
                     </div>
                 </form>
             </section>
 
-            <!-- Right Column: Recent Workouts -->
+            <!-- Right Column: Recent Lift Logs -->
             <section class="bg-dark-card p-6 rounded-lg shadow-lg flex flex-col min-h-0">
                 <h2 class="text-2xl font-semibold mb-6 border-l-4 border-secondary pl-4 flex-shrink-0">Logged Exercises</h2>
-                <div id="workouts-list" class="space-y-3 overflow-y-auto pr-2 flex-grow">
+                <div id="lift-logs-list" class="space-y-3 overflow-y-auto pr-2 flex-grow">
                     <!-- Initial placeholder message -->
-                    <p id="workouts-placeholder" class="text-gray-400 text-center pt-8">Log your first exercise to see it here!</p>
+                    <p id="lift-logs-placeholder" class="text-gray-400 text-center pt-8">Log your first exercise to see it here!</p>
                 </div>
             </section>
         </main>
@@ -128,13 +128,13 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             // --- DOM Element References ---
-            const workoutForm = document.getElementById('workout-form');
+            const liftLogForm = document.getElementById('lift-log-form');
             const exerciseNameInput = document.getElementById('exercise-name');
             const exerciseDataList = document.getElementById('exercise-list');
             const setsContainer = document.getElementById('sets-container');
             const addSetBtn = document.getElementById('add-set-btn');
-            const workoutsList = document.getElementById('workouts-list');
-            const placeholder = document.getElementById('workouts-placeholder');
+            const liftLogsList = document.getElementById('lift-logs-list');
+            const placeholder = document.getElementById('lift-logs-placeholder');
             
             let setCounter = 0;
             // A list of common exercises to start with. This list will grow as the user types new exercises.
@@ -250,7 +250,7 @@
             });
             
             // Event listener for form submission
-            workoutForm.addEventListener('submit', (e) => {
+            liftLogForm.addEventListener('submit', (e) => {
                 e.preventDefault();
                 
                 const setRows = setsContainer.querySelectorAll('.set-row');
@@ -290,8 +290,8 @@
 
             // --- DISPLAY LOGIC ---
             function addExerciseToList(exercise) {
-                 if (document.getElementById('workouts-placeholder')) {
-                    document.getElementById('workouts-placeholder').remove();
+                 if (document.getElementById('lift-logs-placeholder')) {
+                    document.getElementById('lift-logs-placeholder').remove();
                 }
 
                 const exerciseEl = document.createElement('div');
@@ -324,7 +324,7 @@
                     </div>
                 `;
                 
-                workoutsList.prepend(exerciseEl);
+                liftLogsList.prepend(exerciseEl);
 
                 // Add collapse/expand logic
                 const header = exerciseEl.querySelector('.exercise-header');

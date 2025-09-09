@@ -14,19 +14,19 @@
     <div class="container">
         <div style="display: flex; justify-content: space-between; align-items: center;">
             <h1>{{ $exercise->title }}</h1>
-            <a href="{{ route('workouts.index', ['exercise_id' => $exercise->id]) }}" class="button">Add Workout</a>
+            <a href="{{ route('lift-logs.index', ['exercise_id' => $exercise->id]) }}" class="button">Add Lift Log</a>
         </div>
         
 
-        @if ($workouts->isEmpty())
-            <p>No workouts found for this exercise.</p>
+        @if ($liftLogs->isEmpty())
+            <p>No lift logs found for this exercise.</p>
         @else
         <div class="form-container">
             <h3>1RM Progress</h3>
             <canvas id="oneRepMaxChart"></canvas>
         </div>
 
-        <x-workouts-table :workouts="$workouts" />
+        <x-lift-logs-table :liftLogs="$liftLogs" />
 
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>

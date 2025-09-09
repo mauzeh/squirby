@@ -8,12 +8,12 @@ This plan details the steps to integrate "Chin-Ups" as a default bodyweight exer
     *   Add a new field to differentiate between bodyweight and weighted exercises (e.g., `is_bodyweight` boolean). This will be crucial for 1RM calculations.
     *   Update the `ExerciseFactory` (`database/factories/ExerciseFactory.php`) to support this new field.
 
-*   **Workout Model (`app/Models/Workout.php`):**
+*   **LiftLog Model (`app/Models/LiftLog.php`):**
     *   Review existing fields to see if they implicitly assume weighted exercises (e.g., `weight`, `reps`).
     *   Consider how bodyweight exercises will be logged. For bodyweight, `weight` might be null or 0, and `reps` would still apply.
 
-*   **WorkoutSet Model (`app/Models/WorkoutSet.php`):**
-    *   Similar to `Workout` model, ensure it can handle bodyweight exercises.
+*   **LiftSet Model (`app/Models/LiftSet.php`):**
+    *   Similar to `LiftLog` model, ensure it can handle bodyweight exercises.
 
 **Phase 2: Default Data Provisioning**
 
@@ -25,18 +25,18 @@ This plan details the steps to integrate "Chin-Ups" as a default bodyweight exer
 *   **OneRepMaxCalculatorService (`app/Services/OneRepMaxCalculatorService.php`):**
     *   Modify the 1RM calculation logic to handle bodyweight exercises.
         *   For bodyweight exercises, 1RM is typically calculated differently (e.g., using bodyweight as part of the "load" or using a different formula).
-        *   If `is_bodyweight` is true, the `weight` field from `WorkoutSet` should be interpreted differently or ignored, and bodyweight should be factored in. This implies needing access to the user's current bodyweight.
-        *   **Consideration:** How will the service get the user's bodyweight at the time of the workout? This might require linking `Workout` or `WorkoutSet` to `MeasurementLog` or having a `user_bodyweight` field in `Workout` or `WorkoutSet` (which would be a new field). For simplicity, initially, I might assume a default bodyweight or require the user to input it for 1RM calculations for bodyweight exercises. A more robust solution would involve fetching the most recent bodyweight measurement for the user at or before the workout date.
+        *   If `is_bodyweight` is true, the `weight` field from `LiftSet` should be interpreted differently or ignored, and bodyweight should be factored in. This implies needing access to the user's current bodyweight.
+        *   **Consideration:** How will the service get the user's bodyweight at the time of the lift log? This might require linking `LiftLog` or `LiftSet` to `MeasurementLog` or having a `user_bodyweight` field in `LiftLog` or `LiftSet` (which would be a new field). For simplicity, initially, I might assume a default bodyweight or require the user to input it for 1RM calculations for bodyweight exercises. A more robust solution would involve fetching the most recent bodyweight measurement for the user at or before the lift log date.
 
 **Phase 4: UI/UX Presentation**
 
-*   **Workout Logging Forms (`resources/views/workouts/create.blade.php`, `resources/views/workouts/edit.blade.php`):**
+*   **Lift Log Logging Forms (`resources/views/lift-logs/create.blade.php`, `resources/views/lift-logs/edit.blade.php`):**
     *   Adjust the forms to allow logging of bodyweight exercises. This might involve:
         *   Disabling or hiding the weight input field if a bodyweight exercise is selected.
         *   Potentially adding a field for "added weight" if the user adds weight to a bodyweight exercise (e.g., weighted chin-ups).
 
 *   **1RM Presentation (Views/Graphs):**
-    *   Identify views that display 1RM values (e.g., `resources/views/exercises/show.blade.php`, `resources/views/workouts/show.blade.php`, or any dedicated 1RM reports).
+    *   Identify views that display 1RM values (e.g., `resources/views/exercises/show.blade.php`, `resources/views/lift-logs/show.blade.php`, or any dedicated 1RM reports).
     *   Adjust how 1RM is displayed for bodyweight exercises. It might be presented as "Bodyweight + Added Weight" or simply "Reps at Bodyweight."
     *   Graphs might need to differentiate between bodyweight and weighted exercises, or use different scales/labels.
 
@@ -86,18 +86,18 @@ This plan details the steps to integrate "Chin-Ups" as a default bodyweight exer
 
 **Step 3: Adjust OneRepMaxCalculatorService**
 *   Edit `app/Services/OneRepMaxCalculatorService.php`:
-    *   Modify `calculateOneRepMaxForSet` and `calculateWorkoutOneRepMax` methods.
+    *   Modify `calculateOneRepMaxForSet` and `calculateLiftLogOneRepMax` methods.
     *   **Initial approach (simplistic):** For bodyweight exercises, if `is_bodyweight` is true, assume `weight` is 0 and the user's bodyweight is the load. This requires fetching the user's bodyweight.
-    *   **More robust approach:** Add a `bodyweight` parameter to the 1RM calculation methods, or fetch the user's bodyweight from `MeasurementLog` for the workout date. For now, let's assume we'll need to fetch it. This might require passing the `user_id` to the service or fetching the user's bodyweight within the service.
+    *   **More robust approach:** Add a `bodyweight` parameter to the 1RM calculation methods, or fetch the user's bodyweight from `MeasurementLog` for the lift log date. For now, let's assume we'll need to fetch it. This might require passing the `user_id` to the service or fetching the user's bodyweight within the service.
 
 **Step 4: Update UI/UX**
-*   **Workout Logging Forms (`resources/views/workouts/create.blade.php`, `resources/views/workouts/edit.blade.php`):**
+*   **Lift Log Logging Forms (`resources/views/lift-logs/create.blade.php`, `resources/views/lift-logs/edit.blade.php`):**
     *   Adjust the forms to allow logging of bodyweight exercises. This might involve:
         *   Disabling or hiding the weight input field if a bodyweight exercise is selected.
         *   Potentially adding a field for "added weight" if the user adds weight to a bodyweight exercise (e.g., weighted chin-ups).
 
 *   **1RM Presentation (Views/Graphs):**
-    *   Identify views that display 1RM values (e.g., `resources/views/exercises/show.blade.php`, `resources/views/workouts/show.blade.php`, or any dedicated 1RM reports).
+    *   Identify views that display 1RM values (e.g., `resources/views/exercises/show.blade.php`, `resources/views/lift-logs/show.blade.php`, or any dedicated 1RM reports).
     *   Adjust how 1RM is displayed for bodyweight exercises. It might be presented as "Bodyweight + Added Weight" or simply "Reps at Bodyweight."
     *   Graphs might need to differentiate between bodyweight and weighted exercises, or use different scales/labels.
 

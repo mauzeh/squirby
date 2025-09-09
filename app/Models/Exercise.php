@@ -16,9 +16,9 @@ class Exercise extends Model
         'user_id',
     ];
 
-    public function workouts()
+    public function liftLogs()
     {
-        return $this->hasMany(Workout::class);
+        return $this->hasMany(LiftLog::class);
     }
 
     public function user()

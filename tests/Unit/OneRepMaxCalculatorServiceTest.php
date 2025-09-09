@@ -4,8 +4,8 @@ namespace Tests\Unit;
 
 use Tests\TestCase;
 use App\Services\OneRepMaxCalculatorService;
-use App\Models\Workout;
-use App\Models\WorkoutSet;
+use App\Models\LiftLog;
+use App\Models\LiftSet;
 use App\Models\Exercise;
 use App\Models\User;
 use App\Models\MeasurementType;
@@ -60,10 +60,10 @@ class OneRepMaxCalculatorServiceTest extends TestCase
     }
 
     /** @test */
-    public function it_calculates_workout_one_rep_max_for_uniform_sets_correctly()
+    public function it_calculates_lift_log_one_rep_max_for_uniform_sets_correctly()
     {
-        $workout = Workout::factory()->create();
-        $workout->workoutSets()->createMany([
+        $liftLog = LiftLog::factory()->create();
+        $liftLog->liftSets()->createMany([
             ['weight' => 100, 'reps' => 5, 'notes' => 'Set 1'],
             ['weight' => 100, 'reps' => 5, 'notes' => 'Set 2'],
             ['weight' => 100, 'reps' => 5, 'notes' => 'Set 3'],
@@ -71,14 +71,14 @@ class OneRepMaxCalculatorServiceTest extends TestCase
 
         $expected1RM = 100 * (1 + (0.0333 * 5));
 
-        $this->assertEquals($expected1RM, $this->calculator->getWorkoutOneRepMax($workout));
+        $this->assertEquals($expected1RM, $this->calculator->getLiftLogOneRepMax($liftLog));
     }
 
     /** @test */
-    public function it_calculates_workout_one_rep_max_for_non_uniform_sets_using_first_set()
+    public function it_calculates_lift_log_one_rep_max_for_non_uniform_sets_using_first_set()
     {
-        $workout = Workout::factory()->create();
-        $workout->workoutSets()->createMany([
+        $liftLog = LiftLog::factory()->create();
+        $liftLog->liftSets()->createMany([
             ['weight' => 100, 'reps' => 5, 'notes' => 'Set 1'],
             ['weight' => 110, 'reps' => 3, 'notes' => 'Set 2'],
             ['weight' => 120, 'reps' => 1, 'notes' => 'Set 3'],
@@ -87,14 +87,14 @@ class OneRepMaxCalculatorServiceTest extends TestCase
         // Should use the first set's data for calculation
         $expected1RM = 100 * (1 + (0.0333 * 5));
 
-        $this->assertEquals($expected1RM, $this->calculator->getWorkoutOneRepMax($workout));
+        $this->assertEquals($expected1RM, $this->calculator->getLiftLogOneRepMax($liftLog));
     }
 
     /** @test */
-    public function it_calculates_best_workout_one_rep_max_correctly()
+    public function it_calculates_best_lift_log_one_rep_max_correctly()
     {
-        $workout = Workout::factory()->create();
-        $workout->workoutSets()->createMany([
+        $liftLog = LiftLog::factory()->create();
+        $liftLog->liftSets()->createMany([
             ['weight' => 100, 'reps' => 5, 'notes' => 'Set 1'], // 116.65
             ['weight' => 110, 'reps' => 3, 'notes' => 'Set 2'], // 120.989
             ['weight' => 120, 'reps' => 1, 'notes' => 'Set 3'], // 120
@@ -102,23 +102,23 @@ class OneRepMaxCalculatorServiceTest extends TestCase
 
         $expectedBest1RM = 110 * (1 + (0.0333 * 3));
 
-        $this->assertEquals($expectedBest1RM, $this->calculator->getBestWorkoutOneRepMax($workout));
+        $this->assertEquals($expectedBest1RM, $this->calculator->getBestLiftLogOneRepMax($liftLog));
     }
 
     /** @test */
-    public function it_returns_zero_for_empty_workout_sets_for_workout_one_rep_max()
+    public function it_returns_zero_for_empty_lift_sets_for_lift_log_one_rep_max()
     {
-        $workout = Workout::factory()->create();
+        $liftLog = LiftLog::factory()->create();
 
-        $this->assertEquals(0, $this->calculator->getWorkoutOneRepMax($workout));
+        $this->assertEquals(0, $this->calculator->getLiftLogOneRepMax($liftLog));
     }
 
     /** @test */
-    public function it_returns_zero_for_empty_workout_sets_for_best_workout_one_rep_max()
+    public function it_returns_zero_for_empty_lift_sets_for_best_lift_log_one_rep_max()
     {
-        $workout = Workout::factory()->create();
+        $liftLog = LiftLog::factory()->create();
 
-        $this->assertEquals(0, $this->calculator->getBestWorkoutOneRepMax($workout));
+        $this->assertEquals(0, $this->calculator->getBestLiftLogOneRepMax($liftLog));
     }
 
     /** @test */
@@ -132,26 +132,26 @@ class OneRepMaxCalculatorServiceTest extends TestCase
     }
 
     /** @test */
-    public function it_calculates_workout_one_rep_max_for_bodyweight_exercise_correctly()
+    public function it_calculates_lift_log_one_rep_max_for_bodyweight_exercise_correctly()
     {
         $exercise = Exercise::factory()->create(['user_id' => $this->user->id, 'is_bodyweight' => true]);
-        $workout = Workout::factory()->create(['user_id' => $this->user->id, 'exercise_id' => $exercise->id, 'logged_at' => Carbon::now()]);
-        $workout->workoutSets()->createMany([
+        $liftLog = LiftLog::factory()->create(['user_id' => $this->user->id, 'exercise_id' => $exercise->id, 'logged_at' => Carbon::now()]);
+        $liftLog->liftSets()->createMany([
             ['weight' => 0, 'reps' => 5, 'notes' => 'Set 1'],
             ['weight' => 0, 'reps' => 5, 'notes' => 'Set 2'],
         ]);
 
         $expected1RM = 180 * (1 + (0.0333 * 5)); // Assuming bodyweight is 180
 
-        $this->assertEquals($expected1RM, $this->calculator->getWorkoutOneRepMax($workout));
+        $this->assertEquals($expected1RM, $this->calculator->getLiftLogOneRepMax($liftLog));
     }
 
     /** @test */
-    public function it_calculates_best_workout_one_rep_max_for_bodyweight_exercise_correctly()
+    public function it_calculates_best_lift_log_one_rep_max_for_bodyweight_exercise_correctly()
     {
         $exercise = Exercise::factory()->create(['user_id' => $this->user->id, 'is_bodyweight' => true]);
-        $workout = Workout::factory()->create(['user_id' => $this->user->id, 'exercise_id' => $exercise->id, 'logged_at' => Carbon::now()]);
-        $workout->workoutSets()->createMany([
+        $liftLog = LiftLog::factory()->create(['user_id' => $this->user->id, 'exercise_id' => $exercise->id, 'logged_at' => Carbon::now()]);
+        $liftLog->liftSets()->createMany([
             ['weight' => 0, 'reps' => 5, 'notes' => 'Set 1'], // 180 * (1 + (0.0333 * 5)) = 209.97
             ['weight' => 0, 'reps' => 8, 'notes' => 'Set 2'], // 180 * (1 + (0.0333 * 8)) = 227.952
             ['weight' => 0, 'reps' => 3, 'notes' => 'Set 3'], // 180 * (1 + (0.0333 * 3)) = 197.982
@@ -159,6 +159,6 @@ class OneRepMaxCalculatorServiceTest extends TestCase
 
         $expectedBest1RM = 180 * (1 + (0.0333 * 8)); // Best is from 8 reps
 
-        $this->assertEquals($expectedBest1RM, $this->calculator->getBestWorkoutOneRepMax($workout));
+        $this->assertEquals($expectedBest1RM, $this->calculator->getBestLiftLogOneRepMax($liftLog));
     }
 }

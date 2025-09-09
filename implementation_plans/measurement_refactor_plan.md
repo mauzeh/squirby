@@ -1,6 +1,6 @@
 # Measurement Architecture Refactor Plan
 
-This document outlines the plan to refactor the `Measurements` architecture to be more robust and consistent with the `Exercises` and `Workouts` architecture.
+This document outlines the plan to refactor the `Measurements` architecture to be more robust and consistent with the `Exercises` and `LiftLogs` architecture.
 
 ## Current Architecture
 
@@ -16,7 +16,7 @@ We will create two new models:
     *   Represents the *type* of measurement.
     *   Attributes: `id`, `name` (e.g., "Body Weight", "Waist Circumference"), `default_unit`.
 
-2.  **`MeasurementLog`** (analogous to `Workout`)
+2.  **`MeasurementLog`** (analogous to `LiftLog`)
     *   Represents a specific *instance* of a measurement.
     *   Attributes: `id`, `measurement_type_id`, `value`, `unit`, `logged_at`, `comments`.
     *   A `belongsTo` relationship to `MeasurementType`.

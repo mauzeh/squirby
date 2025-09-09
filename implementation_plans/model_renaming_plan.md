@@ -7,7 +7,7 @@ This document outlines the plan to rename several core models to improve clarity
 The following models will be renamed:
 
 - `DailyLog` -> `FoodLog`
-- `Workout` -> `LiftingLog`
+- `Workout` -> `LiftLog`
 - `MeasurementLog` -> `BodyLog`
 
 ## Implementation Steps
@@ -34,9 +34,9 @@ The refactoring will be done in three phases, one for each model.
 12. **Final Testing:** Run the entire test suite.
 13. **Cleanup:** Remove the old `DailyLog` model, factory, seeder, controller, routes, views, and the `daily_logs` table migration.
 
-### Phase 2: Rename `Workout` to `LiftingLog`
+### Phase 2: Rename `Workout` to `LiftLog`
 
-(Follow the same 13 steps as in Phase 1, but for `Workout` -> `LiftingLog`)
+(Follow the same 13 steps as in Phase 1, but for `Workout` -> `LiftLog`)
 
 ### Phase 3: Rename `MeasurementLog` to `BodyLog`
 

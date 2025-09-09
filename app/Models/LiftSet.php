@@ -6,20 +6,22 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Services\OneRepMaxCalculatorService;
 
-class WorkoutSet extends Model
+class LiftSet extends Model
 {
     use HasFactory;
 
+    protected $table = 'lift_sets';
+
     protected $fillable = [
-        'workout_id',
+        'lift_log_id',
         'weight',
         'reps',
         'notes',
     ];
 
-    public function workout()
+    public function liftLog()
     {
-        return $this->belongsTo(Workout::class);
+        return $this->belongsTo(LiftLog::class);
     }
 
     public function getOneRepMaxAttribute()

@@ -2,14 +2,14 @@
 
 namespace Database\Seeders;
 
-use App\Models\Workout;
-use App\Models\WorkoutSet;
+use App\Models\LiftLog;
+use App\Models\LiftSet;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Carbon\Carbon;
 
-class WorkoutSeeder extends Seeder
+class LiftLogSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -26,21 +26,21 @@ class WorkoutSeeder extends Seeder
                 $exercise = \App\Models\Exercise::where('title', $exerciseTitle)->first();
 
                 if ($exercise) {
-                    $workout = Workout::create([
+                    $liftLog = LiftLog::create([
                         'user_id' => $adminUser->id,
                         'exercise_id' => $exercise->id,
                         'logged_at' => Carbon::parse($data[0] . ' ' . $data[1])->ceilMinute(15),
                         'comments' => $data[6]
                     ]);
 
-                    // Create WorkoutSet records based on rounds
+                    // Create LiftSet records based on rounds
                     $weight = $data[3];
                     $reps = $data[4];
                     $rounds = $data[5];
 
                     for ($i = 0; $i < $rounds; $i++) {
-                        WorkoutSet::create([
-                            'workout_id' => $workout->id,
+                        LiftSet::create([
+                            'lift_log_id' => $liftLog->id,
                             'weight' => $weight,
                             'reps' => $reps
                         ]);

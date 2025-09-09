@@ -11,7 +11,7 @@
         *   **Testing:** Immediately write comprehensive feature tests for these core authentication flows (happy and unhappy paths) to establish a strong testing safety net.
 
 2.  **Establish User-Specific Data Scoping:**
-    *   **Action:** Add `user_id` foreign keys to all relevant data tables (e.g., `daily_logs`, `meals`, `ingredients`, `workouts`, `measurement_logs`, `measurement_types`, `exercises`). Define `belongsTo` relationships in models.
+    *   **Action:** Add `user_id` foreign keys to all relevant data tables (e.g., `daily_logs`, `meals`, `ingredients`, `lift_logs`, `measurement_logs`, `measurement_types`, `exercises`). Define `belongsTo` relationships in models.
     *   **Considerations:**
         *   **Data Migration:** Plan for a data migration to associate existing records with a default user or provide a mechanism for the first user to claim existing data. This migration must be robust and handle potential inconsistencies.
         *   **Query Scopes:** Implement global or local query scopes to automatically filter data by the authenticated user's ID.
@@ -19,7 +19,7 @@
         *   **Testing:** Extend existing feature tests to verify data isolation (e.g., User A cannot access User B's data).
 
 3.  **Update Seeders for Multi-User Data:**
-    *   **Action:** Modify existing seeders (e.g., `DailyLogSeeder`, `IngredientSeeder`, `WorkoutSeeder`, `MeasurementSeeder`) to create data associated with specific users. Create new seeders for `User` and `Role` models (if applicable).
+    *   **Action:** Modify existing seeders (e.g., `DailyLogSeeder`, `IngredientSeeder`, `LiftLogSeeder`, `MeasurementSeeder`) to create data associated with specific users. Create new seeders for `User` and `Role` models (if applicable).
     *   **Considerations:**
         *   Ensure seeded data is correctly linked to `user_id`s.
         *   Provide options for creating different types of users (e.g., admin, regular) for testing and development.
@@ -42,7 +42,7 @@
 **Phase 3: Holistic Integration & Security Hardening**
 
 1.  **Review and Update All Related Features:**
-    *   **Action:** Systematically review all existing features (e.g., TSV Import/Export, Workout Analysis/Charting) to ensure they function correctly with the new multi-user and data-scoping architecture.
+    *   **Action:** Systematically review all existing features (e.g., TSV Import/Export, Lift Log Analysis/Charting) to ensure they function correctly with the new multi-user and data-scoping architecture.
     *   **Considerations:**
         *   **Holistic View:** Apply the lesson of considering the entire feature set. Identify and update any controller logic, services, or views that implicitly assumed a single user or lacked user-specific filtering.
         *   **Testing:** Re-run all existing tests and write new tests for any updated or newly affected features.

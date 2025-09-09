@@ -11,7 +11,7 @@ use App\Http\Controllers\IngredientController;
 use App\Http\Controllers\MealController;
 
 use App\Http\Controllers\ExerciseController;
-use App\Http\Controllers\WorkoutController;
+use App\Http\Controllers\LiftLogController;
 use App\Http\Controllers\BodyLogController;
 use App\Http\Controllers\MeasurementTypeController;
 
@@ -61,11 +61,11 @@ Route::middleware('auth')->group(function () {
     Route::resource('exercises', ExerciseController::class);
     Route::get('exercises/{exercise}/logs', [ExerciseController::class, 'showLogs'])->name('exercises.show-logs');
 
-    Route::resource('workouts', WorkoutController::class);
+    Route::resource('lift-logs', LiftLogController::class);
 
-    Route::post('workouts/import-tsv', [WorkoutController::class, 'importTsv'])->name('workouts.import-tsv');
+    Route::post('lift-logs/import-tsv', [LiftLogController::class, 'importTsv'])->name('lift-logs.import-tsv');
 
-    Route::post('workouts/destroy-selected', [WorkoutController::class, 'destroySelected'])->name('workouts.destroy-selected');
+    Route::post('lift-logs/destroy-selected', [LiftLogController::class, 'destroySelected'])->name('lift-logs.destroy-selected');
 });
 
 require __DIR__.'/auth.php';

@@ -20,7 +20,7 @@ class DatabaseSeeder extends Seeder
             IngredientSeeder::class,
             DailyLogSeeder::class,
             MealSeeder::class,
-            WorkoutSeeder::class,
+            LiftLogSeeder::class,
             MeasurementSeeder::class,
         ]);
     }

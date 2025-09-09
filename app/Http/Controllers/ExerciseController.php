@@ -97,16 +97,16 @@ class ExerciseController extends Controller
         if ($exercise->user_id !== auth()->id()) {
             abort(403, 'Unauthorized action.');
         }
-        $workouts = $exercise->workouts()->with('workoutSets')->where('user_id', auth()->id())->orderBy('logged_at', 'asc')->get();
+        $liftLogs = $exercise->liftLogs()->with('liftSets')->where('user_id', auth()->id())->orderBy('logged_at', 'asc')->get();
 
         $chartData = [
             'datasets' => [
                 [
                     'label' => '1RM (est.)',
-                    'data' => $workouts->map(function ($workout) {
+                    'data' => $liftLogs->map(function ($liftLog) {
                         return [
-                            'x' => $workout->logged_at->toIso8601String(),
-                            'y' => $workout->best_one_rep_max,
+                            'x' => $liftLog->logged_at->toIso8601String(),
+                            'y' => $liftLog->best_one_rep_max,
                         ];
                     }),
                     'backgroundColor' => 'rgba(0, 123, 255, 0.5)',
@@ -116,8 +116,8 @@ class ExerciseController extends Controller
             ]
         ];
 
-        $workouts = $workouts->reverse();
+        $liftLogs = $liftLogs->reverse();
 
-        return view('exercises.logs', compact('exercise', 'workouts', 'chartData'));
+        return view('exercises.logs', compact('exercise', 'liftLogs', 'chartData'));
     }
 }

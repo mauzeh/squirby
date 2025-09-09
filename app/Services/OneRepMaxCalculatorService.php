@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
-use App\Models\Workout;
-use App\Models\WorkoutSet;
+use App\Models\LiftLog;
+use App\Models\LiftSet;
 use App\Models\User;
 use App\Models\BodyLog;
 use Carbon\Carbon;
@@ -11,7 +11,7 @@ use Carbon\Carbon;
 class OneRepMaxCalculatorService
 {
     /**
-     * Calculate the 1RM for a single WorkoutSet.
+     * Calculate the 1RM for a single LiftSet.
      *
      * @param float $weight
      * @param int $reps
@@ -49,21 +49,21 @@ class OneRepMaxCalculatorService
     }
 
     /**
-     * Get the 1RM for a Workout, considering uniformity of sets.
+     * Get the 1RM for a LiftLog, considering uniformity of sets.
      *
-     * @param \App\Models\Workout $workout
+     * @param \App\Models\LiftLog $liftLog
      * @return float
      */
-    public function getWorkoutOneRepMax(Workout $workout): float
+    public function getLiftLogOneRepMax(LiftLog $liftLog): float
     {
-        if ($workout->workoutSets->isEmpty()) {
+        if ($liftLog->liftSets->isEmpty()) {
             return 0;
         }
 
         // Check for uniformity
         $isUniform = true;
-        $firstSet = $workout->workoutSets->first();
-        foreach ($workout->workoutSets as $set) {
+        $firstSet = $liftLog->liftSets->first();
+        foreach ($liftLog->liftSets as $set) {
             if ($set->weight !== $firstSet->weight || $set->reps !== $firstSet->reps) {
                 $isUniform = false;
                 break;
@@ -71,10 +71,10 @@ class OneRepMaxCalculatorService
         }
 
         // Eager load exercise to access is_bodyweight
-        $workout->load('exercise');
-        $isBodyweightExercise = $workout->exercise->is_bodyweight ?? false;
-        $userId = $workout->user_id;
-        $date = $workout->logged_at; // Assuming workout has a logged_at date
+        $liftLog->load('exercise');
+        $isBodyweightExercise = $liftLog->exercise->is_bodyweight ?? false;
+        $userId = $liftLog->user_id;
+        $date = $liftLog->logged_at; // Assuming lift log has a logged_at date
 
         if ($isUniform) {
             return $this->calculateOneRepMax($firstSet->weight, $firstSet->reps, $isBodyweightExercise, $userId, $date);
@@ -84,25 +84,25 @@ class OneRepMaxCalculatorService
     }
 
     /**
-     * Get the best 1RM from all WorkoutSets of a Workout.
+     * Get the best 1RM from all LiftSets of a LiftLog.
      *
-     * @param \App\Models\Workout $workout
+     * @param \App\Models\LiftLog $liftLog
      * @return float
      */
-    public function getBestWorkoutOneRepMax(Workout $workout): float
+    public function getBestLiftLogOneRepMax(LiftLog $liftLog): float
     {
-        if ($workout->workoutSets->isEmpty()) {
+        if ($liftLog->liftSets->isEmpty()) {
             return 0;
         }
 
         // Eager load exercise to access is_bodyweight
-        $workout->load('exercise');
-        $isBodyweightExercise = $workout->exercise->is_bodyweight ?? false;
-        $userId = $workout->user_id;
-        $date = $workout->logged_at; // Assuming workout has a logged_at date
+        $liftLog->load('exercise');
+        $isBodyweightExercise = $liftLog->exercise->is_bodyweight ?? false;
+        $userId = $liftLog->user_id;
+        $date = $liftLog->logged_at; // Assuming lift log has a logged_at date
 
-        return $workout->workoutSets->max(function ($workoutSet) use ($isBodyweightExercise, $userId, $date) {
-            return $this->calculateOneRepMax($workoutSet->weight, $workoutSet->reps, $isBodyweightExercise, $userId, $date);
+        return $liftLog->liftSets->max(function ($liftSet) use ($isBodyweightExercise, $userId, $date) {
+            return $this->calculateOneRepMax($liftSet->weight, $liftSet->reps, $isBodyweightExercise, $userId, $date);
         });
     }
 }

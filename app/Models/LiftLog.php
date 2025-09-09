@@ -6,9 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Services\OneRepMaxCalculatorService;
 
-class Workout extends Model
+class LiftLog extends Model
 {
     use HasFactory;
+
+    protected $table = 'lift_logs';
 
     protected $fillable = [
         'exercise_id',
@@ -26,37 +28,36 @@ class Workout extends Model
         return $this->belongsTo(Exercise::class);
     }
 
-    public function workoutSets()
+    public function liftSets()
     {
-        return $this->hasMany(WorkoutSet::class);
+        return $this->hasMany(LiftSet::class);
     }
 
     public function getOneRepMaxAttribute()
     {
         $calculator = new OneRepMaxCalculatorService();
-        return $calculator->getWorkoutOneRepMax($this);
+        return $calculator->getLiftLogOneRepMax($this);
     }
 
     public function getDisplayRepsAttribute()
     {
-        $var=true;
-        return $this->workoutSets->first()->reps ?? 0;
+        return $this->liftSets->first()->reps ?? 0;
     }
 
     public function getDisplayRoundsAttribute()
     {
-        return $this->workoutSets->count();
+        return $this->liftSets->count();
     }
 
     public function getDisplayWeightAttribute()
     {
-        return $this->workoutSets->first()->weight ?? 0;
+        return $this->liftSets->first()->weight ?? 0;
     }
 
     public function getBestOneRepMaxAttribute()
     {
         $calculator = new OneRepMaxCalculatorService();
-        return $calculator->getBestWorkoutOneRepMax($this);
+        return $calculator->getBestLiftLogOneRepMax($this);
     }
 
     public function user()

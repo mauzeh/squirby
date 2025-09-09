@@ -5,9 +5,9 @@ namespace Database\Factories;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Workout>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\LiftLog>
  */
-class WorkoutFactory extends Factory
+class LiftLogFactory extends Factory
 {
     /**
      * Define the model's default state.
@@ -20,6 +20,7 @@ class WorkoutFactory extends Factory
             'exercise_id' => \App\Models\Exercise::factory(),
             'comments' => $this->faker->sentence(),
             'logged_at' => $this->faker->dateTimeBetween('-1 year', 'now'),
+            'user_id' => \App\Models\User::factory(),
         ];
     }
 }

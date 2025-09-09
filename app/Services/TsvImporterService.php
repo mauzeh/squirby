@@ -61,7 +61,7 @@ class TsvImporterService
         ];
     }
 
-    public function importWorkouts(string $tsvData, string $date, int $userId): array
+    public function importLiftLogs(string $tsvData, string $date, int $userId): array
     {
         $rows = explode("\n", $tsvData);
         $importedCount = 0;
@@ -90,21 +90,21 @@ class TsvImporterService
                     continue;
                 }
 
-                $workout = \App\Models\Workout::create([
+                $liftLog = \App\Models\LiftLog::create([
                     'user_id' => $userId,
                     'exercise_id' => $exercise->id,
                     'comments' => isset($columns[6]) ? $columns[6] : null,
                     'logged_at' => $loggedAt,
                 ]);
 
-                // Create WorkoutSet records based on rounds
+                // Create LiftSet records based on rounds
                 $weight = $columns[3];
                 $reps = $columns[4];
                 $rounds = $columns[5];
                 $notes = isset($columns[6]) ? $columns[6] : null;
 
                 for ($i = 0; $i < $rounds; $i++) {
-                    $workout->workoutSets()->create([
+                    $liftLog->liftSets()->create([
                         'weight' => $weight,
                         'reps' => $reps,
                         'notes' => $notes,

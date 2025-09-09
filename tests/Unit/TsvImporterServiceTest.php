@@ -7,7 +7,7 @@ use App\Services\TsvImporterService;
 use App\Models\Ingredient;
 use App\Models\Exercise;
 use App\Models\DailyLog;
-use App\Models\Workout;
+use App\Models\LiftLog;
 use App\Models\Unit;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -84,7 +84,7 @@ class TsvImporterServiceTest extends TestCase
     }
 
     /** @test */
-    public function it_imports_workouts_correctly()
+    public function it_imports_lift_logs_correctly()
     {
         $exercise1 = Exercise::factory()->create(['user_id' => $this->user->id, 'title' => 'Push Ups']);
         $exercise2 = Exercise::factory()->create(['user_id' => $this->user->id, 'title' => 'Squats']);
@@ -92,40 +92,40 @@ class TsvImporterServiceTest extends TestCase
         $tsvData = "2025-08-26\t08:00\tPush Ups\t10\t3\t15\tWarm up\n" .
                    "2025-08-26\t08:30\tSquats\t50\t5\t10\tMain set";
 
-        $result = $this->tsvImporterService->importWorkouts($tsvData, '2025-08-26', $this->user->id);
+        $result = $this->tsvImporterService->importLiftLogs($tsvData, '2025-08-26', $this->user->id);
 
         $this->assertEquals(2, $result['importedCount']);
         $this->assertEmpty($result['notFound']);
 
-        $this->assertDatabaseCount('workouts', 2);
-        $this->assertDatabaseCount('workout_sets', 25); // 15 for Push Ups + 10 for Squats
+        $this->assertDatabaseCount('lift_logs', 2);
+        $this->assertDatabaseCount('lift_sets', 25); // 15 for Push Ups + 10 for Squats
 
-        $workout1 = \App\Models\Workout::where('exercise_id', $exercise1->id)->first();
-        $workout2 = \App\Models\Workout::where('exercise_id', $exercise2->id)->first();
+        $liftLog1 = \App\Models\LiftLog::where('exercise_id', $exercise1->id)->first();
+        $liftLog2 = \App\Models\LiftLog::where('exercise_id', $exercise2->id)->first();
 
-        $this->assertDatabaseHas('workouts', [
+        $this->assertDatabaseHas('lift_logs', [
             'user_id' => $this->user->id,
             'exercise_id' => $exercise1->id,
             'comments' => 'Warm up',
             'logged_at' => '2025-08-26 08:00:00',
         ]);
 
-        $this->assertDatabaseHas('workout_sets', [
-            'workout_id' => $workout1->id,
+        $this->assertDatabaseHas('lift_sets', [
+            'lift_log_id' => $liftLog1->id,
             'weight' => 10,
             'reps' => 3,
             'notes' => 'Warm up',
         ]);
 
-        $this->assertDatabaseHas('workouts', [
+        $this->assertDatabaseHas('lift_logs', [
             'user_id' => $this->user->id,
             'exercise_id' => $exercise2->id,
             'comments' => 'Main set',
             'logged_at' => '2025-08-26 08:30:00',
         ]);
 
-        $this->assertDatabaseHas('workout_sets', [
-            'workout_id' => $workout2->id,
+        $this->assertDatabaseHas('lift_sets', [
+            'lift_log_id' => $liftLog2->id,
             'weight' => 50,
             'reps' => 5,
             'notes' => 'Main set',
@@ -133,25 +133,25 @@ class TsvImporterServiceTest extends TestCase
     }
 
     /** @test */
-    public function it_handles_not_found_exercises_when_importing_workouts()
+    public function it_handles_not_found_exercises_when_importing_lift_logs()
     {
         $tsvData = "2025-08-26\t08:00\tNonExistentExercise\t10\t3\t15\tWarm up";
 
-        $result = $this->tsvImporterService->importWorkouts($tsvData, '2025-08-26', $this->user->id);
+        $result = $this->tsvImporterService->importLiftLogs($tsvData, '2025-08-26', $this->user->id);
 
         $this->assertEquals(0, $result['importedCount']);
         $this->assertEquals(['NonExistentExercise'], $result['notFound']);
-        $this->assertDatabaseCount('workouts', 0);
+        $this->assertDatabaseCount('lift_logs', 0);
     }
 
     /** @test */
-    public function it_handles_empty_tsv_data_for_workouts()
+    public function it_handles_empty_tsv_data_for_lift_logs()
     {
-        $result = $this->tsvImporterService->importWorkouts('', '2025-08-26', $this->user->id);
+        $result = $this->tsvImporterService->importLiftLogs('', '2025-08-26', $this->user->id);
 
         $this->assertEquals(0, $result['importedCount']);
         $this->assertEmpty($result['notFound']);
-        $this->assertDatabaseCount('workouts', 0);
+        $this->assertDatabaseCount('lift_logs', 0);
     }
 
     /** @test */

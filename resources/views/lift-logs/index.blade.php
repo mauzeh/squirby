@@ -18,8 +18,8 @@
         </div>
 
         <div class="form-container">
-            <h3>Add Workout</h3>
-            <form action="{{ route('workouts.store') }}" method="POST">
+            <h3>Add Lift Log</h3>
+            <form action="{{ route('lift-logs.store') }}" method="POST">
                 @csrf
                 <div class="form-group">
                     <label for="exercise_id">Exercise:</label>
@@ -53,21 +53,21 @@
                     <label for="logged_at">Time:</label>
                     <x-time-select name="logged_at" id="logged_at" required />
                 </div>
-                <button type="submit" class="button">Add Workout</button>
+                <button type="submit" class="button">Add Lift Log</button>
             </form>
         </div>
 
-        @if ($workouts->isEmpty())
-            <p>No workouts found. Add one to get started!</p>
+        @if ($liftLogs->isEmpty())
+            <p>No lift logs found. Add one to get started!</p>
         @else
-        <x-workouts-table :workouts="$workouts->reverse()" />
+        <x-lift-logs-table :liftLogs="$liftLogs->reverse()" />
 
         <div class="form-container">
             <h3>TSV Export</h3>
-            <textarea id="tsv-output" rows="10" style="width: 100%; background-color: #3a3a3a; color: #f2f2f2; border: 1px solid #555;">@foreach ($workouts as $workout)
-{{ $workout->logged_at->format('m/d/Y') }} 	 {{ $workout->logged_at->format('H:i') }} 	 {{ $workout->exercise->title }} 	 {{ $workout->display_weight }} 	 {{ $workout->display_reps }} 	 {{ $workout->display_rounds }} 	 {{ preg_replace('/(
+            <textarea id="tsv-output" rows="10" style="width: 100%; background-color: #3a3a3a; color: #f2f2f2; border: 1px solid #555;">@foreach ($liftLogs as $liftLog)
+{{ $liftLog->logged_at->format('m/d/Y') }} 	 {{ $liftLog->logged_at->format('H:i') }} 	 {{ $liftLog->exercise->title }} 	 {{ $liftLog->display_weight }} 	 {{ $liftLog->display_reps }} 	 {{ $liftLog->display_rounds }} 	 {{ preg_replace('/(
 |
-)+/', ' ', $workout->comments) }}
+)+/', ' ', $liftLog->comments) }}
 @endforeach
             </textarea>
             <button id="copy-tsv-button" class="button">Copy to Clipboard</button>
@@ -77,7 +77,7 @@
 
         <div class="form-container">
             <h3>TSV Import</h3>
-            <form action="{{ route('workouts.import-tsv') }}" method="POST">
+            <form action="{{ route('lift-logs.import-tsv') }}" method="POST">
                 @csrf
                 <input type="hidden" name="date" value="{{ now()->format('Y-m-d') }}">
                 <textarea name="tsv_data" rows="10" style="width: 100%; background-color: #3a3a3a; color: #f2f2f2; border: 1px solid #555;"></textarea>

@@ -8,12 +8,12 @@ use Tests\TestCase;
 use App\Models\User;
 use App\Models\Exercise;
 
-class WorkoutExerciseFilteringTest extends TestCase
+class LiftLogExerciseFilteringTest extends TestCase
 {
     use RefreshDatabase;
 
     /** @test */
-    public function authenticated_user_only_sees_their_exercises_in_workout_form()
+    public function authenticated_user_only_sees_their_exercises_in_lift_log_form()
     {
         $user1 = User::factory()->create();
         $user2 = User::factory()->create();
@@ -23,7 +23,7 @@ class WorkoutExerciseFilteringTest extends TestCase
 
         $this->actingAs($user1);
 
-        $response = $this->get(route('workouts.index'));
+        $response = $this->get(route('lift-logs.index'));
 
         $response->assertOk();
         $response->assertSee($exercise1->title);
@@ -31,7 +31,7 @@ class WorkoutExerciseFilteringTest extends TestCase
     }
 
     /** @test */
-    public function authenticated_user_cannot_import_workouts_with_other_users_exercises()
+    public function authenticated_user_cannot_import_lift_logs_with_other_users_exercises()
     {
         $user1 = User::factory()->create();
         $user2 = User::factory()->create();
@@ -43,18 +43,18 @@ class WorkoutExerciseFilteringTest extends TestCase
         $tsvData = "08/04/2025\t18:00\tUser2 Exercise\t175\t5\t3\tSome comments";
         $date = '2025-08-04';
 
-        $response = $this->post(route('workouts.import-tsv'), [
+        $response = $this->post(route('lift-logs.import-tsv'), [
             'tsv_data' => $tsvData,
             'date' => $date,
         ]);
 
-        $response->assertRedirect(route('workouts.index'));
+        $response->assertRedirect(route('lift-logs.index'));
         $response->assertSessionHas('error', 'No exercises found for: User2 Exercise');
-        $this->assertDatabaseCount('workouts', 0);
+        $this->assertDatabaseCount('lift_logs', 0);
     }
 
     /** @test */
-    public function authenticated_user_can_import_their_own_workouts()
+    public function authenticated_user_can_import_their_own_lift_logs()
     {
         $user = User::factory()->create();
         $exercise = Exercise::factory()->create(['user_id' => $user->id, 'title' => 'User Exercise']);
@@ -64,27 +64,27 @@ class WorkoutExerciseFilteringTest extends TestCase
         $tsvData = "08/04/2025\t18:00\tUser Exercise\t175\t5\t3\tSome comments";
         $date = '2025-08-04';
 
-        $response = $this->post(route('workouts.import-tsv'), [
+        $response = $this->post(route('lift-logs.import-tsv'), [
             'tsv_data' => $tsvData,
             'date' => $date,
         ]);
 
-        $response->assertRedirect(route('workouts.index'));
+        $response->assertRedirect(route('lift-logs.index'));
         $response->assertSessionHas('success', 'TSV data imported successfully!');
-        $this->assertDatabaseCount('workouts', 1);
-        $this->assertDatabaseHas('workouts', [
+        $this->assertDatabaseCount('lift_logs', 1);
+        $this->assertDatabaseHas('lift_logs', [
             'user_id' => $user->id,
             'exercise_id' => $exercise->id,
         ]);
 
-        $response = $this->get(route('workouts.index'));
+        $response = $this->get(route('lift-logs.index'));
         $response->assertSee($exercise->title);
         $response->assertSee('175'); // Weight
         $response->assertSee('5'); // Reps
     }
 
     /** @test */
-    public function authenticated_user_sees_error_for_invalid_workout_import_rows()
+    public function authenticated_user_sees_error_for_invalid_lift_log_import_rows()
     {
         $user = User::factory()->create();
         $this->actingAs($user);
@@ -93,18 +93,18 @@ class WorkoutExerciseFilteringTest extends TestCase
         $tsvData = "08/04/2025\t18:00\tUser Exercise\t175\t5"; // Missing 2 columns
         $date = '2025-08-04';
 
-        $response = $this->post(route('workouts.import-tsv'), [
+        $response = $this->post(route('lift-logs.import-tsv'), [
             'tsv_data' => $tsvData,
             'date' => $date,
         ]);
 
-        $response->assertRedirect(route('workouts.index'));
-        $response->assertSessionHas('error', 'No workouts imported due to invalid data in rows: "08/04/2025	18:00	User Exercise	175	5"');
-        $this->assertDatabaseCount('workouts', 0);
+        $response->assertRedirect(route('lift-logs.index'));
+        $response->assertSessionHas('error', 'No lift logs imported due to invalid data in rows: "08/04/2025	18:00	User Exercise	175	5"');
+        $this->assertDatabaseCount('lift_logs', 0);
     }
 
     /** @test */
-    public function authenticated_user_can_import_workouts_without_comments()
+    public function authenticated_user_can_import_lift_logs_without_comments()
     {
         $user = User::factory()->create();
         $exercise = Exercise::factory()->create(['user_id' => $user->id, 'title' => 'User Exercise No Comments']);
@@ -115,21 +115,21 @@ class WorkoutExerciseFilteringTest extends TestCase
         $tsvData = "08/05/2025\t10:00\tUser Exercise No Comments\t100\t10\t3";
         $date = '2025-08-05';
 
-        $response = $this->post(route('workouts.import-tsv'), [
+        $response = $this->post(route('lift-logs.import-tsv'), [
             'tsv_data' => $tsvData,
             'date' => $date,
         ]);
 
-        $response->assertRedirect(route('workouts.index'));
+        $response->assertRedirect(route('lift-logs.index'));
         $response->assertSessionHas('success', 'TSV data imported successfully!');
-        $this->assertDatabaseCount('workouts', 1);
-        $this->assertDatabaseHas('workouts', [
+        $this->assertDatabaseCount('lift_logs', 1);
+        $this->assertDatabaseHas('lift_logs', [
             'user_id' => $user->id,
             'exercise_id' => $exercise->id,
             'comments' => null, // Comments should be null
         ]);
 
-        $response = $this->get(route('workouts.index'));
+        $response = $this->get(route('lift-logs.index'));
         $response->assertSee($exercise->title);
         $response->assertSee('100'); // Weight
         $response->assertSee('10'); // Reps

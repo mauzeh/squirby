@@ -34,7 +34,7 @@
         @auth
         <div class="navbar">
             <a href="{{ route('food-logs.index') }}" class="top-level-nav-item {{ Request::routeIs(['food-logs.*', 'meals.*', 'ingredients.*']) ? 'active' : '' }}"><i class="fas fa-utensils"></i> Food</a>
-            <a href="{{ route('workouts.index') }}" class="top-level-nav-item {{ Request::routeIs(['exercises.*', 'workouts.*']) ? 'active' : '' }}"><i class="fas fa-dumbbell"></i> Lifts</a>
+            <a href="{{ route('lift-logs.index') }}" class="top-level-nav-item {{ Request::routeIs(['exercises.*', 'lift-logs.*']) ? 'active' : '' }}"><i class="fas fa-dumbbell"></i> Lifts</a>
             <a href="{{ route('body-logs.index') }}" class="top-level-nav-item {{ Request::routeIs(['body-logs.*', 'measurement-types.*']) ? 'active' : '' }}"><i class="fas fa-heartbeat"></i> Body</a>
 
             <div style="margin-left: auto;">
@@ -51,7 +51,7 @@
             </div>
         </div>
 
-        @if (Request::routeIs(['food-logs.*', 'meals.*', 'ingredients.*', 'exercises.*', 'workouts.*', 'body-logs.*', 'measurement-types.*']))
+        @if (Request::routeIs(['food-logs.*', 'meals.*', 'ingredients.*', 'exercises.*', 'lift-logs.*', 'body-logs.*', 'measurement-types.*']))
         <div class="navbar sub-navbar">
             @if (Request::routeIs(['food-logs.*', 'meals.*', 'ingredients.*']))
                 <a href="{{ route('food-logs.index') }}" class="{{ Request::routeIs('food-logs.*') ? 'active' : '' }}">Food Log Entry</a>
@@ -59,8 +59,8 @@
                 <a href="{{ route('ingredients.index') }}" class="{{ Request::routeIs('ingredients.*') ? 'active' : '' }}">Ingredients</a>
             @endif
 
-            @if (Request::routeIs(['exercises.*', 'workouts.*']))
-                <a href="{{ route('workouts.index') }}" class="{{ Request::routeIs('workouts.*') ? 'active' : '' }}">Workouts</a>
+            @if (Request::routeIs(['exercises.*', 'lift-logs.*']))
+                <a href="{{ route('lift-logs.index') }}" class="{{ Request::routeIs('lift-logs.*') ? 'active' : '' }}">Lift Logs</a>
                 <a href="{{ route('exercises.index') }}" class="{{ Request::routeIs('exercises.*') ? 'active' : '' }}">Exercises</a>
             @endif
 
