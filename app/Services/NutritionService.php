@@ -2,13 +2,13 @@
 
 namespace App\Services;
 
-use App\Models\DailyLog;
+use App\Models\FoodLog;
 use App\Models\Ingredient;
 use Carbon\Carbon;
 
 class NutritionService
 {
-    public function calculateDailyTotals($items)
+    public function calculateFoodLogTotals($items)
     {
         $totals = [
             'calories' => 0,
@@ -32,8 +32,8 @@ class NutritionService
         $macroNutrients = ['calories', 'protein', 'carbs', 'added_sugars', 'fats', 'sodium', 'iron', 'potassium', 'fiber', 'calcium', 'caffeine'];
 
         foreach ($items as $item) {
-            $ingredient = $item instanceof DailyLog ? $item->ingredient : $item;
-            $quantity = $item instanceof DailyLog ? $item->quantity : $item->pivot->quantity;
+            $ingredient = $item instanceof FoodLog ? $item->ingredient : $item;
+            $quantity = $item instanceof FoodLog ? $item->quantity : $item->pivot->quantity;
 
             if (empty($quantity)) {
                 continue;

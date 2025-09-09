@@ -28,7 +28,7 @@ class TsvImporterServiceTest extends TestCase
     }
 
     /** @test */
-    public function it_imports_daily_logs_correctly()
+    public function it_imports_food_logs_correctly()
     {
         $unit = Unit::factory()->create(['name' => 'grams', 'abbreviation' => 'g']);
         $ingredient1 = Ingredient::factory()->create(['name' => 'Apple', 'base_unit_id' => $unit->id]);
@@ -37,14 +37,14 @@ class TsvImporterServiceTest extends TestCase
         $tsvData = "2025-08-26\t10:00\tApple\tNote 1\t100\n" .
                    "2025-08-26\t12:00\tBanana\tNote 2\t150";
 
-        $result = $this->tsvImporterService->importDailyLogs($tsvData, '2025-08-26', $this->user->id);
+        $result = $this->tsvImporterService->importFoodLogs($tsvData, '2025-08-26', $this->user->id);
 
         $this->assertEquals(2, $result['importedCount']);
         $this->assertEmpty($result['notFound']);
 
-        $this->assertDatabaseCount('daily_logs', 2);
+        $this->assertDatabaseCount('food_logs', 2);
 
-        $this->assertDatabaseHas('daily_logs', [
+        $this->assertDatabaseHas('food_logs', [
             'user_id' => $this->user->id,
             'ingredient_id' => $ingredient1->id,
             'quantity' => 100,
@@ -52,7 +52,7 @@ class TsvImporterServiceTest extends TestCase
             'logged_at' => '2025-08-26 10:00:00',
         ]);
 
-        $this->assertDatabaseHas('daily_logs', [
+        $this->assertDatabaseHas('food_logs', [
             'user_id' => $this->user->id,
             'ingredient_id' => $ingredient2->id,
             'quantity' => 150,
@@ -62,25 +62,25 @@ class TsvImporterServiceTest extends TestCase
     }
 
     /** @test */
-    public function it_handles_not_found_ingredients_when_importing_daily_logs()
+    public function it_handles_not_found_ingredients_when_importing_food_logs()
     {
         $tsvData = "2025-08-26\t10:00\tNonExistentIngredient\tNote 1\t100";
 
-        $result = $this->tsvImporterService->importDailyLogs($tsvData, '2025-08-26', $this->user->id);
+        $result = $this->tsvImporterService->importFoodLogs($tsvData, '2025-08-26', $this->user->id);
 
         $this->assertEquals(0, $result['importedCount']);
         $this->assertEquals(['NonExistentIngredient'], $result['notFound']);
-        $this->assertDatabaseCount('daily_logs', 0);
+        $this->assertDatabaseCount('food_logs', 0);
     }
 
     /** @test */
-    public function it_handles_empty_tsv_data_for_daily_logs()
+    public function it_handles_empty_tsv_data_for_food_logs()
     {
-        $result = $this->tsvImporterService->importDailyLogs('', '2025-08-26', $this->user->id);
+        $result = $this->tsvImporterService->importFoodLogs('', '2025-08-26', $this->user->id);
 
         $this->assertEquals(0, $result['importedCount']);
         $this->assertEmpty($result['notFound']);
-        $this->assertDatabaseCount('daily_logs', 0);
+        $this->assertDatabaseCount('food_logs', 0);
     }
 
     /** @test */

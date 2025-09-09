@@ -56,4 +56,9 @@ class Ingredient extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function foodLogs()
+    {
+        return $this->hasMany(FoodLog::class);
+    }
 }

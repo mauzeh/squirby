@@ -14,4 +14,9 @@ class Unit extends Model
         'abbreviation',
         'conversion_factor',
     ];
+
+    public function foodLogs()
+    {
+        return $this->hasMany(FoodLog::class);
+    }
 }

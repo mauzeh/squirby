@@ -2,19 +2,19 @@
 
 namespace Database\Factories;
 
-use App\Models\DailyLog;
+use App\Models\FoodLog;
 use Database\Factories\IngredientFactory;
 use Database\Factories\UnitFactory;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-class DailyLogFactory extends Factory
+class FoodLogFactory extends Factory
 {
     /**
      * The name of the factory's corresponding model.
      *
      * @var string
      */
-    protected $model = DailyLog::class;
+    protected $model = FoodLog::class;
 
     /**
      * Define the model's default state.

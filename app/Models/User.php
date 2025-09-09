@@ -228,4 +228,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(Meal::class);
     }
+
+    public function foodLogs()
+    {
+        return $this->hasMany(FoodLog::class);
+    }
 }

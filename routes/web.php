@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
 // Custom Controllers
-use App\Http\Controllers\DailyLogController;
+use App\Http\Controllers\FoodLogController;
 use App\Http\Controllers\IngredientController;
 use App\Http\Controllers\MealController;
 
@@ -18,7 +18,7 @@ use App\Http\Controllers\MeasurementTypeController;
 // Breeze Routes
 Route::get('/', function () {
     if (Auth::check()) {
-        return redirect()->route('daily-logs.index');
+        return redirect()->route('food-logs.index');
     }
     return redirect()->route('login');
 });
@@ -32,12 +32,12 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     // Custom Application Routes (Protected by 'auth' middleware)
-    Route::resource('daily-logs', DailyLogController::class)->except(['show']);
-    Route::post('daily-logs/add-meal', [DailyLogController::class, 'addMealToLog'])->name('daily-logs.add-meal');
-    Route::post('daily-logs/destroy-selected', [DailyLogController::class, 'destroySelected'])->name('daily-logs.destroy-selected');
-    Route::post('daily-logs/import-tsv', [DailyLogController::class, 'importTsv'])->name('daily-logs.import-tsv');
-    Route::post('daily-logs/export', [DailyLogController::class, 'export'])->name('export');
-    Route::post('daily-logs/export-all', [DailyLogController::class, 'exportAll'])->name('export-all');
+    Route::resource('food-logs', FoodLogController::class)->except(['show']);
+    Route::post('food-logs/add-meal', [FoodLogController::class, 'addMealToLog'])->name('food-logs.add-meal');
+    Route::post('food-logs/destroy-selected', [FoodLogController::class, 'destroySelected'])->name('food-logs.destroy-selected');
+    Route::post('food-logs/import-tsv', [FoodLogController::class, 'importTsv'])->name('food-logs.import-tsv');
+    Route::post('food-logs/export', [FoodLogController::class, 'export'])->name('food-logs.export');
+    Route::post('food-logs/export-all', [FoodLogController::class, 'exportAll'])->name('food-logs.export-all');
 
     
 

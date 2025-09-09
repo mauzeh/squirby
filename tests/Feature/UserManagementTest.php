@@ -223,7 +223,7 @@ class UserManagementTest extends TestCase
     {
         $this->actingAs($this->admin)->get(route('users.impersonate', $this->athlete));
 
-        $response = $this->get(route('daily-logs.index'));
+        $response = $this->get(route('food-logs.index'));
 
         $response->assertSee('You are currently impersonating ' . $this->athlete->name);
         $response->assertSee('Switch Back');

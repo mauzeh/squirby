@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\DailyLog;
+use App\Models\FoodLog;
 use App\Models\Ingredient;
 use App\Models\Meal;
 use App\Models\Unit;
@@ -13,7 +13,7 @@ use App\Services\NutritionService;
 use App\Services\TsvImporterService;
 use Carbon\Carbon;
 
-class DailyLogController extends Controller
+class FoodLogController extends Controller
 {
     protected $nutritionService;
     protected $tsvImporterService;
@@ -38,22 +38,22 @@ class DailyLogController extends Controller
 
         $selectedDate = $request->input('date') ? Carbon::parse($request->input('date')) : Carbon::today();
 
-        $dailyLogs = DailyLog::with(['ingredient', 'unit'])
-            ->where('daily_logs.user_id', auth()->id())
-            ->join('ingredients', 'daily_logs.ingredient_id', '=', 'ingredients.id')
+        $foodLogs = FoodLog::with(['ingredient', 'unit'])
+            ->where('food_logs.user_id', auth()->id())
+            ->join('ingredients', 'food_logs.ingredient_id', '=', 'ingredients.id')
             ->whereDate('logged_at', $selectedDate->toDateString())
             ->orderBy('logged_at', 'desc')
             ->orderBy('ingredients.name', 'asc')
-            ->select('daily_logs.*')
+            ->select('food_logs.*')
             ->get();
 
-        $groupedLogs = $dailyLogs->groupBy(function ($log) {
+        $groupedLogs = $foodLogs->groupBy(function ($log) {
             return $log->logged_at->format('Y-m-d H:i:s');
         });
 
-        $dailyTotals = $nutritionService->calculateDailyTotals($dailyLogs);
+        $dailyTotals = $nutritionService->calculateFoodLogTotals($foodLogs);
 
-        return view('daily_logs.index', compact('dailyLogs', 'groupedLogs', 'dailyTotals', 'ingredients', 'units', 'meals', 'selectedDate', 'nutritionService'));
+        return view('food_logs.index', compact('foodLogs', 'groupedLogs', 'dailyTotals', 'ingredients', 'units', 'meals', 'selectedDate', 'nutritionService'));
     }
 
     /**
@@ -79,23 +79,23 @@ class DailyLogController extends Controller
         $loggedAtDate = Carbon::parse($validated['date']);
         $validated['logged_at'] = $loggedAtDate->setTimeFromTimeString($validated['logged_at']);
 
-        $logEntry = DailyLog::create(array_merge($validated, ['user_id' => auth()->id()]));
+        $logEntry = FoodLog::create(array_merge($validated, ['user_id' => auth()->id()]));
 
-        return redirect()->route('daily-logs.index', ['date' => $validated['date']])->with('success', 'Log entry added successfully!');
+        return redirect()->route('food-logs.index', ['date' => $validated['date']])->with('success', 'Log entry added successfully!');
     }
 
-    public function edit(DailyLog $dailyLog)
+    public function edit(FoodLog $foodLog)
     {
-        if ($dailyLog->user_id !== auth()->id()) {
+        if ($foodLog->user_id !== auth()->id()) {
             abort(403, 'Unauthorized action.');
         }
         $ingredients = Ingredient::with('baseUnit')->orderBy('name')->get();
-        return view('daily_logs.edit', compact('dailyLog', 'ingredients'));
+        return view('food_logs.edit', compact('foodLog', 'ingredients'));
     }
 
-    public function update(Request $request, DailyLog $dailyLog)
+    public function update(Request $request, FoodLog $foodLog)
     {
-        if ($dailyLog->user_id !== auth()->id()) {
+        if ($foodLog->user_id !== auth()->id()) {
             abort(403, 'Unauthorized action.');
         }
         $validated = $request->validate([
@@ -112,42 +112,42 @@ class DailyLogController extends Controller
         $loggedAtDate = Carbon::parse($validated['date']);
         $validated['logged_at'] = $loggedAtDate->setTimeFromTimeString($validated['logged_at']);
 
-        $dailyLog->update($validated);
+        $foodLog->update($validated);
 
-        return redirect()->route('daily-logs.index', ['date' => $validated['date']])->with('success', 'Log entry updated successfully!');
+        return redirect()->route('food-logs.index', ['date' => $validated['date']])->with('success', 'Log entry updated successfully!');
     }
 
-    public function destroy(DailyLog $dailyLog)
+    public function destroy(FoodLog $foodLog)
     {
-        if ($dailyLog->user_id !== auth()->id()) {
+        if ($foodLog->user_id !== auth()->id()) {
             abort(403, 'Unauthorized action.');
         }
-        $date = $dailyLog->logged_at->format('Y-m-d');
-        $dailyLog->delete();
+        $date = $foodLog->logged_at->format('Y-m-d');
+        $foodLog->delete();
 
-        return redirect()->route('daily-logs.index', ['date' => $date])->with('success', 'Log entry deleted successfully!');
+        return redirect()->route('food-logs.index', ['date' => $date])->with('success', 'Log entry deleted successfully!');
     }
 
     public function destroySelected(Request $request)
     {
         $validated = $request->validate([
-            'daily_log_ids' => 'required|array',
-            'daily_log_ids.*' => 'exists:daily_logs,id',
+            'food_log_ids' => 'required|array',
+            'food_log_ids.*' => 'exists:food_logs,id',
         ]);
 
-        $dailyLogs = DailyLog::whereIn('id', $validated['daily_log_ids'])->get();
+        $foodLogs = FoodLog::whereIn('id', $validated['food_log_ids'])->get();
 
-        foreach ($dailyLogs as $dailyLog) {
-            if ($dailyLog->user_id !== auth()->id()) {
+        foreach ($foodLogs as $foodLog) {
+            if ($foodLog->user_id !== auth()->id()) {
                 abort(403, 'Unauthorized action.');
             }
         }
 
-        $date = $dailyLogs->first()->logged_at->format('Y-m-d');
+        $date = $foodLogs->first()->logged_at->format('Y-m-d');
 
-        DailyLog::destroy($validated['daily_log_ids']);
+        FoodLog::destroy($validated['food_log_ids']);
 
-        return redirect()->route('daily-logs.index', ['date' => $date])->with('success', 'Selected log entries deleted successfully!');
+        return redirect()->route('food-logs.index', ['date' => $date])->with('success', 'Selected log entries deleted successfully!');
     }
 
     public function addMealToLog(Request $request)
@@ -178,7 +178,7 @@ class DailyLogController extends Controller
                 $notes .= ': ' . $validated['notes'];
             }
 
-            DailyLog::create([
+            FoodLog::create([
                 'ingredient_id' => $ingredient->id,
                 'unit_id' => $ingredient->base_unit_id,
                 'quantity' => $ingredient->pivot->quantity * $validated['portion'],
@@ -188,7 +188,7 @@ class DailyLogController extends Controller
             ]);
         }
 
-        return redirect()->route('daily-logs.index', ['date' => $validated['meal_date']])->with('success', 'Meal added to log successfully!');
+        return redirect()->route('food-logs.index', ['date' => $validated['meal_date']])->with('success', 'Meal added to log successfully!');
     }
 
     public function importTsv(Request $request)
@@ -201,20 +201,20 @@ class DailyLogController extends Controller
         $tsvData = trim($validated['tsv_data']);
         if (empty($tsvData)) {
             return redirect()
-                ->route('daily-logs.index', ['date' => $validated['date']])
+                ->route('food-logs.index', ['date' => $validated['date']])
                 ->with('error', 'TSV data cannot be empty.');
         }
 
-        $result = $this->tsvImporterService->importDailyLogs($tsvData, $validated['date'], auth()->id());
+        $result = $this->tsvImporterService->importFoodLogs($tsvData, $validated['date'], auth()->id());
 
         if ($result['importedCount'] === 0 && !empty($result['notFound'])) {
             return redirect()
-                ->route('daily-logs.index', ['date' => $validated['date']])
+                ->route('food-logs.index', ['date' => $validated['date']])
                 ->with('error', 'No ingredients found for: ' . implode(', ', $result['notFound']));
         }
 
         return redirect()
-            ->route('daily-logs.index', ['date' => $validated['date']])
+            ->route('food-logs.index', ['date' => $validated['date']])
             ->with('success', 'TSV data imported successfully!');
     }
 
@@ -228,7 +228,7 @@ class DailyLogController extends Controller
         $startDate = Carbon::parse($validated['start_date'])->startOfDay();
         $endDate = Carbon::parse($validated['end_date'])->endOfDay();
 
-        $dailyLogs = DailyLog::with(['ingredient', 'unit'])
+        $foodLogs = FoodLog::with(['ingredient', 'unit'])
             ->where('user_id', auth()->id())
             ->whereBetween('logged_at', [$startDate, $endDate])
             ->orderBy('logged_at', 'asc')
@@ -245,11 +245,11 @@ class DailyLogController extends Controller
 
         $columns = array('Date', 'Time', 'Ingredient', 'Notes', 'Quantity', 'Unit', 'Calories', 'Protein (g)', 'Carbs (g)', 'Fats (g)', 'Added Sugars (g)', 'Sodium (mg)', 'Iron (mg)', 'Potassium (mg)', 'Fiber (g)', 'Calcium (mg)', 'Caffeine (mg)', 'Cost');
 
-        $callback = function() use($dailyLogs, $columns) {
+        $callback = function() use($foodLogs, $columns) {
             $file = fopen('php://output', 'w');
             fputcsv($file, $columns);
 
-            foreach ($dailyLogs as $log) {
+            foreach ($foodLogs as $log) {
                 $row['Date']  = $log->logged_at->format('m/d/Y');
                 $row['Time']  = $log->logged_at->format('H:i');
                 $row['Ingredient']    = $log->ingredient->name;
@@ -280,7 +280,7 @@ class DailyLogController extends Controller
 
     public function exportAll(Request $request)
     {
-        $dailyLogs = DailyLog::with(['ingredient', 'unit'])
+        $foodLogs = FoodLog::with(['ingredient', 'unit'])
             ->where('user_id', auth()->id())
             ->orderBy('logged_at', 'asc')
             ->get();
@@ -296,11 +296,11 @@ class DailyLogController extends Controller
 
         $columns = array('Date', 'Time', 'Ingredient', 'Notes', 'Quantity', 'Unit', 'Calories', 'Protein (g)', 'Carbs (g)', 'Fats (g)', 'Added Sugars (g)', 'Sodium (mg)', 'Iron (mg)', 'Potassium (mg)', 'Fiber (g)', 'Calcium (mg)', 'Caffeine (mg)', 'Cost');
 
-        $callback = function() use($dailyLogs, $columns) {
+        $callback = function() use($foodLogs, $columns) {
             $file = fopen('php://output', 'w');
             fputcsv($file, $columns);
 
-            foreach ($dailyLogs as $log) {
+            foreach ($foodLogs as $log) {
                 $row['Date']  = $log->logged_at->format('m/d/Y');
                 $row['Time']  = $log->logged_at->format('H:i');
                 $row['Ingredient']    = $log->ingredient->name;
@@ -320,7 +320,7 @@ class DailyLogController extends Controller
                 $row['Cost'] = number_format($this->nutritionService->calculateCostForQuantity($log->ingredient, (float)$log->quantity), 2);
                 $row['Notes'] = $log->notes;
 
-                fputcsv($file, array($row['Date'], $row['Time'], $row['Ingredient'], $row['Notes'], 'Quantity', 'Unit', 'Calories', 'Protein (g)', 'Carbs (g)', 'Fats (g)', 'Added Sugars (g)', 'Sodium (mg)', 'Iron (mg)', 'Potassium (mg)', 'Fiber (g)', 'Calcium (mg)', 'Caffeine (mg)', 'Cost'));
+                fputcsv($file, array($row['Date'], $row['Time'], $row['Ingredient'], $row['Notes'], $row['Quantity'], $row['Unit'], $row['Calories'], $row['Protein (g)'], $row['Carbs (g)'], $row['Fats (g)'], $row['Added Sugars (g)'], $row['Sodium (mg)'], $row['Iron (mg)'], $row['Potassium (mg)'], $row['Fiber (g)'], $row['Calcium (mg)'], $row['Caffeine (mg)'], $row['Cost']));
             }
 
             fclose($file);

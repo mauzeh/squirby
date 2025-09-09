@@ -26,6 +26,6 @@ class RegistrationTest extends TestCase
         ]);
 
         $this->assertAuthenticated();
-        $response->assertRedirect(route('daily-logs.index', absolute: false));
+        $response->assertRedirect(route('food-logs.index', absolute: false));
     }
 }

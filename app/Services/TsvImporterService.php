@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\DailyLog;
+use App\Models\FoodLog;
 use App\Models\Ingredient;
 use App\Models\MeasurementLog;
 use Carbon\Carbon;
@@ -10,7 +10,7 @@ use Carbon\Exceptions\InvalidFormatException;
 
 class TsvImporterService
 {
-    public function importDailyLogs(string $tsvData, string $date, int $userId): array
+    public function importFoodLogs(string $tsvData, string $date, int $userId): array
     {
         $date = Carbon::parse($date);
         $rows = explode("\n", $tsvData);
@@ -40,7 +40,7 @@ class TsvImporterService
                     continue;
                 }
 
-                DailyLog::create([
+                FoodLog::create([
                     'user_id' => $userId,
                     'ingredient_id' => $ingredient->id,
                     'unit_id' => $ingredient->base_unit_id,

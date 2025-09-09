@@ -33,7 +33,7 @@
         @endif
         @auth
         <div class="navbar">
-            <a href="{{ route('daily-logs.index') }}" class="top-level-nav-item {{ Request::routeIs(['daily-logs.*', 'meals.*', 'ingredients.*']) ? 'active' : '' }}"><i class="fas fa-utensils"></i> Food</a>
+            <a href="{{ route('food-logs.index') }}" class="top-level-nav-item {{ Request::routeIs(['food-logs.*', 'meals.*', 'ingredients.*']) ? 'active' : '' }}"><i class="fas fa-utensils"></i> Food</a>
             <a href="{{ route('workouts.index') }}" class="top-level-nav-item {{ Request::routeIs(['exercises.*', 'workouts.*']) ? 'active' : '' }}"><i class="fas fa-dumbbell"></i> Lifts</a>
             <a href="{{ route('measurement-logs.index') }}" class="top-level-nav-item {{ Request::routeIs(['measurement-logs.*', 'measurement-types.*']) ? 'active' : '' }}"><i class="fas fa-heartbeat"></i> Body</a>
 
@@ -51,10 +51,10 @@
             </div>
         </div>
 
-        @if (Request::routeIs(['daily-logs.*', 'meals.*', 'ingredients.*', 'exercises.*', 'workouts.*', 'measurement-logs.*', 'measurement-types.*']))
+        @if (Request::routeIs(['food-logs.*', 'meals.*', 'ingredients.*', 'exercises.*', 'workouts.*', 'measurement-logs.*', 'measurement-types.*']))
         <div class="navbar sub-navbar">
-            @if (Request::routeIs(['daily-logs.*', 'meals.*', 'ingredients.*']))
-                <a href="{{ route('daily-logs.index') }}" class="{{ Request::routeIs('daily-logs.*') ? 'active' : '' }}">Log Entry</a>
+            @if (Request::routeIs(['food-logs.*', 'meals.*', 'ingredients.*']))
+                <a href="{{ route('food-logs.index') }}" class="{{ Request::routeIs('food-logs.*') ? 'active' : '' }}">Food Log Entry</a>
                 <a href="{{ route('meals.index') }}" class="{{ Request::routeIs('meals.*') ? 'active' : '' }}">Meals</a>
                 <a href="{{ route('ingredients.index') }}" class="{{ Request::routeIs('ingredients.*') ? 'active' : '' }}">Ingredients</a>
             @endif

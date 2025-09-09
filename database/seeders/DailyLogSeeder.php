@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\DailyLog;
+use App\Models\FoodLog;
 use App\Models\Ingredient;
 use App\Models\User;
 use Carbon\Carbon;
@@ -30,7 +30,7 @@ class DailyLogSeeder extends Seeder
                 if ($ingredient) {
                     $loggedAt = Carbon::createFromFormat('m/d/Y H:i', $data[0] . ' ' . $data[1]);
                     
-                    DailyLog::create([
+                    FoodLog::create([
                         'user_id' => $adminUser->id,
                         'ingredient_id' => $ingredient->id,
                         'unit_id' => $ingredient->base_unit_id,

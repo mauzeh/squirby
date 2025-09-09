@@ -26,7 +26,7 @@ class MealController extends Controller
         $meals = Meal::with('ingredients')->where('user_id', auth()->id())->get();
 
         foreach ($meals as $meal) {
-            $meal->total_macros = $this->nutritionService->calculateDailyTotals($meal->ingredients);
+            $meal->total_macros = $this->nutritionService->calculateFoodLogTotals($meal->ingredients);
         }
 
         return view('meals.index', compact('meals'));

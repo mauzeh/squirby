@@ -10,12 +10,12 @@
                 $date = $today->copy()->addDays($i);
                 $dateString = $date->toDateString();
             @endphp
-            <a href="{{ route('daily-logs.index', ['date' => $dateString]) }}" class="date-link {{ $selectedDate->toDateString() == $dateString ? 'active' : '' }}">
+            <a href="{{ route('food-logs.index', ['date' => $dateString]) }}" class="date-link {{ $selectedDate->toDateString() == $dateString ? 'active' : '' }}">
                 {{ $date->format('D M d') }}
             </a>
         @endfor
         <label for="date_picker" class="date-pick-label ml-4 mr-2">Or Pick a Date:</label>
-        <input type="date" id="date_picker" onchange="window.location.href = '{{ route('daily-logs.index') }}?date=' + this.value;" value="{{ $selectedDate->format('Y-m-d') }}">
+        <input type="date" id="date_picker" onchange="window.location.href = '{{ route('food-logs.index') }}?date=' + this.value;" value="{{ $selectedDate->format('Y-m-d') }}">
     </div>
     @if (session('success'))
         <div class="container success-message-box">
@@ -30,7 +30,7 @@
     <div class="container forms-container-wrapper">
         <div class="form-container">
             <h3>Add New Entry</h3>
-            <form action="{{ route('daily-logs.store') }}" method="POST">
+            <form action="{{ route('food-logs.store') }}" method="POST">
                 @csrf
                 <div class="form-row">
                     <label for="date">Date:</label>
@@ -58,13 +58,13 @@
                         <span class="error-message">{{ $message }}</span>
                     @enderror
                 </div>
-                <button type="submit" class="button">Add Log Entry</button>
+                <button type="submit" class="button">Add Food Log Entry</button>
             </form>
         </div>
 
         <div class="form-container">
             <h3>Add Meal to Log</h3>
-            <form action="{{ route('daily-logs.add-meal') }}" method="POST">
+            <form action="{{ route('food-logs.add-meal') }}" method="POST">
                 @csrf
                 <div class="form-row">
                     <label for="meal_date">Date:</label>
@@ -91,20 +91,20 @@
                     <label for="notes_meal">Notes:</label>
                     <input type="text" name="notes" id="notes_meal" value="{{ old('notes') }}">
                 </div>
-                <button type="submit" class="button">Add Meal to Log</button>
+                <button type="submit" class="button">Add Meal to Food Log</button>
             </form>
         </div>
 
         <div class="form-container">
             <h3>Export Options</h3>
-            <h4>Export All Logs</h4>
-            <form action="{{ route('export-all') }}" method="POST" id="export-all-form">
+            <h4>Export All Food Logs</h4>
+            <form action="{{ route('food-logs.export-all') }}" method="POST" id="export-all-form">
                 @csrf
-                <button type="submit" class="button">Export All Logs</button>
+                <button type="submit" class="button">Export All Food Logs</button>
             </form>
 
             <h4>Export Date Range</h4>
-            <form action="{{ route('export') }}" method="POST" id="export-form">
+            <form action="{{ route('food-logs.export') }}" method="POST" id="export-form">
                 @csrf
                 <div class="form-group">
                     <label for="start_date">Start Date:</label>
@@ -120,8 +120,8 @@
     </div>
 
     <div class="container">
-        <h2>Log Entries for {{ $selectedDate->format('M d, Y') }}</h2>
-        @if ($dailyLogs->isEmpty())
+        <h2>Food Log Entries for {{ $selectedDate->format('M d, Y') }}</h2>
+        @if ($foodLogs->isEmpty())
             <p>No entries for this day.</p>
         @else
             <table class="log-entries-table">
@@ -141,9 +141,9 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach ($dailyLogs as $log)
+                    @foreach ($foodLogs as $log)
                         <tr>
-                            <td><input type="checkbox" name="daily_log_ids[]" value="{{ $log->id }}" class="log-checkbox"></td>
+                            <td><input type="checkbox" name="food_log_ids[]" value="{{ $log->id }}" class="log-checkbox"></td>
                             <td>{{ $log->logged_at->format('H:i') }}</td>
                             <td>
                                 {{ $log->ingredient->name }}
@@ -160,11 +160,11 @@
                             <td class="hide-on-mobile">{{ number_format($nutritionService->calculateCostForQuantity($log->ingredient, (float)$log->quantity), 2) }}</td>
                             <td class="actions-column">
                                 <div style="display: flex; gap: 5px;">
-                                    <a href="{{ route('daily-logs.edit', $log->id) }}" class="button edit">Edit</a>
-                                    <form action="{{ route('daily-logs.destroy', $log->id) }}" method="POST" style="display:inline;">
+                                    <a href="{{ route('food-logs.edit', $log->id) }}" class="button edit">Edit</a>
+                                    <form action="{{ route('food-logs.destroy', $log->id) }}" method="POST" style="display:inline;">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="button delete" onclick="return confirm('Are you sure you want to delete this log entry?');">Delete</button>
+                                        <button type="submit" class="button delete" onclick="return confirm('Are you sure you want to delete this food log entry?');">Delete</button>
                                     </form>
                                 </div>
                             </td>
@@ -174,9 +174,9 @@
                 <tfoot>
                     <tr>
                         <th colspan="3" style="text-align:left; font-weight:normal;">
-                            <form action="{{ route('daily-logs.destroy-selected') }}" method="POST" id="delete-selected-form" onsubmit="return confirm('Are you sure you want to delete the selected log entries?');" style="display:inline;">
+                            <form action="{{ route('food-logs.destroy-selected') }}" method="POST" id="delete-selected-form" onsubmit="return confirm('Are you sure you want to delete the selected food log entries?');" style="display:inline;">
                                 @csrf
-                                <button type="submit" class="button delete">Delete Selected Logs</button>
+                                <button type="submit" class="button delete">Delete Selected Food Logs</button>
                             </form>
                         </th>
                         <th style="text-align:right; font-weight:bold;">Total:</th>
@@ -205,7 +205,7 @@
 
             <div class="form-container">
                 <h3>TSV Export</h3>
-                <textarea id="tsv-output" rows="10" style="width: 100%; background-color: #3a3a3a; color: #f2f2f2; border: 1px solid #555;">@foreach ($dailyLogs->reverse() as $log)
+                <textarea id="tsv-output" rows="10" style="width: 100%; background-color: #3a3a3a; color: #f2f2f2; border: 1px solid #555;">@foreach ($foodLogs->reverse() as $log)
 {{ $log->logged_at->format('m/d/Y') }}	{{ $log->logged_at->format('H:i') }}	{{ $log->ingredient->name }}	{{ $log->notes }}	{{ $log->quantity }}
 @endforeach
                 </textarea>
@@ -226,14 +226,14 @@
                     var checkedLogs = document.querySelectorAll('.log-checkbox:checked');
 
                     if (checkedLogs.length === 0) {
-                        alert('Please select at least one log entry to create a meal.');
+                        alert('Please select at least one food log entry to create a meal.');
                         return;
                     }
 
                     checkedLogs.forEach(function(checkbox) {
                         var input = document.createElement('input');
                         input.type = 'hidden';
-                        input.name = 'daily_log_ids[]';
+                        input.name = 'food_log_ids[]';
                         input.value = checkbox.value;
                         form.appendChild(input);
                     });
@@ -248,14 +248,14 @@
                     var checkedLogs = document.querySelectorAll('.log-checkbox:checked');
 
                     if (checkedLogs.length === 0) {
-                        alert('Please select at least one log entry to delete.');
+                        alert('Please select at least one food log entry to delete.');
                         return;
                     }
 
                     checkedLogs.forEach(function(checkbox) {
                         var input = document.createElement('input');
                         input.type = 'hidden';
-                        input.name = 'daily_log_ids[]';
+                        input.name = 'food_log_ids[]';
                         input.value = checkbox.value;
                         form.appendChild(input);
                     });
@@ -288,7 +288,7 @@
                         var url = window.URL.createObjectURL(blob);
                         var a = document.createElement('a');
                         a.href = url;
-                        a.download = 'daily_log_all.csv';
+                        a.download = 'food_log_all.csv';
                         document.body.appendChild(a);
                         a.click();
                         a.remove();
@@ -313,7 +313,7 @@
                         var url = window.URL.createObjectURL(blob);
                         var a = document.createElement('a');
                         a.href = url;
-                        a.download = 'daily_log_' + formData.get('start_date') + '_to_' + formData.get('end_date') + '.csv';
+                        a.download = 'food_log_' + formData.get('start_date') + '_to_' + formData.get('end_date') + '.csv';
                         document.body.appendChild(a);
                         a.click();
                         a.remove();
@@ -326,7 +326,7 @@
     <div class="container">
         <div class="form-container">
             <h3>TSV Import</h3>
-            <form action="{{ route('daily-logs.import-tsv') }}" method="POST">
+            <form action="{{ route('food-logs.import-tsv') }}" method="POST">
                 @csrf
                 <input type="hidden" name="date" value="{{ $selectedDate->format('Y-m-d') }}">
                 <textarea name="tsv_data" rows="10" style="width: 100%; background-color: #3a3a3a; color: #f2f2f2; border: 1px solid #555;"></textarea>
@@ -340,7 +340,7 @@
         @foreach($groupedLogs->sortKeys() as $time => $logs)
                 <div class="meal-group">
                     @php
-                        $mealTotals = $nutritionService->calculateDailyTotals($logs);
+                        $mealTotals = $nutritionService->calculateFoodLogTotals($logs);
                     @endphp
                     <x-nutrition-facts-label :totals="$mealTotals" :title="\Carbon\Carbon::parse($time)->format('H:i')" />
                 </div>

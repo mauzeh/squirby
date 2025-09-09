@@ -6,12 +6,12 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 use App\Models\User;
-use App\Models\DailyLog;
+use App\Models\FoodLog;
 use App\Models\Ingredient;
 use App\Models\Unit;
 use Carbon\Carbon;
 
-class DailyLogExportTest extends TestCase
+class FoodLogExportTest extends TestCase
 {
     use RefreshDatabase;
     use WithFaker;
@@ -29,24 +29,24 @@ class DailyLogExportTest extends TestCase
     }
 
     /** @test */
-    public function authenticated_user_can_export_daily_logs_by_date_range()
+    public function authenticated_user_can_export_food_logs_by_date_range()
     {
         $this->actingAs($this->user);
 
-        // Create some daily logs within and outside the date range
-        DailyLog::factory()->create(['user_id' => $this->user->id, 'ingredient_id' => $this->ingredient->id, 'unit_id' => $this->unit->id, 'logged_at' => Carbon::parse('2025-01-01 10:00:00')]);
-        DailyLog::factory()->create(['user_id' => $this->user->id, 'ingredient_id' => $this->ingredient->id, 'unit_id' => $this->unit->id, 'logged_at' => Carbon::parse('2025-01-02 11:00:00')]);
-        DailyLog::factory()->create(['user_id' => $this->user->id, 'ingredient_id' => $this->ingredient->id, 'unit_id' => $this->unit->id, 'logged_at' => Carbon::parse('2025-01-03 12:00:00')]);
-        DailyLog::factory()->create(['user_id' => $this->user->id, 'ingredient_id' => $this->ingredient->id, 'unit_id' => $this->unit->id, 'logged_at' => Carbon::parse('2025-01-04 13:00:00')]); // Outside range
+        // Create some food logs within and outside the date range
+        FoodLog::factory()->create(['user_id' => $this->user->id, 'ingredient_id' => $this->ingredient->id, 'unit_id' => $this->unit->id, 'logged_at' => Carbon::parse('2025-01-01 10:00:00')]);
+        FoodLog::factory()->create(['user_id' => $this->user->id, 'ingredient_id' => $this->ingredient->id, 'unit_id' => $this->unit->id, 'logged_at' => Carbon::parse('2025-01-02 11:00:00')]);
+        FoodLog::factory()->create(['user_id' => $this->user->id, 'ingredient_id' => $this->ingredient->id, 'unit_id' => $this->unit->id, 'logged_at' => Carbon::parse('2025-01-03 12:00:00')]);
+        FoodLog::factory()->create(['user_id' => $this->user->id, 'ingredient_id' => $this->ingredient->id, 'unit_id' => $this->unit->id, 'logged_at' => Carbon::parse('2025-01-04 13:00:00')]); // Outside range
 
-        $response = $this->post(route('export'), [
+        $response = $this->post(route('food-logs.export'), [
             'start_date' => '2025-01-01',
             'end_date' => '2025-01-03',
         ]);
 
         $response->assertOk();
         $response->assertHeader('Content-Type', 'text/csv; charset=UTF-8');
-        //$response->assertHeader('Content-Disposition', '/^attachment; filename=daily_log_2025-01-01_to_2025-01-03_\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}\.csv$/');
+        //$response->assertHeader('Content-Disposition', '/^attachment; filename=food_log_2025-01-01_to_2025-01-03_\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}\.csv$/');
 
         $content = $response->streamedContent();
         $lines = explode("\n", trim($content));
@@ -59,19 +59,19 @@ class DailyLogExportTest extends TestCase
     }
 
     /** @test */
-    public function authenticated_user_can_export_daily_logs_for_single_day_range()
+    public function authenticated_user_can_export_food_logs_for_single_day_range()
     {
         $this->actingAs($this->user);
 
         $logDate = Carbon::parse('2025-09-04 10:00:00');
-        DailyLog::factory()->create([
+        FoodLog::factory()->create([
             'user_id' => $this->user->id,
             'ingredient_id' => $this->ingredient->id,
             'unit_id' => $this->unit->id,
             'logged_at' => $logDate
         ]);
 
-        $response = $this->post(route('export'), [
+        $response = $this->post(route('food-logs.export'), [
             'start_date' => '2025-09-04',
             'end_date' => '2025-09-04',
         ]);
@@ -87,18 +87,18 @@ class DailyLogExportTest extends TestCase
     }
 
     /** @test */
-    public function authenticated_user_can_export_all_daily_logs()
+    public function authenticated_user_can_export_all_food_logs()
     {
         $this->actingAs($this->user);
 
-        DailyLog::factory()->create(['user_id' => $this->user->id, 'ingredient_id' => $this->ingredient->id, 'unit_id' => $this->unit->id, 'logged_at' => Carbon::parse('2025-01-01 10:00:00')]);
-        DailyLog::factory()->create(['user_id' => $this->user->id, 'ingredient_id' => $this->ingredient->id, 'unit_id' => $this->unit->id, 'logged_at' => Carbon::parse('2025-01-02 11:00:00')]);
+        FoodLog::factory()->create(['user_id' => $this->user->id, 'ingredient_id' => $this->ingredient->id, 'unit_id' => $this->unit->id, 'logged_at' => Carbon::parse('2025-01-01 10:00:00')]);
+        FoodLog::factory()->create(['user_id' => $this->user->id, 'ingredient_id' => $this->ingredient->id, 'unit_id' => $this->unit->id, 'logged_at' => Carbon::parse('2025-01-02 11:00:00')]);
 
-        $response = $this->post(route('export-all'));
+        $response = $this->post(route('food-logs.export-all'));
 
         $response->assertOk();
         $response->assertHeader('Content-Type', 'text/csv; charset=UTF-8');
-        //$response->assertHeader('Content-Disposition', '/^attachment; filename=daily_log_all_\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}\.csv$/');
+        //$response->assertHeader('Content-Disposition', '/^attachment; filename=food_log_all_\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}\.csv$/');
 
         $content = $response->streamedContent();
         $lines = explode("\n", trim($content));
@@ -109,22 +109,22 @@ class DailyLogExportTest extends TestCase
     }
 
     /** @test */
-    public function unauthenticated_user_cannot_export_daily_logs()
+    public function unauthenticated_user_cannot_export_food_logs()
     {
-        $response = $this->post(route('export'), [
+        $response = $this->post(route('food-logs.export'), [
             'start_date' => '2025-01-01',
             'end_date' => '2025-01-03',
         ]);
 
         $response->assertRedirect(route('login'));
 
-        $response = $this->post(route('export-all'));
+        $response = $this->post(route('food-logs.export-all'));
 
         $response->assertRedirect(route('login'));
     }
 
     /** @test */
-    public function authenticated_user_cannot_export_other_users_daily_logs()
+    public function authenticated_user_cannot_export_other_users_food_logs()
     {
         $user1 = User::factory()->create();
         $user2 = User::factory()->create();
@@ -134,15 +134,15 @@ class DailyLogExportTest extends TestCase
         $ingredient1 = Ingredient::factory()->create(['user_id' => $user1->id, 'base_unit_id' => $this->unit->id]);
 
         // Create logs for user1
-        DailyLog::factory()->create(['user_id' => $user1->id, 'ingredient_id' => $ingredient1->id, 'unit_id' => $this->unit->id, 'logged_at' => Carbon::parse('2025-01-01 10:00:00')]);
-        DailyLog::factory()->create(['user_id' => $user1->id, 'ingredient_id' => $ingredient1->id, 'unit_id' => $this->unit->id, 'logged_at' => Carbon::parse('2025-01-02 11:00:00')]);
+        FoodLog::factory()->create(['user_id' => $user1->id, 'ingredient_id' => $ingredient1->id, 'unit_id' => $this->unit->id, 'logged_at' => Carbon::parse('2025-01-01 10:00:00')]);
+        FoodLog::factory()->create(['user_id' => $user1->id, 'ingredient_id' => $ingredient1->id, 'unit_id' => $this->unit->id, 'logged_at' => Carbon::parse('2025-01-02 11:00:00')]);
 
         // Create logs for user2
         $ingredient2 = Ingredient::factory()->create(['user_id' => $user2->id, 'base_unit_id' => $this->unit->id]);
-        DailyLog::factory()->create(['user_id' => $user2->id, 'ingredient_id' => $ingredient2->id, 'unit_id' => $this->unit->id, 'logged_at' => Carbon::parse('2025-01-01 10:30:00')]);
-        DailyLog::factory()->create(['user_id' => $user2->id, 'ingredient_id' => $ingredient2->id, 'unit_id' => $this->unit->id, 'logged_at' => Carbon::parse('2025-01-02 11:30:00')]);
+        FoodLog::factory()->create(['user_id' => $user2->id, 'ingredient_id' => $ingredient2->id, 'unit_id' => $this->unit->id, 'logged_at' => Carbon::parse('2025-01-01 10:30:00')]);
+        FoodLog::factory()->create(['user_id' => $user2->id, 'ingredient_id' => $ingredient2->id, 'unit_id' => $this->unit->id, 'logged_at' => Carbon::parse('2025-01-02 11:30:00')]);
 
-        $response = $this->post(route('export-all'));
+        $response = $this->post(route('food-logs.export-all'));
 
         $response->assertOk();
         $content = $response->streamedContent();
@@ -162,7 +162,7 @@ class DailyLogExportTest extends TestCase
     }
 
     /** @test */
-    public function authenticated_user_cannot_export_other_users_daily_logs_for_date_range()
+    public function authenticated_user_cannot_export_other_users_food_logs_for_date_range()
     {
         $user1 = User::factory()->create();
         $user2 = User::factory()->create();
@@ -172,15 +172,15 @@ class DailyLogExportTest extends TestCase
         $ingredient1 = Ingredient::factory()->create(['user_id' => $user1->id, 'base_unit_id' => $this->unit->id]);
 
         // Create logs for user1 within the date range
-        DailyLog::factory()->create(['user_id' => $user1->id, 'ingredient_id' => $ingredient1->id, 'unit_id' => $this->unit->id, 'logged_at' => Carbon::parse('2025-01-01 10:00:00')]);
-        DailyLog::factory()->create(['user_id' => $user1->id, 'ingredient_id' => $ingredient1->id, 'unit_id' => $this->unit->id, 'logged_at' => Carbon::parse('2025-01-02 11:00:00')]);
+        FoodLog::factory()->create(['user_id' => $user1->id, 'ingredient_id' => $ingredient1->id, 'unit_id' => $this->unit->id, 'logged_at' => Carbon::parse('2025-01-01 10:00:00')]);
+        FoodLog::factory()->create(['user_id' => $user1->id, 'ingredient_id' => $ingredient1->id, 'unit_id' => $this->unit->id, 'logged_at' => Carbon::parse('2025-01-02 11:00:00')]);
 
         // Create logs for user2 within the date range
         $ingredient2 = Ingredient::factory()->create(['user_id' => $user2->id, 'base_unit_id' => $this->unit->id]);
-        DailyLog::factory()->create(['user_id' => $user2->id, 'ingredient_id' => $ingredient2->id, 'unit_id' => $this->unit->id, 'logged_at' => Carbon::parse('2025-01-01 10:30:00')]);
-        DailyLog::factory()->create(['user_id' => $user2->id, 'ingredient_id' => $ingredient2->id, 'unit_id' => $this->unit->id, 'logged_at' => Carbon::parse('2025-01-02 11:30:00')]);
+        FoodLog::factory()->create(['user_id' => $user2->id, 'ingredient_id' => $ingredient2->id, 'unit_id' => $this->unit->id, 'logged_at' => Carbon::parse('2025-01-01 10:30:00')]);
+        FoodLog::factory()->create(['user_id' => $user2->id, 'ingredient_id' => $ingredient2->id, 'unit_id' => $this->unit->id, 'logged_at' => Carbon::parse('2025-01-02 11:30:00')]);
 
-        $response = $this->post(route('export'), [
+        $response = $this->post(route('food-logs.export'), [
             'start_date' => '2025-01-01',
             'end_date' => '2025-01-02',
         ]);

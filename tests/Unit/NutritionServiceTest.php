@@ -6,7 +6,7 @@ use Tests\TestCase;
 use App\Services\NutritionService;
 use App\Models\Ingredient;
 use App\Models\Unit;
-use App\Models\DailyLog;
+use App\Models\FoodLog;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class NutritionServiceTest extends TestCase
@@ -107,7 +107,7 @@ class NutritionServiceTest extends TestCase
     }
 
     /** @test */
-    public function it_calculates_daily_totals_from_daily_logs_correctly()
+    public function it_calculates_daily_totals_from_food_logs_correctly()
     {
         $gUnit = Unit::where('abbreviation', 'g')->first();
         $pcUnit = Unit::where('abbreviation', 'pc')->first();
@@ -126,22 +126,22 @@ class NutritionServiceTest extends TestCase
             'base_quantity' => 1, 'base_unit_id' => $pcUnit->id, 'cost_per_unit' => 0.50,
         ]); // 1pc: 180 cal, 20p, 10c, 10f, $0.50
 
-        DailyLog::create([
+        FoodLog::create([
             'ingredient_id' => $ingredient1->id,
             'unit_id' => $gUnit->id,
             'quantity' => 100,
             'logged_at' => now(),
         ]); // 100g of Food A
 
-        DailyLog::create([
+        FoodLog::create([
             'ingredient_id' => $ingredient2->id,
             'unit_id' => $pcUnit->id,
             'quantity' => 2,
             'logged_at' => now(),
         ]); // 2pc of Food B
 
-        $dailyLogs = DailyLog::with('ingredient')->get();
-        $totals = $this->nutritionService->calculateDailyTotals($dailyLogs);
+        $foodLogs = FoodLog::with('ingredient')->get();
+        $totals = $this->nutritionService->calculateFoodLogTotals($foodLogs);
 
         // Expected totals:
         // Calories: 165 (Food A) + (210 * 2) (Food B) = 165 + 420 = 585
@@ -157,7 +157,7 @@ class NutritionServiceTest extends TestCase
     }
 
     /** @test */
-    public function it_calculates_daily_totals_from_ingredients_collection_correctly()
+    public function it_calculates_food_log_totals_from_ingredients_collection_correctly()
     {
         $gUnit = Unit::where('abbreviation', 'g')->first();
         $pcUnit = Unit::where('abbreviation', 'pc')->first();
@@ -182,7 +182,7 @@ class NutritionServiceTest extends TestCase
             $ingredient2->setAttribute('pivot', (object)['quantity' => 3]),  // 3pc of Food Y
         ]);
 
-        $totals = $this->nutritionService->calculateDailyTotals($mealIngredients);
+        $totals = $this->nutritionService->calculateFoodLogTotals($mealIngredients);
 
         // Expected totals:
         // Food X (50g): 116 cal, 7.5p, 12.5c, 4f, $1.50
@@ -200,10 +200,10 @@ class NutritionServiceTest extends TestCase
     }
 
     /** @test */
-    public function it_handles_empty_collections_in_calculate_daily_totals()
+    public function it_handles_empty_collections_in_calculate_food_log_totals()
     {
-        $dailyLogs = collect();
-        $totals = $this->nutritionService->calculateDailyTotals($dailyLogs);
+        $foodLogs = collect();
+        $totals = $this->nutritionService->calculateFoodLogTotals($foodLogs);
 
         $expectedTotals = [
             'calories' => 0, 'protein' => 0, 'carbs' => 0, 'added_sugars' => 0, 'fats' => 0,
