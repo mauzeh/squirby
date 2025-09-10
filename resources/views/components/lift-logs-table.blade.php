@@ -1,11 +1,13 @@
-@props(['liftLogs'])
+@props(['liftLogs', 'hideExerciseColumn' => false])
 
 <table class="log-entries-table">
     <thead>
         <tr>
             <th><input type="checkbox" id="select-all-lift-logs"></th>
             <th>Date</th>
-            <th>Exercise</th>
+            @unless($hideExerciseColumn)
+                <th>Exercise</th>
+            @endunless
             <th>Weight (reps x rounds)</th>
             <th>1RM (est.)</th>
             <th class="hide-on-mobile" style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Comments</th>
@@ -17,7 +19,9 @@
             <tr>
                 <td><input type="checkbox" name="lift_log_ids[]" value="{{ $liftLog->id }}" class="lift-log-checkbox"></td>
                 <td>{{ $liftLog->logged_at->format('m/d') }}</td>
-                <td><a href="{{ route('exercises.show-logs', $liftLog->exercise) }}">{{ $liftLog->exercise->title }}</a></td>
+                @unless($hideExerciseColumn)
+                    <td><a href="{{ route('exercises.show-logs', $liftLog->exercise) }}">{{ $liftLog->exercise->title }}</a></td>
+                @endunless
                 <td>
                     @if ($liftLog->exercise->is_bodyweight)
                         <span style="font-weight: bold; font-size: 1.2em;">Bodyweight</span><br>
@@ -40,11 +44,11 @@
                 <td class="hide-on-mobile" style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ $liftLog->comments }}">{{ $liftLog->comments }}</td>
                 <td class="actions-column">
                     <div style="display: flex; gap: 5px;">
-                        <a href="{{ route('lift-logs.edit', $liftLog->id) }}" class="button edit">Edit</a>
+                        <a href="{{ route('lift-logs.edit', $liftLog->id) }}" class="button edit"><i class="fa-solid fa-pencil"></i></a>
                         <form action="{{ route('lift-logs.destroy', $liftLog->id) }}" method="POST" style="display:inline;">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" class="button delete" onclick="return confirm('Are you sure you want to delete this lift log?');">Delete</button>
+                            <button type="submit" class="button delete" onclick="return confirm('Are you sure you want to delete this lift log?');"><i class="fa-solid fa-trash"></i></button>
                         </form>
                     </div>
                 </td>
