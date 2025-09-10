@@ -4,19 +4,7 @@
 
 <x-top-exercises-buttons :exercises="$top5Exercises" /> 
 
-<style>
-    @media (max-width: 768px) {
-        .chart-container:not(:first-child) {
-            display: none;
-        }
-        .charts-container {
-            flex-direction: column;
-        }
-        .chart-container {
-            width: 100% !important;
-        }
-    }
-</style>
+
     @if (session('success'))
         <div class="container success-message-box">
             {{ session('success') }}
@@ -28,18 +16,6 @@
         </div>
     @endif
     <div class="container">
-        <div class="charts-container" style="display: flex; justify-content: space-between; gap: 20px;">
-            @foreach ($charts as $chart)
-                <div class="form-container chart-container" style="width: 32%;">
-                    <h3>
-                        {{ $chart['title'] }}
-                        &nbsp;
-                        <a href="{{ route('exercises.show-logs', ['exercise' => $chart['exercise_id']]) }}" class="button">View Logs</a>
-                    </h3>
-                    <canvas id="oneRepMaxChart_{{ $loop->index }}"></canvas>
-                </div>
-            @endforeach
-        </div>
 
         <div class="form-container">
             <h3>Add Lift Log</h3>
@@ -111,8 +87,6 @@
 
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const urlParams = new URLSearchParams(window.location.search);
@@ -144,42 +118,7 @@
 
             // Listen for changes on the exercise select dropdown
             exerciseSelect.addEventListener('change', toggleWeightInput);
-
-            @foreach ($charts as $chart)
-                var ctx_{{ $loop->index }} = document.getElementById('oneRepMaxChart_{{ $loop->index }}').getContext('2d');
-                var oneRepMaxChart_{{ $loop->index }} = new Chart(ctx_{{ $loop->index }}, {
-                    type: 'line',
-                    data: {
-                        datasets: @json($chart['chartData']['datasets'])
-                    },
-                    options: {
-                        scales: {
-                            x: {
-                                type: 'time',
-                                time: {
-                                    unit: 'day',
-                                    displayFormats: {
-                                        day: 'MMM d, yyyy'
-                                    }
-                                },
-                                min: '{{ $chart["minDate"] }}',
-                                max: '{{ $chart["maxDate"] }}'
-                            },
-                            y: {
-                            }
-                        },
-                        plugins: {
-                            tooltip: {
-                                mode: 'index',
-                                intersect: false
-                            }
-                        },
-                    }
-                });
-            @endforeach
-
             
-
             const copyTsvButton = document.getElementById('copy-tsv-button');
             if (copyTsvButton) {
                 copyTsvButton.addEventListener('click', function() {

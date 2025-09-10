@@ -29,52 +29,11 @@ class LiftLogController extends Controller
         $liftLogs = LiftLog::with('exercise')->where('user_id', auth()->id())->orderBy('logged_at', 'asc')->get();
         $exercises = Exercise::where('user_id', auth()->id())->orderBy('title', 'asc')->get();
 
-        $topExercisesForCharts = $this->exerciseService->getTopExercises(3);
         $top5Exercises = $this->exerciseService->getTopExercises(5);
 
-        $charts = [];
-        $colors = [
-            ['borderColor' => 'rgba(255, 99, 132, 1)', 'backgroundColor' => 'rgba(255, 99, 132, 0.2)'],
-            ['borderColor' => 'rgba(54, 162, 235, 1)', 'backgroundColor' => 'rgba(54, 162, 235, 0.2)'],
-            ['borderColor' => 'rgba(255, 206, 86, 1)', 'backgroundColor' => 'rgba(255, 206, 86, 0.2)'],
-        ];
-        $colorIndex = 0;
-
-        foreach ($topExercisesForCharts as $exercise) {
-            $exerciseLiftLogs = $liftLogs->where('exercise_id', $exercise->id);
-
-            $minDate = $exerciseLiftLogs->min('logged_at');
-            $maxDate = $exerciseLiftLogs->max('logged_at');
-
-            $datasets = [];
-            $datasets[] = [
-                'label' => $exercise->title,
-                'data' => $exerciseLiftLogs->map(function ($liftLog) {
-                    return [
-                        'x' => $liftLog->logged_at->toIso8601String(),
-                        'y' => $liftLog->best_one_rep_max,
-                    ];
-                })->values(),
-                'borderColor' => $colors[$colorIndex % count($colors)]['borderColor'],
-                'backgroundColor' => $colors[$colorIndex % count($colors)]['backgroundColor'],
-                'fill' => false,
-            ];
-
-            $charts[] = [
-                'title' => $exercise->title,
-                'exercise_id' => $exercise->id,
-                'chartData' => ['datasets' => $datasets],
-                'minDate' => $minDate ? $minDate->toIso8601String() : null,
-                'maxDate' => $maxDate ? $maxDate->toIso8601String() : null,
-            ];
-            $colorIndex++;
-        }
-
-        return view('lift-logs.index', compact('liftLogs', 'exercises', 'charts', 'top5Exercises'));
+        return view('lift-logs.index', compact('liftLogs', 'exercises', 'top5Exercises'));
     }
-
     
-
     /**
      * Store a newly created resource in storage.
      */
