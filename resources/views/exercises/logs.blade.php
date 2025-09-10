@@ -2,7 +2,7 @@
 
 @section('content')
 
-    <x-top-exercises-buttons :exercises="$top5Exercises" :current-exercise-id="$exercise->id" /> 
+    <x-top-exercises-buttons :exercises="$top5Exercises" :allExercises="$exercises" :current-exercise-id="$exercise->id" /> 
 
     @if (session('success'))
         <div class="container success-message-box">

@@ -60,8 +60,8 @@
             @endif
 
             @if (Request::routeIs(['exercises.*', 'lift-logs.*']))
-                <a href="{{ route('lift-logs.index') }}" class="{{ Request::routeIs('lift-logs.*') ? 'active' : '' }}">Lift Logs</a>
-                <a href="{{ route('exercises.index') }}" class="{{ Request::routeIs('exercises.*') ? 'active' : '' }}">Exercises</a>
+                <a href="{{ route('lift-logs.index') }}" class="{{ Request::routeIs(['lift-logs.*', 'exercises.show-logs']) ? 'active' : '' }}">Lift Logs</a>
+                <a href="{{ route('exercises.index') }}" class="{{ Request::routeIs(['exercises.index', 'exercises.create', 'exercises.edit', 'exercises.store', 'exercises.update', 'exercises.destroy']) ? 'active' : '' }}">Exercises</a>
             @endif
 
             @if (Request::routeIs(['body-logs.*', 'measurement-types.*']))
