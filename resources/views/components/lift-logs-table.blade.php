@@ -4,11 +4,7 @@
     <thead>
         <tr>
             <th><input type="checkbox" id="select-all-lift-logs"></th>
-            @if($hideExerciseColumn)
-                <th>Date</th>
-            @else
-                <th class="hide-on-mobile">Date</th>
-            @endif
+            <th class="hide-on-mobile">Date</th>
             @unless($hideExerciseColumn)
                 <th>Exercise</th>
             @endunless
@@ -22,26 +18,7 @@
         @foreach ($liftLogs as $liftLog)
             <tr>
                 <td><input type="checkbox" name="lift_log_ids[]" value="{{ $liftLog->id }}" class="lift-log-checkbox"></td>
-                @if($hideExerciseColumn)
-                    <td>
-                        {{ $liftLog->logged_at->format('m/d') }}
-                        <div class="show-on-mobile" style="font-size: 0.9em; color: #ccc;">
-                            @if ($liftLog->exercise->is_bodyweight)
-                                Bodyweight {{ $liftLog->display_reps }} x {{ $liftLog->display_rounds }}
-                                @if ($liftLog->display_weight > 0)
-                                    + {{ $liftLog->display_weight }} lbs
-                                @endif
-                            @else
-                                {{ $liftLog->display_weight }} lbs {{ $liftLog->display_reps }} x {{ $liftLog->display_rounds }}
-                            @endif
-                            @if ($liftLog->one_rep_max)
-                                (1RM: {{ round($liftLog->one_rep_max) }} lbs)
-                            @endif
-                        </div>
-                    </td>
-                @else
-                    <td class="hide-on-mobile">{{ $liftLog->logged_at->format('m/d') }}</td>
-                @endif
+                <td class="hide-on-mobile">{{ $liftLog->logged_at->format('m/d') }}</td>
                 @unless($hideExerciseColumn)
                     <td>
                         <a href="{{ route('exercises.show-logs', $liftLog->exercise) }}">{{ $liftLog->exercise->title }}</a>
@@ -96,7 +73,7 @@
     </tbody>
     <tfoot>
         <tr>
-            <th colspan="{{ $hideExerciseColumn ? 5 : 6 }}" style="text-align:left; font-weight:normal;">
+            <th colspan="3" style="text-align:left; font-weight:normal;">
                 <form action="{{ route('lift-logs.destroy-selected') }}" method="POST" id="delete-selected-form" onsubmit="return confirm('Are you sure you want to delete the selected lift logs?');" style="display:inline;">
                     @csrf
                     <button type="submit" class="button delete">Delete Selected</button>

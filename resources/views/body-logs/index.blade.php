@@ -30,13 +30,13 @@
                                 N/A
                             @endif
                             <div class="show-on-mobile" style="font-size: 0.9em; color: #ccc;">
-                                <span style="font-weight: bold; font-size: 1.2em;">{{ $bodyLog->value }}</span> {{ $bodyLog->measurementType ? $bodyLog->measurementType->default_unit : '' }} - {{ $bodyLog->logged_at->format('m/d/Y H:i') }}
+                                {{ $bodyLog->value }} {{ $bodyLog->measurementType ? $bodyLog->measurementType->default_unit : '' }} - {{ $bodyLog->logged_at->format('m/d/Y H:i') }}
                                 @if ($bodyLog->comments)
                                     <br><small style="font-size: 0.8em; color: #aaa;">{{ $bodyLog->comments }}</small>
                                 @endif
                             </div>
                         </td>
-                        <td class="hide-on-mobile"><span style="font-weight: bold; font-size: 1.2em;">{{ $bodyLog->value }}</span> {{ $bodyLog->measurementType ? $bodyLog->measurementType->default_unit : '' }}</td>
+                        <td class="hide-on-mobile">{{ $bodyLog->value }} {{ $bodyLog->measurementType ? $bodyLog->measurementType->default_unit : '' }}</td>
                         <td class="hide-on-mobile">{{ $bodyLog->logged_at->format('m/d/Y H:i') }}</td>
                         <td class="hide-on-mobile" style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ $bodyLog->comments }}">{{ $bodyLog->comments }}</td>
                         <td class="actions-column">
