@@ -40,11 +40,11 @@
                 <td class="hide-on-mobile" style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ $liftLog->comments }}">{{ $liftLog->comments }}</td>
                 <td class="actions-column">
                     <div style="display: flex; gap: 5px;">
-                        <a href="{{ route('lift-logs.edit', $liftLog->id) }}" class="button edit">Edit</a>
+                        <a href="{{ route('lift-logs.edit', $liftLog->id) }}" class="button edit"><i class="fa-solid fa-pencil"></a>
                         <form action="{{ route('lift-logs.destroy', $liftLog->id) }}" method="POST" style="display:inline;">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" class="button delete" onclick="return confirm('Are you sure you want to delete this lift log?');">Delete</button>
+                            <button type="submit" class="button delete" onclick="return confirm('Are you sure you want to delete this lift log?');"><i class="fa-solid fa-trash"></i></button>
                         </form>
                     </div>
                 </td>
@@ -56,7 +56,7 @@
             <th colspan="7" style="text-align:left; font-weight:normal;">
                 <form action="{{ route('lift-logs.destroy-selected') }}" method="POST" id="delete-selected-form" onsubmit="return confirm('Are you sure you want to delete the selected lift logs?');" style="display:inline;">
                     @csrf
-                    <button type="submit" class="button delete">Delete Selected</button>
+                    <button type="submit" class="button delete"><i class="fa-solid fa-trash"></i> Delete Selected</button>
                 </form>
             </th>
         </tr>

@@ -33,11 +33,11 @@
                         <td class="hide-on-mobile" style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ $bodyLog->comments }}">{{ $bodyLog->comments }}</td>
                         <td class="actions-column">
                             <div style="display: flex; gap: 5px;">
-                                <a href="{{ route('body-logs.edit', $bodyLog->id) }}" class="button edit">Edit</a>
+                                <a href="{{ route('body-logs.edit', $bodyLog->id) }}" class="button edit"><i class="fa-solid fa-pencil"></i></a>
                                 <form action="{{ route('body-logs.destroy', $bodyLog->id) }}" method="POST" style="display:inline;">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="button delete" onclick="return confirm('Are you sure you want to delete this body log?');">Delete</button>
+                                    <button type="submit" class="button delete" onclick="return confirm('Are you sure you want to delete this body log?');"><i class="fa-solid fa-trash"></i></button>
                                 </form>
                             </div>
                         </td>

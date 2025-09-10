@@ -39,7 +39,7 @@
                                     <form action="{{ route('ingredients.destroy', $ingredient->id) }}" method="POST">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="button delete" onclick="return confirm('Are you sure you want to delete this ingredient?');">Delete</button>
+                                        <button type="submit" class="button delete" onclick="return confirm('Are you sure you want to delete this ingredient?');"><i class="fa-solid fa-trash"></i></button>
                                     </form>
                                 </div>
                             </td>
@@ -49,4 +49,4 @@
             </table>
         @endif
     </div>
-@endsection
+@endsectionion

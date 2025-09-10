@@ -50,7 +50,7 @@
                                     <form action="{{ route('meals.destroy', $meal->id) }}" method="POST">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="button delete" onclick="return confirm('Are you sure you want to delete this meal?');">Delete</button>
+                                        <button type="submit" class="button delete" onclick="return confirm('Are you sure you want to delete this meal?');"><i class="fa-solid fa-trash"></i></button>
                                     </form>
                                 </div>
                             </td>
@@ -65,4 +65,4 @@
             <textarea style="width: 100%; height: 300px; background-color: #2d3748; color: #f7fafc;" readonly>{{ $seederOutput }}</textarea>
         </div>
     </div>
-@endsection
+@endsectionion

@@ -160,11 +160,11 @@
                             <td class="hide-on-mobile">{{ number_format($nutritionService->calculateCostForQuantity($log->ingredient, (float)$log->quantity), 2) }}</td>
                             <td class="actions-column">
                                 <div style="display: flex; gap: 5px;">
-                                    <a href="{{ route('food-logs.edit', $log->id) }}" class="button edit">Edit</a>
+                                    <a href="{{ route('food-logs.edit', $log->id) }}" class="button edit"><i class="fa-solid fa-pencil"></i></a>
                                     <form action="{{ route('food-logs.destroy', $log->id) }}" method="POST" style="display:inline;">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="button delete" onclick="return confirm('Are you sure you want to delete this food log entry?');">Delete</button>
+                                        <button type="submit" class="button delete" onclick="return confirm('Are you sure you want to delete this food log entry?');"><i class="fa-solid fa-trash"></i></button>
                                     </form>
                                 </div>
                             </td>
@@ -176,7 +176,7 @@
                         <th colspan="3" style="text-align:left; font-weight:normal;">
                             <form action="{{ route('food-logs.destroy-selected') }}" method="POST" id="delete-selected-form" onsubmit="return confirm('Are you sure you want to delete the selected food log entries?');" style="display:inline;">
                                 @csrf
-                                <button type="submit" class="button delete">Delete Selected Food Logs</button>
+                                <button type="submit" class="button delete"><i class="fa-solid fa-trash"></i> Delete Selected Food Logs</button>
                             </form>
                         </th>
                         <th style="text-align:right; font-weight:bold;">Total:</th>

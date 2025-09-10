@@ -19,11 +19,11 @@
                         <td>{{ $exercise->description }}</td>
                         <td class="actions-column">
                             <div style="display: flex; gap: 5px;">
-                                <a href="{{ route('exercises.edit', $exercise->id) }}" class="button edit">Edit</a>
+                                <a href="{{ route('exercises.edit', $exercise->id) }}" class="button edit"><i class="fa-solid fa-pencil"></i></a>
                                 <form action="{{ route('exercises.destroy', $exercise->id) }}" method="POST" style="display:inline;">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="button delete" onclick="return confirm('Are you sure you want to delete this exercise?');">Delete</button>
+                                    <button type="submit" class="button delete" onclick="return confirm('Are you sure you want to delete this exercise?');"><i class="fa-solid fa-trash"></i></button>
                                 </form>
                             </div>
                         </td>
