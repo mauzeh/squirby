@@ -4,12 +4,12 @@
     <thead>
         <tr>
             <th><input type="checkbox" id="select-all-lift-logs"></th>
-            <th>Date</th>
+            <th class="hide-on-mobile">Date</th>
             @unless($hideExerciseColumn)
                 <th>Exercise</th>
             @endunless
-            <th>Weight (reps x rounds)</th>
-            <th>1RM (est.)</th>
+            <th class="hide-on-mobile">Weight (reps x rounds)</th>
+            <th class="hide-on-mobile">1RM (est.)</th>
             <th class="hide-on-mobile" style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Comments</th>
             <th class="actions-column">Actions</th>
         </tr>
@@ -18,11 +18,27 @@
         @foreach ($liftLogs as $liftLog)
             <tr>
                 <td><input type="checkbox" name="lift_log_ids[]" value="{{ $liftLog->id }}" class="lift-log-checkbox"></td>
-                <td>{{ $liftLog->logged_at->format('m/d') }}</td>
+                <td class="hide-on-mobile">{{ $liftLog->logged_at->format('m/d') }}</td>
                 @unless($hideExerciseColumn)
-                    <td><a href="{{ route('exercises.show-logs', $liftLog->exercise) }}">{{ $liftLog->exercise->title }}</a></td>
+                    <td>
+                        <a href="{{ route('exercises.show-logs', $liftLog->exercise) }}">{{ $liftLog->exercise->title }}</a>
+                        <div class="show-on-mobile" style="font-size: 0.9em; color: #ccc;">
+                            {{ $liftLog->logged_at->format('m/d') }} -
+                            @if ($liftLog->exercise->is_bodyweight)
+                                Bodyweight {{ $liftLog->display_reps }} x {{ $liftLog->display_rounds }}
+                                @if ($liftLog->display_weight > 0)
+                                    + {{ $liftLog->display_weight }} lbs
+                                @endif
+                            @else
+                                {{ $liftLog->display_weight }} lbs {{ $liftLog->display_reps }} x {{ $liftLog->display_rounds }}
+                            @endif
+                            @if ($liftLog->one_rep_max)
+                                (1RM: {{ round($liftLog->one_rep_max) }} lbs)
+                            @endif
+                        </div>
+                    </td>
                 @endunless
-                <td>
+                <td class="hide-on-mobile">
                     @if ($liftLog->exercise->is_bodyweight)
                         <span style="font-weight: bold; font-size: 1.2em;">Bodyweight</span><br>
                         {{ $liftLog->display_reps }} x {{ $liftLog->display_rounds }}
@@ -34,7 +50,7 @@
                         {{ $liftLog->display_reps }} x {{ $liftLog->display_rounds }}
                     @endif
                 </td>
-                <td>
+                <td class="hide-on-mobile">
                     @if ($liftLog->exercise->is_bodyweight)
                         {{ round($liftLog->one_rep_max) }} lbs (est. incl. BW)
                     @else
@@ -57,7 +73,7 @@
     </tbody>
     <tfoot>
         <tr>
-            <th colspan="7" style="text-align:left; font-weight:normal;">
+            <th colspan="3" style="text-align:left; font-weight:normal;">
                 <form action="{{ route('lift-logs.destroy-selected') }}" method="POST" id="delete-selected-form" onsubmit="return confirm('Are you sure you want to delete the selected lift logs?');" style="display:inline;">
                     @csrf
                     <button type="submit" class="button delete">Delete Selected</button>

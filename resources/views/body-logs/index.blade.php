@@ -13,8 +13,8 @@
                 <tr>
                     <th><input type="checkbox" id="select-all-body-logs"></th>
                     <th>Type</th>
-                    <th>Value</th>
-                    <th>Date</th>
+                    <th class="hide-on-mobile">Value</th>
+                    <th class="hide-on-mobile">Date</th>
                     <th class="hide-on-mobile">Comments</th>
                     <th class="actions-column">Actions</th>
                 </tr>
@@ -29,9 +29,15 @@
                             @else
                                 N/A
                             @endif
+                            <div class="show-on-mobile" style="font-size: 0.9em; color: #ccc;">
+                                {{ $bodyLog->value }} {{ $bodyLog->measurementType ? $bodyLog->measurementType->default_unit : '' }} - {{ $bodyLog->logged_at->format('m/d/Y H:i') }}
+                                @if ($bodyLog->comments)
+                                    <br><small style="font-size: 0.8em; color: #aaa;">{{ $bodyLog->comments }}</small>
+                                @endif
+                            </div>
                         </td>
-                        <td>{{ $bodyLog->value }} {{ $bodyLog->measurementType ? $bodyLog->measurementType->default_unit : '' }}</td>
-                        <td>{{ $bodyLog->logged_at->format('m/d/Y H:i') }}</td>
+                        <td class="hide-on-mobile">{{ $bodyLog->value }} {{ $bodyLog->measurementType ? $bodyLog->measurementType->default_unit : '' }}</td>
+                        <td class="hide-on-mobile">{{ $bodyLog->logged_at->format('m/d/Y H:i') }}</td>
                         <td class="hide-on-mobile" style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ $bodyLog->comments }}">{{ $bodyLog->comments }}</td>
                         <td class="actions-column">
                             <div style="display: flex; gap: 5px;">
@@ -48,7 +54,8 @@
             </tbody>
             <tfoot>
                 <tr>
-                    <th colspan="6" style="text-align:left; font-weight:normal;">
+                    <th><input type="checkbox" id="select-all-body-logs-footer"></th>
+                    <th colspan="5" style="text-align:left; font-weight:normal;">
                         <form action="{{ route('body-logs.destroy-selected') }}" method="POST" id="delete-selected-form" onsubmit="return confirm('Are you sure you want to delete the selected body logs?');" style="display:inline;">
                             @csrf
                             <button type="submit" class="button delete">Delete Selected</button>
@@ -78,10 +85,29 @@
     </div>
 
     <script>
-        document.getElementById('select-all-body-logs').addEventListener('change', function(e) {
+        function handleSelectAll(sourceCheckbox) {
+            const isChecked = sourceCheckbox.checked;
             document.querySelectorAll('.body-checkbox').forEach(function(checkbox) {
-                checkbox.checked = e.target.checked;
+                checkbox.checked = isChecked;
             });
+
+            const headerCheckbox = document.getElementById('select-all-body-logs');
+            const footerCheckbox = document.getElementById('select-all-body-logs-footer');
+
+            if (headerCheckbox && headerCheckbox !== sourceCheckbox) {
+                headerCheckbox.checked = isChecked;
+            }
+            if (footerCheckbox && footerCheckbox !== sourceCheckbox) {
+                footerCheckbox.checked = isChecked;
+            }
+        }
+
+        document.getElementById('select-all-body-logs').addEventListener('change', function(e) {
+            handleSelectAll(e.target);
+        });
+
+        document.getElementById('select-all-body-logs-footer').addEventListener('change', function(e) {
+            handleSelectAll(e.target);
         });
 
         document.getElementById('delete-selected-form').addEventListener('submit', function(e) {
