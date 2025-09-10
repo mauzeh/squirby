@@ -23,13 +23,22 @@ class MealController extends Controller
      */
     public function index()
     {
-        $meals = Meal::with('ingredients')->where('user_id', auth()->id())->get();
+        $meals = Meal::with('ingredients.baseUnit')->where('user_id', auth()->id())->get();
 
         foreach ($meals as $meal) {
             $meal->total_macros = $this->nutritionService->calculateFoodLogTotals($meal->ingredients);
         }
 
-        return view('meals.index', compact('meals'));
+        $seederOutput = '';
+        foreach ($meals as $meal) {
+            $seederOutput .= '$meal = Meal::create([\'name\' => \''. addslashes($meal->name) . '\', \'user_id\' => $adminUser->id]);' . "\n";
+            foreach ($meal->ingredients as $ingredient) {
+                $seederOutput .= '$meal->ingredients()->attach($ingredients[\''. addslashes($ingredient->name) . '\']->id, [\'quantity\' => ' . $ingredient->pivot->quantity . ']);' . "\n";
+            }
+            $seederOutput .= "\n";
+        }
+
+        return view('meals.index', compact('meals', 'seederOutput'));
     }
 
     /**

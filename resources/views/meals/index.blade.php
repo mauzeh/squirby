@@ -59,5 +59,10 @@
                 </tbody>
             </table>
         @endif
+
+        <div class="container">
+            <h2>Meal Seeder Output</h2>
+            <textarea style="width: 100%; height: 300px; background-color: #2d3748; color: #f7fafc;" readonly>{{ $seederOutput }}</textarea>
+        </div>
     </div>
 @endsection
