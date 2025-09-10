@@ -57,6 +57,13 @@ class MealSeeder extends Seeder
         $meal->ingredients()->attach($ingredients["Seasoning, Umami Multi-Purpose (Trader Joe's)"]->id, ['quantity' => .125]);
         $meal->ingredients()->attach($ingredients['Olive oil']->id, ['quantity' => .5]);
 
+        $meal = Meal::create(['name' => 'Mexican Spiced Chicken Tacos', 'user_id' => $adminUser->id]);
+        $meal->ingredients()->attach($ingredients['Tortillas (Mini, Flour, Trader Joe\'s)']->id, ['quantity' => 4]);
+        $meal->ingredients()->attach($ingredients['Chicken Thigh (Skinless, Boneless)']->id, ['quantity' => 100]);
+        $meal->ingredients()->attach($ingredients['Black Beans (canned, rinsed)']->id, ['quantity' => 200]);
+        $meal->ingredients()->attach($ingredients['Olive oil']->id, ['quantity' => 2]);
+        $meal->ingredients()->attach($ingredients['Seasoning, Umami Multi-Purpose (Trader Joe\'s)']->id, ['quantity' => 0.5]);
+
         $meal = Meal::create(['name' => 'Fusili with Veggies & Red Sauce (1 serving)', 'user_id' => $adminUser->id]);
         // The original sauce (see above)
         $meal->ingredients()->attach($ingredients['Beef, Ground (90% Lean, 10% Fat)']->id, ['quantity' => 452/5]);
