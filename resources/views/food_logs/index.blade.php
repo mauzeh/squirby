@@ -128,9 +128,9 @@
                 <thead>
                     <tr>
                         <th><input type="checkbox" id="select-all-logs"></th>
-                        <th>Time</th>
+                        <th class="hide-on-mobile">Time</th>
                         <th>Ingredient</th>
-                        <th>Quantity</th>
+                        <th class="hide-on-mobile">Quantity</th>
                         <th class="hide-on-mobile">Calories</th>
                         <th class="hide-on-mobile">Fats (g)</th>
                         <th class="hide-on-mobile">Carbs (g)</th>
@@ -144,14 +144,17 @@
                     @foreach ($foodLogs as $log)
                         <tr>
                             <td><input type="checkbox" name="food_log_ids[]" value="{{ $log->id }}" class="log-checkbox"></td>
-                            <td>{{ $log->logged_at->format('H:i') }}</td>
+                            <td class="hide-on-mobile">{{ $log->logged_at->format('H:i') }}</td>
                             <td>
                                 {{ $log->ingredient->name }}
                                 @if($log->notes)
                                     <br><small style="font-size: 0.8em; color: #aaa;">{{ $log->notes }}</small>
                                 @endif
+                                <div class="show-on-mobile" style="font-size: 0.9em; color: #ccc;">
+                                    {{ $log->logged_at->format('H:i') }} - {{ $log->quantity }} {{ $log->unit->abbreviation }}
+                                </div>
                             </td>
-                            <td>{{ $log->quantity }} {{ $log->unit->abbreviation }}</td>
+                            <td class="hide-on-mobile">{{ $log->quantity }} {{ $log->unit->abbreviation }}</td>
                             <td class="hide-on-mobile">{{ round($nutritionService->calculateTotalMacro($log->ingredient, 'calories', (float)$log->quantity)) }}</td>
                             <td class="hide-on-mobile">{{ round($nutritionService->calculateTotalMacro($log->ingredient, 'fats', (float)$log->quantity), 1) }}</td>
                             <td class="hide-on-mobile">{{ round($nutritionService->calculateTotalMacro($log->ingredient, 'carbs', (float)$log->quantity), 1) }}</td>
@@ -173,14 +176,14 @@
                 </tbody>
                 <tfoot>
                     <tr>
-                        <th colspan="3" style="text-align:left; font-weight:normal;">
+                        <th colspan="2" style="text-align:left; font-weight:normal;">
                             <form action="{{ route('food-logs.destroy-selected') }}" method="POST" id="delete-selected-form" onsubmit="return confirm('Are you sure you want to delete the selected food log entries?');" style="display:inline;">
                                 @csrf
-                                <button type="submit" class="button delete"><i class="fa-solid fa-trash"></i> Delete Selected Food Logs</button>
+                                <button type="submit" class="button delete"><i class="fa-solid fa-trash"></i> Delete Selected</button>
                             </form>
                         </th>
-                        <th style="text-align:right; font-weight:bold;">Total:</th>
-                        <td style="font-weight:bold;">{{ round($dailyTotals['calories']) }}</td>
+                        <th class="hide-on-mobile"></th> {{-- Empty header for the hidden Quantity column --}}
+                        <th colspan="2" style="text-align:right; font-weight:bold;">Total: {{ round($dailyTotals['calories']) }}</th>
                         <td class="hide-on-mobile" style="font-weight:bold;">{{ round($dailyTotals['fats']) }}</td>
                         <td class="hide-on-mobile" style="font-weight:bold;">{{ round($dailyTotals['carbs']) }}</td>
                         <td class="hide-on-mobile" style="font-weight:bold;">{{ round($dailyTotals['protein']) }}</td>

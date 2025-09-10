@@ -169,7 +169,7 @@ a.button.create::before {
     background-color: #0056b3; /* Darker blue for active state, same as for hover */
 }
 .actions-column {
-    width: 150px;
+    /* width: 150px; */
 }
 /* Form specific styles for dark theme */
 .form-group {
@@ -309,6 +309,19 @@ select:focus {
 @media (max-width: 768px) {
     .hide-on-mobile {
         display: none;
+    }
+}
+
+.show-on-mobile {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .hide-on-mobile {
+        display: none;
+    }
+    .show-on-mobile {
+        display: block; /* or inline, inline-block depending on context */
     }
 }
 
