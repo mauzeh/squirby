@@ -75,6 +75,19 @@ class User extends Authenticatable
                 ['title' => 'Half-Kneeling DB Press', 'description' => 'A unilateral exercise that targets the shoulders and core.'],
                 ['title' => 'Cyclist Squat (Barbell, Front Rack)', 'description' => 'A squat variation that emphasizes the quadriceps by elevating the heels, performed with a barbell in the front rack position.'],
                 ['title' => 'Chin-Ups', 'description' => 'A bodyweight pulling exercise.', 'is_bodyweight' => true],
+                ['title' => 'Zombie Squats', 'description' => 'Front-loaded squat variation focusing on core stability and upright posture.'],
+                ['title' => 'Pendlay Rows', 'description' => 'Barbell row variation starting from the floor with strict form.'],
+                ['title' => 'Romanian Deadlifts', 'description' => 'Hip-hinge movement targeting hamstrings and glutes.'],
+                ['title' => 'Plank', 'description' => 'Isometric core exercise for stability and strength.', 'is_bodyweight' => true],
+                ['title' => 'Overhead Press', 'description' => 'Standing shoulder press with barbell.'],
+                ['title' => 'Lat Pulldowns', 'description' => 'Cable exercise targeting the latissimus dorsi.'],
+                ['title' => 'Dumbbell Incline Press', 'description' => 'Upper chest focused pressing movement.'],
+                ['title' => 'Face Pulls', 'description' => 'Cable exercise for rear deltoids and upper back health.'],
+                ['title' => 'Bicep Curls', 'description' => 'Isolation exercise for bicep development.'],
+                ['title' => 'Conventional Deadlift', 'description' => 'Hip-hinge movement lifting from the floor.'],
+                ['title' => 'Glute-Ham Raises', 'description' => 'Posterior chain exercise targeting hamstrings and glutes.', 'is_bodyweight' => true],
+                ['title' => 'Dumbbell Rows', 'description' => 'Unilateral rowing movement for back development.'],
+                ['title' => 'Hanging Leg Raises', 'description' => 'Core exercise performed hanging from a bar.', 'is_bodyweight' => true],
             ];
 
             foreach ($exercises as $exercise) {
@@ -242,5 +255,10 @@ class User extends Authenticatable
     public function liftLogs()
     {
         return $this->hasMany(LiftLog::class);
+    }
+
+    public function workoutPrograms()
+    {
+        return $this->hasMany(WorkoutProgram::class);
     }
 }

@@ -14,6 +14,7 @@ use App\Http\Controllers\ExerciseController;
 use App\Http\Controllers\LiftLogController;
 use App\Http\Controllers\BodyLogController;
 use App\Http\Controllers\MeasurementTypeController;
+use App\Http\Controllers\WorkoutProgramController;
 
 // Breeze Routes
 Route::get('/', function () {
@@ -66,6 +67,8 @@ Route::middleware('auth')->group(function () {
     Route::post('lift-logs/import-tsv', [LiftLogController::class, 'importTsv'])->name('lift-logs.import-tsv');
 
     Route::post('lift-logs/destroy-selected', [LiftLogController::class, 'destroySelected'])->name('lift-logs.destroy-selected');
+
+    Route::resource('workout-programs', WorkoutProgramController::class);
 });
 
 require __DIR__.'/auth.php';

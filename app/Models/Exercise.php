@@ -16,6 +16,10 @@ class Exercise extends Model
         'user_id',
     ];
 
+    protected $casts = [
+        'is_bodyweight' => 'boolean',
+    ];
+
     public function liftLogs()
     {
         return $this->hasMany(LiftLog::class);
@@ -24,5 +28,11 @@ class Exercise extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function workoutPrograms()
+    {
+        return $this->belongsToMany(WorkoutProgram::class, 'program_exercises')
+            ->withPivot(['sets', 'reps', 'notes', 'exercise_order', 'exercise_type']);
     }
 }
