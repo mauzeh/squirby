@@ -12,3 +12,15 @@
     flex: none; /* Override flex: 0 0 120px from .form-group label */
     text-align: left; /* Align text to the left */
 }
+
+.top-exercises-container {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.top-exercises-container .button.active {
+    background-color: #4CAF50; /* Example active color */
+    color: white;
+}

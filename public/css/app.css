@@ -136,6 +136,12 @@ p {
 .button.delete:hover {
     background-color: #c82333; /* Darker red on hover */
 }
+.button.demure {
+    background-color: #6c757d; /* Gray for less prominent actions */
+}
+.button.active {
+    background-color: #0056b3; /* Darker blue for active state, same as for hover */
+}
 .actions-column {
     width: 150px;
 }

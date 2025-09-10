@@ -6,6 +6,7 @@ use App\Models\Exercise;
 use App\Models\LiftLog;
 use App\Models\LiftSet;
 use App\Services\TsvImporterService;
+use App\Services\ExerciseService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
@@ -13,10 +14,12 @@ use Carbon\Carbon;
 class LiftLogController extends Controller
 {
     protected $tsvImporterService;
+    protected $exerciseService;
 
-    public function __construct(TsvImporterService $tsvImporterService)
+    public function __construct(TsvImporterService $tsvImporterService, ExerciseService $exerciseService)
     {
         $this->tsvImporterService = $tsvImporterService;
+        $this->exerciseService = $exerciseService;
     }
     /**
      * Display a listing of the resource.
@@ -26,12 +29,8 @@ class LiftLogController extends Controller
         $liftLogs = LiftLog::with('exercise')->where('user_id', auth()->id())->orderBy('logged_at', 'asc')->get();
         $exercises = Exercise::where('user_id', auth()->id())->orderBy('title', 'asc')->get();
 
-        $topExercises = LiftLog::select('exercise_id')
-            ->where('user_id', auth()->id())
-            ->groupBy('exercise_id')
-            ->orderByRaw('COUNT(*) DESC')
-            ->limit(3)
-            ->pluck('exercise_id');
+        $topExercisesForCharts = $this->exerciseService->getTopExercises(3);
+        $top5Exercises = $this->exerciseService->getTopExercises(5);
 
         $charts = [];
         $colors = [
@@ -41,9 +40,8 @@ class LiftLogController extends Controller
         ];
         $colorIndex = 0;
 
-        foreach ($topExercises as $exerciseId) {
-            $exercise = Exercise::find($exerciseId);
-            $exerciseLiftLogs = $liftLogs->where('exercise_id', $exerciseId);
+        foreach ($topExercisesForCharts as $exercise) {
+            $exerciseLiftLogs = $liftLogs->where('exercise_id', $exercise->id);
 
             $minDate = $exerciseLiftLogs->min('logged_at');
             $maxDate = $exerciseLiftLogs->max('logged_at');
@@ -72,7 +70,7 @@ class LiftLogController extends Controller
             $colorIndex++;
         }
 
-        return view('lift-logs.index', compact('liftLogs', 'exercises', 'charts'));
+        return view('lift-logs.index', compact('liftLogs', 'exercises', 'charts', 'top5Exercises'));
     }
 
     

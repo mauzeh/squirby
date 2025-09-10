@@ -1,6 +1,9 @@
 @extends('app')
 
 @section('content')
+
+<x-top-exercises-buttons :exercises="$top5Exercises" /> 
+
 <style>
     @media (max-width: 768px) {
         .chart-container:not(:first-child) {

@@ -3,11 +3,19 @@
 namespace App\Http\Controllers;
 
 use App\Models\Exercise;
+use App\Services\ExerciseService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class ExerciseController extends Controller
 {
+    protected $exerciseService;
+
+    public function __construct(ExerciseService $exerciseService)
+    {
+        $this->exerciseService = $exerciseService;
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -99,6 +107,8 @@ class ExerciseController extends Controller
         }
         $liftLogs = $exercise->liftLogs()->with('liftSets')->where('user_id', auth()->id())->orderBy('logged_at', 'asc')->get();
 
+        $top5Exercises = $this->exerciseService->getTopExercises(5);
+
         $chartData = [
             'datasets' => [
                 [
@@ -118,6 +128,6 @@ class ExerciseController extends Controller
 
         $liftLogs = $liftLogs->reverse();
 
-        return view('exercises.logs', compact('exercise', 'liftLogs', 'chartData'));
+        return view('exercises.logs', compact('exercise', 'liftLogs', 'chartData', 'top5Exercises'));
     }
 }
