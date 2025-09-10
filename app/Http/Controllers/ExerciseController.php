@@ -128,6 +128,8 @@ class ExerciseController extends Controller
 
         $liftLogs = $liftLogs->reverse();
 
-        return view('exercises.logs', compact('exercise', 'liftLogs', 'chartData', 'top5Exercises'));
+        $exercises = Exercise::where('user_id', auth()->id())->orderBy('title', 'asc')->get();
+
+        return view('exercises.logs', compact('exercise', 'liftLogs', 'chartData', 'top5Exercises', 'exercises'));
     }
 }
