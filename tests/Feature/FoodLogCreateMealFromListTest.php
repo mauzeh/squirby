@@ -9,7 +9,7 @@ use App\Models\Meal;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-class CreateMealFromFoodLogsTest extends TestCase
+class FoodLogCreateMealFromListTest extends TestCase
 {
     use RefreshDatabase;
 
