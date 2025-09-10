@@ -26,38 +26,53 @@ class LiftLogController extends Controller
         $liftLogs = LiftLog::with('exercise')->where('user_id', auth()->id())->orderBy('logged_at', 'asc')->get();
         $exercises = Exercise::where('user_id', auth()->id())->orderBy('title', 'asc')->get();
 
-        $datasets = [];
-        $groupedLiftLogs = $liftLogs->groupBy('exercise.title');
+        $topExercises = LiftLog::select('exercise_id')
+            ->where('user_id', auth()->id())
+            ->groupBy('exercise_id')
+            ->orderByRaw('COUNT(*) DESC')
+            ->limit(3)
+            ->pluck('exercise_id');
 
+        $charts = [];
         $colors = [
-            'rgba(255, 99, 132, 1)',
-            'rgba(54, 162, 235, 1)',
-            'rgba(255, 206, 86, 1)',
-            'rgba(75, 192, 192, 1)',
-            'rgba(153, 102, 255, 1)',
-            'rgba(255, 159, 64, 1)'
+            ['borderColor' => 'rgba(255, 99, 132, 1)', 'backgroundColor' => 'rgba(255, 99, 132, 0.2)'],
+            ['borderColor' => 'rgba(54, 162, 235, 1)', 'backgroundColor' => 'rgba(54, 162, 235, 0.2)'],
+            ['borderColor' => 'rgba(255, 206, 86, 1)', 'backgroundColor' => 'rgba(255, 206, 86, 0.2)'],
         ];
         $colorIndex = 0;
 
-        foreach ($groupedLiftLogs as $exerciseName => $exerciseLiftLogs) {
+        foreach ($topExercises as $exerciseId) {
+            $exercise = Exercise::find($exerciseId);
+            $exerciseLiftLogs = $liftLogs->where('exercise_id', $exerciseId);
+
+            $minDate = $exerciseLiftLogs->min('logged_at');
+            $maxDate = $exerciseLiftLogs->max('logged_at');
+
+            $datasets = [];
             $datasets[] = [
-                'label' => $exerciseName,
+                'label' => $exercise->title,
                 'data' => $exerciseLiftLogs->map(function ($liftLog) {
                     return [
                         'x' => $liftLog->logged_at->toIso8601String(),
                         'y' => $liftLog->best_one_rep_max,
                     ];
-                }),
-                'borderColor' => $colors[$colorIndex % count($colors)],
-                'backgroundColor' => $colors[$colorIndex % count($colors)],
+                })->values(),
+                'borderColor' => $colors[$colorIndex % count($colors)]['borderColor'],
+                'backgroundColor' => $colors[$colorIndex % count($colors)]['backgroundColor'],
                 'fill' => false,
+            ];
+
+            $charts[] = [
+                'title' => $exercise->title,
+                'exercise_id' => $exercise->id,
+                'chartData' => ['datasets' => $datasets],
+                'minDate' => $minDate ? $minDate->toIso8601String() : null,
+                'maxDate' => $maxDate ? $maxDate->toIso8601String() : null,
             ];
             $colorIndex++;
         }
 
-        $chartData['datasets'] = $datasets;
-
-        return view('lift-logs.index', compact('liftLogs', 'exercises', 'chartData'));
+        return view('lift-logs.index', compact('liftLogs', 'exercises', 'charts'));
     }
 
     
