@@ -25,7 +25,7 @@ class WorkoutProgramController extends Controller
         
         // Get workout programs for the selected date
         $workoutPrograms = WorkoutProgram::with(['exercises' => function($query) {
-                $query->orderByPivot('exercise_order');
+                $query->orderBy('program_exercises.exercise_order');
             }])
             ->where('user_id', auth()->id())
             ->forDate($selectedDate)
@@ -102,31 +102,31 @@ class WorkoutProgramController extends Controller
     /**
      * Display the specified workout program.
      */
-    public function show(WorkoutProgram $workoutProgram)
+    public function show(WorkoutProgram $workout_program)
     {
         // Ensure user can only view their own programs
-        if ($workoutProgram->user_id !== auth()->id()) {
+        if ($workout_program->user_id !== auth()->id()) {
             abort(403, 'Unauthorized action.');
         }
 
-        $workoutProgram->load(['exercises' => function($query) {
+        $workout_program->load(['exercises' => function($query) {
             $query->orderByPivot('exercise_order');
         }]);
 
-        return view('workout_programs.show', compact('workoutProgram'));
+        return view('workout_programs.show', compact('workout_program'));
     }
 
     /**
      * Show the form for editing the specified workout program.
      */
-    public function edit(WorkoutProgram $workoutProgram)
+    public function edit(WorkoutProgram $workout_program)
     {
         // Ensure user can only edit their own programs
-        if ($workoutProgram->user_id !== auth()->id()) {
+        if ($workout_program->user_id !== auth()->id()) {
             abort(403, 'Unauthorized action.');
         }
 
-        $workoutProgram->load(['exercises' => function($query) {
+        $workout_program->load(['exercises' => function($query) {
             $query->orderByPivot('exercise_order');
         }]);
 
@@ -134,16 +134,16 @@ class WorkoutProgramController extends Controller
             ->orderBy('title')
             ->get();
 
-        return view('workout_programs.edit', compact('workoutProgram', 'exercises'));
+        return view('workout_programs.edit', compact('workout_program', 'exercises'));
     }
 
     /**
      * Update the specified workout program in storage.
      */
-    public function update(Request $request, WorkoutProgram $workoutProgram)
+    public function update(Request $request, WorkoutProgram $workout_program)
     {
         // Ensure user can only update their own programs
-        if ($workoutProgram->user_id !== auth()->id()) {
+        if ($workout_program->user_id !== auth()->id()) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -170,17 +170,17 @@ class WorkoutProgramController extends Controller
         }
 
         // Update the workout program
-        $workoutProgram->update([
+        $workout_program->update([
             'date' => $validated['date'],
             'name' => $validated['name'],
             'notes' => $validated['notes'],
         ]);
 
         // Detach all existing exercises and reattach with new data
-        $workoutProgram->exercises()->detach();
+        $workout_program->exercises()->detach();
         
         foreach ($validated['exercises'] as $index => $exerciseData) {
-            $workoutProgram->exercises()->attach($exerciseData['exercise_id'], [
+            $workout_program->exercises()->attach($exerciseData['exercise_id'], [
                 'sets' => $exerciseData['sets'],
                 'reps' => $exerciseData['reps'],
                 'notes' => $exerciseData['notes'],
@@ -196,17 +196,17 @@ class WorkoutProgramController extends Controller
     /**
      * Remove the specified workout program from storage.
      */
-    public function destroy(WorkoutProgram $workoutProgram)
+    public function destroy(WorkoutProgram $workout_program)
     {
         // Ensure user can only delete their own programs
-        if ($workoutProgram->user_id !== auth()->id()) {
+        if ($workout_program->user_id !== auth()->id()) {
             abort(403, 'Unauthorized action.');
         }
 
-        $date = $workoutProgram->date->format('Y-m-d');
+        $date = $workout_program->date->format('Y-m-d');
         
         // Delete the program (exercises will be detached automatically due to cascade)
-        $workoutProgram->delete();
+        $workout_program->delete();
 
         return redirect()->route('workout-programs.index', ['date' => $date])
             ->with('success', 'Workout program deleted successfully!');
