@@ -136,6 +136,32 @@ p {
 .button.delete:hover {
     background-color: #c82333; /* Darker red on hover */
 }
+.button.create {
+    background-color: #28a745; /* Green for add */
+    color: white;
+}
+.button.create::before {
+    content: '+';
+    margin-right: 0.5rem;
+}
+a.button.create {
+    display: inline-block;
+    background-color: #28a745; /* Green for add */
+    color: white;
+    padding: 8px 15px;
+    border-radius: 5px;
+    text-decoration: none;
+    margin-top: 10px;
+    margin-right: 5px;
+    transition: background-color 0.3s ease;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+}
+a.button.create::before {
+    content: '+';
+    margin-right: 0.5rem;
+}
 .button.demure {
     background-color: #6c757d; /* Gray for less prominent actions */
 }

@@ -58,7 +58,7 @@
                         <span class="error-message">{{ $message }}</span>
                     @enderror
                 </div>
-                <button type="submit" class="button">Add Food Log Entry</button>
+                <button type="submit" class="button create">Add Food Log Entry</button>
             </form>
         </div>
 
@@ -91,7 +91,7 @@
                     <label for="notes_meal">Notes:</label>
                     <input type="text" name="notes" id="notes_meal" value="{{ old('notes') }}">
                 </div>
-                <button type="submit" class="button">Add Meal to Food Log</button>
+                <button type="submit" class="button create">Add Meal to Food Log</button>
             </form>
         </div>
 

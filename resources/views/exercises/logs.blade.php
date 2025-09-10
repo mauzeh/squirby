@@ -17,7 +17,7 @@
     <div class="container">
         <div style="display: flex; justify-content: space-between; align-items: center;">
             <h1>{{ $exercise->title }}</h1>
-            <a href="{{ route('lift-logs.index', ['exercise_id' => $exercise->id]) }}" class="button">Add Lift Log</a>
+            <a href="{{ route('lift-logs.index', ['exercise_id' => $exercise->id]) }}" class="button create">Add Lift Log</a>
         </div>
         
 

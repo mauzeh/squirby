@@ -4,7 +4,7 @@
     <div class="container">
         <div style="display: flex; justify-content: space-between; align-items: center;">
             <h1>{{ $measurementType->name }}</h1>
-            <a href="{{ route('body-logs.create', ['measurement_type_id' => $measurementType->id]) }}" class="button">Add Body Log</a>
+            <a href="{{ route('body-logs.create', ['measurement_type_id' => $measurementType->id]) }}" class="button create">Add Body Log</a>
         </div>
 
         <div class="form-container">

@@ -41,7 +41,7 @@
                     <label for="comments">Comments:</label>
                     <textarea name="comments" id="comments" class="form-control" rows="5">{{ old('comments') }}</textarea>
                 </div>
-                <button type="submit" class="button">Add Body Log</button>
+                <button type="submit" class="button create">Add Body Log</button>
             </form>
         </div>
     </div>

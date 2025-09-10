@@ -53,7 +53,7 @@
                     <label for="logged_at">Time:</label>
                     <x-time-select name="logged_at" id="logged_at" required />
                 </div>
-                <button type="submit" class="button">Add Lift Log</button>
+                <button type="submit" class="button create">Add Lift Log</button>
             </form>
         </div>
 

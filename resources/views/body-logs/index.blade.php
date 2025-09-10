@@ -3,7 +3,7 @@
 @section('content')
     <div class="container">
         <h1>Body Logs</h1>
-        <a href="{{ route('body-logs.create') }}" class="button">Add Body Log</a>
+        <a href="{{ route('body-logs.create') }}" class="button create">Add Body Log</a>
         <a href="{{ route('measurement-types.index') }}" class="button">Manage Measurement Types</a>
         @if ($bodyLogs->isEmpty())
             <p>No body logs found. Add one to get started!</p>
