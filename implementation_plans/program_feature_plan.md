@@ -36,3 +36,20 @@ This document outlines the plan to add a program feature to the application, all
     -   The seeder will add the example program (5x3 Back Squat, 5x3 Bench Press) for tomorrow's date for the first user.
 -   **Database Seeder:**
     -   Call `ProgramSeeder` from the main `DatabaseSeeder.php`.
+
+## 4. Testing
+
+-   **Unit Tests:**
+    -   Create a unit test for the `Program` model to verify its relationships and properties.
+    -   Create unit tests for the `StoreProgramRequest` and `UpdateProgramRequest` to ensure the validation rules are correct.
+
+-   **Feature Tests:**
+    -   Create a feature test file for the `Program` feature (`tests/Feature/ProgramTest.php`).
+    -   Test that an authenticated user can view their own programs.
+    -   Test that a user cannot view programs belonging to other users.
+    -   Test the full CRUD lifecycle:
+        -   A user can successfully create a program with valid data.
+        -   Validation errors are returned when creating a program with invalid data.
+        -   A user can update their own program.
+        -   A user can delete their own program.
+    -   Test that guests are redirected to the login page.
