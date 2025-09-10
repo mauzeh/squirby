@@ -63,6 +63,8 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('lift-logs', LiftLogController::class);
 
+    Route::resource('programs', ProgramController::class);
+
     Route::post('lift-logs/import-tsv', [LiftLogController::class, 'importTsv'])->name('lift-logs.import-tsv');
 
     Route::post('lift-logs/destroy-selected', [LiftLogController::class, 'destroySelected'])->name('lift-logs.destroy-selected');
