@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Meal;
 use App\Models\Ingredient;
-use App\Models\DailyLog;
+use App\Models\FoodLog;
 use App\Services\NutritionService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
@@ -139,16 +139,16 @@ class MealController extends Controller
     public function createFromLogs(Request $request)
     {
         $request->validate([
-            'daily_log_ids' => 'required|array',
-            'daily_log_ids.*' => 'exists:daily_logs,id',
+            'food_log_ids' => 'required|array',
+            'food_log_ids.*' => 'exists:food_logs,id',
             'meal_name' => 'required|string|max:255|unique:meals,name',
         ]);
 
         $meal = Meal::create(array_merge(['name' => $request->meal_name], ['user_id' => auth()->id()]));
 
-        $dailyLogs = DailyLog::whereIn('id', $request->daily_log_ids)->where('user_id', auth()->id())->get();
+        $foodLogs = FoodLog::whereIn('id', $request->food_log_ids)->where('user_id', auth()->id())->get();
 
-        foreach ($dailyLogs as $log) {
+        foreach ($foodLogs as $log) {
             $meal->ingredients()->attach($log->ingredient_id, ['quantity' => $log->quantity]);
         }
 
