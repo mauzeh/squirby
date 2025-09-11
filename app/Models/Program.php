@@ -9,6 +9,10 @@ class Program extends Model
 {
     use HasFactory;
 
+    protected $casts = [
+        'date' => 'date',
+    ];
+
     protected $fillable = [
         'user_id',
         'exercise_id',
@@ -16,10 +20,6 @@ class Program extends Model
         'sets',
         'reps',
         'weight',
-    ];
-
-    protected $casts = [
-        'date' => 'date',
     ];
 
     public function user()

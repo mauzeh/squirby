@@ -21,7 +21,7 @@ class ProgramFactory extends Factory
         return [
             'user_id' => User::factory(),
             'exercise_id' => Exercise::factory(),
-            'date' => $this->faker->date(),
+            'date' => now()->toDateString(),
             'sets' => $this->faker->numberBetween(1, 5),
             'reps' => $this->faker->numberBetween(5, 12),
             'weight' => $this->faker->optional()->randomFloat(2, 0, 200),
