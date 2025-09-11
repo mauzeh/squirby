@@ -134,4 +134,16 @@ class ProgramFeatureTest extends TestCase
 
         $this->assertDatabaseMissing('programs', ['id' => $program->id]);
     }
+
+    public function test_the_create_view_is_rendered_with_exercise_names()
+    {
+        $user = User::factory()->create();
+        $exercise = Exercise::factory()->create(['user_id' => $user->id]);
+
+        $response = $this->actingAs($user)->get(route('programs.create'));
+
+        $response->assertStatus(200);
+        $response->assertViewHas('exercises');
+        $response->assertSee($exercise->title);
+    }
 }
