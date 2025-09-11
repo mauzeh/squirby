@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
             MealSeeder::class,
             LiftLogSeeder::class,
             MeasurementSeeder::class,
+            ProgramSeeder::class,
         ]);
     }
 }
