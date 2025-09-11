@@ -14,17 +14,17 @@
                     <th>Exercise</th>
                     <th>Sets</th>
                     <th>Reps</th>
-                    <th>Weight</th>
+                    <th>Comments</th>
                     <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
                 @forelse ($programs as $program)
                     <tr>
-                        <td>{{ $program->exercise->name }}</td>
+                        <td>{{ $program->exercise->title }}</td>
                         <td>{{ $program->sets }}</td>
                         <td>{{ $program->reps }}</td>
-                        <td>{{ $program->weight }}</td>
+                        <td>{{ $program->comments }}</td>
                         <td>
                             <a href="{{ route('programs.edit', $program->id) }}" class="button edit">Edit</a>
                             <form action="{{ route('programs.destroy', $program->id) }}" method="POST" style="display:inline;">

@@ -27,7 +27,7 @@ class ProgramFeatureTest extends TestCase
         $this->actingAs($user)
             ->get(route('programs.index'))
             ->assertStatus(200)
-            ->assertSee($exercise->name);
+            ->assertSee($exercise->title);
     }
 
     public function test_user_cannot_see_programs_of_other_users()
@@ -40,7 +40,7 @@ class ProgramFeatureTest extends TestCase
         $this->actingAs($user1)
             ->get(route('programs.index'))
             ->assertStatus(200)
-            ->assertDontSee($exercise->name);
+            ->assertDontSee($exercise->title);
     }
 
     public function test_user_can_create_a_program()
@@ -54,7 +54,6 @@ class ProgramFeatureTest extends TestCase
                 'date' => Carbon::today()->format('Y-m-d'),
                 'sets' => 3,
                 'reps' => 10,
-                'weight' => 50,
                 'comments' => 'Test comments',
             ])
             ->assertRedirect(route('programs.index'));
@@ -111,7 +110,6 @@ class ProgramFeatureTest extends TestCase
                 'date' => Carbon::today()->format('Y-m-d'),
                 'sets' => 5,
                 'reps' => 5,
-                'weight' => 100,
             ])
             ->assertRedirect(route('programs.index'));
 
@@ -145,5 +143,26 @@ class ProgramFeatureTest extends TestCase
         $response->assertStatus(200);
         $response->assertViewHas('exercises');
         $response->assertSee($exercise->title);
+    }
+
+    public function test_program_index_displays_correct_fields()
+    {
+        $user = User::factory()->create();
+        $exercise = Exercise::factory()->create(['user_id' => $user->id]);
+        $program = Program::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'sets' => 3,
+            'reps' => 12,
+            'comments' => 'Test comment',
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('programs.index'))
+            ->assertStatus(200)
+            ->assertSee($exercise->title)
+            ->assertSee('3')
+            ->assertSee('12')
+            ->assertSee('Test comment');
     }
 }
