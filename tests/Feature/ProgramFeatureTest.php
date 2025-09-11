@@ -165,4 +165,39 @@ class ProgramFeatureTest extends TestCase
             ->assertSee('12')
             ->assertSee('Test comment');
     }
+
+    public function test_user_can_delete_multiple_programs()
+    {
+        $user = User::factory()->create();
+        $exercise = Exercise::factory()->create(['user_id' => $user->id]);
+        $program1 = Program::factory()->create(['user_id' => $user->id, 'exercise_id' => $exercise->id]);
+        $program2 = Program::factory()->create(['user_id' => $user->id, 'exercise_id' => $exercise->id]);
+
+        $this->actingAs($user)
+            ->post(route('programs.destroy-selected'), [
+                'program_ids' => [$program1->id, $program2->id],
+            ])
+            ->assertRedirect(route('programs.index'));
+
+        $this->assertDatabaseMissing('programs', ['id' => $program1->id]);
+        $this->assertDatabaseMissing('programs', ['id' => $program2->id]);
+    }
+
+    public function test_user_cannot_delete_other_users_programs_via_bulk_delete()
+    {
+        $user1 = User::factory()->create();
+        $user2 = User::factory()->create();
+        $exercise = Exercise::factory()->create(['user_id' => $user2->id]);
+        $program1 = Program::factory()->create(['user_id' => $user2->id, 'exercise_id' => $exercise->id]);
+        $program2 = Program::factory()->create(['user_id' => $user2->id, 'exercise_id' => $exercise->id]);
+
+        $this->actingAs($user1)
+            ->post(route('programs.destroy-selected'), [
+                'program_ids' => [$program1->id, $program2->id],
+            ])
+            ->assertRedirect(route('programs.index'));
+
+        $this->assertDatabaseHas('programs', ['id' => $program1->id]);
+        $this->assertDatabaseHas('programs', ['id' => $program2->id]);
+    }
 }

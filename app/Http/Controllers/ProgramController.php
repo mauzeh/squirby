@@ -7,6 +7,7 @@ use App\Models\Exercise;
 use App\Http\Requests\StoreProgramRequest;
 use App\Http\Requests\UpdateProgramRequest;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
 
 class ProgramController extends Controller
 {
@@ -93,5 +94,22 @@ class ProgramController extends Controller
         $program->delete();
 
         return redirect()->route('programs.index')->with('success', 'Program entry deleted.');
+    }
+
+    /**
+     * Remove the specified resources from storage.
+     */
+    public function destroySelected(Request $request)
+    {
+        $request->validate([
+            'program_ids' => 'required|array',
+            'program_ids.*' => 'exists:programs,id',
+        ]);
+
+        Program::whereIn('id', $request->program_ids)
+            ->where('user_id', auth()->id())
+            ->delete();
+
+        return redirect()->route('programs.index')->with('success', 'Selected program entries deleted.');
     }
 }
