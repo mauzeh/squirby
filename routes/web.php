@@ -14,6 +14,7 @@ use App\Http\Controllers\ExerciseController;
 use App\Http\Controllers\LiftLogController;
 use App\Http\Controllers\BodyLogController;
 use App\Http\Controllers\MeasurementTypeController;
+use App\Http\Controllers\ProgramController;
 
 // Breeze Routes
 Route::get('/', function () {
