@@ -45,7 +45,7 @@ class ProgramTest extends TestCase
             'date' => now()->format('Y-m-d H:i:s'),
             'sets' => 5,
             'reps' => 5,
-            'weight' => 100,
+            'comments' => 'Test comments',
         ];
 
         $response = $this->actingAs($user)->post(route('programs.store'), $programData);
@@ -74,7 +74,7 @@ class ProgramTest extends TestCase
             'date' => now()->addDay()->format('Y-m-d H:i:s'),
             'sets' => 10,
             'reps' => 10,
-            'weight' => 120,
+            'comments' => 'Updated comments',
         ];
 
         $response = $this->actingAs($user)->put(route('programs.update', $program), $updatedProgramData);
@@ -98,5 +98,17 @@ class ProgramTest extends TestCase
     {
         $response = $this->get(route('programs.index'));
         $response->assertRedirect(route('login'));
+    }
+
+    public function test_the_create_view_is_rendered_with_exercise_names()
+    {
+        $user = User::factory()->create();
+        $exercise = Exercise::factory()->create(['user_id' => $user->id]);
+
+        $response = $this->actingAs($user)->get(route('programs.create'));
+
+        $response->assertStatus(200);
+        $response->assertViewHas('exercises');
+        $response->assertSee($exercise->title);
     }
 }

@@ -55,6 +55,7 @@ class ProgramFeatureTest extends TestCase
                 'sets' => 3,
                 'reps' => 10,
                 'weight' => 50,
+                'comments' => 'Test comments',
             ])
             ->assertRedirect(route('programs.index'));
 
@@ -62,7 +63,7 @@ class ProgramFeatureTest extends TestCase
             'exercise_id' => $exercise->id,
             'sets' => 3,
             'reps' => 10,
-            'weight' => 50,
+            'comments' => 'Test comments',
         ]);
     }
 
@@ -118,7 +119,6 @@ class ProgramFeatureTest extends TestCase
             'id' => $program->id,
             'sets' => 5,
             'reps' => 5,
-            'weight' => 100,
         ]);
     }
 

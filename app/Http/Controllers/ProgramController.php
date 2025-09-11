@@ -29,7 +29,8 @@ class ProgramController extends Controller
      */
     public function create()
     {
-        // Not used, form is on the index page.
+        $exercises = Exercise::where('user_id', auth()->id())->orderBy('name')->get();
+        return view('programs.create', compact('exercises'));
     }
 
     /**

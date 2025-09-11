@@ -4,39 +4,7 @@
     <div class="container">
         <h1>Program</h1>
 
-        {{-- Create Form --}}
-        <div class="form-container">
-            <h3>Add New Program Entry</h3>
-            <form action="{{ route('programs.store') }}" method="POST">
-                @csrf
-                <div class="form-row">
-                    <label for="date">Date:</label>
-                    <input type="date" name="date" id="date" value="{{ date('Y-m-d') }}" required>
-                </div>
-                <div class="form-row">
-                    <label for="exercise_id">Exercise:</label>
-                    <select name="exercise_id" id="exercise_id" required>
-                        <option value="">Select an Exercise</option>
-                        @foreach ($exercises as $exercise)
-                            <option value="{{ $exercise->id }}">{{ $exercise->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="form-row">
-                    <label for="sets">Sets:</label>
-                    <input type="number" name="sets" id="sets" required>
-                </div>
-                <div class="form-row">
-                    <label for="reps">Reps:</label>
-                    <input type="number" name="reps" id="reps" required>
-                </div>
-                <div class="form-row">
-                    <label for="weight">Weight:</label>
-                    <input type="text" name="weight" id="weight">
-                </div>
-                <button type="submit" class="button create">Add Program Entry</button>
-            </form>
-        </div>
+        <a href="{{ route('programs.create') }}" class="button create"><i class="fas fa-plus"></i> Add Program Entry</a>
 
         {{-- Program List --}}
         <h2>Program for {{ date('M d, Y') }}</h2>

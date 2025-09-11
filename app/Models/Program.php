@@ -19,7 +19,7 @@ class Program extends Model
         'date',
         'sets',
         'reps',
-        'weight',
+        'comments',
     ];
 
     public function user()

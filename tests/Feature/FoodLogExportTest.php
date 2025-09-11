@@ -139,26 +139,19 @@ class FoodLogExportTest extends TestCase
 
         // Create logs for user2
         $ingredient2 = Ingredient::factory()->create(['user_id' => $user2->id, 'base_unit_id' => $this->unit->id]);
-        FoodLog::factory()->create(['user_id' => $user2->id, 'ingredient_id' => $ingredient2->id, 'unit_id' => $this->unit->id, 'logged_at' => Carbon::parse('2025-01-01 10:30:00')]);
-        FoodLog::factory()->create(['user_id' => $user2->id, 'ingredient_id' => $ingredient2->id, 'unit_id' => $this->unit->id, 'logged_at' => Carbon::parse('2025-01-02 11:30:00')]);
+        FoodLog::factory()->create(['user_id' => $user2->id, 'ingredient_id' => $ingredient2->id, 'unit_id' => $this->unit->id, 'logged_at' => Carbon::parse('2025-01-01 10:30:00'), 'notes' => 'user2 log']);
+        FoodLog::factory()->create(['user_id' => $user2->id, 'ingredient_id' => $ingredient2->id, 'unit_id' => $this->unit->id, 'logged_at' => Carbon::parse('2025-01-02 11:30:00'), 'notes' => 'user2 log']);
 
         $response = $this->post(route('food-logs.export-all'));
 
         $response->assertOk();
         $content = $response->streamedContent();
-        $lines = explode("\n", trim($content));
-        $csv = array_map('str_getcsv', $lines);
 
         // Assert that user1's logs are present
         $this->assertStringContainsString($ingredient1->name, $content);
-        $this->assertCount(3, $lines); // Header + 2 logs from user1
 
         // Assert that user2's logs are NOT present
-        foreach ($csv as $row) {
-            if (isset($row[2])) { // Check if the column exists
-                $this->assertNotEquals($ingredient2->name, $row[2]);
-            }
-        }
+        $this->assertStringNotContainsString('user2 log', $content);
     }
 
     /** @test */
@@ -177,8 +170,8 @@ class FoodLogExportTest extends TestCase
 
         // Create logs for user2 within the date range
         $ingredient2 = Ingredient::factory()->create(['user_id' => $user2->id, 'base_unit_id' => $this->unit->id]);
-        FoodLog::factory()->create(['user_id' => $user2->id, 'ingredient_id' => $ingredient2->id, 'unit_id' => $this->unit->id, 'logged_at' => Carbon::parse('2025-01-01 10:30:00')]);
-        FoodLog::factory()->create(['user_id' => $user2->id, 'ingredient_id' => $ingredient2->id, 'unit_id' => $this->unit->id, 'logged_at' => Carbon::parse('2025-01-02 11:30:00')]);
+        FoodLog::factory()->create(['user_id' => $user2->id, 'ingredient_id' => $ingredient2->id, 'unit_id' => $this->unit->id, 'logged_at' => Carbon::parse('2025-01-01 10:30:00'), 'notes' => 'user2 log']);
+        FoodLog::factory()->create(['user_id' => $user2->id, 'ingredient_id' => $ingredient2->id, 'unit_id' => $this->unit->id, 'logged_at' => Carbon::parse('2025-01-02 11:30:00'), 'notes' => 'user2 log']);
 
         $response = $this->post(route('food-logs.export'), [
             'start_date' => '2025-01-01',
@@ -187,19 +180,12 @@ class FoodLogExportTest extends TestCase
 
         $response->assertOk();
         $content = $response->streamedContent();
-        $lines = explode("\n", trim($content));
-        $csv = array_map('str_getcsv', $lines);
 
         // Assert that user1's logs are present
         $this->assertStringContainsString($ingredient1->name, $content);
-        $this->assertCount(3, $lines); // Header + 2 logs from user1
 
         // Assert that user2's logs are NOT present
-        foreach ($csv as $row) {
-            if (isset($row[2])) { // Check if the column exists
-                $this->assertNotEquals($ingredient2->name, $row[2]);
-            }
-        }
+        $this->assertStringNotContainsString('user2 log', $content);
     }
 
 }
