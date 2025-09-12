@@ -78,8 +78,7 @@
             <div class="form-container">
                 <h3>TSV Export</h3>
                 @php
-                    $exportHeaders = ['date', 'exercise_title', 'sets', 'reps', 'priority', 'comments'];
-                    $exportOutput = implode("\t", $exportHeaders) . "\n";
+                    $exportOutput = "";
 
                     foreach ($programs as $program) {
                         $row = [
