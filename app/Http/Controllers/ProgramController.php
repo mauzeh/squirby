@@ -9,13 +9,14 @@ use App\Http\Requests\UpdateProgramRequest;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Services\ProgramTsvImporterService;
+use App\Services\WeightProgressionService;
 
 class ProgramController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
+    public function index(Request $request, WeightProgressionService $weightProgressionService)
     {
         $selectedDate = $request->input('date') ? Carbon::parse($request->input('date')) : Carbon::today();
 
@@ -24,6 +25,19 @@ class ProgramController extends Controller
             ->whereDate('date', $selectedDate->toDateString())
             ->orderBy('priority')
             ->get();
+
+        foreach ($programs as $program) {
+            // Only suggest weight for non-bodyweight exercises
+            if (!$program->exercise->is_bodyweight) {
+                $program->suggestedNextWeight = $weightProgressionService->suggestNextWeight(
+                    auth()->id(),
+                    $program->exercise_id,
+                    $program->reps // Assuming 'reps' from the program is the target reps
+                );
+            } else {
+                $program->suggestedNextWeight = null; // Or a specific message for bodyweight
+            }
+        }
 
         return view('programs.index', compact('programs', 'selectedDate'));
     }

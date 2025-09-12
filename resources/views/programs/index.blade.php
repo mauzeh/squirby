@@ -31,6 +31,7 @@
                         <th class="hide-on-mobile" style="width: 1%; white-space: nowrap; text-align: center;">Reps</th>
                         <th class="hide-on-mobile" style="width: 1%; white-space: nowrap; text-align: center;">Prio</th>
                         <th>Exercise</th>
+                        <th class="hide-on-mobile">Today</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -50,6 +51,13 @@
                                 </div>
                                 @if($program->comments)
                                     <br><small style="font-size: 0.8em; color: #aaa;">{{ $program->comments }}</small>
+                                @endif
+                            </td>
+                            <td class="hide-on-mobile" style="text-align: center;">
+                                @if($program->suggestedNextWeight)
+                                    {{ number_format($program->suggestedNextWeight) }} lbs
+                                @else
+                                    N/A
                                 @endif
                             </td>
                             <td style="white-space: normal;">
