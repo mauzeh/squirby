@@ -107,7 +107,7 @@ class ExerciseController extends Controller
         }
         $liftLogs = $exercise->liftLogs()->with('liftSets')->where('user_id', auth()->id())->orderBy('logged_at', 'asc')->get();
 
-        $top5Exercises = $this->exerciseService->getTopExercises(5);
+        $displayExercises = $this->exerciseService->getDisplayExercises(5);
 
         $chartData = [
             'datasets' => [
@@ -130,6 +130,6 @@ class ExerciseController extends Controller
 
         $exercises = Exercise::where('user_id', auth()->id())->orderBy('title', 'asc')->get();
 
-        return view('exercises.logs', compact('exercise', 'liftLogs', 'chartData', 'top5Exercises', 'exercises'));
+        return view('exercises.logs', compact('exercise', 'liftLogs', 'chartData', 'displayExercises', 'exercises'));
     }
 }

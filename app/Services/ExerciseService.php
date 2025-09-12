@@ -22,4 +22,18 @@ class ExerciseService
             ->orderBy('lift_logs_count', 'desc')
             ->get();
     }
+
+    public function getDisplayExercises(int $limit = 5)
+    {
+        $topExercises = $this->getTopExercises($limit);
+
+        if ($topExercises->isEmpty()) {
+            return Exercise::where('user_id', Auth::id())
+                            ->orderBy('created_at', 'desc')
+                            ->limit(3)
+                            ->get();
+        }
+
+        return $topExercises;
+    }
 }

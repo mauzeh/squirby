@@ -29,9 +29,9 @@ class LiftLogController extends Controller
         $liftLogs = LiftLog::with('exercise')->where('user_id', auth()->id())->orderBy('logged_at', 'asc')->get();
         $exercises = Exercise::where('user_id', auth()->id())->orderBy('title', 'asc')->get();
 
-        $top5Exercises = $this->exerciseService->getTopExercises(5);
+        $displayExercises = $this->exerciseService->getDisplayExercises(5);
 
-        return view('lift-logs.index', compact('liftLogs', 'exercises', 'top5Exercises'));
+        return view('lift-logs.index', compact('liftLogs', 'displayExercises', 'exercises'));
     }
     
     /**
