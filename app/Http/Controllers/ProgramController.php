@@ -131,10 +131,10 @@ class ProgramController extends Controller
             'date' => 'required|date',
         ]);
 
-        $dateForImport = Carbon::parse($request->input('date'));
+        $date = Carbon::parse($request->input('date'));
         $tsvContent = $request->input('tsv_content');
 
-        $result = $importerService->import($tsvContent, auth()->id(), $dateForImport);
+        $result = $importerService->import($tsvContent, auth()->id());
 
         $message = 'Successfully imported ' . $result['importedCount'] . ' program entries.';
         if (count($result['notFound']) > 0) {
@@ -145,9 +145,9 @@ class ProgramController extends Controller
         }
 
         if (count($result['notFound']) > 0 || count($result['invalidRows']) > 0) {
-            return redirect()->route('programs.index', ['date' => $dateForImport->format('Y-m-d')])->withErrors($result['invalidRows'])->with('error', $message);
+            return redirect()->route('programs.index', ['date' => $date->format('Y-m-d')])->withErrors($result['invalidRows'])->with('error', $message);
         } else {
-            return redirect()->route('programs.index', ['date' => $dateForImport->format('Y-m-d')])->with('success', $message);
+            return redirect()->route('programs.index', ['date' => $date->format('Y-m-d')])->with('success', $message);
         }
     }
 }

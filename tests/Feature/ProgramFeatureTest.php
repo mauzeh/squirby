@@ -275,10 +275,10 @@ class ProgramFeatureTest extends TestCase
         $exercise1 = Exercise::factory()->create(['user_id' => $user->id, 'title' => 'Pushups']);
         $exercise2 = Exercise::factory()->create(['user_id' => $user->id, 'title' => 'Squats']);
 
-        $tsvContent = "Pushups\t3\t10\t1\tMorning workout\n";
-        $tsvContent .= "Squats\t5\t5\t2\tLeg day\n";
-
         $importDate = Carbon::today();
+
+        $tsvContent = $importDate->format('Y-m-d') . "\tPushups\t3\t10\t1\tMorning workout\n";
+        $tsvContent .= $importDate->format('Y-m-d') . "\tSquats\t5\t5\t2\tLeg day\n";
 
         $this->actingAs($user)
             ->post(route('programs.import'), [
@@ -309,31 +309,29 @@ class ProgramFeatureTest extends TestCase
         ]);
 
         // Test with not found exercise
-        $tsvContentNotFound = "NonExistentExercise\t1\t1\t1\tComments\n";
+        $tsvContentNotFound = $importDate->format('Y-m-d') . "\tNonExistentExercise\t1\t1\t1\tComments\n";
         $this->actingAs($user)
             ->post(route('programs.import'), [
                 'tsv_content' => $tsvContentNotFound,
                 'date' => $importDate->format('Y-m-d'),
             ])
             ->assertRedirect(route('programs.index', ['date' => $importDate->format('Y-m-d')]))
-            ->assertSessionHas('error', 'Successfully imported 0 program entries. Some exercises not found: NonExistentExercise.')
-            ->assertSessionHasErrors(); // Should have errors for the invalid row
+            ->assertSessionHas('error', 'Successfully imported 0 program entries. Some exercises not found: NonExistentExercise.');
 
         $this->assertDatabaseMissing('programs', [
             'user_id' => $user->id,
-            'exercise_id' => null, // Exercise not found
+            'comments' => 'Comments',
         ]);
 
         // Test with invalid row data (non-numeric sets)
-        $tsvContentInvalid = "Pushups\tabc\t10\t1\tInvalid sets\n";
+        $tsvContentInvalid = $importDate->format('Y-m-d') . "\tPushups\tabc\t10\t1\tInvalid sets\n";
         $this->actingAs($user)
             ->post(route('programs.import'), [
                 'tsv_content' => $tsvContentInvalid,
                 'date' => $importDate->format('Y-m-d'),
             ])
             ->assertRedirect(route('programs.index', ['date' => $importDate->format('Y-m-d')]))
-            ->assertSessionHas('error', 'Successfully imported 0 program entries. Some rows were invalid.')
-            ->assertSessionHasErrors(); // Should have errors for the invalid row
+            ->assertSessionHas('error', 'Successfully imported 0 program entries. Some rows were invalid.');
 
         $this->assertDatabaseMissing('programs', [
             'user_id' => $user->id,

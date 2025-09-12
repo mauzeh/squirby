@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Validator;
 
 class ProgramTsvImporterService
 {
-    public function import(string $tsvContent, int $userId, Carbon $dateForImport)
+    public function import(string $tsvContent, int $userId)
     {
         $lines = array_filter(explode("\n", $tsvContent));
         if (empty($lines)) {
@@ -23,32 +23,32 @@ class ProgramTsvImporterService
         foreach ($lines as $lineNumber => $line) {
             $columns = array_map('trim', str_getcsv($line, "\t"));
 
-            // Expected columns: exercise_title, sets, reps, priority, comments
-            if (count($columns) < 5) {
+            // Expected columns: date, exercise_title, sets, reps, priority, comments
+            if (count($columns) < 6) {
                 $invalidRows[] = $line;
                 continue;
             }
 
             // Find exercise by title for the current user (case-insensitive)
             $exercise = Exercise::where('user_id', $userId)
-                                ->whereRaw('LOWER(title) = ?', [strtolower($columns[0])])
+                                ->whereRaw('LOWER(title) = ?', [strtolower($columns[1])])
                                 ->first();
 
             if (!$exercise) {
-                $notFound[] = $columns[0];
+                $notFound[] = $columns[1];
                 continue;
             }
 
             $validator = Validator::make([
+                'date' => $columns[0],
                 'exercise_id' => $exercise->id,
-                'date' => $dateForImport->toDateString(),
-                'sets' => $columns[1] ?? null,
-                'reps' => $columns[2] ?? null,
-                'priority' => $columns[3] ?? null,
-                'comments' => $columns[4] ?? null,
+                'sets' => $columns[2] ?? null,
+                'reps' => $columns[3] ?? null,
+                'priority' => $columns[4] ?? null,
+                'comments' => $columns[5] ?? null,
             ], [
-                'exercise_id' => ['required', 'exists:exercises,id'],
                 'date' => ['required', 'date'],
+                'exercise_id' => ['required', 'exists:exercises,id'],
                 'sets' => ['required', 'integer', 'min:1'],
                 'reps' => ['required', 'integer', 'min:1'],
                 'priority' => ['nullable', 'integer', 'min:0'],
@@ -62,12 +62,12 @@ class ProgramTsvImporterService
 
             Program::create([
                 'user_id' => $userId,
+                'date' => Carbon::parse($columns[0]),
                 'exercise_id' => $exercise->id,
-                'date' => $dateForImport,
-                'sets' => $columns[1],
-                'reps' => $columns[2],
-                'priority' => $columns[3] ?? 0,
-                'comments' => $columns[4] ?? null,
+                'sets' => $columns[2],
+                'reps' => $columns[3],
+                'priority' => $columns[4] ?? 0,
+                'comments' => $columns[5] ?? null,
             ]);
 
             $importedCount++;
