@@ -24,7 +24,7 @@ class ProgramTsvImporterService
             $columns = array_map('trim', str_getcsv($line, "\t"));
 
             // Expected columns: date, exercise_title, sets, reps, priority, comments
-            if (count($columns) < 6) {
+            if (count($columns) < 5) {
                 $invalidRows[] = $line;
                 continue;
             }
