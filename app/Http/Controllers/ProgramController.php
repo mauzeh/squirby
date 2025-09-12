@@ -38,7 +38,10 @@ class ProgramController extends Controller
         $highestPriority = Program::where('user_id', auth()->id())
             ->whereDate('date', $date->toDateString())
             ->max('priority');
-        $defaultPriority = $highestPriority + 1;
+
+        // If no programs exist, or if the next available priority is less than 100, default to 100.
+        // Otherwise, use the next available priority.
+        $defaultPriority = ($highestPriority === null || $highestPriority + 1 < 100) ? 100 : $highestPriority + 1;
 
         return view('programs.create', compact('exercises', 'date', 'defaultPriority'));
     }

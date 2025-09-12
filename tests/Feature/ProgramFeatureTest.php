@@ -436,6 +436,6 @@ class ProgramFeatureTest extends TestCase
             ->get(route('programs.create', ['date' => Carbon::today()->format('Y-m-d')]));
 
         $response->assertStatus(200);
-        $response->assertViewHas('defaultPriority', 6);
+        $response->assertViewHas('defaultPriority', 100);
     }
 }

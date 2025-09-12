@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('programs', function (Blueprint $table) {
-            $table->integer('priority')->default(0)->after('reps');
+            $table->integer('priority')->default(100)->after('reps');
         });
     }
 

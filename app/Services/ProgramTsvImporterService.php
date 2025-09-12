@@ -67,7 +67,7 @@ class ProgramTsvImporterService
                 'exercise_id' => $exercise->id,
                 'sets' => $columns[2],
                 'reps' => $columns[3],
-                'priority' => $columns[4] ?? 0,
+                'priority' => $columns[4] ?? 100,
                 'comments' => $columns[5] ?? null,
             ]);
 
