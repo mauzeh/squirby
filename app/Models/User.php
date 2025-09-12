@@ -74,7 +74,8 @@ class User extends Authenticatable
                 ['title' => 'Power Clean', 'description' => 'An explosive deadlift.'],
                 ['title' => 'Half-Kneeling DB Press', 'description' => 'A unilateral exercise that targets the shoulders and core.'],
                 ['title' => 'Cyclist Squat (Barbell, Front Rack)', 'description' => 'A squat variation that emphasizes the quadriceps by elevating the heels, performed with a barbell in the front rack position.'],
-                ['title' => 'Chin-Ups', 'description' => 'A bodyweight pulling exercise.', 'is_bodyweight' => true],
+                ['title' => 'Chin-Ups', 'description' => 'A bodyweight pulling exercise with supinated grip.', 'is_bodyweight' => true],
+                ['title' => 'Pull-Ups', 'description' => 'A bodyweight pulling exercise with pronated grip.', 'is_bodyweight' => true],
             ];
 
             foreach ($exercises as $exercise) {
