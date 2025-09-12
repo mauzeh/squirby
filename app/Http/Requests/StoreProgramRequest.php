@@ -26,7 +26,7 @@ class StoreProgramRequest extends FormRequest
             'date' => ['required', 'date'],
             'sets' => ['required', 'integer', 'min:1'],
             'reps' => ['required', 'integer', 'min:1'],
-            'weight' => ['nullable', 'numeric', 'min:0'],
+            'priority' => ['nullable', 'integer', 'min:0'],
             'comments' => ['nullable', 'string'],
         ];
     }

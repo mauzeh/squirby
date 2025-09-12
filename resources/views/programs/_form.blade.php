@@ -23,6 +23,11 @@
 </div>
 
 <div class="form-group">
+    <label for="priority">Priority</label>
+    <input type="number" name="priority" id="priority" class="form-control" value="{{ isset($program) ? $program->priority : 0 }}" step="1">
+</div>
+
+<div class="form-group">
     <label for="comments">Comments</label>
     <textarea name="comments" id="comments" class="form-control">{{ isset($program) ? $program->comments : '' }}</textarea>
 </div>

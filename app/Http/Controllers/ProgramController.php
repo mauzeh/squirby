@@ -22,6 +22,7 @@ class ProgramController extends Controller
         $programs = Program::with('exercise')
             ->where('user_id', auth()->id())
             ->whereDate('date', $selectedDate->toDateString())
+            ->orderBy('priority')
             ->get();
 
         return view('programs.index', compact('exercises', 'programs', 'selectedDate'));

@@ -20,6 +20,7 @@ class Program extends Model
         'sets',
         'reps',
         'comments',
+        'priority',
     ];
 
     public function user()

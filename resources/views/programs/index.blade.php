@@ -29,6 +29,7 @@
                         <th style="width: 1%;"><input type="checkbox" id="select-all-programs"></th>
                         <th class="hide-on-mobile" style="width: 1%; white-space: nowrap; text-align: center;">Sets</th>
                         <th class="hide-on-mobile" style="width: 1%; white-space: nowrap; text-align: center;">Reps</th>
+                        <th class="hide-on-mobile" style="width: 1%; white-space: nowrap; text-align: center;">Prio</th>
                         <th style="min-width: 150px;">Exercise</th>
                         <th style="width: 1%; white-space: nowrap;">Actions</th>
                     </tr>
@@ -39,10 +40,11 @@
                             <td><input type="checkbox" name="program_ids[]" value="{{ $program->id }}" class="program-checkbox"></td>
                             <td class="hide-on-mobile" style="text-align: center;">{{ $program->sets }}</td>
                             <td class="hide-on-mobile" style="text-align: center;">{{ $program->reps }}</td>
+                            <td class="hide-on-mobile" style="text-align: center;">{{ $program->priority }}</td>
                             <td>
                                 {{ $program->exercise->title }}
                                 <div class="show-on-mobile" style="font-size: 0.9em; color: #ccc;">
-                                    Sets: {{ $program->sets }} / Reps: {{ $program->reps }}
+                                    Sets: {{ $program->sets }} / Reps: {{ $program->reps }} / Priority: {{ $program->priority }}
                                 </div>
                                 @if($program->comments)
                                     <br><small style="font-size: 0.8em; color: #aaa;">{{ $program->comments }}</small>
