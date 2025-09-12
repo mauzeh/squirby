@@ -42,9 +42,11 @@
                             <td class="hide-on-mobile" style="text-align: center;">{{ $program->reps }}</td>
                             <td class="hide-on-mobile" style="text-align: center;">{{ $program->priority }}</td>
                             <td>
-                                {{ $program->exercise->title }}
+                                <strong>{{ $program->exercise->title }}</strong>
                                 <div class="show-on-mobile" style="font-size: 0.9em; color: #ccc;">
-                                    Sets: {{ $program->sets }} / Reps: {{ $program->reps }} / Priority: {{ $program->priority }}
+                                    <br>
+                                    Reps: {{ $program->reps }}<br>
+                                    Sets: {{ $program->sets }}
                                 </div>
                                 @if($program->comments)
                                     <br><small style="font-size: 0.8em; color: #aaa;">{{ $program->comments }}</small>
