@@ -14,7 +14,7 @@ class WeightProgressionService
     // Define the look-back period for recent history
     const LOOKBACK_WEEKS = 2;
 
-    public function suggestNextWeight(int $userId, int $exerciseId, int $targetReps): float
+    public function suggestNextWeight(int $userId, int $exerciseId, int $targetReps): float|false
     {
         // 1. Retrieve recent LiftLogs for the exercise and user
         $recentLiftLogs = LiftLog::with('liftSets')
@@ -32,11 +32,9 @@ class WeightProgressionService
         // 2. Identify "Last Successful" Set
         // Find the heaviest weight for the target reps from any set within the recent LiftLogs
         foreach ($recentLiftLogs as $log) {
-            // dd($log->liftSets()->where('reps', $targetReps)->get()); // Debugging line 1
             $heaviestSetWeight = $log->liftSets()
                                     ->where('reps', $targetReps)
                                     ->max('weight');
-            // dd($heaviestSetWeight); // Debugging line 2
 
             if ($heaviestSetWeight !== null && ($lastSuccessfulWeight === null || $heaviestSetWeight > $lastSuccessfulWeight)) {
                 $lastSuccessfulWeight = $heaviestSetWeight;
@@ -50,7 +48,7 @@ class WeightProgressionService
         } else {
             // If no recent history, suggest a default starting weight
             // This could be more sophisticated (e.g., exercise-specific defaults)
-            return 45.0; // Example default for a barbell exercise
+            return false; // Return false when no weight can be determined
         }
     }
 }

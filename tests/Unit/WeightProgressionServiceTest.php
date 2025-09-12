@@ -31,7 +31,7 @@ class WeightProgressionServiceTest extends TestCase
 
         $suggestedWeight = $this->service->suggestNextWeight($user->id, $exercise->id, 5);
 
-        $this->assertEquals(45.0, $suggestedWeight);
+        $this->assertFalse($suggestedWeight);
     }
 
     /** @test */
@@ -75,7 +75,7 @@ class WeightProgressionServiceTest extends TestCase
 
         $suggestedWeight = $this->service->suggestNextWeight($user->id, $exercise->id, 5);
 
-        $this->assertEquals(45.0, $suggestedWeight); // Should fall back to default
+        $this->assertFalse($suggestedWeight); // Should fall back to default
     }
 
     /** @test */
@@ -100,7 +100,7 @@ class WeightProgressionServiceTest extends TestCase
         // Should still suggest default weight for nonBodyweightExercise as bodyweight history is ignored
         $suggestedWeight = $this->service->suggestNextWeight($user->id, $nonBodyweightExercise->id, 5);
 
-        $this->assertEquals(45.0, $suggestedWeight);
+        $this->assertFalse($suggestedWeight);
     }
 
     /** @test */
@@ -180,6 +180,6 @@ class WeightProgressionServiceTest extends TestCase
         // No sets with 5 reps, should fall back to default
         $suggestedWeight = $this->service->suggestNextWeight($user->id, $exercise->id, 5);
 
-        $this->assertEquals(45.0, $suggestedWeight);
+        $this->assertFalse($suggestedWeight);
     }
 }
