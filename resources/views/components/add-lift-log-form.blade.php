@@ -1,4 +1,4 @@
-@props(['exercises', 'selectedExercise' => null])
+@props(['exercises', 'selectedExercise' => null, 'sets' => null, 'reps' => null])
 
 <div class="form-container">
     <h3>Add Lift Log</h3>
@@ -23,11 +23,11 @@
         </div>
         <div class="form-group">
             <label for="reps">Reps:</label>
-            <input type="number" name="reps" id="reps" class="form-control" value="5" required inputmode="numeric">
+            <input type="number" name="reps" id="reps" class="form-control" value="{{ $reps ?? 5 }}" required inputmode="numeric">
         </div>
         <div class="form-group">
             <label for="rounds">Rounds:</label>
-            <input type="number" name="rounds" id="rounds" class="form-control" value="3" required inputmode="numeric">
+            <input type="number" name="rounds" id="rounds" class="form-control" value="{{ $sets ?? 3 }}" required inputmode="numeric">
         </div>
         <div class="form-group">
             <label for="comments">Comments:</label>

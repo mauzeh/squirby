@@ -100,7 +100,7 @@ class ExerciseController extends Controller
         return redirect()->route('exercises.index')->with('success', 'Exercise deleted successfully.');
     }
 
-    public function showLogs(Exercise $exercise)
+    public function showLogs(Request $request, Exercise $exercise)
     {
         if ($exercise->user_id !== auth()->id()) {
             abort(403, 'Unauthorized action.');
@@ -130,6 +130,9 @@ class ExerciseController extends Controller
 
         $exercises = Exercise::where('user_id', auth()->id())->orderBy('title', 'asc')->get();
 
-        return view('exercises.logs', compact('exercise', 'liftLogs', 'chartData', 'displayExercises', 'exercises'));
+        $sets = $request->input('sets');
+        $reps = $request->input('reps');
+
+        return view('exercises.logs', compact('exercise', 'liftLogs', 'chartData', 'displayExercises', 'exercises', 'sets', 'reps'));
     }
 }

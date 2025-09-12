@@ -19,7 +19,7 @@
             <h1>{{ $exercise->title }}</h1>
         </div>
 
-        <x-add-lift-log-form :exercises="$exercises" :selectedExercise="$exercise" />
+        <x-add-lift-log-form :exercises="$exercises" :selectedExercise="$exercise" :sets="$sets ?? null" :reps="$reps ?? null" />
 
         @if ($liftLogs->isEmpty())
             <p>No lift logs found for this exercise.</p>

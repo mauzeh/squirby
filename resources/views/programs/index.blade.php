@@ -53,7 +53,7 @@
                                 @endif
                             </td>
                             <td style="white-space: normal;">
-                                <a href="{{ route('exercises.show-logs', $program->exercise) }}" class="button"><i class="fa-solid fa-chart-line"></i></a>
+                                <a href="{{ route('exercises.show-logs', ['exercise' => $program->exercise, 'sets' => $program->sets, 'reps' => $program->reps]) }}" class="button"><i class="fa-solid fa-chart-line"></i></a>
                                 <a href="{{ route('programs.edit', $program->id) }}" class="button edit"><i class="fa-solid fa-pencil"></i></a>
                                 <form action="{{ route('programs.destroy', $program->id) }}" method="POST" style="display:inline;">
                                     @csrf
