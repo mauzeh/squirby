@@ -96,7 +96,7 @@
     </tbody>
     <tfoot>
         <tr>
-            <th colspan="{{ $hideExerciseColumn ? 5 : 6 }}" style="text-align:left; font-weight:normal;">
+            <th colspan="{{ $hideExerciseColumn ? 6 : 7 }}" style="text-align:left; font-weight:normal;">
                 <form action="{{ route('lift-logs.destroy-selected') }}" method="POST" id="delete-selected-form" onsubmit="return confirm('Are you sure you want to delete the selected lift logs?');" style="display:inline;">
                     @csrf
                     <button type="submit" class="button delete">Delete Selected</button>
