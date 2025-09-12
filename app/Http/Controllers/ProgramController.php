@@ -42,11 +42,12 @@ class ProgramController extends Controller
      */
     public function store(StoreProgramRequest $request)
     {
-        $program = new Program($request->validated());
+        $validated = $request->validated();
+        $program = new Program($validated);
         $program->user_id = auth()->id();
         $program->save();
 
-        return redirect()->route('programs.index')->with('success', 'Program entry created.');
+        return redirect()->route('programs.index', ['date' => $validated['date']])->with('success', 'Program entry created.');
     }
 
     /**
@@ -80,9 +81,10 @@ class ProgramController extends Controller
             abort(403);
         }
 
-        $program->update($request->validated());
+        $validated = $request->validated();
+        $program->update($validated);
 
-        return redirect()->route('programs.index')->with('success', 'Program entry updated.');
+        return redirect()->route('programs.index', ['date' => $validated['date']])->with('success', 'Program entry updated.');
     }
 
     /**
