@@ -269,6 +269,47 @@ class ProgramFeatureTest extends TestCase
         $this->assertDatabaseMissing('programs', ['id' => $program2->id]);
     }
 
+    public function test_user_can_import_programs_via_tsv_textarea()
+    {
+        $user = User::factory()->create();
+        $exercise1 = Exercise::factory()->create(['user_id' => $user->id, 'title' => 'Pushups']);
+        $exercise2 = Exercise::factory()->create(['user_id' => $user->id, 'title' => 'Squats']);
+
+        $tsvContent = "exercise_title\tsets\treps\tpriority\tcomments\n";
+        $tsvContent .= "Pushups\t3\t10\t1\tMorning workout\n";
+        $tsvContent .= "Squats\t5\t5\t2\tLeg day\n";
+
+        $importDate = Carbon::today();
+
+        $this->actingAs($user)
+            ->post(route('programs.import'), [
+                'tsv_content' => $tsvContent,
+                'date' => $importDate->format('Y-m-d'),
+            ])
+            ->assertRedirect(route('programs.index', ['date' => $importDate->format('Y-m-d')]))
+            ->assertSessionHas('success', 'Successfully imported 2 program entries.');
+
+        $this->assertDatabaseHas('programs', [
+            'user_id' => $user->id,
+            'exercise_id' => $exercise1->id,
+            'date' => $importDate->toDateString() . ' 00:00:00',
+            'sets' => 3,
+            'reps' => 10,
+            'priority' => 1,
+            'comments' => 'Morning workout',
+        ]);
+
+        $this->assertDatabaseHas('programs', [
+            'user_id' => $user->id,
+            'exercise_id' => $exercise2->id,
+            'date' => $importDate->toDateString() . ' 00:00:00',
+            'sets' => 5,
+            'reps' => 5,
+            'priority' => 2,
+            'comments' => 'Leg day',
+        ]);
+    }
+
     public function test_user_cannot_delete_other_users_programs_via_bulk_delete()
     {
         $user1 = User::factory()->create();

@@ -73,45 +73,54 @@
         @else
             <p>No program entries for this day.</p>
         @endif
-    </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const selectAllCheckbox = document.getElementById('select-all-programs');
-            if (selectAllCheckbox) {
-                selectAllCheckbox.addEventListener('change', function(e) {
-                    document.querySelectorAll('.program-checkbox').forEach(function(checkbox) {
-                        checkbox.checked = e.target.checked;
-                    });
-                });
-            }
+        <div class="container">
+            <div class="form-container">
+                <h3>TSV Export</h3>
+                @php
+                    $exportHeaders = ['date', 'exercise_title', 'sets', 'reps', 'priority', 'comments'];
+                    $exportOutput = implode("\t", $exportHeaders) . "\n";
 
-            const deleteSelectedForm = document.getElementById('delete-selected-form');
-            if (deleteSelectedForm) {
-                deleteSelectedForm.addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    
-                    var form = e.target;
-                    var checkedPrograms = document.querySelectorAll('.program-checkbox:checked');
-
-                    if (checkedPrograms.length === 0) {
-                        alert('Please select at least one program to delete.');
-                        return;
+                    foreach ($programs as $program) {
+                        $row = [
+                            $program->date->format('Y-m-d'),
+                            $program->exercise->title,
+                            $program->sets,
+                            $program->reps,
+                            $program->priority,
+                            str_replace(["\n", "\r", "\t"], [" ", " ", " "], $program->comments ?? ''), // Sanitize comments
+                        ];
+                        $exportOutput .= implode("\t", $row) . "\n";
                     }
+                @endphp
+                <textarea id="exportTsv" rows="10" style="width: 100%; background-color: #3a3a3a; color: #f2f2f2; border: 1px solid #555;">{{ $exportOutput }}</textarea>
+                <button id="copy-tsv-button" class="button">Copy to Clipboard</button>
+            </div>
+        </div>
 
-                    checkedPrograms.forEach(function(checkbox) {
-                        var input = document.createElement('input');
-                        input.type = 'hidden';
-                        input.name = 'program_ids[]';
-                        input.value = checkbox.value;
-                        form.appendChild(input);
+        <div class="container">
+            <div class="form-container">
+                <h3>TSV Import</h3>
+                <form action="{{ route('programs.import') }}" method="POST">
+                    @csrf
+                    <input type="hidden" name="date" value="{{ $selectedDate->format('Y-m-d') }}">
+                    <textarea name="tsv_content" rows="10" style="width: 100%; background-color: #3a3a3a; color: #f2f2f2; border: 1px solid #555;" placeholder="Paste TSV content here..."></textarea>
+                    <button type="submit" class="button">Import TSV</button>
+                </form>
+            </div>
+        </div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const copyTsvButton = document.getElementById('copy-tsv-button');
+                if (copyTsvButton) {
+                    copyTsvButton.addEventListener('click', function() {
+                        var tsvOutput = document.getElementById('exportTsv');
+                        tsvOutput.select();
+                        document.execCommand('copy');
+                        alert('TSV data copied to clipboard!');
                     });
-
-                    if (confirm('Are you sure you want to delete the selected programs?')) {
-                        form.submit();
-                    }
-                });
-            }
-        });
-    </script>
+                }
+            });
+        </script>
 @endsection

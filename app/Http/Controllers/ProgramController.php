@@ -8,6 +8,7 @@ use App\Http\Requests\StoreProgramRequest;
 use App\Http\Requests\UpdateProgramRequest;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use App\Services\ProgramTsvImporterService;
 
 class ProgramController extends Controller
 {
@@ -121,5 +122,24 @@ class ProgramController extends Controller
         $date = $request->input('date');
 
         return redirect()->route('programs.index', ['date' => $date])->with('success', 'Selected program entries deleted.');
+    }
+
+    public function import(Request $request, ProgramTsvImporterService $importerService)
+    {
+        $request->validate([
+            'tsv_content' => 'required|string',
+            'date' => 'required|date',
+        ]);
+
+        $dateForImport = Carbon::parse($request->input('date'));
+        $tsvContent = $request->input('tsv_content');
+
+        $result = $importerService->import($tsvContent, auth()->id(), $dateForImport);
+
+        if ($result['success']) {
+            return redirect()->route('programs.index', ['date' => $dateForImport->format('Y-m-d')])->with('success', $result['message']);
+        } else {
+            return redirect()->route('programs.index', ['date' => $dateForImport->format('Y-m-d')])->withErrors($result['errors'] ?? [])->withInput()->with('error', $result['message']);
+        }
     }
 }
