@@ -25,15 +25,27 @@ class ExerciseService
 
     public function getDisplayExercises(int $limit = 5)
     {
-        $topExercises = $this->getTopExercises($limit);
+        $topExercises = $this->getTopExercises($limit); // Get top N exercises based on logs
 
-        if ($topExercises->isEmpty()) {
-            return Exercise::where('user_id', Auth::id())
-                            ->orderBy('created_at', 'desc')
-                            ->limit(3)
-                            ->get();
+        // If we have enough top exercises, just return them
+        if ($topExercises->count() >= $limit) {
+            return $topExercises;
         }
 
-        return $topExercises;
+        // If not enough top exercises, fill up with recently created ones
+        $needed = $limit - $topExercises->count();
+        if ($needed > 0) {
+            $topExerciseIds = $topExercises->pluck('id')->toArray();
+            $recentExercises = Exercise::where('user_id', Auth::id())
+                                        ->whereNotIn('id', $topExerciseIds) // Exclude already selected top exercises
+                                        ->orderBy('created_at', 'desc')
+                                        ->limit($needed)
+                                        ->get();
+            // Combine top exercises with recent ones, ensuring uniqueness (though `whereNotIn` should handle this)
+            // and maintaining the order of top exercises first.
+            return $topExercises->merge($recentExercises)->take($limit);
+        }
+
+        return $topExercises; // Should not be reached if $needed > 0
     }
 }
