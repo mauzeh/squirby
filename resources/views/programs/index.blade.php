@@ -30,8 +30,8 @@
                         <th class="hide-on-mobile" style="width: 1%; white-space: nowrap; text-align: center;">Sets</th>
                         <th class="hide-on-mobile" style="width: 1%; white-space: nowrap; text-align: center;">Reps</th>
                         <th class="hide-on-mobile" style="width: 1%; white-space: nowrap; text-align: center;">Prio</th>
-                        <th style="min-width: 150px;">Exercise</th>
-                        <th style="width: 1%; white-space: nowrap;">Actions</th>
+                        <th>Exercise</th>
+                        <th style="width: 1%; white-space: normal;">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -52,16 +52,15 @@
                                     <br><small style="font-size: 0.8em; color: #aaa;">{{ $program->comments }}</small>
                                 @endif
                             </td>
-                            <td>
-                                <div style="display: flex; gap: 5px;">
+                            <td style="white-space: normal;">
                                     <a href="{{ route('programs.edit', $program->id) }}" class="button edit"><i class="fa-solid fa-pencil"></i></a>
+                                    <a href="{{ route('exercises.show-logs', $program->exercise) }}" class="button"><i class="fa-solid fa-chart-line"></i></a>
                                     <form action="{{ route('programs.destroy', $program->id) }}" method="POST" style="display:inline;">
                                         @csrf
                                         @method('DELETE')
                                         <input type="hidden" name="date" value="{{ $selectedDate->toDateString() }}">
                                         <button type="submit" class="button delete" onclick="return confirm('Are you sure you want to delete this entry?');"><i class="fa-solid fa-trash"></i></button>
                                     </form>
-                                </div>
                             </td>
                         </tr>
                     @endforeach

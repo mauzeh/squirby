@@ -254,7 +254,7 @@ class UserManagementTest extends TestCase
 
         $newUser = User::where('email', 'newuser@example.com')->first();
 
-        $this->assertCount(8, $newUser->exercises);
+        $this->assertCount(9, $newUser->exercises);
         $this->assertDatabaseHas('exercises', ['user_id' => $newUser->id, 'title' => 'Back Squat']);
         $this->assertDatabaseHas('exercises', ['user_id' => $newUser->id, 'title' => 'Bench Press']);
         $this->assertDatabaseHas('exercises', ['user_id' => $newUser->id, 'title' => 'Deadlift']);
@@ -262,5 +262,7 @@ class UserManagementTest extends TestCase
         $this->assertDatabaseHas('exercises', ['user_id' => $newUser->id, 'title' => 'Power Clean']);
         $this->assertDatabaseHas('exercises', ['user_id' => $newUser->id, 'title' => 'Half-Kneeling DB Press']);
         $this->assertDatabaseHas('exercises', ['user_id' => $newUser->id, 'title' => 'Cyclist Squat (Barbell, Front Rack)']);
+        $this->assertDatabaseHas('exercises', ['user_id' => $newUser->id, 'title' => 'Chin-Ups']);
+        $this->assertDatabaseHas('exercises', ['user_id' => $newUser->id, 'title' => 'Pull-Ups']);
     }
 }
