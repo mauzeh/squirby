@@ -11,16 +11,16 @@ class ProgramTsvImporterService
 {
     public function import(string $tsvContent, int $userId)
     {
-        $lines = array_filter(explode("\n", $tsvContent));
-        if (empty($lines)) {
-            return ['importedCount' => 0, 'notFound' => [], 'invalidRows' => []];
-        }
+        $lines = explode("\n", $tsvContent);
 
         $importedCount = 0;
         $notFound = [];
         $invalidRows = [];
 
         foreach ($lines as $lineNumber => $line) {
+            if (empty(trim($line))) {
+                continue;
+            }
             $columns = array_map('trim', str_getcsv($line, "\t"));
 
             // Expected columns: date, exercise_title, sets, reps, priority, comments
