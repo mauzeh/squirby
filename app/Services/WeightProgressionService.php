@@ -8,7 +8,7 @@ use Illuminate\Support\Collection;
 
 class WeightProgressionService
 {
-    const DEFAULT_INCREMENT = 5.0;
+    const RESOLUTION = 5.0;
     const LOOKBACK_WEEKS = 2;
 
     protected OneRepMaxCalculatorService $oneRepMaxCalculatorService;
@@ -57,8 +57,10 @@ class WeightProgressionService
             $predictedWeight = $this->oneRepMaxCalculatorService->getWeightFromOneRepMax($current1RM, $targetReps);
 
             // Apply the increment to the predicted weight
-            // This ensures progression even if the 1RM calculation itself doesn't directly lead to an increase
-            return $predictedWeight + self::DEFAULT_INCREMENT;
+            $finalPredictedWeight = $predictedWeight + self::RESOLUTION;
+
+            // Round to the nearest multiple of RESOLUTION, rounded to the lowest ceiling
+            return ceil($finalPredictedWeight / self::RESOLUTION) * self::RESOLUTION;
         } else {
             // If no history to determine 1RM, return false
             return false;

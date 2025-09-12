@@ -63,7 +63,10 @@ class WeightProgressionServiceTest extends TestCase
         // Calculate expected predicted weight for target reps
         $expectedPredictedWeight = $this->oneRepMaxCalculatorService->getWeightFromOneRepMax($expected1RM, 5);
 
-        $this->assertEquals($expectedPredictedWeight + WeightProgressionService::DEFAULT_INCREMENT, $suggestedWeight);
+        // Apply the increment and then round to the nearest multiple of RESOLUTION, rounded to the lowest ceiling
+        $expectedRoundedWeight = ceil(($expectedPredictedWeight + WeightProgressionService::RESOLUTION) / WeightProgressionService::RESOLUTION) * WeightProgressionService::RESOLUTION;
+
+        $this->assertEquals($expectedRoundedWeight, $suggestedWeight);
     }
 
     /** @test */
@@ -145,7 +148,10 @@ class WeightProgressionServiceTest extends TestCase
         // Calculate expected predicted weight for target reps
         $expectedPredictedWeight = $this->oneRepMaxCalculatorService->getWeightFromOneRepMax($expected1RM, 5);
 
-        $this->assertEquals($expectedPredictedWeight + WeightProgressionService::DEFAULT_INCREMENT, $suggestedWeight);
+        // Apply the increment and then round to the nearest multiple of RESOLUTION, rounded to the lowest ceiling
+        $expectedRoundedWeight = ceil(($expectedPredictedWeight + WeightProgressionService::RESOLUTION) / WeightProgressionService::RESOLUTION) * WeightProgressionService::RESOLUTION;
+
+        $this->assertEquals($expectedRoundedWeight, $suggestedWeight);
     }
 
     /** @test */
@@ -184,7 +190,10 @@ class WeightProgressionServiceTest extends TestCase
         // Calculate expected predicted weight for target reps
         $expectedPredictedWeight = $this->oneRepMaxCalculatorService->getWeightFromOneRepMax($expected1RM, 5);
 
-        $this->assertEquals($expectedPredictedWeight + WeightProgressionService::DEFAULT_INCREMENT, $suggestedWeight);
+        // Apply rounding to the lowest ceiling
+        $expectedRoundedWeight = ceil(($expectedPredictedWeight + WeightProgressionService::RESOLUTION) / WeightProgressionService::RESOLUTION) * WeightProgressionService::RESOLUTION;
+
+        $this->assertEquals($expectedRoundedWeight, $suggestedWeight);
     }
 
     /** @test */
