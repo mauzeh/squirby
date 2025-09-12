@@ -89,7 +89,7 @@
                     <input type="number" name="caffeine" id="caffeine" step="0.01" value="{{ old('caffeine') }}">
                 </div>
             </div>
-            <button type="submit" class="button">Add Ingredient</button>
+            <button type="submit" class="button create">Add Ingredient</button>
         </form>
         </div>
         </form>

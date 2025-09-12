@@ -4,19 +4,19 @@
     <div class="container">
         <h1>Program</h1>
 
-        <a href="{{ route('programs.create') }}" class="button create"><i class="fas fa-plus"></i> Add Program Entry</a>
+        <a href="{{ route('programs.create') }}" class="button create">Add Program Entry</a>
 
         {{-- Program List --}}
         <h2>Program for {{ date('M d, Y') }}</h2>
         <table class="log-entries-table">
             <thead>
                 <tr>
-                    <th><input type="checkbox" id="select-all-programs"></th>
+                    <th style="width: 1%;"><input type="checkbox" id="select-all-programs"></th>
                     <th>Exercise</th>
                     <th>Sets</th>
                     <th>Reps</th>
                     <th>Comments</th>
-                    <th>Actions</th>
+                    <th style="width: 1%; white-space: nowrap;">Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -28,12 +28,14 @@
                         <td>{{ $program->reps }}</td>
                         <td>{{ $program->comments }}</td>
                         <td>
-                            <a href="{{ route('programs.edit', $program->id) }}" class="button edit">Edit</a>
-                            <form action="{{ route('programs.destroy', $program->id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this entry?');">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="button delete">Delete</button>
-                            </form>
+                            <div style="display: flex; gap: 5px;">
+                                <a href="{{ route('programs.edit', $program->id) }}" class="button edit"><i class="fa-solid fa-pencil"></i></a>
+                                <form action="{{ route('programs.destroy', $program->id) }}" method="POST" style="display:inline;">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="button delete" onclick="return confirm('Are you sure you want to delete this entry?');"><i class="fa-solid fa-trash"></i></button>
+                                </form>
+                            </div>
                         </td>
                     </tr>
                 @empty

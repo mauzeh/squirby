@@ -9,7 +9,7 @@
                 @csrf
                 @method('PUT')
                 @include('programs._form')
-                <button type="submit" class="button create">Update Program Entry</button>
+                <button type="submit" class="button">Update Program Entry</button>
             </form>
         </div>
     </div>

@@ -1,7 +1,7 @@
 @extends('app')
 
 @section('content')
-    <h1>Create Program</h1>
+    <h1>Add Program Entry</h1>
 
     @if ($errors->any())
         <div class="error-message">
@@ -16,6 +16,6 @@
     <form action="{{ route('programs.store') }}" method="POST">
         @csrf
         @include('programs._form')
-        <button type="submit" class="btn btn-primary">Create</button>
+        <button type="submit" class="button create">Add Program Entry</button>
     </form>
 @endsection

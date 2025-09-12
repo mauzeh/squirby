@@ -51,7 +51,7 @@
             </div>
         </div>
 
-        @if (Request::routeIs(['food-logs.*', 'meals.*', 'ingredients.*', 'exercises.*', 'lift-logs.*', 'body-logs.*', 'measurement-types.*']))
+        @if (Request::routeIs(['food-logs.*', 'meals.*', 'ingredients.*', 'exercises.*', 'lift-logs.*', 'programs.*', 'body-logs.*', 'measurement-types.*']))
         <div class="navbar sub-navbar">
             @if (Request::routeIs(['food-logs.*', 'meals.*', 'ingredients.*']))
                 <a href="{{ route('food-logs.index') }}" class="{{ Request::routeIs('food-logs.*') ? 'active' : '' }}">Food Log Entry</a>
