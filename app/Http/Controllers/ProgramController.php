@@ -19,14 +19,13 @@ class ProgramController extends Controller
     {
         $selectedDate = $request->input('date') ? Carbon::parse($request->input('date')) : Carbon::today();
 
-        $exercises = Exercise::where('user_id', auth()->id())->orderBy('name')->get();
         $programs = Program::with('exercise')
             ->where('user_id', auth()->id())
             ->whereDate('date', $selectedDate->toDateString())
             ->orderBy('priority')
             ->get();
 
-        return view('programs.index', compact('exercises', 'programs', 'selectedDate'));
+        return view('programs.index', compact('programs', 'selectedDate'));
     }
 
     /**
@@ -35,7 +34,7 @@ class ProgramController extends Controller
     public function create(Request $request)
     {
         $date = $request->input('date') ? Carbon::parse($request->input('date')) : Carbon::today();
-        $exercises = Exercise::where('user_id', auth()->id())->orderBy('name')->get();
+        $exercises = Exercise::where('user_id', auth()->id())->orderBy('title')->get();
         $highestPriority = Program::where('user_id', auth()->id())
             ->whereDate('date', $date->toDateString())
             ->max('priority');
@@ -83,7 +82,7 @@ class ProgramController extends Controller
             abort(403);
         }
 
-        $exercises = Exercise::where('user_id', auth()->id())->orderBy('name')->get();
+        $exercises = Exercise::where('user_id', auth()->id())->orderBy('title')->get();
 
         return view('programs.edit', compact('program', 'exercises'));
     }
