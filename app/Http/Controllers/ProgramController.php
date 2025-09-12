@@ -36,7 +36,12 @@ class ProgramController extends Controller
     {
         $date = $request->input('date') ? Carbon::parse($request->input('date')) : Carbon::today();
         $exercises = Exercise::where('user_id', auth()->id())->orderBy('name')->get();
-        return view('programs.create', compact('exercises', 'date'));
+        $highestPriority = Program::where('user_id', auth()->id())
+            ->whereDate('date', $date->toDateString())
+            ->max('priority');
+        $defaultPriority = $highestPriority + 1;
+
+        return view('programs.create', compact('exercises', 'date', 'defaultPriority'));
     }
 
     /**
@@ -45,6 +50,15 @@ class ProgramController extends Controller
     public function store(StoreProgramRequest $request)
     {
         $validated = $request->validated();
+
+        if (!empty($validated['new_exercise_name'])) {
+            $exercise = new Exercise();
+            $exercise->title = $validated['new_exercise_name'];
+            $exercise->user_id = auth()->id();
+            $exercise->save();
+            $validated['exercise_id'] = $exercise->id;
+        }
+
         $program = new Program($validated);
         $program->user_id = auth()->id();
         $program->save();
@@ -84,6 +98,15 @@ class ProgramController extends Controller
         }
 
         $validated = $request->validated();
+
+        if (!empty($validated['new_exercise_name'])) {
+            $exercise = new Exercise();
+            $exercise->title = $validated['new_exercise_name'];
+            $exercise->user_id = auth()->id();
+            $exercise->save();
+            $validated['exercise_id'] = $exercise->id;
+        }
+
         $program->update($validated);
 
         return redirect()->route('programs.index', ['date' => $validated['date']])->with('success', 'Program entry updated.');

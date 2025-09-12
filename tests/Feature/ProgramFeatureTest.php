@@ -358,4 +358,78 @@ class ProgramFeatureTest extends TestCase
         $this->assertDatabaseHas('programs', ['id' => $program1->id]);
         $this->assertDatabaseHas('programs', ['id' => $program2->id]);
     }
+
+    public function test_user_can_create_a_program_with_a_new_exercise()
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->post(route('programs.store'), [
+                'new_exercise_name' => 'New Exercise',
+                'date' => Carbon::today()->format('Y-m-d'),
+                'sets' => 3,
+                'reps' => 10,
+                'comments' => 'Test comments',
+                'priority' => 5,
+            ])
+            ->assertRedirect(route('programs.index', ['date' => Carbon::today()->format('Y-m-d')]));
+
+        $this->assertDatabaseHas('exercises', [
+            'title' => 'New Exercise',
+            'user_id' => $user->id,
+        ]);
+
+        $exercise = Exercise::where('title', 'New Exercise')->first();
+
+        $this->assertDatabaseHas('programs', [
+            'exercise_id' => $exercise->id,
+            'sets' => 3,
+            'reps' => 10,
+            'comments' => 'Test comments',
+            'priority' => 5,
+        ]);
+    }
+
+    public function test_user_can_update_a_program_with_a_new_exercise()
+    {
+        $user = User::factory()->create();
+        $exercise = Exercise::factory()->create(['user_id' => $user->id]);
+        $program = Program::factory()->create(['user_id' => $user->id, 'exercise_id' => $exercise->id]);
+
+        $this->actingAs($user)
+            ->put(route('programs.update', $program), [
+                'new_exercise_name' => 'New Exercise',
+                'date' => Carbon::today()->format('Y-m-d'),
+                'sets' => 5,
+                'reps' => 5,
+            ])
+            ->assertRedirect(route('programs.index', ['date' => Carbon::today()->format('Y-m-d')]));
+
+        $this->assertDatabaseHas('exercises', [
+            'title' => 'New Exercise',
+            'user_id' => $user->id,
+        ]);
+
+        $new_exercise = Exercise::where('title', 'New Exercise')->first();
+
+        $this->assertDatabaseHas('programs', [
+            'id' => $program->id,
+            'exercise_id' => $new_exercise->id,
+            'sets' => 5,
+            'reps' => 5,
+        ]);
+    }
+
+    public function test_default_priority_is_set_correctly()
+    {
+        $user = User::factory()->create();
+        $exercise = Exercise::factory()->create(['user_id' => $user->id]);
+        Program::factory()->create(['user_id' => $user->id, 'exercise_id' => $exercise->id, 'date' => Carbon::today(), 'priority' => 5]);
+
+        $response = $this->actingAs($user)
+            ->get(route('programs.create', ['date' => Carbon::today()->format('Y-m-d')]));
+
+        $response->assertStatus(200);
+        $response->assertViewHas('defaultPriority', 6);
+    }
 }

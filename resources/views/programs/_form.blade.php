@@ -1,10 +1,16 @@
 <div class="form-group">
     <label for="exercise_id">Exercise</label>
-    <select name="exercise_id" id="exercise_id" class="form-control" required>
+    <select name="exercise_id" id="exercise_id" class="form-control">
+        <option value="">Select an exercise</option>
         @foreach ($exercises as $exercise)
             <option value="{{ $exercise->id }}" {{ isset($program) && $program->exercise_id == $exercise->id ? 'selected' : '' }}>{{ $exercise->title }}</option>
         @endforeach
     </select>
+</div>
+
+<div class="form-group">
+    <label for="new_exercise_name">Or Add New Exercise</label>
+    <input type="text" name="new_exercise_name" id="new_exercise_name" class="form-control">
 </div>
 
 <div class="form-group">
@@ -24,7 +30,7 @@
 
 <div class="form-group">
     <label for="priority">Priority</label>
-    <input type="number" name="priority" id="priority" class="form-control" value="{{ isset($program) ? $program->priority : 0 }}" step="1">
+    <input type="number" name="priority" id="priority" class="form-control" value="{{ isset($program) ? $program->priority : $defaultPriority ?? 0 }}" step="1">
 </div>
 
 <div class="form-group">
