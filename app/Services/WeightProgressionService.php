@@ -4,19 +4,23 @@ namespace App\Services;
 
 use App\Models\LiftLog;
 use Carbon\Carbon;
+use Illuminate\Support\Collection;
 
 class WeightProgressionService
 {
-    // Define a default increment (e.g., 2.5 lbs or 5 lbs)
-    // This could eventually be user-configurable or exercise-specific
     const DEFAULT_INCREMENT = 5.0;
-
-    // Define the look-back period for recent history
     const LOOKBACK_WEEKS = 2;
+
+    protected OneRepMaxCalculatorService $oneRepMaxCalculatorService;
+
+    public function __construct(OneRepMaxCalculatorService $oneRepMaxCalculatorService)
+    {
+        $this->oneRepMaxCalculatorService = $oneRepMaxCalculatorService;
+    }
 
     public function suggestNextWeight(int $userId, int $exerciseId, int $targetReps): float|false
     {
-        // 1. Retrieve recent LiftLogs for the exercise and user
+        // 1. Retrieve all relevant LiftLogs with their sets
         $recentLiftLogs = LiftLog::with('liftSets')
             ->join('exercises', 'lift_logs.exercise_id', '=', 'exercises.id')
             ->where('lift_logs.user_id', $userId)
@@ -27,28 +31,37 @@ class WeightProgressionService
             ->select('lift_logs.*') // Select lift_logs columns to avoid ambiguity
             ->get();
 
-        $lastSuccessfulWeight = null;
+        $allEstimated1RMs = collect();
 
-        // 2. Identify "Last Successful" Set
-        // Find the heaviest weight for the target reps from any set within the recent LiftLogs
-        foreach ($recentLiftLogs as $log) {
-            $heaviestSetWeight = $log->liftSets()
-                                    ->where('reps', $targetReps)
-                                    ->max('weight');
-
-            if ($heaviestSetWeight !== null && ($lastSuccessfulWeight === null || $heaviestSetWeight > $lastSuccessfulWeight)) {
-                $lastSuccessfulWeight = $heaviestSetWeight;
+        // 2. Calculate Estimated 1RM for Each Set
+        foreach ($recentLiftLogs as $liftLog) {
+            foreach ($liftLog->liftSets as $liftSet) {
+                // Only calculate 1RM if weight and reps are valid
+                if ($liftSet->weight > 0 && $liftSet->reps > 0) {
+                    $estimated1RM = $this->oneRepMaxCalculatorService->calculateOneRepMax($liftSet->weight, $liftSet->reps);
+                    if ($estimated1RM !== null) { // Ensure 1RM calculation was successful
+                        $allEstimated1RMs->push($estimated1RM);
+                    }
+                }
             }
         }
 
-        // 3. Determine Progression Increment
-        if ($lastSuccessfulWeight !== null) {
-            // Suggest a small increment
-            return $lastSuccessfulWeight + self::DEFAULT_INCREMENT;
+        $current1RM = null;
+        if ($allEstimated1RMs->isNotEmpty()) {
+            // For simplicity, take the highest estimated 1RM from recent history
+            $current1RM = $allEstimated1RMs->max();
+        }
+
+        // 3. Predict Target Weight from Current 1RM
+        if ($current1RM !== null) {
+            $predictedWeight = $this->oneRepMaxCalculatorService->getWeightFromOneRepMax($current1RM, $targetReps);
+
+            // Apply the increment to the predicted weight
+            // This ensures progression even if the 1RM calculation itself doesn't directly lead to an increase
+            return $predictedWeight + self::DEFAULT_INCREMENT;
         } else {
-            // If no recent history, suggest a default starting weight
-            // This could be more sophisticated (e.g., exercise-specific defaults)
-            return false; // Return false when no weight can be determined
+            // If no history to determine 1RM, return false
+            return false;
         }
     }
 }

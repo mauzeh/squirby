@@ -49,6 +49,21 @@ class OneRepMaxCalculatorService
     }
 
     /**
+     * Calculate the weight for a given 1RM and reps.
+     *
+     * @param float $oneRepMax
+     * @param int $reps
+     * @return float
+     */
+    public function getWeightFromOneRepMax(float $oneRepMax, int $reps): float
+    {
+        if ($reps === 0) {
+            return 0.0; // Avoid division by zero
+        }
+        return $oneRepMax / (1 + (0.0333 * $reps));
+    }
+
+    /**
      * Get the 1RM for a LiftLog, considering uniformity of sets.
      *
      * @param \App\Models\LiftLog $liftLog

@@ -10,17 +10,20 @@ use App\Models\LiftLog;
 use App\Models\LiftSet;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use App\Services\OneRepMaxCalculatorService;
 
 class WeightProgressionServiceTest extends TestCase
 {
     use RefreshDatabase;
 
     protected WeightProgressionService $service;
+    protected OneRepMaxCalculatorService $oneRepMaxCalculatorService;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->service = new WeightProgressionService();
+        $this->oneRepMaxCalculatorService = new OneRepMaxCalculatorService();
+        $this->service = new WeightProgressionService($this->oneRepMaxCalculatorService);
     }
 
     /** @test */
@@ -52,7 +55,15 @@ class WeightProgressionServiceTest extends TestCase
 
         $suggestedWeight = $this->service->suggestNextWeight($user->id, $exercise->id, 5);
 
-        $this->assertEquals(100.0 + WeightProgressionService::DEFAULT_INCREMENT, $suggestedWeight);
+        // Calculate expected 1RM from historical data
+        $historicalWeight = 100.0;
+        $historicalReps = 5;
+        $expected1RM = $this->oneRepMaxCalculatorService->calculateOneRepMax($historicalWeight, $historicalReps);
+
+        // Calculate expected predicted weight for target reps
+        $expectedPredictedWeight = $this->oneRepMaxCalculatorService->getWeightFromOneRepMax($expected1RM, 5);
+
+        $this->assertEquals($expectedPredictedWeight + WeightProgressionService::DEFAULT_INCREMENT, $suggestedWeight);
     }
 
     /** @test */
@@ -126,7 +137,15 @@ class WeightProgressionServiceTest extends TestCase
 
         $suggestedWeight = $this->service->suggestNextWeight($user->id, $exercise->id, 5);
 
-        $this->assertEquals(100.0 + WeightProgressionService::DEFAULT_INCREMENT, $suggestedWeight);
+        // Calculate expected 1RM from historical data (heaviest for 5 reps)
+        $historicalWeight = 100.0;
+        $historicalReps = 5;
+        $expected1RM = $this->oneRepMaxCalculatorService->calculateOneRepMax($historicalWeight, $historicalReps);
+
+        // Calculate expected predicted weight for target reps
+        $expectedPredictedWeight = $this->oneRepMaxCalculatorService->getWeightFromOneRepMax($expected1RM, 5);
+
+        $this->assertEquals($expectedPredictedWeight + WeightProgressionService::DEFAULT_INCREMENT, $suggestedWeight);
     }
 
     /** @test */
@@ -157,11 +176,19 @@ class WeightProgressionServiceTest extends TestCase
 
         $suggestedWeight = $this->service->suggestNextWeight($user->id, $exercise->id, 5);
 
-        $this->assertEquals(105.0 + WeightProgressionService::DEFAULT_INCREMENT, $suggestedWeight);
+        // Calculate expected 1RM from historical data (heaviest overall)
+        $historicalWeight = 105.0;
+        $historicalReps = 5;
+        $expected1RM = $this->oneRepMaxCalculatorService->calculateOneRepMax($historicalWeight, $historicalReps);
+
+        // Calculate expected predicted weight for target reps
+        $expectedPredictedWeight = $this->oneRepMaxCalculatorService->getWeightFromOneRepMax($expected1RM, 5);
+
+        $this->assertEquals($expectedPredictedWeight + WeightProgressionService::DEFAULT_INCREMENT, $suggestedWeight);
     }
 
     /** @test */
-    public function it_handles_no_sets_matching_target_reps()
+    public function it_predicts_weight_even_if_no_sets_exactly_match_target_reps()
     {
         $user = User::factory()->create();
         $exercise = Exercise::factory()->create(['user_id' => $user->id, 'is_bodyweight' => false]);
@@ -177,9 +204,10 @@ class WeightProgressionServiceTest extends TestCase
             'weight' => 80.0,
         ]);
 
-        // No sets with 5 reps, should fall back to default
+        // A set with 8 reps exists, so a 1RM can be calculated and a prediction made for 5 reps
         $suggestedWeight = $this->service->suggestNextWeight($user->id, $exercise->id, 5);
 
-        $this->assertFalse($suggestedWeight);
+        $this->assertIsFloat($suggestedWeight);
+        $this->assertGreaterThan(0, $suggestedWeight);
     }
 }
