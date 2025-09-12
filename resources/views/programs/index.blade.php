@@ -52,6 +52,7 @@
                                 <form action="{{ route('programs.destroy', $program->id) }}" method="POST" style="display:inline;">
                                     @csrf
                                     @method('DELETE')
+                                    <input type="hidden" name="date" value="{{ $selectedDate->toDateString() }}">
                                     <button type="submit" class="button delete" onclick="return confirm('Are you sure you want to delete this entry?');"><i class="fa-solid fa-trash"></i></button>
                                 </form>
                             </div>
@@ -66,6 +67,7 @@
         </table>
         <form action="{{ route('programs.destroy-selected') }}" method="POST" id="delete-selected-form">
             @csrf
+            <input type="hidden" name="date" value="{{ $selectedDate->toDateString() }}">
             <button type="submit" class="button delete">Delete Selected</button>
         </form>
     </div>

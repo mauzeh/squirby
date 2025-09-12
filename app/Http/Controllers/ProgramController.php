@@ -90,7 +90,7 @@ class ProgramController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Program $program)
+    public function destroy(Request $request, Program $program)
     {
         if ($program->user_id !== auth()->id()) {
             abort(403);
@@ -98,7 +98,9 @@ class ProgramController extends Controller
 
         $program->delete();
 
-        return redirect()->route('programs.index')->with('success', 'Program entry deleted.');
+        $date = $request->input('date');
+
+        return redirect()->route('programs.index', ['date' => $date])->with('success', 'Program entry deleted.');
     }
 
     /**
@@ -115,6 +117,8 @@ class ProgramController extends Controller
             ->where('user_id', auth()->id())
             ->delete();
 
-        return redirect()->route('programs.index')->with('success', 'Selected program entries deleted.');
+        $date = $request->input('date');
+
+        return redirect()->route('programs.index', ['date' => $date])->with('success', 'Selected program entries deleted.');
     }
 }
