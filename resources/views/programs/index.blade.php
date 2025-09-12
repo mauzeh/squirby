@@ -10,7 +10,7 @@
                 $date = $today->copy()->addDays($i);
                 $dateString = $date->toDateString();
             @endphp
-            <a href="{{ route('programs.index', ['date' => $dateString]) }}" class="date-link {{ $selectedDate->toDateString() == $dateString ? 'active' : '' }}">
+            <a href="{{ route('programs.index', ['date' => $dateString]) }}" class="date-link {{ $selectedDate->toDateString() == $dateString ? 'active' : '' }} {{ $date->isToday() ? 'today-date' : '' }}">
                 {{ $date->format('D M d') }}
             </a>
         @endfor

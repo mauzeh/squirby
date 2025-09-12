@@ -168,9 +168,6 @@ a.button.create::before {
 .button.active {
     background-color: #0056b3; /* Darker blue for active state, same as for hover */
 }
-.actions-column {
-    /* width: 150px; */
-}
 /* Form specific styles for dark theme */
 .form-group {
     display: flex;
@@ -410,4 +407,7 @@ footer {
     white-space: pre-wrap;
     margin: 0 20px;
     font-size: 0.8em;
+}
+.date-link.today-date {
+    border: 1px solid #ffc107; /* A subtle yellow border to highlight today's date */
 }
