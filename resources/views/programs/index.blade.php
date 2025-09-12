@@ -21,55 +21,56 @@
         <h1>Program for {{ $selectedDate->format('M d, Y') }}</h1>
 
         <a href="{{ route('programs.create', ['date' => $selectedDate->toDateString()]) }}" class="button create">Add Program Entry</a>
-        <table class="log-entries-table">
-            <thead>
-                <tr>
-                    <th style="width: 1%;"><input type="checkbox" id="select-all-programs"></th>
-                    <th class="hide-on-mobile" style="width: 1%; white-space: nowrap; text-align: center;">Sets</th>
-                    <th class="hide-on-mobile" style="width: 1%; white-space: nowrap; text-align: center;">Reps</th>
-                    <th style="min-width: 150px;">Exercise</th>
-                    <th style="width: 1%; white-space: nowrap;">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse ($programs as $program)
+
+        @if ($programs->isNotEmpty())
+            <table class="log-entries-table">
+                <thead>
                     <tr>
-                        <td><input type="checkbox" name="program_ids[]" value="{{ $program->id }}" class="program-checkbox"></td>
-                        <td class="hide-on-mobile" style="text-align: center;">{{ $program->sets }}</td>
-                        <td class="hide-on-mobile" style="text-align: center;">{{ $program->reps }}</td>
-                        <td>
-                            {{ $program->exercise->title }}
-                            <div class="show-on-mobile" style="font-size: 0.9em; color: #ccc;">
-                                Sets: {{ $program->sets }} / Reps: {{ $program->reps }}
-                            </div>
-                            @if($program->comments)
-                                <br><small style="font-size: 0.8em; color: #aaa;">{{ $program->comments }}</small>
-                            @endif
-                        </td>
-                        <td>
-                            <div style="display: flex; gap: 5px;">
-                                <a href="{{ route('programs.edit', $program->id) }}" class="button edit"><i class="fa-solid fa-pencil"></i></a>
-                                <form action="{{ route('programs.destroy', $program->id) }}" method="POST" style="display:inline;">
-                                    @csrf
-                                    @method('DELETE')
-                                    <input type="hidden" name="date" value="{{ $selectedDate->toDateString() }}">
-                                    <button type="submit" class="button delete" onclick="return confirm('Are you sure you want to delete this entry?');"><i class="fa-solid fa-trash"></i></button>
-                                </form>
-                            </div>
-                        </td>
+                        <th style="width: 1%;"><input type="checkbox" id="select-all-programs"></th>
+                        <th class="hide-on-mobile" style="width: 1%; white-space: nowrap; text-align: center;">Sets</th>
+                        <th class="hide-on-mobile" style="width: 1%; white-space: nowrap; text-align: center;">Reps</th>
+                        <th style="min-width: 150px;">Exercise</th>
+                        <th style="width: 1%; white-space: nowrap;">Actions</th>
                     </tr>
-                @empty
-                    <tr>
-                        <td colspan="5">No program entries for this day.</td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
-        <form action="{{ route('programs.destroy-selected') }}" method="POST" id="delete-selected-form">
-            @csrf
-            <input type="hidden" name="date" value="{{ $selectedDate->toDateString() }}">
-            <button type="submit" class="button delete">Delete Selected</button>
-        </form>
+                </thead>
+                <tbody>
+                    @foreach ($programs as $program)
+                        <tr>
+                            <td><input type="checkbox" name="program_ids[]" value="{{ $program->id }}" class="program-checkbox"></td>
+                            <td class="hide-on-mobile" style="text-align: center;">{{ $program->sets }}</td>
+                            <td class="hide-on-mobile" style="text-align: center;">{{ $program->reps }}</td>
+                            <td>
+                                {{ $program->exercise->title }}
+                                <div class="show-on-mobile" style="font-size: 0.9em; color: #ccc;">
+                                    Sets: {{ $program->sets }} / Reps: {{ $program->reps }}
+                                </div>
+                                @if($program->comments)
+                                    <br><small style="font-size: 0.8em; color: #aaa;">{{ $program->comments }}</small>
+                                @endif
+                            </td>
+                            <td>
+                                <div style="display: flex; gap: 5px;">
+                                    <a href="{{ route('programs.edit', $program->id) }}" class="button edit"><i class="fa-solid fa-pencil"></i></a>
+                                    <form action="{{ route('programs.destroy', $program->id) }}" method="POST" style="display:inline;">
+                                        @csrf
+                                        @method('DELETE')
+                                        <input type="hidden" name="date" value="{{ $selectedDate->toDateString() }}">
+                                        <button type="submit" class="button delete" onclick="return confirm('Are you sure you want to delete this entry?');"><i class="fa-solid fa-trash"></i></button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+            <form action="{{ route('programs.destroy-selected') }}" method="POST" id="delete-selected-form">
+                @csrf
+                <input type="hidden" name="date" value="{{ $selectedDate->toDateString() }}">
+                <button type="submit" class="button delete">Delete Selected</button>
+            </form>
+        @else
+            <p>No program entries for this day.</p>
+        @endif
     </div>
 
     <script>
