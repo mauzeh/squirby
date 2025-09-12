@@ -9,7 +9,7 @@
 
 <div class="form-group">
     <label for="date">Date</label>
-    <input type="date" name="date" id="date" class="form-control" value="{{ isset($program) ? $program->date->format('Y-m-d') : today()->format('Y-m-d') }}" required>
+    <input type="date" name="date" id="date" class="form-control" value="{{ isset($program) ? $program->date->format('Y-m-d') : $date->format('Y-m-d') }}" required>
 </div>
 
 <div class="form-group">

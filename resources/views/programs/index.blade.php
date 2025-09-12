@@ -1,21 +1,33 @@
 @extends('app')
 
 @section('content')
+    <div class="date-navigation flex items-center">
+        @php
+            $today = \Carbon\Carbon::today();
+        @endphp
+        @for ($i = -3; $i <= 1; $i++)
+            @php
+                $date = $today->copy()->addDays($i);
+                $dateString = $date->toDateString();
+            @endphp
+            <a href="{{ route('programs.index', ['date' => $dateString]) }}" class="date-link {{ $selectedDate->toDateString() == $dateString ? 'active' : '' }}">
+                {{ $date->format('D M d') }}
+            </a>
+        @endfor
+        <label for="date_picker" class="date-pick-label ml-4 mr-2">Or Pick a Date:</label>
+        <input type="date" id="date_picker" onchange="window.location.href = '{{ route('programs.index') }}?date=' + this.value;" value="{{ $selectedDate->format('Y-m-d') }}">
+    </div>
     <div class="container">
-        <h1>Program</h1>
+        <h1>Program for {{ $selectedDate->format('M d, Y') }}</h1>
 
-        <a href="{{ route('programs.create') }}" class="button create">Add Program Entry</a>
-
-        {{-- Program List --}}
-        <h2>Program for {{ date('M d, Y') }}</h2>
+        <a href="{{ route('programs.create', ['date' => $selectedDate->toDateString()]) }}" class="button create">Add Program Entry</a>
         <table class="log-entries-table">
             <thead>
                 <tr>
                     <th style="width: 1%;"><input type="checkbox" id="select-all-programs"></th>
-                    <th>Exercise</th>
-                    <th>Sets</th>
-                    <th>Reps</th>
-                    <th>Comments</th>
+                    <th style="width: 1%; white-space: nowrap; text-align: center;">Sets</th>
+                    <th style="width: 1%; white-space: nowrap; text-align: center;">Reps</th>
+                    <th style="min-width: 150px;">Exercise</th>
                     <th style="width: 1%; white-space: nowrap;">Actions</th>
                 </tr>
             </thead>
@@ -23,10 +35,14 @@
                 @forelse ($programs as $program)
                     <tr>
                         <td><input type="checkbox" name="program_ids[]" value="{{ $program->id }}" class="program-checkbox"></td>
-                        <td>{{ $program->exercise->title }}</td>
-                        <td>{{ $program->sets }}</td>
-                        <td>{{ $program->reps }}</td>
-                        <td>{{ $program->comments }}</td>
+                        <td style="text-align: center;">{{ $program->sets }}</td>
+                        <td style="text-align: center;">{{ $program->reps }}</td>
+                        <td>
+                            {{ $program->exercise->title }}
+                            @if($program->comments)
+                                <br><small style="font-size: 0.8em; color: #aaa;">{{ $program->comments }}</small>
+                            @endif
+                        </td>
                         <td>
                             <div style="display: flex; gap: 5px;">
                                 <a href="{{ route('programs.edit', $program->id) }}" class="button edit"><i class="fa-solid fa-pencil"></i></a>
@@ -40,7 +56,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6">No program entries for this day.</td>
+                        <td colspan="5">No program entries for this day.</td>
                     </tr>
                 @endforelse
             </tbody>

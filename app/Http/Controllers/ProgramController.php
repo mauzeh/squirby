@@ -14,24 +14,27 @@ class ProgramController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
+        $selectedDate = $request->input('date') ? Carbon::parse($request->input('date')) : Carbon::today();
+
         $exercises = Exercise::where('user_id', auth()->id())->orderBy('name')->get();
         $programs = Program::with('exercise')
             ->where('user_id', auth()->id())
-            ->whereDate('date', Carbon::today())
+            ->whereDate('date', $selectedDate->toDateString())
             ->get();
 
-        return view('programs.index', compact('exercises', 'programs'));
+        return view('programs.index', compact('exercises', 'programs', 'selectedDate'));
     }
 
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(Request $request)
     {
+        $date = $request->input('date') ? Carbon::parse($request->input('date')) : Carbon::today();
         $exercises = Exercise::where('user_id', auth()->id())->orderBy('name')->get();
-        return view('programs.create', compact('exercises'));
+        return view('programs.create', compact('exercises', 'date'));
     }
 
     /**
