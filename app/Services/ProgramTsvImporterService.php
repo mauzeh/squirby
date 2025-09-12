@@ -29,15 +29,16 @@ class ProgramTsvImporterService
                 continue;
             }
 
-            // Find exercise by title for the current user (case-insensitive)
-            $exercise = Exercise::where('user_id', $userId)
-                                ->whereRaw('LOWER(title) = ?', [strtolower($columns[1])])
-                                ->first();
-
-            if (!$exercise) {
-                $notFound[] = $columns[1];
-                continue;
-            }
+            // Find or create exercise by title for the current user (case-insensitive)
+            $exercise = Exercise::firstOrCreate(
+                [
+                    'user_id' => $userId,
+                    'title' => $columns[1],
+                ],
+                [
+                    'is_bodyweight' => false, // Default to false if creating a new exercise
+                ]
+            );
 
             $validator = Validator::make([
                 'date' => $columns[0],
