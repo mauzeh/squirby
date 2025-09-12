@@ -121,6 +121,42 @@
                         alert('TSV data copied to clipboard!');
                     });
                 }
+
+                const selectAllCheckbox = document.getElementById('select-all-programs');
+                if (selectAllCheckbox) {
+                    selectAllCheckbox.addEventListener('change', function(e) {
+                        document.querySelectorAll('.program-checkbox').forEach(function(checkbox) {
+                            checkbox.checked = e.target.checked;
+                        });
+                    });
+                }
+
+                const deleteSelectedForm = document.getElementById('delete-selected-form');
+                if (deleteSelectedForm) {
+                    deleteSelectedForm.addEventListener('submit', function(e) {
+                        e.preventDefault();
+                        
+                        var form = e.target;
+                        var checkedPrograms = document.querySelectorAll('.program-checkbox:checked');
+
+                        if (checkedPrograms.length === 0) {
+                            alert('Please select at least one program to delete.');
+                            return;
+                        }
+
+                        checkedPrograms.forEach(function(checkbox) {
+                            var input = document.createElement('input');
+                            input.type = 'hidden';
+                            input.name = 'program_ids[]';
+                            input.value = checkbox.value;
+                            form.appendChild(input);
+                        });
+
+                        if (confirm('Are you sure you want to delete the selected programs?')) {
+                            form.submit();
+                        }
+                    });
+                }
             });
         </script>
 @endsection
