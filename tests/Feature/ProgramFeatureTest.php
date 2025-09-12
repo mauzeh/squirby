@@ -308,17 +308,23 @@ class ProgramFeatureTest extends TestCase
             'comments' => 'Leg day',
         ]);
 
-        // Test with not found exercise
-        $tsvContentNotFound = $importDate->format('Y-m-d') . "\tNonExistentExercise\t1\t1\t1\tComments\n";
+        // Test with new exercise created on the fly
+        $tsvContentNewExercise = $importDate->format('Y-m-d') . "\tNonExistentExercise\t1\t1\t1\tComments\n";
         $this->actingAs($user)
             ->post(route('programs.import'), [
-                'tsv_content' => $tsvContentNotFound,
+                'tsv_content' => $tsvContentNewExercise,
                 'date' => $importDate->format('Y-m-d'),
             ])
             ->assertRedirect(route('programs.index', ['date' => $importDate->format('Y-m-d')]))
-            ->assertSessionHas('error', 'Successfully imported 0 program entries. Some exercises not found: NonExistentExercise.');
+            ->assertSessionHas('success', 'Successfully imported 1 program entries.');
 
-        $this->assertDatabaseMissing('programs', [
+        $this->assertDatabaseHas('exercises', [
+            'user_id' => $user->id,
+            'title' => 'NonExistentExercise',
+            'is_bodyweight' => false,
+        ]);
+
+        $this->assertDatabaseHas('programs', [
             'user_id' => $user->id,
             'comments' => 'Comments',
         ]);

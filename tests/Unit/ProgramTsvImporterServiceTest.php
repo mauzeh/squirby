@@ -31,4 +31,26 @@ class ProgramTsvImporterServiceTest extends TestCase
         $this->assertEquals(3, $result['importedCount']);
         $this->assertDatabaseCount('programs', 3);
     }
+
+    /** @test */
+    public function it_creates_a_new_exercise_on_the_fly_if_it_does_not_exist()
+    {
+        // 1. Arrange
+        $user = User::factory()->create();
+        $programTsvImporterService = new ProgramTsvImporterService();
+
+        $tsvContent = "2025-09-12\tNon Existent Exercise\t3\t5\t0";
+
+        // 2. Act
+        $result = $programTsvImporterService->import($tsvContent, $user->id);
+
+        // 3. Assert
+        $this->assertEquals(1, $result['importedCount']);
+        $this->assertDatabaseCount('programs', 1);
+        $this->assertDatabaseHas('exercises', [
+            'user_id' => $user->id,
+            'title' => 'Non Existent Exercise',
+            'is_bodyweight' => false,
+        ]);
+    }
 }
