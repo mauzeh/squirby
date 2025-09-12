@@ -32,10 +32,16 @@ class WeightProgressionService
             ->get();
 
         $allEstimated1RMs = collect();
+        $hasRecentHigherOrEqualReps = false;
 
         // 2. Calculate Estimated 1RM for Each Set
         foreach ($recentLiftLogs as $liftLog) {
             foreach ($liftLog->liftSets as $liftSet) {
+                // Check if any historical set has reps >= targetReps
+                if ($liftSet->reps >= $targetReps) {
+                    $hasRecentHigherOrEqualReps = true;
+                }
+
                 // Only calculate 1RM if weight and reps are valid
                 if ($liftSet->weight > 0 && $liftSet->reps > 0) {
                     $estimated1RM = $this->oneRepMaxCalculatorService->calculateOneRepMax($liftSet->weight, $liftSet->reps);
@@ -56,8 +62,25 @@ class WeightProgressionService
         if ($current1RM !== null) {
             $predictedWeight = $this->oneRepMaxCalculatorService->getWeightFromOneRepMax($current1RM, $targetReps);
 
-            // Apply the increment to the predicted weight
-            $finalPredictedWeight = $predictedWeight + self::RESOLUTION;
+            $finalPredictedWeight = $predictedWeight;
+
+            // Apply the resolution only if there's recent history with higher or equal reps.
+            // This prevents adding resolution when the user is attempting a rep count
+            // significantly higher than their recent performance, where a direct increment
+            // might not be appropriate.
+            //
+            // Examples:
+            // - Target Reps: 5
+            //   Historical Sets: (100 lbs x 5 reps), (90 lbs x 6 reps) -> hasRecentHigherOrEqualReps is TRUE. RESOLUTION applied.
+            // - Target Reps: 5
+            //   Historical Sets: (100 lbs x 3 reps), (90 lbs x 5 reps) -> hasRecentHigherOrEqualReps is TRUE. RESOLUTION applied.
+            // - Target Reps: 5
+            //   Historical Sets: (100 lbs x 8 reps), (90 lbs x 10 reps) -> hasRecentHigherOrEqualReps is TRUE. RESOLUTION applied.
+            // - Target Reps: 10
+            //   Historical Sets: (100 lbs x 8 reps), (90 lbs x 5 reps) -> hasRecentHigherOrEqualReps is FALSE. RESOLUTION NOT applied.
+            if ($hasRecentHigherOrEqualReps) {
+                $finalPredictedWeight += self::RESOLUTION;
+            }
 
             // Round to the nearest multiple of RESOLUTION, rounded to the lowest ceiling
             return ceil($finalPredictedWeight / self::RESOLUTION) * self::RESOLUTION;

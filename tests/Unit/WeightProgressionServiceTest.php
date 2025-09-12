@@ -219,4 +219,36 @@ class WeightProgressionServiceTest extends TestCase
         $this->assertIsFloat($suggestedWeight);
         $this->assertGreaterThan(0, $suggestedWeight);
     }
+
+    /** @test */
+    public function it_does_not_apply_resolution_if_all_historical_reps_are_lower_than_target_reps()
+    {
+        $user = User::factory()->create();
+        $exercise = Exercise::factory()->create(['user_id' => $user->id, 'is_bodyweight' => false]);
+
+        // Create a recent LiftLog with a set where reps are lower than target reps
+        $liftLog = LiftLog::factory()->has(LiftSet::factory()->state([
+            'reps' => 8,
+            'weight' => 100.0,
+        ]), 'liftSets')->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => Carbon::now()->subDays(1),
+        ]);
+
+        $suggestedWeight = $this->service->suggestNextWeight($user->id, $exercise->id, 10); // Target reps is 10
+
+        // Calculate expected 1RM from historical data
+        $historicalWeight = 100.0;
+        $historicalReps = 8;
+        $expected1RM = $this->oneRepMaxCalculatorService->calculateOneRepMax($historicalWeight, $historicalReps);
+
+        // Calculate expected predicted weight for target reps (without increment)
+        $expectedPredictedWeight = $this->oneRepMaxCalculatorService->getWeightFromOneRepMax($expected1RM, 10);
+
+        // Apply rounding to the lowest ceiling (without increment)
+        $expectedRoundedWeight = ceil($expectedPredictedWeight / WeightProgressionService::RESOLUTION) * WeightProgressionService::RESOLUTION;
+
+        $this->assertEquals($expectedRoundedWeight, $suggestedWeight);
+    }
 }
