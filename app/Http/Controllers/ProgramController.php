@@ -136,10 +136,18 @@ class ProgramController extends Controller
 
         $result = $importerService->import($tsvContent, auth()->id(), $dateForImport);
 
-        if ($result['success']) {
-            return redirect()->route('programs.index', ['date' => $dateForImport->format('Y-m-d')])->with('success', $result['message']);
+        $message = 'Successfully imported ' . $result['importedCount'] . ' program entries.';
+        if (count($result['notFound']) > 0) {
+            $message .= ' Some exercises not found: ' . implode(', ', array_unique($result['notFound'])) . '.';
+        }
+        if (count($result['invalidRows']) > 0) {
+            $message .= ' Some rows were invalid.';
+        }
+
+        if (count($result['notFound']) > 0 || count($result['invalidRows']) > 0) {
+            return redirect()->route('programs.index', ['date' => $dateForImport->format('Y-m-d')])->withErrors($result['invalidRows'])->with('error', $message);
         } else {
-            return redirect()->route('programs.index', ['date' => $dateForImport->format('Y-m-d')])->withErrors($result['errors'] ?? [])->withInput()->with('error', $result['message']);
+            return redirect()->route('programs.index', ['date' => $dateForImport->format('Y-m-d')])->with('success', $message);
         }
     }
 }

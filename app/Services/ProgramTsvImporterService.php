@@ -12,47 +12,40 @@ class ProgramTsvImporterService
     public function import(string $tsvContent, int $userId, Carbon $dateForImport)
     {
         $lines = array_filter(explode("\n", $tsvContent));
-        if (count($lines) <= 1) { // Only header or empty content
-            return ['success' => false, 'message' => 'TSV content is empty or only contains headers.'];
-        }
-
-        $header = array_map('trim', explode("\t", array_shift($lines)));
-        $expectedHeaders = ['exercise_title', 'sets', 'reps', 'priority', 'comments'];
-
-        // Basic header validation
-        if (array_diff($expectedHeaders, $header)) {
-            return ['success' => false, 'message' => 'Missing required headers. Expected: ' . implode(', ', $expectedHeaders)];
+        if (empty($lines)) {
+            return ['importedCount' => 0, 'notFound' => [], 'invalidRows' => []];
         }
 
         $importedCount = 0;
-        $errors = [];
+        $notFound = [];
+        $invalidRows = [];
 
         foreach ($lines as $lineNumber => $line) {
-            $data = array_map('trim', explode("\t", $line));
-            if (count($data) !== count($header)) {
-                $errors[] = "Line " . ($lineNumber + 2) . ": Column count mismatch.";
+            $columns = array_map('trim', str_getcsv($line, "\t"));
+
+            // Expected columns: exercise_title, sets, reps, priority, comments
+            if (count($columns) < 5) {
+                $invalidRows[] = $line;
                 continue;
             }
 
-            $rowData = array_combine($header, $data);
-
-            // Find exercise by title for the current user
+            // Find exercise by title for the current user (case-insensitive)
             $exercise = Exercise::where('user_id', $userId)
-                                ->where('title', $rowData['exercise_title'])
+                                ->whereRaw('LOWER(title) = ?', [strtolower($columns[0])])
                                 ->first();
 
             if (!$exercise) {
-                $errors[] = "Line " . ($lineNumber + 2) . ": Exercise '" . $rowData['exercise_title'] . "' not found for user.";
+                $notFound[] = $columns[0];
                 continue;
             }
 
             $validator = Validator::make([
                 'exercise_id' => $exercise->id,
                 'date' => $dateForImport->toDateString(),
-                'sets' => $rowData['sets'] ?? null,
-                'reps' => $rowData['reps'] ?? null,
-                'priority' => $rowData['priority'] ?? null,
-                'comments' => $rowData['comments'] ?? null,
+                'sets' => $columns[1] ?? null,
+                'reps' => $columns[2] ?? null,
+                'priority' => $columns[3] ?? null,
+                'comments' => $columns[4] ?? null,
             ], [
                 'exercise_id' => ['required', 'exists:exercises,id'],
                 'date' => ['required', 'date'],
@@ -63,7 +56,7 @@ class ProgramTsvImporterService
             ]);
 
             if ($validator->fails()) {
-                $errors[] = "Line " . ($lineNumber + 2) . ": " . implode(", ", $validator->errors()->all());
+                $invalidRows[] = $line . ' - ' . implode(", ", $validator->errors()->all());
                 continue;
             }
 
@@ -71,19 +64,19 @@ class ProgramTsvImporterService
                 'user_id' => $userId,
                 'exercise_id' => $exercise->id,
                 'date' => $dateForImport,
-                'sets' => $rowData['sets'],
-                'reps' => $rowData['reps'],
-                'priority' => $rowData['priority'] ?? 0,
-                'comments' => $rowData['comments'] ?? null,
+                'sets' => $columns[1],
+                'reps' => $columns[2],
+                'priority' => $columns[3] ?? 0,
+                'comments' => $columns[4] ?? null,
             ]);
 
             $importedCount++;
         }
 
-        if (count($errors) > 0) {
-            return ['success' => false, 'message' => 'Import completed with errors.', 'errors' => $errors, 'imported_count' => $importedCount];
-        } else {
-            return ['success' => true, 'message' => 'Successfully imported ' . $importedCount . ' program entries.'];
-        }
+        return [
+            'importedCount' => $importedCount,
+            'notFound' => $notFound,
+            'invalidRows' => $invalidRows,
+        ];
     }
 }
