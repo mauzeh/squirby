@@ -49,7 +49,10 @@
                         </div>
                     @else
                         @if($program->suggestedNextWeight)
-                            <p class="suggested-weight">Suggested: {{ number_format($program->suggestedNextWeight) }} lbs</p>
+                            <p class="suggested-weight">
+                                Suggested: {{ number_format($program->suggestedNextWeight) }} lbs
+                                <button type="button" class="button-change change-suggested-weight" data-program-id="{{ $program->id }}">Change</button>
+                            </p>
                         @endif
                         <form action="{{ route('lift-logs.store') }}" method="POST" class="lift-log-form">
                             @csrf
@@ -59,24 +62,26 @@
                             <input type="hidden" name="redirect_to" value="mobile-entry">
                             <input type="hidden" name="program_id" value="{{ $program->id }}"> {{-- Pass program_id --}}
 
-                            <div class="form-group">
-                                <label for="weight_{{ $program->id }}">Weight (lbs):</label>
-                                <input type="number" name="weight" id="weight_{{ $program->id }}" class="large-input" inputmode="decimal" value="{{ $program->suggestedNextWeight ?? '' }}" required>
-                            </div>
+                            <div id="form-fields-{{ $program->id }}" class="lift-log-form-fields @if($program->suggestedNextWeight) hidden @endif">
+                                <div class="form-group">
+                                    <label for="weight_{{ $program->id }}">Weight (lbs):</label>
+                                    <input type="number" name="weight" id="weight_{{ $program->id }}" class="large-input" inputmode="decimal" value="{{ $program->suggestedNextWeight ?? '' }}" required>
+                                </div>
 
-                            <div class="form-group">
-                                <label for="reps_{{ $program->id }}">Reps:</label>
-                                <input type="number" name="reps" id="reps_{{ $program->id }}" class="large-input" inputmode="numeric" value="{{ $program->reps }}">
-                            </div>
+                                <div class="form-group">
+                                    <label for="reps_{{ $program->id }}">Reps:</label>
+                                    <input type="number" name="reps" id="reps_{{ $program->id }}" class="large-input" inputmode="numeric" value="{{ $program->reps }}">
+                                </div>
 
-                            <div class="form-group">
-                                <label for="rounds_{{ $program->id }}">Sets:</label>
-                                <input type="number" name="rounds" id="rounds_{{ $program->id }}" class="large-input" inputmode="numeric" value="{{ $program->sets }}">
-                            </div>
+                                <div class="form-group">
+                                    <label for="rounds_{{ $program->id }}">Sets:</label>
+                                    <input type="number" name="rounds" id="rounds_{{ $program->id }}" class="large-input" inputmode="numeric" value="{{ $program->sets }}">
+                                </div>
 
-                            <div class="form-group">
-                                <label for="comments_{{ $program->id }}">Comments:</label>
-                                <textarea name="comments" id="comments_{{ $program->id }}" class="large-textarea" rows="3"></textarea>
+                                <div class="form-group">
+                                    <label for="comments_{{ $program->id }}">Comments:</label>
+                                    <textarea name="comments" id="comments_{{ $program->id }}" class="large-textarea" rows="3"></textarea>
+                                </div>
                             </div>
 
                             <button type="submit" class="large-button submit-button">I did this!</button>
@@ -195,6 +200,20 @@
         .large-textarea {
             resize: vertical;
         }
+        .button-change {
+            background-color: #6c757d;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            margin-top: 5px;
+            display: inline-block;
+        }
+        .button-change:hover {
+            background-color: #5a6268;
+        }
         .button-small {
             background-color: #6c757d;
             color: white;
@@ -230,16 +249,18 @@
         .submit-button:hover {
             background-color: #0056b3;
         }
+        .hidden {
+            display: none;
+        }
     </style>
 
     <script>
-        // No JavaScript for core functionality, but a small script for "Use Suggested" button
         document.addEventListener('DOMContentLoaded', function() {
-            document.querySelectorAll('.set-suggested-weight').forEach(button => {
+            document.querySelectorAll('.change-suggested-weight').forEach(button => {
                 button.addEventListener('click', function() {
-                    const targetId = this.dataset.target;
-                    const suggestedWeight = this.dataset.weight;
-                    document.getElementById(targetId).value = suggestedWeight;
+                    const programId = this.dataset.programId;
+                    const formFields = document.getElementById('form-fields-' + programId);
+                    formFields.classList.toggle('hidden');
                 });
             });
         });
