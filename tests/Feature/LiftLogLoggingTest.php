@@ -7,8 +7,7 @@ use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 use App\Models\User;
 
-class LiftLogLoggingTest extends TestCase
-{
+class LiftLogLoggingTest extends TestCase {
 
     protected function setUp(): void
     {
@@ -21,7 +20,8 @@ class LiftLogLoggingTest extends TestCase
     /** @test */
     public function a_user_can_view_the_lift_log_logging_page()
     {
-        $response = $this->get('/lift-logs');
+        $exercise = \App\Models\Exercise::factory()->create(['user_id' => $this->user->id]);
+        $response = $this->get(route('exercises.show-logs', ['exercise' => $exercise->id]));
 
         $response->assertStatus(200);
         $response->assertSee('Add Lift Log');
@@ -63,8 +63,7 @@ class LiftLogLoggingTest extends TestCase
             'notes' => 'Test lift log comments',
         ]);
 
-        $response->assertRedirect(route('lift-logs.index'));
-        $response->assertSessionHas('success', 'Lift log created successfully.');
+        $response->assertRedirect(route('exercises.show-logs', ['exercise' => $exercise->id]))->assertSessionHas('success', 'Lift log created successfully.');
     }
 
     /** @test */
@@ -114,8 +113,7 @@ class LiftLogLoggingTest extends TestCase
             'notes' => 'Updated comments',
         ]);
 
-        $response->assertRedirect(route('lift-logs.index'));
-        $response->assertSessionHas('success', 'Lift log updated successfully.');
+        $response->assertRedirect(route('exercises.show-logs', ['exercise' => $updatedExercise->id]))->assertSessionHas('success', 'Lift log updated successfully.');
     }
 
     /** @test */
@@ -269,8 +267,7 @@ class LiftLogLoggingTest extends TestCase
             'notes' => 'Bodyweight lift log comments',
         ]);
 
-        $response->assertRedirect(route('lift-logs.index'));
-        $response->assertSessionHas('success', 'Lift log created successfully.');
+        $response->assertRedirect(route('exercises.show-logs', ['exercise' => $exercise->id]))->assertSessionHas('success', 'Lift log created successfully.');
     }
 
     /** @test */
@@ -316,8 +313,7 @@ class LiftLogLoggingTest extends TestCase
             'notes' => 'Updated bodyweight comments',
         ]);
 
-        $response->assertRedirect(route('lift-logs.index'));
-        $response->assertSessionHas('success', 'Lift log updated successfully.');
+        $response->assertRedirect(route('exercises.show-logs', ['exercise' => $updatedExercise->id]))->assertSessionHas('success', 'Lift log updated successfully.');
     }
 
     /** @test */

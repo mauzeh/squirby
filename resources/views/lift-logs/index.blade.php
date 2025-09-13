@@ -17,8 +17,6 @@
     @endif
     <div class="container">
 
-        <x-add-lift-log-form :exercises="$exercises" />
-
         @if ($liftLogs->isEmpty())
             <p>No lift logs found. Add one to get started!</p>
         @else
@@ -51,35 +49,6 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const exerciseId = urlParams.get('exercise_id');
-            if (exerciseId) {
-                document.getElementById('exercise_id').value = exerciseId;
-            }
-
-            const exerciseSelect = document.getElementById('exercise_id');
-            const weightGroup = document.getElementById('weight-group');
-            const weightInput = document.getElementById('weight');
-
-            function toggleWeightInput() {
-                const selectedOption = exerciseSelect.options[exerciseSelect.selectedIndex];
-                const isBodyweight = selectedOption.dataset.isBodyweight === 'true';
-
-                if (isBodyweight) {
-                    weightGroup.style.display = 'none';
-                    weightInput.removeAttribute('required');
-                    weightInput.value = 0; // Set weight to 0 for bodyweight exercises
-                } else {
-                    weightGroup.style.display = 'flex';
-                    weightInput.setAttribute('required', 'required');
-                }
-            }
-
-            // Initial call to set state based on default selected option
-            toggleWeightInput();
-
-            // Listen for changes on the exercise select dropdown
-            exerciseSelect.addEventListener('change', toggleWeightInput);
             
             const copyTsvButton = document.getElementById('copy-tsv-button');
             if (copyTsvButton) {

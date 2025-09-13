@@ -69,7 +69,7 @@ class LiftLogController extends Controller
             ]);
         }
 
-        return redirect()->route('lift-logs.index')->with('success', 'Lift log created successfully.');
+        return redirect()->route('exercises.show-logs', ['exercise' => $liftLog->exercise_id])->with('success', 'Lift log created successfully.');
     }
 
     /**
@@ -124,7 +124,7 @@ class LiftLogController extends Controller
             ]);
         }
 
-        return redirect()->route('lift-logs.index')->with('success', 'Lift log updated successfully.');
+        return redirect()->route('exercises.show-logs', ['exercise' => $liftLog->exercise_id])->with('success', 'Lift log updated successfully.');
     }
 
     /**
