@@ -109,11 +109,17 @@ class ExerciseController extends Controller
 
         $displayExercises = $this->exerciseService->getDisplayExercises(5);
 
+        $bestLiftLogsPerDay = $liftLogs->groupBy(function ($liftLog) {
+            return $liftLog->logged_at->format('Y-m-d');
+        })->map(function ($logsOnDay) {
+            return $logsOnDay->sortByDesc('best_one_rep_max')->first();
+        });
+
         $chartData = [
             'datasets' => [
                 [
                     'label' => '1RM (est.)',
-                    'data' => $liftLogs->map(function ($liftLog) {
+                    'data' => $bestLiftLogsPerDay->map(function ($liftLog) {
                         return [
                             'x' => $liftLog->logged_at->toIso8601String(),
                             'y' => $liftLog->best_one_rep_max,

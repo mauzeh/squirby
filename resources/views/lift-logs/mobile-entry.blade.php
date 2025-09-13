@@ -28,8 +28,9 @@
                     @endphp
 
                     @if ($loggedLift)
-                        <div class="logged-summary">
-                            <h3>Logged:</h3>
+                        <div class="logged-summary completed-badge">
+                            <div class="badge-icon">&#10004;</div>
+                            <h3>Completed!</h3>
                             <p><strong>Weight:</strong> {{ $loggedLift->display_weight }} lbs</p>
                             <p><strong>Reps x Sets:</strong> {{ $loggedLift->display_reps }} x {{ $loggedLift->display_rounds }}</p>
                             @if($loggedLift->comments)
@@ -78,6 +79,27 @@
     </div>
 
     <style>
+        .completed-badge {
+            border-left: 5px solid #28a745; /* Green border */
+            padding-left: 20px;
+            position: relative;
+        }
+        .badge-icon {
+            position: absolute;
+            left: -15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: #28a745;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
         .mobile-entry-container {
             max-width: 600px;
             margin: 20px auto;
