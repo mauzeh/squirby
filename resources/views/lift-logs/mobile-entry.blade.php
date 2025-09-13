@@ -69,7 +69,7 @@
                                 <textarea name="comments" id="comments_{{ $program->id }}" class="large-textarea" rows="3"></textarea>
                             </div>
 
-                            <button type="submit" class="large-button submit-button">Add Log</button>
+                            <button type="submit" class="large-button submit-button">I did this!</button>
                         </form>
                     @endif
                 </div>
