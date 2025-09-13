@@ -43,21 +43,26 @@
                             <td class="hide-on-mobile" style="text-align: center;">{{ $program->reps }}</td>
                             <td class="hide-on-mobile" style="text-align: center;">{{ $program->priority }}</td>
                             <td>
-                                <strong>{{ $program->exercise->title }}</strong>
+                                <div class="hide-on-mobile"><strong>{{ $program->exercise->title }}</strong></div>
+                                <div class="show-on-mobile">
+                                    <strong>{{ $program->exercise->title }}</strong>
+                                    @if($program->suggestedNextWeight)
+                                        (<i>{{ number_format($program->suggestedNextWeight) }} lbs</i>)
+                                    @endif
+                                </div>
                                 <div class="show-on-mobile" style="font-size: 0.9em; color: #ccc;">
-                                    <br>
                                     Reps: {{ $program->reps }}<br>
                                     Sets: {{ $program->sets }}
                                 </div>
                                 @if($program->comments)
-                                    <br><small style="font-size: 0.8em; color: #aaa;">{{ $program->comments }}</small>
+                                    <small style="font-size: 0.8em; color: #aaa;">{{ $program->comments }}</small>
                                 @endif
                             </td>
                             <td class="hide-on-mobile" style="text-align: center;">
                                 @if($program->suggestedNextWeight)
                                     {{ number_format($program->suggestedNextWeight) }} lbs
                                 @else
-                                    N/A
+                                    <span class="demure">N/A</span>
                                 @endif
                             </td>
                             <td style="white-space: normal;">

@@ -411,3 +411,7 @@ footer {
 .date-link.today-date {
     border: 1px solid #ffc107; /* A subtle yellow border to highlight today's date */
 }
+
+.demure {
+    color: #868686;
+}
