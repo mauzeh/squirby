@@ -63,9 +63,15 @@
                             <input type="hidden" name="program_id" value="{{ $program->id }}"> {{-- Pass program_id --}}
 
                             <div id="form-fields-{{ $program->id }}" class="lift-log-form-fields @if($program->suggestedNextWeight) hidden @endif">
-                                <div class="form-group">
-                                    <label for="weight_{{ $program->id }}">Weight (lbs):</label>
-                                    <input type="number" name="weight" id="weight_{{ $program->id }}" class="large-input" inputmode="decimal" value="{{ $program->suggestedNextWeight ?? '' }}" required>
+                                @if ($program->exercise->is_bodyweight)
+                                    <div class="form-group">
+                                        <label>&nbsp;</label>
+                                        <button type="button" class="button-change toggle-weight-field" data-program-id="{{ $program->id }}">Add additional weight</button>
+                                    </div>
+                                @endif
+                                <div class="form-group weight-form-group @if($program->exercise->is_bodyweight) hidden @endif" id="weight-form-group-{{ $program->id }}">
+                                    <label for="weight_{{ $program->id }}">@if($program->exercise->is_bodyweight) Extra Weight (lbs): @else Weight (lbs): @endif</label>
+                                    <input type="number" name="weight" id="weight_{{ $program->id }}" class="large-input" inputmode="decimal" value="{{ $program->suggestedNextWeight ?? ($program->exercise->is_bodyweight ? 0 : '') }}" @if(!$program->exercise->is_bodyweight) required @endif>
                                 </div>
 
                                 <div class="form-group">
@@ -261,6 +267,21 @@
                     const programId = this.dataset.programId;
                     const formFields = document.getElementById('form-fields-' + programId);
                     formFields.classList.toggle('hidden');
+                });
+            });
+
+            document.querySelectorAll('.toggle-weight-field').forEach(button => {
+                button.addEventListener('click', function() {
+                    const programId = this.dataset.programId;
+                    const weightField = document.getElementById('weight-form-group-' + programId);
+                    weightField.classList.toggle('hidden');
+                    const weightInput = document.getElementById('weight_' + programId);
+                    if (!weightField.classList.contains('hidden')) {
+                        weightInput.required = true;
+                    } else {
+                        weightInput.required = false;
+                    }
+                    this.parentElement.style.display = 'none';
                 });
             });
         });
