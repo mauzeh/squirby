@@ -61,7 +61,7 @@
 
                             <div class="form-group">
                                 <label for="weight_{{ $program->id }}">Weight (lbs):</label>
-                                <input type="number" name="weight" id="weight_{{ $program->id }}" class="large-input" inputmode="decimal" value="{{ $program->suggestedNextWeight ?? '' }}">
+                                <input type="number" name="weight" id="weight_{{ $program->id }}" class="large-input" inputmode="decimal" value="{{ $program->suggestedNextWeight ?? '' }}" required>
                             </div>
 
                             <div class="form-group">
