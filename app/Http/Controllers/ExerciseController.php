@@ -132,7 +132,8 @@ class ExerciseController extends Controller
 
         $sets = $request->input('sets');
         $reps = $request->input('reps');
+        $weight = $request->input('weight');
 
-        return view('exercises.logs', compact('exercise', 'liftLogs', 'chartData', 'displayExercises', 'exercises', 'sets', 'reps'));
+        return view('exercises.logs', compact('exercise', 'liftLogs', 'chartData', 'displayExercises', 'exercises', 'sets', 'reps', 'weight'));
     }
 }

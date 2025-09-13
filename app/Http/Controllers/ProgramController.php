@@ -26,16 +26,22 @@ class ProgramController extends Controller
             ->orderBy('priority')
             ->get();
 
-        foreach ($programs as $program) {
-            // Only suggest weight for non-bodyweight exercises
-            if (!$program->exercise->is_bodyweight) {
-                $program->suggestedNextWeight = $weightProgressionService->suggestNextWeight(
-                    auth()->id(),
-                    $program->exercise_id,
-                    $program->reps // Assuming 'reps' from the program is the target reps
-                );
-            } else {
-                $program->suggestedNextWeight = null; // Or a specific message for bodyweight
+        if ($selectedDate->isToday()) {
+            foreach ($programs as $program) {
+                // Only suggest weight for non-bodyweight exercises
+                if (!$program->exercise->is_bodyweight) {
+                    $program->suggestedNextWeight = $weightProgressionService->suggestNextWeight(
+                        auth()->id(),
+                        $program->exercise_id,
+                        $program->reps // Assuming 'reps' from the program is the target reps
+                    );
+                } else {
+                    $program->suggestedNextWeight = null; // Or a specific message for bodyweight
+                }
+            }
+        } else {
+            foreach ($programs as $program) {
+                $program->suggestedNextWeight = null;
             }
         }
 
