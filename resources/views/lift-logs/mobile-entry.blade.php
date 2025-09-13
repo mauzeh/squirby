@@ -32,7 +32,7 @@
                             <div class="badge-icon">&#10004;</div>
                             <div style="display: flex; align-items: center; justify-content: space-between;">
                                 <h3>Completed!</h3>
-                                <form action="{{ route('lift-logs.destroy', $loggedLift->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this log?');">
+                                <form action="{{ route('lift-logs.destroy', $loggedLift->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to undo this?');">
                                     @csrf
                                     @method('DELETE')
                                     <input type="hidden" name="redirect_to" value="mobile-entry">
