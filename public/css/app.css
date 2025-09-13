@@ -412,6 +412,6 @@ footer {
     border: 1px solid #ffc107; /* A subtle yellow border to highlight today's date */
 }
 
-.demure {
+a.demure {
     color: #868686;
 }
