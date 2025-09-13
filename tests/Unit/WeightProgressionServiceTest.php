@@ -251,4 +251,89 @@ class WeightProgressionServiceTest extends TestCase
 
         $this->assertEquals($expectedRoundedWeight, $suggestedWeight);
     }
+
+    /** @test */
+    public function it_suggests_weight_for_a_future_date_correctly()
+    {
+        $user = User::factory()->create();
+        $exercise = Exercise::factory()->create(['user_id' => $user->id, 'is_bodyweight' => false]);
+
+        // Create a LiftLog in the past
+        $liftLog = LiftLog::factory()->has(LiftSet::factory()->state([
+            'reps' => 5,
+            'weight' => 100.0,
+        ]), 'liftSets')->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => Carbon::now()->subDays(3), // Logged 3 days ago
+        ]);
+
+        // Ask for suggested weight for tomorrow
+        $forDate = Carbon::now()->addDay();
+        $suggestedWeight = $this->service->suggestNextWeight($user->id, $exercise->id, 5, $forDate);
+
+        // Calculate expected based on the past log
+        $historicalWeight = 100.0;
+        $historicalReps = 5;
+        $expected1RM = $this->oneRepMaxCalculatorService->calculateOneRepMax($historicalWeight, $historicalReps);
+        $expectedPredictedWeight = $this->oneRepMaxCalculatorService->getWeightFromOneRepMax($expected1RM, 5);
+        $expectedRoundedWeight = ceil(($expectedPredictedWeight + WeightProgressionService::RESOLUTION) / WeightProgressionService::RESOLUTION) * WeightProgressionService::RESOLUTION;
+
+        $this->assertEquals($expectedRoundedWeight, $suggestedWeight);
+    }
+
+    /** @test */
+    public function it_does_not_suggest_weight_when_history_is_too_old_for_a_future_date()
+    {
+        $user = User::factory()->create();
+        $exercise = Exercise::factory()->create(['user_id' => $user->id, 'is_bodyweight' => false]);
+
+        // Create a LiftLog that is too old relative to a future date
+        $liftLog = LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => Carbon::now()->subWeeks(WeightProgressionService::LOOKBACK_WEEKS + 1),
+        ]);
+        LiftSet::factory()->create([
+            'lift_log_id' => $liftLog->id,
+            'reps' => 5,
+            'weight' => 100.0,
+        ]);
+
+        // Ask for suggested weight for tomorrow
+        $forDate = Carbon::now()->addDay();
+        $suggestedWeight = $this->service->suggestNextWeight($user->id, $exercise->id, 5, $forDate);
+
+        $this->assertFalse($suggestedWeight); // Should fall back to default
+    }
+
+    /** @test */
+    public function it_suggests_weight_for_a_past_date_correctly()
+    {
+        $user = User::factory()->create();
+        $exercise = Exercise::factory()->create(['user_id' => $user->id, 'is_bodyweight' => false]);
+
+        // Create a LiftLog in the recent past
+        $liftLog = LiftLog::factory()->has(LiftSet::factory()->state([
+            'reps' => 5,
+            'weight' => 100.0,
+        ]), 'liftSets')->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => Carbon::now()->subDays(5), // Logged 5 days ago
+        ]);
+
+        // Ask for suggested weight for 2 days ago
+        $forDate = Carbon::now()->subDays(2);
+        $suggestedWeight = $this->service->suggestNextWeight($user->id, $exercise->id, 5, $forDate);
+
+        // Calculate expected based on the past log
+        $historicalWeight = 100.0;
+        $historicalReps = 5;
+        $expected1RM = $this->oneRepMaxCalculatorService->calculateOneRepMax($historicalWeight, $historicalReps);
+        $expectedPredictedWeight = $this->oneRepMaxCalculatorService->getWeightFromOneRepMax($expected1RM, 5);
+        $expectedRoundedWeight = ceil(($expectedPredictedWeight + WeightProgressionService::RESOLUTION) / WeightProgressionService::RESOLUTION) * WeightProgressionService::RESOLUTION;
+
+        $this->assertEquals($expectedRoundedWeight, $suggestedWeight);
+    }
 }
