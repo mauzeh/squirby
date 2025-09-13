@@ -4,16 +4,19 @@ namespace App\Http\Controllers;
 
 use App\Models\Exercise;
 use App\Services\ExerciseService;
+use App\Services\ChartService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class ExerciseController extends Controller
 {
     protected $exerciseService;
+    protected $chartService;
 
-    public function __construct(ExerciseService $exerciseService)
+    public function __construct(ExerciseService $exerciseService, \App\Services\ChartService $chartService)
     {
         $this->exerciseService = $exerciseService;
+        $this->chartService = $chartService;
     }
 
     /**
@@ -109,28 +112,7 @@ class ExerciseController extends Controller
 
         $displayExercises = $this->exerciseService->getDisplayExercises(5);
 
-        $bestLiftLogsPerDay = $liftLogs->groupBy(function ($liftLog) {
-            return $liftLog->logged_at->format('Y-m-d');
-        })->map(function ($logsOnDay) {
-            return $logsOnDay->sortByDesc('best_one_rep_max')->first();
-        });
-
-        $chartData = [
-            'datasets' => [
-                [
-                    'label' => '1RM (est.)',
-                    'data' => $bestLiftLogsPerDay->map(function ($liftLog) {
-                        return [
-                            'x' => $liftLog->logged_at->toIso8601String(),
-                            'y' => $liftLog->best_one_rep_max,
-                        ];
-                    }),
-                    'backgroundColor' => 'rgba(0, 123, 255, 0.5)',
-                    'borderColor' => 'rgba(0, 123, 255, 1)',
-                    'borderWidth' => 1
-                ]
-            ]
-        ];
+        $chartData = $this->chartService->generateBestPerDay($liftLogs);
 
         $liftLogs = $liftLogs->reverse();
 
