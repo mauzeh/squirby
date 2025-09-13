@@ -62,7 +62,7 @@
                                 @if($program->suggestedNextWeight)
                                     {{ number_format($program->suggestedNextWeight) }} lbs
                                 @else
-                                    <span class="demure">N/A</span>
+                                    <span class="no-suggested-weight-available">N/A</span>
                                 @endif
                             </td>
                             <td style="white-space: normal;">
