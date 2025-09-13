@@ -18,15 +18,17 @@ class WeightProgressionService
         $this->oneRepMaxCalculatorService = $oneRepMaxCalculatorService;
     }
 
-    public function suggestNextWeight(int $userId, int $exerciseId, int $targetReps): float|false
+    public function suggestNextWeight(int $userId, int $exerciseId, int $targetReps, Carbon $forDate = null): float|false
     {
+        $forDate = $forDate ?? Carbon::now(); // Use provided date or default to now
+
         // 1. Retrieve all relevant LiftLogs with their sets
         $recentLiftLogs = LiftLog::with('liftSets')
             ->join('exercises', 'lift_logs.exercise_id', '=', 'exercises.id')
             ->where('lift_logs.user_id', $userId)
             ->where('lift_logs.exercise_id', $exerciseId)
             ->where('exercises.is_bodyweight', false) // Filter on the exercises table
-            ->where('logged_at', '>=', Carbon::now()->subWeeks(self::LOOKBACK_WEEKS))
+            ->where('logged_at', '>=', $forDate->copy()->subWeeks(self::LOOKBACK_WEEKS))
             ->orderBy('logged_at', 'desc')
             ->select('lift_logs.*') // Select lift_logs columns to avoid ambiguity
             ->get();

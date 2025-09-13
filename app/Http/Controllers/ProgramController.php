@@ -26,14 +26,15 @@ class ProgramController extends Controller
             ->orderBy('priority')
             ->get();
 
-        if ($selectedDate->isToday()) {
+        if ($selectedDate->isToday() || $selectedDate->isTomorrow() || $selectedDate->copy()->addDay()->isTomorrow()) {
             foreach ($programs as $program) {
                 // Only suggest weight for non-bodyweight exercises
                 if (!$program->exercise->is_bodyweight) {
                     $program->suggestedNextWeight = $weightProgressionService->suggestNextWeight(
                         auth()->id(),
                         $program->exercise_id,
-                        $program->reps // Assuming 'reps' from the program is the target reps
+                        $program->reps, // Assuming 'reps' from the program is the target reps
+                        $selectedDate // Pass the selected date for lookback
                     );
                 } else {
                     $program->suggestedNextWeight = null; // Or a specific message for bodyweight
