@@ -34,7 +34,7 @@
         @auth
         <div class="navbar">
             <a href="{{ route('food-logs.index') }}" class="top-level-nav-item {{ Request::routeIs(['food-logs.*', 'meals.*', 'ingredients.*']) ? 'active' : '' }}"><i class="fas fa-utensils"></i> Food</a>
-            <a href="{{ route('lift-logs.index') }}" class="top-level-nav-item {{ Request::routeIs(['exercises.*', 'lift-logs.*', 'programs.*']) ? 'active' : '' }}"><i class="fas fa-dumbbell"></i> Lifts</a>
+            <a id="lifts-nav-link" href="{{ route('lift-logs.index') }}" class="top-level-nav-item {{ Request::routeIs(['exercises.*', 'lift-logs.*', 'programs.*']) ? 'active' : '' }}"><i class="fas fa-dumbbell"></i> Lifts</a>
             <a href="{{ route('body-logs.index') }}" class="top-level-nav-item {{ Request::routeIs(['body-logs.*', 'measurement-types.*']) ? 'active' : '' }}"><i class="fas fa-heartbeat"></i> Body</a>
 
             <div style="margin-left: auto;">
@@ -87,5 +87,19 @@
             </div>
         </footer>
         @endauth
+
+        <script>
+            // This script enhances the user experience on mobile devices by redirecting the main "Lifts" navigation link.
+            document.addEventListener('DOMContentLoaded', function() {
+                // Select the "Lifts" navigation link using its unique ID.
+                const liftsNavLink = document.getElementById('lifts-nav-link');
+
+                // Check if the link exists and if the screen width is indicative of a mobile device (768px or less).
+                if (liftsNavLink && window.innerWidth <= 768) {
+                    // If on a mobile device, change the link's destination to the mobile-specific entry page.
+                    liftsNavLink.href = "{{ route('lift-logs.mobile-entry') }}";
+                }
+            });
+        </script>
     </body>
 </html>
