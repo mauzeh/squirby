@@ -62,7 +62,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('exercises', ExerciseController::class);
     Route::get('exercises/{exercise}/logs', [ExerciseController::class, 'showLogs'])->name('exercises.show-logs');
 
-    Route::resource('lift-logs', LiftLogController::class);
+    Route::resource('lift-logs', LiftLogController::class)->except(['show']);
 
     Route::resource('programs', ProgramController::class);
     Route::post('programs/destroy-selected', [ProgramController::class, 'destroySelected'])->name('programs.destroy-selected');
@@ -71,6 +71,7 @@ Route::middleware('auth')->group(function () {
     Route::post('lift-logs/import-tsv', [LiftLogController::class, 'importTsv'])->name('lift-logs.import-tsv');
 
     Route::post('lift-logs/destroy-selected', [LiftLogController::class, 'destroySelected'])->name('lift-logs.destroy-selected');
+    Route::get('lift-logs/mobile-entry', [LiftLogController::class, 'mobileEntry'])->name('lift-logs.mobile-entry');
 });
 
 require __DIR__.'/auth.php';

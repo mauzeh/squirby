@@ -10,6 +10,7 @@ use App\Services\ExerciseService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
+use App\Services\WeightProgressionService;
 
 class LiftLogController extends Controller
 {
@@ -69,7 +70,16 @@ class LiftLogController extends Controller
             ]);
         }
 
-        return redirect()->route('exercises.show-logs', ['exercise' => $liftLog->exercise_id])->with('success', 'Lift log created successfully.');
+        if ($request->input('redirect_to') === 'mobile-entry') {
+            $redirectParams = [
+                'date' => $request->input('date'),
+                'submitted_lift_log_id' => $liftLog->id,
+                'submitted_program_id' => $request->input('program_id'), // Assuming program_id is passed from the form
+            ];
+            return redirect()->route('lift-logs.mobile-entry', $redirectParams)->with('success', 'Lift log created successfully.');
+        } else {
+            return redirect()->route('exercises.show-logs', ['exercise' => $liftLog->exercise_id])->with('success', 'Lift log created successfully.');
+        }
     }
 
     /**
@@ -124,7 +134,16 @@ class LiftLogController extends Controller
             ]);
         }
 
-        return redirect()->route('exercises.show-logs', ['exercise' => $liftLog->exercise_id])->with('success', 'Lift log updated successfully.');
+        if ($request->input('redirect_to') === 'mobile-entry') {
+            $redirectParams = [
+                'date' => $request->input('date'),
+                'submitted_lift_log_id' => $liftLog->id,
+                'submitted_program_id' => $request->input('program_id'), // Assuming program_id is passed from the form
+            ];
+            return redirect()->route('lift-logs.mobile-entry', $redirectParams)->with('success', 'Lift log updated successfully.');
+        } else {
+            return redirect()->route('exercises.show-logs', ['exercise' => $liftLog->exercise_id])->with('success', 'Lift log updated successfully.');
+        }
     }
 
     /**
@@ -195,5 +214,49 @@ class LiftLogController extends Controller
         return redirect()
             ->route('lift-logs.index')
             ->with('success', 'TSV data imported successfully!');
+    }
+
+    public function mobileEntry(Request $request, \App\Services\WeightProgressionService $weightProgressionService)
+    {
+        $selectedDate = $request->input('date') ? \Carbon\Carbon::parse($request->input('date')) : \Carbon\Carbon::today();
+
+        $programs = \App\Models\Program::with('exercise')
+            ->where('user_id', auth()->id())
+            ->whereDate('date', $selectedDate->toDateString())
+            ->orderBy('priority')
+            ->get();
+
+        if ($selectedDate->isToday() || $selectedDate->isTomorrow() || $selectedDate->copy()->addDay()->isTomorrow()) {
+            foreach ($programs as $program) {
+                if (!$program->exercise->is_bodyweight) {
+                    $program->suggestedNextWeight = $weightProgressionService->suggestNextWeight(
+                        auth()->id(),
+                        $program->exercise_id,
+                        $program->reps,
+                        $selectedDate
+                    );
+                } else {
+                    $program->suggestedNextWeight = null;
+                }
+            }
+        } else {
+            foreach ($programs as $program) {
+                $program->suggestedNextWeight = null;
+            }
+        }
+
+        $submittedLiftLog = null;
+        if ($request->has('submitted_lift_log_id')) {
+            $submittedLiftLog = \App\Models\LiftLog::with('liftSets', 'exercise')->find($request->input('submitted_lift_log_id'));
+        }
+
+        // Fetch all lift logs for the selected date and user
+        $dailyLiftLogs = \App\Models\LiftLog::with('liftSets', 'exercise')
+            ->where('user_id', auth()->id())
+            ->whereDate('logged_at', $selectedDate->toDateString())
+            ->get()
+            ->keyBy('exercise_id'); // Key by exercise_id for easy lookup
+
+        return view('lift-logs.mobile-entry', compact('programs', 'selectedDate', 'submittedLiftLog', 'dailyLiftLogs'));
     }
 }
