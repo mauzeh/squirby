@@ -157,7 +157,7 @@
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
         }
         .program-card h2 {
-            color: #007bff;
+            color: orange;
             margin-top: 0;
             margin-bottom: 10px;
             font-size: 1.8em;
