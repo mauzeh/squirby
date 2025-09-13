@@ -156,6 +156,10 @@ class LiftLogController extends Controller
         }
         $liftLog->delete();
 
+        if (request()->input('redirect_to') === 'mobile-entry') {
+            return redirect()->route('lift-logs.mobile-entry', ['date' => request()->input('date')])->with('success', 'Lift log deleted successfully.');
+        }
+
         return redirect()->route('lift-logs.index')->with('success', 'Lift log deleted successfully.');
     }
 

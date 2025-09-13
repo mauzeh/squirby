@@ -235,7 +235,7 @@ class MobileLiftLogEntryTest extends TestCase
         $response = $this->get(route('lift-logs.mobile-entry'));
 
         $response->assertStatus(200);
-        $response->assertSee('Logged:');
+        $response->assertSee('Completed!');
         $response->assertSee($liftLog->display_weight . ' lbs');
         $response->assertDontSee('Add Log'); // Form button should not be visible
     }
@@ -272,7 +272,7 @@ class MobileLiftLogEntryTest extends TestCase
         $response = $this->get($response->headers->get('Location'));
 
         $response->assertStatus(200);
-        $response->assertSee('Logged:');
+        $response->assertSee('Completed!');
         $response->assertSee('Mobile entry test log');
         $response->assertDontSee('Add Log'); // Form button should not be visible
     }

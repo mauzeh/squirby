@@ -30,7 +30,16 @@
                     @if ($loggedLift)
                         <div class="logged-summary completed-badge">
                             <div class="badge-icon">&#10004;</div>
-                            <h3>Completed!</h3>
+                            <div style="display: flex; align-items: center; justify-content: space-between;">
+                                <h3>Completed!</h3>
+                                <form action="{{ route('lift-logs.destroy', $loggedLift->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this log?');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <input type="hidden" name="redirect_to" value="mobile-entry">
+                                    <input type="hidden" name="date" value="{{ $selectedDate->toDateString() }}">
+                                    <button type="submit" class="button-small button-danger">Undo</button>
+                                </form>
+                            </div>
                             <p><strong>Weight:</strong> {{ $loggedLift->display_weight }} lbs</p>
                             <p><strong>Reps x Sets:</strong> {{ $loggedLift->display_reps }} x {{ $loggedLift->display_rounds }}</p>
                             @if($loggedLift->comments)
@@ -199,6 +208,12 @@
         }
         .button-small:hover {
             background-color: #5a6268;
+        }
+        .button-danger {
+            background-color: #dc3545;
+        }
+        .button-danger:hover {
+            background-color: #c82333;
         }
         .submit-button {
             background-color: #007bff;
