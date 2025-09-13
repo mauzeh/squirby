@@ -6,6 +6,7 @@ use Tests\TestCase;
 use App\Services\ChartService;
 use Illuminate\Support\Collection;
 use Carbon\Carbon;
+use App\Models\MeasurementType;
 
 /**
  * Class ChartServiceTest
@@ -138,5 +139,53 @@ class ChartServiceTest extends TestCase
         $this->assertEquals(100, $dataset['data'][0]['y']);
         $this->assertEquals(150, $dataset['data'][1]['y']);
         $this->assertEquals(200, $dataset['data'][2]['y']);
+    }
+
+    /**
+     * Test that the generateBodyLogChartData method correctly generates chart data.
+     *
+     * This test provides a collection of body logs with gaps in the dates.
+     * It asserts that the chart data is generated correctly, with null values for the missing dates.
+     *
+     * @test
+     */
+    public function it_generates_body_log_chart_data_correctly()
+    {
+        // Arrange: Create a new ChartService instance, a measurement type, and a collection of body logs.
+        $service = new ChartService();
+        $measurementType = new MeasurementType(['name' => 'Weight', 'default_unit' => 'lbs']);
+        $bodyLogs = new Collection([
+            (object)[
+                'logged_at' => Carbon::parse('2025-01-01'),
+                'value' => 150,
+            ],
+            (object)[
+                'logged_at' => Carbon::parse('2025-01-03'),
+                'value' => 152,
+            ],
+        ]);
+        $bodyLogs = $bodyLogs->sortByDesc('logged_at');
+
+        // Act: Generate the chart data.
+        $chartData = $service->generateBodyLogChartData($bodyLogs, $measurementType);
+
+        // Assert: Check that the chart data is in the correct format and contains the correct data.
+        $this->assertIsArray($chartData);
+        $this->assertArrayHasKey('labels', $chartData);
+        $this->assertArrayHasKey('datasets', $chartData);
+        $this->assertCount(1, $chartData['datasets']);
+
+        $dataset = $chartData['datasets'][0];
+        $this->assertEquals('Weight', $dataset['label']);
+        $this->assertIsArray($dataset['data']);
+        $this->assertCount(3, $dataset['data']);
+
+        // Check that the data contains the correct values, with null for the missing date.
+        $this->assertEquals('01/01', $chartData['labels'][0]);
+        $this->assertEquals(150, $dataset['data'][0]);
+        $this->assertEquals('01/02', $chartData['labels'][1]);
+        $this->assertNull($dataset['data'][1]);
+        $this->assertEquals('01/03', $chartData['labels'][2]);
+        $this->assertEquals(152, $dataset['data'][2]);
     }
 }

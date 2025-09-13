@@ -5,16 +5,19 @@ namespace App\Http\Controllers;
 use App\Models\BodyLog;
 use App\Models\MeasurementType;
 use App\Services\TsvImporterService;
+use App\Services\ChartService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 
 class BodyLogController extends Controller
 {
     protected $tsvImporterService;
+    protected $chartService;
 
-    public function __construct(TsvImporterService $tsvImporterService)
+    public function __construct(TsvImporterService $tsvImporterService, ChartService $chartService)
     {
         $this->tsvImporterService = $tsvImporterService;
+        $this->chartService = $chartService;
     }
 
     public function index()
@@ -156,35 +159,7 @@ class BodyLogController extends Controller
     {
         $bodyLogs = BodyLog::where('measurement_type_id', $measurementType->id)->where('user_id', auth()->id())->orderBy('logged_at', 'desc')->get();
 
-        $chartData = [
-            'labels' => [],
-            'datasets' => [
-                [
-                    'label' => $measurementType->name,
-                    'data' => [],
-                    'borderColor' => 'rgba(255, 99, 132, 1)',
-                    'backgroundColor' => 'rgba(255, 99, 132, 1)',
-                    'fill' => false,
-                ],
-            ],
-        ];
-
-        if ($bodyLogs->isNotEmpty()) {
-            $earliestDate = $bodyLogs->last()->logged_at->startOfDay();
-            $latestDate = $bodyLogs->first()->logged_at->endOfDay();
-
-            $currentDate = $earliestDate->copy();
-            $dataMap = $bodyLogs->keyBy(function ($item) {
-                return $item->logged_at->format('Y-m-d');
-            });
-
-            while ($currentDate->lte($latestDate)) {
-                $dateString = $currentDate->format('Y-m-d');
-                $chartData['labels'][] = $currentDate->format('m/d');
-                $chartData['datasets'][0]['data'][] = $dataMap->has($dateString) ? $dataMap[$dateString]->value : null;
-                $currentDate->addDay();
-            }
-        }
+        $chartData = $this->chartService->generateBodyLogChartData($bodyLogs, $measurementType);
 
         return view('body-logs.show-by-type', compact('bodyLogs', 'chartData', 'measurementType'));
     }
