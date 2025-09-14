@@ -22,6 +22,9 @@
                 <div class="program-card">
                     <h2>{{ $program->exercise->title }}</h2>
                     <p class="details">Target: {{ $program->sets }} sets of {{ $program->reps }} reps</p>
+                    @if($program->comments)
+                        <p class="details"><strong>Notes:</strong> {{ $program->comments }}</p>
+                    @endif
 
                     @php
                         $loggedLift = $dailyLiftLogs->get($program->exercise->id);
