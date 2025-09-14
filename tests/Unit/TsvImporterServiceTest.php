@@ -7,6 +7,7 @@ use App\Services\TsvImporterService;
 use App\Models\Ingredient;
 use App\Models\Exercise;
 use App\Models\DailyLog;
+use App\Models\FoodLog;
 use App\Models\LiftLog;
 use App\Models\Unit;
 use App\Models\User;
@@ -59,6 +60,55 @@ class TsvImporterServiceTest extends TestCase
             'quantity' => 150,
             'notes' => 'Note 2',
             'logged_at' => '2025-08-26 12:00:00',
+        ]);
+    }
+
+    /** @test */
+    public function it_skips_duplicate_food_logs_during_import()
+    {
+        $unit = Unit::factory()->create(['name' => 'grams', 'abbreviation' => 'g']);
+        $ingredient = Ingredient::factory()->create(['name' => 'Apple', 'base_unit_id' => $unit->id]);
+
+        // Create an initial food log entry
+        FoodLog::create([
+            'user_id' => $this->user->id,
+            'ingredient_id' => $ingredient->id,
+            'unit_id' => $unit->id,
+            'quantity' => 100,
+            'logged_at' => '2025-08-26 10:00:00',
+            'notes' => 'Original Note',
+        ]);
+
+        $this->assertDatabaseCount('food_logs', 1);
+
+        // TSV data with a duplicate and a new entry
+        $tsvData = "2025-08-26\t10:00\tApple\tDuplicate Note\t100\n" . // Duplicate
+                   "2025-08-26\t11:00\tApple\tNew Entry Note\t120";   // New entry
+
+        $result = $this->tsvImporterService->importFoodLogs($tsvData, '2025-08-26', $this->user->id);
+
+        $this->assertEquals(1, $result['importedCount']); // Only the new entry should be imported
+        $this->assertEmpty($result['notFound']);
+        $this->assertEmpty($result['invalidRows']);
+
+        $this->assertDatabaseCount('food_logs', 2); // Original + 1 new entry
+
+        // Assert the new entry was added
+        $this->assertDatabaseHas('food_logs', [
+            'user_id' => $this->user->id,
+            'ingredient_id' => $ingredient->id,
+            'quantity' => 120,
+            'notes' => 'New Entry Note',
+            'logged_at' => '2025-08-26 11:00:00',
+        ]);
+
+        // Assert the duplicate was NOT added as a new entry (i.e., no third entry with the duplicate data)
+        $this->assertDatabaseMissing('food_logs', [
+            'user_id' => $this->user->id,
+            'ingredient_id' => $ingredient->id,
+            'quantity' => 100,
+            'notes' => 'Duplicate Note',
+            'logged_at' => '2025-08-26 10:00:00',
         ]);
     }
 

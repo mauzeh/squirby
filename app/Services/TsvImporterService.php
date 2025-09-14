@@ -48,6 +48,18 @@ class TsvImporterService
                     continue;
                 }
 
+                // Check for existing FoodLog entry with the same ingredient, logged_at, and quantity
+                $existingFoodLog = FoodLog::where('user_id', $userId)
+                    ->where('ingredient_id', $ingredient->id)
+                    ->where('logged_at', $loggedAt)
+                    ->where('quantity', $columns[4])
+                    ->first();
+
+                if ($existingFoodLog) {
+                    // Skip this row as it's a duplicate
+                    continue;
+                }
+
                 FoodLog::create([
                     'user_id' => $userId,
                     'ingredient_id' => $ingredient->id,

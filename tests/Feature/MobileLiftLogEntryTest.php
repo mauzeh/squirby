@@ -62,9 +62,9 @@ class MobileLiftLogEntryTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertSee($exercise1->title);
-        $response->assertSee('Target: 3 sets of 5 reps');
+        $response->assertSee('3 × 5 reps');
         $response->assertSee($exercise2->title);
-        $response->assertSee('Target: 4 sets of 10 reps');
+        $response->assertSee('4 × 10 reps');
     }
 
     /** @test */
