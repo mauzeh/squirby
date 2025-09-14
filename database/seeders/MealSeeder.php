@@ -16,6 +16,8 @@ class MealSeeder extends Seeder
     {
         $adminUser = User::where('email', 'admin@example.com')->first();
 
+        \Illuminate\Support\Facades\Log::info('Ingredients count before MealSeeder: ' . Ingredient::count());
+
         $ingredients = Ingredient::all()->keyBy('name');
 
         $meal = Meal::create(['name' => 'Breakfast Bowl', 'user_id' => $adminUser->id]);

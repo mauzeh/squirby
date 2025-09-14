@@ -4,6 +4,7 @@ namespace App\Services;
 
 use Illuminate\Support\Collection;
 use App\Models\Unit;
+use Illuminate\Support\Facades\Log;
 
 class IngredientTsvProcessorService
 {
@@ -16,6 +17,9 @@ class IngredientTsvProcessorService
         $errors = [];
 
         if ($header !== $expectedHeader) {
+            Log::error('Header mismatch:');
+            Log::error('Expected: ' . implode(', ', $expectedHeader));
+            Log::error('Actual: ' . implode(', ', $header));
             return [
                 'processedCount' => 0,
                 'invalidRows' => [],
@@ -37,6 +41,7 @@ class IngredientTsvProcessorService
             $rowData = array_combine($header, $values);
 
             try {
+                Log::info('Processing row: ' . json_encode($rowData));
                 $rowProcessor($rowData);
                 $processedCount++;
             } catch (\Exception $e) {
