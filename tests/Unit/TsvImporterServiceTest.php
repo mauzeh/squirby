@@ -199,4 +199,63 @@ class TsvImporterServiceTest extends TestCase
         $this->assertEquals(['invalid row'], $result['invalidRows']);
         $this->assertDatabaseCount('body_logs', 0);
     }
+
+    /** @test */
+    public function it_imports_ingredients_and_updates_existing_ones()
+    {
+        $unit = Unit::factory()->create(['name' => 'gram', 'abbreviation' => 'g']);
+        Ingredient::factory()->create([
+            'user_id' => $this->user->id,
+            'name' => 'Ingredient A',
+            'base_quantity' => 100,
+            'base_unit_id' => $unit->id,
+            'protein' => 10,
+            'carbs' => 20,
+            'fats' => 5,
+            'cost_per_unit' => 1.50,
+        ]);
+
+        $header = "Ingredient\tAmount\tType\tCalories\tFat (g)\tSodium (mg)\tCarb (g)\tFiber (g)\tAdded Sugar (g)\tProtein (g)\tCalcium (mg)\tPotassium (mg)\tCaffeine (mg)\tIron (mg)\tCost ($)\n";
+        $tsvData = $header .
+                   "Ingredient A\t150\tgram\t250\t10\t0\t25\t0\t0\t15\t0\t0\t0\t0\t2.00\n" .
+                   "Ingredient B\t200\tgram\t400\t10\t0\t40\t0\t0\t20\t0\t0\t0\t0\t3.00";
+
+        $result = $this->tsvImporterService->importIngredients($tsvData, $this->user->id);
+
+        $this->assertEquals(2, $result['importedCount']);
+        $this->assertEmpty($result['invalidRows']);
+        
+        // It's 5 because a User factory creates 5 ingredients by default
+        $this->assertDatabaseCount('ingredients', 5 + 2);
+
+        $this->assertDatabaseHas('ingredients', [
+            'name' => 'Ingredient A',
+            'base_quantity' => 150,
+            'protein' => 15,
+            'carbs' => 25,
+            'fats' => 10,
+            'cost_per_unit' => 2.00,
+        ]);
+
+        $this->assertDatabaseHas('ingredients', [
+            'name' => 'Ingredient B',
+        ]);
+    }
+
+    /** @test */
+    public function it_returns_an_error_for_invalid_header()
+    {
+        $service = new TsvImporterService();
+
+        $tsvData = "Wrong Header\tAmount\tType\tCalories\tFat (g)\tSodium (mg)\tCarb (g)\tFiber (g)\tAdded Sugar (g)\tProtein (g)\tCalcium (mg)\tPotassium (mg)\tCaffeine (mg)\tIron (mg)\tCost ($)\n" .
+                   "Ingredient A\t150\tgram\t250\t10\t0\t25\t0\t0\t15\t0\t0\t0\t0\t2.00";
+
+        $result = $service->importIngredients($tsvData, $this->user->id);
+
+        $this->assertEquals(0, $result['importedCount']);
+        $this->assertArrayHasKey('error', $result);
+        $this->assertStringContainsString('Invalid TSV header', $result['error']);
+        // It's 5 because a User factory creates 5 ingredients by default
+        $this->assertDatabaseCount('ingredients', 5);
+    }
 }

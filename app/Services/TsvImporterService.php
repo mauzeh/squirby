@@ -136,6 +136,93 @@ class TsvImporterService
         }
     }
 
+    public function importIngredients(string $tsvData, int $userId): array
+    {
+        $rows = explode("\n", $tsvData);
+        $header = array_map('trim', str_getcsv(array_shift($rows), "\t"));
+
+        $expectedHeader = ['Ingredient', 'Amount', 'Type', 'Calories', 'Fat (g)', 'Sodium (mg)', 'Carb (g)', 'Fiber (g)', 'Added Sugar (g)', 'Protein (g)', 'Calcium (mg)', 'Potassium (mg)', 'Caffeine (mg)', 'Iron (mg)', 'Cost ($)'];
+        if ($header !== $expectedHeader) {
+            return [
+                'importedCount' => 0,
+                'invalidRows' => [],
+                'error' => 'Invalid TSV header. Please make sure the columns are in the correct order.'
+            ];
+        }
+        $importedCount = 0;
+        $invalidRows = [];
+
+        $units = \App\Models\Unit::all()->keyBy('abbreviation');
+
+        $unitMapping = [
+            'gram' => 'g',
+            'tbsp' => 'tbsp',
+            'tsp' => 'tsp',
+            'ml' => 'ml',
+            'egg (L)' => 'pc',
+            'apple (S)' => 'pc',
+            'slice' => 'pc',
+            'Pita' => 'pc',
+            'can' => 'pc',
+            'bottle' => 'pc',
+            'shot' => 'pc',
+            'raspberries' => 'pc',
+        ];
+
+        foreach ($rows as $row) {
+            if (empty(trim($row))) {
+                continue;
+            }
+
+            $values = array_map('trim', str_getcsv($row, "\t"));
+            if (count($header) !== count($values)) {
+                $invalidRows[] = $row;
+                continue;
+            }
+
+            $rowData = array_combine($header, $values);
+
+            if (empty($rowData['Ingredient'])) {
+                continue;
+            }
+
+            $unitAbbreviation = $unitMapping[$rowData['Type']] ?? 'pc';
+            $unit = $units[$unitAbbreviation] ?? $units['pc'];
+
+            $ingredient = \App\Models\Ingredient::where('user_id', $userId)->whereRaw('LOWER(name) = ?', [strtolower($rowData['Ingredient'])])->first();
+
+            $data = [
+                'user_id' => $userId,
+                'name' => $rowData['Ingredient'],
+                'base_quantity' => (float)($rowData['Amount'] ?? 1),
+                'base_unit_id' => $unit->id,
+                'protein' => (float)($rowData['Protein (g)'] ?? 0),
+                'carbs' => (float)($rowData['Carb (g)'] ?? 0),
+                'added_sugars' => (float)($rowData['Added Sugar (g)'] ?? 0),
+                'fats' => (float)($rowData['Fat (g)'] ?? 0),
+                'sodium' => (float)($rowData['Sodium (mg)'] ?? 0),
+                'iron' => (float)($rowData['Iron (mg)'] ?? 0),
+                'potassium' => (float)($rowData['Potassium (mg)'] ?? 0),
+                'fiber' => (float)($rowData['Fiber (g)'] ?? 0),
+                'calcium' => (float)($rowData['Calcium (mg)'] ?? 0),
+                'caffeine' => (float)($rowData['Caffeine (mg)'] ?? 0),
+                'cost_per_unit' => (float)(str_replace("$", "", $rowData['Cost ($)']) ?? 0)
+            ];
+
+            if ($ingredient) {
+                $ingredient->update($data);
+            } else {
+                \App\Models\Ingredient::create($data);
+            }
+            $importedCount++;
+        }
+
+        return [
+            'importedCount' => $importedCount,
+            'invalidRows' => $invalidRows,
+        ];
+    }
+
     public function importMeasurements(string $tsvData, int $userId): array
     {
         $rows = explode("\n", $tsvData);

@@ -45,6 +45,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('ingredients', IngredientController::class)->except([
         'show'
     ]);
+    Route::post('ingredients/import-tsv', [IngredientController::class, 'importTsv'])->name('ingredients.import-tsv');
 
     Route::resource('meals', MealController::class)->except([
         'show'

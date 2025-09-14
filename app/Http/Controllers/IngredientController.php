@@ -9,6 +9,13 @@ use Illuminate\Support\Facades\Auth;
 
 class IngredientController extends Controller
 {
+    protected $tsvImporterService;
+
+    public function __construct(\App\Services\TsvImporterService $tsvImporterService)
+    {
+        $this->tsvImporterService = $tsvImporterService;
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -114,5 +121,37 @@ class IngredientController extends Controller
 
         return redirect()->route('ingredients.index')
                          ->with('success', 'Ingredient deleted successfully.');
+    }
+
+    public function importTsv(Request $request)
+    {
+        $validated = $request->validate([
+            'tsv_data' => 'nullable|string',
+        ]);
+
+        $tsvData = trim($validated['tsv_data']);
+        if (empty($tsvData)) {
+            return redirect()
+                ->route('ingredients.index')
+                ->with('error', 'TSV data cannot be empty.');
+        }
+
+        $result = $this->tsvImporterService->importIngredients($tsvData, auth()->id());
+
+        if (isset($result['error'])) {
+            return redirect()
+                ->route('ingredients.index')
+                ->with('error', $result['error']);
+        }
+
+        if ($result['importedCount'] === 0) {
+            return redirect()
+                ->route('ingredients.index')
+                ->with('error', 'No ingredients were imported.');
+        }
+
+        return redirect()
+            ->route('ingredients.index')
+            ->with('success', 'TSV data imported successfully!');
     }
 }
