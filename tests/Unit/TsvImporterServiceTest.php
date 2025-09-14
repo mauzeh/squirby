@@ -23,7 +23,8 @@ class TsvImporterServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->tsvImporterService = new TsvImporterService();
+        $processor = new \App\Services\IngredientTsvProcessorService();
+        $this->tsvImporterService = new TsvImporterService($processor);
         $this->user = User::factory()->create();
     }
 
@@ -245,7 +246,8 @@ class TsvImporterServiceTest extends TestCase
     /** @test */
     public function it_returns_an_error_for_invalid_header()
     {
-        $service = new TsvImporterService();
+        $processor = new \App\Services\IngredientTsvProcessorService();
+        $service = new TsvImporterService($processor);
 
         $tsvData = "Wrong Header\tAmount\tType\tCalories\tFat (g)\tSodium (mg)\tCarb (g)\tFiber (g)\tAdded Sugar (g)\tProtein (g)\tCalcium (mg)\tPotassium (mg)\tCaffeine (mg)\tIron (mg)\tCost ($)\n" .
                    "Ingredient A\t150\tgram\t250\t10\t0\t25\t0\t0\t15\t0\t0\t0\t0\t2.00";
