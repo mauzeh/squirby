@@ -206,6 +206,72 @@ class TsvImporterServiceTest extends TestCase
     }
 
     /** @test */
+    public function it_skips_duplicate_lift_logs_during_import()
+    {
+        $exercise = Exercise::where('user_id', $this->user->id)->where('title', 'Bench Press')->first();
+        $this->assertNotNull($exercise);
+
+        // Create an initial lift log entry with sets
+        $initialLiftLog = LiftLog::create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $exercise->id,
+            'comments' => 'Initial Log',
+            'logged_at' => '2025-08-26 09:00',
+        ]);
+        $initialLiftLog->liftSets()->createMany([
+            ['weight' => 100, 'reps' => 5, 'notes' => 'Initial Log'],
+            ['weight' => 100, 'reps' => 5, 'notes' => 'Initial Log'],
+            ['weight' => 100, 'reps' => 5, 'notes' => 'Initial Log'],
+        ]);
+
+        $this->assertDatabaseCount('lift_logs', 1);
+        $this->assertDatabaseCount('lift_sets', 3);
+
+        // TSV data with a duplicate and a new entry
+        // New entry
+        $tsvData = $initialLiftLog->logged_at->format("Y-m-d\tH:i") . "\tBench Press\t110\t4\t2\tNew Log";
+        // Duplicate (should be skipped)
+        $tsvData .= "\n" . $initialLiftLog->logged_at->format("Y-m-d\tH:i") . "\tBench Press\t100\t5\t3\tInitial Log";
+
+        $result = $this->tsvImporterService->importLiftLogs($tsvData, '2025-08-26', $this->user->id);
+
+        $this->assertEquals(1, $result['importedCount']); // Only the new entry should be imported
+        $this->assertEmpty($result['notFound']);
+        $this->assertEmpty($result['invalidRows']);
+
+        $this->assertDatabaseCount('lift_logs', 2); // Original + 1 new entry
+        $this->assertDatabaseCount('lift_sets', 3 + 2); // Original 3 sets + 2 new sets
+
+        // Assert the new entry was added
+        $this->assertDatabaseHas('lift_logs', [
+            'user_id' => $this->user->id,
+            'exercise_id' => $exercise->id,
+            'comments' => 'New Log',
+            'logged_at' => '2025-08-26 09:00:00',
+        ]);
+        $newLiftLog = LiftLog::where('user_id', $this->user->id)
+            ->where('exercise_id', $exercise->id)
+            ->where('logged_at', '2025-08-26 09:00:00')
+            ->where('comments', 'New Log')
+            ->first();
+        $this->assertNotNull($newLiftLog);
+        $this->assertDatabaseHas('lift_sets', [
+            'lift_log_id' => $newLiftLog->id,
+            'weight' => 110,
+            'reps' => 4,
+            'notes' => 'New Log',
+        ]);
+
+        // Assert the duplicate was NOT added as a new entry
+        $this->assertDatabaseMissing('lift_logs', [
+            'user_id' => $this->user->id,
+            'exercise_id' => $exercise->id,
+            'comments' => 'Duplicate Log',
+            'logged_at' => '2025-08-26 09:00:00',
+        ]);
+    }
+
+    /** @test */
     public function it_imports_measurements_correctly()
     {
         $tsvData = "09/07/2025\t10:00\tBodyweight\t180\tlbs\tMorning weight\n"

@@ -110,25 +110,56 @@ class TsvImporterService
                     continue;
                 }
 
-                $liftLog = \App\Models\LiftLog::create([
-                    'user_id' => $userId,
-                    'exercise_id' => $exercise->id,
-                    'comments' => isset($columns[6]) ? $columns[6] : null,
-                    'logged_at' => $loggedAt,
-                ]);
-
-                // Create LiftSet records based on rounds
+                // Extract LiftSet details from TSV
                 $weight = $columns[3];
                 $reps = $columns[4];
                 $rounds = $columns[5];
-                $notes = isset($columns[6]) ? $columns[6] : null;
+                $notes = $columns[6] ?? '';
+
+                // Check for existing LiftLog entry with the same user, exercise, and logged_at
+                $existingLiftLog = \App\Models\LiftLog::with('liftSets')
+                    ->where('user_id', $userId)
+                    ->where('exercise_id', $exercise->id)
+                    ->where('logged_at', $loggedAt->format('Y-m-d H:i:s'))
+                    ->first();
+
+                if ($existingLiftLog) {
+                    // Check if the number of existing LiftSets matches the number of rounds from TSV
+                    if ($existingLiftLog->liftSets->count() === (int)$rounds) {
+                        $allSetsMatch = true;
+                        foreach ($existingLiftLog->liftSets as $set) {
+                            if (!($set->weight == $weight && $set->reps == $reps && $set->notes == $notes)) {
+                                $allSetsMatch = false;
+                                break;
+                            }
+                        }
+                        if ($allSetsMatch) {
+                            // All LiftSets match, and the count of sets matches, so it's a duplicate
+                            continue; // Skip this row
+                        }
+                    }
+                }
+
+                $liftLog = \App\Models\LiftLog::create([
+                    'user_id' => $userId,
+                    'exercise_id' => $exercise->id,
+                    'comments' => $notes, // Use notes for comments in LiftLog
+                    'logged_at' => $loggedAt,
+                ]);
 
                 for ($i = 0; $i < $rounds; $i++) {
-                    $liftLog->liftSets()->create([
+                    /*dd("Adding LiftSet", [
+                        'lift_log_id' => $liftLog->id,
+                        'weight' => $weight,
+                        'reps' => $reps,
+                        'notes' => $notes,
+                    ]);*/
+                    $result = $liftLog->liftSets()->create([
                         'weight' => $weight,
                         'reps' => $reps,
                         'notes' => $notes,
                     ]);
+                    //dd($result);
                 }
                 $importedCount++;
             } else {

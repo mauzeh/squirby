@@ -126,7 +126,7 @@ class LiftLogExerciseFilteringTest extends TestCase
         $this->assertDatabaseHas('lift_logs', [
             'user_id' => $user->id,
             'exercise_id' => $exercise->id,
-            'comments' => null, // Comments should be null
+            'comments' => "",
         ]);
 
         $response = $this->get(route('lift-logs.index'));
