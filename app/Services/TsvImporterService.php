@@ -155,6 +155,7 @@ class TsvImporterService
         $units = \App\Models\Unit::all()->keyBy('abbreviation');
 
         $unitMapping = [
+            'g' => 'g',
             'gram' => 'g',
             'tbsp' => 'tbsp',
             'tsp' => 'tsp',
