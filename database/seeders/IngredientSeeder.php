@@ -22,7 +22,24 @@ class IngredientSeeder extends Seeder
 
         
         $csvContent = file_get_contents(database_path('seeders/csv/ingredients_from_real_world.csv'));
-        $expectedHeader = ['Ingredient', 'Amount', 'Type', 'Calories', 'Fat (g)', 'Sodium (mg)', 'Carb (g)', 'Fiber (g)', 'Added Sugar (g)', 'Protein (g)', 'Calcium (mg)', 'Potassium (mg)', 'Caffeine (mg)', 'Iron (mg)', 'Cost ($)', 'Food Source'];
+        $expectedHeader = [
+            'Ingredient',
+            'Amount',
+            'Type',
+            'Calories',
+            'Fat (g)',
+            'Sodium (mg)',
+            'Carb (g)',
+            'Fiber (g)',
+            'Added Sugar (g)',
+            'Protein (g)',
+            'Calcium (mg)',
+            'Potassium (mg)',
+            'Caffeine (mg)',
+            'Iron (mg)',
+            'Cost ($)',
+            'Food Source'
+        ];
 
         $processor->processTsv(
             $csvContent,

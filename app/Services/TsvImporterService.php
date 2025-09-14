@@ -146,7 +146,23 @@ class TsvImporterService
 
     public function importIngredients(string $tsvData, int $userId): array
     {
-        $expectedHeader = ['Ingredient', 'Amount', 'Type', 'Calories', 'Fat (g)', 'Sodium (mg)', 'Carb (g)', 'Fiber (g)', 'Added Sugar (g)', 'Protein (g)', 'Calcium (mg)', 'Potassium (mg)', 'Caffeine (mg)', 'Iron (mg)', 'Cost ($)'];
+        $expectedHeader = [
+            'Ingredient',
+            'Amount',
+            'Type',
+            'Calories',
+            'Fat (g)',
+            'Sodium (mg)',
+            'Carb (g)',
+            'Fiber (g)',
+            'Added Sugar (g)',
+            'Protein (g)',
+            'Calcium (mg)',
+            'Potassium (mg)',
+            'Caffeine (mg)',
+            'Iron (mg)',
+            'Cost ($)'
+        ];
 
         $result = $this->ingredientTsvProcessorService->processTsv(
             $tsvData,
