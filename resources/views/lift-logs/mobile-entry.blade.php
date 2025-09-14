@@ -31,7 +31,7 @@
             @foreach ($programs as $program)
                 <div class="program-card">
                     <h2>{{ $program->exercise->title }}</h2>
-                    <p class="details">Target: {{ $program->sets }} sets of {{ $program->reps }} reps</p>
+                    <p class="details">{{ $program->sets }} × {{ $program->reps }} reps</p>
                     @if($program->comments)
                         <p class="details"><strong>Notes:</strong> {{ $program->comments }}</p>
                     @endif
@@ -103,7 +103,7 @@
                                 </div>
                             </div>
 
-                            <button type="submit" class="large-button submit-button">I did this!</button>
+                            <button type="submit" class="large-button submit-button">Save</button>
                         </form>
                     @endif
                 </div>
