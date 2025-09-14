@@ -9,11 +9,21 @@
                 $nextDay = $selectedDate->copy()->addDay();
             @endphp
             <a href="{{ route('lift-logs.mobile-entry', ['date' => $prevDay->toDateString()]) }}" class="nav-button">&lt; Prev</a>
-            <span class="current-date">{{ $selectedDate->format('M d, Y') }}</span>
+            <a href="{{ route('lift-logs.mobile-entry', ['date' => $today->toDateString()]) }}" class="nav-button">Today</a>
             <a href="{{ route('lift-logs.mobile-entry', ['date' => $nextDay->toDateString()]) }}" class="nav-button">Next &gt;</a>
         </div>
 
-        <h1>Today's Program</h1>
+        <h1>
+            @if ($selectedDate->isToday())
+                Today
+            @elseif ($selectedDate->isYesterday())
+                Yesterday
+            @elseif ($selectedDate->isTomorrow())
+                Tomorrow
+            @else
+                {{ $selectedDate->format('M d, Y') }}
+            @endif
+        </h1>
 
         @if ($programs->isEmpty())
             <p class="no-program-message">No program entries for this day.</p>
