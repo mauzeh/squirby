@@ -4,7 +4,7 @@ Avocado,100,g,177,15,5,8.5,6.7,0,2,0,485,0,1.02,$0.00
 Bacon,100,g,264,24,1162,0,0,0,12,0,0,0,0.00,$0.00
 Balsamic Glaze (Trader Joe's),1,tbsp,28,0,15,7,0,4,0,0,40,0,0.00,$0.00
 "Banana (medium, around 150g with skin)",1,pc,95,0.3,1,22,3.1,0,1.1,6,350,0,0.00,$0.00
-"Bar, ABC (Almond Butter Cocoa, Trader Joe's)",1,pc,155,7,70,20,2,5,3,30,100,,1.00,$0.00
+"Bar, ABC (Almond Butter Cocoa, Trader Joe's)",1,pc,155,7,70,20,2,5,3,30,100,0,1.00,$0.00
 "Beef, Ground (90% Lean, 10% Fat)",113,g,191,11,75,0,0,0,23,0,360,0,2.20,$1.75
 Bell Pepper (Fresh),100,g,28,0,0,7,1,0,0,10,200,0,0.00,$0.81
 "Black Beans (canned, rinsed)",125,g,76,0,0,14,3,0,5,30,330,0,1.10,$0.00
@@ -19,6 +19,7 @@ Broccoli (raw),100,g,41,0.4,0,6.6,0,0,2.8,0,0,0,0.00,$0.00
 "Cheese, Cream Whipped (Trader Joe's)",20,g,71,7,70,1,0,0,1,0,0,0,0.00,$0.00
 "Cheese, Feta Crumbled (Trader Joe's)",28,g,68,4,340,2,0,0,6,100,0,0,0.00,$0.00
 "Cheese, Goat (Creamy, Fresh, Trader Joe's)",28,g,74,6,80,0,0,0,5,0,0,0,0.00,$0.00
+"Cheese, Goat (Crumbled, Trader Joe's)",28,g,78,6,90,1,0,0,5,40,0,0,0.00,$0.00
 "Cheese, Gouda Double Cream (Trader Joe's)",28,g,109,9,200,2,0,0,5,375,0,0,0.00,$0.00
 "Cheese, Parmesan",100,g,429,29,1529,4.1,0,0,38,1100,125,0,0.00,$0.00
 Chicken Breast,100,g,156,3.6,0,0,0,0,31,0,0,0,0.00,$0.00
@@ -57,9 +58,10 @@ Lime Juice,100,g,32,0,0,8,0,0,0,0,0,0,0.00,$0.00
 Mixed Vegetables,100,g,0,0,0,0,5,0,0,0,0,0,0.00,$0.00
 Nespresso,1,pc,0,0,0,0,0,0,0,0,0,65,0.00,$0.99
 Oats,40,g,151,2.5,0,27,4,0,5,0,140,0,1.70,$0.18
-Olive Oil,15,ml,126,14,0,0,0,0,0,0,0,0,0.00,$0.00
+Olive oil,1,tbsp,126,14,0,0,0,0,0,0,0,0,0.00,$0.20
 Olive oil,1,tbsp,126,14,0,0,0,0,0,0,0,0,0.00,$0.20
 Onion Powder,1,g,0,0,0,0,0,0,0,0,0,0,0.00,$0.00
+"Onion, Yellow",100,g,43,0.1,4,9.3,1.7,0,1.1,0,260,0,0.00,$0.00
 Panko Breadcrumbs,100,g,374,2,166,78,4,7,11,0,0,0,0.00,$0.00
 "Pasta, Casarecce (Durum Wheat Semolina - Whole Foods) - Dry",56,g,201,1,0,42,2,0,6,0,120,0,0.00,$0.00
 "Pasta, Fusilli, Whole Wheat (De Cecco)",56,g,206,2,0,39,4,1,8,27,168,0,0.00,$0.37
@@ -90,9 +92,6 @@ Tomato Sauce (Muir Glen),1,pc,196,0,140,42,7,0,7,0,1120,0,0.00,$3.69
 "Turkey (Sliced, Honey Roasted)",85,g,105,1,380,4,0,999,20,0,0,0,0.88,$0.00
 "Turkey Meatballs (Whole Foods, Frozen)",4,pc,155,7,370,6,1,999,17,20,0,0,0.00,$0.00
 "Walnuts (Organic, Unroasted & Unsalted, Trader Joe's)",28,g,194,18,0,4,2,0,4,30,120,0,0.00,$0.00
-Yellow Onion,80,g,32,0,3.2,7,1.4,0,0.88,18,117,0,0.00,$0.00
-,,,,,,,,,,,,,,
-,,,0,,,,,,,,,,,
 ,,,0,,,,,,,,,,,
 ,,,0,,,,,,,,,,,
 ,,,0,,,,,,,,,,,
