@@ -345,4 +345,50 @@ class LiftLogMobileEntryTest extends TestCase
         $response->assertRedirect(route('lift-logs.mobile-entry', ['date' => $date]));
         $this->assertDatabaseMissing('programs', ['id' => $program->id]);
     }
+
+    /** @test */
+    public function can_move_program_up()
+    {
+        $program1 = Program::factory()->create(['user_id' => $this->user->id, 'priority' => 1]);
+        $program2 = Program::factory()->create(['user_id' => $this->user->id, 'priority' => 2, 'date' => $program1->date]);
+
+        $response = $this->get(route('programs.move-up', $program2->id));
+
+        $response->assertRedirect(route('lift-logs.mobile-entry', ['date' => $program1->date]));
+        $this->assertDatabaseHas('programs', ['id' => $program1->id, 'priority' => 2]);
+        $this->assertDatabaseHas('programs', ['id' => $program2->id, 'priority' => 1]);
+    }
+
+    /** @test */
+    public function can_move_program_down()
+    {
+        $program1 = Program::factory()->create(['user_id' => $this->user->id, 'priority' => 1]);
+        $program2 = Program::factory()->create(['user_id' => $this->user->id, 'priority' => 2, 'date' => $program1->date]);
+
+        $response = $this->get(route('programs.move-down', $program1->id));
+
+        $response->assertRedirect(route('lift-logs.mobile-entry', ['date' => $program1->date]));
+        $this->assertDatabaseHas('programs', ['id' => $program1->id, 'priority' => 2]);
+        $this->assertDatabaseHas('programs', ['id' => $program2->id, 'priority' => 1]);
+    }
+
+    /** @test */
+    public function first_program_does_not_have_up_arrow()
+    {
+        Program::factory()->create(['user_id' => $this->user->id]);
+
+        $response = $this->get(route('lift-logs.mobile-entry'));
+
+        $response->assertDontSee(route('programs.move-up', 1));
+    }
+
+    /** @test */
+    public function last_program_does_not_have_down_arrow()
+    {
+        Program::factory()->create(['user_id' => $this->user->id]);
+
+        $response = $this->get(route('lift-logs.mobile-entry'));
+
+        $response->assertDontSee(route('programs.move-down', 1));
+    }
 }
