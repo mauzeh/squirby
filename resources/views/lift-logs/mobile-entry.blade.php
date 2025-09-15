@@ -30,13 +30,21 @@
         @else
             @foreach ($programs as $program)
                 <div class="program-card">
-                    <form action="{{ route('programs.destroy', $program->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to remove this exercise from the program?');">
-                        @csrf
-                        @method('DELETE')
-                        <input type="hidden" name="redirect_to" value="mobile-entry">
-                        <input type="hidden" name="date" value="{{ $selectedDate->toDateString() }}">
-                        <button type="submit" class="delete-program-button"><i class="fa-solid fa-trash"></i></button>
-                    </form>
+                    <div class="program-card-actions">
+                        @if(!$loop->first)
+                            <a href="{{ route('programs.move-up', $program->id) }}" class="program-action-button">&uarr;</a>
+                        @endif
+                        @if(!$loop->last)
+                            <a href="{{ route('programs.move-down', $program->id) }}" class="program-action-button">&darr;</a>
+                        @endif
+                        <form action="{{ route('programs.destroy', $program->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to remove this exercise from the program?');">
+                            @csrf
+                            @method('DELETE')
+                            <input type="hidden" name="redirect_to" value="mobile-entry">
+                            <input type="hidden" name="date" value="{{ $selectedDate->toDateString() }}">
+                            <button type="submit" class="program-action-button delete-program-button"><i class="fa-solid fa-trash"></i></button>
+                        </form>
+                    </div>
                     <h2>{{ $program->exercise->title }}</h2>
                     <p class="details">{{ $program->sets }} × {{ $program->reps }} reps</p>
                     @if($program->comments)
@@ -251,11 +259,14 @@
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
             position: relative;
         }
-        .delete-program-button {
+        .program-card-actions {
             position: absolute;
             top: 10px;
             right: 10px;
-            background-color: #dc3545;
+            display: flex;
+        }
+        .program-action-button {
+            background-color: #6c757d;
             color: white;
             border: none;
             border-radius: 50%;
@@ -265,12 +276,19 @@
             line-height: 30px;
             text-align: center;
             cursor: pointer;
+            margin-left: 5px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .delete-program-button {
+            background-color: #dc3545;
         }
         .program-card h2 {
             color: orange;
             margin-top: 0;
             margin-bottom: 10px;
             font-size: 1.8em;
+            padding-right: 80px; /* Make space for the buttons */
         }
         .program-card .details {
             font-size: 1.1em;

@@ -205,16 +205,18 @@ class ProgramController extends Controller
     {
         // Find the highest priority for the given date
         $maxPriority = Program::where('user_id', auth()->id())
-            ->where('date', $date)
+            ->whereDate('date', $date)
             ->max('priority');
+
+        $newPriority = $maxPriority !== null ? $maxPriority + 1 : 100;
 
         Program::create([
             'exercise_id' => $exercise->id,
             'user_id' => auth()->id(),
             'date' => $date,
-            'sets' => 3, // Default value
-            'reps' => 10, // Default value
-            'priority' => $maxPriority + 1,
+            'sets' => config('training.defaults.sets', 3),
+            'reps' => config('training.defaults.reps', 10),
+            'priority' => $newPriority,
         ]);
 
         return redirect()->route('lift-logs.mobile-entry', ['date' => $date])->with('success', 'Exercise added to program successfully.');
@@ -232,18 +234,48 @@ class ProgramController extends Controller
         ]);
 
         $maxPriority = Program::where('user_id', auth()->id())
-            ->where('date', $date)
+            ->whereDate('date', $date)
             ->max('priority');
 
         Program::create([
             'exercise_id' => $exercise->id,
             'user_id' => auth()->id(),
             'date' => $date,
-            'sets' => 3, // Default value
-            'reps' => 10, // Default value
+            'sets' => config('training.defaults.sets', 3),
+            'reps' => config('training.defaults.reps', 10),
             'priority' => $maxPriority + 1,
         ]);
 
         return redirect()->route('lift-logs.mobile-entry', ['date' => $date])->with('success', 'New exercise created and added to program successfully.');
+    }
+
+    public function moveUp(Request $request, Program $program)
+    {
+        $this->swapPriority($program, 'up');
+        return redirect()->route('lift-logs.mobile-entry', ['date' => $program->date]);
+    }
+
+    public function moveDown(Request $request, Program $program)
+    {
+        $this->swapPriority($program, 'down');
+        return redirect()->route('lift-logs.mobile-entry', ['date' => $program->date]);
+    }
+
+    private function swapPriority(Program $program, $direction)
+    {
+        $query = Program::where('user_id', $program->user_id)
+            ->where('date', $program->date);
+
+        if ($direction === 'up') {
+            $otherProgram = $query->where('priority', '<', $program->priority)->orderBy('priority', 'desc')->first();
+        } else {
+            $otherProgram = $query->where('priority', '>', $program->priority)->orderBy('priority', 'asc')->first();
+        }
+
+        if ($otherProgram) {
+            $tempPriority = $program->priority;
+            $program->update(['priority' => $otherProgram->priority]);
+            $otherProgram->update(['priority' => $tempPriority]);
+        }
     }
 }
