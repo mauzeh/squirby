@@ -148,6 +148,10 @@ class ProgramController extends Controller
 
         $date = $request->input('date');
 
+        if ($request->input('redirect_to') === 'mobile-entry') {
+            return redirect()->route('lift-logs.mobile-entry', ['date' => $date])->with('success', 'Program entry deleted.');
+        }
+
         return redirect()->route('programs.index', ['date' => $date])->with('success', 'Program entry deleted.');
     }
 
@@ -195,5 +199,51 @@ class ProgramController extends Controller
         } else {
             return redirect()->route('programs.index', ['date' => $date->format('Y-m-d')])->with('success', $message);
         }
+    }
+
+    public function quickAdd(Request $request, Exercise $exercise, $date)
+    {
+        // Find the highest priority for the given date
+        $maxPriority = Program::where('user_id', auth()->id())
+            ->where('date', $date)
+            ->max('priority');
+
+        Program::create([
+            'exercise_id' => $exercise->id,
+            'user_id' => auth()->id(),
+            'date' => $date,
+            'sets' => 3, // Default value
+            'reps' => 10, // Default value
+            'priority' => $maxPriority + 1,
+        ]);
+
+        return redirect()->route('lift-logs.mobile-entry', ['date' => $date])->with('success', 'Exercise added to program successfully.');
+    }
+
+    public function quickCreate(Request $request, $date)
+    {
+        $request->validate([
+            'exercise_name' => 'required|string|max:255',
+        ]);
+
+        $exercise = Exercise::create([
+            'title' => $request->input('exercise_name'),
+            'user_id' => auth()->id(),
+        ]);
+
+        $maxPriority = Program::where('user_id', auth()->id())
+            ->where('date', $date)
+            ->max('priority');
+
+        Program::create([
+            'exercise_id' => $exercise->id,
+            'user_id' => auth()->id(),
+            'date' => $date,
+            'sets' => 3, // Default value
+            'reps' => 10, // Default value
+            'priority' => $maxPriority + 1,
+        ]);
+
+        return redirect()->route('lift-logs.mobile-entry', ['date' => $date])->with('success', 'New exercise created and added to program successfully.');
     }
 }

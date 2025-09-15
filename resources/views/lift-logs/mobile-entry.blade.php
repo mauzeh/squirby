@@ -30,6 +30,13 @@
         @else
             @foreach ($programs as $program)
                 <div class="program-card">
+                    <form action="{{ route('programs.destroy', $program->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to remove this exercise from the program?');">
+                        @csrf
+                        @method('DELETE')
+                        <input type="hidden" name="redirect_to" value="mobile-entry">
+                        <input type="hidden" name="date" value="{{ $selectedDate->toDateString() }}">
+                        <button type="submit" class="delete-program-button"><i class="fa-solid fa-trash"></i></button>
+                    </form>
                     <h2>{{ $program->exercise->title }}</h2>
                     <p class="details">{{ $program->sets }} × {{ $program->reps }} reps</p>
                     @if($program->comments)
@@ -109,9 +116,72 @@
                 </div>
             @endforeach
         @endif
+
+        <div class="add-exercise-container">
+            <button type="button" id="add-exercise-button" class="button-large button-green">Add exercise</button>
+        </div>
+
+        <div id="exercise-list-container" class="hidden">
+            <h3>Select an exercise to add:</h3>
+            <div class="exercise-list">
+                <a href="#" id="new-exercise-link" class="exercise-list-item new-exercise-item">New...</a>
+                <div id="new-exercise-form-container" class="hidden">
+                    <form action="{{ route('programs.quick-create', ['date' => $selectedDate->toDateString()]) }}" method="POST">
+                        @csrf
+                        <div class="form-group">
+                            <input type="text" name="exercise_name" id="exercise_name" class="large-input" placeholder="Enter new exercise name..." required>
+                        </div>
+                        <button type="submit" class="large-button button-green">Add Exercise</button>
+                    </form>
+                </div>
+                @foreach ($exercises as $exercise)
+                    <a href="{{ route('programs.quick-add', ['exercise' => $exercise->id, 'date' => $selectedDate->toDateString()]) }}" class="exercise-list-item">{{ $exercise->title }}</a>
+                @endforeach
+            </div>
+        </div>
     </div>
 
     <style>
+        .add-exercise-container {
+            margin-top: 20px;
+        }
+        .button-green {
+            background-color: #28a745;
+            color: white;
+            text-align: center;
+            display: block;
+            width: 100%;
+            box-sizing: border-box;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+        .exercise-list-container {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #3a3a3a;
+            border-radius: 8px;
+        }
+        .exercise-list {
+            display: flex;
+            flex-direction: column;
+        }
+        .exercise-list-item {
+            color: #f2f2f2;
+            padding: 15px;
+            text-decoration: none;
+            border-bottom: 1px solid #555;
+            font-size: 1.2em;
+        }
+        .exercise-list-item:hover {
+            background-color: #4a4a4a;
+        }
+        .new-exercise-item {
+            background-color: #4a4a4a;
+        }
         .completed-badge {
             border-left: 5px solid #28a745; /* Green border */
             padding-left: 20px;
@@ -179,6 +249,22 @@
             padding: 20px;
             margin-bottom: 20px;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+        .delete-program-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            font-size: 1.2em;
+            line-height: 30px;
+            text-align: center;
+            cursor: pointer;
         }
         .program-card h2 {
             color: orange;
@@ -297,6 +383,20 @@
                     this.parentElement.style.display = 'none';
                 });
             });
+        });
+    </script>
+
+    <script>
+        document.getElementById('add-exercise-button').addEventListener('click', function() {
+            document.getElementById('exercise-list-container').classList.remove('hidden');
+            this.style.display = 'none';
+        });
+
+        document.getElementById('new-exercise-link').addEventListener('click', function(event) {
+            event.preventDefault();
+            document.getElementById('new-exercise-form-container').classList.remove('hidden');
+            document.getElementById('exercise_name').focus();
+            this.style.display = 'none';
         });
     </script>
 @endsection

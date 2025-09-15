@@ -293,5 +293,56 @@ class MobileLiftLogEntryTest extends TestCase
         $response->assertSee(route('lift-logs.mobile-entry', ['date' => $tomorrow->toDateString()]));
     }
 
-    
+    /** @test */
+    public function can_add_exercise_to_program_from_mobile_entry()
+    {
+        $exercise = Exercise::factory()->create(['user_id' => $this->user->id]);
+        $date = Carbon::today()->toDateString();
+
+        $response = $this->get(route('programs.quick-add', ['exercise' => $exercise->id, 'date' => $date]));
+
+        $response->assertRedirect(route('lift-logs.mobile-entry', ['date' => $date]));
+        $this->assertDatabaseHas('programs', [
+            'user_id' => $this->user->id,
+            'exercise_id' => $exercise->id,
+            'date' => Carbon::parse($date)->startOfDay(),
+        ]);
+    }
+
+    /** @test */
+    public function can_create_new_exercise_and_add_to_program_from_mobile_entry()
+    {
+        $date = Carbon::today()->toDateString();
+        $exerciseName = 'New Test Exercise';
+
+        $response = $this->post(route('programs.quick-create', ['date' => $date]), [
+            'exercise_name' => $exerciseName,
+        ]);
+
+        $response->assertRedirect(route('lift-logs.mobile-entry', ['date' => $date]));
+        $this->assertDatabaseHas('exercises', [
+            'user_id' => $this->user->id,
+            'title' => $exerciseName,
+        ]);
+        $this->assertDatabaseHas('programs', [
+            'user_id' => $this->user->id,
+            'exercise_id' => Exercise::where('title', $exerciseName)->first()->id,
+            'date' => Carbon::parse($date)->startOfDay(),
+        ]);
+    }
+
+    /** @test */
+    public function can_delete_program_from_mobile_entry()
+    {
+        $program = Program::factory()->create(['user_id' => $this->user->id]);
+        $date = $program->date;
+
+        $response = $this->delete(route('programs.destroy', $program->id), [
+            'date' => $date,
+            'redirect_to' => 'mobile-entry',
+        ]);
+
+        $response->assertRedirect(route('lift-logs.mobile-entry', ['date' => $date]));
+        $this->assertDatabaseMissing('programs', ['id' => $program->id]);
+    }
 }

@@ -82,4 +82,6 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('users/{user}/impersonate', [UserController::class, 'impersonate'])->name('users.impersonate');
 });
 
-Route::get('users/impersonate/leave', [UserController::class, 'leaveImpersonate'])->name('users.leave-impersonate');
+Route::get('users/impersonate/leave', [UserController::class, 'leaveImpersonate'])->name('users.leave-impersonate');    Route::get('lift-logs/quick-add/{exercise}/{date}', [LiftLogController::class, 'quickAdd'])->name('lift-logs.quick-add');
+    Route::get('programs/quick-add/{exercise}/{date}', [ProgramController::class, 'quickAdd'])->name('programs.quick-add');
+    Route::post('programs/quick-create/{date}', [ProgramController::class, 'quickCreate'])->name('programs.quick-create');

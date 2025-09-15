@@ -261,6 +261,8 @@ class LiftLogController extends Controller
             ->get()
             ->keyBy('exercise_id'); // Key by exercise_id for easy lookup
 
-        return view('lift-logs.mobile-entry', compact('programs', 'selectedDate', 'submittedLiftLog', 'dailyLiftLogs'));
+        $exercises = \App\Models\Exercise::where('user_id', auth()->id())->orderBy('title')->get();
+
+        return view('lift-logs.mobile-entry', compact('programs', 'selectedDate', 'submittedLiftLog', 'dailyLiftLogs', 'exercises'));
     }
 }
