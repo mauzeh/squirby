@@ -12,7 +12,7 @@ use App\Models\LiftLog;
 use App\Models\LiftSet;
 use Carbon\Carbon;
 
-class MobileLiftLogEntryTest extends TestCase
+class LiftLogMobileEntryTest extends TestCase
 {
     use RefreshDatabase;
 
