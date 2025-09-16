@@ -376,4 +376,70 @@ class TsvImporterServiceTest extends TestCase
         // It's 5 because a User factory creates 5 ingredients by default
         $this->assertDatabaseCount('ingredients', 5);
     }
+
+    /** 
+     * @test 
+     * This test is specifically designed to reproduce a bug where the duplicate detection logic
+     * for lift log imports would fail if multiple lift logs for the same exercise existed at the same time
+     * but with a different number of rounds.
+     * 
+     * The bug was caused by the fact that the query to find existing lift logs would only return the first
+     * matching record. If that record had a different number of rounds than the one being imported, the
+     * duplicate check would fail and a new, duplicate record would be created.
+     * 
+     * This test ensures that the fix for this bug is working correctly by creating two lift logs for the
+     * same exercise at the same time, but with a different number of rounds. It then tries to import a
+     * TSV file that matches one of these entries and asserts that no new lift logs are created.
+     * 
+     * The order of creation of the lift logs is important to reproduce the bug consistently. By creating the
+     * lift log with more rounds first, we ensure that the query to find existing lift logs will return
+     * the wrong record first, thus exposing the bug if it's not fixed.
+     */
+    public function it_skips_duplicate_lift_logs_with_different_rounds_during_import()
+    {
+        $exercise = Exercise::factory()->create(['user_id' => $this->user->id, 'title' => 'Test Exercise']);
+
+        // Create another lift log entry for the same exercise and time, but with 5 sets
+        $initialLiftLog2 = LiftLog::create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $exercise->id,
+            'comments' => '5 sets',
+            'logged_at' => '2025-08-26 09:00',
+        ]);
+        $initialLiftLog2->liftSets()->createMany([
+            ['weight' => 100, 'reps' => 5, 'notes' => '5 sets'],
+            ['weight' => 100, 'reps' => 5, 'notes' => '5 sets'],
+            ['weight' => 100, 'reps' => 5, 'notes' => '5 sets'],
+            ['weight' => 100, 'reps' => 5, 'notes' => '5 sets'],
+            ['weight' => 100, 'reps' => 5, 'notes' => '5 sets'],
+        ]);
+
+        // Create an initial lift log entry with 3 sets
+        $initialLiftLog1 = LiftLog::create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $exercise->id,
+            'comments' => '3 sets',
+            'logged_at' => '2025-08-26 09:00',
+        ]);
+        $initialLiftLog1->liftSets()->createMany([
+            ['weight' => 100, 'reps' => 5, 'notes' => '3 sets'],
+            ['weight' => 100, 'reps' => 5, 'notes' => '3 sets'],
+            ['weight' => 100, 'reps' => 5, 'notes' => '3 sets'],
+        ]);
+
+        $this->assertDatabaseCount('lift_logs', 2);
+        $this->assertDatabaseCount('lift_sets', 8);
+
+        // TSV data that matches the first lift log (3 sets)
+        $tsvData = "2025-08-26\t09:00\tTest Exercise\t100\t5\t3\t3 sets";
+
+        $result = $this->tsvImporterService->importLiftLogs($tsvData, '2025-08-26', $this->user->id);
+
+        $this->assertEquals(0, $result['importedCount']); // No new entries should be imported
+        $this->assertEmpty($result['notFound']);
+        $this->assertEmpty($result['invalidRows']);
+
+        $this->assertDatabaseCount('lift_logs', 2); // Should still be 2
+        $this->assertDatabaseCount('lift_sets', 8); // Should still be 8
+    }
 }

@@ -116,14 +116,15 @@ class TsvImporterService
                 $rounds = $columns[5];
                 $notes = $columns[6] ?? '';
 
-                // Check for existing LiftLog entry with the same user, exercise, and logged_at
-                $existingLiftLog = \App\Models\LiftLog::with('liftSets')
+                // Check for existing LiftLog entries with the same user, exercise, and logged_at
+                $existingLiftLogs = \App\Models\LiftLog::with('liftSets')
                     ->where('user_id', $userId)
                     ->where('exercise_id', $exercise->id)
                     ->where('logged_at', $loggedAt->format('Y-m-d H:i:s'))
-                    ->first();
+                    ->get();
 
-                if ($existingLiftLog) {
+                $isDuplicate = false;
+                foreach ($existingLiftLogs as $existingLiftLog) {
                     // Check if the number of existing LiftSets matches the number of rounds from TSV
                     if ($existingLiftLog->liftSets->count() === (int)$rounds) {
                         $allSetsMatch = true;
@@ -135,9 +136,14 @@ class TsvImporterService
                         }
                         if ($allSetsMatch) {
                             // All LiftSets match, and the count of sets matches, so it's a duplicate
-                            continue; // Skip this row
+                            $isDuplicate = true;
+                            break; // Exit the loop since a duplicate is found
                         }
                     }
+                }
+
+                if ($isDuplicate) {
+                    continue; // Skip this row
                 }
 
                 $liftLog = \App\Models\LiftLog::create([
