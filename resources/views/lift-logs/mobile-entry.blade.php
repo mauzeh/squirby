@@ -99,17 +99,29 @@
                                 @endif
                                 <div class="form-group weight-form-group @if($program->exercise->is_bodyweight) hidden @endif" id="weight-form-group-{{ $program->id }}">
                                     <label for="weight_{{ $program->id }}">@if($program->exercise->is_bodyweight) Extra Weight (lbs): @else Weight (lbs): @endif</label>
-                                    <input type="number" name="weight" id="weight_{{ $program->id }}" class="large-input" inputmode="decimal" value="{{ $program->suggestedNextWeight ?? ($program->exercise->is_bodyweight ? 0 : '') }}" @if(!$program->exercise->is_bodyweight) required @endif>
+                                    <div class="input-group">
+                                        <button type="button" class="decrement-button" data-field="weight_{{ $program->id }}">-</button>
+                                        <input type="number" name="weight" id="weight_{{ $program->id }}" class="large-input" inputmode="decimal" value="{{ $program->suggestedNextWeight ?? ($program->exercise->is_bodyweight ? 0 : '') }}" @if(!$program->exercise->is_bodyweight) required @endif>
+                                        <button type="button" class="increment-button" data-field="weight_{{ $program->id }}">+</button>
+                                    </div>
                                 </div>
 
                                 <div class="form-group">
                                     <label for="reps_{{ $program->id }}">Reps:</label>
-                                    <input type="number" name="reps" id="reps_{{ $program->id }}" class="large-input" inputmode="numeric" value="{{ $program->reps }}">
+                                    <div class="input-group">
+                                        <button type="button" class="decrement-button" data-field="reps_{{ $program->id }}">-</button>
+                                        <input type="number" name="reps" id="reps_{{ $program->id }}" class="large-input" inputmode="numeric" value="{{ $program->reps }}">
+                                        <button type="button" class="increment-button" data-field="reps_{{ $program->id }}">+</button>
+                                    </div>
                                 </div>
 
                                 <div class="form-group">
                                     <label for="rounds_{{ $program->id }}">Sets:</label>
-                                    <input type="number" name="rounds" id="rounds_{{ $program->id }}" class="large-input" inputmode="numeric" value="{{ $program->sets }}">
+                                    <div class="input-group">
+                                        <button type="button" class="decrement-button" data-field="rounds_{{ $program->id }}">-</button>
+                                        <input type="number" name="rounds" id="rounds_{{ $program->id }}" class="large-input" inputmode="numeric" value="{{ $program->sets }}">
+                                        <button type="button" class="increment-button" data-field="rounds_{{ $program->id }}">+</button>
+                                    </div>
                                 </div>
 
                                 <div class="form-group">
@@ -150,6 +162,34 @@
     </div>
 
     <style>
+        .input-group {
+            display: flex;
+            align-items: center;
+        }
+        .input-group .large-input {
+            text-align: center;
+            flex-grow: 1;
+            border-radius: 0; /* Remove radius from input to make it seamless with buttons */
+            font-size: 1.5em;
+            border: none;
+            padding: 15px 10px;
+        }
+        .decrement-button, .increment-button {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            padding: 15px 20px;
+            cursor: pointer;
+            font-size: 1.5em;
+        }
+        .decrement-button {
+            border-top-left-radius: 5px;
+            border-bottom-left-radius: 5px;
+        }
+        .increment-button {
+            border-top-right-radius: 5px;
+            border-bottom-right-radius: 5px;
+        }
         .add-exercise-container {
             margin-top: 20px;
         }
@@ -375,6 +415,18 @@
         .hidden {
             display: none;
         }
+        @media (max-width: 768px) {
+            .lift-log-form .form-group {
+                display: flex;
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .lift-log-form label {
+                flex: none;
+                text-align: left;
+                margin-bottom: 5px;
+            }
+        }
     </style>
 
     <script>
@@ -415,6 +467,27 @@
             document.getElementById('new-exercise-form-container').classList.remove('hidden');
             document.getElementById('exercise_name').focus();
             this.style.display = 'none';
+        });
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.increment-button, .decrement-button').forEach(button => {
+                button.addEventListener('click', function() {
+                    const fieldId = this.dataset.field;
+                    const input = document.getElementById(fieldId);
+                    const step = this.classList.contains('increment-button') ? 1 : -1;
+                    let value = parseFloat(input.value) || 0;
+                    if (fieldId.includes('weight')) {
+                        value += step * 5;
+                    } else {
+                        value += step;
+                    }
+                    if (value < 0) {
+                        value = 0;
+                    }
+                    input.value = value;
+                });
+            });
         });
     </script>
 @endsection

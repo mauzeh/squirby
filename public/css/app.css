@@ -320,6 +320,14 @@ select:focus {
     .show-on-mobile {
         display: block; /* or inline, inline-block depending on context */
     }
+    .form-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .form-row label {
+        text-align: left;
+        margin-bottom: 5px;
+    }
 }
 
 .nutrition-facts-label {
