@@ -63,11 +63,13 @@
                 @endunless
                 <td class="hide-on-mobile">
                     @if ($liftLog->exercise->is_bodyweight)
-                        <span style="font-weight: bold; font-size: 1.2em;">Bodyweight</span><br>
+                        <span style="font-weight: bold; font-size: 1.2em;">
+                            Bodyweight
+                            @if ($liftLog->display_weight > 0)
+                                +{{ $liftLog->display_weight }} lbs
+                            @endif
+                        </span><br>
                         {{ $liftLog->display_reps }} x {{ $liftLog->display_rounds }}
-                        @if ($liftLog->display_weight > 0)
-                            <br>+ {{ $liftLog->display_weight }} lbs
-                        @endif
                     @else
                         <span style="font-weight: bold; font-size: 1.2em;">{{ $liftLog->display_weight }} lbs</span><br>
                         {{ $liftLog->display_reps }} x {{ $liftLog->display_rounds }}
