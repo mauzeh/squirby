@@ -79,7 +79,6 @@
                         @if($program->suggestedNextWeight)
                             <p class="suggested-weight">
                                 Suggested: {{ number_format($program->suggestedNextWeight) }} lbs
-                                <button type="button" class="button-change change-suggested-weight" data-program-id="{{ $program->id }}">Change</button>
                             </p>
                         @endif
                         <form action="{{ route('lift-logs.store') }}" method="POST" class="lift-log-form">
@@ -90,7 +89,7 @@
                             <input type="hidden" name="redirect_to" value="mobile-entry">
                             <input type="hidden" name="program_id" value="{{ $program->id }}"> {{-- Pass program_id --}}
 
-                            <div id="form-fields-{{ $program->id }}" class="lift-log-form-fields @if($program->suggestedNextWeight) hidden @endif">
+                            <div id="form-fields-{{ $program->id }}" class="lift-log-form-fields">
                                 @if ($program->exercise->is_bodyweight)
                                     <div class="form-group">
                                         <label>&nbsp;</label>
@@ -130,7 +129,7 @@
                                 </div>
                             </div>
 
-                            <button type="submit" class="large-button submit-button">Save</button>
+                            <button type="submit" class="large-button submit-button">✔ Complete this lift</button>
                         </form>
                     @endif
                 </div>
@@ -170,7 +169,7 @@
             text-align: center;
             flex-grow: 1;
             border-radius: 0; /* Remove radius from input to make it seamless with buttons */
-            font-size: 1.5em;
+            font-size: 2.2em;
             border: none;
             padding: 15px 10px;
         }
@@ -435,14 +434,6 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            document.querySelectorAll('.change-suggested-weight').forEach(button => {
-                button.addEventListener('click', function() {
-                    const programId = this.dataset.programId;
-                    const formFields = document.getElementById('form-fields-' + programId);
-                    formFields.classList.toggle('hidden');
-                });
-            });
-
             document.querySelectorAll('.toggle-weight-field').forEach(button => {
                 button.addEventListener('click', function() {
                     const programId = this.dataset.programId;
