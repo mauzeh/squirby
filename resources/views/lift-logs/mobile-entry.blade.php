@@ -181,6 +181,10 @@
             padding: 15px 20px;
             cursor: pointer;
             font-size: 1.5em;
+
+
+            touch-action: manipulation;
+
         }
         .decrement-button {
             border-top-left-radius: 5px;
