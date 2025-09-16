@@ -54,14 +54,14 @@
         @if (Request::routeIs(['food-logs.*', 'meals.*', 'ingredients.*', 'exercises.*', 'lift-logs.*', 'programs.*', 'body-logs.*', 'measurement-types.*']))
         <div class="navbar sub-navbar">
             @if (Request::routeIs(['food-logs.*', 'meals.*', 'ingredients.*']))
-                <a href="{{ route('food-logs.index') }}" class="{{ Request::routeIs('food-logs.*') ? 'active' : '' }}">Food Log Entry</a>
+                <a href="{{ route('food-logs.index') }}" class="{{ Request::routeIs('food-logs.*') ? 'active' : '' }}">Log</a>
                 <a href="{{ route('meals.index') }}" class="{{ Request::routeIs('meals.*') ? 'active' : '' }}">Meals</a>
                 <a href="{{ route('ingredients.index') }}" class="{{ Request::routeIs('ingredients.*') ? 'active' : '' }}">Ingredients</a>
             @endif
 
             @if (Request::routeIs(['exercises.*', 'lift-logs.*', 'programs.*']))
                 <a href="{{ route('lift-logs.mobile-entry') }}" class="{{ Request::routeIs('lift-logs.mobile-entry') ? 'active' : '' }}"><i class="fas fa-mobile-alt"></i></a>
-                <a href="{{ route('lift-logs.index') }}" class="{{ Request::routeIs(['lift-logs.index', 'lift-logs.edit', 'lift-logs.import-tsv', 'lift-logs.destroy-selected', 'exercises.show-logs']) ? 'active' : '' }}">Lift Logs</a>
+                <a href="{{ route('lift-logs.index') }}" class="{{ Request::routeIs(['lift-logs.index', 'lift-logs.edit', 'lift-logs.import-tsv', 'lift-logs.destroy-selected', 'exercises.show-logs']) ? 'active' : '' }}">Log</a>
                 <a href="{{ route('programs.index') }}" class="{{ Request::routeIs('programs.*') ? 'active' : '' }}">Program</a>
                 <a href="{{ route('exercises.index') }}" class="{{ Request::routeIs(['exercises.index', 'exercises.create', 'exercises.edit', 'exercises.store', 'exercises.update', 'exercises.destroy']) ? 'active' : '' }}">Exercises</a>
             @endif
