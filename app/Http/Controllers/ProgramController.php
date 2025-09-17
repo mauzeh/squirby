@@ -268,13 +268,13 @@ class ProgramController extends Controller
     public function moveUp(Request $request, Program $program)
     {
         $this->swapPriority($program, 'up');
-        return redirect()->route('lift-logs.mobile-entry', ['date' => $program->date]);
+        return redirect()->route('lift-logs.mobile-entry', ['date' => $program->date->toDateString()]);
     }
 
     public function moveDown(Request $request, Program $program)
     {
         $this->swapPriority($program, 'down');
-        return redirect()->route('lift-logs.mobile-entry', ['date' => $program->date]);
+        return redirect()->route('lift-logs.mobile-entry', ['date' => $program->date->toDateString()]);
     }
 
     private function swapPriority(Program $program, $direction)

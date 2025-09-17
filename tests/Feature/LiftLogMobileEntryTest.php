@@ -360,6 +360,40 @@ class LiftLogMobileEntryTest extends TestCase
     }
 
     /** @test */
+    public function moving_program_entry_retains_original_date_on_redirect()
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $exercise = Exercise::factory()->create(['user_id' => $user->id]);
+
+        // Create program entries for a specific date (not today)
+        $testDate = Carbon::today()->addDays(5); // 5 days from today
+        $program1 = Program::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'date' => $testDate,
+            'priority' => 100,
+            'sets' => 3,
+            'reps' => 10,
+        ]);
+        $program2 = Program::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'date' => $testDate,
+            'priority' => 110,
+            'sets' => 3,
+            'reps' => 10,
+        ]);
+
+        // Simulate moving program1 down
+        $response = $this->get(route('programs.move-down', $program1));
+
+        // Assert that the redirect URL contains the original test date
+        $response->assertRedirect(route('lift-logs.mobile-entry', ['date' => $testDate->toDateString()]));
+    }
+
+    /** @test */
     public function can_move_program_down()
     {
         $program1 = Program::factory()->create(['user_id' => $this->user->id, 'priority' => 1]);
