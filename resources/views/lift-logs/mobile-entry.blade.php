@@ -45,14 +45,19 @@
                             <button type="submit" class="program-action-button delete-program-button"><i class="fa-solid fa-trash"></i></button>
                         </form>
                     </div>
-                    <h2>{{ $program->exercise->title }} (<x-lift-reps-sets-display :reps="$program->reps" :sets="$program->sets" />)</h2>
-                    @if($program->comments)
-                        <p class="details"><strong>Notes:</strong> {{ $program->comments }}</p>
-                    @endif
-
                     @php
                         $loggedLift = $dailyLiftLogs->get($program->exercise->id);
                     @endphp
+                    <h2>{{ $program->exercise->title }}
+                        @if ($loggedLift)
+                            (<x-lift-reps-sets-display :reps="$loggedLift->display_reps" :sets="$loggedLift->display_rounds" />)
+                        @else
+                            (<x-lift-reps-sets-display :reps="$program->reps" :sets="$program->sets" />)
+                        @endif
+                    </h2>
+                    @if($program->comments)
+                        <p class="details"><strong>Notes:</strong> {{ $program->comments }}</p>
+                    @endif
 
                     @if ($loggedLift)
                         <div class="logged-summary completed-badge">
