@@ -160,13 +160,13 @@ class LiftLogLoggingTest extends TestCase {
         // Assert Back Squat lift log details
         $response->assertSee($backSquat->title);
         $response->assertSee($liftLog1->display_weight . ' lbs');
-        $response->assertSee($liftLog1->display_reps . ' x ' . $liftLog1->display_rounds);
+        $response->assertSee($liftLog1->display_rounds . ' x ' . $liftLog1->display_reps);
         $response->assertSee($liftLog1->comments);
 
         // Assert Deadlift lift log details
         $response->assertSee($deadlift->title);
         $response->assertSee($liftLog2->display_weight . ' lbs');
-        $response->assertSee($liftLog2->display_reps . ' x ' . $liftLog2->display_rounds);
+        $response->assertSee($liftLog2->display_rounds . ' x ' . $liftLog2->display_reps);
         $response->assertSee($liftLog2->comments);
     }
 
@@ -224,10 +224,10 @@ class LiftLogLoggingTest extends TestCase {
         // Assert Back Squat lift log details
         $response->assertSee($backSquat->title);
         $response->assertSee($liftLog1->display_weight . ' lbs');
-        $response->assertSee($liftLog1->display_reps . ' x ' . $liftLog1->display_rounds);
+        $response->assertSee($liftLog1->display_rounds . ' x ' . $liftLog1->display_reps);
         $response->assertSee($liftLog1->comments);
         $response->assertSee($liftLog2->display_weight . ' lbs');
-        $response->assertSee($liftLog2->display_reps . ' x ' . $liftLog2->display_rounds);
+        $response->assertSee($liftLog2->display_rounds . ' x ' . $liftLog2->display_reps);
         $response->assertSee($liftLog2->comments);
     }
 
@@ -339,7 +339,7 @@ class LiftLogLoggingTest extends TestCase {
 
         $response->assertStatus(200);
         $response->assertSee('Bodyweight');
-        $response->assertSee('5 x ' . $liftLog->liftSets->count());
+        $response->assertSee($liftLog->liftSets->count() . ' x 5');
     }
 
     /** @test */
