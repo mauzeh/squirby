@@ -23,6 +23,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         if (config('app.env') !== 'production') {
+            \Illuminate\Support\Facades\DB::enableQueryLog();
             try {
                 $gitLog = shell_exec('git log -n 25 --pretty=format:"%h - %s (%cr)"');
                 View::share('gitLog', $gitLog);
@@ -35,6 +36,9 @@ class AppServiceProvider extends ServiceProvider
             if (Auth::check()) {
                 $measurementTypes = MeasurementType::where('user_id', auth()->id())->orderBy('name')->get();
                 $view->with('measurementTypes', $measurementTypes);
+            }
+            if (config('app.env') !== 'production') {
+                $view->with('queryCount', count(\Illuminate\Support\Facades\DB::getQueryLog()));
             }
         });
     }

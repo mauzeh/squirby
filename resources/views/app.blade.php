@@ -81,6 +81,9 @@
         @auth
         <footer>
             <div class="container">
+                @if(isset($queryCount))
+                    <pre class="git-log">Queries: {{ $queryCount }}</pre><br>
+                @endif
                 @if(isset($gitLog))
                     <pre class="git-log">{{ $gitLog }}</pre>
                 @endif
