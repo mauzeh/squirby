@@ -431,4 +431,56 @@ class TrainingProgressionServiceTest extends TestCase
         $this->assertEquals(5, $suggestionDetails->lastReps);
         $this->assertEquals(3, $suggestionDetails->lastSets);
     }
+
+    /** @test */
+    public function it_finds_closest_lift_log_with_higher_reps_and_more_recent_date_on_tie()
+    {
+        $user = User::factory()->create();
+        $exercise = Exercise::factory()->create(['user_id' => $user->id]);
+        config(['training.defaults.reps' => 10, 'training.defaults.sets' => 3]);
+
+        // Same distance (2), but lower reps and older
+        $log1 = LiftLog::factory()->has(LiftSet::factory()->count(4)->state(['reps' => 10]), 'liftSets')->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => Carbon::now()->subDays(2),
+        ]);
+
+        // Same distance (2), but higher reps and more recent
+        $log2 = LiftLog::factory()->has(LiftSet::factory()->count(2)->state(['reps' => 11]), 'liftSets')->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => Carbon::now()->subDay(),
+        ]);
+
+        $closestLog = $this->service->findClosestLiftLog($user->id, $exercise->id);
+
+        $this->assertEquals($log2->id, $closestLog->id);
+    }
+
+    /** @test */
+    public function it_ignores_lift_logs_with_reps_above_high_rep_threshold()
+    {
+        $user = User::factory()->create();
+        $exercise = Exercise::factory()->create(['user_id' => $user->id]);
+        config(['training.defaults.reps' => 10, 'training.defaults.sets' => 3, 'training.defaults.high_rep_threshold' => 13]);
+
+        // This log should be ignored because its reps are above the threshold
+        $highRepLog = LiftLog::factory()->has(LiftSet::factory()->state(['reps' => 14]), 'liftSets')->create([ // 4 reps away from default
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => Carbon::now()->subDay(),
+        ]);
+
+        // This log should be chosen as it's the only one within the threshold
+        $normalRepLog = LiftLog::factory()->has(LiftSet::factory()->state(['reps' => 5]), 'liftSets')->create([ // 5 reps away from default
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => Carbon::now()->subDays(2),
+        ]);
+
+        $closestLog = $this->service->findClosestLiftLog($user->id, $exercise->id);
+
+        $this->assertEquals($normalRepLog->id, $closestLog->id);
+    }
 }

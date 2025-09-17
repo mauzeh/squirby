@@ -122,6 +122,7 @@ class TrainingProgressionService
     {
         $defaultReps = config('training.defaults.reps', 10);
         $defaultSets = config('training.defaults.sets', 3);
+        $highRepThreshold = config('training.defaults.high_rep_threshold', 20);
 
         if ($recentLiftLogs === null) {
             $recentLiftLogs = LiftLog::where('user_id', $userId)
@@ -134,20 +135,28 @@ class TrainingProgressionService
             return null;
         }
 
-        $closestLog = null;
-        $minDistance = PHP_INT_MAX;
+        $bestLog = null;
+        $maxScore = -PHP_INT_MAX;
 
         foreach ($recentLiftLogs as $log) {
-            $repsDistance = abs($log->display_reps - $defaultReps);
-            $setsDistance = abs($log->display_rounds - $defaultSets);
-            $totalDistance = $repsDistance + $setsDistance;
+            if ($log->display_reps > $highRepThreshold) {
+                continue;
+            }
 
-            if ($totalDistance < $minDistance) {
-                $minDistance = $totalDistance;
-                $closestLog = $log;
+            $repsScore = $log->display_reps;
+            $setsDistance = abs($log->display_rounds - $defaultSets);
+            $totalScore = $repsScore - $setsDistance;
+
+            if ($totalScore > $maxScore) {
+                $maxScore = $totalScore;
+                $bestLog = $log;
+            } elseif ($totalScore === $maxScore) {
+                if ($log->logged_at > $bestLog->logged_at) {
+                    $bestLog = $log;
+                }
             }
         }
 
-        return $closestLog;
+        return $bestLog;
     }
 }
