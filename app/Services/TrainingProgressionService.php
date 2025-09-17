@@ -47,6 +47,8 @@ class TrainingProgressionService
             'reps' => $closestLog ? $closestLog->display_reps : config('training.defaults.reps', 10),
             'sets' => $closestLog ? $closestLog->display_rounds : config('training.defaults.sets', 3),
             'lastWeight' => $lastWeight,
+            'lastReps' => $closestLog ? $closestLog->display_reps : null,
+            'lastSets' => $closestLog ? $closestLog->display_rounds : null,
         ];
     }
 

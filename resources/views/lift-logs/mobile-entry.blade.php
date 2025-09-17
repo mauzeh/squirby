@@ -83,7 +83,9 @@
                             <p class="suggested-weight">
                                 @if(isset($program->lastWeight))
                                     <span class="last-weight">Last time: {{ number_format($program->lastWeight) }} lbs
-                                    
+                                        @if(isset($program->lastSets) && isset($program->lastReps))
+                                            (<x-lift-reps-sets-display :reps="$program->lastReps" :sets="$program->lastSets" />)
+                                        @endif
                                     </span>
                                 @endif
                             </p>

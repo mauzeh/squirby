@@ -425,4 +425,33 @@ class LiftLogMobileEntryTest extends TestCase
 
         $response->assertDontSee(route('programs.move-down', 1));
     }
+
+    /** @test */
+    public function mobile_entry_page_displays_last_weight_reps_and_sets()
+    {
+        $exercise = Exercise::factory()->create(['user_id' => $this->user->id, 'is_bodyweight' => false]);
+        $program = Program::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $exercise->id,
+            'date' => Carbon::today(),
+            'sets' => 3,
+            'reps' => 5,
+        ]);
+
+        // Create a past lift log to generate a suggested weight
+        LiftLog::factory()->has(LiftSet::factory()->count(3)->state([
+            'reps' => 5,
+            'weight' => 100.0,
+        ]), 'liftSets')->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => Carbon::today()->subDays(1),
+        ]);
+
+        $response = $this->get(route('lift-logs.mobile-entry'));
+
+        $response->assertStatus(200);
+        $response->assertSee('Last time: 100 lbs');
+        $response->assertSee('(3 x 5)');
+    }
 }

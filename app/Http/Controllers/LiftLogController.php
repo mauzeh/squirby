@@ -242,6 +242,10 @@ class LiftLogController extends Controller
                     if ($suggestionDetails) {
                         $program->suggestedNextWeight = $suggestionDetails->suggestedWeight;
                         $program->lastWeight = $suggestionDetails->lastWeight;
+                        $program->lastReps = $suggestionDetails->lastReps;
+                        $program->lastSets = $suggestionDetails->lastSets;
+                        $program->lastReps = $suggestionDetails->lastReps;
+                        $program->lastSets = $suggestionDetails->lastSets;
                         
                     } else {
                         $program->suggestedNextWeight = null;

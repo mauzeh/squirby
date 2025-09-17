@@ -410,4 +410,25 @@ class TrainingProgressionServiceTest extends TestCase
 
         $this->assertEquals(config('training.defaults.sets', 3), $suggestedSets);
     }
+
+    /** @test */
+    public function it_returns_last_reps_and_sets_in_suggestion_details()
+    {
+        $user = User::factory()->create();
+        $exercise = Exercise::factory()->create(['user_id' => $user->id, 'is_bodyweight' => false]);
+
+        $liftLog = LiftLog::factory()->has(LiftSet::factory()->count(3)->state([
+            'reps' => 5,
+            'weight' => 100.0,
+        ]), 'liftSets')->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => Carbon::now()->subDays(1),
+        ]);
+
+        $suggestionDetails = $this->service->getSuggestionDetails($user->id, $exercise->id);
+
+        $this->assertEquals(5, $suggestionDetails->lastReps);
+        $this->assertEquals(3, $suggestionDetails->lastSets);
+    }
 }
