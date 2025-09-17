@@ -42,17 +42,11 @@ class TrainingProgressionService
 
         $suggestedWeight = $this->suggestNextWeight($userId, $exerciseId, $targetReps, $forDate, $recentLiftLogs);
 
-        $percentageIncrease = null;
-        if ($lastWeight > 0 && $suggestedWeight) {
-            $percentageIncrease = (($suggestedWeight - $lastWeight) / $lastWeight) * 100;
-        }
-
         return (object)[
             'suggestedWeight' => $suggestedWeight,
             'reps' => $closestLog ? $closestLog->display_reps : config('training.defaults.reps', 10),
             'sets' => $closestLog ? $closestLog->display_rounds : config('training.defaults.sets', 3),
             'lastWeight' => $lastWeight,
-            'percentageIncrease' => $percentageIncrease,
         ];
     }
 

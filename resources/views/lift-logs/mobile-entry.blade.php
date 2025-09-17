@@ -83,9 +83,7 @@
                             <p class="suggested-weight">
                                 @if(isset($program->lastWeight))
                                     <span class="last-weight">Last time: {{ number_format($program->lastWeight) }} lbs
-                                    @if(isset($program->percentageIncrease) && $program->percentageIncrease > 0)
-                                        <span class="percentage-increase">({{ number_format($program->percentageIncrease, 0) }}% increase)</span>
-                                    @endif
+                                    
                                     </span>
                                 @endif
                             </p>

@@ -39,23 +39,23 @@ class ProgramController extends Controller
                     if ($suggestionDetails) {
                         $program->suggestedNextWeight = $suggestionDetails->suggestedWeight;
                         $program->lastWeight = $suggestionDetails->lastWeight;
-                        $program->percentageIncrease = $suggestionDetails->percentageIncrease;
+                        
                     } else {
                         $program->suggestedNextWeight = null;
                         $program->lastWeight = null;
-                        $program->percentageIncrease = null;
+                        
                     }
                 } else {
                     $program->suggestedNextWeight = null;
                     $program->lastWeight = null;
-                    $program->percentageIncrease = null;
+                    
                 }
             }
         } else {
             foreach ($programs as $program) {
                 $program->suggestedNextWeight = null;
                 $program->lastWeight = null;
-                $program->percentageIncrease = null;
+                
             }
         }
 
