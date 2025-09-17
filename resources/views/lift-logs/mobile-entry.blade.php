@@ -67,7 +67,7 @@
                                     <button type="submit" class="button-small button-danger">Undo</button>
                                 </form>
                             </div>
-                            <p><strong>Weight:</strong> {{ $loggedLift->display_weight }} lbs</p>
+                            <p><x-lift-weight-display :liftLog="$loggedLift" /></p>
                             <p><strong>Reps x Sets:</strong> {{ $loggedLift->display_reps }} x {{ $loggedLift->display_rounds }}</p>
                             @if($loggedLift->comments)
                                 <p><strong>Comments:</strong> {{ $loggedLift->comments }}</p>

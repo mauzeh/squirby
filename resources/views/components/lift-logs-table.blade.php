@@ -26,16 +26,9 @@
                     <td>
                         {{ $liftLog->logged_at->format('m/d') }}
                         <div class="show-on-mobile" style="font-size: 0.9em; color: #ccc;">
-                            @if ($liftLog->exercise->is_bodyweight)
-                                Bodyweight {{ $liftLog->display_reps }} x {{ $liftLog->display_rounds }}
-                                @if ($liftLog->display_weight > 0)
-                                    + {{ $liftLog->display_weight }} lbs
-                                @endif
-                            @else
-                                {{ $liftLog->display_weight }} lbs {{ $liftLog->display_reps }} x {{ $liftLog->display_rounds }}
-                            @endif
+                            <x-lift-weight-display :liftLog="$liftLog" /> ({{ $liftLog->display_reps }}&nbsp;x&nbsp;{{ $liftLog->display_rounds }})
                             @if ($liftLog->one_rep_max)
-                                (1RM: {{ round($liftLog->one_rep_max) }} lbs)
+                                <br><i>1RM: {{ round($liftLog->one_rep_max) }} lbs</i>
                             @endif
                         </div>
                     </td>
@@ -47,33 +40,16 @@
                         <a href="{{ route('exercises.show-logs', $liftLog->exercise) }}">{{ $liftLog->exercise->title }}</a>
                         <div class="show-on-mobile" style="font-size: 0.9em; color: #ccc;">
                             {{ $liftLog->logged_at->format('m/d') }} -
-                            @if ($liftLog->exercise->is_bodyweight)
-                                Bodyweight {{ $liftLog->display_reps }} x {{ $liftLog->display_rounds }}
-                                @if ($liftLog->display_weight > 0)
-                                    + {{ $liftLog->display_weight }} lbs
-                                @endif
-                            @else
-                                {{ $liftLog->display_weight }} lbs {{ $liftLog->display_reps }} x {{ $liftLog->display_rounds }}
-                            @endif
+                            <x-lift-weight-display :liftLog="$liftLog" /> ({{ $liftLog->display_reps }}&nbsp;x&nbsp;{{ $liftLog->display_rounds }})
                             @if ($liftLog->one_rep_max)
-                                (1RM: {{ round($liftLog->one_rep_max) }} lbs)
+                                <br><i>1RM: {{ round($liftLog->one_rep_max) }} lbs</i>
                             @endif
                         </div>
                     </td>
                 @endunless
                 <td class="hide-on-mobile">
-                    @if ($liftLog->exercise->is_bodyweight)
-                        <span style="font-weight: bold; font-size: 1.2em;">
-                            Bodyweight
-                            @if ($liftLog->display_weight > 0)
-                                +{{ $liftLog->display_weight }} lbs
-                            @endif
-                        </span><br>
-                        {{ $liftLog->display_reps }} x {{ $liftLog->display_rounds }}
-                    @else
-                        <span style="font-weight: bold; font-size: 1.2em;">{{ $liftLog->display_weight }} lbs</span><br>
-                        {{ $liftLog->display_reps }} x {{ $liftLog->display_rounds }}
-                    @endif
+                    <x-lift-weight-display :liftLog="$liftLog" /><br>
+                    {{ $liftLog->display_reps }} x {{ $liftLog->display_rounds }}
                 </td>
                 <td class="hide-on-mobile">
                     @if ($liftLog->exercise->is_bodyweight)
