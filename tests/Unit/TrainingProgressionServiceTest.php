@@ -338,20 +338,21 @@ class TrainingProgressionServiceTest extends TestCase
     }
 
     /** @test */
-    public function it_suggests_next_rep_count_based_on_most_recent_lift_log()
+    public function it_suggests_next_rep_count_based_on_closest_lift_log()
     {
         $user = User::factory()->create();
         $exercise = Exercise::factory()->create(['user_id' => $user->id]);
+        config(['training.defaults.reps' => 10, 'training.defaults.sets' => 3]);
 
-        // Create a lift log with 8 reps
+        // Create a lift log with 8 reps and 3 sets (distance 2)
         LiftLog::factory()->has(LiftSet::factory()->state(['reps' => 8]), 'liftSets')->create([
             'user_id' => $user->id,
             'exercise_id' => $exercise->id,
             'logged_at' => Carbon::now()->subDays(1),
         ]);
 
-        // Create an older lift log with 10 reps
-        LiftLog::factory()->has(LiftSet::factory()->state(['reps' => 10]), 'liftSets')->create([
+        // Create a lift log with 5 reps and 5 sets (distance 7)
+        LiftLog::factory()->has(LiftSet::factory()->count(5)->state(['reps' => 5]), 'liftSets')->create([
             'user_id' => $user->id,
             'exercise_id' => $exercise->id,
             'logged_at' => Carbon::now()->subDays(2),
@@ -374,28 +375,29 @@ class TrainingProgressionServiceTest extends TestCase
     }
 
     /** @test */
-    public function it_suggests_next_set_count_based_on_most_recent_lift_log()
+    public function it_suggests_next_set_count_based_on_closest_lift_log()
     {
         $user = User::factory()->create();
         $exercise = Exercise::factory()->create(['user_id' => $user->id]);
+        config(['training.defaults.reps' => 10, 'training.defaults.sets' => 3]);
 
-        // Create a lift log with 4 rounds
-        LiftLog::factory()->has(LiftSet::factory()->count(4), 'liftSets')->create([
-            'user_id' => $user->id,
-            'exercise_id' => $exercise->id,
-            'logged_at' => Carbon::now()->subDays(1),
-        ]);
-
-        // Create an older lift log with 3 rounds
-        LiftLog::factory()->has(LiftSet::factory()->count(3), 'liftSets')->create([
+        // Create a lift log with 8 reps and 3 sets (distance 2)
+        LiftLog::factory()->has(LiftSet::factory()->state(['reps' => 8]), 'liftSets')->create([
             'user_id' => $user->id,
             'exercise_id' => $exercise->id,
             'logged_at' => Carbon::now()->subDays(2),
         ]);
 
+        // Create a lift log with 10 reps and 5 sets (distance 2)
+        LiftLog::factory()->has(LiftSet::factory()->count(5)->state(['reps' => 10]), 'liftSets')->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => Carbon::now()->subDays(1),
+        ]);
+
         $suggestedSets = $this->service->suggestNextSetCount($user->id, $exercise->id);
 
-        $this->assertEquals(4, $suggestedSets);
+        $this->assertEquals(5, $suggestedSets);
     }
 
     /** @test */

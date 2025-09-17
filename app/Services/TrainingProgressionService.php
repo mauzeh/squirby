@@ -94,21 +94,58 @@ class TrainingProgressionService
 
     public function suggestNextRepCount(int $userId, int $exerciseId): int
     {
-        $mostRecentLiftLog = LiftLog::where('user_id', $userId)
-            ->where('exercise_id', $exerciseId)
-            ->orderBy('logged_at', 'desc')
-            ->first();
-
-        return $mostRecentLiftLog ? $mostRecentLiftLog->display_reps : config('training.defaults.reps', 10);
+        $closestLog = $this->findClosestLiftLog($userId, $exerciseId);
+        return $closestLog ? $closestLog->display_reps : config('training.defaults.reps', 10);
     }
 
     public function suggestNextSetCount(int $userId, int $exerciseId): int
     {
-        $mostRecentLiftLog = LiftLog::where('user_id', $userId)
-            ->where('exercise_id', $exerciseId)
-            ->orderBy('logged_at', 'desc')
-            ->first();
+        $closestLog = $this->findClosestLiftLog($userId, $exerciseId);
+        return $closestLog ? $closestLog->display_rounds : config('training.defaults.sets', 3);
+    }
 
-        return $mostRecentLiftLog ? $mostRecentLiftLog->display_rounds : config('training.defaults.sets', 3);
+    /**
+     * Finds the lift log within the lookback window that is most similar to the default training values.
+     *
+     * This method calculates a "distance" for each lift log based on how close its reps and sets are
+     * to the default values defined in the training config. The lift log with the smallest distance
+     * is considered the "closest" and is returned.
+     *
+     * If multiple logs have the same minimum distance, the one that appears first in the collection
+     * will be returned. Since the collection is not ordered by date, this may not be the most recent.
+     *
+     * @param int $userId The ID of the user.
+     * @param int $exerciseId The ID of the exercise.
+     * @return LiftLog|null The closest lift log, or null if no recent logs are found.
+     */
+    private function findClosestLiftLog(int $userId, int $exerciseId): ?LiftLog
+    {
+        $defaultReps = config('training.defaults.reps', 10);
+        $defaultSets = config('training.defaults.sets', 3);
+
+        $recentLiftLogs = LiftLog::where('user_id', $userId)
+            ->where('exercise_id', $exerciseId)
+            ->where('logged_at', '>=', Carbon::now()->subWeeks(self::LOOKBACK_WEEKS))
+            ->get();
+
+        if ($recentLiftLogs->isEmpty()) {
+            return null;
+        }
+
+        $closestLog = null;
+        $minDistance = PHP_INT_MAX;
+
+        foreach ($recentLiftLogs as $log) {
+            $repsDistance = abs($log->display_reps - $defaultReps);
+            $setsDistance = abs($log->display_rounds - $defaultSets);
+            $totalDistance = $repsDistance + $setsDistance;
+
+            if ($totalDistance < $minDistance) {
+                $minDistance = $totalDistance;
+                $closestLog = $log;
+            }
+        }
+
+        return $closestLog;
     }
 }
