@@ -3,7 +3,7 @@
 namespace Tests\Unit;
 
 use Tests\TestCase;
-use App\Services\WeightProgressionService;
+use App\Services\TrainingProgressionService;
 use App\Models\User;
 use App\Models\Exercise;
 use App\Models\LiftLog;
@@ -12,18 +12,18 @@ use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Services\OneRepMaxCalculatorService;
 
-class WeightProgressionServiceTest extends TestCase
+class TrainingProgressionServiceTest extends TestCase
 {
     use RefreshDatabase;
 
-    protected WeightProgressionService $service;
+    protected TrainingProgressionService $service;
     protected OneRepMaxCalculatorService $oneRepMaxCalculatorService;
 
     protected function setUp(): void
     {
         parent::setUp();
         $this->oneRepMaxCalculatorService = new OneRepMaxCalculatorService();
-        $this->service = new WeightProgressionService($this->oneRepMaxCalculatorService);
+        $this->service = new TrainingProgressionService($this->oneRepMaxCalculatorService);
     }
 
     /** @test */
@@ -64,7 +64,7 @@ class WeightProgressionServiceTest extends TestCase
         $expectedPredictedWeight = $this->oneRepMaxCalculatorService->getWeightFromOneRepMax($expected1RM, 5);
 
         // Apply the increment and then round to the nearest multiple of RESOLUTION, rounded to the lowest ceiling
-        $expectedRoundedWeight = ceil(($expectedPredictedWeight + WeightProgressionService::RESOLUTION) / WeightProgressionService::RESOLUTION) * WeightProgressionService::RESOLUTION;
+        $expectedRoundedWeight = ceil(($expectedPredictedWeight + TrainingProgressionService::RESOLUTION) / TrainingProgressionService::RESOLUTION) * TrainingProgressionService::RESOLUTION;
 
         $this->assertEquals($expectedRoundedWeight, $suggestedWeight);
     }
@@ -79,7 +79,7 @@ class WeightProgressionServiceTest extends TestCase
         $liftLog = LiftLog::factory()->create([
             'user_id' => $user->id,
             'exercise_id' => $exercise->id,
-            'logged_at' => Carbon::now()->subWeeks(WeightProgressionService::LOOKBACK_WEEKS + 1),
+            'logged_at' => Carbon::now()->subWeeks(TrainingProgressionService::LOOKBACK_WEEKS + 1),
         ]);
         LiftSet::factory()->create([
             'lift_log_id' => $liftLog->id,
@@ -149,7 +149,7 @@ class WeightProgressionServiceTest extends TestCase
         $expectedPredictedWeight = $this->oneRepMaxCalculatorService->getWeightFromOneRepMax($expected1RM, 5);
 
         // Apply the increment and then round to the nearest multiple of RESOLUTION, rounded to the lowest ceiling
-        $expectedRoundedWeight = ceil(($expectedPredictedWeight + WeightProgressionService::RESOLUTION) / WeightProgressionService::RESOLUTION) * WeightProgressionService::RESOLUTION;
+        $expectedRoundedWeight = ceil(($expectedPredictedWeight + TrainingProgressionService::RESOLUTION) / TrainingProgressionService::RESOLUTION) * TrainingProgressionService::RESOLUTION;
 
         $this->assertEquals($expectedRoundedWeight, $suggestedWeight);
     }
@@ -191,7 +191,7 @@ class WeightProgressionServiceTest extends TestCase
         $expectedPredictedWeight = $this->oneRepMaxCalculatorService->getWeightFromOneRepMax($expected1RM, 5);
 
         // Apply rounding to the lowest ceiling
-        $expectedRoundedWeight = ceil(($expectedPredictedWeight + WeightProgressionService::RESOLUTION) / WeightProgressionService::RESOLUTION) * WeightProgressionService::RESOLUTION;
+        $expectedRoundedWeight = ceil(($expectedPredictedWeight + TrainingProgressionService::RESOLUTION) / TrainingProgressionService::RESOLUTION) * TrainingProgressionService::RESOLUTION;
 
         $this->assertEquals($expectedRoundedWeight, $suggestedWeight);
     }
@@ -247,7 +247,7 @@ class WeightProgressionServiceTest extends TestCase
         $expectedPredictedWeight = $this->oneRepMaxCalculatorService->getWeightFromOneRepMax($expected1RM, 10);
 
         // Apply rounding to the lowest ceiling (without increment)
-        $expectedRoundedWeight = ceil($expectedPredictedWeight / WeightProgressionService::RESOLUTION) * WeightProgressionService::RESOLUTION;
+        $expectedRoundedWeight = ceil($expectedPredictedWeight / TrainingProgressionService::RESOLUTION) * TrainingProgressionService::RESOLUTION;
 
         $this->assertEquals($expectedRoundedWeight, $suggestedWeight);
     }
@@ -277,7 +277,7 @@ class WeightProgressionServiceTest extends TestCase
         $historicalReps = 5;
         $expected1RM = $this->oneRepMaxCalculatorService->calculateOneRepMax($historicalWeight, $historicalReps);
         $expectedPredictedWeight = $this->oneRepMaxCalculatorService->getWeightFromOneRepMax($expected1RM, 5);
-        $expectedRoundedWeight = ceil(($expectedPredictedWeight + WeightProgressionService::RESOLUTION) / WeightProgressionService::RESOLUTION) * WeightProgressionService::RESOLUTION;
+        $expectedRoundedWeight = ceil(($expectedPredictedWeight + TrainingProgressionService::RESOLUTION) / TrainingProgressionService::RESOLUTION) * TrainingProgressionService::RESOLUTION;
 
         $this->assertEquals($expectedRoundedWeight, $suggestedWeight);
     }
@@ -292,7 +292,7 @@ class WeightProgressionServiceTest extends TestCase
         $liftLog = LiftLog::factory()->create([
             'user_id' => $user->id,
             'exercise_id' => $exercise->id,
-            'logged_at' => Carbon::now()->subWeeks(WeightProgressionService::LOOKBACK_WEEKS + 1),
+            'logged_at' => Carbon::now()->subWeeks(TrainingProgressionService::LOOKBACK_WEEKS + 1),
         ]);
         LiftSet::factory()->create([
             'lift_log_id' => $liftLog->id,
@@ -332,8 +332,80 @@ class WeightProgressionServiceTest extends TestCase
         $historicalReps = 5;
         $expected1RM = $this->oneRepMaxCalculatorService->calculateOneRepMax($historicalWeight, $historicalReps);
         $expectedPredictedWeight = $this->oneRepMaxCalculatorService->getWeightFromOneRepMax($expected1RM, 5);
-        $expectedRoundedWeight = ceil(($expectedPredictedWeight + WeightProgressionService::RESOLUTION) / WeightProgressionService::RESOLUTION) * WeightProgressionService::RESOLUTION;
+        $expectedRoundedWeight = ceil(($expectedPredictedWeight + TrainingProgressionService::RESOLUTION) / TrainingProgressionService::RESOLUTION) * TrainingProgressionService::RESOLUTION;
 
         $this->assertEquals($expectedRoundedWeight, $suggestedWeight);
+    }
+
+    /** @test */
+    public function it_suggests_next_rep_count_based_on_most_recent_lift_log()
+    {
+        $user = User::factory()->create();
+        $exercise = Exercise::factory()->create(['user_id' => $user->id]);
+
+        // Create a lift log with 8 reps
+        LiftLog::factory()->has(LiftSet::factory()->state(['reps' => 8]), 'liftSets')->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => Carbon::now()->subDays(1),
+        ]);
+
+        // Create an older lift log with 10 reps
+        LiftLog::factory()->has(LiftSet::factory()->state(['reps' => 10]), 'liftSets')->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => Carbon::now()->subDays(2),
+        ]);
+
+        $suggestedReps = $this->service->suggestNextRepCount($user->id, $exercise->id);
+
+        $this->assertEquals(8, $suggestedReps);
+    }
+
+    /** @test */
+    public function it_suggests_default_rep_count_when_no_history_exists()
+    {
+        $user = User::factory()->create();
+        $exercise = Exercise::factory()->create(['user_id' => $user->id]);
+
+        $suggestedReps = $this->service->suggestNextRepCount($user->id, $exercise->id);
+
+        $this->assertEquals(config('training.defaults.reps', 10), $suggestedReps);
+    }
+
+    /** @test */
+    public function it_suggests_next_set_count_based_on_most_recent_lift_log()
+    {
+        $user = User::factory()->create();
+        $exercise = Exercise::factory()->create(['user_id' => $user->id]);
+
+        // Create a lift log with 4 rounds
+        LiftLog::factory()->has(LiftSet::factory()->count(4), 'liftSets')->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => Carbon::now()->subDays(1),
+        ]);
+
+        // Create an older lift log with 3 rounds
+        LiftLog::factory()->has(LiftSet::factory()->count(3), 'liftSets')->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => Carbon::now()->subDays(2),
+        ]);
+
+        $suggestedSets = $this->service->suggestNextSetCount($user->id, $exercise->id);
+
+        $this->assertEquals(4, $suggestedSets);
+    }
+
+    /** @test */
+    public function it_suggests_default_set_count_when_no_history_exists()
+    {
+        $user = User::factory()->create();
+        $exercise = Exercise::factory()->create(['user_id' => $user->id]);
+
+        $suggestedSets = $this->service->suggestNextSetCount($user->id, $exercise->id);
+
+        $this->assertEquals(config('training.defaults.sets', 3), $suggestedSets);
     }
 }

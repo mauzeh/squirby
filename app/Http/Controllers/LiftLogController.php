@@ -10,7 +10,7 @@ use App\Services\ExerciseService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
-use App\Services\WeightProgressionService;
+use App\Services\TrainingProgressionService;
 
 class LiftLogController extends Controller
 {
@@ -220,7 +220,7 @@ class LiftLogController extends Controller
             ->with('success', 'TSV data imported successfully!');
     }
 
-    public function mobileEntry(Request $request, \App\Services\WeightProgressionService $weightProgressionService)
+    public function mobileEntry(Request $request, \App\Services\TrainingProgressionService $trainingProgressionService)
     {
         $selectedDate = $request->input('date') ? \Carbon\Carbon::parse($request->input('date')) : \Carbon\Carbon::today();
 
@@ -233,7 +233,7 @@ class LiftLogController extends Controller
         if ($selectedDate->isToday() || $selectedDate->isTomorrow() || $selectedDate->copy()->addDay()->isTomorrow()) {
             foreach ($programs as $program) {
                 if (!$program->exercise->is_bodyweight) {
-                    $program->suggestedNextWeight = $weightProgressionService->suggestNextWeight(
+                    $program->suggestedNextWeight = $trainingProgressionService->suggestNextWeight(
                         auth()->id(),
                         $program->exercise_id,
                         $program->reps,

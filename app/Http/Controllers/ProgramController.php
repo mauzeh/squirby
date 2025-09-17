@@ -9,14 +9,15 @@ use App\Http\Requests\UpdateProgramRequest;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Services\ProgramTsvImporterService;
-use App\Services\WeightProgressionService;
+use App\Services\TrainingProgressionService;
+use App\Models\LiftLog;
 
 class ProgramController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request, WeightProgressionService $weightProgressionService)
+    public function index(Request $request, TrainingProgressionService $trainingProgressionService)
     {
         $selectedDate = $request->input('date') ? Carbon::parse($request->input('date')) : Carbon::today();
 
@@ -30,7 +31,7 @@ class ProgramController extends Controller
             foreach ($programs as $program) {
                 // Only suggest weight for non-bodyweight exercises
                 if (!$program->exercise->is_bodyweight) {
-                    $program->suggestedNextWeight = $weightProgressionService->suggestNextWeight(
+                    $program->suggestedNextWeight = $trainingProgressionService->suggestNextWeight(
                         auth()->id(),
                         $program->exercise_id,
                         $program->reps, // Assuming 'reps' from the program is the target reps
@@ -201,8 +202,11 @@ class ProgramController extends Controller
         }
     }
 
-    public function quickAdd(Request $request, Exercise $exercise, $date)
+    public function quickAdd(Request $request, Exercise $exercise, $date, TrainingProgressionService $trainingProgressionService)
     {
+        $reps = $trainingProgressionService->suggestNextRepCount(auth()->id(), $exercise->id);
+        $sets = $trainingProgressionService->suggestNextSetCount(auth()->id(), $exercise->id);
+
         // Find the highest priority for the given date
         $maxPriority = Program::where('user_id', auth()->id())
             ->whereDate('date', $date)
@@ -214,8 +218,8 @@ class ProgramController extends Controller
             'exercise_id' => $exercise->id,
             'user_id' => auth()->id(),
             'date' => $date,
-            'sets' => config('training.defaults.sets', 3),
-            'reps' => config('training.defaults.reps', 10),
+            'sets' => $sets,
+            'reps' => $reps,
             'priority' => $newPriority,
         ]);
 

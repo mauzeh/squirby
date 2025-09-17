@@ -6,7 +6,7 @@ use App\Models\LiftLog;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 
-class WeightProgressionService
+class TrainingProgressionService
 {
     const RESOLUTION = 5.0;
     const LOOKBACK_WEEKS = 2;
@@ -90,5 +90,25 @@ class WeightProgressionService
             // If no history to determine 1RM, return false
             return false;
         }
+    }
+
+    public function suggestNextRepCount(int $userId, int $exerciseId): int
+    {
+        $mostRecentLiftLog = LiftLog::where('user_id', $userId)
+            ->where('exercise_id', $exerciseId)
+            ->orderBy('logged_at', 'desc')
+            ->first();
+
+        return $mostRecentLiftLog ? $mostRecentLiftLog->display_reps : config('training.defaults.reps', 10);
+    }
+
+    public function suggestNextSetCount(int $userId, int $exerciseId): int
+    {
+        $mostRecentLiftLog = LiftLog::where('user_id', $userId)
+            ->where('exercise_id', $exerciseId)
+            ->orderBy('logged_at', 'desc')
+            ->first();
+
+        return $mostRecentLiftLog ? $mostRecentLiftLog->display_rounds : config('training.defaults.sets', 3);
     }
 }
