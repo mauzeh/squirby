@@ -1,0 +1,151 @@
+<?php
+
+namespace App\Services\ProgressionModels;
+
+use App\Models\LiftLog;
+use App\Services\OneRepMaxCalculatorService;
+use Carbon\Carbon;
+use Illuminate\Support\Collection;
+
+class LinearProgression implements ProgressionModel
+{
+    const RESOLUTION = 5.0;
+    const LOOKBACK_WEEKS = 2;
+
+    protected OneRepMaxCalculatorService $oneRepMaxCalculatorService;
+
+    public function __construct(OneRepMaxCalculatorService $oneRepMaxCalculatorService)
+    {
+        $this->oneRepMaxCalculatorService = $oneRepMaxCalculatorService;
+    }
+
+    public function suggest(int $userId, int $exerciseId, Carbon $forDate = null): ?object
+    {
+        $forDate = $forDate ?? Carbon::now();
+        $recentLiftLogs = LiftLog::with('liftSets')
+            ->join('exercises', 'lift_logs.exercise_id', '=', 'exercises.id')
+            ->where('lift_logs.user_id', $userId)
+            ->where('lift_logs.exercise_id', $exerciseId)
+            ->where('exercises.is_bodyweight', false)
+            ->where('logged_at', '>=', $forDate->copy()->subWeeks(self::LOOKBACK_WEEKS))
+            ->orderBy('logged_at', 'desc')
+            ->select('lift_logs.*')
+            ->get();
+
+        if ($recentLiftLogs->isEmpty()) {
+            return null;
+        }
+
+        $closestLog = $this->findClosestLiftLog($userId, $exerciseId, $recentLiftLogs);
+
+        $lastWeight = $closestLog ? $closestLog->display_weight : null;
+        $targetReps = $closestLog ? $closestLog->display_reps : config('training.defaults.reps', 10);
+
+        $suggestedWeight = $this->suggestNextWeight($userId, $exerciseId, $targetReps, $forDate, $recentLiftLogs);
+
+        return (object)[
+            'suggestedWeight' => $suggestedWeight,
+            'reps' => $closestLog ? $closestLog->display_reps : config('training.defaults.reps', 10),
+            'sets' => $closestLog ? $closestLog->display_rounds : config('training.defaults.sets', 3),
+            'lastWeight' => $lastWeight,
+            'lastReps' => $closestLog ? $closestLog->display_reps : null,
+            'lastSets' => $closestLog ? $closestLog->display_rounds : null,
+        ];
+    }
+
+    private function suggestNextWeight(int $userId, int $exerciseId, int $targetReps, Carbon $forDate = null, Collection $recentLiftLogs = null): float|false
+    {
+        $forDate = $forDate ?? Carbon::now();
+
+        if ($recentLiftLogs === null) {
+            $recentLiftLogs = LiftLog::with('liftSets')
+                ->join('exercises', 'lift_logs.exercise_id', '=', 'exercises.id')
+                ->where('lift_logs.user_id', $userId)
+                ->where('lift_logs.exercise_id', $exerciseId)
+                ->where('exercises.is_bodyweight', false)
+                ->where('logged_at', '>=', $forDate->copy()->subWeeks(self::LOOKBACK_WEEKS))
+                ->orderBy('logged_at', 'desc')
+                ->select('lift_logs.*')
+                ->get();
+        }
+
+        if ($recentLiftLogs->isEmpty()) {
+            return false;
+        }
+
+        $allEstimated1RMs = collect();
+        $hasRecentHigherOrEqualReps = false;
+
+        foreach ($recentLiftLogs as $liftLog) {
+            foreach ($liftLog->liftSets as $liftSet) {
+                if ($liftSet->reps >= $targetReps) {
+                    $hasRecentHigherOrEqualReps = true;
+                }
+                if ($liftSet->weight > 0 && $liftSet->reps > 0) {
+                    $estimated1RM = $this->oneRepMaxCalculatorService->calculateOneRepMax($liftSet->weight, $liftSet->reps);
+                    if ($estimated1RM !== null) {
+                        $allEstimated1RMs->push($estimated1RM);
+                    }
+                }
+            }
+        }
+
+        $current1RM = null;
+        if ($allEstimated1RMs->isNotEmpty()) {
+            $current1RM = $allEstimated1RMs->max();
+        }
+
+        if ($current1RM !== null) {
+            $predictedWeight = $this->oneRepMaxCalculatorService->getWeightFromOneRepMax($current1RM, $targetReps);
+            $finalPredictedWeight = $predictedWeight;
+            if ($hasRecentHigherOrEqualReps) {
+                $finalPredictedWeight += self::RESOLUTION;
+            }
+            return ceil($finalPredictedWeight / self::RESOLUTION) * self::RESOLUTION;
+        } else {
+            return false;
+        }
+    }
+
+    private function findClosestLiftLog(int $userId, int $exerciseId, Collection $recentLiftLogs = null): ?LiftLog
+    {
+        $defaultReps = config('training.defaults.reps', 10);
+        $defaultSets = config('training.defaults.sets', 3);
+        $highRepThreshold = config('training.defaults.high_rep_threshold', 20);
+
+        if ($recentLiftLogs === null) {
+            $recentLiftLogs = LiftLog::where('user_id', $userId)
+                ->where('exercise_id', $exerciseId)
+                ->where('logged_at', '>=', Carbon::now()->subWeeks(self::LOOKBACK_WEEKS))
+                ->get();
+        }
+
+        if ($recentLiftLogs->isEmpty()) {
+            return null;
+        }
+
+        $bestLog = null;
+        $maxScore = -PHP_INT_MAX;
+
+        foreach ($recentLiftLogs as $log) {
+            if ($log->display_reps > $highRepThreshold) {
+                continue;
+            }
+
+            $repsScore = $log->display_reps;
+            $setsDistance = abs($log->display_rounds - $defaultSets);
+            $totalScore = $repsScore - $setsDistance;
+
+            if ($totalScore > $maxScore) {
+                $maxScore = $totalScore;
+                $bestLog = $log;
+            } elseif ($totalScore === $maxScore) {
+                if ($log->logged_at > $bestLog->logged_at) {
+                    $bestLog = $log;
+                }
+            }
+        }
+
+        return $bestLog;
+    }
+}

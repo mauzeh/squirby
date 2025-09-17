@@ -216,8 +216,10 @@ class ProgramController extends Controller
 
     public function quickAdd(Request $request, Exercise $exercise, $date, TrainingProgressionService $trainingProgressionService)
     {
-        $reps = $trainingProgressionService->suggestNextRepCount(auth()->id(), $exercise->id);
-        $sets = $trainingProgressionService->suggestNextSetCount(auth()->id(), $exercise->id);
+        $suggestion = $trainingProgressionService->getSuggestionDetails(auth()->id(), $exercise->id);
+
+        $reps = $suggestion ? $suggestion->reps : config('training.defaults.reps', 10);
+        $sets = $suggestion ? $suggestion->sets : config('training.defaults.sets', 3);
 
         // Find the highest priority for the given date
         $maxPriority = Program::where('user_id', auth()->id())

@@ -244,8 +244,8 @@ class LiftLogController extends Controller
                         $program->lastWeight = $suggestionDetails->lastWeight;
                         $program->lastReps = $suggestionDetails->lastReps;
                         $program->lastSets = $suggestionDetails->lastSets;
-                        $program->lastReps = $suggestionDetails->lastReps;
-                        $program->lastSets = $suggestionDetails->lastSets;
+                        $program->reps = $suggestionDetails->reps;
+                        $program->sets = $suggestionDetails->sets;
                         
                     } else {
                         $program->suggestedNextWeight = null;
@@ -265,6 +265,8 @@ class LiftLogController extends Controller
                 
             }
         }
+
+        //dd($programs);
 
         $submittedLiftLog = null;
         if ($request->has('submitted_lift_log_id')) {

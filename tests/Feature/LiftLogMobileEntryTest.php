@@ -96,6 +96,32 @@ class LiftLogMobileEntryTest extends TestCase
     }
 
     /** @test */
+    public function mobile_entry_page_displays_suggested_reps_and_sets()
+    {
+        $exercise = Exercise::factory()->create(['user_id' => $this->user->id, 'is_bodyweight' => false]);
+        Program::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $exercise->id,
+            'date' => Carbon::today(),
+        ]);
+
+        LiftLog::factory()->has(LiftSet::factory()->count(3)->state([
+            'reps' => 11,
+            'weight' => 40.0,
+        ]), 'liftSets')->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => Carbon::today()->subDays(1),
+        ]);
+
+        $response = $this->get(route('lift-logs.mobile-entry'));
+
+        $response->assertStatus(200);
+        $response->assertSee('40 lbs');
+        $response->assertSee('(3 x 12)');
+    }
+
+    /** @test */
     public function mobile_entry_page_does_not_display_suggested_weight_for_bodyweight_exercises()
     {
         $exercise = Exercise::factory()->create(['user_id' => $this->user->id, 'is_bodyweight' => true]);
