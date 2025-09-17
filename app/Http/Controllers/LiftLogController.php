@@ -27,7 +27,7 @@ class LiftLogController extends Controller
      */
     public function index()
     {
-        $liftLogs = LiftLog::with('exercise')->where('user_id', auth()->id())->orderBy('logged_at', 'asc')->get();
+        $liftLogs = LiftLog::with(['exercise', 'liftSets'])->where('user_id', auth()->id())->orderBy('logged_at', 'asc')->get();
         $exercises = Exercise::where('user_id', auth()->id())->orderBy('title', 'asc')->get();
 
         $displayExercises = $this->exerciseService->getDisplayExercises(5);
