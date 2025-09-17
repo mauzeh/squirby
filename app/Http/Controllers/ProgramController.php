@@ -29,21 +29,33 @@ class ProgramController extends Controller
 
         if ($selectedDate->isToday() || $selectedDate->isTomorrow() || $selectedDate->copy()->addDay()->isTomorrow()) {
             foreach ($programs as $program) {
-                // Only suggest weight for non-bodyweight exercises
                 if (!$program->exercise->is_bodyweight) {
-                    $program->suggestedNextWeight = $trainingProgressionService->suggestNextWeight(
+                    $suggestionDetails = $trainingProgressionService->getSuggestionDetails(
                         auth()->id(),
                         $program->exercise_id,
-                        $program->reps, // Assuming 'reps' from the program is the target reps
-                        $selectedDate // Pass the selected date for lookback
+                        $selectedDate
                     );
+
+                    if ($suggestionDetails) {
+                        $program->suggestedNextWeight = $suggestionDetails->suggestedWeight;
+                        $program->lastWeight = $suggestionDetails->lastWeight;
+                        $program->percentageIncrease = $suggestionDetails->percentageIncrease;
+                    } else {
+                        $program->suggestedNextWeight = null;
+                        $program->lastWeight = null;
+                        $program->percentageIncrease = null;
+                    }
                 } else {
-                    $program->suggestedNextWeight = null; // Or a specific message for bodyweight
+                    $program->suggestedNextWeight = null;
+                    $program->lastWeight = null;
+                    $program->percentageIncrease = null;
                 }
             }
         } else {
             foreach ($programs as $program) {
                 $program->suggestedNextWeight = null;
+                $program->lastWeight = null;
+                $program->percentageIncrease = null;
             }
         }
 

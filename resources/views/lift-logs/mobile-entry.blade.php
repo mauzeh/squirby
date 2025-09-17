@@ -45,8 +45,7 @@
                             <button type="submit" class="program-action-button delete-program-button"><i class="fa-solid fa-trash"></i></button>
                         </form>
                     </div>
-                    <h2>{{ $program->exercise->title }}</h2>
-                    <p class="details">{{ $program->sets }} × {{ $program->reps }} reps</p>
+                    <h2>{{ $program->exercise->title }} ({{ $program->sets }} × {{ $program->reps }})</h2>
                     @if($program->comments)
                         <p class="details"><strong>Notes:</strong> {{ $program->comments }}</p>
                     @endif
@@ -78,7 +77,13 @@
                     @else
                         @if($program->suggestedNextWeight)
                             <p class="suggested-weight">
-                                Suggested: {{ number_format($program->suggestedNextWeight) }} lbs
+                                @if(isset($program->lastWeight))
+                                    <span class="last-weight">Last time: {{ number_format($program->lastWeight) }} lbs
+                                    @if(isset($program->percentageIncrease) && $program->percentageIncrease > 0)
+                                        <span class="percentage-increase">({{ number_format($program->percentageIncrease, 0) }}% increase)</span>
+                                    @endif
+                                    </span>
+                                @endif
                             </p>
                         @endif
                         <form action="{{ route('lift-logs.store') }}" method="POST" class="lift-log-form">

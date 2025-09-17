@@ -233,19 +233,32 @@ class LiftLogController extends Controller
         if ($selectedDate->isToday() || $selectedDate->isTomorrow() || $selectedDate->copy()->addDay()->isTomorrow()) {
             foreach ($programs as $program) {
                 if (!$program->exercise->is_bodyweight) {
-                    $program->suggestedNextWeight = $trainingProgressionService->suggestNextWeight(
+                    $suggestionDetails = $trainingProgressionService->getSuggestionDetails(
                         auth()->id(),
                         $program->exercise_id,
-                        $program->reps,
                         $selectedDate
                     );
+
+                    if ($suggestionDetails) {
+                        $program->suggestedNextWeight = $suggestionDetails->suggestedWeight;
+                        $program->lastWeight = $suggestionDetails->lastWeight;
+                        $program->percentageIncrease = $suggestionDetails->percentageIncrease;
+                    } else {
+                        $program->suggestedNextWeight = null;
+                        $program->lastWeight = null;
+                        $program->percentageIncrease = null;
+                    }
                 } else {
                     $program->suggestedNextWeight = null;
+                    $program->lastWeight = null;
+                    $program->percentageIncrease = null;
                 }
             }
         } else {
             foreach ($programs as $program) {
                 $program->suggestedNextWeight = null;
+                $program->lastWeight = null;
+                $program->percentageIncrease = null;
             }
         }
 
