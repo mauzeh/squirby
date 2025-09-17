@@ -27,8 +27,7 @@
                 <thead>
                     <tr>
                         <th style="width: 1%;"><input type="checkbox" id="select-all-programs"></th>
-                        <th class="hide-on-mobile" style="width: 1%; white-space: nowrap; text-align: center;">Sets</th>
-                        <th class="hide-on-mobile" style="width: 1%; white-space: nowrap; text-align: center;">Reps</th>
+                        
                         <th class="hide-on-mobile" style="width: 1%; white-space: nowrap; text-align: center;">Prio</th>
                         <th>Exercise</th>
                         <th class="hide-on-mobile">Today</th>
@@ -39,20 +38,15 @@
                     @foreach ($programs as $program)
                         <tr>
                             <td><input type="checkbox" name="program_ids[]" value="{{ $program->id }}" class="program-checkbox"></td>
-                            <td class="hide-on-mobile" style="text-align: center;">{{ $program->sets }}</td>
-                            <td class="hide-on-mobile" style="text-align: center;">{{ $program->reps }}</td>
+                            
                             <td class="hide-on-mobile" style="text-align: center;">{{ $program->priority }}</td>
                             <td>
-                                <div class="hide-on-mobile"><strong>{{ $program->exercise->title }}</strong></div>
+                                <div class="hide-on-mobile"><strong>{{ $program->exercise->title }}</strong> (<x-lift-reps-sets-display :reps="$program->reps" :sets="$program->sets" />)</div>
                                 <div class="show-on-mobile">
-                                    <strong>{{ $program->exercise->title }}</strong>
+                                    <strong>{{ $program->exercise->title }}</strong> (<x-lift-reps-sets-display :reps="$program->reps" :sets="$program->sets" />)
                                     @if($program->suggestedNextWeight)
                                         (<i>{{ number_format($program->suggestedNextWeight) }} lbs</i>)
                                     @endif
-                                </div>
-                                <div class="show-on-mobile" style="font-size: 0.9em; color: #ccc;">
-                                    Reps: {{ $program->reps }}<br>
-                                    Sets: {{ $program->sets }}
                                 </div>
                                 @if($program->comments)
                                     <small style="font-size: 0.8em; color: #aaa;">{{ $program->comments }}</small>
