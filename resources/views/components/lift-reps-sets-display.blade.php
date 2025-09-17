@@ -1,0 +1,1 @@
+@props(['reps', 'sets']){{ $sets }}&nbsp;×&nbsp;{{ $reps }}

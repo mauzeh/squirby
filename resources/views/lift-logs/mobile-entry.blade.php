@@ -45,7 +45,7 @@
                             <button type="submit" class="program-action-button delete-program-button"><i class="fa-solid fa-trash"></i></button>
                         </form>
                     </div>
-                    <h2>{{ $program->exercise->title }} ({{ $program->sets }}&nbsp;×&nbsp;{{ $program->reps }})</h2>
+                    <h2>{{ $program->exercise->title }} (<x-lift-reps-sets-display :reps="$program->reps" :sets="$program->sets" />)</h2>
                     @if($program->comments)
                         <p class="details"><strong>Notes:</strong> {{ $program->comments }}</p>
                     @endif
@@ -67,8 +67,7 @@
                                     <button type="submit" class="button-small button-danger">Undo</button>
                                 </form>
                             </div>
-                            <p><x-lift-weight-display :liftLog="$loggedLift" /></p>
-                            <p><strong>Reps x Sets:</strong> {{ $loggedLift->display_reps }} x {{ $loggedLift->display_rounds }}</p>
+                            <p><x-lift-weight-display :liftLog="$loggedLift" /> (<x-lift-reps-sets-display :reps="$loggedLift->display_reps" :sets="$loggedLift->display_rounds" />)</p>
                             @if($loggedLift->comments)
                                 <p><strong>Comments:</strong> {{ $loggedLift->comments }}</p>
                             @endif
