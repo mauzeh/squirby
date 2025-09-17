@@ -45,7 +45,7 @@
                             <button type="submit" class="program-action-button delete-program-button"><i class="fa-solid fa-trash"></i></button>
                         </form>
                     </div>
-                    <h2>{{ $program->exercise->title }} ({{ $program->sets }} × {{ $program->reps }})</h2>
+                    <h2>{{ $program->exercise->title }} ({{ $program->sets }}&nbsp;×&nbsp;{{ $program->reps }})</h2>
                     @if($program->comments)
                         <p class="details"><strong>Notes:</strong> {{ $program->comments }}</p>
                     @endif
