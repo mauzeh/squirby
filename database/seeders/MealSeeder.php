@@ -119,5 +119,11 @@ class MealSeeder extends Seeder
         $meal->ingredients()->attach($ingredients['Onion, Yellow']->id, ['quantity' => 100]);
         $meal->ingredients()->attach($ingredients['Bell Pepper (Fresh)']->id, ['quantity' => 50]);
 
+        $meal = Meal::create(['name' => 'Souvla Chicken Sandwich (with 1 tbsp Granch Yogurt and no cheese at all).', 'user_id' => $adminUser->id]);
+        $meal->ingredients()->attach($ingredients['Direct Entry - Carbohydrate (g)']->id, ['quantity' => 36]);
+        $meal->ingredients()->attach($ingredients['Direct Entry - Fat (g)']->id, ['quantity' => 33]);
+        $meal->ingredients()->attach($ingredients['Direct Entry - Protein (g)']->id, ['quantity' => 44]);
+        $meal->ingredients()->attach($ingredients['Direct Entry - Sodium (mg)']->id, ['quantity' => 1500]);
+
     }
 }
