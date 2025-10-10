@@ -202,9 +202,15 @@ class LiftLogController extends Controller
         $value=true;
 
         if ($result['importedCount'] === 0 && !empty($result['notFound'])) {
+            $errorHtml = 'No exercises were found for the following names:<ul>';
+            foreach ($result['notFound'] as $notFoundExercise) {
+                $errorHtml .= '<li>' . htmlspecialchars($notFoundExercise) . '</li>';
+            }
+            $errorHtml .= '</ul>';
+
             return redirect()
                 ->route('lift-logs.index')
-                ->with('error', 'No exercises found for: ' . implode(', ', $result['notFound']));
+                ->with('error', $errorHtml);
         } elseif ($result['importedCount'] === 0 && !empty($result['invalidRows'])) {
             return redirect()
                 ->route('lift-logs.index')
