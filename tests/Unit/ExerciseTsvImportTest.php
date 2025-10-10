@@ -102,4 +102,28 @@ class ExerciseTsvImportTest extends TestCase
         $this->assertTrue($exercises->where('title', 'Wall Sits')->first()->is_bodyweight);
         $this->assertFalse($exercises->where('title', 'Lat Pulldowns')->first()->is_bodyweight);
     }
+
+    /** @test */
+    public function it_handles_two_column_input_with_default_bodyweight_false()
+    {
+        $tsvData = "Running\tCardio exercise\nSwimming\tFull body cardio";
+
+        $result = $this->tsvImporterService->importExercises($tsvData, $this->user->id);
+
+        $this->assertEquals(2, $result['importedCount']);
+        $this->assertEquals(0, $result['updatedCount']);
+        $this->assertEmpty($result['invalidRows']);
+
+        $exercises = Exercise::where('user_id', $this->user->id)->get();
+        
+        $running = $exercises->where('title', 'Running')->first();
+        $this->assertNotNull($running);
+        $this->assertEquals('Cardio exercise', $running->description);
+        $this->assertFalse($running->is_bodyweight); // Should default to false
+
+        $swimming = $exercises->where('title', 'Swimming')->first();
+        $this->assertNotNull($swimming);
+        $this->assertEquals('Full body cardio', $swimming->description);
+        $this->assertFalse($swimming->is_bodyweight); // Should default to false
+    }
 }

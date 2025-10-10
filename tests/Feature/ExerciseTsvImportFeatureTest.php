@@ -88,4 +88,31 @@ class ExerciseTsvImportFeatureTest extends TestCase
         $response->assertRedirect(route('exercises.index'));
         $response->assertSessionHas('error');
     }
+
+    public function test_user_can_import_exercises_with_two_columns_only()
+    {
+        $tsvData = "Running\tCardio exercise\nSwimming\tFull body cardio";
+
+        $response = $this->actingAs($this->user)
+            ->post(route('exercises.import-tsv'), [
+                'tsv_data' => $tsvData
+            ]);
+
+        $response->assertRedirect(route('exercises.index'));
+        $response->assertSessionHas('success');
+
+        $this->assertDatabaseHas('exercises', [
+            'user_id' => $this->user->id,
+            'title' => 'Running',
+            'description' => 'Cardio exercise',
+            'is_bodyweight' => false, // Should default to false
+        ]);
+
+        $this->assertDatabaseHas('exercises', [
+            'user_id' => $this->user->id,
+            'title' => 'Swimming',
+            'description' => 'Full body cardio',
+            'is_bodyweight' => false, // Should default to false
+        ]);
+    }
 }
