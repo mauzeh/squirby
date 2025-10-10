@@ -199,9 +199,8 @@ class LiftLogController extends Controller
 
         $result = $this->tsvImporterService->importLiftLogs($tsvData, $validated['date'], auth()->id());
 
-        $value=true;
-
-        if ($result['importedCount'] === 0 && !empty($result['notFound'])) {
+        // Handle errors first
+        if ($result['importedCount'] === 0 && $result['updatedCount'] === 0 && !empty($result['notFound'])) {
             $errorHtml = 'No exercises were found for the following names:<ul>';
             foreach ($result['notFound'] as $notFoundExercise) {
                 $errorHtml .= '<li>' . htmlspecialchars($notFoundExercise) . '</li>';
@@ -211,19 +210,54 @@ class LiftLogController extends Controller
             return redirect()
                 ->route('lift-logs.index')
                 ->with('error', $errorHtml);
-        } elseif ($result['importedCount'] === 0 && !empty($result['invalidRows'])) {
+        } elseif ($result['importedCount'] === 0 && $result['updatedCount'] === 0 && !empty($result['invalidRows'])) {
             return redirect()
                 ->route('lift-logs.index')
                 ->with('error', 'No lift logs imported due to invalid data in rows: ' . implode(', ', array_map(function($row) { return '"' . $row . '"' ; }, $result['invalidRows'])));
-        } elseif (!empty($result['importedCount']) && !empty($result['invalidRows'])) {
-            return redirect()
-                ->route('lift-logs.index')
-                ->with('success', 'TSV data imported successfully with some invalid rows. Invalid rows: ' . implode(', ', array_map(function($row) { return '"' . $row . '"' ; }, $result['invalidRows'])));
+        }
+
+        // Build success message
+        $successMessage = 'TSV data processed successfully! ';
+        $totalProcessed = $result['importedCount'] + $result['updatedCount'];
+        
+        // Add counts
+        $messageParts = [];
+        if ($result['importedCount'] > 0) {
+            $messageParts[] = $result['importedCount'] . ' lift log(s) imported';
+        }
+        if ($result['updatedCount'] > 0) {
+            $messageParts[] = $result['updatedCount'] . ' lift log(s) updated';
+        }
+        
+        if (!empty($messageParts)) {
+            $successMessage .= implode(', ', $messageParts) . '.';
+        }
+
+        // Add detailed list if total < 10
+        if ($totalProcessed < 10) {
+            $details = [];
+            
+            if (!empty($result['importedEntries'])) {
+                $details[] = '<strong>Imported:</strong><ul><li>' . implode('</li><li>', array_map('htmlspecialchars', $result['importedEntries'])) . '</li></ul>';
+            }
+            
+            if (!empty($result['updatedEntries'])) {
+                $details[] = '<strong>Updated:</strong><ul><li>' . implode('</li><li>', array_map('htmlspecialchars', $result['updatedEntries'])) . '</li></ul>';
+            }
+            
+            if (!empty($details)) {
+                $successMessage .= '<br><br>' . implode('<br>', $details);
+            }
+        }
+
+        // Add invalid rows warning if any
+        if (!empty($result['invalidRows'])) {
+            $successMessage .= '<br><br><strong>Warning:</strong> Some rows were invalid: ' . implode(', ', array_map(function($row) { return '"' . htmlspecialchars($row) . '"'; }, $result['invalidRows']));
         }
 
         return redirect()
             ->route('lift-logs.index')
-            ->with('success', 'TSV data imported successfully!');
+            ->with('success', $successMessage);
     }
 
     public function mobileEntry(Request $request, \App\Services\TrainingProgressionService $trainingProgressionService)

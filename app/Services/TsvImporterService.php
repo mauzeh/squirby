@@ -86,15 +86,18 @@ class TsvImporterService
     {
         $rows = explode("\n", $tsvData);
         $importedCount = 0;
+        $updatedCount = 0;
         $notFound = [];
         $invalidRows = [];
+        $importedEntries = [];
+        $updatedEntries = [];
 
         foreach ($rows as $row) {
             if (empty($row)) {
                 continue;
             }
 
-            $columns = array_map('trim', str_getcsv($row, "\t"));
+            $columns = array_map('trim', explode("\t", $row));
 
             if (count($columns) < 6) {
                 $invalidRows[] = $row;
@@ -118,15 +121,17 @@ class TsvImporterService
                 $notes = $columns[6] ?? '';
 
                 // Check for existing LiftLog entries with the same user, exercise, and logged_at
-                $existingLiftLogs = \App\Models\LiftLog::with('liftSets')
+                $existingLiftLog = \App\Models\LiftLog::with('liftSets')
                     ->where('user_id', $userId)
                     ->where('exercise_id', $exercise->id)
                     ->where('logged_at', $loggedAt->format('Y-m-d H:i:s'))
-                    ->get();
+                    ->first();
 
-                $isDuplicate = false;
-                foreach ($existingLiftLogs as $existingLiftLog) {
-                    // Check if the number of existing LiftSets matches the number of rounds from TSV
+                $entryDescription = $exercise->title . ' on ' . $loggedAt->format('m/d/Y H:i') . ' (' . $weight . 'lbs x ' . $reps . ' reps x ' . $rounds . ' sets)';
+
+                if ($existingLiftLog) {
+                    // Check if the data is exactly the same (duplicate)
+                    $isDuplicate = false;
                     if ($existingLiftLog->liftSets->count() === (int)$rounds) {
                         $allSetsMatch = true;
                         foreach ($existingLiftLog->liftSets as $set) {
@@ -135,40 +140,50 @@ class TsvImporterService
                                 break;
                             }
                         }
-                        if ($allSetsMatch) {
-                            // All LiftSets match, and the count of sets matches, so it's a duplicate
+                        if ($allSetsMatch && $existingLiftLog->comments == $notes) {
                             $isDuplicate = true;
-                            break; // Exit the loop since a duplicate is found
                         }
                     }
-                }
 
-                if ($isDuplicate) {
-                    continue; // Skip this row
-                }
+                    if ($isDuplicate) {
+                        continue; // Skip exact duplicates
+                    }
 
-                $liftLog = \App\Models\LiftLog::create([
-                    'user_id' => $userId,
-                    'exercise_id' => $exercise->id,
-                    'comments' => $notes, // Use notes for comments in LiftLog
-                    'logged_at' => $loggedAt,
-                ]);
-
-                for ($i = 0; $i < $rounds; $i++) {
-                    /*dd("Adding LiftSet", [
-                        'lift_log_id' => $liftLog->id,
-                        'weight' => $weight,
-                        'reps' => $reps,
-                        'notes' => $notes,
-                    ]);*/
-                    $result = $liftLog->liftSets()->create([
-                        'weight' => $weight,
-                        'reps' => $reps,
-                        'notes' => $notes,
+                    // Update existing lift log
+                    $existingLiftLog->update([
+                        'comments' => $notes,
                     ]);
-                    //dd($result);
+
+                    // Delete existing lift sets and create new ones
+                    $existingLiftLog->liftSets()->delete();
+                    for ($i = 0; $i < $rounds; $i++) {
+                        $existingLiftLog->liftSets()->create([
+                            'weight' => $weight,
+                            'reps' => $reps,
+                            'notes' => $notes,
+                        ]);
+                    }
+                    $updatedCount++;
+                    $updatedEntries[] = $entryDescription;
+                } else {
+                    // Create new lift log
+                    $liftLog = \App\Models\LiftLog::create([
+                        'user_id' => $userId,
+                        'exercise_id' => $exercise->id,
+                        'comments' => $notes,
+                        'logged_at' => $loggedAt,
+                    ]);
+
+                    for ($i = 0; $i < $rounds; $i++) {
+                        $liftLog->liftSets()->create([
+                            'weight' => $weight,
+                            'reps' => $reps,
+                            'notes' => $notes,
+                        ]);
+                    }
+                    $importedCount++;
+                    $importedEntries[] = $entryDescription;
                 }
-                $importedCount++;
             } else {
                 $notFound[] = $columns[2];
             }
@@ -176,20 +191,27 @@ class TsvImporterService
 
         return [
             'importedCount' => $importedCount,
+            'updatedCount' => $updatedCount,
             'notFound' => $notFound,
             'invalidRows' => $invalidRows,
+            'importedEntries' => $importedEntries,
+            'updatedEntries' => $updatedEntries,
         ];
     }
 
     private function parseDate(string $dateString): ?\Carbon\Carbon
     {
         try {
-            return \Carbon\Carbon::createFromFormat('m/d/Y H:i', $dateString);
+            return \Carbon\Carbon::createFromFormat('m/d/Y g:i A', $dateString);
         } catch (\Exception $e) {
             try {
-                return \Carbon\Carbon::createFromFormat('Y-m-d H:i', $dateString);
+                return \Carbon\Carbon::createFromFormat('m/d/Y H:i', $dateString);
             } catch (\Exception $e) {
-                return null;
+                try {
+                    return \Carbon\Carbon::createFromFormat('Y-m-d H:i', $dateString);
+                } catch (\Exception $e) {
+                    return null;
+                }
             }
         }
     }
