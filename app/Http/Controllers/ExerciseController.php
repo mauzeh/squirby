@@ -12,11 +12,13 @@ class ExerciseController extends Controller
 {
     protected $exerciseService;
     protected $chartService;
+    protected $tsvImporterService;
 
-    public function __construct(ExerciseService $exerciseService, \App\Services\ChartService $chartService)
+    public function __construct(ExerciseService $exerciseService, \App\Services\ChartService $chartService, \App\Services\TsvImporterService $tsvImporterService)
     {
         $this->exerciseService = $exerciseService;
         $this->chartService = $chartService;
+        $this->tsvImporterService = $tsvImporterService;
     }
 
     /**
@@ -123,5 +125,48 @@ class ExerciseController extends Controller
         $weight = $request->input('weight');
 
         return view('exercises.logs', compact('exercise', 'liftLogs', 'chartData', 'displayExercises', 'exercises', 'sets', 'reps', 'weight'));
+    }
+
+    public function importTsv(Request $request)
+    {
+        $validated = $request->validate([
+            'tsv_data' => 'nullable|string',
+        ]);
+
+        $tsvData = trim($validated['tsv_data']);
+        if (empty($tsvData)) {
+            return redirect()
+                ->route('exercises.index')
+                ->with('error', 'TSV data cannot be empty.');
+        }
+
+        $result = $this->tsvImporterService->importExercises($tsvData, auth()->id());
+
+        if ($result['importedCount'] === 0 && $result['updatedCount'] === 0) {
+            if (!empty($result['invalidRows'])) {
+                return redirect()
+                    ->route('exercises.index')
+                    ->with('error', 'No exercises were imported due to invalid data in rows: ' . implode(', ', array_map(function($row) { return '"' . $row . '"'; }, $result['invalidRows'])));
+            }
+            return redirect()
+                ->route('exercises.index')
+                ->with('error', 'No exercises were imported.');
+        }
+
+        $message = '';
+        if ($result['importedCount'] > 0) {
+            $message .= $result['importedCount'] . ' exercise(s) imported';
+        }
+        if ($result['updatedCount'] > 0) {
+            if ($message) $message .= ', ';
+            $message .= $result['updatedCount'] . ' exercise(s) updated';
+        }
+        if (!empty($result['invalidRows'])) {
+            $message .= '. Some rows were invalid: ' . implode(', ', array_map(function($row) { return '"' . $row . '"'; }, $result['invalidRows']));
+        }
+
+        return redirect()
+            ->route('exercises.index')
+            ->with('success', 'TSV data processed successfully! ' . $message);
     }
 }

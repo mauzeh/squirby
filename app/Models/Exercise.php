@@ -16,6 +16,10 @@ class Exercise extends Model
         'user_id',
     ];
 
+    protected $casts = [
+        'is_bodyweight' => 'boolean',
+    ];
+
     public function liftLogs()
     {
         return $this->hasMany(LiftLog::class);

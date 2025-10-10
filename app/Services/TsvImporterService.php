@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\FoodLog;
 use App\Models\Ingredient;
 use App\Models\BodyLog;
+use App\Models\Exercise;
 use Carbon\Carbon;
 use Carbon\Exceptions\InvalidFormatException;
 use App\Services\IngredientTsvProcessorService;
@@ -300,6 +301,66 @@ class TsvImporterService
 
         return [
             'importedCount' => $importedCount,
+            'invalidRows' => $invalidRows,
+        ];
+    }
+
+    public function importExercises(string $tsvData, int $userId): array
+    {
+        $rows = explode("\n", $tsvData);
+        $importedCount = 0;
+        $invalidRows = [];
+        $updatedCount = 0;
+
+        foreach ($rows as $row) {
+            if (empty(trim($row))) {
+                continue;
+            }
+
+            $columns = array_map('trim', explode("\t", $row));
+
+            if (count($columns) < 2 || empty($columns[0])) {
+                $invalidRows[] = $row;
+                continue;
+            }
+
+            $title = $columns[0];
+            $description = $columns[1] ?? '';
+            
+            // Parse boolean value - handle various formats
+            $isBodyweight = false;
+            if (isset($columns[2])) {
+                $boolValue = strtolower(trim($columns[2]));
+                $isBodyweight = in_array($boolValue, ['true', '1', 'yes', 'y']);
+            }
+
+            // Check if exercise already exists for this user
+            $existingExercise = Exercise::where('user_id', $userId)
+                ->whereRaw('LOWER(title) = ?', [strtolower($title)])
+                ->first();
+
+            if ($existingExercise) {
+                // Update existing exercise
+                $existingExercise->update([
+                    'description' => $description,
+                    'is_bodyweight' => $isBodyweight,
+                ]);
+                $updatedCount++;
+            } else {
+                // Create new exercise
+                Exercise::create([
+                    'user_id' => $userId,
+                    'title' => $title,
+                    'description' => $description,
+                    'is_bodyweight' => $isBodyweight,
+                ]);
+                $importedCount++;
+            }
+        }
+
+        return [
+            'importedCount' => $importedCount,
+            'updatedCount' => $updatedCount,
             'invalidRows' => $invalidRows,
         ];
     }

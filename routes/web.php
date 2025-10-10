@@ -62,6 +62,7 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('exercises', ExerciseController::class);
     Route::get('exercises/{exercise}/logs', [ExerciseController::class, 'showLogs'])->name('exercises.show-logs');
+    Route::post('exercises/import-tsv', [ExerciseController::class, 'importTsv'])->name('exercises.import-tsv');
 
     Route::resource('lift-logs', LiftLogController::class)->except(['show']);
 
