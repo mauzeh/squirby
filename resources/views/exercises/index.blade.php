@@ -59,44 +59,29 @@
 
             <div class="form-container">
                 <h3>TSV Export</h3>
-                <p style="color: #ccc; font-size: 0.9em; margin-bottom: 10px;">
-                    Copy this data to backup your exercises or import into other applications.
-                </p>
-                <textarea id="tsv-output" rows="10" style="width: 100%; background-color: #3a3a3a; color: #f2f2f2; border: 1px solid #555;">Title	Description	Is Bodyweight
-@foreach ($exercises as $exercise){{ $exercise->title }}	{{ $exercise->description }}	{{ $exercise->is_bodyweight ? 'true' : 'false' }}
+                <textarea id="tsv-output" rows="10" style="width: 100%; background-color: #3a3a3a; color: #f2f2f2; border: 1px solid #555;">@foreach ($exercises as $exercise){{ $exercise->title }}	{{ $exercise->description }}	{{ $exercise->is_bodyweight ? 'true' : 'false' }}
 @endforeach
                 </textarea>
                 <button id="copy-tsv-button" class="button">Copy to Clipboard</button>
             </div>
-        @endif
 
-        <div class="form-container">
-            <h3>TSV Import</h3>
-            <p style="color: #ccc; font-size: 0.9em; margin-bottom: 10px;">
-                Format: Title	Description	Is Bodyweight (true/false)<br>
-                Example: Push-up	Basic bodyweight exercise	true
-            </p>
-            <form action="{{ route('exercises.import-tsv') }}" method="POST">
-                @csrf
-                <textarea name="tsv_data" rows="10" style="width: 100%; background-color: #3a3a3a; color: #f2f2f2; border: 1px solid #555;" placeholder="Title	Description	Is Bodyweight
-Push-up	Basic bodyweight exercise	true
-Bench Press	Chest exercise with barbell	false"></textarea>
-                <button type="submit" class="button">Import TSV</button>
-            </form>
-        </div>
-    </div>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const copyTsvButton = document.getElementById('copy-tsv-button');
-            if (copyTsvButton) {
-                copyTsvButton.addEventListener('click', function() {
+            <script>
+                document.getElementById('copy-tsv-button').addEventListener('click', function() {
                     var tsvOutput = document.getElementById('tsv-output');
                     tsvOutput.select();
                     document.execCommand('copy');
                     alert('TSV data copied to clipboard!');
                 });
-            }
-        });
-    </script>
+            </script>
+        @endif
+
+        <div class="form-container">
+            <h3>TSV Import</h3>
+            <form action="{{ route('exercises.import-tsv') }}" method="POST">
+                @csrf
+                <textarea name="tsv_data" rows="10" style="width: 100%; background-color: #3a3a3a; color: #f2f2f2; border: 1px solid #555;"></textarea>
+                <button type="submit" class="button">Import TSV</button>
+            </form>
+        </div>
+    </div>
 @endsection
