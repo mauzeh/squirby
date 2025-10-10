@@ -12,7 +12,7 @@
     @endif
     @if (session('error'))
         <div class="container error-message-box">
-            {{ session('error') }}
+            {!! session('error') !!}
         </div>
     @endif
     <div class="container">
