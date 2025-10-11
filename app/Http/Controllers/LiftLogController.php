@@ -28,7 +28,7 @@ class LiftLogController extends Controller
     public function index()
     {
         $liftLogs = LiftLog::with(['exercise', 'liftSets'])->where('user_id', auth()->id())->orderBy('logged_at', 'asc')->get();
-        $exercises = Exercise::where('user_id', auth()->id())->orderBy('title', 'asc')->get();
+        $exercises = Exercise::availableToUser(auth()->id())->orderBy('title', 'asc')->get();
 
         $displayExercises = $this->exerciseService->getDisplayExercises(5);
 
@@ -90,7 +90,7 @@ class LiftLogController extends Controller
         if ($liftLog->user_id !== auth()->id()) {
             abort(403, 'Unauthorized action.');
         }
-        $exercises = Exercise::where('user_id', auth()->id())->orderBy('title', 'asc')->get();
+        $exercises = Exercise::availableToUser(auth()->id())->orderBy('title', 'asc')->get();
         return view('lift-logs.edit', compact('liftLog', 'exercises'));
     }
 
@@ -340,7 +340,7 @@ class LiftLogController extends Controller
             ->get()
             ->keyBy('exercise_id'); // Key by exercise_id for easy lookup
 
-        $exercises = \App\Models\Exercise::where('user_id', auth()->id())->orderBy('title')->get();
+        $exercises = \App\Models\Exercise::availableToUser(auth()->id())->orderBy('title')->get();
 
         return view('lift-logs.mobile-entry', compact('programs', 'selectedDate', 'submittedLiftLog', 'dailyLiftLogs', 'exercises'));
     }

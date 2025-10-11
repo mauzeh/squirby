@@ -68,7 +68,7 @@ class ProgramController extends Controller
     public function create(Request $request)
     {
         $date = $request->input('date') ? Carbon::parse($request->input('date')) : Carbon::today();
-        $exercises = Exercise::where('user_id', auth()->id())->orderBy('title')->get();
+        $exercises = Exercise::availableToUser(auth()->id())->orderBy('title')->get();
         $highestPriority = Program::where('user_id', auth()->id())
             ->whereDate('date', $date->toDateString())
             ->max('priority');
@@ -119,7 +119,7 @@ class ProgramController extends Controller
             abort(403);
         }
 
-        $exercises = Exercise::where('user_id', auth()->id())->orderBy('title')->get();
+        $exercises = Exercise::availableToUser(auth()->id())->orderBy('title')->get();
 
         return view('programs.edit', compact('program', 'exercises'));
     }

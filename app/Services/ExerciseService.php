@@ -36,7 +36,7 @@ class ExerciseService
         $needed = $limit - $topExercises->count();
         if ($needed > 0) {
             $topExerciseIds = $topExercises->pluck('id')->toArray();
-            $recentExercises = Exercise::where('user_id', Auth::id())
+            $recentExercises = Exercise::availableToUser(Auth::id())
                                         ->whereNotIn('id', $topExerciseIds) // Exclude already selected top exercises
                                         ->orderBy('created_at', 'desc')
                                         ->limit($needed)
