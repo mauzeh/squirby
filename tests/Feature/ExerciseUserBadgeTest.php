@@ -63,7 +63,7 @@ class ExerciseUserBadgeTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertSee('Personal Squat');
-        $response->assertSee('John Doe'); // Should see the user's name badge
+        $response->assertSee('You'); // Should see 'You' for the user's own exercise
     }
 
     /** @test */
@@ -90,13 +90,13 @@ class ExerciseUserBadgeTest extends TestCase
 
         $response->assertStatus(200);
         
-        // Should see global exercise with Global badge
+        // Should see global exercise with Everyone badge
         $response->assertSee('Global Exercise');
-        $response->assertSee('Global');
+        $response->assertSee('Everyone');
         
-        // Should see admin exercise with admin name badge
+        // Should see admin exercise with 'You' badge
         $response->assertSee('Admin Exercise');
-        $response->assertSee('Admin User');
+        $response->assertSee('You');
     }
 
     /** @test */
@@ -122,12 +122,12 @@ class ExerciseUserBadgeTest extends TestCase
 
         $response->assertStatus(200);
         
-        // Check for Global badge with green background
+        // Check for Everyone badge with green background
         $response->assertSee('background-color: #4CAF50');
-        $response->assertSee('Global');
+        $response->assertSee('Everyone');
         
         // Check for user badge with yellow background
         $response->assertSee('background-color: #FFC107');
-        $response->assertSee('John Doe');
+        $response->assertSee('You');
     }
 }
