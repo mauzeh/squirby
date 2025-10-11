@@ -26,7 +26,6 @@
                         <th>Title</th>
                         <th class="hide-on-mobile">Description</th>
                         <th class="hide-on-mobile">Type</th>
-                        <th class="hide-on-mobile">Scope</th>
                         <th class="actions-column">Actions</th>
                     </tr>
                 </thead>
@@ -49,13 +48,6 @@
                             </td>
                             <td class="hide-on-mobile">{{ $exercise->description }}</td>
                             <td class="hide-on-mobile">{{ $exercise->is_bodyweight ? 'Bodyweight' : 'Weighted' }}</td>
-                            <td class="hide-on-mobile">
-                                @if($exercise->isGlobal())
-                                    <span style="color: #4CAF50; font-weight: bold;">Global</span>
-                                @else
-                                    <span style="color: #FFC107;">Personal</span>
-                                @endif
-                            </td>
                             <td class="actions-column">
                                 <div style="display: flex; gap: 5px;">
                                     @if($exercise->canBeEditedBy(auth()->user()))
@@ -78,7 +70,7 @@
                 <tfoot>
                     <tr>
                         <th><input type="checkbox" id="select-all-exercises-footer"></th>
-                        <th colspan="5" style="text-align:left; font-weight:normal;">
+                        <th colspan="4" style="text-align:left; font-weight:normal;">
                             <form action="{{ route('exercises.destroy-selected') }}" method="POST" id="delete-selected-form" onsubmit="return confirm('Are you sure you want to delete the selected exercises?');" style="display:inline;">
                                 @csrf
                                 <button type="submit" class="button delete"><i class="fa-solid fa-trash"></i> Delete Selected</button>
