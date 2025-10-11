@@ -22,6 +22,7 @@
             <table class="log-entries-table">
                 <thead>
                     <tr>
+                        <th><input type="checkbox" id="select-all-exercises"></th>
                         <th>Title</th>
                         <th class="hide-on-mobile">Description</th>
                         <th class="hide-on-mobile">Type</th>
@@ -31,6 +32,7 @@
                 <tbody>
                     @foreach ($exercises as $exercise)
                         <tr>
+                            <td><input type="checkbox" name="exercise_ids[]" value="{{ $exercise->id }}" class="exercise-checkbox"></td>
                             <td>
                                 <a href="{{ route('exercises.show-logs', $exercise) }}" class="text-white">{{ $exercise->title }}</a>
                                 <div class="show-on-mobile" style="font-size: 0.9em; color: #ccc;">
@@ -55,6 +57,17 @@
                         </tr>
                     @endforeach
                 </tbody>
+                <tfoot>
+                    <tr>
+                        <th><input type="checkbox" id="select-all-exercises-footer"></th>
+                        <th colspan="4" style="text-align:left; font-weight:normal;">
+                            <form action="{{ route('exercises.destroy-selected') }}" method="POST" id="delete-selected-form" onsubmit="return confirm('Are you sure you want to delete the selected exercises?');" style="display:inline;">
+                                @csrf
+                                <button type="submit" class="button delete"><i class="fa-solid fa-trash"></i> Delete Selected</button>
+                            </form>
+                        </th>
+                    </tr>
+                </tfoot>
             </table>
 
             <div class="form-container">
@@ -71,6 +84,44 @@
                     tsvOutput.select();
                     document.execCommand('copy');
                     alert('TSV data copied to clipboard!');
+                });
+
+                // Select all functionality for exercises
+                document.getElementById('select-all-exercises').addEventListener('change', function() {
+                    var checkboxes = document.querySelectorAll('.exercise-checkbox');
+                    var footerCheckbox = document.getElementById('select-all-exercises-footer');
+                    checkboxes.forEach(function(checkbox) {
+                        checkbox.checked = this.checked;
+                    }, this);
+                    footerCheckbox.checked = this.checked;
+                });
+
+                document.getElementById('select-all-exercises-footer').addEventListener('change', function() {
+                    var checkboxes = document.querySelectorAll('.exercise-checkbox');
+                    var headerCheckbox = document.getElementById('select-all-exercises');
+                    checkboxes.forEach(function(checkbox) {
+                        checkbox.checked = this.checked;
+                    }, this);
+                    headerCheckbox.checked = this.checked;
+                });
+
+                // Handle bulk delete form submission
+                document.getElementById('delete-selected-form').addEventListener('submit', function(e) {
+                    var checkedBoxes = document.querySelectorAll('.exercise-checkbox:checked');
+                    if (checkedBoxes.length === 0) {
+                        e.preventDefault();
+                        alert('Please select at least one exercise to delete.');
+                        return false;
+                    }
+                    
+                    // Add selected IDs to the form
+                    checkedBoxes.forEach(function(checkbox) {
+                        var hiddenInput = document.createElement('input');
+                        hiddenInput.type = 'hidden';
+                        hiddenInput.name = 'exercise_ids[]';
+                        hiddenInput.value = checkbox.value;
+                        this.appendChild(hiddenInput);
+                    }, this);
                 });
             </script>
         @endif

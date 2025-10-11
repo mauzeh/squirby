@@ -105,6 +105,29 @@ class ExerciseController extends Controller
         return redirect()->route('exercises.index')->with('success', 'Exercise deleted successfully.');
     }
 
+    /**
+     * Remove the specified resources from storage.
+     */
+    public function destroySelected(Request $request)
+    {
+        $validated = $request->validate([
+            'exercise_ids' => 'required|array',
+            'exercise_ids.*' => 'exists:exercises,id',
+        ]);
+
+        $exercises = Exercise::whereIn('id', $validated['exercise_ids'])->get();
+
+        foreach ($exercises as $exercise) {
+            if ($exercise->user_id !== auth()->id()) {
+                abort(403, 'Unauthorized action.');
+            }
+        }
+
+        Exercise::destroy($validated['exercise_ids']);
+
+        return redirect()->route('exercises.index')->with('success', 'Selected exercises deleted successfully!');
+    }
+
     public function showLogs(Request $request, Exercise $exercise)
     {
         if ($exercise->user_id !== auth()->id()) {

@@ -58,6 +58,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('measurement-types', MeasurementTypeController::class)->except(['show']);
 
     Route::resource('exercises', ExerciseController::class);
+    Route::post('exercises/destroy-selected', [ExerciseController::class, 'destroySelected'])->name('exercises.destroy-selected');
     Route::get('exercises/{exercise}/logs', [ExerciseController::class, 'showLogs'])->name('exercises.show-logs');
 
     Route::resource('lift-logs', LiftLogController::class)->except(['show']);
