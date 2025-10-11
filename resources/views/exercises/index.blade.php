@@ -79,6 +79,13 @@
                                 @csrf
                                 <button type="submit" class="button delete"><i class="fa-solid fa-trash"></i> Delete Selected</button>
                             </form>
+                            
+                            @if(auth()->user()->hasRole('Admin'))
+                            <form action="{{ route('exercises.promote-selected') }}" method="POST" id="promote-selected-form" onsubmit="return confirm('Are you sure you want to promote the selected exercises to global status?');" style="display:inline; margin-left: 10px;">
+                                @csrf
+                                <button type="submit" class="button" style="background-color: #4CAF50;"><i class="fa-solid fa-globe"></i> Promote</button>
+                            </form>
+                            @endif
                         </th>
                     </tr>
                 </tfoot>
@@ -137,6 +144,41 @@
                         this.appendChild(hiddenInput);
                     }, this);
                 });
+
+                // Handle bulk promotion form submission
+                var promoteForm = document.getElementById('promote-selected-form');
+                if (promoteForm) {
+                    promoteForm.addEventListener('submit', function(e) {
+                        var checkedBoxes = document.querySelectorAll('.exercise-checkbox:checked:not([disabled])');
+                        if (checkedBoxes.length === 0) {
+                            e.preventDefault();
+                            alert('Please select at least one exercise to promote.');
+                            return false;
+                        }
+                        
+                        // Filter to only user exercises (not already global)
+                        var userExercises = Array.from(checkedBoxes).filter(function(checkbox) {
+                            var row = checkbox.closest('tr');
+                            var badge = row.querySelector('.badge');
+                            return badge && !badge.textContent.includes('Everyone');
+                        });
+                        
+                        if (userExercises.length === 0) {
+                            e.preventDefault();
+                            alert('Please select user exercises to promote. Global exercises cannot be promoted.');
+                            return false;
+                        }
+                        
+                        // Add selected user exercise IDs to the form
+                        userExercises.forEach(function(checkbox) {
+                            var hiddenInput = document.createElement('input');
+                            hiddenInput.type = 'hidden';
+                            hiddenInput.name = 'exercise_ids[]';
+                            hiddenInput.value = checkbox.value;
+                            this.appendChild(hiddenInput);
+                        }, this);
+                    });
+                }
             </script>
         @endif
 

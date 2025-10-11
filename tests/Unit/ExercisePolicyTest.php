@@ -144,4 +144,40 @@ class ExercisePolicyTest extends TestCase
         
         $this->assertFalse($result);
     }
+
+    public function test_admin_can_promote_user_exercises_to_global(): void
+    {
+        $userExercise = Exercise::factory()->create(['user_id' => $this->regularUser->id]);
+        
+        $result = $this->policy->promoteToGlobal($this->adminUser, $userExercise);
+        
+        $this->assertTrue($result);
+    }
+
+    public function test_regular_user_cannot_promote_exercises_to_global(): void
+    {
+        $userExercise = Exercise::factory()->create(['user_id' => $this->regularUser->id]);
+        
+        $result = $this->policy->promoteToGlobal($this->regularUser, $userExercise);
+        
+        $this->assertFalse($result);
+    }
+
+    public function test_admin_cannot_promote_already_global_exercises(): void
+    {
+        $globalExercise = Exercise::factory()->create(['user_id' => null]);
+        
+        $result = $this->policy->promoteToGlobal($this->adminUser, $globalExercise);
+        
+        $this->assertFalse($result);
+    }
+
+    public function test_regular_user_cannot_promote_already_global_exercises(): void
+    {
+        $globalExercise = Exercise::factory()->create(['user_id' => null]);
+        
+        $result = $this->policy->promoteToGlobal($this->regularUser, $globalExercise);
+        
+        $this->assertFalse($result);
+    }
 }

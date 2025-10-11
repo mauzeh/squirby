@@ -174,6 +174,36 @@ class ExerciseController extends Controller
         return redirect()->route('exercises.index')->with('success', 'Selected exercises deleted successfully!');
     }
 
+    /**
+     * Promote selected user exercises to global exercises.
+     */
+    public function promoteSelected(Request $request)
+    {
+        $validated = $request->validate([
+            'exercise_ids' => 'required|array',
+            'exercise_ids.*' => 'exists:exercises,id',
+        ]);
+
+        $exercises = Exercise::whereIn('id', $validated['exercise_ids'])->get();
+
+        // Verify admin permissions and that exercises are user-specific
+        foreach ($exercises as $exercise) {
+            $this->authorize('promoteToGlobal', $exercise);
+            
+            if ($exercise->isGlobal()) {
+                return back()->withErrors(['error' => "Exercise '{$exercise->title}' is already global."]);
+            }
+        }
+
+        // Promote all selected exercises
+        Exercise::whereIn('id', $validated['exercise_ids'])
+            ->update(['user_id' => null]);
+
+        $count = count($validated['exercise_ids']);
+        return redirect()->route('exercises.index')
+            ->with('success', "Successfully promoted {$count} exercise(s) to global status.");
+    }
+
     public function showLogs(Request $request, Exercise $exercise)
     {
         // Only allow viewing logs for exercises available to the user
