@@ -201,15 +201,23 @@ class LiftLogController extends Controller
 
         // Handle errors first
         if ($result['importedCount'] === 0 && !empty($result['notFound'])) {
-            $errorHtml = 'No exercises were found for the following names:<ul>';
-            foreach ($result['notFound'] as $notFoundExercise) {
-                $errorHtml .= '<li>' . htmlspecialchars($notFoundExercise) . '</li>';
+            $uniqueNotFound = array_unique($result['notFound']);
+            $notFoundCount = count($uniqueNotFound);
+            
+            if ($notFoundCount > 10) {
+                $errorMessage = 'No exercises were found for ' . $notFoundCount . ' exercise names in the import data.';
+            } else {
+                $errorHtml = 'No exercises were found for the following names:<ul>';
+                foreach ($uniqueNotFound as $notFoundExercise) {
+                    $errorHtml .= '<li>' . htmlspecialchars($notFoundExercise) . '</li>';
+                }
+                $errorHtml .= '</ul>';
+                $errorMessage = $errorHtml;
             }
-            $errorHtml .= '</ul>';
 
             return redirect()
                 ->route('lift-logs.index')
-                ->with('error', $errorHtml);
+                ->with('error', $errorMessage);
         } elseif ($result['importedCount'] === 0 && !empty($result['invalidRows'])) {
             return redirect()
                 ->route('lift-logs.index')
@@ -249,6 +257,22 @@ class LiftLogController extends Controller
         // Add invalid rows warning if any
         if (!empty($result['invalidRows'])) {
             $successMessage .= '<br><br><strong>Warning:</strong> Some rows were invalid: ' . implode(', ', array_map(function($row) { return '"' . htmlspecialchars($row) . '"'; }, $result['invalidRows']));
+        }
+
+        // Add missing exercises warning if any (for partial success cases)
+        if (!empty($result['notFound'])) {
+            $uniqueNotFound = array_unique($result['notFound']);
+            $notFoundCount = count($uniqueNotFound);
+            
+            if ($notFoundCount > 10) {
+                $successMessage .= '<br><br><strong>Warning:</strong> ' . $notFoundCount . ' exercise names were not found and their rows were skipped.';
+            } else {
+                $successMessage .= '<br><br><strong>Warning:</strong> The following exercises were not found and their rows were skipped:<ul>';
+                foreach ($uniqueNotFound as $notFoundExercise) {
+                    $successMessage .= '<li>' . htmlspecialchars($notFoundExercise) . '</li>';
+                }
+                $successMessage .= '</ul>';
+            }
         }
 
         return redirect()
