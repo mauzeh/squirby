@@ -53,7 +53,12 @@ class FoodLogController extends Controller
 
         $dailyTotals = $nutritionService->calculateFoodLogTotals($foodLogs);
 
-        return view('food_logs.index', compact('foodLogs', 'groupedLogs', 'dailyTotals', 'ingredients', 'units', 'meals', 'selectedDate', 'nutritionService'));
+        // Get the last record date for the "last record" button
+        $lastRecordDate = FoodLog::where('user_id', auth()->id())
+            ->orderBy('logged_at', 'desc')
+            ->first()?->logged_at?->toDateString();
+
+        return view('food_logs.index', compact('foodLogs', 'groupedLogs', 'dailyTotals', 'ingredients', 'units', 'meals', 'selectedDate', 'nutritionService', 'lastRecordDate'));
     }
 
     /**
