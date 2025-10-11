@@ -1,0 +1,33 @@
+feat(admin): Implement admin-managed exercises and TSV import
+
+This commit introduces a comprehensive feature set for administrators to manage exercises within the application. It also adds support for importing exercises from TSV files, enhancing the data management capabilities for admins.
+
+Key features and changes in this commit include:
+
+- **Admin-Managed Exercises:**
+    - Administrators now have full CRUD (Create, Read, Update, Delete) capabilities for exercises.
+    - This is enforced through a new `ExercisePolicy` that restricts access to these actions to users with the 'admin' role.
+    - The `ExerciseController` has been updated to handle these new administrative functions.
+
+- **TSV Import for Exercises:**
+    - A new `TsvImporterService` has been introduced to handle the import of exercises from TSV files.
+    - This service is integrated into the `ExerciseController` to allow admins to upload and process TSV files.
+    - The service includes detailed error messaging for failed imports.
+
+- **UI Improvements:**
+    - A password visibility toggle has been added to the login and user creation/edit forms.
+    - The exercises index page now includes a banner that does not wrap, improving the layout.
+    - The UI for creating and editing exercises has been updated to support the new admin features.
+
+- **Testing:**
+    - A significant number of new tests have been added to cover the new functionality, including:
+        - Feature tests for exercise management, TSV import, and user badge display.
+        - Unit tests for the `ExercisePolicy`, `Exercise` model, and `TsvImporterService`.
+        - Integration tests for the `GlobalExercisesSeeder` and TSV import with global exercises.
+
+- **Kiro Specs:**
+    - This commit implements the requirements outlined in the following Kiro specifications:
+        - `admin-managed-exercises`
+        - `exercise-tsv-import-admin-support`
+        - `password-visibility-toggle`
+        - `exercise-index-banner-nowrap`
