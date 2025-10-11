@@ -253,6 +253,12 @@ a.button.create::before {
     border-radius: 5px; /* Slightly rounded corners */
 }
 
+.success-message-box p,
+.success-message-box ul,
+.success-message-box li {
+    color: white; /* Ensure all text elements are white */
+}
+
 .error-message-box {
     background-color: #dc3545; /* Red for error */
     color: white; /* White text */
@@ -260,6 +266,12 @@ a.button.create::before {
     padding: 15px; /* Add padding */
     margin: 20px 0;
     border-radius: 5px; /* Slightly rounded corners */
+}
+
+.error-message-box p,
+.error-message-box ul,
+.error-message-box li {
+    color: white; /* Ensure all text elements are white */
 }
 input[type="text"]:focus,
 input[type="number"]:focus,

@@ -71,28 +71,23 @@ class ExerciseTsvImportIntegrationTest extends TestCase
         $response->assertRedirect(route('exercises.index'));
         $response->assertSessionHas('success');
 
-        // Verify all global exercises were created successfully
-        $this->assertDatabaseHas('exercises', [
+        // Verify conflicting global exercises were NOT created (per requirement 1.5)
+        $this->assertDatabaseMissing('exercises', [
             'user_id' => null,
             'title' => 'Push Ups',
-            'description' => 'Global push ups exercise',
-            'is_bodyweight' => true,
         ]);
 
-        $this->assertDatabaseHas('exercises', [
+        $this->assertDatabaseMissing('exercises', [
             'user_id' => null,
             'title' => 'Squats',
-            'description' => 'Global squats exercise',
-            'is_bodyweight' => false,
         ]);
 
-        $this->assertDatabaseHas('exercises', [
+        $this->assertDatabaseMissing('exercises', [
             'user_id' => null,
             'title' => 'Deadlifts',
-            'description' => 'Global deadlifts exercise',
-            'is_bodyweight' => false,
         ]);
 
+        // Verify only the non-conflicting global exercise was created
         $this->assertDatabaseHas('exercises', [
             'user_id' => null,
             'title' => 'New Global Exercise',
@@ -113,19 +108,20 @@ class ExerciseTsvImportIntegrationTest extends TestCase
             'description' => 'Another user squats',
         ]);
 
-        // Verify we now have both global and user versions
-        $this->assertEquals(2, Exercise::whereRaw('LOWER(title) = ?', ['push ups'])->count());
-        $this->assertEquals(2, Exercise::whereRaw('LOWER(title) = ?', ['squats'])->count());
-        $this->assertEquals(2, Exercise::whereRaw('LOWER(title) = ?', ['deadlifts'])->count());
-        $this->assertEquals(1, Exercise::whereRaw('LOWER(title) = ?', ['new global exercise'])->count());
+        // Verify we only have user versions for conflicting names, global for non-conflicting
+        $this->assertEquals(1, Exercise::whereRaw('LOWER(title) = ?', ['push ups'])->count()); // 1 user exercise
+        $this->assertEquals(1, Exercise::whereRaw('LOWER(title) = ?', ['squats'])->count()); // 1 user exercise
+        $this->assertEquals(1, Exercise::whereRaw('LOWER(title) = ?', ['deadlifts'])->count()); // 1 user exercise
+        $this->assertEquals(1, Exercise::whereRaw('LOWER(title) = ?', ['new global exercise'])->count()); // 1 global exercise
 
-        // Verify success message shows all imports
+        // Verify success message shows conflicts and imports
         $successMessage = session('success');
-        $this->assertStringContainsString('Imported 4 new global exercises:', $successMessage);
-        $this->assertStringContainsString('Push Ups (bodyweight)', $successMessage);
-        $this->assertStringContainsString('Squats', $successMessage);
-        $this->assertStringContainsString('Deadlifts', $successMessage);
+        $this->assertStringContainsString('Imported 1 new global exercises:', $successMessage);
         $this->assertStringContainsString('New Global Exercise (bodyweight)', $successMessage);
+        $this->assertStringContainsString('Skipped 3 exercises:', $successMessage);
+        $this->assertStringContainsString('Push Ups - Exercise &#039;Push Ups&#039; conflicts with existing user exercise', $successMessage);
+        $this->assertStringContainsString('Squats - Exercise &#039;Squats&#039; conflicts with existing user exercise', $successMessage);
+        $this->assertStringContainsString('Deadlifts - Exercise &#039;Deadlifts&#039; conflicts with existing user exercise', $successMessage);
     }
 
     public function test_user_importing_exercises_that_conflict_with_existing_global_exercises()
@@ -766,5 +762,122 @@ class ExerciseTsvImportIntegrationTest extends TestCase
 
         $user2Available = Exercise::availableToUser($this->anotherUser->id)->get();
         $this->assertCount(3, $user2Available); // 2 personal + 1 global
+    }
+
+    public function test_case_insensitive_conflict_detection_across_all_scenarios()
+    {
+        // Create exercises with various case combinations
+        Exercise::create([
+            'user_id' => null,
+            'title' => 'GLOBAL EXERCISE',
+            'description' => 'Global exercise in caps',
+            'is_bodyweight' => true,
+        ]);
+
+        Exercise::create([
+            'user_id' => $this->user->id,
+            'title' => 'user exercise',
+            'description' => 'User exercise in lowercase',
+            'is_bodyweight' => false,
+        ]);
+
+        Exercise::create([
+            'user_id' => $this->anotherUser->id,
+            'title' => 'Mixed Case Exercise',
+            'description' => 'Another user mixed case',
+            'is_bodyweight' => true,
+        ]);
+
+        // Test user import with case variations
+        $userTsvData = "Global Exercise\tUser attempt at global\tfalse\n" .      // Should conflict with global (case insensitive)
+                       "USER EXERCISE\tUpdated user exercise\ttrue\n" .           // Should update existing (case insensitive)
+                       "mixed case exercise\tUser attempt at another user\tfalse\n" . // Should be allowed (different user)
+                       "Brand New Exercise\tCompletely new\ttrue";                // Should be created
+
+        $response = $this->actingAs($this->user)
+            ->post(route('exercises.import-tsv'), [
+                'tsv_data' => $userTsvData
+            ]);
+
+        $response->assertRedirect(route('exercises.index'));
+        $response->assertSessionHas('success');
+
+        // Verify global exercise remains unchanged
+        $globalExercise = Exercise::global()->whereRaw('LOWER(title) = ?', ['global exercise'])->first();
+        $this->assertEquals('Global exercise in caps', $globalExercise->description);
+        $this->assertTrue($globalExercise->is_bodyweight);
+
+        // Verify user exercise was updated (case insensitive match)
+        $userExercise = Exercise::userSpecific($this->user->id)->whereRaw('LOWER(title) = ?', ['user exercise'])->first();
+        $this->assertEquals('Updated user exercise', $userExercise->description);
+        $this->assertTrue($userExercise->is_bodyweight);
+
+        // Verify user can create exercise with same name as another user (different case)
+        $this->assertDatabaseHas('exercises', [
+            'user_id' => $this->user->id,
+            'title' => 'mixed case exercise',
+            'description' => 'User attempt at another user',
+            'is_bodyweight' => false,
+        ]);
+
+        // Verify new exercise was created
+        $this->assertDatabaseHas('exercises', [
+            'user_id' => $this->user->id,
+            'title' => 'Brand New Exercise',
+            'description' => 'Completely new',
+            'is_bodyweight' => true,
+        ]);
+
+        // Test admin global import with case variations
+        $adminTsvData = "user EXERCISE\tAdmin attempt at user exercise\tfalse\n" .  // Should conflict with user exercise
+                        "MIXED case EXERCISE\tAdmin attempt at mixed case\ttrue\n" .   // Should conflict with user exercise
+                        "completely NEW exercise\tAdmin version\tfalse\n" .             // Should be allowed (no conflict)
+                        "Admin Only Exercise\tAdmin exclusive\ttrue";                   // Should be created
+
+        $response = $this->actingAs($this->admin)
+            ->post(route('exercises.import-tsv'), [
+                'tsv_data' => $adminTsvData,
+                'import_as_global' => true
+            ]);
+
+        $response->assertRedirect(route('exercises.index'));
+        $response->assertSessionHas('success');
+
+        // Verify no global exercises were created that conflict with user exercises
+        $this->assertDatabaseMissing('exercises', [
+            'user_id' => null,
+            'title' => 'user EXERCISE',
+        ]);
+
+        $this->assertDatabaseMissing('exercises', [
+            'user_id' => null,
+            'title' => 'MIXED case EXERCISE',
+        ]);
+
+        // Verify non-conflicting global exercises were created
+        $this->assertDatabaseHas('exercises', [
+            'user_id' => null,
+            'title' => 'completely NEW exercise',
+            'description' => 'Admin version',
+            'is_bodyweight' => false,
+        ]);
+
+        $this->assertDatabaseHas('exercises', [
+            'user_id' => null,
+            'title' => 'Admin Only Exercise',
+            'description' => 'Admin exclusive',
+            'is_bodyweight' => true,
+        ]);
+
+        // Verify success messages show case-insensitive conflict detection
+        $successMessage = session('success');
+        $this->assertStringContainsString('Skipped 2 exercises:', $successMessage);
+        $this->assertStringContainsString('user EXERCISE - Exercise &#039;user EXERCISE&#039; conflicts with existing user exercise', $successMessage);
+        $this->assertStringContainsString('MIXED case EXERCISE - Exercise &#039;MIXED case EXERCISE&#039; conflicts with existing user exercise', $successMessage);
+
+        // Verify case insensitive uniqueness is maintained
+        $this->assertEquals(1, Exercise::whereRaw('LOWER(title) = ?', ['global exercise'])->count());
+        $this->assertEquals(1, Exercise::whereRaw('LOWER(title) = ?', ['user exercise'])->count());
+        $this->assertEquals(2, Exercise::whereRaw('LOWER(title) = ?', ['mixed case exercise'])->count()); // One per user
     }
 }

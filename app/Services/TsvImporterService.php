@@ -470,6 +470,15 @@ class TsvImporterService
             }
         }
 
+        // Check for any user exercise conflict
+        $userConflict = Exercise::whereNotNull('user_id')
+            ->whereRaw('LOWER(title) = ?', [strtolower($title)])
+            ->first();
+
+        if ($userConflict) {
+            return ['action' => 'skipped', 'reason' => "Exercise '{$title}' conflicts with existing user exercise"];
+        }
+
         // Create new global exercise
         $exercise = Exercise::create([
             'user_id' => null, // Global exercise

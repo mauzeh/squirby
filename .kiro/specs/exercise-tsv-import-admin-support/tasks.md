@@ -1,14 +1,14 @@
 # Implementation Plan
 
-- [x] 1. Update TsvImporterService to support global exercise imports
+- [x] 1. Update TsvImporterService to support global exercise imports with user conflict checking
   - Add importAsGlobal parameter to importExercises method
   - Add admin permission validation for global imports
   - Create processExerciseImport method to route to appropriate import logic
-  - Create processGlobalExerciseImport method for global exercise handling
+  - Create processGlobalExerciseImport method for global exercise handling with user exercise conflict checking
   - Create processUserExerciseImport method for user exercise handling with global conflict checking
   - Update return array to include detailed lists of importedExercises, updatedExercises, and skippedExercises with specific exercise details and change tracking
-  - Write unit tests for all new service methods and import modes
-  - _Requirements: 1.1, 1.2, 1.3, 1.4, 2.1, 2.2, 2.3, 2.4, 3.1, 3.2, 3.3, 3.4_
+  - Write unit tests for all new service methods and import modes including user exercise conflicts for global imports
+  - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5, 2.1, 2.2, 2.3, 2.4, 3.1, 3.2, 3.3, 3.4_
 
 - [x] 2. Update ExerciseController to handle global import option
   - Add import_as_global validation to importTsv method
@@ -29,10 +29,11 @@
 - [x] 4. Update existing unit tests to work with new service signature
   - Modify ExerciseTsvImportTest to use new importExercises method signature
   - Add tests for global import mode functionality
-  - Add tests for conflict detection between global and user exercises
+  - Add tests for conflict detection between global and user exercises (both directions)
   - Add tests for admin permission validation
+  - Add tests for admin global import being skipped when user exercises exist with same name
   - Update test assertions to verify detailed exercise lists and change tracking in return array
-  - _Requirements: 1.1, 1.2, 1.3, 1.4, 2.1, 2.2, 2.3, 2.4, 3.1, 3.2, 3.3, 3.4_
+  - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5, 2.1, 2.2, 2.3, 2.4, 3.1, 3.2, 3.3, 3.4_
 
 - [x] 5. Update existing feature tests to work with new import functionality
   - Modify ExerciseTsvImportFeatureTest to test both import modes
@@ -43,14 +44,21 @@
   - _Requirements: 1.1, 2.1, 2.3, 4.1, 4.2, 4.3, 4.4_
 
 - [x] 6. Add integration tests for complete TSV import workflow with admin-managed exercises
-  - Test admin importing global exercises that conflict with existing user exercises
-  - Test user importing exercises that conflict with existing global exercises
+  - Test admin importing global exercises that conflict with existing user exercises (should be skipped)
+  - Test user importing exercises that conflict with existing global exercises (should be skipped)
   - Test mixed scenarios with both global and user exercises in database
   - Test detailed import result lists showing specific exercises imported, updated, and skipped with change details
   - Test backward compatibility with existing exercise data
-  - _Requirements: 1.1, 1.2, 1.3, 1.4, 2.1, 2.2, 2.3, 2.4, 3.1, 3.2, 3.3, 3.4, 4.3, 4.4_
+  - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5, 2.1, 2.2, 2.3, 2.4, 3.1, 3.2, 3.3, 3.4, 4.3, 4.4_
 
-- [x] 7. Update lift log TSV import to work with new exercise scoping
+- [x] 7. Update processGlobalExerciseImport to check for user exercise conflicts
+  - Modify processGlobalExerciseImport method to check for any existing user exercises with same name
+  - Skip global import if any user exercise exists with same name (case-insensitive)
+  - Update error message to indicate conflict with user exercise
+  - Write unit tests for this new conflict detection behavior
+  - _Requirements: 1.5_
+
+- [x] 8. Update lift log TSV import to work with new exercise scoping
   - Modify importLiftLogs method to use availableToUser scope instead of user-specific query
   - Update lift log import tests to work with global exercises
   - Ensure lift log imports can find both global and user exercises

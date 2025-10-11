@@ -14,8 +14,9 @@ This feature updates the existing Exercise TSV import functionality to work with
 
 1. WHEN an administrator imports exercises via TSV THEN the system SHALL provide an option to create them as global exercises
 2. WHEN an administrator chooses to import as global exercises THEN the system SHALL set user_id to NULL for all imported exercises
-3. WHEN importing global exercises THEN the system SHALL check for conflicts with existing global exercises by name
+3. WHEN importing global exercises THEN the system SHALL check for conflicts with existing global exercises and any user exercises by name
 4. WHEN a global exercise name conflict is detected THEN the system SHALL update the existing global exercise instead of creating a duplicate
+5. WHEN an administrator tries to import a global exercise that matches any existing user exercise name THEN the system SHALL skip the import and report the conflict
 
 ### Requirement 2
 

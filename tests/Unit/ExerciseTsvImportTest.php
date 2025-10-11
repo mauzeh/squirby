@@ -301,6 +301,35 @@ class ExerciseTsvImportTest extends TestCase
     }
 
     /** @test */
+    public function it_skips_global_exercise_when_user_conflict_exists()
+    {
+        // Create user exercise
+        Exercise::create([
+            'user_id' => $this->user->id,
+            'title' => 'Conflicting Exercise',
+            'description' => 'User exercise',
+            'is_bodyweight' => false,
+        ]);
+
+        $tsvData = "Conflicting Exercise\tGlobal exercise\ttrue";
+
+        $result = $this->tsvImporterService->importExercises($tsvData, $this->admin->id, true);
+
+        $this->assertEquals(0, $result['importedCount']);
+        $this->assertEquals(0, $result['updatedCount']);
+        $this->assertEquals(1, $result['skippedCount']);
+        $this->assertCount(1, $result['skippedExercises']);
+
+        $skippedExercise = $result['skippedExercises'][0];
+        $this->assertEquals('Conflicting Exercise', $skippedExercise['title']);
+        $this->assertStringContainsString('conflicts with existing user exercise', $skippedExercise['reason']);
+
+        // Verify no global exercise was created
+        $globalExercises = Exercise::global()->get();
+        $this->assertCount(0, $globalExercises);
+    }
+
+    /** @test */
     public function it_processes_mixed_import_scenarios()
     {
         // Create existing user exercise
