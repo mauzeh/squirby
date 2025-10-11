@@ -104,7 +104,7 @@ class TsvImporterService
                 continue;
             }
 
-            $exercise = \App\Models\Exercise::where('user_id', $userId)->whereRaw('LOWER(title) = ?', [strtolower($columns[2])])->first();
+            $exercise = \App\Models\Exercise::availableToUser($userId)->whereRaw('LOWER(title) = ?', [strtolower($columns[2])])->first();
 
             if ($exercise) {
                 $loggedAt = $this->parseDate($columns[0] . ' ' . $columns[1]);
@@ -354,12 +354,24 @@ class TsvImporterService
         ];
     }
 
-    public function importExercises(string $tsvData, int $userId): array
+    public function importExercises(string $tsvData, int $userId, bool $importAsGlobal = false): array
     {
+        // Validate admin permission for global imports
+        if ($importAsGlobal) {
+            $user = \App\Models\User::find($userId);
+            if (!$user || !$user->hasRole('Admin')) {
+                throw new \Exception('Only administrators can import global exercises.');
+            }
+        }
+
         $rows = explode("\n", $tsvData);
         $importedCount = 0;
-        $invalidRows = [];
         $updatedCount = 0;
+        $skippedCount = 0;
+        $invalidRows = [];
+        $importedExercises = [];
+        $updatedExercises = [];
+        $skippedExercises = [];
 
         foreach ($rows as $row) {
             if (empty(trim($row))) {
@@ -375,46 +387,151 @@ class TsvImporterService
 
             $title = $columns[0];
             $description = $columns[1] ?? '';
+            $isBodyweight = $this->parseBooleanValue($columns[2] ?? 'false');
+
+            $result = $this->processExerciseImport($title, $description, $isBodyweight, $userId, $importAsGlobal);
             
-            // Parse boolean value - handle various formats
-            $isBodyweight = false;
-            if (isset($columns[2])) {
-                $boolValue = strtolower(trim($columns[2]));
-                $isBodyweight = in_array($boolValue, ['true', '1', 'yes', 'y']);
-            }
-
-            // Check if exercise already exists for this user
-            $existingExercise = Exercise::where('user_id', $userId)
-                ->whereRaw('LOWER(title) = ?', [strtolower($title)])
-                ->first();
-
-            if ($existingExercise) {
-                // Check if data actually differs before updating
-                if ($existingExercise->description !== $description || $existingExercise->is_bodyweight !== $isBodyweight) {
-                    // Update existing exercise only if data differs
-                    $existingExercise->update([
-                        'description' => $description,
-                        'is_bodyweight' => $isBodyweight,
-                    ]);
+            switch ($result['action']) {
+                case 'imported':
+                    $importedCount++;
+                    $importedExercises[] = [
+                        'title' => $result['exercise']->title,
+                        'description' => $result['exercise']->description,
+                        'is_bodyweight' => $result['exercise']->is_bodyweight,
+                        'type' => $result['exercise']->isGlobal() ? 'global' : 'personal'
+                    ];
+                    break;
+                case 'updated':
                     $updatedCount++;
-                }
-                // If data is the same, we skip it (no increment to any counter)
-            } else {
-                // Create new exercise
-                Exercise::create([
-                    'user_id' => $userId,
-                    'title' => $title,
-                    'description' => $description,
-                    'is_bodyweight' => $isBodyweight,
-                ]);
-                $importedCount++;
+                    $updatedExercises[] = [
+                        'title' => $result['exercise']->title,
+                        'description' => $result['exercise']->description,
+                        'is_bodyweight' => $result['exercise']->is_bodyweight,
+                        'type' => $result['exercise']->isGlobal() ? 'global' : 'personal',
+                        'changes' => $result['changes'] ?? []
+                    ];
+                    break;
+                case 'skipped':
+                    $skippedCount++;
+                    $skippedExercises[] = [
+                        'title' => $title,
+                        'reason' => $result['reason']
+                    ];
+                    break;
             }
         }
 
         return [
             'importedCount' => $importedCount,
             'updatedCount' => $updatedCount,
+            'skippedCount' => $skippedCount,
             'invalidRows' => $invalidRows,
+            'importedExercises' => $importedExercises,
+            'updatedExercises' => $updatedExercises,
+            'skippedExercises' => $skippedExercises,
+            'importMode' => $importAsGlobal ? 'global' : 'personal'
         ];
+    }
+
+    private function processExerciseImport(string $title, string $description, bool $isBodyweight, int $userId, bool $importAsGlobal): array
+    {
+        if ($importAsGlobal) {
+            return $this->processGlobalExerciseImport($title, $description, $isBodyweight);
+        } else {
+            return $this->processUserExerciseImport($title, $description, $isBodyweight, $userId);
+        }
+    }
+
+    private function processGlobalExerciseImport(string $title, string $description, bool $isBodyweight): array
+    {
+        // Check for existing global exercise
+        $existingGlobal = Exercise::global()
+            ->whereRaw('LOWER(title) = ?', [strtolower($title)])
+            ->first();
+
+        if ($existingGlobal) {
+            // Check if data differs
+            $changes = [];
+            if ($existingGlobal->description !== $description) {
+                $changes['description'] = ['from' => $existingGlobal->description, 'to' => $description];
+            }
+            if ($existingGlobal->is_bodyweight !== $isBodyweight) {
+                $changes['is_bodyweight'] = ['from' => $existingGlobal->is_bodyweight, 'to' => $isBodyweight];
+            }
+            
+            if (!empty($changes)) {
+                $existingGlobal->update([
+                    'description' => $description,
+                    'is_bodyweight' => $isBodyweight,
+                ]);
+                return ['action' => 'updated', 'exercise' => $existingGlobal, 'changes' => $changes];
+            } else {
+                return ['action' => 'skipped', 'reason' => "Global exercise '{$title}' already exists with same data"];
+            }
+        }
+
+        // Create new global exercise
+        $exercise = Exercise::create([
+            'user_id' => null, // Global exercise
+            'title' => $title,
+            'description' => $description,
+            'is_bodyweight' => $isBodyweight,
+        ]);
+
+        return ['action' => 'imported', 'exercise' => $exercise];
+    }
+
+    private function processUserExerciseImport(string $title, string $description, bool $isBodyweight, int $userId): array
+    {
+        // Check for global exercise conflict first
+        $globalConflict = Exercise::global()
+            ->whereRaw('LOWER(title) = ?', [strtolower($title)])
+            ->first();
+
+        if ($globalConflict) {
+            return ['action' => 'skipped', 'reason' => "Exercise '{$title}' conflicts with existing global exercise"];
+        }
+
+        // Check for existing user exercise
+        $existingUser = Exercise::userSpecific($userId)
+            ->whereRaw('LOWER(title) = ?', [strtolower($title)])
+            ->first();
+
+        if ($existingUser) {
+            // Check if data differs
+            $changes = [];
+            if ($existingUser->description !== $description) {
+                $changes['description'] = ['from' => $existingUser->description, 'to' => $description];
+            }
+            if ($existingUser->is_bodyweight !== $isBodyweight) {
+                $changes['is_bodyweight'] = ['from' => $existingUser->is_bodyweight, 'to' => $isBodyweight];
+            }
+            
+            if (!empty($changes)) {
+                $existingUser->update([
+                    'description' => $description,
+                    'is_bodyweight' => $isBodyweight,
+                ]);
+                return ['action' => 'updated', 'exercise' => $existingUser, 'changes' => $changes];
+            } else {
+                return ['action' => 'skipped', 'reason' => "Personal exercise '{$title}' already exists with same data"];
+            }
+        }
+
+        // Create new user exercise
+        $exercise = Exercise::create([
+            'user_id' => $userId,
+            'title' => $title,
+            'description' => $description,
+            'is_bodyweight' => $isBodyweight,
+        ]);
+
+        return ['action' => 'imported', 'exercise' => $exercise];
+    }
+
+    private function parseBooleanValue(string $value): bool
+    {
+        $boolValue = strtolower(trim($value));
+        return in_array($boolValue, ['true', '1', 'yes', 'y']);
     }
 }

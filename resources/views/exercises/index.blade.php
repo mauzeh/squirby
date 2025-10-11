@@ -149,8 +149,27 @@
             <h3>TSV Import</h3>
             <form action="{{ route('exercises.import-tsv') }}" method="POST">
                 @csrf
-                <textarea name="tsv_data" rows="10" style="width: 100%; background-color: #3a3a3a; color: #f2f2f2; border: 1px solid #555;"></textarea>
-                <button type="submit" class="button">Import TSV</button>
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label for="tsv_data" style="display: block; margin-bottom: 5px; color: #f2f2f2;">TSV Data:</label>
+                    <textarea name="tsv_data" id="tsv_data" rows="10" style="width: 100%; background-color: #3a3a3a; color: #f2f2f2; border: 1px solid #555;" placeholder="Exercise Name&#9;Description&#9;Is Bodyweight (true/false)"></textarea>
+                </div>
+                
+                @if(auth()->user()->hasRole('Admin'))
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <div style="display: flex; align-items: center; margin-bottom: 5px;">
+                        <input type="checkbox" name="import_as_global" id="import_as_global" value="1" style="margin-right: 8px;">
+                        <label for="import_as_global" style="color: #f2f2f2; cursor: pointer;">
+                            Import as Global Exercises (available to all users)
+                        </label>
+                    </div>
+                    <small style="color: #aaa; font-size: 0.85em; line-height: 1.3;">
+                        Global exercises will be available to all users and can only be managed by administrators. 
+                        Personal exercises are only visible to you and will be skipped if they conflict with existing global exercises.
+                    </small>
+                </div>
+                @endif
+                
+                <button type="submit" class="button">Import Exercises</button>
             </form>
         </div>
         @endif

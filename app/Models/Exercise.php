@@ -46,7 +46,7 @@ class Exercise extends Model
         return $query->where(function ($q) use ($userId) {
             $q->whereNull('user_id')        // Global exercises (available to all users)
               ->orWhere('user_id', $userId); // User's own exercises
-        });
+        })->orderByRaw('user_id IS NULL ASC'); // Prioritize user exercises (user_id IS NOT NULL) over global exercises (user_id IS NULL)
     }
 
     // Helper methods

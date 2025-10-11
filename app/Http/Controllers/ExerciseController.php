@@ -200,47 +200,93 @@ class ExerciseController extends Controller
     public function importTsv(Request $request)
     {
         $validated = $request->validate([
-            'tsv_data' => 'nullable|string',
+            'tsv_data' => 'required|string',
+            'import_as_global' => 'boolean'
         ]);
 
         $tsvData = trim($validated['tsv_data']);
+        $importAsGlobal = $request->boolean('import_as_global', false);
+
         if (empty($tsvData)) {
             return redirect()
                 ->route('exercises.index')
                 ->with('error', 'TSV data cannot be empty.');
         }
 
-        $result = $this->tsvImporterService->importExercises($tsvData, auth()->id());
-
-        // Handle case with only invalid rows and no valid data
-        if ($result['importedCount'] === 0 && $result['updatedCount'] === 0 && !empty($result['invalidRows'])) {
+        // Validate admin permission for global imports
+        if ($importAsGlobal && !auth()->user()->hasRole('Admin')) {
             return redirect()
                 ->route('exercises.index')
-                ->with('error', 'No exercises were imported due to invalid data in rows: ' . implode(', ', array_map(function($row) { return '"' . $row . '"'; }, $result['invalidRows'])));
+                ->with('error', 'Only administrators can import global exercises.');
         }
 
-        $message = 'TSV data processed successfully! ';
-        $countParts = [];
+        try {
+            $result = $this->tsvImporterService->importExercises($tsvData, auth()->id(), $importAsGlobal);
+
+            $message = $this->buildImportSuccessMessage($result);
+            
+            return redirect()
+                ->route('exercises.index')
+                ->with('success', $message);
+
+        } catch (\Exception $e) {
+            return redirect()
+                ->route('exercises.index')
+                ->with('error', 'Import failed: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Build detailed import success message with lists of imported, updated, and skipped exercises.
+     */
+    private function buildImportSuccessMessage(array $result): string
+    {
+        $mode = $result['importMode'] === 'global' ? 'global' : 'personal';
+        $parts = ["TSV data processed successfully!"];
+
+        // Imported exercises
         if ($result['importedCount'] > 0) {
-            $countParts[] = $result['importedCount'] . ' exercise(s) imported';
-        }
-        if ($result['updatedCount'] > 0) {
-            $countParts[] = $result['updatedCount'] . ' exercise(s) updated';
-        }
-        
-        if (!empty($countParts)) {
-            $message .= implode(', ', $countParts) . '.';
-        } else {
-            // Handle case where nothing was imported or updated (all duplicates)
-            $message .= 'No new data was imported or updated - all entries already exist with the same data.';
-        }
-        if (!empty($result['invalidRows'])) {
-            $message .= '. Some rows were invalid: ' . implode(', ', array_map(function($row) { return '"' . $row . '"'; }, $result['invalidRows']));
+            $parts[] = "Imported {$result['importedCount']} new {$mode} exercises:";
+            foreach ($result['importedExercises'] as $exercise) {
+                $bodyweightText = $exercise['is_bodyweight'] ? ' (bodyweight)' : '';
+                $parts[] = "• {$exercise['title']}{$bodyweightText}";
+            }
         }
 
-        return redirect()
-            ->route('exercises.index')
-            ->with('success', 'TSV data processed successfully! ' . $message);
+        // Updated exercises
+        if ($result['updatedCount'] > 0) {
+            $parts[] = "Updated {$result['updatedCount']} existing {$mode} exercises:";
+            foreach ($result['updatedExercises'] as $exercise) {
+                $changeDetails = [];
+                foreach ($exercise['changes'] as $field => $change) {
+                    if ($field === 'is_bodyweight') {
+                        $changeDetails[] = "bodyweight: " . ($change['from'] ? 'yes' : 'no') . " → " . ($change['to'] ? 'yes' : 'no');
+                    } else {
+                        $changeDetails[] = "{$field}: '{$change['from']}' → '{$change['to']}'";
+                    }
+                }
+                $parts[] = "• {$exercise['title']} (" . implode(', ', $changeDetails) . ")";
+            }
+        }
+
+        // Skipped exercises
+        if ($result['skippedCount'] > 0) {
+            $parts[] = "Skipped {$result['skippedCount']} exercises:";
+            foreach ($result['skippedExercises'] as $exercise) {
+                $parts[] = "• {$exercise['title']} - {$exercise['reason']}";
+            }
+        }
+
+        // Invalid rows
+        if (count($result['invalidRows']) > 0) {
+            $parts[] = "Found " . count($result['invalidRows']) . " invalid rows that were skipped.";
+        }
+
+        if ($result['importedCount'] === 0 && $result['updatedCount'] === 0) {
+            $parts[] = "No new data was imported or updated - all entries already exist with the same data.";
+        }
+
+        return implode("\n", $parts);
     }
 
     /**
