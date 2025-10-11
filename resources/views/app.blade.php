@@ -102,7 +102,85 @@
                     // If on a mobile device, change the link's destination to the mobile-specific entry page.
                     liftsNavLink.href = "{{ route('lift-logs.mobile-entry') }}";
                 }
+
+                // Initialize password visibility toggles
+                initializePasswordToggles();
             });
+
+            /**
+             * Toggle password field visibility between text and password types
+             * @param {string} targetId - The ID of the password input field to toggle
+             */
+            function togglePasswordVisibility(targetId) {
+                const field = document.getElementById(targetId);
+                const button = document.querySelector(`[data-target="${targetId}"]`);
+                
+                if (!field || !button) {
+                    console.warn(`Password toggle: Could not find field or button for target ID: ${targetId}`);
+                    return;
+                }
+
+                const icon = button.querySelector('i');
+                if (!icon) {
+                    console.warn(`Password toggle: Could not find icon in button for target ID: ${targetId}`);
+                    return;
+                }
+                
+                if (field.type === 'password') {
+                    // Show password
+                    field.type = 'text';
+                    icon.classList.remove('fa-eye');
+                    icon.classList.add('fa-eye-slash');
+                    button.setAttribute('aria-label', 'Hide password');
+                } else {
+                    // Hide password
+                    field.type = 'password';
+                    icon.classList.remove('fa-eye-slash');
+                    icon.classList.add('fa-eye');
+                    button.setAttribute('aria-label', 'Show password');
+                }
+            }
+
+            /**
+             * Initialize password visibility toggle functionality
+             * Sets up event listeners for all password toggle buttons
+             */
+            function initializePasswordToggles() {
+                const toggleButtons = document.querySelectorAll('.password-toggle');
+                
+                toggleButtons.forEach(button => {
+                    const targetId = button.getAttribute('data-target');
+                    
+                    if (!targetId) {
+                        console.warn('Password toggle button found without data-target attribute');
+                        return;
+                    }
+
+                    // Set initial aria-label
+                    if (!button.getAttribute('aria-label')) {
+                        button.setAttribute('aria-label', 'Show password');
+                    }
+
+                    // Add click event listener
+                    button.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        togglePasswordVisibility(targetId);
+                    });
+
+                    // Add keyboard support (Enter and Space keys)
+                    button.addEventListener('keydown', function(e) {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            togglePasswordVisibility(targetId);
+                        }
+                    });
+
+                    // Ensure button is focusable
+                    if (!button.hasAttribute('tabindex')) {
+                        button.setAttribute('tabindex', '0');
+                    }
+                });
+            }
         </script>
     </body>
 </html>
