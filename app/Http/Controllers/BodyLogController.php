@@ -144,16 +144,51 @@ class BodyLogController extends Controller
 
         $result = $this->tsvImporterService->importMeasurements($tsvData, auth()->id());
 
-        $message = 'TSV data processed successfully! ';
+        // Handle errors first
+        if ($result['importedCount'] === 0 && !empty($result['invalidRows'])) {
+            $invalidRowCount = count($result['invalidRows']);
+            
+            if ($invalidRowCount > 10) {
+                $errorMessage = 'No measurements were imported due to invalid data in ' . $invalidRowCount . ' rows.';
+            } else {
+                $errorMessage = 'No measurements were imported due to invalid data in rows: ' . implode(', ', array_map(function($row) { return '"' . $row . '"'; }, $result['invalidRows']));
+            }
+
+            return redirect()
+                ->route('body-logs.index')
+                ->with('error', $errorMessage);
+        }
+
+        // Build success message
+        $successMessage = 'TSV data processed successfully! ';
+        
         if ($result['importedCount'] > 0) {
-            $message .= $result['importedCount'] . ' measurement(s) imported.';
+            $successMessage .= $result['importedCount'] . ' measurement(s) imported.';
         } else {
-            $message .= 'No new data was imported - all entries already exist with the same data.';
+            $successMessage .= 'No new data was imported - all entries already exist with the same data.';
+        }
+
+        // Add detailed list if total < 10
+        if ($result['importedCount'] > 0 && $result['importedCount'] < 10) {
+            if (!empty($result['importedEntries'])) {
+                $successMessage .= '<br><br><strong>Imported:</strong><ul><li>' . implode('</li><li>', array_map('htmlspecialchars', $result['importedEntries'])) . '</li></ul>';
+            }
+        }
+
+        // Add invalid rows warning if any
+        if (!empty($result['invalidRows'])) {
+            $invalidRowCount = count($result['invalidRows']);
+            
+            if ($invalidRowCount > 10) {
+                $successMessage .= '<br><br><strong>Warning:</strong> ' . $invalidRowCount . ' rows had invalid data and were skipped.';
+            } else {
+                $successMessage .= '<br><br><strong>Warning:</strong> Some rows were invalid: ' . implode(', ', array_map(function($row) { return '"' . htmlspecialchars($row) . '"'; }, $result['invalidRows']));
+            }
         }
 
         return redirect()
             ->route('body-logs.index')
-            ->with('success', $message);
+            ->with('success', $successMessage);
     }
 
     public function showByType(MeasurementType $measurementType)

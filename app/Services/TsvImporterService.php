@@ -297,6 +297,7 @@ class TsvImporterService
         $rows = explode("\n", $tsvData);
         $importedCount = 0;
         $invalidRows = [];
+        $importedEntries = [];
 
         foreach ($rows as $row) {
             if (empty($row)) {
@@ -338,6 +339,9 @@ class TsvImporterService
                     'comments' => $columns[5] ?? null,
                     'logged_at' => $loggedAt,
                 ]);
+                
+                $entryDescription = $measurementType->name . ' on ' . $loggedAt->format('m/d/Y H:i') . ' (' . $columns[3] . ' ' . $measurementType->default_unit . ')';
+                $importedEntries[] = $entryDescription;
                 $importedCount++;
             }
             // If it already exists, we skip it (no increment to importedCount)
@@ -346,6 +350,7 @@ class TsvImporterService
         return [
             'importedCount' => $importedCount,
             'invalidRows' => $invalidRows,
+            'importedEntries' => $importedEntries,
         ];
     }
 
