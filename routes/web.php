@@ -36,7 +36,6 @@ Route::middleware('auth')->group(function () {
     Route::resource('food-logs', FoodLogController::class)->except(['show']);
     Route::post('food-logs/add-meal', [FoodLogController::class, 'addMealToLog'])->name('food-logs.add-meal');
     Route::post('food-logs/destroy-selected', [FoodLogController::class, 'destroySelected'])->name('food-logs.destroy-selected');
-    Route::post('food-logs/import-tsv', [FoodLogController::class, 'importTsv'])->name('food-logs.import-tsv');
     Route::post('food-logs/export', [FoodLogController::class, 'export'])->name('food-logs.export');
     Route::post('food-logs/export-all', [FoodLogController::class, 'exportAll'])->name('food-logs.export-all');
 
@@ -45,7 +44,6 @@ Route::middleware('auth')->group(function () {
     Route::resource('ingredients', IngredientController::class)->except([
         'show'
     ]);
-    Route::post('ingredients/import-tsv', [IngredientController::class, 'importTsv'])->name('ingredients.import-tsv');
 
     Route::resource('meals', MealController::class)->except([
         'show'
@@ -55,22 +53,43 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('body-logs', BodyLogController::class)->except(['show']);
     Route::post('body-logs/destroy-selected', [BodyLogController::class, 'destroySelected'])->name('body-logs.destroy-selected');
-    Route::post('body-logs/import-tsv', [BodyLogController::class, 'importTsv'])->name('body-logs.import-tsv');
     Route::get('body-logs/type/{measurementType}', [BodyLogController::class, 'showByType'])->name('body-logs.show-by-type');
 
     Route::resource('measurement-types', MeasurementTypeController::class)->except(['show']);
 
     Route::resource('exercises', ExerciseController::class);
     Route::get('exercises/{exercise}/logs', [ExerciseController::class, 'showLogs'])->name('exercises.show-logs');
-    Route::post('exercises/import-tsv', [ExerciseController::class, 'importTsv'])->name('exercises.import-tsv');
 
     Route::resource('lift-logs', LiftLogController::class)->except(['show']);
 
     Route::resource('programs', ProgramController::class);
     Route::post('programs/destroy-selected', [ProgramController::class, 'destroySelected'])->name('programs.destroy-selected');
-    Route::post('programs/import', [ProgramController::class, 'import'])->name('programs.import');
 
-    Route::post('lift-logs/import-tsv', [LiftLogController::class, 'importTsv'])->name('lift-logs.import-tsv');
+    /*
+    |--------------------------------------------------------------------------
+    | TSV Import Routes - Development/Testing Only
+    |--------------------------------------------------------------------------
+    |
+    | These routes handle TSV (Tab-Separated Values) data imports for various
+    | data types. They are restricted to non-production environments for
+    | security reasons to prevent unauthorized data manipulation in live systems.
+    |
+    | Protection layers:
+    | 1. Environment check: Routes only registered in non-production
+    | 2. Middleware: Additional protection via 'no.tsv.in.production' middleware
+    | 3. UI hiding: Import forms hidden in production via Blade conditionals
+    |
+    */
+    if (!app()->environment('production')) {
+        Route::middleware('no.tsv.in.production')->group(function () {
+            Route::post('food-logs/import-tsv', [FoodLogController::class, 'importTsv'])->name('food-logs.import-tsv');
+            Route::post('ingredients/import-tsv', [IngredientController::class, 'importTsv'])->name('ingredients.import-tsv');
+            Route::post('body-logs/import-tsv', [BodyLogController::class, 'importTsv'])->name('body-logs.import-tsv');
+            Route::post('exercises/import-tsv', [ExerciseController::class, 'importTsv'])->name('exercises.import-tsv');
+            Route::post('lift-logs/import-tsv', [LiftLogController::class, 'importTsv'])->name('lift-logs.import-tsv');
+            Route::post('programs/import', [ProgramController::class, 'import'])->name('programs.import');
+        });
+    }
 
     Route::post('lift-logs/destroy-selected', [LiftLogController::class, 'destroySelected'])->name('lift-logs.destroy-selected');
     Route::get('lift-logs/mobile-entry', [LiftLogController::class, 'mobileEntry'])->name('lift-logs.mobile-entry');

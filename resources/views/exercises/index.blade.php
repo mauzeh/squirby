@@ -75,6 +75,7 @@
             </script>
         @endif
 
+        @if (!app()->environment('production'))
         <div class="form-container">
             <h3>TSV Import</h3>
             <form action="{{ route('exercises.import-tsv') }}" method="POST">
@@ -83,5 +84,6 @@
                 <button type="submit" class="button">Import TSV</button>
             </form>
         </div>
+        @endif
     </div>
 @endsection

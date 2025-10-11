@@ -109,6 +109,7 @@
             </div>
         </div>
 
+        @if (!app()->environment('production'))
         <div class="container">
             <div class="form-container">
                 <h3>TSV Import</h3>
@@ -120,6 +121,7 @@
                 </form>
             </div>
         </div>
+        @endif
 
         <script>
             document.addEventListener('DOMContentLoaded', function() {
