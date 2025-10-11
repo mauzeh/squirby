@@ -120,53 +120,64 @@ class TsvImporterService
                 $rounds = $columns[5];
                 $notes = $columns[6] ?? '';
 
+                $entryDescription = $exercise->title . ' on ' . $loggedAt->format('m/d/Y H:i') . ' (' . $weight . 'lbs x ' . $reps . ' reps x ' . $rounds . ' sets)';
+
                 // Check for existing LiftLog entries with the same user, exercise, and logged_at
-                $existingLiftLog = \App\Models\LiftLog::with('liftSets')
+                $existingLiftLogs = \App\Models\LiftLog::with('liftSets')
                     ->where('user_id', $userId)
                     ->where('exercise_id', $exercise->id)
                     ->where('logged_at', $loggedAt->format('Y-m-d H:i:s'))
-                    ->first();
+                    ->get();
 
-                $entryDescription = $exercise->title . ' on ' . $loggedAt->format('m/d/Y H:i') . ' (' . $weight . 'lbs x ' . $reps . ' reps x ' . $rounds . ' sets)';
+                $shouldUpdate = false;
+                $isDuplicate = false;
+                $matchingLiftLog = null;
 
-                if ($existingLiftLog) {
-                    // Check if the data is exactly the same (duplicate)
-                    $isDuplicate = false;
+                foreach ($existingLiftLogs as $existingLiftLog) {
+                    // Check if the sets match (same count, weight, and reps)
                     if ($existingLiftLog->liftSets->count() === (int)$rounds) {
                         $allSetsMatch = true;
                         foreach ($existingLiftLog->liftSets as $set) {
-                            if (!($set->weight == $weight && $set->reps == $reps && $set->notes == $notes)) {
+                            if (!($set->weight == $weight && $set->reps == $reps)) {
                                 $allSetsMatch = false;
                                 break;
                             }
                         }
-                        if ($allSetsMatch && $existingLiftLog->comments == $notes) {
-                            $isDuplicate = true;
+                        
+                        if ($allSetsMatch) {
+                            $matchingLiftLog = $existingLiftLog;
+                            if ($existingLiftLog->comments === $notes) {
+                                // Exact duplicate - skip it
+                                $isDuplicate = true;
+                                break;
+                            } else {
+                                // Same sets but different comments - update it
+                                $shouldUpdate = true;
+                                break;
+                            }
                         }
                     }
+                }
 
-                    if ($isDuplicate) {
-                        continue; // Skip exact duplicates
-                    }
+                if ($isDuplicate) {
+                    continue; // Skip exact duplicates
+                }
 
-                    // Update existing lift log
-                    $existingLiftLog->update([
+                if ($shouldUpdate) {
+                    // Update existing lift log with new comments
+                    $matchingLiftLog->update([
                         'comments' => $notes,
                     ]);
-
-                    // Delete existing lift sets and create new ones
-                    $existingLiftLog->liftSets()->delete();
-                    for ($i = 0; $i < $rounds; $i++) {
-                        $existingLiftLog->liftSets()->create([
-                            'weight' => $weight,
-                            'reps' => $reps,
-                            'notes' => $notes,
-                        ]);
+                    
+                    // Also update the notes on all lift sets
+                    foreach ($matchingLiftLog->liftSets as $set) {
+                        $set->update(['notes' => $notes]);
                     }
+                    
                     $updatedCount++;
                     $updatedEntries[] = $entryDescription;
                 } else {
-                    // Create new lift log
+                    // Create new lift log (different data or no existing match)
                     $liftLog = \App\Models\LiftLog::create([
                         'user_id' => $userId,
                         'exercise_id' => $exercise->id,

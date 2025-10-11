@@ -72,13 +72,15 @@ class LiftLogTsvImportDetailedMessagesTest extends TestCase
             'comments' => 'Old comments',
         ]);
 
-        // Add some lift sets (different from what we'll import)
-        LiftSet::create([
-            'lift_log_id' => $existingLiftLog->id,
-            'weight' => 125, // Different weight
-            'reps' => 5,
-            'notes' => 'Old notes',
-        ]);
+        // Add lift sets that match what we'll import (same weight, reps, count) but different notes
+        for ($i = 0; $i < 3; $i++) {
+            LiftSet::create([
+                'lift_log_id' => $existingLiftLog->id,
+                'weight' => 135, // Same weight as TSV
+                'reps' => 5,     // Same reps as TSV
+                'notes' => 'Old notes',
+            ]);
+        }
 
         $tsvData = "8/4/2025\t6:00 PM\tBench Press\t135\t5\t3\tUpdated form";
 
@@ -107,12 +109,15 @@ class LiftLogTsvImportDetailedMessagesTest extends TestCase
             'comments' => 'Old comments',
         ]);
 
-        LiftSet::create([
-            'lift_log_id' => $existingLiftLog->id,
-            'weight' => 125, // Different weight
-            'reps' => 5,
-            'notes' => 'Old notes',
-        ]);
+        // Add lift sets that match what we'll import (same weight, reps, count) but different notes
+        for ($i = 0; $i < 3; $i++) {
+            LiftSet::create([
+                'lift_log_id' => $existingLiftLog->id,
+                'weight' => 135, // Same weight as TSV
+                'reps' => 5,     // Same reps as TSV
+                'notes' => 'Old notes',
+            ]);
+        }
 
         $tsvData = "8/4/2025\t6:00 PM\tBench Press\t135\t5\t3\tUpdated form\n8/4/2025\t6:15 PM\tSquat\t185\t5\t3\tNew exercise";
 

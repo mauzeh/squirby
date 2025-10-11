@@ -200,7 +200,7 @@ class LiftLogController extends Controller
         $result = $this->tsvImporterService->importLiftLogs($tsvData, $validated['date'], auth()->id());
 
         // Handle errors first
-        if ($result['importedCount'] === 0 && $result['updatedCount'] === 0 && !empty($result['notFound'])) {
+        if ($result['importedCount'] === 0 && !empty($result['notFound'])) {
             $errorHtml = 'No exercises were found for the following names:<ul>';
             foreach ($result['notFound'] as $notFoundExercise) {
                 $errorHtml .= '<li>' . htmlspecialchars($notFoundExercise) . '</li>';
@@ -210,7 +210,7 @@ class LiftLogController extends Controller
             return redirect()
                 ->route('lift-logs.index')
                 ->with('error', $errorHtml);
-        } elseif ($result['importedCount'] === 0 && $result['updatedCount'] === 0 && !empty($result['invalidRows'])) {
+        } elseif ($result['importedCount'] === 0 && !empty($result['invalidRows'])) {
             return redirect()
                 ->route('lift-logs.index')
                 ->with('error', 'No lift logs imported due to invalid data in rows: ' . implode(', ', array_map(function($row) { return '"' . $row . '"' ; }, $result['invalidRows'])));
@@ -221,32 +221,25 @@ class LiftLogController extends Controller
         $totalProcessed = $result['importedCount'] + $result['updatedCount'];
         
         // Add counts
-        $messageParts = [];
+        $countParts = [];
         if ($result['importedCount'] > 0) {
-            $messageParts[] = $result['importedCount'] . ' lift log(s) imported';
+            $countParts[] = $result['importedCount'] . ' lift log(s) imported';
         }
         if ($result['updatedCount'] > 0) {
-            $messageParts[] = $result['updatedCount'] . ' lift log(s) updated';
+            $countParts[] = $result['updatedCount'] . ' lift log(s) updated';
         }
         
-        if (!empty($messageParts)) {
-            $successMessage .= implode(', ', $messageParts) . '.';
+        if (!empty($countParts)) {
+            $successMessage .= implode(', ', $countParts) . '.';
         }
 
         // Add detailed list if total < 10
         if ($totalProcessed < 10) {
-            $details = [];
-            
             if (!empty($result['importedEntries'])) {
-                $details[] = '<strong>Imported:</strong><ul><li>' . implode('</li><li>', array_map('htmlspecialchars', $result['importedEntries'])) . '</li></ul>';
+                $successMessage .= '<br><br><strong>Imported:</strong><ul><li>' . implode('</li><li>', array_map('htmlspecialchars', $result['importedEntries'])) . '</li></ul>';
             }
-            
             if (!empty($result['updatedEntries'])) {
-                $details[] = '<strong>Updated:</strong><ul><li>' . implode('</li><li>', array_map('htmlspecialchars', $result['updatedEntries'])) . '</li></ul>';
-            }
-            
-            if (!empty($details)) {
-                $successMessage .= '<br><br>' . implode('<br>', $details);
+                $successMessage .= '<br><br><strong>Updated:</strong><ul><li>' . implode('</li><li>', array_map('htmlspecialchars', $result['updatedEntries'])) . '</li></ul>';
             }
         }
 
