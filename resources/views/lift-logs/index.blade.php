@@ -7,7 +7,7 @@
 
     @if (session('success'))
         <div class="container success-message-box">
-            {{ session('success') }}
+            {!! session('success') !!}
         </div>
     @endif
     @if (session('error'))
