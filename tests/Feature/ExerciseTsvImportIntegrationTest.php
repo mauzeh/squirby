@@ -122,10 +122,10 @@ class ExerciseTsvImportIntegrationTest extends TestCase
         // Verify success message shows all imports
         $successMessage = session('success');
         $this->assertStringContainsString('Imported 4 new global exercises:', $successMessage);
-        $this->assertStringContainsString('• Push Ups (bodyweight)', $successMessage);
-        $this->assertStringContainsString('• Squats', $successMessage);
-        $this->assertStringContainsString('• Deadlifts', $successMessage);
-        $this->assertStringContainsString('• New Global Exercise (bodyweight)', $successMessage);
+        $this->assertStringContainsString('Push Ups (bodyweight)', $successMessage);
+        $this->assertStringContainsString('Squats', $successMessage);
+        $this->assertStringContainsString('Deadlifts', $successMessage);
+        $this->assertStringContainsString('New Global Exercise (bodyweight)', $successMessage);
     }
 
     public function test_user_importing_exercises_that_conflict_with_existing_global_exercises()
@@ -220,12 +220,12 @@ class ExerciseTsvImportIntegrationTest extends TestCase
         // Verify success message shows imports and skips
         $successMessage = session('success');
         $this->assertStringContainsString('Imported 2 new personal exercises:', $successMessage);
-        $this->assertStringContainsString('• User Specific Exercise (bodyweight)', $successMessage);
-        $this->assertStringContainsString('• Another User Exercise', $successMessage);
+        $this->assertStringContainsString('User Specific Exercise (bodyweight)', $successMessage);
+        $this->assertStringContainsString('Another User Exercise', $successMessage);
         $this->assertStringContainsString('Skipped 3 exercises:', $successMessage);
-        $this->assertStringContainsString('• Bench Press - Exercise \'Bench Press\' conflicts with existing global exercise', $successMessage);
-        $this->assertStringContainsString('• Pull Ups - Exercise \'Pull Ups\' conflicts with existing global exercise', $successMessage);
-        $this->assertStringContainsString('• Rows - Exercise \'Rows\' conflicts with existing global exercise', $successMessage);
+        $this->assertStringContainsString('Bench Press - Exercise &#039;Bench Press&#039; conflicts with existing global exercise', $successMessage);
+        $this->assertStringContainsString('Pull Ups - Exercise &#039;Pull Ups&#039; conflicts with existing global exercise', $successMessage);
+        $this->assertStringContainsString('Rows - Exercise &#039;Rows&#039; conflicts with existing global exercise', $successMessage);
     }
 
     public function test_mixed_scenarios_with_both_global_and_user_exercises_in_database()
@@ -337,8 +337,8 @@ class ExerciseTsvImportIntegrationTest extends TestCase
         $this->assertStringContainsString('Imported 3 new personal exercises:', $successMessage);
         $this->assertStringContainsString('Updated 2 existing personal exercises:', $successMessage);
         $this->assertStringContainsString('Skipped 3 exercises:', $successMessage);
-        $this->assertStringContainsString('• Global Exercise A - Exercise \'Global Exercise A\' conflicts with existing global exercise', $successMessage);
-        $this->assertStringContainsString('• User Exercise A - Personal exercise \'User Exercise A\' already exists with same data', $successMessage);
+        $this->assertStringContainsString('Global Exercise A - Exercise &#039;Global Exercise A&#039; conflicts with existing global exercise', $successMessage);
+        $this->assertStringContainsString('User Exercise A - Personal exercise &#039;User Exercise A&#039; already exists with same data', $successMessage);
     }
 
     public function test_detailed_import_result_lists_showing_specific_exercises_and_changes()
@@ -386,19 +386,19 @@ class ExerciseTsvImportIntegrationTest extends TestCase
 
         // Verify detailed imported exercises list
         $this->assertStringContainsString('Imported 3 new personal exercises:', $successMessage);
-        $this->assertStringContainsString('• New Exercise 1 (bodyweight)', $successMessage);
-        $this->assertStringContainsString('• New Exercise 2', $successMessage);
-        $this->assertStringContainsString('• Same Data Test (bodyweight)', $successMessage);
+        $this->assertStringContainsString('New Exercise 1 (bodyweight)', $successMessage);
+        $this->assertStringContainsString('New Exercise 2', $successMessage);
+        $this->assertStringContainsString('Same Data Test (bodyweight)', $successMessage);
 
         // Verify detailed updated exercises list with change tracking
         $this->assertStringContainsString('Updated 2 existing personal exercises:', $successMessage);
-        $this->assertStringContainsString('• Update Test A (description: \'Original description A\' → \'Updated description A\', bodyweight: no → yes)', $successMessage);
-        $this->assertStringContainsString('• Update Test B (description: \'Original description B\' → \'Updated description B\', bodyweight: yes → no)', $successMessage);
+        $this->assertStringContainsString('Update Test A (description: \'Original description A\' → \'Updated description A\', bodyweight: no → yes)', $successMessage);
+        $this->assertStringContainsString('Update Test B (description: \'Original description B\' → \'Updated description B\', bodyweight: yes → no)', $successMessage);
 
         // Verify detailed skipped exercises list with reasons
         $this->assertStringContainsString('Skipped 2 exercises:', $successMessage);
-        $this->assertStringContainsString('• Global Update Test - Exercise \'Global Update Test\' conflicts with existing global exercise', $successMessage);
-        $this->assertStringContainsString('• Same Data Test - Personal exercise \'Same Data Test\' already exists with same data', $successMessage);
+        $this->assertStringContainsString('Global Update Test - Exercise &#039;Global Update Test&#039; conflicts with existing global exercise', $successMessage);
+        $this->assertStringContainsString('Same Data Test - Personal exercise &#039;Same Data Test&#039; already exists with same data', $successMessage);
 
         // Test detailed admin global import results
         $adminTsvData = "Global New 1\tGlobal description 1\ttrue\n" .
@@ -418,11 +418,11 @@ class ExerciseTsvImportIntegrationTest extends TestCase
 
         // Verify detailed global import results
         $this->assertStringContainsString('Imported 2 new global exercises:', $globalSuccessMessage);
-        $this->assertStringContainsString('• Global New 1 (bodyweight)', $globalSuccessMessage);
-        $this->assertStringContainsString('• Global New 2', $globalSuccessMessage);
+        $this->assertStringContainsString('Global New 1 (bodyweight)', $globalSuccessMessage);
+        $this->assertStringContainsString('Global New 2', $globalSuccessMessage);
 
         $this->assertStringContainsString('Updated 1 existing global exercises:', $globalSuccessMessage);
-        $this->assertStringContainsString('• Global Update Test (description: \'Original global description\' → \'Updated global description\', bodyweight: no → yes)', $globalSuccessMessage);
+        $this->assertStringContainsString('Global Update Test (description: \'Original global description\' → \'Updated global description\', bodyweight: no → yes)', $globalSuccessMessage);
     }
 
     public function test_backward_compatibility_with_existing_exercise_data()

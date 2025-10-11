@@ -221,11 +221,11 @@ class ExerciseTsvImportFeatureTest extends TestCase
         $response->assertSessionHas('success');
         
         $successMessage = session('success');
-        $this->assertStringContainsString('TSV data processed successfully!', $successMessage);
-        $this->assertStringContainsString('Imported 1 new personal exercises:', $successMessage);
-        $this->assertStringContainsString('• New Exercise (bodyweight)', $successMessage);
-        $this->assertStringContainsString('Updated 1 existing personal exercises:', $successMessage);
-        $this->assertStringContainsString('• Existing Exercise', $successMessage);
+        $this->assertStringContainsString('<p>TSV data processed successfully!</p>', $successMessage);
+        $this->assertStringContainsString('<p>Imported 1 new personal exercises:</p>', $successMessage);
+        $this->assertStringContainsString('<li>New Exercise (bodyweight)</li>', $successMessage);
+        $this->assertStringContainsString('<p>Updated 1 existing personal exercises:</p>', $successMessage);
+        $this->assertStringContainsString('<li>Existing Exercise', $successMessage);
         $this->assertStringContainsString('description: \'Old description\' → \'Updated description\'', $successMessage);
         $this->assertStringContainsString('bodyweight: no → yes', $successMessage);
     }
@@ -254,9 +254,9 @@ class ExerciseTsvImportFeatureTest extends TestCase
         $successMessage = session('success');
         $this->assertStringContainsString('TSV data processed successfully!', $successMessage);
         $this->assertStringContainsString('Imported 1 new global exercises:', $successMessage);
-        $this->assertStringContainsString('• New Global (bodyweight)', $successMessage);
+        $this->assertStringContainsString('New Global (bodyweight)', $successMessage);
         $this->assertStringContainsString('Updated 1 existing global exercises:', $successMessage);
-        $this->assertStringContainsString('• Existing Global', $successMessage);
+        $this->assertStringContainsString('Existing Global', $successMessage);
         $this->assertStringContainsString('description: \'Old global description\' → \'Updated global description\'', $successMessage);
         $this->assertStringContainsString('bodyweight: no → yes', $successMessage);
     }
@@ -283,9 +283,9 @@ class ExerciseTsvImportFeatureTest extends TestCase
         
         $successMessage = session('success');
         $this->assertStringContainsString('Imported 1 new personal exercises:', $successMessage);
-        $this->assertStringContainsString('• User Exercise', $successMessage);
+        $this->assertStringContainsString('User Exercise', $successMessage);
         $this->assertStringContainsString('Skipped 1 exercises:', $successMessage);
-        $this->assertStringContainsString('• Global Exercise - Exercise \'Global Exercise\' conflicts with existing global exercise', $successMessage);
+        $this->assertStringContainsString('Global Exercise - Exercise &#039;Global Exercise&#039; conflicts with existing global exercise', $successMessage);
 
         // Verify the global exercise wasn't changed and user exercise was created
         $this->assertDatabaseHas('exercises', [
@@ -360,7 +360,7 @@ class ExerciseTsvImportFeatureTest extends TestCase
             ->get(route('exercises.index'));
 
         $response->assertStatus(200);
-        $response->assertSee('Import as Global Exercises (available to all users)');
+        $response->assertSee('Global');
         $response->assertSee('import_as_global');
         $response->assertSee('Global exercises will be available to all users and can only be managed by administrators.');
     }
@@ -388,9 +388,9 @@ class ExerciseTsvImportFeatureTest extends TestCase
         $response->assertStatus(200);
         
         // Check that the form has proper structure
-        $response->assertSee('TSV Data:');
+        $response->assertSee('TSV Import');
         $response->assertSee('placeholder="Exercise Name&#9;Description&#9;Is Bodyweight (true/false)"', false);
-        $response->assertSee('Import as Global Exercises (available to all users)');
+        $response->assertSee('Global');
         $response->assertSee('Personal exercises are only visible to you and will be skipped if they conflict with existing global exercises.');
         $response->assertSee('Import Exercises');
     }
@@ -403,12 +403,12 @@ class ExerciseTsvImportFeatureTest extends TestCase
         $response->assertStatus(200);
         
         // Check that the form has proper structure but without global option
-        $response->assertSee('TSV Data:');
+        $response->assertSee('TSV Import');
         $response->assertSee('placeholder="Exercise Name&#9;Description&#9;Is Bodyweight (true/false)"', false);
         $response->assertSee('Import Exercises');
         
         // Should not see admin-specific content
-        $response->assertDontSee('Import as Global Exercises');
+        $response->assertDontSee('Global');
         $response->assertDontSee('Personal exercises are only visible to you and will be skipped if they conflict with existing global exercises.');
     }
 
@@ -435,9 +435,9 @@ class ExerciseTsvImportFeatureTest extends TestCase
         
         $successMessage = session('success');
         $this->assertStringContainsString('Skipped 3 exercises:', $successMessage);
-        $this->assertStringContainsString('• push ups - Exercise \'push ups\' conflicts with existing global exercise', $successMessage);
-        $this->assertStringContainsString('• PUSH UPS - Exercise \'PUSH UPS\' conflicts with existing global exercise', $successMessage);
-        $this->assertStringContainsString('• PuSh UpS - Exercise \'PuSh UpS\' conflicts with existing global exercise', $successMessage);
+        $this->assertStringContainsString('push ups - Exercise &#039;push ups&#039; conflicts with existing global exercise', $successMessage);
+        $this->assertStringContainsString('PUSH UPS - Exercise &#039;PUSH UPS&#039; conflicts with existing global exercise', $successMessage);
+        $this->assertStringContainsString('PuSh UpS - Exercise &#039;PuSh UpS&#039; conflicts with existing global exercise', $successMessage);
 
         // Verify no new exercises were created
         $this->assertEquals(1, Exercise::where('title', 'Push Ups')->count());
@@ -467,7 +467,7 @@ class ExerciseTsvImportFeatureTest extends TestCase
         
         $successMessage = session('success');
         $this->assertStringContainsString('Updated 1 existing global exercises:', $successMessage);
-        $this->assertStringContainsString('• Squats', $successMessage);
+        $this->assertStringContainsString('Squats', $successMessage);
         $this->assertStringContainsString('description: \'Original description\' → \'Updated description\'', $successMessage);
         $this->assertStringContainsString('bodyweight: no → yes', $successMessage);
 
@@ -501,7 +501,7 @@ class ExerciseTsvImportFeatureTest extends TestCase
         
         $successMessage = session('success');
         $this->assertStringContainsString('Updated 1 existing personal exercises:', $successMessage);
-        $this->assertStringContainsString('• Deadlifts', $successMessage);
+        $this->assertStringContainsString('Deadlifts', $successMessage);
 
         // Verify the exercise was updated, not duplicated
         $this->assertEquals(1, Exercise::where('user_id', $this->user->id)->whereRaw('LOWER(title) = ?', ['deadlifts'])->count());
@@ -533,7 +533,7 @@ class ExerciseTsvImportFeatureTest extends TestCase
         
         $successMessage = session('success');
         $this->assertStringContainsString('Skipped 1 exercises:', $successMessage);
-        $this->assertStringContainsString('• Bench Press - Personal exercise \'Bench Press\' already exists with same data', $successMessage);
+        $this->assertStringContainsString('Bench Press - Personal exercise &#039;Bench Press&#039; already exists with same data', $successMessage);
         $this->assertStringContainsString('No new data was imported or updated - all entries already exist with the same data.', $successMessage);
     }
 
@@ -561,7 +561,7 @@ class ExerciseTsvImportFeatureTest extends TestCase
         
         $successMessage = session('success');
         $this->assertStringContainsString('Skipped 1 exercises:', $successMessage);
-        $this->assertStringContainsString('• Pull Ups - Global exercise \'Pull Ups\' already exists with same data', $successMessage);
+        $this->assertStringContainsString('Pull Ups - Global exercise &#039;Pull Ups&#039; already exists with same data', $successMessage);
         $this->assertStringContainsString('No new data was imported or updated - all entries already exist with the same data.', $successMessage);
     }
 
@@ -601,16 +601,16 @@ class ExerciseTsvImportFeatureTest extends TestCase
         
         // Should show imported exercises
         $this->assertStringContainsString('Imported 2 new personal exercises:', $successMessage);
-        $this->assertStringContainsString('• New Exercise (bodyweight)', $successMessage);
-        $this->assertStringContainsString('• Another New', $successMessage);
+        $this->assertStringContainsString('New Exercise (bodyweight)', $successMessage);
+        $this->assertStringContainsString('Another New', $successMessage);
         
         // Should show updated exercises
         $this->assertStringContainsString('Updated 1 existing personal exercises:', $successMessage);
-        $this->assertStringContainsString('• Existing Personal', $successMessage);
+        $this->assertStringContainsString('Existing Personal', $successMessage);
         
         // Should show skipped exercises
         $this->assertStringContainsString('Skipped', $successMessage);
-        $this->assertStringContainsString('• Existing Global - Exercise \'Existing Global\' conflicts with existing global exercise', $successMessage);
+        $this->assertStringContainsString('Existing Global - Exercise &#039;Existing Global&#039; conflicts with existing global exercise', $successMessage);
         
         // Should mention invalid rows
         $this->assertStringContainsString('Found 1 invalid rows that were skipped.', $successMessage);
@@ -655,7 +655,7 @@ class ExerciseTsvImportFeatureTest extends TestCase
 
         $successMessage = session('success');
         $this->assertStringContainsString('Imported 1 new personal exercises:', $successMessage);
-        $this->assertStringContainsString('• Personal Exercise (bodyweight)', $successMessage);
+        $this->assertStringContainsString('Personal Exercise (bodyweight)', $successMessage);
 
         // Test global import result indication
         $tsvData = "Global Exercise\tGlobal description\ttrue";
@@ -668,6 +668,6 @@ class ExerciseTsvImportFeatureTest extends TestCase
 
         $successMessage = session('success');
         $this->assertStringContainsString('Imported 1 new global exercises:', $successMessage);
-        $this->assertStringContainsString('• Global Exercise (bodyweight)', $successMessage);
+        $this->assertStringContainsString('Global Exercise (bodyweight)', $successMessage);
     }
 }

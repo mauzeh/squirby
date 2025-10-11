@@ -243,51 +243,54 @@ class ExerciseController extends Controller
     private function buildImportSuccessMessage(array $result): string
     {
         $mode = $result['importMode'] === 'global' ? 'global' : 'personal';
-        $parts = ["TSV data processed successfully!"];
+        $html = "<p>TSV data processed successfully!</p>";
 
         // Imported exercises
         if ($result['importedCount'] > 0) {
-            $parts[] = "Imported {$result['importedCount']} new {$mode} exercises:";
+            $html .= "<p>Imported {$result['importedCount']} new {$mode} exercises:</p><ul>";
             foreach ($result['importedExercises'] as $exercise) {
                 $bodyweightText = $exercise['is_bodyweight'] ? ' (bodyweight)' : '';
-                $parts[] = "• {$exercise['title']}{$bodyweightText}";
+                $html .= "<li>" . e($exercise['title']) . e($bodyweightText) . "</li>";
             }
+            $html .= "</ul>";
         }
 
         // Updated exercises
         if ($result['updatedCount'] > 0) {
-            $parts[] = "Updated {$result['updatedCount']} existing {$mode} exercises:";
+            $html .= "<p>Updated {$result['updatedCount']} existing {$mode} exercises:</p><ul>";
             foreach ($result['updatedExercises'] as $exercise) {
                 $changeDetails = [];
                 foreach ($exercise['changes'] as $field => $change) {
                     if ($field === 'is_bodyweight') {
                         $changeDetails[] = "bodyweight: " . ($change['from'] ? 'yes' : 'no') . " → " . ($change['to'] ? 'yes' : 'no');
                     } else {
-                        $changeDetails[] = "{$field}: '{$change['from']}' → '{$change['to']}'";
+                        $changeDetails[] = e($field) . ": '" . e($change['from']) . "' → '" . e($change['to']) . "'";
                     }
                 }
-                $parts[] = "• {$exercise['title']} (" . implode(', ', $changeDetails) . ")";
+                $html .= "<li>" . e($exercise['title']) . " (" . implode(', ', $changeDetails) . ")</li>";
             }
+            $html .= "</ul>";
         }
 
         // Skipped exercises
         if ($result['skippedCount'] > 0) {
-            $parts[] = "Skipped {$result['skippedCount']} exercises:";
+            $html .= "<p>Skipped {$result['skippedCount']} exercises:</p><ul>";
             foreach ($result['skippedExercises'] as $exercise) {
-                $parts[] = "• {$exercise['title']} - {$exercise['reason']}";
+                $html .= "<li>" . e($exercise['title']) . " - " . e($exercise['reason']) . "</li>";
             }
+            $html .= "</ul>";
         }
 
         // Invalid rows
         if (count($result['invalidRows']) > 0) {
-            $parts[] = "Found " . count($result['invalidRows']) . " invalid rows that were skipped.";
+            $html .= "<p>Found " . count($result['invalidRows']) . " invalid rows that were skipped.</p>";
         }
 
         if ($result['importedCount'] === 0 && $result['updatedCount'] === 0) {
-            $parts[] = "No new data was imported or updated - all entries already exist with the same data.";
+            $html .= "<p>No new data was imported or updated - all entries already exist with the same data.</p>";
         }
 
-        return implode("\n", $parts);
+        return $html;
     }
 
     /**
