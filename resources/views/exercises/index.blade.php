@@ -37,6 +37,8 @@
                                 <a href="{{ route('exercises.show-logs', $exercise) }}" class="text-white">{{ $exercise->title }}</a>
                                 @if($exercise->isGlobal())
                                     <span class="badge" style="background-color: #4CAF50; color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.7em; margin-left: 5px;">Global</span>
+                                @else
+                                    <span class="badge" style="background-color: #FFC107; color: black; padding: 2px 6px; border-radius: 3px; font-size: 0.7em; margin-left: 5px;">{{ $exercise->user->name }}</span>
                                 @endif
                                 <div class="show-on-mobile" style="font-size: 0.9em; color: #ccc;">
                                     {{ $exercise->is_bodyweight ? 'Bodyweight' : 'Weighted' }}

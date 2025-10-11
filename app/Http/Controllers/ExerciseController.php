@@ -30,6 +30,7 @@ class ExerciseController extends Controller
     public function index()
     {
         $exercises = Exercise::availableToUser(auth()->id())
+            ->with('user') // Load user relationship for displaying user names
             ->orderBy('user_id') // Global exercises (null) first, then user exercises
             ->orderBy('title', 'asc')
             ->get();
