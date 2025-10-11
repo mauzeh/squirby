@@ -38,7 +38,10 @@ class FoodLogImportTest extends TestCase
         ]);
 
         $response->assertRedirect(route('food-logs.index', ['date' => '2025-09-07']));
-        $response->assertSessionHas('success', 'TSV data imported successfully!');
+        $response->assertSessionHas('success');
+        $successMessage = session('success');
+        $this->assertStringContainsString('TSV data processed successfully!', $successMessage);
+        $this->assertStringContainsString('2 food log(s) imported', $successMessage);
 
         $this->assertDatabaseCount('food_logs', 2);
         $this->assertDatabaseHas('food_logs', [

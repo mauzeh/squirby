@@ -49,7 +49,10 @@ class LiftLogExerciseFilteringTest extends TestCase
         ]);
 
         $response->assertRedirect(route('lift-logs.index'));
-        $response->assertSessionHas('error', 'No exercises found for: User2 Exercise');
+        $response->assertSessionHas('error');
+        $errorMessage = session('error');
+        $this->assertStringContainsString('No exercises were found for the following names:', $errorMessage);
+        $this->assertStringContainsString('User2 Exercise', $errorMessage);
         $this->assertDatabaseCount('lift_logs', 0);
     }
 
@@ -70,7 +73,10 @@ class LiftLogExerciseFilteringTest extends TestCase
         ]);
 
         $response->assertRedirect(route('lift-logs.index'));
-        $response->assertSessionHas('success', 'TSV data imported successfully!');
+        $response->assertSessionHas('success');
+        $successMessage = session('success');
+        $this->assertStringContainsString('TSV data processed successfully!', $successMessage);
+        $this->assertStringContainsString('1 lift log(s) imported', $successMessage);
         $this->assertDatabaseCount('lift_logs', 1);
         $this->assertDatabaseHas('lift_logs', [
             'user_id' => $user->id,
@@ -121,7 +127,10 @@ class LiftLogExerciseFilteringTest extends TestCase
         ]);
 
         $response->assertRedirect(route('lift-logs.index'));
-        $response->assertSessionHas('success', 'TSV data imported successfully!');
+        $response->assertSessionHas('success');
+        $successMessage = session('success');
+        $this->assertStringContainsString('TSV data processed successfully!', $successMessage);
+        $this->assertStringContainsString('1 lift log(s) imported', $successMessage);
         $this->assertDatabaseCount('lift_logs', 1);
         $this->assertDatabaseHas('lift_logs', [
             'user_id' => $user->id,

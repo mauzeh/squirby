@@ -36,7 +36,10 @@ class LiftLogImportTest extends TestCase
         ]);
 
         $response->assertRedirect(route('lift-logs.index'));
-        $response->assertSessionHas('success', 'TSV data imported successfully!');
+        $response->assertSessionHas('success');
+        $successMessage = session('success');
+        $this->assertStringContainsString('TSV data processed successfully!', $successMessage);
+        $this->assertStringContainsString('2 lift log(s) imported', $successMessage);
 
         $this->assertDatabaseCount('lift_logs', 2);
         $this->assertDatabaseCount('lift_sets', 25);
@@ -65,7 +68,10 @@ class LiftLogImportTest extends TestCase
         ]);
 
         $response->assertRedirect(route('lift-logs.index'));
-        $response->assertSessionHas('error', 'No exercises found for: NonExistentExercise');
+        $response->assertSessionHas('error');
+        $errorMessage = session('error');
+        $this->assertStringContainsString('No exercises were found for the following names:', $errorMessage);
+        $this->assertStringContainsString('NonExistentExercise', $errorMessage);
     }
 
     /** @test */

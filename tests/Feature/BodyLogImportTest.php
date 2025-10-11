@@ -31,7 +31,10 @@ class BodyLogImportTest extends TestCase
         ]);
 
         $response->assertRedirect(route('body-logs.index'));
-        $response->assertSessionHas('success', 'TSV data imported successfully!');
+        $response->assertSessionHas('success');
+        $successMessage = session('success');
+        $this->assertStringContainsString('TSV data processed successfully!', $successMessage);
+        $this->assertStringContainsString('2 measurement(s) imported', $successMessage);
 
         $this->assertDatabaseCount('body_logs', 2);
         $this->assertDatabaseHas('body_logs', [
