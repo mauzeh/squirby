@@ -35,7 +35,7 @@
 
         @endif
 
-        @if (!app()->environment('production'))
+        @if (!app()->environment(['production', 'staging']))
         <div class="form-container">
             <h3>TSV Import</h3>
             <form action="{{ route('lift-logs.import-tsv') }}" method="POST">

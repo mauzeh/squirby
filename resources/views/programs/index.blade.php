@@ -109,7 +109,7 @@
             </div>
         </div>
 
-        @if (!app()->environment('production'))
+        @if (!app()->environment(['production', 'staging']))
         <div class="container">
             <div class="form-container">
                 <h3>TSV Import</h3>

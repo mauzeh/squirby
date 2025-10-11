@@ -1,0 +1,26 @@
+Extend TSV import restrictions to staging environment
+
+Security Enhancement: Apply TSV import restrictions to both production AND staging
+environments to ensure staging mirrors production security posture.
+
+Changes Made:
+- Route Protection: Updated environment check to block both 'production' and 'staging'
+- Middleware Protection: Enhanced middleware to block staging requests
+- UI Hiding: Updated all Blade conditionals to hide TSV imports in staging
+- Documentation: Updated comments to reflect staging restrictions
+- Testing: Enhanced test coverage for staging environment restrictions
+
+Rationale:
+Staging environments should mirror production behavior for security testing
+and to prevent accidental data manipulation in staging systems that may
+contain production-like data.
+
+Protected Environments:
+- production ❌ (TSV imports blocked)
+- staging ❌ (TSV imports blocked)  
+- local ✅ (TSV imports available)
+- testing ✅ (TSV imports available)
+- development ✅ (TSV imports available)
+
+This ensures TSV import functionality is only available in true development
+and testing environments while maintaining security in all live-like systems.

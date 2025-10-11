@@ -15,9 +15,9 @@ class RestrictTsvImportsInProduction
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // Block TSV import requests in production environment
-        if (app()->environment('production')) {
-            abort(404, 'TSV import functionality is not available in production.');
+        // Block TSV import requests in production and staging environments
+        if (app()->environment(['production', 'staging'])) {
+            abort(404, 'TSV import functionality is not available in production or staging environments.');
         }
 
         return $next($request);

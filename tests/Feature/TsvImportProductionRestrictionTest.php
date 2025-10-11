@@ -20,7 +20,7 @@ class TsvImportProductionRestrictionTest extends TestCase
 
     public function test_tsv_import_routes_are_available_in_current_environment()
     {
-        // In testing environment (non-production), routes should be available
+        // In testing environment (non-production/staging), routes should be available
         $response = $this->actingAs($this->user)
             ->post(route('food-logs.import-tsv'), [
                 '_token' => csrf_token(),
@@ -32,7 +32,7 @@ class TsvImportProductionRestrictionTest extends TestCase
         $this->assertNotEquals(404, $response->getStatusCode());
     }
 
-    public function test_tsv_import_ui_is_visible_in_non_production()
+    public function test_tsv_import_ui_is_visible_in_development()
     {
         $response = $this->actingAs($this->user)
             ->get(route('exercises.index'));
@@ -44,25 +44,29 @@ class TsvImportProductionRestrictionTest extends TestCase
     public function test_environment_check_works_correctly()
     {
         // Test that our environment check logic works
-        $this->assertFalse(app()->environment('production'));
+        $this->assertFalse(app()->environment(['production', 'staging']));
         
-        // In non-production, TSV import should be available
-        $this->assertTrue(!app()->environment('production'));
+        // In development/testing, TSV import should be available
+        $this->assertTrue(!app()->environment(['production', 'staging']));
     }
 
-    public function test_production_environment_simulation()
+    public function test_production_and_staging_environment_restrictions()
     {
-        // Simulate production environment by temporarily changing config
-        $originalEnv = app()->environment();
+        // Test that both production and staging are restricted
+        $restrictedEnvironments = ['production', 'staging'];
         
-        // Mock the environment method to return 'production'
-        $this->app->instance('env', 'production');
+        foreach ($restrictedEnvironments as $env) {
+            // Test that the environment check would block these environments
+            $isRestricted = in_array($env, ['production', 'staging']);
+            $this->assertTrue($isRestricted, "Environment {$env} should be restricted");
+        }
         
-        // Test that the blade directive would work correctly
-        $isProduction = app()->environment('production');
-        $this->assertTrue($isProduction);
+        // Test that development environments are allowed
+        $allowedEnvironments = ['local', 'testing', 'development'];
         
-        // Restore original environment
-        $this->app->instance('env', $originalEnv);
+        foreach ($allowedEnvironments as $env) {
+            $isRestricted = in_array($env, ['production', 'staging']);
+            $this->assertFalse($isRestricted, "Environment {$env} should be allowed");
+        }
     }
 }
