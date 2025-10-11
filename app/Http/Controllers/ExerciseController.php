@@ -7,9 +7,12 @@ use App\Services\ExerciseService;
 use App\Services\ChartService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class ExerciseController extends Controller
 {
+    use AuthorizesRequests;
+    
     protected $exerciseService;
     protected $chartService;
     protected $tsvImporterService;
@@ -26,7 +29,10 @@ class ExerciseController extends Controller
      */
     public function index()
     {
-        $exercises = Exercise::where('user_id', auth()->id())->orderBy('title', 'asc')->get();
+        $exercises = Exercise::availableToUser(auth()->id())
+            ->orderBy('user_id') // Global exercises (null) first, then user exercises
+            ->orderBy('title', 'asc')
+            ->get();
         return view('exercises.index', compact('exercises'));
     }
 
@@ -35,7 +41,8 @@ class ExerciseController extends Controller
      */
     public function create()
     {
-        return view('exercises.create');
+        $canCreateGlobal = auth()->user()->hasRole('Admin');
+        return view('exercises.create', compact('canCreateGlobal'));
     }
 
     /**
@@ -47,9 +54,30 @@ class ExerciseController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'is_bodyweight' => 'nullable|boolean',
+            'is_global' => 'nullable|boolean',
         ]);
 
-        Exercise::create(array_merge($validated, ['user_id' => auth()->id(), 'is_bodyweight' => $request->has('is_bodyweight')]));
+        // Check admin permission for global exercises
+        if ($validated['is_global'] ?? false) {
+            $this->authorize('createGlobalExercise', Exercise::class);
+        }
+
+        // Check for name conflicts
+        $this->validateExerciseName($validated['title'], $validated['is_global'] ?? false);
+
+        $exercise = new Exercise([
+            'title' => $validated['title'],
+            'description' => $validated['description'],
+            'is_bodyweight' => $request->boolean('is_bodyweight'),
+        ]);
+        
+        if ($validated['is_global'] ?? false) {
+            $exercise->user_id = null;
+        } else {
+            $exercise->user_id = auth()->id();
+        }
+
+        $exercise->save();
 
         return redirect()->route('exercises.index')->with('success', 'Exercise created successfully.');
     }
@@ -67,10 +95,9 @@ class ExerciseController extends Controller
      */
     public function edit(Exercise $exercise)
     {
-        if ($exercise->user_id !== auth()->id()) {
-            abort(403, 'Unauthorized action.');
-        }
-        return view('exercises.edit', compact('exercise'));
+        $this->authorize('update', $exercise);
+        $canCreateGlobal = auth()->user()->hasRole('Admin');
+        return view('exercises.edit', compact('exercise', 'canCreateGlobal'));
     }
 
     /**
@@ -78,16 +105,29 @@ class ExerciseController extends Controller
      */
     public function update(Request $request, Exercise $exercise)
     {
-        if ($exercise->user_id !== auth()->id()) {
-            abort(403, 'Unauthorized action.');
-        }
+        $this->authorize('update', $exercise);
+        
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'is_bodyweight' => 'nullable|boolean',
+            'is_global' => 'nullable|boolean',
         ]);
 
-        $exercise->update(array_merge($validated, ['is_bodyweight' => $request->boolean('is_bodyweight')]));
+        // Check admin permission for global exercises
+        if ($validated['is_global'] ?? false) {
+            $this->authorize('createGlobalExercise', Exercise::class);
+        }
+
+        // Check for name conflicts (excluding current exercise)
+        $this->validateExerciseNameForUpdate($exercise, $validated['title'], $validated['is_global'] ?? false);
+
+        $exercise->update([
+            'title' => $validated['title'],
+            'description' => $validated['description'],
+            'is_bodyweight' => $request->boolean('is_bodyweight'),
+            'user_id' => ($validated['is_global'] ?? false) ? null : auth()->id()
+        ]);
 
         return redirect()->route('exercises.index')->with('success', 'Exercise updated successfully.');
     }
@@ -97,11 +137,14 @@ class ExerciseController extends Controller
      */
     public function destroy(Exercise $exercise)
     {
-        if ($exercise->user_id !== auth()->id()) {
-            abort(403, 'Unauthorized action.');
+        $this->authorize('delete', $exercise);
+        
+        if ($exercise->liftLogs()->exists()) {
+            return back()->withErrors(['error' => 'Cannot delete exercise: it has associated lift logs.']);
         }
+        
         $exercise->delete();
-
+        
         return redirect()->route('exercises.index')->with('success', 'Exercise deleted successfully.');
     }
 
@@ -118,8 +161,10 @@ class ExerciseController extends Controller
         $exercises = Exercise::whereIn('id', $validated['exercise_ids'])->get();
 
         foreach ($exercises as $exercise) {
-            if ($exercise->user_id !== auth()->id()) {
-                abort(403, 'Unauthorized action.');
+            $this->authorize('delete', $exercise);
+            
+            if ($exercise->liftLogs()->exists()) {
+                return back()->withErrors(['error' => "Cannot delete exercise '{$exercise->title}': it has associated lift logs."]);
             }
         }
 
@@ -130,7 +175,9 @@ class ExerciseController extends Controller
 
     public function showLogs(Request $request, Exercise $exercise)
     {
-        if ($exercise->user_id !== auth()->id()) {
+        // Only allow viewing logs for exercises available to the user
+        $availableExercise = Exercise::availableToUser(auth()->id())->find($exercise->id);
+        if (!$availableExercise) {
             abort(403, 'Unauthorized action.');
         }
         $liftLogs = $exercise->liftLogs()->with('liftSets')->where('user_id', auth()->id())->orderBy('logged_at', 'asc')->get();
@@ -141,7 +188,7 @@ class ExerciseController extends Controller
 
         $liftLogs = $liftLogs->reverse();
 
-        $exercises = Exercise::where('user_id', auth()->id())->orderBy('title', 'asc')->get();
+        $exercises = Exercise::availableToUser(auth()->id())->orderBy('title', 'asc')->get();
 
         $sets = $request->input('sets');
         $reps = $request->input('reps');
@@ -194,5 +241,66 @@ class ExerciseController extends Controller
         return redirect()
             ->route('exercises.index')
             ->with('success', 'TSV data processed successfully! ' . $message);
+    }
+
+    /**
+     * Validate exercise name for conflicts when creating new exercise.
+     */
+    private function validateExerciseName(string $title, bool $isGlobal): void
+    {
+        if ($isGlobal) {
+            // Check if global exercise with same name exists
+            if (Exercise::global()->where('title', $title)->exists()) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'title' => 'A global exercise with this name already exists.'
+                ]);
+            }
+        } else {
+            // Check if user has exercise with same name OR global exercise exists
+            $userId = auth()->id();
+            $conflicts = Exercise::where('title', $title)
+                ->where(function ($q) use ($userId) {
+                    $q->whereNull('user_id')
+                      ->orWhere('user_id', $userId);
+                })
+                ->exists();
+
+            if ($conflicts) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'title' => 'An exercise with this name already exists.'
+                ]);
+            }
+        }
+    }
+
+    /**
+     * Validate exercise name for conflicts when updating existing exercise.
+     */
+    private function validateExerciseNameForUpdate(Exercise $exercise, string $title, bool $isGlobal): void
+    {
+        if ($isGlobal) {
+            // Check if another global exercise with same name exists
+            if (Exercise::global()->where('title', $title)->where('id', '!=', $exercise->id)->exists()) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'title' => 'A global exercise with this name already exists.'
+                ]);
+            }
+        } else {
+            // Check if user has another exercise with same name OR global exercise exists
+            $userId = auth()->id();
+            $conflicts = Exercise::where('title', $title)
+                ->where('id', '!=', $exercise->id)
+                ->where(function ($q) use ($userId) {
+                    $q->whereNull('user_id')
+                      ->orWhere('user_id', $userId);
+                })
+                ->exists();
+
+            if ($conflicts) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'title' => 'An exercise with this name already exists.'
+                ]);
+            }
+        }
     }
 }

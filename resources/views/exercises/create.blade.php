@@ -17,6 +17,12 @@
                 <input type="checkbox" name="is_bodyweight" id="is_bodyweight" value="1">
                 <label for="is_bodyweight">Bodyweight Exercise</label>
             </div>
+            @if($canCreateGlobal)
+                <div class="form-group form-group-checkbox">
+                    <input type="checkbox" name="is_global" id="is_global" value="1">
+                    <label for="is_global">Global Exercise (Available to all users)</label>
+                </div>
+            @endif
             <button type="submit" class="button">Add Exercise</button>
         </form>
     </div>

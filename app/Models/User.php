@@ -66,21 +66,7 @@ class User extends Authenticatable
     protected static function booted()
     {
         static::created(function ($user) {
-            $exercises = [
-                ['title' => 'Back Squat', 'description' => 'A compound exercise that targets the muscles of the legs and core.'],
-                ['title' => 'Bench Press', 'description' => 'A compound exercise that targets the muscles of the upper body, including the chest, shoulders, and triceps.'],
-                ['title' => 'Deadlift', 'description' => 'A compound exercise that targets the muscles of the back, legs, and grip.'],
-                ['title' => 'Strict Press', 'description' => 'A compound exercise that targets the shoulders and triceps.'],
-                ['title' => 'Power Clean', 'description' => 'An explosive deadlift.'],
-                ['title' => 'Half-Kneeling DB Press', 'description' => 'A unilateral exercise that targets the shoulders and core.'],
-                ['title' => 'Cyclist Squat (Barbell, Front Rack)', 'description' => 'A squat variation that emphasizes the quadriceps by elevating the heels, performed with a barbell in the front rack position.'],
-                ['title' => 'Chin-Ups', 'description' => 'A bodyweight pulling exercise with supinated grip.', 'is_bodyweight' => true],
-                ['title' => 'Pull-Ups', 'description' => 'A bodyweight pulling exercise with pronated grip.', 'is_bodyweight' => true],
-            ];
-
-            foreach ($exercises as $exercise) {
-                $user->exercises()->create($exercise);
-            }
+            // Global exercises are now managed by admins, not created per user
 
             $measurementTypes = [
                 ['name' => 'Bodyweight', 'default_unit' => 'lbs'],

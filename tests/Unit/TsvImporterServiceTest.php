@@ -208,8 +208,12 @@ class TsvImporterServiceTest extends TestCase
     /** @test */
     public function it_skips_duplicate_lift_logs_during_import()
     {
-        $exercise = Exercise::where('user_id', $this->user->id)->where('title', 'Bench Press')->first();
-        $this->assertNotNull($exercise);
+        // Create the exercise explicitly since they are no longer automatically created
+        $exercise = Exercise::factory()->create([
+            'user_id' => $this->user->id,
+            'title' => 'Bench Press',
+            'is_bodyweight' => false,
+        ]);
 
         // Create an initial lift log entry with sets
         $initialLiftLog = LiftLog::create([

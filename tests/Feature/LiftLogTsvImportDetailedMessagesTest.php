@@ -23,23 +23,18 @@ class LiftLogTsvImportDetailedMessagesTest extends TestCase
         parent::setUp();
         $this->user = User::factory()->create();
         
-        // Use the exercises that are automatically created by the User factory
-        $this->exercise1 = Exercise::where('user_id', $this->user->id)
-            ->where('title', 'Bench Press')
-            ->first();
+        // Create exercises explicitly since they are no longer automatically created
+        $this->exercise1 = Exercise::factory()->create([
+            'user_id' => $this->user->id,
+            'title' => 'Bench Press',
+            'is_bodyweight' => false,
+        ]);
         
-        // Create Squat if it doesn't exist
-        $this->exercise2 = Exercise::where('user_id', $this->user->id)
-            ->where('title', 'Squat')
-            ->first();
-        
-        if (!$this->exercise2) {
-            $this->exercise2 = Exercise::factory()->create([
-                'user_id' => $this->user->id,
-                'title' => 'Squat',
-                'is_bodyweight' => false,
-            ]);
-        }
+        $this->exercise2 = Exercise::factory()->create([
+            'user_id' => $this->user->id,
+            'title' => 'Squat',
+            'is_bodyweight' => false,
+        ]);
     }
 
     public function test_detailed_success_message_for_small_import()

@@ -26,17 +26,22 @@
                         <th>Title</th>
                         <th class="hide-on-mobile">Description</th>
                         <th class="hide-on-mobile">Type</th>
+                        <th class="hide-on-mobile">Scope</th>
                         <th class="actions-column">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach ($exercises as $exercise)
                         <tr>
-                            <td><input type="checkbox" name="exercise_ids[]" value="{{ $exercise->id }}" class="exercise-checkbox"></td>
+                            <td><input type="checkbox" name="exercise_ids[]" value="{{ $exercise->id }}" class="exercise-checkbox" {{ !$exercise->canBeDeletedBy(auth()->user()) ? 'disabled' : '' }}></td>
                             <td>
                                 <a href="{{ route('exercises.show-logs', $exercise) }}" class="text-white">{{ $exercise->title }}</a>
+                                @if($exercise->isGlobal())
+                                    <span class="badge" style="background-color: #4CAF50; color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.7em; margin-left: 5px;">Global</span>
+                                @endif
                                 <div class="show-on-mobile" style="font-size: 0.9em; color: #ccc;">
                                     {{ $exercise->is_bodyweight ? 'Bodyweight' : 'Weighted' }}
+                                    • {{ $exercise->isGlobal() ? 'Global' : 'Personal' }}
                                     @if($exercise->description)
                                         <br><small style="font-size: 0.8em; color: #aaa;">{{ \Illuminate\Support\Str::limit($exercise->description, 50) }}</small>
                                     @endif
@@ -44,14 +49,27 @@
                             </td>
                             <td class="hide-on-mobile">{{ $exercise->description }}</td>
                             <td class="hide-on-mobile">{{ $exercise->is_bodyweight ? 'Bodyweight' : 'Weighted' }}</td>
+                            <td class="hide-on-mobile">
+                                @if($exercise->isGlobal())
+                                    <span style="color: #4CAF50; font-weight: bold;">Global</span>
+                                @else
+                                    <span style="color: #FFC107;">Personal</span>
+                                @endif
+                            </td>
                             <td class="actions-column">
                                 <div style="display: flex; gap: 5px;">
-                                    <a href="{{ route('exercises.edit', $exercise->id) }}" class="button edit"><i class="fa-solid fa-pencil"></i></a>
-                                    <form action="{{ route('exercises.destroy', $exercise->id) }}" method="POST" style="display:inline;">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="button delete" onclick="return confirm('Are you sure you want to delete this exercise?');"><i class="fa-solid fa-trash"></i></button>
-                                    </form>
+                                    @if($exercise->canBeEditedBy(auth()->user()))
+                                        <a href="{{ route('exercises.edit', $exercise->id) }}" class="button edit"><i class="fa-solid fa-pencil"></i></a>
+                                    @endif
+                                    @if($exercise->canBeDeletedBy(auth()->user()))
+                                        <form action="{{ route('exercises.destroy', $exercise->id) }}" method="POST" style="display:inline;">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="button delete" onclick="return confirm('Are you sure you want to delete this exercise?');"><i class="fa-solid fa-trash"></i></button>
+                                        </form>
+                                    @elseif($exercise->liftLogs()->exists())
+                                        <span class="button delete" style="opacity: 0.5; cursor: not-allowed;" title="Cannot delete: has lift logs"><i class="fa-solid fa-trash"></i></span>
+                                    @endif
                                 </div>
                             </td>
                         </tr>
@@ -60,7 +78,7 @@
                 <tfoot>
                     <tr>
                         <th><input type="checkbox" id="select-all-exercises-footer"></th>
-                        <th colspan="4" style="text-align:left; font-weight:normal;">
+                        <th colspan="5" style="text-align:left; font-weight:normal;">
                             <form action="{{ route('exercises.destroy-selected') }}" method="POST" id="delete-selected-form" onsubmit="return confirm('Are you sure you want to delete the selected exercises?');" style="display:inline;">
                                 @csrf
                                 <button type="submit" class="button delete"><i class="fa-solid fa-trash"></i> Delete Selected</button>
@@ -88,7 +106,7 @@
 
                 // Select all functionality for exercises
                 document.getElementById('select-all-exercises').addEventListener('change', function() {
-                    var checkboxes = document.querySelectorAll('.exercise-checkbox');
+                    var checkboxes = document.querySelectorAll('.exercise-checkbox:not([disabled])');
                     var footerCheckbox = document.getElementById('select-all-exercises-footer');
                     checkboxes.forEach(function(checkbox) {
                         checkbox.checked = this.checked;
@@ -97,7 +115,7 @@
                 });
 
                 document.getElementById('select-all-exercises-footer').addEventListener('change', function() {
-                    var checkboxes = document.querySelectorAll('.exercise-checkbox');
+                    var checkboxes = document.querySelectorAll('.exercise-checkbox:not([disabled])');
                     var headerCheckbox = document.getElementById('select-all-exercises');
                     checkboxes.forEach(function(checkbox) {
                         checkbox.checked = this.checked;
@@ -107,7 +125,7 @@
 
                 // Handle bulk delete form submission
                 document.getElementById('delete-selected-form').addEventListener('submit', function(e) {
-                    var checkedBoxes = document.querySelectorAll('.exercise-checkbox:checked');
+                    var checkedBoxes = document.querySelectorAll('.exercise-checkbox:checked:not([disabled])');
                     if (checkedBoxes.length === 0) {
                         e.preventDefault();
                         alert('Please select at least one exercise to delete.');

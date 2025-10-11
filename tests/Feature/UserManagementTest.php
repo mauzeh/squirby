@@ -239,8 +239,11 @@ class UserManagementTest extends TestCase
         $this->assertEquals(auth()->id(), $this->admin->id);
     }
 
-    public function test_new_user_is_seeded_with_default_exercises()
+    public function test_new_user_has_access_to_global_exercises()
     {
+        // Ensure global exercises exist (from seeder)
+        $this->seed(\Database\Seeders\GlobalExercisesSeeder::class);
+        
         $role = Role::factory()->create();
         $userData = [
             'name' => 'New User',
@@ -254,15 +257,22 @@ class UserManagementTest extends TestCase
 
         $newUser = User::where('email', 'newuser@example.com')->first();
 
-        $this->assertCount(9, $newUser->exercises);
-        $this->assertDatabaseHas('exercises', ['user_id' => $newUser->id, 'title' => 'Back Squat']);
-        $this->assertDatabaseHas('exercises', ['user_id' => $newUser->id, 'title' => 'Bench Press']);
-        $this->assertDatabaseHas('exercises', ['user_id' => $newUser->id, 'title' => 'Deadlift']);
-        $this->assertDatabaseHas('exercises', ['user_id' => $newUser->id, 'title' => 'Strict Press']);
-        $this->assertDatabaseHas('exercises', ['user_id' => $newUser->id, 'title' => 'Power Clean']);
-        $this->assertDatabaseHas('exercises', ['user_id' => $newUser->id, 'title' => 'Half-Kneeling DB Press']);
-        $this->assertDatabaseHas('exercises', ['user_id' => $newUser->id, 'title' => 'Cyclist Squat (Barbell, Front Rack)']);
-        $this->assertDatabaseHas('exercises', ['user_id' => $newUser->id, 'title' => 'Chin-Ups']);
-        $this->assertDatabaseHas('exercises', ['user_id' => $newUser->id, 'title' => 'Pull-Ups']);
+        // New users should not have personal exercises created
+        $this->assertCount(0, $newUser->exercises);
+        
+        // But they should have access to global exercises
+        $availableExercises = \App\Models\Exercise::availableToUser($newUser->id)->get();
+        $this->assertGreaterThan(0, $availableExercises->count());
+        
+        // Verify global exercises exist and are accessible
+        $this->assertDatabaseHas('exercises', ['user_id' => null, 'title' => 'Back Squat']);
+        $this->assertDatabaseHas('exercises', ['user_id' => null, 'title' => 'Bench Press']);
+        $this->assertDatabaseHas('exercises', ['user_id' => null, 'title' => 'Deadlift']);
+        $this->assertDatabaseHas('exercises', ['user_id' => null, 'title' => 'Strict Press']);
+        $this->assertDatabaseHas('exercises', ['user_id' => null, 'title' => 'Power Clean']);
+        $this->assertDatabaseHas('exercises', ['user_id' => null, 'title' => 'Half-Kneeling DB Press']);
+        $this->assertDatabaseHas('exercises', ['user_id' => null, 'title' => 'Cyclist Squat (Barbell, Front Rack)']);
+        $this->assertDatabaseHas('exercises', ['user_id' => null, 'title' => 'Chin-Ups']);
+        $this->assertDatabaseHas('exercises', ['user_id' => null, 'title' => 'Pull-Ups']);
     }
 }
