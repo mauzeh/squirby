@@ -34,12 +34,14 @@
                         <tr>
                             <td><input type="checkbox" name="exercise_ids[]" value="{{ $exercise->id }}" class="exercise-checkbox" {{ !$exercise->canBeDeletedBy(auth()->user()) ? 'disabled' : '' }}></td>
                             <td>
-                                <a href="{{ route('exercises.show-logs', $exercise) }}" class="text-white">{{ $exercise->title }}</a>
-                                @if($exercise->isGlobal())
-                                    <span class="badge" style="background-color: #4CAF50; color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.7em; margin-left: 5px;">Global</span>
-                                @else
-                                    <span class="badge" style="background-color: #FFC107; color: black; padding: 2px 6px; border-radius: 3px; font-size: 0.7em; margin-left: 5px;">{{ $exercise->user->name }}</span>
-                                @endif
+                                <div style="display: flex; align-items: flex-start; gap: 8px;">
+                                    @if($exercise->isGlobal())
+                                        <span class="badge" style="background-color: #4CAF50; color: white; padding: 2px 6px; border-radius: 3px; font-size: 0.7em; white-space: nowrap; display: inline-block; flex-shrink: 0;">Everyone</span>
+                                    @else
+                                        <span class="badge" style="background-color: #FFC107; color: black; padding: 2px 6px; border-radius: 3px; font-size: 0.7em; white-space: nowrap; display: inline-block; flex-shrink: 0;">{{ $exercise->user_id === auth()->id() ? 'You' : $exercise->user->name }}</span>
+                                    @endif
+                                    <a href="{{ route('exercises.show-logs', $exercise) }}" class="text-white" style="flex: 1; word-wrap: break-word;">{{ $exercise->title }}</a>
+                                </div>
                                 <div class="show-on-mobile" style="font-size: 0.9em; color: #ccc;">
                                     {{ $exercise->is_bodyweight ? 'Bodyweight' : 'Weighted' }}
                                     • {{ $exercise->isGlobal() ? 'Global' : 'Personal' }}
