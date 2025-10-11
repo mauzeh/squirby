@@ -59,7 +59,9 @@ class FoodLogDateNavigationTest extends TestCase
         $response = $this->actingAs($this->user)->get(route('food-logs.index', ['date' => $lastRecordDate->toDateString()]));
 
         $response->assertStatus(200);
-        $response->assertDontSee('Last Record');
+        // Should not see the Last Record button link
+        $response->assertDontSee('<a href="' . route('food-logs.index', ['date' => $lastRecordDate->toDateString()]) . '" class="date-link">', false);
+        $response->assertDontSee('>Last Record</a>', false);
     }
 
     /** @test */
@@ -68,11 +70,12 @@ class FoodLogDateNavigationTest extends TestCase
         $response = $this->actingAs($this->user)->get(route('food-logs.index'));
 
         $response->assertStatus(200);
-        $response->assertDontSee('Last Record');
+        // Should not see the Last Record button when no records exist
+        $response->assertDontSee('>Last Record</a>', false);
     }
 
     /** @test */
-    public function food_log_index_shows_today_button_when_today_not_in_date_range()
+    public function food_log_index_shows_separate_today_button_when_today_not_in_range()
     {
         // Visit a date that's more than 1 day away from today (outside the -1 to +1 range)
         $selectedDate = Carbon::now()->subDays(5);
@@ -80,12 +83,17 @@ class FoodLogDateNavigationTest extends TestCase
         $response = $this->actingAs($this->user)->get(route('food-logs.index', ['date' => $selectedDate->toDateString()]));
 
         $response->assertStatus(200);
+        // Should see separate "Today" button
         $response->assertSee('Today');
         $response->assertSee('href="' . route('food-logs.index', ['date' => Carbon::today()->toDateString()]) . '"', false);
+        // Should see actual dates in the date buttons (not "Today" text)
+        $response->assertSee($selectedDate->copy()->subDay()->format('D M d'));
+        $response->assertSee($selectedDate->format('D M d'));
+        $response->assertSee($selectedDate->copy()->addDay()->format('D M d'));
     }
 
     /** @test */
-    public function food_log_index_hides_today_button_when_today_is_in_date_range()
+    public function food_log_index_shows_today_text_in_date_button_when_today_is_in_range()
     {
         // Visit yesterday (today will be in the -1 to +1 range)
         $selectedDate = Carbon::now()->subDay();
@@ -93,17 +101,22 @@ class FoodLogDateNavigationTest extends TestCase
         $response = $this->actingAs($this->user)->get(route('food-logs.index', ['date' => $selectedDate->toDateString()]));
 
         $response->assertStatus(200);
-        // Should not see "Today" as a separate button since today is in the date range
+        // Should see "Today" text in one of the date buttons, not as a separate button
+        $response->assertSee('Today');
+        // Should NOT see a separate Today button
         $response->assertDontSee('<a href="' . route('food-logs.index', ['date' => Carbon::today()->toDateString()]) . '" class="date-link today-date">', false);
     }
 
     /** @test */
-    public function food_log_index_hides_today_button_when_viewing_today()
+    public function food_log_index_shows_today_text_when_viewing_today()
     {
         $response = $this->actingAs($this->user)->get(route('food-logs.index'));
 
         $response->assertStatus(200);
-        // Should not see "Today" as a separate button when viewing today
+        // Should see "Today" text in the active date button
+        $response->assertSee('Today');
+        $response->assertSee('class="date-link active today-date"', false);
+        // Should NOT see a separate Today button
         $response->assertDontSee('<a href="' . route('food-logs.index', ['date' => Carbon::today()->toDateString()]) . '" class="date-link today-date">', false);
     }
 

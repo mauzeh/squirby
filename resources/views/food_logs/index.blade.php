@@ -20,11 +20,11 @@
                 }
             @endphp
             <a href="{{ route('food-logs.index', ['date' => $dateString]) }}" class="date-link {{ $selectedDate->toDateString() == $dateString ? 'active' : '' }} {{ $date->isSameDay($today) ? 'today-date' : '' }}">
-                {{ $date->format('D M d') }}
+                {{ $date->isSameDay($today) ? 'Today' : $date->format('D M d') }}
             </a>
         @endfor
-        @if(!$todayInRange && !$selectedDate->isSameDay($today))
-            <a href="{{ route('food-logs.index', ['date' => $today->toDateString()]) }}" class="date-link today-date">
+        @if(!$todayInRange)
+            <a href="{{ route('food-logs.index', ['date' => $today->toDateString()]) }}" class="date-link {{ $selectedDate->isSameDay($today) ? 'active today-date' : 'today-date' }}">
                 Today
             </a>
         @endif
