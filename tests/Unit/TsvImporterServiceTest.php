@@ -343,11 +343,17 @@ class TsvImporterServiceTest extends TestCase
 
         $result = $this->tsvImporterService->importIngredients($tsvData, $this->user->id);
 
-        $this->assertEquals(2, $result['importedCount']);
+        $this->assertEquals(1, $result['importedCount']); // Only Ingredient B is new
+        $this->assertEquals(1, $result['updatedCount']); // Ingredient A is updated
+        $this->assertEquals(0, $result['skippedCount']);
         $this->assertEmpty($result['invalidRows']);
         
-        // It's 5 because a User factory creates 5 ingredients by default
-        $this->assertDatabaseCount('ingredients', 5 + 2);
+        // Verify the new structure includes the detailed arrays
+        $this->assertArrayHasKey('importedIngredients', $result);
+        $this->assertArrayHasKey('updatedIngredients', $result);
+        $this->assertArrayHasKey('skippedIngredients', $result);
+        $this->assertArrayHasKey('importMode', $result);
+        $this->assertEquals('personal', $result['importMode']);
 
         $this->assertDatabaseHas('ingredients', [
             'name' => 'Ingredient A',

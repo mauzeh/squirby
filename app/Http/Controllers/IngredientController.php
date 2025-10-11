@@ -126,33 +126,95 @@ class IngredientController extends Controller
     public function importTsv(Request $request)
     {
         $validated = $request->validate([
-            'tsv_data' => 'nullable|string',
+            'tsv_data' => 'required|string',
         ]);
 
         $tsvData = trim($validated['tsv_data']);
+
         if (empty($tsvData)) {
             return redirect()
                 ->route('ingredients.index')
                 ->with('error', 'TSV data cannot be empty.');
         }
 
-        $result = $this->tsvImporterService->importIngredients($tsvData, auth()->id());
+        try {
+            $result = $this->tsvImporterService->importIngredients($tsvData, auth()->id());
 
-        if (isset($result['error'])) {
+            // Check if there was an error in the result
+            if (isset($result['error'])) {
+                return redirect()
+                    ->route('ingredients.index')
+                    ->with('error', 'Import failed: ' . $result['error']);
+            }
+
+            $message = $this->buildImportSuccessMessage($result);
+            
             return redirect()
                 ->route('ingredients.index')
-                ->with('error', $result['error']);
-        }
+                ->with('success', $message);
 
-        $message = 'TSV data processed successfully! ';
+        } catch (\Exception $e) {
+            return redirect()
+                ->route('ingredients.index')
+                ->with('error', 'Import failed: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Build detailed import success message with lists of imported, updated, and skipped ingredients.
+     */
+    private function buildImportSuccessMessage(array $result): string
+    {
+        $html = "<p>TSV data processed successfully!</p>";
+
+        // Imported ingredients
         if ($result['importedCount'] > 0) {
-            $message .= $result['importedCount'] . ' ingredient(s) imported.';
-        } else {
-            $message .= 'No new data was imported - all entries already exist with the same data.';
+            $html .= "<p>Imported {$result['importedCount']} new ingredients:</p><ul>";
+            foreach ($result['importedIngredients'] as $ingredient) {
+                $html .= "<li>" . e($ingredient['name']) . " ({$ingredient['base_quantity']}" . e($ingredient['unit_abbreviation'] ?? '') . ")</li>";
+            }
+            $html .= "</ul>";
         }
 
-        return redirect()
-            ->route('ingredients.index')
-            ->with('success', $message);
+        // Updated ingredients
+        if ($result['updatedCount'] > 0) {
+            $html .= "<p>Updated {$result['updatedCount']} existing ingredients:</p><ul>";
+            foreach ($result['updatedIngredients'] as $ingredient) {
+                $changeDetails = [];
+                if (isset($ingredient['changes'])) {
+                    foreach ($ingredient['changes'] as $field => $change) {
+                        // Handle special field formatting
+                        if ($field === 'base_unit_id') {
+                            $changeDetails[] = "unit: '" . e($change['from']) . "' → '" . e($change['to']) . "'";
+                        } else {
+                            $changeDetails[] = e($field) . ": '" . e($change['from']) . "' → '" . e($change['to']) . "'";
+                        }
+                    }
+                }
+                $changeText = !empty($changeDetails) ? " (" . implode(', ', $changeDetails) . ")" : "";
+                $html .= "<li>" . e($ingredient['name']) . $changeText . "</li>";
+            }
+            $html .= "</ul>";
+        }
+
+        // Skipped ingredients
+        if ($result['skippedCount'] > 0) {
+            $html .= "<p>Skipped {$result['skippedCount']} ingredients:</p><ul>";
+            foreach ($result['skippedIngredients'] as $skipped) {
+                $html .= "<li>" . e($skipped['name']) . " - " . e($skipped['reason']) . "</li>";
+            }
+            $html .= "</ul>";
+        }
+
+        // Invalid rows
+        if (count($result['invalidRows']) > 0) {
+            $html .= "<p>Found " . count($result['invalidRows']) . " invalid rows that were skipped.</p>";
+        }
+
+        if ($result['importedCount'] === 0 && $result['updatedCount'] === 0) {
+            $html .= "<p>No new data was imported or updated - all entries already exist with the same data.</p>";
+        }
+
+        return $html;
     }
 }

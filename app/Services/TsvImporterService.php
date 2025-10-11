@@ -247,48 +247,77 @@ class TsvImporterService
             'Cost ($)'
         ];
 
+        $importedCount = 0;
+        $updatedCount = 0;
+        $skippedCount = 0;
+        $importedIngredients = [];
+        $updatedIngredients = [];
+        $skippedIngredients = [];
+
         $result = $this->ingredientTsvProcessorService->processTsv(
             $tsvData,
             $expectedHeader,
-            function ($rowData) use ($userId) {
-                $unit = $this->ingredientTsvProcessorService->getUnitFromAbbreviation($rowData['Type']);
-
-                if (!$unit) {
-                    throw new \Exception('Unit not found for abbreviation: ' . $rowData['Type']);
-                }
-
-                $ingredient = \App\Models\Ingredient::where('user_id', $userId)->whereRaw('LOWER(name) = ?', [strtolower($rowData['Ingredient'])])->first();
-
-                $data = [
-                    'user_id' => $userId,
-                    'name' => $rowData['Ingredient'],
-                    'base_quantity' => (float)($rowData['Amount'] ?? 1),
-                    'base_unit_id' => $unit->id,
-                    'protein' => (float)($rowData['Protein (g)'] ?? 0),
-                    'carbs' => (float)($rowData['Carb (g)'] ?? 0),
-                    'added_sugars' => (float)($rowData['Added Sugar (g)'] ?? 0),
-                    'fats' => (float)($rowData['Fat (g)'] ?? 0),
-                    'sodium' => (float)($rowData['Sodium (mg)'] ?? 0),
-                    'iron' => (float)($rowData['Iron (mg)'] ?? 0),
-                    'potassium' => (float)($rowData['Potassium (mg)'] ?? 0),
-                    'fiber' => (float)($rowData['Fiber (g)'] ?? 0),
-                    'calcium' => (float)($rowData['Calcium (mg)'] ?? 0),
-                    'caffeine' => (float)($rowData['Caffeine (mg)'] ?? 0),
-                    'cost_per_unit' => (float)(str_replace("$", "", $rowData['Cost ($)']) ?? 0)
-                ];
-
-                if ($ingredient) {
-                    $ingredient->update($data);
-                } else {
-                    \App\Models\Ingredient::create($data);
+            function ($rowData) use ($userId, &$importedCount, &$updatedCount, &$skippedCount, &$importedIngredients, &$updatedIngredients, &$skippedIngredients) {
+                try {
+                    $processResult = $this->processIngredientImport($rowData, $userId);
+                    
+                    switch ($processResult['action']) {
+                        case 'imported':
+                            $importedCount++;
+                            $importedIngredients[] = [
+                                'name' => $processResult['ingredient']->name,
+                                'base_quantity' => $processResult['ingredient']->base_quantity,
+                                'unit_abbreviation' => $processResult['ingredient']->baseUnit ? $processResult['ingredient']->baseUnit->abbreviation : 'pc'
+                            ];
+                            break;
+                        case 'updated':
+                            $updatedCount++;
+                            $updatedIngredients[] = [
+                                'name' => $processResult['ingredient']->name,
+                                'base_quantity' => $processResult['ingredient']->base_quantity,
+                                'unit_abbreviation' => $processResult['ingredient']->baseUnit ? $processResult['ingredient']->baseUnit->abbreviation : 'pc',
+                                'changes' => $processResult['changes'] ?? []
+                            ];
+                            break;
+                        case 'skipped':
+                            $skippedCount++;
+                            $skippedIngredients[] = [
+                                'name' => $processResult['name'],
+                                'reason' => $processResult['reason']
+                            ];
+                            break;
+                    }
+                } catch (\Exception $e) {
+                    // Re-throw to be caught by the processor's exception handling
+                    throw $e;
                 }
             }
         );
 
+        // Handle errors from TSV processing
+        if (!empty($result['errors'])) {
+            return [
+                'importedCount' => 0,
+                'updatedCount' => 0,
+                'skippedCount' => 0,
+                'invalidRows' => $result['invalidRows'],
+                'importedIngredients' => [],
+                'updatedIngredients' => [],
+                'skippedIngredients' => [],
+                'importMode' => 'personal',
+                'error' => $result['errors'][0]
+            ];
+        }
+
         return [
-            'importedCount' => $result['processedCount'],
+            'importedCount' => $importedCount,
+            'updatedCount' => $updatedCount,
+            'skippedCount' => $skippedCount,
             'invalidRows' => $result['invalidRows'],
-            'error' => $result['errors'][0] ?? null,
+            'importedIngredients' => $importedIngredients,
+            'updatedIngredients' => $updatedIngredients,
+            'skippedIngredients' => $skippedIngredients,
+            'importMode' => 'personal'
         ];
     }
 
@@ -536,6 +565,108 @@ class TsvImporterService
         ]);
 
         return ['action' => 'imported', 'exercise' => $exercise];
+    }
+
+    private function processIngredientImport(array $rowData, int $userId): array
+    {
+        $ingredientName = $rowData['Ingredient'];
+        
+        // Get unit for the ingredient
+        $unit = $this->ingredientTsvProcessorService->getUnitFromAbbreviation($rowData['Type']);
+        
+        if (!$unit) {
+            throw new \Exception('Unit not found for abbreviation: ' . $rowData['Type']);
+        }
+        
+        // Case-insensitive lookup for existing ingredient (personal only)
+        $existingIngredient = Ingredient::where('user_id', $userId)
+            ->whereRaw('LOWER(name) = ?', [strtolower($ingredientName)])
+            ->first();
+        
+        // Prepare ingredient data (excluding user_id for comparison)
+        $ingredientData = [
+            'name' => $ingredientName,
+            'base_quantity' => (float)($rowData['Amount'] ?? 1),
+            'base_unit_id' => $unit->id,
+            'protein' => (float)($rowData['Protein (g)'] ?? 0),
+            'carbs' => (float)($rowData['Carb (g)'] ?? 0),
+            'added_sugars' => (float)($rowData['Added Sugar (g)'] ?? 0),
+            'fats' => (float)($rowData['Fat (g)'] ?? 0),
+            'sodium' => (float)($rowData['Sodium (mg)'] ?? 0),
+            'iron' => (float)($rowData['Iron (mg)'] ?? 0),
+            'potassium' => (float)($rowData['Potassium (mg)'] ?? 0),
+            'fiber' => (float)($rowData['Fiber (g)'] ?? 0),
+            'calcium' => (float)($rowData['Calcium (mg)'] ?? 0),
+            'caffeine' => (float)($rowData['Caffeine (mg)'] ?? 0),
+            'cost_per_unit' => (float)(str_replace("$", "", $rowData['Cost ($)']) ?? 0)
+        ];
+        
+        if ($existingIngredient) {
+            // Preserve the existing name case if it's just a case difference
+            if (strtolower($existingIngredient->name) === strtolower($ingredientName)) {
+                $ingredientData['name'] = $existingIngredient->name;
+            }
+        }
+        
+        if ($existingIngredient) {
+            // Check if data differs
+            $changes = $this->detectIngredientChanges($existingIngredient, $ingredientData);
+            
+            if (!empty($changes)) {
+                $existingIngredient->update($ingredientData);
+                return [
+                    'action' => 'updated',
+                    'ingredient' => $existingIngredient->fresh()->load('baseUnit'),
+                    'changes' => $changes
+                ];
+            } else {
+                return [
+                    'action' => 'skipped',
+                    'name' => $ingredientName,
+                    'reason' => "Ingredient '{$ingredientName}' already exists with same data"
+                ];
+            }
+        }
+        
+        // Create new ingredient (add user_id for creation)
+        $ingredientData['user_id'] = $userId;
+        $ingredient = Ingredient::create($ingredientData);
+        return [
+            'action' => 'imported',
+            'ingredient' => $ingredient->load('baseUnit')
+        ];
+    }
+
+    private function detectIngredientChanges(Ingredient $existing, array $newData): array
+    {
+        $changes = [];
+        $trackableFields = [
+            'name', 'base_quantity', 'base_unit_id', 'protein', 'carbs', 'added_sugars', 
+            'fats', 'sodium', 'iron', 'potassium', 'fiber', 'calcium',
+            'caffeine', 'cost_per_unit'
+        ];
+        
+        foreach ($trackableFields as $field) {
+            if (isset($newData[$field]) && $existing->$field != $newData[$field]) {
+                if ($field === 'base_unit_id') {
+                    // Handle unit changes with unit names instead of IDs
+                    $fromUnit = $existing->baseUnit ? $existing->baseUnit->abbreviation : 'unknown';
+                    $toUnit = \App\Models\Unit::find($newData[$field]);
+                    $toUnitName = $toUnit ? $toUnit->abbreviation : 'unknown';
+                    $changes[$field] = [
+                        'from' => $fromUnit,
+                        'to' => $toUnitName
+                    ];
+                } else {
+                    $changes[$field] = [
+                        'from' => $existing->$field,
+                        'to' => $newData[$field]
+                    ];
+                }
+            }
+        }
+        
+        return $changes;
     }
 
     private function parseBooleanValue(string $value): bool
