@@ -231,6 +231,9 @@ class LiftLogController extends Controller
         
         if (!empty($countParts)) {
             $successMessage .= implode(', ', $countParts) . '.';
+        } else {
+            // Handle case where nothing was imported or updated (all duplicates)
+            $successMessage .= 'No new data was imported or updated - all entries already exist with the same data.';
         }
 
         // Add detailed list if total < 10

@@ -144,14 +144,15 @@ class IngredientController extends Controller
                 ->with('error', $result['error']);
         }
 
-        if ($result['importedCount'] === 0) {
-            return redirect()
-                ->route('ingredients.index')
-                ->with('error', 'No ingredients were imported.');
+        $message = 'TSV data processed successfully! ';
+        if ($result['importedCount'] > 0) {
+            $message .= $result['importedCount'] . ' ingredient(s) imported.';
+        } else {
+            $message .= 'No new data was imported - all entries already exist with the same data.';
         }
 
         return redirect()
             ->route('ingredients.index')
-            ->with('success', 'TSV data imported successfully!');
+            ->with('success', $message);
     }
 }

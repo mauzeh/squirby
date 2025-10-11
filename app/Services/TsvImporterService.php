@@ -373,12 +373,16 @@ class TsvImporterService
                 ->first();
 
             if ($existingExercise) {
-                // Update existing exercise
-                $existingExercise->update([
-                    'description' => $description,
-                    'is_bodyweight' => $isBodyweight,
-                ]);
-                $updatedCount++;
+                // Check if data actually differs before updating
+                if ($existingExercise->description !== $description || $existingExercise->is_bodyweight !== $isBodyweight) {
+                    // Update existing exercise only if data differs
+                    $existingExercise->update([
+                        'description' => $description,
+                        'is_bodyweight' => $isBodyweight,
+                    ]);
+                    $updatedCount++;
+                }
+                // If data is the same, we skip it (no increment to any counter)
             } else {
                 // Create new exercise
                 Exercise::create([

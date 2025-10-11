@@ -76,6 +76,32 @@ class ExerciseTsvImportFeatureTest extends TestCase
         $response->assertSessionHas('error', 'TSV data cannot be empty.');
     }
 
+    public function test_import_with_no_new_data_shows_success_message()
+    {
+        // Create existing exercise that matches what we'll try to import
+        Exercise::create([
+            'user_id' => $this->user->id,
+            'title' => 'Push Ups',
+            'description' => 'Bodyweight exercise',
+            'is_bodyweight' => true,
+        ]);
+
+        // Try to import the exact same data
+        $tsvData = "Push Ups\tBodyweight exercise\ttrue";
+
+        $response = $this->actingAs($this->user)
+            ->post(route('exercises.import-tsv'), [
+                'tsv_data' => $tsvData
+            ]);
+
+        $response->assertRedirect(route('exercises.index'));
+        $response->assertSessionHas('success');
+        
+        $successMessage = session('success');
+        $this->assertStringContainsString('TSV data processed successfully!', $successMessage);
+        $this->assertStringContainsString('No new data was imported or updated - all entries already exist with the same data.', $successMessage);
+    }
+
     public function test_import_with_invalid_data_shows_error()
     {
         $tsvData = "Invalid\nAnother Invalid Row";

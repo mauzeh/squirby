@@ -142,24 +142,27 @@ class ExerciseController extends Controller
 
         $result = $this->tsvImporterService->importExercises($tsvData, auth()->id());
 
-        if ($result['importedCount'] === 0 && $result['updatedCount'] === 0) {
-            if (!empty($result['invalidRows'])) {
-                return redirect()
-                    ->route('exercises.index')
-                    ->with('error', 'No exercises were imported due to invalid data in rows: ' . implode(', ', array_map(function($row) { return '"' . $row . '"'; }, $result['invalidRows'])));
-            }
+        // Handle case with only invalid rows and no valid data
+        if ($result['importedCount'] === 0 && $result['updatedCount'] === 0 && !empty($result['invalidRows'])) {
             return redirect()
                 ->route('exercises.index')
-                ->with('error', 'No exercises were imported.');
+                ->with('error', 'No exercises were imported due to invalid data in rows: ' . implode(', ', array_map(function($row) { return '"' . $row . '"'; }, $result['invalidRows'])));
         }
 
-        $message = '';
+        $message = 'TSV data processed successfully! ';
+        $countParts = [];
         if ($result['importedCount'] > 0) {
-            $message .= $result['importedCount'] . ' exercise(s) imported';
+            $countParts[] = $result['importedCount'] . ' exercise(s) imported';
         }
         if ($result['updatedCount'] > 0) {
-            if ($message) $message .= ', ';
-            $message .= $result['updatedCount'] . ' exercise(s) updated';
+            $countParts[] = $result['updatedCount'] . ' exercise(s) updated';
+        }
+        
+        if (!empty($countParts)) {
+            $message .= implode(', ', $countParts) . '.';
+        } else {
+            // Handle case where nothing was imported or updated (all duplicates)
+            $message .= 'No new data was imported or updated - all entries already exist with the same data.';
         }
         if (!empty($result['invalidRows'])) {
             $message .= '. Some rows were invalid: ' . implode(', ', array_map(function($row) { return '"' . $row . '"'; }, $result['invalidRows']));

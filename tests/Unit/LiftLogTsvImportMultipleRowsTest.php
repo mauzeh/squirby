@@ -129,4 +129,58 @@ class LiftLogTsvImportMultipleRowsTest extends TestCase
             $this->assertEquals('Updated comments', $set->notes);
         }
     }
+
+    /** @test */
+    public function it_handles_no_imports_or_updates_when_all_data_already_exists()
+    {
+        // Create existing lift logs that exactly match what we'll try to import
+        $existingLog1 = LiftLog::create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $this->exercise->id,
+            'logged_at' => \Carbon\Carbon::createFromFormat('m/d/Y g:i A', '8/4/2025 6:00 PM'),
+            'comments' => 'Warm up set',
+        ]);
+
+        for ($i = 0; $i < 3; $i++) {
+            $existingLog1->liftSets()->create([
+                'weight' => 135,
+                'reps' => 5,
+                'notes' => 'Warm up set',
+            ]);
+        }
+
+        $existingLog2 = LiftLog::create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $this->exercise->id,
+            'logged_at' => \Carbon\Carbon::createFromFormat('m/d/Y g:i A', '8/4/2025 6:15 PM'),
+            'comments' => 'Working set',
+        ]);
+
+        for ($i = 0; $i < 3; $i++) {
+            $existingLog2->liftSets()->create([
+                'weight' => 155,
+                'reps' => 5,
+                'notes' => 'Working set',
+            ]);
+        }
+
+        // Try to import the exact same data
+        $tsvData = "8/4/2025\t6:00 PM\tBench Press\t135\t5\t3\tWarm up set\n" .
+                   "8/4/2025\t6:15 PM\tBench Press\t155\t5\t3\tWorking set";
+
+        $result = $this->tsvImporterService->importLiftLogs($tsvData, '2025-08-04', $this->user->id);
+
+        $this->assertEquals(0, $result['importedCount']);
+        $this->assertEquals(0, $result['updatedCount']);
+        $this->assertEmpty($result['invalidRows']);
+        $this->assertEmpty($result['importedEntries']);
+        $this->assertEmpty($result['updatedEntries']);
+
+        // Verify no new lift logs were created
+        $liftLogs = LiftLog::where('user_id', $this->user->id)
+            ->where('exercise_id', $this->exercise->id)
+            ->get();
+
+        $this->assertCount(2, $liftLogs); // Should still be just the original 2
+    }
 }

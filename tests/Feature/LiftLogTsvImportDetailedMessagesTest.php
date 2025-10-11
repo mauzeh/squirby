@@ -181,4 +181,43 @@ class LiftLogTsvImportDetailedMessagesTest extends TestCase
         $this->assertStringContainsString('Warning:', $successMessage);
         $this->assertStringContainsString('Invalid Row', $successMessage);
     }
+
+    public function test_success_message_when_no_data_imported_or_updated()
+    {
+        // Create existing lift logs that exactly match what we'll try to import
+        $existingLiftLog = LiftLog::create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $this->exercise1->id,
+            'logged_at' => Carbon::createFromFormat('m/d/Y g:i A', '8/4/2025 6:00 PM'),
+            'comments' => 'Good form',
+        ]);
+
+        // Add lift sets that exactly match
+        for ($i = 0; $i < 3; $i++) {
+            LiftSet::create([
+                'lift_log_id' => $existingLiftLog->id,
+                'weight' => 135,
+                'reps' => 5,
+                'notes' => 'Good form',
+            ]);
+        }
+
+        // Try to import the exact same data
+        $tsvData = "8/4/2025\t6:00 PM\tBench Press\t135\t5\t3\tGood form";
+
+        $response = $this->actingAs($this->user)
+            ->post(route('lift-logs.import-tsv'), [
+                'tsv_data' => $tsvData,
+                'date' => '2025-08-04'
+            ]);
+
+        $response->assertRedirect(route('lift-logs.index'));
+        $response->assertSessionHas('success');
+        
+        $successMessage = session('success');
+        $this->assertStringContainsString('TSV data processed successfully!', $successMessage);
+        $this->assertStringContainsString('No new data was imported or updated - all entries already exist with the same data.', $successMessage);
+        $this->assertStringNotContainsString('lift log(s) imported', $successMessage);
+        $this->assertStringNotContainsString('lift log(s) updated', $successMessage);
+    }
 }

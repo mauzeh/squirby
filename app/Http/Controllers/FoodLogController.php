@@ -213,9 +213,16 @@ class FoodLogController extends Controller
                 ->with('error', 'No ingredients found for: ' . implode(', ', $result['notFound']));
         }
 
+        $message = 'TSV data processed successfully! ';
+        if ($result['importedCount'] > 0) {
+            $message .= $result['importedCount'] . ' food log(s) imported.';
+        } else {
+            $message .= 'No new data was imported - all entries already exist with the same data.';
+        }
+
         return redirect()
             ->route('food-logs.index', ['date' => $validated['date']])
-            ->with('success', 'TSV data imported successfully!');
+            ->with('success', $message);
     }
 
     public function export(Request $request)
