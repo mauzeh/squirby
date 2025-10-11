@@ -5,6 +5,17 @@
         <h1>Body Logs</h1>
         <a href="{{ route('body-logs.create') }}" class="button create">Add Body Log</a>
         <a href="{{ route('measurement-types.index') }}" class="button">Manage Measurement Types</a>
+        
+        @if (session('success'))
+            <div class="container success-message-box">
+                {!! session('success') !!}
+            </div>
+        @endif
+        @if (session('error'))
+            <div class="container error-message-box">
+                {{ session('error') }}
+            </div>
+        @endif
         @if ($bodyLogs->isEmpty())
             <p>No body logs found. Add one to get started!</p>
         @else

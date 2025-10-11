@@ -322,14 +322,25 @@ class TsvImporterService
                 continue;
             }
 
-            BodyLog::create([
-                'user_id' => $userId,
-                'measurement_type_id' => $measurementType->id,
-                'value' => $columns[3],
-                'comments' => $columns[5] ?? null,
-                'logged_at' => $loggedAt,
-            ]);
-            $importedCount++;
+            // Check for existing BodyLog entry with the same data
+            $existingBodyLog = BodyLog::where('user_id', $userId)
+                ->where('measurement_type_id', $measurementType->id)
+                ->where('logged_at', $loggedAt)
+                ->where('value', $columns[3])
+                ->where('comments', $columns[5] ?? null)
+                ->first();
+
+            if (!$existingBodyLog) {
+                BodyLog::create([
+                    'user_id' => $userId,
+                    'measurement_type_id' => $measurementType->id,
+                    'value' => $columns[3],
+                    'comments' => $columns[5] ?? null,
+                    'logged_at' => $loggedAt,
+                ]);
+                $importedCount++;
+            }
+            // If it already exists, we skip it (no increment to importedCount)
         }
 
         return [
