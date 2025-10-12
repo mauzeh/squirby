@@ -94,7 +94,7 @@
                             @csrf
                             <input type="hidden" name="exercise_id" value="{{ $program->exercise->id }}">
                             <input type="hidden" name="date" value="{{ $selectedDate->toDateString() }}">
-                            <input type="hidden" name="logged_at" value="{{ now()->format('H:i') }}">
+
                             <input type="hidden" name="redirect_to" value="mobile-entry">
                             <input type="hidden" name="program_id" value="{{ $program->id }}"> {{-- Pass program_id --}}
 

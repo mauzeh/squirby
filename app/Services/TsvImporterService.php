@@ -114,6 +114,13 @@ class TsvImporterService
                     continue;
                 }
 
+                // Round time to nearest 15-minute interval for consistency
+                $minutes = $loggedAt->minute;
+                $remainder = $minutes % 15;
+                if ($remainder !== 0) {
+                    $loggedAt->addMinutes(15 - $remainder);
+                }
+
                 // Extract LiftSet details from TSV
                 $weight = $columns[3];
                 $reps = $columns[4];

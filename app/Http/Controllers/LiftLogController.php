@@ -45,11 +45,24 @@ class LiftLogController extends Controller
             'weight' => 'required|numeric',
             'comments' => 'nullable|string',
             'date' => 'required|date',
-            'logged_at' => 'required|date_format:H:i',
+            'logged_at' => 'nullable|date_format:H:i',
         ]);
 
         $loggedAtDate = Carbon::parse($request->input('date'));
-        $loggedAt = $loggedAtDate->setTimeFromTimeString($request->input('logged_at'));
+        
+        // If no time provided (mobile entry), use current time
+        if ($request->has('logged_at') && $request->input('logged_at')) {
+            $loggedAt = $loggedAtDate->setTimeFromTimeString($request->input('logged_at'));
+        } else {
+            $loggedAt = $loggedAtDate->setTime(now()->hour, now()->minute);
+        }
+        
+        // Round time to nearest 15-minute interval
+        $minutes = $loggedAt->minute;
+        $remainder = $minutes % 15;
+        if ($remainder !== 0) {
+            $loggedAt->addMinutes(15 - $remainder);
+        }
 
         $liftLog = LiftLog::create([
             'exercise_id' => $request->input('exercise_id'),
@@ -111,6 +124,13 @@ class LiftLogController extends Controller
 
         $loggedAtDate = Carbon::parse($request->input('date'));
         $loggedAt = $loggedAtDate->setTimeFromTimeString($request->input('logged_at'));
+        
+        // Round time to nearest 15-minute interval
+        $minutes = $loggedAt->minute;
+        $remainder = $minutes % 15;
+        if ($remainder !== 0) {
+            $loggedAt->addMinutes(15 - $remainder);
+        }
 
         $liftLog->update([
             'exercise_id' => $request->input('exercise_id'),

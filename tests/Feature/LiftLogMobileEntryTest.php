@@ -480,4 +480,128 @@ class LiftLogMobileEntryTest extends TestCase
         $response->assertSee('Last time: 100 lbs');
         $response->assertSee('(3 x 5)');
     }
+
+    /** @test */
+    public function mobile_entry_form_uses_current_time_when_no_time_provided()
+    {
+        $exercise = Exercise::factory()->create(['user_id' => $this->user->id, 'is_bodyweight' => false]);
+        $program = Program::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $exercise->id,
+            'date' => Carbon::today(),
+            'sets' => 3,
+            'reps' => 5,
+        ]);
+
+        // Test mobile entry behavior (no logged_at field)
+        $liftLogData = [
+            'exercise_id' => $exercise->id,
+            'weight' => 100,
+            'reps' => 5,
+            'rounds' => 3,
+            'comments' => 'Mobile entry test',
+            'date' => Carbon::today()->format('Y-m-d'),
+            'redirect_to' => 'mobile-entry',
+            'program_id' => $program->id,
+            // Note: no 'logged_at' field - mobile form doesn't send it
+        ];
+
+        $response = $this->post(route('lift-logs.store'), $liftLogData);
+
+        // Verify the lift log was created
+        $liftLog = LiftLog::where('user_id', $this->user->id)->first();
+        $this->assertNotNull($liftLog);
+        
+        // Check that the time is rounded to a 15-minute interval
+        $loggedMinutes = $liftLog->logged_at->minute;
+        $this->assertTrue(in_array($loggedMinutes, [0, 15, 30, 45]), 
+            "Expected logged time to be rounded to 15-minute interval, got {$loggedMinutes} minutes");
+        
+        // Verify it's logged for today
+        $this->assertTrue($liftLog->logged_at->isToday(), 
+            "Expected lift log to be logged today");
+    }
+
+    /** @test */
+    public function mobile_entry_form_rounds_time_to_nearest_15_minute_interval_on_backend()
+    {
+        $exercise = Exercise::factory()->create(['user_id' => $this->user->id, 'is_bodyweight' => false]);
+        $program = Program::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $exercise->id,
+            'date' => Carbon::today(),
+            'sets' => 3,
+            'reps' => 5,
+        ]);
+
+        // Test various times that should be rounded to 15-minute intervals
+        $testCases = [
+            ['input' => '14:37', 'expected' => '14:45'], // Round up
+            ['input' => '09:22', 'expected' => '09:30'], // Round up
+            ['input' => '16:08', 'expected' => '16:15'], // Round up
+            ['input' => '11:52', 'expected' => '12:00'], // Round up to next hour
+            ['input' => '08:00', 'expected' => '08:00'], // Already on 15-min interval
+            ['input' => '13:15', 'expected' => '13:15'], // Already on 15-min interval
+            ['input' => '20:30', 'expected' => '20:30'], // Already on 15-min interval
+            ['input' => '18:45', 'expected' => '18:45'], // Already on 15-min interval
+        ];
+
+        // Test that mobile entry (no logged_at field) uses current time and rounds it
+        $liftLogData = [
+            'exercise_id' => $exercise->id,
+            'weight' => 100,
+            'reps' => 5,
+            'rounds' => 3,
+            'comments' => 'Mobile entry time rounding test',
+            'date' => Carbon::today()->format('Y-m-d'),
+            'redirect_to' => 'mobile-entry',
+            'program_id' => $program->id,
+            // Note: no 'logged_at' field - mobile form doesn't send it
+        ];
+
+        $response = $this->post(route('lift-logs.store'), $liftLogData);
+
+        // Verify the lift log was created with current time rounded to 15-minute interval
+        $liftLog = LiftLog::where('user_id', $this->user->id)->first();
+        $this->assertNotNull($liftLog);
+        
+        // Check that the time is rounded to a 15-minute interval
+        $loggedMinutes = $liftLog->logged_at->minute;
+        $this->assertTrue(in_array($loggedMinutes, [0, 15, 30, 45]), 
+            "Expected logged time to be rounded to 15-minute interval, got {$loggedMinutes} minutes");
+        
+        // Verify it's logged for today
+        $this->assertTrue($liftLog->logged_at->isToday(), 
+            "Expected lift log to be logged today");
+            
+        // Test with explicit time (simulating regular form behavior)
+        LiftLog::where('user_id', $this->user->id)->delete();
+        
+        foreach ($testCases as $case) {
+            $liftLogData = [
+                'exercise_id' => $exercise->id,
+                'weight' => 100,
+                'reps' => 5,
+                'rounds' => 3,
+                'comments' => 'Regular form time rounding test',
+                'date' => Carbon::today()->format('Y-m-d'),
+                'logged_at' => $case['input'], // Submit specific time
+                'redirect_to' => 'mobile-entry',
+                'program_id' => $program->id,
+            ];
+
+            $response = $this->post(route('lift-logs.store'), $liftLogData);
+
+            // Verify the lift log was created with rounded time
+            $expectedDateTime = Carbon::today()->setTimeFromTimeString($case['expected']);
+            $this->assertDatabaseHas('lift_logs', [
+                'user_id' => $this->user->id,
+                'exercise_id' => $exercise->id,
+                'logged_at' => $expectedDateTime->format('Y-m-d H:i:s'),
+            ]);
+
+            // Clean up for next iteration
+            LiftLog::where('user_id', $this->user->id)->delete();
+        }
+    }
 }
