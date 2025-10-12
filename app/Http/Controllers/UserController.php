@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\Role;
+use App\Services\UserSeederService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
@@ -21,7 +22,7 @@ class UserController extends Controller
         return view('admin.users.create', compact('roles'));
     }
 
-    public function store(Request $request)
+    public function store(Request $request, UserSeederService $userSeederService)
     {
         $request->validate([
             'name' => 'required|string|max:255',
@@ -35,6 +36,9 @@ class UserController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
         ]);
+
+        // Seed the new user with default data
+        $userSeederService->seedNewUser($user);
 
         $user->roles()->sync($request->input('roles'));
 

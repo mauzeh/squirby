@@ -383,8 +383,8 @@ class TsvImporterServiceTest extends TestCase
         $this->assertEquals(0, $result['importedCount']);
         $this->assertArrayHasKey('error', $result);
         $this->assertStringContainsString('Invalid TSV header', $result['error']);
-        // It's 5 because a User factory creates 5 ingredients by default
-        $this->assertDatabaseCount('ingredients', 5);
+        // No ingredients should be created when there's an invalid header
+        $this->assertDatabaseCount('ingredients', 0);
     }
 
     /** 
