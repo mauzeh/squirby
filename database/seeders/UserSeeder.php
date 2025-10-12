@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Role;
 use App\Models\User;
+use App\Services\UserSeederService;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -15,6 +16,7 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
+        $userSeederService = new UserSeederService();
         $adminRole = Role::where('name', 'Admin')->first();
         $athleteRole = Role::where('name', 'Athlete')->first();
 
@@ -24,6 +26,9 @@ class UserSeeder extends Seeder
             'password' => Hash::make('password'),
             'email_verified_at' => now(),
         ]);
+        
+        // Seed the admin user with default data
+        $userSeederService->seedNewUser($admin);
         $admin->roles()->attach($adminRole);
 
         $athlete = User::create([
@@ -32,6 +37,9 @@ class UserSeeder extends Seeder
             'password' => Hash::make('password'),
             'email_verified_at' => now(),
         ]);
+        
+        // Seed the athlete user with default data
+        $userSeederService->seedNewUser($athlete);
         $athlete->roles()->attach($athleteRole);
     }
 }
