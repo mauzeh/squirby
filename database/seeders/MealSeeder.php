@@ -101,13 +101,6 @@ class MealSeeder extends Seeder
         $meal->ingredients()->attach($ingredients['Apple (small, around 150g in total)']->id, ['quantity' => 1]);
         $meal->ingredients()->attach($ingredients["Cashews, Whole (Salted, 50% Less Sodium, Trader Joe's)"]->id, ['quantity' => 35]);
 
-        $meal = Meal::create(['name' => 'Mexican Spiced Chicken Tacos', 'user_id' => $adminUser->id]);
-        $meal->ingredients()->attach($ingredients['Tortillas (Mini, Flour, Trader Joe\'s)']->id, ['quantity' => 4]);
-        $meal->ingredients()->attach($ingredients['Chicken Thigh (Skinless, Boneless)']->id, ['quantity' => 100]);
-        $meal->ingredients()->attach($ingredients['Black Beans (canned, rinsed)']->id, ['quantity' => 200]);
-        $meal->ingredients()->attach($ingredients['Olive oil']->id, ['quantity' => 2]);
-        $meal->ingredients()->attach($ingredients['Seasoning, Umami Multi-Purpose (Trader Joe\'s)']->id, ['quantity' => 0.5]);
-
         $meal = Meal::create(['name' => 'Spanish Tortilla with Caramelized Onion', 'user_id' => $adminUser->id]);
         $meal->ingredients()->attach($ingredients['Direct Entry - Added Sugar (g) - ZERO calories']->id, ['quantity' => 8]);
         $meal->ingredients()->attach($ingredients['Potatoes, Yellow Fingerling (Southwind Farms)']->id, ['quantity' => 227]);

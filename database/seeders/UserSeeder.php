@@ -27,8 +27,8 @@ class UserSeeder extends Seeder
             'email_verified_at' => now(),
         ]);
         
-        // Seed the admin user with default data
-        $userSeederService->seedNewUser($admin);
+        // Seed the admin user with only measurement types (no sample meal)
+        $userSeederService->seedAdminUser($admin);
         $admin->roles()->attach($adminRole);
 
         $athlete = User::create([
