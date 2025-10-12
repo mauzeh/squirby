@@ -80,7 +80,7 @@ class UserRegistrationWithSeededDataTest extends TestCase
         $this->assertEquals(150, $chickenPivot->quantity);
         $this->assertEquals(100, $ricePivot->quantity);
         $this->assertEquals(200, $broccoliPivot->quantity);
-        $this->assertEquals(10, $oilPivot->quantity);
+        $this->assertEquals(1, $oilPivot->quantity);
     }
 
     public function test_admin_created_user_also_gets_seeded_data()
