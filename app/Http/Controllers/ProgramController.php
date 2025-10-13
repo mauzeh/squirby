@@ -15,10 +15,35 @@ use App\Models\LiftLog;
 
 class ProgramController extends Controller
 {
+    protected TrainingProgressionService $trainingProgressionService;
+
+    public function __construct(TrainingProgressionService $trainingProgressionService)
+    {
+        $this->trainingProgressionService = $trainingProgressionService;
+    }
+
+    /**
+     * Calculate sets and reps for a given exercise and date using TrainingProgressionService
+     */
+    private function calculateSetsAndReps(int $exerciseId, Carbon $date): array
+    {
+        $suggestion = $this->trainingProgressionService->getSuggestionDetails(
+            auth()->id(), 
+            $exerciseId, 
+            $date
+        );
+        
+        return [
+            'sets' => $suggestion ? $suggestion->sets : config('training.defaults.sets', 3),
+            'reps' => $suggestion ? $suggestion->reps : config('training.defaults.reps', 10),
+            'suggestion_available' => $suggestion !== null
+        ];
+    }
+
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request, TrainingProgressionService $trainingProgressionService, DateNavigationService $dateNavigationService)
+    public function index(Request $request, DateNavigationService $dateNavigationService)
     {
         $selectedDate = $dateNavigationService->parseSelectedDate($request->input('date'));
 
@@ -31,7 +56,7 @@ class ProgramController extends Controller
         if ($selectedDate->isToday() || $selectedDate->isTomorrow() || $selectedDate->copy()->addDay()->isTomorrow()) {
             foreach ($programs as $program) {
                 if (!$program->exercise->is_bodyweight) {
-                    $suggestionDetails = $trainingProgressionService->getSuggestionDetails(
+                    $suggestionDetails = $this->trainingProgressionService->getSuggestionDetails(
                         auth()->id(),
                         $program->exercise_id,
                         $selectedDate
@@ -86,7 +111,14 @@ class ProgramController extends Controller
         // Otherwise, use the next available priority.
         $defaultPriority = ($highestPriority === null || $highestPriority + 1 < 100) ? 100 : $highestPriority + 1;
 
-        return view('programs.create', compact('exercises', 'date', 'defaultPriority'));
+        // Calculate default sets and reps for display purposes
+        $defaultSetsReps = [
+            'sets' => config('training.defaults.sets', 3),
+            'reps' => config('training.defaults.reps', 10),
+            'suggestion_available' => false
+        ];
+
+        return view('programs.create', compact('exercises', 'date', 'defaultPriority', 'defaultSetsReps'));
     }
 
     /**
@@ -103,6 +135,14 @@ class ProgramController extends Controller
             $exercise->save();
             $validated['exercise_id'] = $exercise->id;
         }
+
+        // Calculate sets and reps using TrainingProgressionService
+        $date = Carbon::parse($validated['date']);
+        $calculatedSetsReps = $this->calculateSetsAndReps($validated['exercise_id'], $date);
+        
+        // Override any sets/reps values with calculated ones
+        $validated['sets'] = $calculatedSetsReps['sets'];
+        $validated['reps'] = $calculatedSetsReps['reps'];
 
         $program = new Program($validated);
         $program->user_id = auth()->id();
@@ -223,9 +263,9 @@ class ProgramController extends Controller
         }
     }
 
-    public function quickAdd(Request $request, Exercise $exercise, $date, TrainingProgressionService $trainingProgressionService)
+    public function quickAdd(Request $request, Exercise $exercise, $date)
     {
-        $suggestion = $trainingProgressionService->getSuggestionDetails(auth()->id(), $exercise->id);
+        $suggestion = $this->trainingProgressionService->getSuggestionDetails(auth()->id(), $exercise->id);
 
         $reps = $suggestion ? $suggestion->reps : config('training.defaults.reps', 10);
         $sets = $suggestion ? $suggestion->sets : config('training.defaults.sets', 3);
