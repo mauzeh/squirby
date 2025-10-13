@@ -26,6 +26,7 @@ class DatabaseSeeder extends Seeder
             LiftLogSeeder::class,
             MeasurementSeeder::class,
             ProgramSeeder::class,
+            // AthleteTransformationSeeder::class, // Uncomment to include in default seeding
         ]);
     }
 }

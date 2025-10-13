@@ -93,4 +93,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(LiftLog::class);
     }
+
+    public function programs()
+    {
+        return $this->hasMany(Program::class);
+    }
 }
