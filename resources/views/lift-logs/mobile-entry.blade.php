@@ -156,6 +156,7 @@
                 <div id="new-exercise-form-container" class="hidden">
                     <form action="{{ route('programs.quick-create', ['date' => $selectedDate->toDateString()]) }}" method="POST">
                         @csrf
+                        <input type="hidden" name="redirect_to" value="mobile-entry">
                         <div class="form-group">
                             <input type="text" name="exercise_name" id="exercise_name" class="large-input" placeholder="Enter new exercise name..." required>
                         </div>
@@ -163,7 +164,7 @@
                     </form>
                 </div>
                 @foreach ($exercises as $exercise)
-                    <a href="{{ route('programs.quick-add', ['exercise' => $exercise->id, 'date' => $selectedDate->toDateString()]) }}" class="exercise-list-item">{{ $exercise->title }}</a>
+                    <a href="{{ route('programs.quick-add', ['exercise' => $exercise->id, 'date' => $selectedDate->toDateString(), 'redirect_to' => 'mobile-entry']) }}" class="exercise-list-item">{{ $exercise->title }}</a>
                 @endforeach
             </div>
         </div>

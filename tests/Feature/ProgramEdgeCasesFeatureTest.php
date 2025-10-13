@@ -267,9 +267,9 @@ class ProgramEdgeCasesFeatureTest extends TestCase
         $date = Carbon::today()->toDateString();
 
         $response = $this->actingAs($user)
-            ->get(route('programs.quick-add', ['exercise' => $exercise->id, 'date' => $date]));
+            ->get(route('programs.quick-add', ['exercise' => $exercise->id, 'date' => $date, 'redirect_to' => 'mobile-entry']));
 
-        $response->assertRedirect(route('programs.index', ['date' => $date]));
+        $response->assertRedirect(route('lift-logs.mobile-entry', ['date' => $date]));
         $response->assertSessionHas('success', 'Exercise added to program successfully.');
 
         // Verify program was created with default values despite service failure
@@ -303,9 +303,9 @@ class ProgramEdgeCasesFeatureTest extends TestCase
         $date = Carbon::today()->toDateString();
 
         $response = $this->actingAs($user)
-            ->get(route('programs.quick-add', ['exercise' => $exercise->id, 'date' => $date]));
+            ->get(route('programs.quick-add', ['exercise' => $exercise->id, 'date' => $date, 'redirect_to' => 'mobile-entry']));
 
-        $response->assertRedirect(route('programs.index', ['date' => $date]));
+        $response->assertRedirect(route('lift-logs.mobile-entry', ['date' => $date]));
 
         // Verify program was created with default values due to malformed data
         $program = Program::where('user_id', $user->id)
@@ -337,9 +337,10 @@ class ProgramEdgeCasesFeatureTest extends TestCase
         $response = $this->actingAs($user)
             ->post(route('programs.quick-create', ['date' => $date]), [
                 'exercise_name' => $exerciseName,
+                'redirect_to' => 'mobile-entry',
             ]);
 
-        $response->assertRedirect(route('programs.index', ['date' => $date]));
+        $response->assertRedirect(route('lift-logs.mobile-entry', ['date' => $date]));
 
         // Verify exercise was created
         $exercise = Exercise::where('title', $exerciseName)->first();
