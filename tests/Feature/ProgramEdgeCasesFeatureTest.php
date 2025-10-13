@@ -269,7 +269,7 @@ class ProgramEdgeCasesFeatureTest extends TestCase
         $response = $this->actingAs($user)
             ->get(route('programs.quick-add', ['exercise' => $exercise->id, 'date' => $date]));
 
-        $response->assertRedirect(route('lift-logs.mobile-entry', ['date' => $date]));
+        $response->assertRedirect(route('programs.index', ['date' => $date]));
         $response->assertSessionHas('success', 'Exercise added to program successfully.');
 
         // Verify program was created with default values despite service failure
@@ -305,7 +305,7 @@ class ProgramEdgeCasesFeatureTest extends TestCase
         $response = $this->actingAs($user)
             ->get(route('programs.quick-add', ['exercise' => $exercise->id, 'date' => $date]));
 
-        $response->assertRedirect(route('lift-logs.mobile-entry', ['date' => $date]));
+        $response->assertRedirect(route('programs.index', ['date' => $date]));
 
         // Verify program was created with default values due to malformed data
         $program = Program::where('user_id', $user->id)
@@ -339,7 +339,7 @@ class ProgramEdgeCasesFeatureTest extends TestCase
                 'exercise_name' => $exerciseName,
             ]);
 
-        $response->assertRedirect(route('lift-logs.mobile-entry', ['date' => $date]));
+        $response->assertRedirect(route('programs.index', ['date' => $date]));
 
         // Verify exercise was created
         $exercise = Exercise::where('title', $exerciseName)->first();
