@@ -33,6 +33,7 @@ class LiftLogLoggingTest extends TestCase {
         $exercise = \App\Models\Exercise::factory()->create(['user_id' => $this->user->id]);
 
         $now = now();
+        $testTime = '14:30'; // Use a time that's already on 15-minute interval
 
         $liftLogData = [
             'exercise_id' => $exercise->id,
@@ -41,7 +42,7 @@ class LiftLogLoggingTest extends TestCase {
             'rounds' => 3,
             'comments' => 'Test lift log comments',
             'date' => $now->format('Y-m-d'),
-            'logged_at' => $now->format('H:i'),
+            'logged_at' => $testTime,
         ];
 
         $response = $this->post(route('lift-logs.store'), $liftLogData);
@@ -50,7 +51,7 @@ class LiftLogLoggingTest extends TestCase {
             'user_id' => $this->user->id,
             'exercise_id' => $exercise->id,
             'comments' => 'Test lift log comments',
-            'logged_at' => \Carbon\Carbon::parse($now->format('Y-m-d H:i'))->format('Y-m-d H:i:s'),
+            'logged_at' => \Carbon\Carbon::parse($now->format('Y-m-d') . ' ' . $testTime)->format('Y-m-d H:i:s'),
         ]);
 
         $liftLog = \App\Models\LiftLog::where('exercise_id', $exercise->id)->first();
@@ -237,6 +238,7 @@ class LiftLogLoggingTest extends TestCase {
         $exercise = \App\Models\Exercise::factory()->create(['user_id' => $this->user->id, 'is_bodyweight' => true]);
 
         $now = now();
+        $testTime = '09:15'; // Use a time that's already on 15-minute interval
 
         $liftLogData = [
             'exercise_id' => $exercise->id,
@@ -245,7 +247,7 @@ class LiftLogLoggingTest extends TestCase {
             'rounds' => 3,
             'comments' => 'Bodyweight lift log comments',
             'date' => $now->format('Y-m-d'),
-            'logged_at' => $now->format('H:i'),
+            'logged_at' => $testTime,
         ];
 
         $response = $this->post(route('lift-logs.store'), $liftLogData);
@@ -254,7 +256,7 @@ class LiftLogLoggingTest extends TestCase {
             'user_id' => $this->user->id,
             'exercise_id' => $exercise->id,
             'comments' => 'Bodyweight lift log comments',
-            'logged_at' => \Carbon\Carbon::parse($now->format('Y-m-d H:i'))->format('Y-m-d H:i:s'),
+            'logged_at' => \Carbon\Carbon::parse($now->format('Y-m-d') . ' ' . $testTime)->format('Y-m-d H:i:s'),
         ]);
 
         $liftLog = \App\Models\LiftLog::where('exercise_id', $exercise->id)->first();
