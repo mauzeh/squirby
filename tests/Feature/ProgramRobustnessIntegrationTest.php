@@ -82,7 +82,7 @@ class ProgramRobustnessIntegrationTest extends TestCase
         $response3 = $this->actingAs($user)
             ->get(route('programs.quick-add', ['exercise' => $regularExercise->id, 'date' => $date]));
 
-        $response3->assertRedirect(route('lift-logs.mobile-entry', ['date' => $date]));
+        $response3->assertRedirect(route('programs.index', ['date' => $date]));
         
         $quickAddProgram = Program::where('user_id', $user->id)
             ->where('exercise_id', $regularExercise->id)
@@ -99,7 +99,7 @@ class ProgramRobustnessIntegrationTest extends TestCase
                 'exercise_name' => 'Emergency Exercise',
             ]);
 
-        $response4->assertRedirect(route('lift-logs.mobile-entry', ['date' => $date]));
+        $response4->assertRedirect(route('programs.index', ['date' => $date]));
         
         $newExercise = Exercise::where('title', 'Emergency Exercise')->first();
         $this->assertNotNull($newExercise);

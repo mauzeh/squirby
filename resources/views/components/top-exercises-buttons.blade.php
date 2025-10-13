@@ -1,12 +1,18 @@
-@props(['exercises', 'allExercises', 'currentExerciseId' => null])
+@props(['exercises', 'allExercises', 'currentExerciseId' => null, 'routeType' => 'exercises', 'date' => null])
 
-<div class="container">
-    <div class="top-exercises-container">
+<div class="top-exercises-container">
         @foreach ($exercises as $exercise)
-            <a href="{{ route('exercises.show-logs', ['exercise' => $exercise->id]) }}" 
-               class="button {{ $currentExerciseId == $exercise->id ? 'active' : '' }}">
-                {{ $exercise->title }}
-            </a>
+            @if($routeType === 'programs')
+                <a href="{{ route('programs.quick-add', ['exercise' => $exercise->id, 'date' => $date]) }}" 
+                   class="button {{ $currentExerciseId == $exercise->id ? 'active' : '' }}">
+                    {{ $exercise->title }}
+                </a>
+            @else
+                <a href="{{ route('exercises.show-logs', ['exercise' => $exercise->id]) }}" 
+                   class="button {{ $currentExerciseId == $exercise->id ? 'active' : '' }}">
+                    {{ $exercise->title }}
+                </a>
+            @endif
         @endforeach
 
         <div class="dropdown">
@@ -21,12 +27,15 @@
                     });
                 @endphp
                 @foreach ($remainingExercises as $exercise)
-                    <a class="dropdown-item" href="{{ route('exercises.show-logs', ['exercise' => $exercise->id]) }}">{{ $exercise->title }}</a>
+                    @if($routeType === 'programs')
+                        <a class="dropdown-item" href="{{ route('programs.quick-add', ['exercise' => $exercise->id, 'date' => $date]) }}">{{ $exercise->title }}</a>
+                    @else
+                        <a class="dropdown-item" href="{{ route('exercises.show-logs', ['exercise' => $exercise->id]) }}">{{ $exercise->title }}</a>
+                    @endif
                 @endforeach
             </div>
         </div>
     </div>
-</div>
 
 <style>
     .dropdown {

@@ -5,7 +5,18 @@
     <div class="container">
         <h1>Program for {{ $selectedDate->format('M d, Y') }}</h1>
 
-        <a href="{{ route('programs.create', ['date' => $selectedDate->toDateString()]) }}" class="button create">Add Program Entry</a>
+        <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px; flex-wrap: wrap;">
+            <a href="{{ route('programs.create', ['date' => $selectedDate->toDateString()]) }}" class="button create">Add Program Entry</a>
+            
+            <div style="flex: 1; min-width: 300px;">
+                <x-top-exercises-buttons 
+                    :exercises="$displayExercises" 
+                    :allExercises="$allExercises" 
+                    routeType="programs"
+                    :date="$selectedDate->toDateString()" 
+                />
+            </div>
+        </div>
 
         @if ($programs->isNotEmpty())
             <table class="log-entries-table">

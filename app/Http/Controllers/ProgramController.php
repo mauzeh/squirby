@@ -11,15 +11,18 @@ use Illuminate\Http\Request;
 use App\Services\ProgramTsvImporterService;
 use App\Services\TrainingProgressionService;
 use App\Services\DateNavigationService;
+use App\Services\ExerciseService;
 use App\Models\LiftLog;
 
 class ProgramController extends Controller
 {
     protected TrainingProgressionService $trainingProgressionService;
+    protected ExerciseService $exerciseService;
 
-    public function __construct(TrainingProgressionService $trainingProgressionService)
+    public function __construct(TrainingProgressionService $trainingProgressionService, ExerciseService $exerciseService)
     {
         $this->trainingProgressionService = $trainingProgressionService;
+        $this->exerciseService = $exerciseService;
     }
 
     /**
@@ -137,7 +140,11 @@ class ProgramController extends Controller
             'programs.index'
         );
 
-        return view('programs.index', compact('programs', 'selectedDate', 'navigationData'));
+        // Fetch exercise data for the selector
+        $displayExercises = $this->exerciseService->getDisplayExercises(5);
+        $allExercises = Exercise::availableToUser(auth()->id())->orderBy('title')->get();
+
+        return view('programs.index', compact('programs', 'selectedDate', 'navigationData', 'displayExercises', 'allExercises'));
     }
 
     /**
@@ -328,7 +335,7 @@ class ProgramController extends Controller
             'priority' => $newPriority,
         ]);
 
-        return redirect()->route('lift-logs.mobile-entry', ['date' => $date])->with('success', 'Exercise added to program successfully.');
+        return redirect()->route('programs.index', ['date' => $date])->with('success', 'Exercise added to program successfully.');
     }
 
     public function quickCreate(Request $request, $date)
@@ -358,7 +365,7 @@ class ProgramController extends Controller
             'priority' => $maxPriority + 1,
         ]);
 
-        return redirect()->route('lift-logs.mobile-entry', ['date' => $date])->with('success', 'New exercise created and added to program successfully.');
+        return redirect()->route('programs.index', ['date' => $date])->with('success', 'New exercise created and added to program successfully.');
     }
 
     public function moveUp(Request $request, Program $program)

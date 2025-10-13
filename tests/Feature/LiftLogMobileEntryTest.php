@@ -327,7 +327,7 @@ class LiftLogMobileEntryTest extends TestCase
 
         $response = $this->get(route('programs.quick-add', ['exercise' => $exercise->id, 'date' => $date]));
 
-        $response->assertRedirect(route('lift-logs.mobile-entry', ['date' => $date]));
+        $response->assertRedirect(route('programs.index', ['date' => $date]));
         $this->assertDatabaseHas('programs', [
             'user_id' => $this->user->id,
             'exercise_id' => $exercise->id,
@@ -345,7 +345,7 @@ class LiftLogMobileEntryTest extends TestCase
             'exercise_name' => $exerciseName,
         ]);
 
-        $response->assertRedirect(route('lift-logs.mobile-entry', ['date' => $date]));
+        $response->assertRedirect(route('programs.index', ['date' => $date]));
         $this->assertDatabaseHas('exercises', [
             'user_id' => $this->user->id,
             'title' => $exerciseName,

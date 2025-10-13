@@ -31,8 +31,11 @@ class ProgramControllerAutoCalculationTest extends TestCase
         // Mock the TrainingProgressionService
         $this->trainingProgressionService = Mockery::mock(TrainingProgressionService::class);
         
-        // Create controller with mocked service
-        $this->controller = new ProgramController($this->trainingProgressionService);
+        // Mock the ExerciseService
+        $this->exerciseService = Mockery::mock(\App\Services\ExerciseService::class);
+        
+        // Create controller with mocked services
+        $this->controller = new ProgramController($this->trainingProgressionService, $this->exerciseService);
         
         // Authenticate the user
         $this->actingAs($this->user);

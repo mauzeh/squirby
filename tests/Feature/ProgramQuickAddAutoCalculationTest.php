@@ -37,7 +37,7 @@ class ProgramQuickAddAutoCalculationTest extends TestCase
 
         $response = $this->get(route('programs.quick-add', ['exercise' => $this->exercise->id, 'date' => $date]));
 
-        $response->assertRedirect(route('lift-logs.mobile-entry', ['date' => $date]));
+        $response->assertRedirect(route('programs.index', ['date' => $date]));
         $response->assertSessionHas('success', 'Exercise added to program successfully.');
 
         // Verify program was created with calculated sets/reps based on progression
@@ -60,7 +60,7 @@ class ProgramQuickAddAutoCalculationTest extends TestCase
 
         $response = $this->get(route('programs.quick-add', ['exercise' => $this->exercise->id, 'date' => $date]));
 
-        $response->assertRedirect(route('lift-logs.mobile-entry', ['date' => $date]));
+        $response->assertRedirect(route('programs.index', ['date' => $date]));
         $response->assertSessionHas('success', 'Exercise added to program successfully.');
 
         // Verify program was created with default values from config
@@ -89,7 +89,7 @@ class ProgramQuickAddAutoCalculationTest extends TestCase
 
         $response = $this->get(route('programs.quick-add', ['exercise' => $this->exercise->id, 'date' => $date]));
 
-        $response->assertRedirect(route('lift-logs.mobile-entry', ['date' => $date]));
+        $response->assertRedirect(route('programs.index', ['date' => $date]));
 
         // Verify new program has priority higher than existing
         $program = Program::where('user_id', $this->user->id)
@@ -108,7 +108,7 @@ class ProgramQuickAddAutoCalculationTest extends TestCase
 
         $response = $this->get(route('programs.quick-add', ['exercise' => $this->exercise->id, 'date' => $date]));
 
-        $response->assertRedirect(route('lift-logs.mobile-entry', ['date' => $date]));
+        $response->assertRedirect(route('programs.index', ['date' => $date]));
 
         // Verify new program has default priority of 100
         $program = Program::where('user_id', $this->user->id)
@@ -130,7 +130,7 @@ class ProgramQuickAddAutoCalculationTest extends TestCase
             'exercise_name' => $exerciseName,
         ]);
 
-        $response->assertRedirect(route('lift-logs.mobile-entry', ['date' => $date]));
+        $response->assertRedirect(route('programs.index', ['date' => $date]));
         $response->assertSessionHas('success', 'New exercise created and added to program successfully.');
 
         // Verify exercise was created
@@ -189,7 +189,7 @@ class ProgramQuickAddAutoCalculationTest extends TestCase
             'exercise_name' => $exerciseName,
         ]);
 
-        $response->assertRedirect(route('lift-logs.mobile-entry', ['date' => $date]));
+        $response->assertRedirect(route('programs.index', ['date' => $date]));
 
         // Verify new program has priority higher than existing
         $exercise = Exercise::where('title', $exerciseName)->first();
@@ -232,7 +232,7 @@ class ProgramQuickAddAutoCalculationTest extends TestCase
 
         $response = $this->get(route('programs.quick-add', ['exercise' => $bodyweightExercise->id, 'date' => $date]));
 
-        $response->assertRedirect(route('lift-logs.mobile-entry', ['date' => $date]));
+        $response->assertRedirect(route('programs.index', ['date' => $date]));
 
         // Verify program was created with appropriate values for bodyweight exercise
         $program = Program::where('user_id', $this->user->id)
@@ -259,7 +259,7 @@ class ProgramQuickAddAutoCalculationTest extends TestCase
         
         $response = $this->get(route('programs.quick-add', ['exercise' => $this->exercise->id, 'date' => $date]));
 
-        $response->assertRedirect(route('lift-logs.mobile-entry', ['date' => $date]));
+        $response->assertRedirect(route('programs.index', ['date' => $date]));
 
         // Verify program was still created with fallback values
         $program = Program::where('user_id', $this->user->id)
@@ -280,7 +280,7 @@ class ProgramQuickAddAutoCalculationTest extends TestCase
         // Test quickAdd with future date
         $response = $this->get(route('programs.quick-add', ['exercise' => $this->exercise->id, 'date' => $futureDate]));
         
-        $response->assertRedirect(route('lift-logs.mobile-entry', ['date' => $futureDate]));
+        $response->assertRedirect(route('programs.index', ['date' => $futureDate]));
 
         // Test quickCreate with future date
         $exerciseName = 'Future Exercise';
@@ -288,7 +288,7 @@ class ProgramQuickAddAutoCalculationTest extends TestCase
             'exercise_name' => $exerciseName,
         ]);
 
-        $response->assertRedirect(route('lift-logs.mobile-entry', ['date' => $futureDate]));
+        $response->assertRedirect(route('programs.index', ['date' => $futureDate]));
 
         // Verify both programs were created for the correct date
         $programs = Program::where('user_id', $this->user->id)
@@ -308,7 +308,7 @@ class ProgramQuickAddAutoCalculationTest extends TestCase
 
         $response = $this->get(route('programs.quick-add', ['exercise' => $globalExercise->id, 'date' => $date]));
 
-        $response->assertRedirect(route('lift-logs.mobile-entry', ['date' => $date]));
+        $response->assertRedirect(route('programs.index', ['date' => $date]));
 
         // Verify program was created with the global exercise
         $program = Program::where('user_id', $this->user->id)
