@@ -8,6 +8,7 @@ use App\Models\Ingredient;
 use App\Models\User;
 use App\Services\NutritionService;
 use App\Services\TsvImporterService;
+use App\Services\DateNavigationService;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
@@ -29,8 +30,9 @@ class FoodLogControllerDateNavigationTest extends TestCase
         
         $nutritionService = $this->createMock(NutritionService::class);
         $tsvImporterService = $this->createMock(TsvImporterService::class);
+        $dateNavigationService = new DateNavigationService();
         
-        $this->controller = new FoodLogController($nutritionService, $tsvImporterService);
+        $this->controller = new FoodLogController($nutritionService, $tsvImporterService, $dateNavigationService);
         $this->user = User::factory()->create();
         $this->ingredient = IngredientFactory::new()->create(['user_id' => $this->user->id]);
         
@@ -44,7 +46,7 @@ class FoodLogControllerDateNavigationTest extends TestCase
         
         $response = $this->controller->index($request);
         
-        $this->assertNull($response->getData()['lastRecordDate']);
+        $this->assertNull($response->getData()['navigationData']['lastRecordDate']);
     }
 
     /** @test */
@@ -70,7 +72,7 @@ class FoodLogControllerDateNavigationTest extends TestCase
         
         $response = $this->controller->index($request);
         
-        $this->assertEquals($newerDate->toDateString(), $response->getData()['lastRecordDate']);
+        $this->assertEquals($newerDate->toDateString(), $response->getData()['navigationData']['lastRecordDate']);
     }
 
     /** @test */
@@ -100,7 +102,7 @@ class FoodLogControllerDateNavigationTest extends TestCase
         $response = $this->controller->index($request);
         
         // Should return the authenticated user's last record date, not the other user's
-        $this->assertEquals($userDate->toDateString(), $response->getData()['lastRecordDate']);
+        $this->assertEquals($userDate->toDateString(), $response->getData()['navigationData']['lastRecordDate']);
     }
 
     /** @test */
@@ -186,7 +188,7 @@ class FoodLogControllerDateNavigationTest extends TestCase
     }
 
     /** @test */
-    public function index_passes_last_record_date_to_view()
+    public function index_passes_navigation_data_to_view()
     {
         $lastRecordDate = Carbon::parse('2025-01-10');
         
@@ -201,8 +203,9 @@ class FoodLogControllerDateNavigationTest extends TestCase
         $response = $this->controller->index($request);
         $viewData = $response->getData();
         
-        $this->assertArrayHasKey('lastRecordDate', $viewData);
-        $this->assertEquals($lastRecordDate->toDateString(), $viewData['lastRecordDate']);
+        $this->assertArrayHasKey('navigationData', $viewData);
+        $this->assertEquals($lastRecordDate->toDateString(), $viewData['navigationData']['lastRecordDate']);
+        $this->assertEquals('food-logs.index', $viewData['navigationData']['routeName']);
     }
 
     /** @test */

@@ -10,6 +10,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Services\ProgramTsvImporterService;
 use App\Services\TrainingProgressionService;
+use App\Services\DateNavigationService;
 use App\Models\LiftLog;
 
 class ProgramController extends Controller
@@ -17,9 +18,9 @@ class ProgramController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request, TrainingProgressionService $trainingProgressionService)
+    public function index(Request $request, TrainingProgressionService $trainingProgressionService, DateNavigationService $dateNavigationService)
     {
-        $selectedDate = $request->input('date') ? Carbon::parse($request->input('date')) : Carbon::today();
+        $selectedDate = $dateNavigationService->parseSelectedDate($request->input('date'));
 
         $programs = Program::with('exercise')
             ->where('user_id', auth()->id())
@@ -59,7 +60,15 @@ class ProgramController extends Controller
             }
         }
 
-        return view('programs.index', compact('programs', 'selectedDate'));
+        // Get date navigation data
+        $navigationData = $dateNavigationService->getNavigationData(
+            $selectedDate,
+            Program::class,
+            auth()->id(),
+            'programs.index'
+        );
+
+        return view('programs.index', compact('programs', 'selectedDate', 'navigationData'));
     }
 
     /**

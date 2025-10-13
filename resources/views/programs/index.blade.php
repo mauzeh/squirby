@@ -1,22 +1,7 @@
 @extends('app')
 
 @section('content')
-    <div class="date-navigation flex items-center">
-        @php
-            $today = \Carbon\Carbon::today();
-        @endphp
-        @for ($i = -3; $i <= 1; $i++)
-            @php
-                $date = $today->copy()->addDays($i);
-                $dateString = $date->toDateString();
-            @endphp
-            <a href="{{ route('programs.index', ['date' => $dateString]) }}" class="date-link {{ $selectedDate->toDateString() == $dateString ? 'active' : '' }} {{ $date->isToday() ? 'today-date' : '' }}">
-                {{ $date->format('D M d') }}
-            </a>
-        @endfor
-        <label for="date_picker" class="date-pick-label ml-4 mr-2">Or Pick a Date:</label>
-        <input type="date" id="date_picker" onchange="window.location.href = '{{ route('programs.index') }}?date=' + this.value;" value="{{ $selectedDate->format('Y-m-d') }}">
-    </div>
+    <x-date-navigation :navigationData="$navigationData" />
     <div class="container">
         <h1>Program for {{ $selectedDate->format('M d, Y') }}</h1>
 

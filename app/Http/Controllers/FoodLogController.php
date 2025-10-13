@@ -11,17 +11,20 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use App\Services\NutritionService;
 use App\Services\TsvImporterService;
+use App\Services\DateNavigationService;
 use Carbon\Carbon;
 
 class FoodLogController extends Controller
 {
     protected $nutritionService;
     protected $tsvImporterService;
+    protected $dateNavigationService;
 
-    public function __construct(NutritionService $nutritionService, TsvImporterService $tsvImporterService)
+    public function __construct(NutritionService $nutritionService, TsvImporterService $tsvImporterService, DateNavigationService $dateNavigationService)
     {
         $this->nutritionService = $nutritionService;
         $this->tsvImporterService = $tsvImporterService;
+        $this->dateNavigationService = $dateNavigationService;
     }
 
     /**
@@ -36,7 +39,7 @@ class FoodLogController extends Controller
         $meals = Meal::where('user_id', auth()->id())->get();
         $nutritionService = $this->nutritionService;
 
-        $selectedDate = $request->input('date') ? Carbon::parse($request->input('date')) : Carbon::today();
+        $selectedDate = $this->dateNavigationService->parseSelectedDate($request->input('date'));
 
         $foodLogs = FoodLog::with(['ingredient', 'unit'])
             ->where('food_logs.user_id', auth()->id())
@@ -53,12 +56,15 @@ class FoodLogController extends Controller
 
         $dailyTotals = $nutritionService->calculateFoodLogTotals($foodLogs);
 
-        // Get the last record date for the "last record" button
-        $lastRecordDate = FoodLog::where('user_id', auth()->id())
-            ->orderBy('logged_at', 'desc')
-            ->first()?->logged_at?->toDateString();
+        // Get date navigation data
+        $navigationData = $this->dateNavigationService->getNavigationData(
+            $selectedDate,
+            FoodLog::class,
+            auth()->id(),
+            'food-logs.index'
+        );
 
-        return view('food_logs.index', compact('foodLogs', 'groupedLogs', 'dailyTotals', 'ingredients', 'units', 'meals', 'selectedDate', 'nutritionService', 'lastRecordDate'));
+        return view('food_logs.index', compact('foodLogs', 'groupedLogs', 'dailyTotals', 'ingredients', 'units', 'meals', 'selectedDate', 'nutritionService', 'navigationData'));
     }
 
     /**

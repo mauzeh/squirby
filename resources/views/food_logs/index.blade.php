@@ -1,36 +1,7 @@
 @extends('app')
 
 @section('content')
-    <div class="date-navigation flex items-center">
-        @if($lastRecordDate && $selectedDate->toDateString() != $lastRecordDate)
-            <a href="{{ route('food-logs.index', ['date' => $lastRecordDate]) }}" class="date-link">
-                Last Record
-            </a>
-        @endif
-        @php
-            $today = \Carbon\Carbon::today();
-            $todayInRange = false;
-        @endphp
-        @for ($i = -1; $i <= 1; $i++)
-            @php
-                $date = $selectedDate->copy()->addDays($i);
-                $dateString = $date->toDateString();
-                if ($date->isSameDay($today)) {
-                    $todayInRange = true;
-                }
-            @endphp
-            <a href="{{ route('food-logs.index', ['date' => $dateString]) }}" class="date-link {{ $selectedDate->toDateString() == $dateString ? 'active' : '' }} {{ $date->isSameDay($today) ? 'today-date' : '' }}">
-                {{ $date->isSameDay($today) ? 'Today' : $date->format('D M d') }}
-            </a>
-        @endfor
-        @if(!$todayInRange)
-            <a href="{{ route('food-logs.index', ['date' => $today->toDateString()]) }}" class="date-link {{ $selectedDate->isSameDay($today) ? 'active today-date' : 'today-date' }}">
-                Today
-            </a>
-        @endif
-        <label for="date_picker" class="date-pick-label ml-4 mr-2">Or Pick a Date:</label>
-        <input type="date" id="date_picker" onchange="window.location.href = '{{ route('food-logs.index') }}?date=' + this.value;" value="{{ $selectedDate->format('Y-m-d') }}">
-    </div>
+    <x-date-navigation :navigationData="$navigationData" />
     @if (session('success'))
         <div class="container success-message-box">
             {{ session('success') }}
