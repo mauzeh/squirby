@@ -12,41 +12,76 @@ class GlobalExercisesSeeder extends Seeder
      */
     public function run(): void
     {
-        $exercises = [
-            // Original global exercises
-            ['title' => 'Back Squat', 'description' => 'A compound exercise that targets the muscles of the legs and core.', 'user_id' => null],
-            ['title' => 'Bench Press', 'description' => 'A compound exercise that targets the muscles of the upper body, including the chest, shoulders, and triceps.', 'user_id' => null],
-            ['title' => 'Deadlift', 'description' => 'A compound exercise that targets the muscles of the back, legs, and grip.', 'user_id' => null],
-            ['title' => 'Strict Press', 'description' => 'A compound exercise that targets the shoulders and triceps.', 'user_id' => null],
-            ['title' => 'Power Clean', 'description' => 'An explosive deadlift.', 'user_id' => null],
-            ['title' => 'Half-Kneeling DB Press', 'description' => 'A unilateral exercise that targets the shoulders and core.', 'user_id' => null],
-            ['title' => 'Cyclist Squat (Barbell, Front Rack)', 'description' => 'A squat variation that emphasizes the quadriceps by elevating the heels, performed with a barbell in the front rack position.', 'user_id' => null],
-            ['title' => 'Chin-Ups', 'description' => 'A bodyweight pulling exercise with supinated grip.', 'is_bodyweight' => true, 'user_id' => null],
-            ['title' => 'Pull-Ups', 'description' => 'A bodyweight pulling exercise with pronated grip.', 'is_bodyweight' => true, 'user_id' => null],
-            
-            // Exercises migrated from user=1 to global
-            ['title' => 'Back Rack Lunge (Step Back)', 'description' => 'Reps are per leg', 'user_id' => null],
-            ['title' => 'Bench Press (2-DB Seesaw)', 'description' => 'Weight is that of a single DB', 'user_id' => null],
-            ['title' => 'DB Bench Press', 'description' => '', 'user_id' => null],
-            ['title' => 'Front Squat', 'description' => '', 'user_id' => null],
-            ['title' => 'Hip Thrust (Barbell)', 'description' => '', 'user_id' => null],
-            ['title' => 'Kettlebell Swing', 'description' => '', 'user_id' => null],
-            ['title' => 'L-Sit (Tucked, Parallelites)', 'description' => '', 'is_bodyweight' => true, 'user_id' => null],
-            ['title' => 'Lat Pull-Down (Kneeled)', 'description' => 'Use the comments to indicate the color of the band you used', 'is_bodyweight' => true, 'user_id' => null],
-            ['title' => 'Pendlay Row', 'description' => '', 'user_id' => null],
-            ['title' => 'Push Press', 'description' => '', 'user_id' => null],
-            ['title' => 'Push-Up', 'description' => '', 'is_bodyweight' => true, 'user_id' => null],
-            ['title' => 'Ring Row', 'description' => '', 'is_bodyweight' => true, 'user_id' => null],
-            ['title' => 'Walking Lunge (2-DB)', 'description' => 'Weight is both dumbbells combined', 'user_id' => null],
-            ['title' => 'Zombie Squat', 'description' => '', 'user_id' => null],
-            ['title' => 'Romanian Deadlift', 'description' => '', 'user_id' => null],
-        ];
+        $csvPath = database_path('seeders/csv/exercises_from_real_world.csv');
+        
+        // Check if CSV file exists
+        if (!file_exists($csvPath)) {
+            throw new \Exception("CSV file not found: {$csvPath}. Please ensure the exercises CSV file exists.");
+        }
+        
+        // Read the CSV file content line by line
+        $csvLines = file($csvPath);
+        
+        // Check if file reading was successful
+        if ($csvLines === false) {
+            throw new \Exception("Failed to read CSV file: {$csvPath}. Please check file permissions.");
+        }
+        
+        // Process each CSV line directly (simpler approach than IngredientSeeder)
+        $header = null;
+        
+        foreach ($csvLines as $lineNumber => $line) {
+            $line = trim($line);
+            if (empty($line)) {
+                continue; // Skip empty lines
+            }
 
-        foreach ($exercises as $exercise) {
-            Exercise::firstOrCreate(
-                ['title' => $exercise['title'], 'user_id' => null],
-                $exercise
-            );
+            try {
+                $rowData = str_getcsv($line); // Parse CSV line into an array
+                
+                // First line is the header
+                if ($lineNumber === 0) {
+                    $header = $rowData;
+                    continue;
+                }
+                
+                // Ensure we have the same number of columns as the header
+                if (count($rowData) !== count($header)) {
+                    continue; // Skip malformed rows
+                }
+                
+                // Create associative array from header and row data
+                $exerciseData = array_combine($header, $rowData);
+                
+                // Skip rows with empty or missing title
+                if (!isset($exerciseData['title']) || empty(trim($exerciseData['title']))) {
+                    continue;
+                }
+
+                // Convert is_bodyweight to boolean (1/true becomes true, others become false)
+                $isBodyweight = isset($exerciseData['is_bodyweight']) && 
+                               in_array(strtolower($exerciseData['is_bodyweight']), ['1', 'true']);
+
+                // Create exercise array for firstOrCreate
+                $exercise = [
+                    'title' => $exerciseData['title'],
+                    'description' => $exerciseData['description'] ?? '',
+                    'user_id' => null
+                ];
+
+                // Only add is_bodyweight if it's true (to match original seeder behavior)
+                if ($isBodyweight) {
+                    $exercise['is_bodyweight'] = true;
+                }
+
+                Exercise::firstOrCreate(
+                    ['title' => $exercise['title'], 'user_id' => null],
+                    $exercise
+                );
+            } catch (\Exception $e) {
+                // Skip malformed rows gracefully and continue processing
+                continue;
+            }
         }
     }
 }
