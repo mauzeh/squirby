@@ -25,8 +25,6 @@ class StoreProgramRequest extends FormRequest
             'exercise_id' => ['required_without:new_exercise_name', 'nullable', 'exists:exercises,id'],
             'new_exercise_name' => ['required_without:exercise_id', 'nullable', 'string', 'max:255'],
             'date' => ['required', 'date'],
-            'sets' => ['required', 'integer', 'min:1'],
-            'reps' => ['required', 'integer', 'min:1'],
             'priority' => ['nullable', 'integer', 'min:0'],
             'comments' => ['nullable', 'string'],
         ];

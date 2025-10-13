@@ -27,16 +27,60 @@ class ProgramController extends Controller
      */
     private function calculateSetsAndReps(int $exerciseId, Carbon $date): array
     {
-        $suggestion = $this->trainingProgressionService->getSuggestionDetails(
-            auth()->id(), 
-            $exerciseId, 
-            $date
-        );
+        try {
+            $suggestion = $this->trainingProgressionService->getSuggestionDetails(
+                auth()->id(), 
+                $exerciseId, 
+                $date
+            );
+            
+            // Validate suggestion data if it exists
+            if ($suggestion && $this->isValidSuggestionData($suggestion)) {
+                return [
+                    'sets' => $suggestion->sets,
+                    'reps' => $suggestion->reps,
+                    'suggestion_available' => true
+                ];
+            }
+            
+            // Fall back to defaults if no suggestion or invalid suggestion data
+            return $this->getDefaultSetsAndReps();
+            
+        } catch (\Exception $e) {
+            // Fall back to defaults if TrainingProgressionService fails
+            return $this->getDefaultSetsAndReps();
+        }
+    }
+
+    /**
+     * Validate suggestion data to ensure it contains valid sets and reps
+     */
+    private function isValidSuggestionData($suggestion): bool
+    {
+        return isset($suggestion->sets) && 
+               isset($suggestion->reps) && 
+               is_numeric($suggestion->sets) && 
+               is_numeric($suggestion->reps) && 
+               $suggestion->sets > 0 && 
+               $suggestion->reps > 0;
+    }
+
+    /**
+     * Get default sets and reps with proper fallbacks
+     */
+    private function getDefaultSetsAndReps(): array
+    {
+        $defaultSets = config('training.defaults.sets', 3);
+        $defaultReps = config('training.defaults.reps', 10);
+        
+        // Ensure we have valid positive integers, fall back to hardcoded values if not
+        $sets = (is_numeric($defaultSets) && $defaultSets > 0) ? (int)$defaultSets : 3;
+        $reps = (is_numeric($defaultReps) && $defaultReps > 0) ? (int)$defaultReps : 10;
         
         return [
-            'sets' => $suggestion ? $suggestion->sets : config('training.defaults.sets', 3),
-            'reps' => $suggestion ? $suggestion->reps : config('training.defaults.reps', 10),
-            'suggestion_available' => $suggestion !== null
+            'sets' => $sets,
+            'reps' => $reps,
+            'suggestion_available' => false
         ];
     }
 
@@ -265,10 +309,8 @@ class ProgramController extends Controller
 
     public function quickAdd(Request $request, Exercise $exercise, $date)
     {
-        $suggestion = $this->trainingProgressionService->getSuggestionDetails(auth()->id(), $exercise->id);
-
-        $reps = $suggestion ? $suggestion->reps : config('training.defaults.reps', 10);
-        $sets = $suggestion ? $suggestion->sets : config('training.defaults.sets', 3);
+        // Use the same robust calculation method as store()
+        $calculatedSetsReps = $this->calculateSetsAndReps($exercise->id, Carbon::parse($date));
 
         // Find the highest priority for the given date
         $maxPriority = Program::where('user_id', auth()->id())
@@ -281,8 +323,8 @@ class ProgramController extends Controller
             'exercise_id' => $exercise->id,
             'user_id' => auth()->id(),
             'date' => $date,
-            'sets' => $sets,
-            'reps' => $reps,
+            'sets' => $calculatedSetsReps['sets'],
+            'reps' => $calculatedSetsReps['reps'],
             'priority' => $newPriority,
         ]);
 
@@ -300,6 +342,9 @@ class ProgramController extends Controller
             'user_id' => auth()->id(),
         ]);
 
+        // Use robust default calculation for new exercises (no progression data expected)
+        $defaultSetsReps = $this->getDefaultSetsAndReps();
+
         $maxPriority = Program::where('user_id', auth()->id())
             ->whereDate('date', $date)
             ->max('priority');
@@ -308,8 +353,8 @@ class ProgramController extends Controller
             'exercise_id' => $exercise->id,
             'user_id' => auth()->id(),
             'date' => $date,
-            'sets' => config('training.defaults.sets', 3),
-            'reps' => config('training.defaults.reps', 10),
+            'sets' => $defaultSetsReps['sets'],
+            'reps' => $defaultSetsReps['reps'],
             'priority' => $maxPriority + 1,
         ]);
 

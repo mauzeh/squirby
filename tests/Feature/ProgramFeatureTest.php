@@ -98,7 +98,7 @@ class ProgramFeatureTest extends TestCase
 
         $this->actingAs($user)
             ->post(route('programs.store'), [])
-            ->assertSessionHasErrors(['exercise_id', 'date', 'sets', 'reps']);
+            ->assertSessionHasErrors(['exercise_id', 'date']);
     }
 
     public function test_user_can_edit_their_own_program()
