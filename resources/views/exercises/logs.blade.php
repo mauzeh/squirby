@@ -61,6 +61,8 @@
                     <p>1RM chart not available for banded exercises.</p>
                 </div>
             @endif
+
+            <x-lift-logs-table :liftLogs="$liftLogs" hideExerciseColumn="true" />
         @endif
     </div>
 @endsection
