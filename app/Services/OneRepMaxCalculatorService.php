@@ -18,10 +18,16 @@ class OneRepMaxCalculatorService
      * @param bool $isBodyweightExercise
      * @param int|null $userId
      * @param Carbon|null $date
+     * @param string|null $bandType
      * @return float
+     * @throws NotApplicableException
      */
-    public function calculateOneRepMax(float $weight, int $reps, bool $isBodyweightExercise = false, ?int $userId = null, ?Carbon $date = null): float
+    public function calculateOneRepMax(float $weight, int $reps, bool $isBodyweightExercise = false, ?int $userId = null, ?Carbon $date = null, ?string $bandType = null): float
     {
+        if ($bandType !== null) {
+            throw new NotApplicableException('1RM calculation is not applicable for banded exercises.');
+        }
+
         $bodyweight = 0;
         if ($isBodyweightExercise && $userId && $date) {
             $bodyweightMeasurement = BodyLog::where('user_id', $userId)
@@ -34,9 +40,6 @@ class OneRepMaxCalculatorService
 
             if ($bodyweightMeasurement) {
                 $bodyweight = $bodyweightMeasurement->value;
-                // Convert bodyweight to kg if it's in lbs and the exercise is in kg context
-                // This part needs careful consideration based on how units are handled globally
-                // For simplicity, assuming bodyweight is in the same unit as exercise weight or conversion is handled elsewhere
             }
         }
 
@@ -68,11 +71,17 @@ class OneRepMaxCalculatorService
      *
      * @param \App\Models\LiftLog $liftLog
      * @return float
+     * @throws NotApplicableException
      */
     public function getLiftLogOneRepMax(LiftLog $liftLog): float
     {
         if ($liftLog->liftSets->isEmpty()) {
             return 0;
+        }
+
+        $liftLog->load('exercise');
+        if ($liftLog->exercise->band_type !== null) {
+            throw new NotApplicableException('1RM calculation is not applicable for banded exercises.');
         }
 
         // Check for uniformity
@@ -85,8 +94,6 @@ class OneRepMaxCalculatorService
             }
         }
 
-        // Eager load exercise to access is_bodyweight
-        $liftLog->load('exercise');
         $isBodyweightExercise = $liftLog->exercise->is_bodyweight ?? false;
         $userId = $liftLog->user_id;
         $date = $liftLog->logged_at; // Assuming lift log has a logged_at date
@@ -103,6 +110,7 @@ class OneRepMaxCalculatorService
      *
      * @param \App\Models\LiftLog $liftLog
      * @return float
+     * @throws NotApplicableException
      */
     public function getBestLiftLogOneRepMax(LiftLog $liftLog): float
     {
@@ -110,8 +118,11 @@ class OneRepMaxCalculatorService
             return 0;
         }
 
-        // Eager load exercise to access is_bodyweight
         $liftLog->load('exercise');
+        if ($liftLog->exercise->band_type !== null) {
+            throw new NotApplicableException('1RM calculation is not applicable for banded exercises.');
+        }
+
         $isBodyweightExercise = $liftLog->exercise->is_bodyweight ?? false;
         $userId = $liftLog->user_id;
         $date = $liftLog->logged_at; // Assuming lift log has a logged_at date
