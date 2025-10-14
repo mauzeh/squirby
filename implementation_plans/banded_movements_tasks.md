@@ -80,8 +80,6 @@ This document outlines the step-by-step tasks for implementing the "Banded Movem
         - `getBandResistance(string $color): ?int`: Returns resistance for a given color.
         - `getNextHarderBand(string $currentColor, string $bandType): ?string`: Returns the next band in the progression, considering the `band_type`.
         - `getPreviousEasierBand(string $currentColor, string $bandType): ?string`: Returns the previous band in the progression, considering the `band_type`.
-- **Verification:**
-    - Create `tests/Unit/BandServiceTest.php` and write comprehensive unit tests for all methods in `BandService`.
 
 ### Task 2.2: `TrainingProgressionService` Updates
 
@@ -95,8 +93,6 @@ This document outlines the step-by-step tasks for implementing the "Banded Movem
             - If `last_logged_reps` is `config('bands.max_reps_before_band_change', 15)` or more:
                 - Suggest the *next harder band* (determined by `BandService` based on `band_type`) at `config('bands.default_reps_on_band_change', 8)` reps.
         - This will require injecting `BandService` into `TrainingProgressionService`.
-- **Verification:**
-    - Update `tests/Unit/TrainingProgressionServiceTest.php` to include tests for banded exercise progression logic and fallbacks.
 
 ### Task 2.3: `OneRepMaxCalculatorService` Review
 
@@ -106,6 +102,28 @@ This document outlines the step-by-step tasks for implementing the "Banded Movem
     - For banded exercises (where `exercise->band_type` is not null), the service **must throw an exception** (e.g., `NotApplicableException`) when 1RM is requested, clearly indicating that 1RM is not a meaningful metric for this exercise type.
 - **Verification:**
     - Update `tests/Unit/OneRepMaxCalculatorServiceTest.php` to include tests that verify an exception is thrown for banded exercises.
+
+### Task 2.4: Testing for Phase 2 Business Logic
+
+#### 2.4.1 `BandService` Unit Tests
+- **Instructions:**
+    - Create `tests/Unit/BandServiceTest.php`.
+    - Write comprehensive unit tests for `getBands`, `getBandResistance`, `getNextHarderBand`, `getPreviousEasierBand` methods, covering both 'resistance' and 'assistance' band types.
+- **Verification:**
+    - All tests in `BandServiceTest.php` pass.
+
+#### 2.4.2 `TrainingProgressionService` Unit Tests
+- **Instructions:**
+    - Update `tests/Unit/TrainingProgressionServiceTest.php` to include tests for banded exercise progression logic and fallbacks.
+    - Test both 'resistance' and 'assistance' band types.
+- **Verification:**
+    - All tests in `TrainingProgressionServiceTest.php` pass.
+
+#### 2.4.3 `OneRepMaxCalculatorService` Unit Tests
+- **Instructions:**
+    - Update `tests/Unit/OneRepMaxCalculatorServiceTest.php` to include tests that verify an exception is thrown for banded exercises.
+- **Verification:**
+    - All tests in `OneRepMaxCalculatorServiceTest.php` pass.
 
 ## Phase 3: User Interface (UI) / User Experience (UX)
 
