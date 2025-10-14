@@ -74,9 +74,16 @@ class ChartService
                 [
                     'label' => '1RM (est.)',
                     'data' => $bestLiftLogsPerDay->map(function ($liftLog) {
+                        $oneRepMax = null;
+                        try {
+                            $oneRepMax = $liftLog->best_one_rep_max;
+                        } catch (\App\Services\NotApplicableException $e) {
+                            // 1RM not applicable for banded exercises, set to null
+                            $oneRepMax = null;
+                        }
                         return [
                             'x' => $liftLog->logged_at->toIso8601String(),
-                            'y' => $liftLog->best_one_rep_max,
+                            'y' => $oneRepMax,
                         ];
                     })->values()->toArray(),
                     'backgroundColor' => 'rgba(0, 123, 255, 0.5)',
@@ -127,9 +134,16 @@ class ChartService
                 [
                     'label' => '1RM (est.)',
                     'data' => $liftLogs->map(function ($liftLog) {
+                        $oneRepMax = null;
+                        try {
+                            $oneRepMax = $liftLog->best_one_rep_max;
+                        } catch (\App\Services\NotApplicableException $e) {
+                            // 1RM not applicable for banded exercises, set to null
+                            $oneRepMax = null;
+                        }
                         return [
                             'x' => $liftLog->logged_at->toIso8601String(),
-                            'y' => $liftLog->best_one_rep_max,
+                            'y' => $oneRepMax,
                         ];
                     })->values()->toArray(),
                     'backgroundColor' => 'rgba(0, 123, 255, 0.5)',
