@@ -39,17 +39,17 @@ This plan outlines the steps to introduce "banded movements" as a new type of ex
 - **Modify `app/Services/TrainingProgressionService.php`:**
     - Update `getSuggestionDetails` method:
         - If `exercise->isBanded()` is true, implement the banded progression logic:
-            - If last logged reps >= 15, suggest the next harder band at 8 reps.
-            - If last logged reps < 8, suggest the same band at 8 reps.
-            - Otherwise, suggest the same band at 15 reps.
+            - If `last_logged_reps` is less than 15:
+                - Suggest `min(last_logged_reps + 1, 15)` reps with the *same band*.
+            - If `last_logged_reps` is 15 or more:
+                - Suggest the *next harder band* at 8 reps.
         - This will require injecting `BandService` into `TrainingProgressionService`.
 
 ### 2.3 `OneRepMaxCalculatorService` Review
-- **Review `app/Services/OneRepMaxCalculatorService.php`:**
-    - Decide how 1RM applies to banded movements.
-    - **Option A (Recommended for resistance bands):** Exclude banded resistance exercises from 1RM calculations, as resistance varies.
-    - **Option B (For assisted bands):** If bands are used for assistance (e.g., assisted pull-ups), calculate 1RM as `bodyweight - band_resistance`. This would require access to user's bodyweight at the time of the lift.
-    - For simplicity, initially, we might exclude them or provide a clear message that 1RM is not applicable.
+- **Modify `app/Services/OneRepMaxCalculatorService.php`:**
+    - **Exclude banded exercises from 1RM calculations altogether.**
+    - For banded exercises, the service **must throw an exception** (e.g., `NotApplicableException`) when 1RM is requested, clearly indicating that 1RM is not a meaningful metric for this exercise type.
+    - This decision is based on the variable resistance of bands making a consistent 1RM calculation impractical or misleading.
 
 ## Phase 3: User Interface (UI) / User Experience (UX)
 
