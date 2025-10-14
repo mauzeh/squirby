@@ -51,6 +51,13 @@ class TrainingProgressionService
                         'reps' => $defaultRepsOnBandChange,
                         'band_color' => $nextHarderBand,
                     ];
+                } else {
+                    // If no harder band, suggest same band with max reps
+                    return (object)[
+                        'sets' => $lastLog->liftSets->count(),
+                        'reps' => $maxRepsBeforeBandChange,
+                        'band_color' => $lastLoggedBandColor,
+                    ];
                 }
             }
         }

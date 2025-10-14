@@ -24,12 +24,21 @@ class BandService
         }
 
         $nextBand = null;
-        $nextOrder = PHP_INT_MAX;
-
-        foreach ($bands as $color => $data) {
-            if ($data['order'] > $currentOrder && $data['order'] < $nextOrder) {
-                $nextOrder = $data['order'];
-                $nextBand = $color;
+        if ($bandType === 'resistance') {
+            $nextOrder = PHP_INT_MAX;
+            foreach ($bands as $color => $data) {
+                if ($data['order'] > $currentOrder && $data['order'] < $nextOrder) {
+                    $nextOrder = $data['order'];
+                    $nextBand = $color;
+                }
+            }
+        } elseif ($bandType === 'assistance') {
+            $nextOrder = PHP_INT_MAX;
+            foreach ($bands as $color => $data) {
+                if ($data['order'] < $currentOrder && $data['order'] > 0) {
+                    $nextOrder = $data['order'];
+                    $nextBand = $color;
+                }
             }
         }
 
@@ -46,12 +55,21 @@ class BandService
         }
 
         $previousBand = null;
-        $previousOrder = 0;
-
-        foreach ($bands as $color => $data) {
-            if ($data['order'] < $currentOrder && $data['order'] > $previousOrder) {
-                $previousOrder = $data['order'];
-                $previousBand = $color;
+        if ($bandType === 'resistance') {
+            $previousOrder = 0;
+            foreach ($bands as $color => $data) {
+                if ($data['order'] < $currentOrder && $data['order'] > $previousOrder) {
+                    $previousOrder = $data['order'];
+                    $previousBand = $color;
+                }
+            }
+        } elseif ($bandType === 'assistance') {
+            $previousOrder = PHP_INT_MAX;
+            foreach ($bands as $color => $data) {
+                if ($data['order'] > $currentOrder && $data['order'] < $previousOrder) {
+                    $previousOrder = $data['order'];
+                    $previousBand = $color;
+                }
             }
         }
 

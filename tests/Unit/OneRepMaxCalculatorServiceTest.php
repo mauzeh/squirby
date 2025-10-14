@@ -12,6 +12,7 @@ use App\Models\MeasurementType;
 use App\Models\BodyLog;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use App\Services\NotApplicableException;
 
 class OneRepMaxCalculatorServiceTest extends TestCase
 {
@@ -147,18 +148,37 @@ class OneRepMaxCalculatorServiceTest extends TestCase
     }
 
     /** @test */
-    public function it_calculates_best_lift_log_one_rep_max_for_bodyweight_exercise_correctly()
+    public function it_throws_exception_for_banded_exercise_in_calculate_one_rep_max()
     {
-        $exercise = Exercise::factory()->create(['user_id' => $this->user->id, 'is_bodyweight' => true]);
-        $liftLog = LiftLog::factory()->create(['user_id' => $this->user->id, 'exercise_id' => $exercise->id, 'logged_at' => Carbon::now()]);
-        $liftLog->liftSets()->createMany([
-            ['weight' => 0, 'reps' => 5, 'notes' => 'Set 1'], // 180 * (1 + (0.0333 * 5)) = 209.97
-            ['weight' => 0, 'reps' => 8, 'notes' => 'Set 2'], // 180 * (1 + (0.0333 * 8)) = 227.952
-            ['weight' => 0, 'reps' => 3, 'notes' => 'Set 3'], // 180 * (1 + (0.0333 * 3)) = 197.982
-        ]);
+        $this->expectException(\App\Services\NotApplicableException::class);
+        $this->expectExceptionMessage('1RM calculation is not applicable for banded exercises.');
 
-        $expectedBest1RM = 180 * (1 + (0.0333 * 8)); // Best is from 8 reps
+        $this->calculator->calculateOneRepMax(100, 5, false, null, null, 'resistance');
+    }
 
-        $this->assertEquals($expectedBest1RM, $this->calculator->getBestLiftLogOneRepMax($liftLog));
+    /** @test */
+    public function it_throws_exception_for_banded_exercise_in_get_lift_log_one_rep_max()
+    {
+        $this->expectException(\App\Services\NotApplicableException::class);
+        $this->expectExceptionMessage('1RM calculation is not applicable for banded exercises.');
+
+        $exercise = Exercise::factory()->create(['band_type' => 'resistance']);
+        $liftLog = LiftLog::factory()->create(['exercise_id' => $exercise->id]);
+        $liftLog->liftSets()->create(['weight' => 0, 'reps' => 5, 'band_color' => 'red']);
+
+        $this->calculator->getLiftLogOneRepMax($liftLog);
+    }
+
+    /** @test */
+    public function it_throws_exception_for_banded_exercise_in_get_best_lift_log_one_rep_max()
+    {
+        $this->expectException(\App\Services\NotApplicableException::class);
+        $this->expectExceptionMessage('1RM calculation is not applicable for banded exercises.');
+
+        $exercise = Exercise::factory()->create(['band_type' => 'assistance']);
+        $liftLog = LiftLog::factory()->create(['exercise_id' => $exercise->id]);
+        $liftLog->liftSets()->create(['weight' => 0, 'reps' => 5, 'band_color' => 'blue']);
+
+        $this->calculator->getBestLiftLogOneRepMax($liftLog);
     }
 }
