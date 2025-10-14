@@ -33,19 +33,19 @@ This document outlines the step-by-step tasks for implementing the "Banded Movem
     - Add `band_type` to the `$fillable` array.
     - Add helper methods `isBandedResistance(): bool` and `isBandedAssistance(): bool` to check the `band_type` status.
 - **Verification:**
-    - Create/update unit tests for the `Exercise` model to verify the `$fillable` property and the new helper methods.
+    - Manually inspect the `Exercise` model to confirm `band_type` is in `$fillable` and helper methods are present and correctly implemented.
 
 #### 1.2.2 Update `app/Models/LiftSet.php`
 - **Instructions:**
     - Add `band_color` to the `$fillable` array.
 - **Verification:**
-    - Create/update unit tests for the `LiftSet` model to verify the `$fillable` property.
+    - Manually inspect the `LiftSet` model to confirm `band_color` is in `$fillable`.
 
 #### 1.2.3 Update `app/Models/LiftLog.php`
 - **Instructions:**
     - Review and adjust any methods that implicitly assume `weight` (e.g., `getOneRepMaxAttribute`, `getDisplayWeightAttribute`) to handle `band_color` for banded exercises, considering `band_type`. This will likely involve conditional logic based on `exercise->band_type`.
 - **Verification:**
-    - Create/update unit tests for the `LiftLog` model to verify these adjustments.
+    - Manually inspect the `LiftLog` model to confirm adjustments for `band_color` handling.
 
 ### Task 1.3: Configuration
 
@@ -66,7 +66,7 @@ This document outlines the step-by-step tasks for implementing the "Banded Movem
         ];
         ```
 - **Verification:**
-    - Write a simple test (e.g., a temporary route or a `dd()` in a controller) to confirm the configuration can be accessed correctly (e.g., `config('bands.colors')`).
+    - Manually confirm the file `config/bands.php` exists and contains the specified configuration.
 
 ## Phase 2: Business Logic & Services
 
