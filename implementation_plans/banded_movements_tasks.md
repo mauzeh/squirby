@@ -133,11 +133,15 @@ This document outlines the step-by-step tasks for implementing the "Banded Movem
 - **Instructions:**
     - In both `exercises/create.blade.php` and `exercises/edit.blade.php`, add a new form field for `band_type`. This should be a dropdown or radio buttons with options "None", "Resistance", "Assistance".
     - The `is_bodyweight` checkbox will remain visible. Its value will be ignored or overridden in the backend (`ExerciseController`) if a `band_type` other than "None" is selected.
-- **Verification:**
-    - Manually test the forms in a browser to ensure the `band_type` selection appears and `is_bodyweight` remains visible.
-    - Create/update feature tests for exercise creation/editing to verify `band_type` is saved correctly and `is_bodyweight` is handled as per backend logic.
+    - **Backend (`ExerciseController`):**
+        - Modify the `store` method to:
+            - Add `band_type` to validation rules (`nullable|in:resistance,assistance`).
+            - If `band_type` is present in the request, set `is_bodyweight` to `false` and store `band_type`.
+        - Modify the `update` method to:
+            - Add `band_type` to validation rules (`nullable|in:resistance,assistance`).
+            - If `band_type` is present in the request, set `is_bodyweight` to `false` and update `band_type`.
 
-### Task 3.2: Lift Log Entry Forms (`lift-logs/mobile-entry.blade.php`, `lift-logs/edit.blade.php`)
+### Task 3.2: Lift Log Entry Forms (`lift-logs/mobile-entry.blade.php`, `lift-logs/edit.blade.php`, `components/add-lift-log-form.blade.php`)
 
 #### 3.2.1 Adjust input for banded exercises
 - **Instructions:**
@@ -145,9 +149,15 @@ This document outlines the step-by-step tasks for implementing the "Banded Movem
         - Replace the `weight` input field with a `band_color` dropdown selector (Red, Blue, Green, Black, based on `config/bands.php`).
         - The `reps` input field remains.
     - For exercises where `exercise->band_type` is null, retain the `weight` input.
-- **Verification:**
-    - Manually test the forms in a browser with both banded and non-banded exercises.
-    - Create/update feature tests for lift log entry to verify `band_color` is saved correctly.
+    - **Backend (`LiftLogController`):**
+        - Modify the `store` method to:
+            - Retrieve the `Exercise` model associated with `exercise_id`.
+            - If `exercise->band_type` is not null, validate `band_color` (`required|string`) and save `band_color` to `LiftSet`, setting `weight` to `0`.
+            - Else (non-banded exercise), validate `weight` (`required|numeric`) and save `weight` to `LiftSet`.
+        - Modify the `update` method to:
+            - Retrieve the `Exercise` model associated with `liftLog->exercise_id`.
+            - If `exercise->band_type` is not null, validate `band_color` (`required|string`) and save `band_color` to `LiftSet`, setting `weight` to `0`.
+            - Else (non-banded exercise), validate `weight` (`required|numeric`) and save `weight` to `LiftSet`.
 
 ### Task 3.3: Lift Log Display (`lift-logs/index.blade.php`, `exercises/logs.blade.php`)
 
@@ -155,9 +165,6 @@ This document outlines the step-by-step tasks for implementing the "Banded Movem
 - **Instructions:**
     - For banded exercises, display the `band_color` used instead of weight.
     - Update any progression displays to reflect band color changes.
-- **Verification:**
-    - Manually test the display in a browser for banded exercises.
-    - Create/update feature tests to assert the correct display of `band_color`.
 
 ### Task 3.4: Program Forms (`programs/_form_create.blade.php`, `programs/_form.blade.php`)
 
@@ -165,9 +172,24 @@ This document outlines the step-by-step tasks for implementing the "Banded Movem
 - **Instructions:**
     - Update the auto-calculation display to show the suggested `band_color` and `reps` for banded exercises.
     - Ensure the `sets` and `reps` fields are correctly populated by the auto-calculation logic for banded exercises.
-- **Verification:**
-    - Manually test program creation/editing with banded exercises.
-    - Create/update feature tests for program creation/editing to verify correct auto-calculation and display.
+
+### Task 3.5: Testing for Phase 3 UI/UX
+
+#### 3.5.1 Exercise Forms Testing
+- Manually test the forms in a browser to ensure the `band_type` selection appears and `is_bodyweight` remains visible.
+- Create/update feature tests for exercise creation/editing to verify `band_type` is saved correctly and `is_bodyweight` is handled as per backend logic.
+
+#### 3.5.2 Lift Log Entry Forms Testing
+- Manually test the forms in a browser with both banded and non-banded exercises.
+- Create/update feature tests for lift log entry to verify `band_color` is saved correctly.
+
+#### 3.5.3 Lift Log Display Testing
+- Manually test the display in a browser for banded exercises.
+- Create/update feature tests to assert the correct display of `band_color`.
+
+#### 3.5.4 Program Forms Testing
+- Manually test program creation/editing with banded exercises.
+- Create/update feature tests for program creation/editing to verify correct auto-calculation and display.
 
 ## Phase 4: Testing
 

@@ -18,6 +18,14 @@
                 <input type="checkbox" name="is_bodyweight" id="is_bodyweight" value="1" {{ $exercise->is_bodyweight ? 'checked' : '' }}>
                 <label for="is_bodyweight">Bodyweight Exercise</label>
             </div>
+            <div class="form-group">
+                <label for="band_type">Band Type:</label>
+                <select name="band_type" id="band_type" class="form-control">
+                    <option value="">None</option>
+                    <option value="resistance" {{ $exercise->band_type == 'resistance' ? 'selected' : '' }}>Resistance</option>
+                    <option value="assistance" {{ $exercise->band_type == 'assistance' ? 'selected' : '' }}>Assistance</option>
+                </select>
+            </div>
             @if($canCreateGlobal)
                 <div class="form-group form-group-checkbox">
                     <input type="checkbox" name="is_global" id="is_global" value="1" {{ $exercise->isGlobal() ? 'checked' : '' }}>

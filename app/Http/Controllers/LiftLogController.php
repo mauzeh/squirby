@@ -40,13 +40,24 @@ class LiftLogController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
+        $exercise = Exercise::find($request->input('exercise_id'));
+
+        $rules = [
             'exercise_id' => 'required|exists:exercises,id',
-            'weight' => 'required|numeric',
             'comments' => 'nullable|string',
             'date' => 'required|date',
             'logged_at' => 'nullable|date_format:H:i',
-        ]);
+            'reps' => 'required|integer|min:1',
+            'rounds' => 'required|integer|min:1',
+        ];
+
+        if ($exercise && $exercise->band_type) {
+            $rules['band_color'] = 'required|string';
+        } else {
+            $rules['weight'] = 'required|numeric';
+        }
+
+        $request->validate($rules);
 
         $loggedAtDate = Carbon::parse($request->input('date'));
         
@@ -71,15 +82,15 @@ class LiftLogController extends Controller
             'user_id' => auth()->id(),
         ]);
 
-        $weight = $request->input('weight');
         $reps = $request->input('reps');
         $rounds = $request->input('rounds');
 
         for ($i = 0; $i < $rounds; $i++) {
             $liftLog->liftSets()->create([
-                'weight' => $weight,
+                'weight' => $exercise->band_type ? 0 : $request->input('weight'),
                 'reps' => $reps,
                 'notes' => $request->input('comments'),
+                'band_color' => $exercise->band_type ? $request->input('band_color') : null,
             ]);
         }
 
@@ -115,12 +126,25 @@ class LiftLogController extends Controller
         if ($liftLog->user_id !== auth()->id()) {
             abort(403, 'Unauthorized action.');
         }
-        $request->validate([
+
+        $exercise = Exercise::find($request->input('exercise_id'));
+
+        $rules = [
             'exercise_id' => 'required|exists:exercises,id',
             'comments' => 'nullable|string',
             'date' => 'required|date',
             'logged_at' => 'required|date_format:H:i',
-        ]);
+            'reps' => 'required|integer|min:1',
+            'rounds' => 'required|integer|min:1',
+        ];
+
+        if ($exercise && $exercise->band_type) {
+            $rules['band_color'] = 'required|string';
+        } else {
+            $rules['weight'] = 'required|numeric';
+        }
+
+        $request->validate($rules);
 
         $loggedAtDate = Carbon::parse($request->input('date'));
         $loggedAt = $loggedAtDate->setTimeFromTimeString($request->input('logged_at'));
@@ -142,15 +166,15 @@ class LiftLogController extends Controller
         $liftLog->liftSets()->delete();
 
         // Create new lift sets
-        $weight = $request->input('weight');
         $reps = $request->input('reps');
         $rounds = $request->input('rounds');
 
         for ($i = 0; $i < $rounds; $i++) {
             $liftLog->liftSets()->create([
-                'weight' => $weight,
+                'weight' => $exercise->band_type ? 0 : $request->input('weight'),
                 'reps' => $reps,
                 'notes' => $request->input('comments'),
+                'band_color' => $exercise->band_type ? $request->input('band_color') : null,
             ]);
         }
 

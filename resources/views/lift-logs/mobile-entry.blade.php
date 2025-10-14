@@ -106,12 +106,22 @@
                                     </div>
                                 @endif
                                 <div class="form-group weight-form-group @if($program->exercise->is_bodyweight) hidden @endif" id="weight-form-group-{{ $program->id }}">
-                                    <label for="weight_{{ $program->id }}">@if($program->exercise->is_bodyweight) Extra Weight (lbs): @else Weight (lbs): @endif</label>
-                                    <div class="input-group">
-                                        <button type="button" class="decrement-button" data-field="weight_{{ $program->id }}">-</button>
-                                        <input type="number" name="weight" id="weight_{{ $program->id }}" class="large-input" inputmode="decimal" value="{{ $program->suggestedNextWeight ?? ($program->exercise->is_bodyweight ? 0 : '') }}" @if(!$program->exercise->is_bodyweight) required @endif>
-                                        <button type="button" class="increment-button" data-field="weight_{{ $program->id }}">+</button>
-                                    </div>
+                                    @if ($program->exercise->band_type)
+                                        <label for="band_color_{{ $program->id }}">Band Color:</label>
+                                        <select name="band_color" id="band_color_{{ $program->id }}" class="form-control large-input">
+                                            <option value="">Select Band</option>
+                                            @foreach(config('bands.colors') as $color => $data)
+                                                <option value="{{ $color }}">{{ ucfirst($color) }}</option>
+                                            @endforeach
+                                        </select>
+                                    @else
+                                        <label for="weight_{{ $program->id }}">@if($program->exercise->is_bodyweight) Extra Weight (lbs): @else Weight (lbs): @endif</label>
+                                        <div class="input-group">
+                                            <button type="button" class="decrement-button" data-field="weight_{{ $program->id }}">-</button>
+                                            <input type="number" name="weight" id="weight_{{ $program->id }}" class="large-input" inputmode="decimal" value="{{ $program->suggestedNextWeight ?? ($program->exercise->is_bodyweight ? 0 : '') }}" @if(!$program->exercise->is_bodyweight) required @endif>
+                                            <button type="button" class="increment-button" data-field="weight_{{ $program->id }}">+</button>
+                                        </div>
+                                    @endif
                                 </div>
 
                                 <div class="form-group">

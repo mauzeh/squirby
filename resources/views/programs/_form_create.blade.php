@@ -21,10 +21,22 @@
 <div class="form-group">
     <label>Sets & Reps</label>
     <div class="auto-calculation-info">
-        <p style="margin: 0; color: #b3d7ff; font-style: italic;">
-            Sets and reps will be automatically calculated based on your training progression history. 
-            If no training history is available, default values will be used (3 sets, 10 reps).
-        </p>
+        @if(isset($suggestedNextWeight) || isset($suggestedBandColor))
+            <p style="margin: 0; color: #b3d7ff; font-style: italic;">
+                Suggested: 
+                @if(isset($suggestedBandColor))
+                    Band: {{ $suggestedBandColor }}
+                @else
+                    {{ number_format($suggestedNextWeight) }} lbs
+                @endif
+                for {{ $suggestedReps }} reps, {{ $suggestedSets }} sets.
+            </p>
+        @else
+            <p style="margin: 0; color: #b3d7ff; font-style: italic;">
+                Sets and reps will be automatically calculated based on your training progression history. 
+                If no training history is available, default values will be used (3 sets, 10 reps).
+            </p>
+        @endif
     </div>
 </div>
 

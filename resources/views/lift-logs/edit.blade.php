@@ -15,8 +15,18 @@
                 </select>
             </div>
             <div class="form-group" id="weight-group">
-                <label for="weight">Weight (lbs):</label>
-                <input type="number" name="weight" id="weight" class="form-control" value="{{ $liftLog->display_weight }}" required inputmode="decimal">
+                @if ($liftLog->exercise->band_type)
+                    <label for="band_color">Band Color:</label>
+                    <select name="band_color" id="band_color" class="form-control">
+                        <option value="">Select Band</option>
+                        @foreach(config('bands.colors') as $color => $data)
+                            <option value="{{ $color }}" {{ $liftLog->liftSets->first()->band_color == $color ? 'selected' : '' }}>{{ ucfirst($color) }}</option>
+                        @endforeach
+                    </select>
+                @else
+                    <label for="weight">Weight (lbs):</label>
+                    <input type="number" name="weight" id="weight" class="form-control" value="{{ $liftLog->display_weight }}" required inputmode="decimal">
+                @endif
             </div>
             <div class="form-group">
                 <label for="reps">Reps:</label>
