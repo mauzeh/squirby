@@ -255,6 +255,18 @@ This document outlines the step-by-step tasks for implementing the "Banded Movem
 - **Verification:**
     - Run all existing feature tests to ensure no regressions.
 
+#### 4.2.5 `ExerciseController` Feature Tests
+- **Instructions:**
+    - Test creating exercises with `band_type` and verify `is_bodyweight` is set to `false`.
+    - Test updating exercises with `band_type` and verify `is_bodyweight` is set to `false`.
+    - Test creating/updating exercises without `band_type` and verify `is_bodyweight` is respected.
+
+#### 4.2.6 `LiftLogController` Feature Tests
+- **Instructions:**
+    - Test storing lift logs for banded exercises, verifying `band_color` is saved and `weight` is `0`.
+    - Test updating lift logs for banded exercises, verifying `band_color` is updated and `weight` is `0`.
+    - Test storing/updating lift logs for non-banded exercises, verifying `weight` is saved and `band_color` is `null`.
+
 ## Phase 5: Documentation
 
 ### Task 5.1 User Documentation
