@@ -29,40 +29,38 @@
                     <h3>1RM Progress</h3>
                     <canvas id="oneRepMaxChart"></canvas>
                 </div>
+
+                <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+                <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+                <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        var ctx = document.getElementById('oneRepMaxChart').getContext('2d');
+                        var oneRepMaxChart = new Chart(ctx, {
+                            type: 'line',
+                            data: {
+                                datasets: @json($chartData['datasets'])
+                            },
+                            options: {
+                                scales: {
+                                    x: {
+                                        type: 'time',
+                                        time: {
+                                            unit: 'day'
+                                        }
+                                    },
+                                    y: {
+                                    }
+                                }
+                            }
+                        });
+                    });
+                </script>
             @else
                 <div class="form-container">
                     <h3>1RM Progress</h3>
                     <p>1RM chart not available for banded exercises.</p>
                 </div>
             @endif
-
-        <x-lift-logs-table :liftLogs="$liftLogs" hideExerciseColumn="true" />
-
-        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                var ctx = document.getElementById('oneRepMaxChart').getContext('2d');
-                var oneRepMaxChart = new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        datasets: @json($chartData['datasets'])
-                    },
-                    options: {
-                        scales: {
-                            x: {
-                                type: 'time',
-                                time: {
-                                    unit: 'day'
-                                }
-                            },
-                            y: {
-                            }
-                        }
-                    }
-                });
-            });
-        </script>
         @endif
     </div>
 @endsection
