@@ -5,21 +5,21 @@ This plan outlines the steps to introduce "banded movements" as a new type of ex
 ## Phase 1: Core Data Model & Configuration
 
 ### 1.1 Database Migrations
-- **Add `is_banded` to `exercises` table:**
-    - Create a new migration: `php artisan make:migration add_is_banded_to_exercises_table --table=exercises`
-    - Add `is_banded` (boolean, default `false`) column.
+- **Add `band_type` to `exercises` table:**
+    - Create a new migration: `php artisan make:migration add_band_type_to_exercises_table --table=exercises`
+    - Add `band_type` (string, nullable, enum: 'resistance', 'assistance') column.
 - **Add `band_color` to `lift_sets` table:**
     - Create a new migration: `php artisan make:migration add_band_color_to_lift_sets_table --table=lift_sets`
     - Add `band_color` (string, nullable) column.
 
 ### 1.2 Model Updates
 - **`app/Models/Exercise.php`:**
-    - Add `is_banded` to the `$fillable` array.
-    - Add a helper method `isBanded(): bool` to check the `is_banded` status.
+    - Add `band_type` to the `$fillable` array.
+    - Add helper methods `isBandedResistance(): bool` and `isBandedAssistance(): bool` to check the `band_type` status.
 - **`app/Models/LiftSet.php`:**
     - Add `band_color` to the `$fillable` array.
 - **`app/Models/LiftLog.php`:**
-    - Review and adjust any methods that implicitly assume `weight` (e.g., `getOneRepMaxAttribute`, `getDisplayWeightAttribute`) to handle `band_color` for banded exercises.
+    - Review and adjust any methods that implicitly assume `weight` (e.g., `getOneRepMaxAttribute`, `getDisplayWeightAttribute`) to handle `band_color` for banded exercises, considering `band_type`.
 
 ### 1.3 Configuration
 - **Create `config/bands.php`:**
@@ -32,17 +32,17 @@ This plan outlines the steps to introduce "banded movements" as a new type of ex
     - Encapsulate band-related logic:
         - `getBands(): array`: Returns the configured band array.
         - `getBandResistance(string $color): ?int`: Returns resistance for a given color.
-        - `getNextHarderBand(string $currentColor): ?string`: Returns the next band in the progression.
-        - `getPreviousEasierBand(string $currentColor): ?string`: Returns the previous band in the progression.
+        - `getNextHarderBand(string $currentColor, string $bandType): ?string`: Returns the next band in the progression, considering the `band_type`.
+        - `getPreviousEasierBand(string $currentColor, string $bandType): ?string`: Returns the previous band in the progression, considering the `band_type`.
 
 ### 2.2 `TrainingProgressionService` Updates
 - **Modify `app/Services/TrainingProgressionService.php`:**
     - Update `getSuggestionDetails` method:
-        - If `exercise->isBanded()` is true, implement the banded progression logic:
+        - If `exercise->band_type` is not null, implement the banded progression logic:
             - If `last_logged_reps` is less than 15:
                 - Suggest `min(last_logged_reps + 1, 15)` reps with the *same band*.
             - If `last_logged_reps` is 15 or more:
-                - Suggest the *next harder band* at 8 reps.
+                - Suggest the *next harder band* (determined by `BandService` based on `band_type`) at 8 reps.
         - This will require injecting `BandService` into `TrainingProgressionService`.
 
 ### 2.3 `OneRepMaxCalculatorService` Review
@@ -54,8 +54,8 @@ This plan outlines the steps to introduce "banded movements" as a new type of ex
 ## Phase 3: User Interface (UI) / User Experience (UX)
 
 ### 3.1 Exercise Forms (`exercises/create.blade.php`, `exercises/edit.blade.php`)
-- Add an `is_banded` checkbox.
-- Adjust visibility/interaction with `is_bodyweight` checkbox if `is_banded` is checked (e.g., `is_bodyweight` might be implicitly true or disabled).
+- Add a new `band_type` selection (e.g., dropdown or radio buttons) that includes options like "None", "Resistance", "Assistance".
+- The `is_bodyweight` checkbox will remain visible. Its value will be ignored or overridden in the backend (`ExerciseController`) if a `band_type` other than "None" is selected.
 
 ### 3.2 Lift Log Entry Forms (`lift-logs/mobile-entry.blade.php`, `lift-logs/edit.blade.php`)
 - For exercises where `exercise->isBanded()` is true:
