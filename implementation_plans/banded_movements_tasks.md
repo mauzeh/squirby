@@ -267,6 +267,17 @@ This document outlines the step-by-step tasks for implementing the "Banded Movem
     - Test updating lift logs for banded exercises, verifying `band_color` is updated and `weight` is `0`.
     - Test storing/updating lift logs for non-banded exercises, verifying `weight` is saved and `band_color` is `null`.
 
+#### 4.2.7 `LiftLogsTable` Display Tests
+- **Instructions:**
+    - Test that the 1RM column is omitted from `lift-logs-table.blade.php` for banded exercises.
+    - Test that the 1RM column is correctly displayed for non-banded exercises in `lift-logs-table.blade.php`.
+
+#### 4.2.8 `ExerciseLogs` Chart Display Tests
+- **Instructions:**
+    - Test that the 1RM chart is not rendered on `exercises/logs.blade.php` for banded exercises.
+    - Test that the "1RM chart not available for banded exercises" message is displayed on `exercises/logs.blade.php` for banded exercises.
+    - Test that the 1RM chart is correctly rendered on `exercises/logs.blade.php` for non-banded exercises.
+
 ## Phase 5: Documentation
 
 ### Task 5.1 User Documentation
