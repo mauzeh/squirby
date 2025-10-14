@@ -27,21 +27,7 @@
                         {{ $liftLog->logged_at->format('m/d') }}
                         <div class="show-on-mobile" style="font-size: 0.9em; color: #ccc;">
                             <x-lift-weight-display :liftLog="$liftLog" /> (<x-lift-reps-sets-display :reps="$liftLog->display_reps" :sets="$liftLog->display_rounds" />)
-                            @if ($liftLog->one_rep_max)
-                                <br><i>1RM: {{ round($liftLog->one_rep_max) }} lbs</i>
-                            @endif
-                        </div>
-                    </td>
-                @else
-                    <td class="hide-on-mobile">{{ $liftLog->logged_at->format('m/d') }}</td>
-                @endif
-                @unless($hideExerciseColumn)
-                    <td>
-                        <a href="{{ route('exercises.show-logs', $liftLog->exercise) }}">{{ $liftLog->exercise->title }}</a>
-                        <div class="show-on-mobile" style="font-size: 0.9em; color: #ccc;">
-                            {{ $liftLog->logged_at->format('m/d') }} -
-                            <x-lift-weight-display :liftLog="$liftLog" /> (<x-lift-reps-sets-display :reps="$liftLog->display_reps" :sets="$liftLog->display_rounds" />)
-                            @if ($liftLog->one_rep_max)
+                            @if (!$liftLog->exercise->band_type)
                                 <br><i>1RM: {{ round($liftLog->one_rep_max) }} lbs</i>
                             @endif
                         </div>
@@ -52,10 +38,12 @@
                     <x-lift-reps-sets-display :reps="$liftLog->display_reps" :sets="$liftLog->display_rounds" />
                 </td>
                 <td class="hide-on-mobile">
-                    @if ($liftLog->exercise->is_bodyweight)
-                        {{ round($liftLog->one_rep_max) }} lbs (est. incl. BW)
-                    @else
-                        {{ round($liftLog->one_rep_max) }} lbs
+                    @if (!$liftLog->exercise->band_type)
+                        @if ($liftLog->exercise->is_bodyweight)
+                            {{ round($liftLog->one_rep_max) }} lbs (est. incl. BW)
+                        @else
+                            {{ round($liftLog->one_rep_max) }} lbs
+                        @endif
                     @endif
                 </td>
                 <td class="hide-on-mobile" style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ $liftLog->comments }}">{{ $liftLog->comments }}</td>
