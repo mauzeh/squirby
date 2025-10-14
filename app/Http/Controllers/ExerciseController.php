@@ -235,7 +235,10 @@ class ExerciseController extends Controller
 
         $displayExercises = $this->exerciseService->getDisplayExercises(5);
 
-        $chartData = $this->chartService->generateBestPerDay($liftLogs);
+        $chartData = [];
+        if (!$exercise->band_type) {
+            $chartData = $this->chartService->generateBestPerDay($liftLogs);
+        }
 
         $liftLogs = $liftLogs->reverse();
 

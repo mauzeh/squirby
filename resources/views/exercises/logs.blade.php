@@ -24,10 +24,17 @@
         @if ($liftLogs->isEmpty())
             <p>No lift logs found for this exercise.</p>
         @else
-        <div class="form-container">
-            <h3>1RM Progress</h3>
-            <canvas id="oneRepMaxChart"></canvas>
-        </div>
+            @if (!empty($chartData['datasets'][0]['data']))
+                <div class="form-container">
+                    <h3>1RM Progress</h3>
+                    <canvas id="oneRepMaxChart"></canvas>
+                </div>
+            @else
+                <div class="form-container">
+                    <h3>1RM Progress</h3>
+                    <p>1RM chart not available for banded exercises.</p>
+                </div>
+            @endif
 
         <x-lift-logs-table :liftLogs="$liftLogs" hideExerciseColumn="true" />
 
