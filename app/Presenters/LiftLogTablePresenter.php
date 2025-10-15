@@ -48,6 +48,14 @@ class LiftLogTablePresenter
      */
     private function formatWeight(LiftLog $liftLog): string
     {
+        if (!empty($liftLog->exercise->band_type)) {
+            $bandColor = $liftLog->liftSets->first()->band_color ?? null;
+            if ($bandColor) {
+                return 'Band: ' . $bandColor;
+            }
+            return 'Band: ' . $liftLog->exercise->band_type;
+        }
+
         if ($liftLog->exercise->is_bodyweight) {
             $weight = 'Bodyweight';
             if ($liftLog->display_weight > 0) {
@@ -72,6 +80,10 @@ class LiftLogTablePresenter
      */
     private function format1RM(LiftLog $liftLog): string
     {
+        if (!empty($liftLog->exercise->band_type)) {
+            return 'N/A (Banded)';
+        }
+
         if (!$liftLog->one_rep_max) {
             return '';
         }
@@ -94,7 +106,7 @@ class LiftLogTablePresenter
                   $this->formatWeight($liftLog) . ' (' . 
                   $this->formatRepsSets($liftLog) . ')';
         
-        if ($liftLog->one_rep_max) {
+        if (!$liftLog->exercise->band_type && $liftLog->one_rep_max) {
             $summary .= '<br><i>1RM: ' . round($liftLog->one_rep_max) . ' lbs</i>';
         }
         

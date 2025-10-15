@@ -438,4 +438,26 @@ class ProgramFeatureTest extends TestCase
         $response->assertStatus(200);
         $response->assertViewHas('defaultPriority', 100);
     }
+
+    public function test_program_index_handles_missing_suggested_weight_gracefully()
+    {
+        $user = User::factory()->create();
+        $exercise = Exercise::factory()->create(['user_id' => $user->id]);
+        Program::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'date' => Carbon::today(),
+            'sets' => 3,
+            'reps' => 5,
+        ]);
+
+        // No lift logs for this exercise, so getSuggestionDetails should return null or an empty object
+        $response = $this->actingAs($user)
+            ->get(route('programs.index', ['date' => Carbon::today()->format('Y-m-d')]));
+
+        $response->assertStatus(200);
+        // Assert that the page loads without the "Undefined property" error.
+        // We can assert that suggested weight is not displayed, or that a placeholder is shown.
+        // For now, just asserting 200 status is enough to confirm no fatal error.
+    }
 }
