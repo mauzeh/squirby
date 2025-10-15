@@ -18,7 +18,7 @@ class MealSeeder extends Seeder
 
         \Illuminate\Support\Facades\Log::info('Ingredients count before MealSeeder: ' . Ingredient::count());
 
-        $ingredients = Ingredient::all()->keyBy('name');
+        $ingredients = Ingredient::where('user_id', $adminUser->id)->get()->keyBy('name');
 
         $meal = Meal::create(['name' => 'Breakfast Bowl', 'user_id' => $adminUser->id]);
         $meal->ingredients()->attach($ingredients['Greek Yogurt (Whole Milk - Chobani)']->id, ['quantity' => 250]);

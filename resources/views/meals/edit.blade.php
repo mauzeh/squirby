@@ -30,12 +30,22 @@
 
                 <h2>Ingredients</h2>
                 <div id="ingredients-container">
+                    @php
+                        $mealIngredients = $meal->ingredients->keyBy('id');
+                        $mealIngredientsArray = $meal->ingredients->toArray();
+                    @endphp
+                    
                     @for ($i = 0; $i < 10; $i++)
+                        @php
+                            $currentIngredient = $mealIngredientsArray[$i] ?? null;
+                            $selectedId = old('ingredients.' . $i . '.ingredient_id', $currentIngredient['id'] ?? '');
+                            $quantityValue = old('ingredients.' . $i . '.quantity', $currentIngredient['pivot']['quantity'] ?? '');
+                        @endphp
                         <div class="form-group">
                             <label for="ingredients[{{ $i }}][ingredient_id]">Ingredient {{ $i + 1 }}:</label>
-                            <x-ingredient-select name="ingredients[{{ $i }}][ingredient_id]" id="ingredients_{{ $i }}_ingredient_id" :ingredients="$ingredients" :selected="old('ingredients.' . $i . '.ingredient_id', $meal->ingredients->get($i)->id ?? '')" />
+                            <x-ingredient-select name="ingredients[{{ $i }}][ingredient_id]" id="ingredients_{{ $i }}_ingredient_id" :ingredients="$ingredients" :selected="$selectedId" />
                             <label for="ingredients[{{ $i }}][quantity]" style="margin-left: 10px;">Quantity:</label>
-                            <x-quantity-input name="ingredients[{{ $i }}][quantity]" id="ingredients_{{ $i }}_quantity" :value="old('ingredients.' . $i . '.quantity', $meal->ingredients->get($i)->pivot->quantity ?? '')" />
+                            <x-quantity-input name="ingredients[{{ $i }}][quantity]" id="ingredients_{{ $i }}_quantity" :value="$quantityValue" />
                         </div>
                     @endfor
                 </div>
