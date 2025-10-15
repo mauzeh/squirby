@@ -110,7 +110,7 @@
                                         <select name="band_color" id="band_color_{{ $program->id }}" class="form-control large-input">
                                             <option value="">Select Band</option>
                                             @foreach(config('bands.colors') as $color => $data)
-                                                <option value="{{ $color }}">{{ ucfirst($color) }}</option>
+                                                <option value="{{ $color }}" @if(isset($program->suggestedBandColor) && $program->suggestedBandColor === $color) selected @endif>{{ ucfirst($color) }}</option>
                                             @endforeach
                                         </select>
                                     @else
