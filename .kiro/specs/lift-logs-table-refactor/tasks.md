@@ -74,21 +74,21 @@
   - Include bulk-selection-controls component
   - _Requirements: 1.1, 1.2, 1.3_
 
-- [ ] 6. Update controller to use presenter
-- [ ] 6.1 Integrate LiftLogTablePresenter in LiftLogController
+- [x] 6. Update controller to use presenter
+- [x] 6.1 Integrate LiftLogTablePresenter in LiftLogController
   - Modify index method to use presenter for data formatting
   - Pass formatted data and configuration to view
   - _Requirements: 4.1, 4.2_
 
-- [ ] 7. Add CSS classes to replace inline styles
-- [ ] 7.1 Create CSS classes for table styling
+- [-] 7. Add CSS classes to replace inline styles
+- [x] 7.1 Create CSS classes for table styling
   - Add comments-column class for comment truncation
   - Add mobile-summary class for responsive text styling
   - Add actions-flex class for button layout
   - _Requirements: 3.1, 3.2_
 
-- [ ] 8. Update existing lift-logs index view
-- [ ] 8.1 Update index view to pass presenter data
+- [-] 8. Update existing lift-logs index view
+- [x] 8.1 Update index view to pass presenter data
   - Modify view to use formatted data from presenter
   - Ensure backward compatibility with existing functionality
   - _Requirements: 5.1, 5.2, 5.3, 5.4_

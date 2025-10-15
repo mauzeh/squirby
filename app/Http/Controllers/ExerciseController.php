@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Exercise;
 use App\Services\ExerciseService;
 use App\Services\ChartService;
+use App\Presenters\LiftLogTablePresenter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
@@ -16,12 +17,14 @@ class ExerciseController extends Controller
     protected $exerciseService;
     protected $chartService;
     protected $tsvImporterService;
+    protected $liftLogTablePresenter;
 
-    public function __construct(ExerciseService $exerciseService, \App\Services\ChartService $chartService, \App\Services\TsvImporterService $tsvImporterService)
+    public function __construct(ExerciseService $exerciseService, \App\Services\ChartService $chartService, \App\Services\TsvImporterService $tsvImporterService, LiftLogTablePresenter $liftLogTablePresenter)
     {
         $this->exerciseService = $exerciseService;
         $this->chartService = $chartService;
         $this->tsvImporterService = $tsvImporterService;
+        $this->liftLogTablePresenter = $liftLogTablePresenter;
     }
 
     /**
@@ -211,13 +214,16 @@ class ExerciseController extends Controller
         if (!$availableExercise) {
             abort(403, 'Unauthorized action.');
         }
-        $liftLogs = $exercise->liftLogs()->with('liftSets')->where('user_id', auth()->id())->orderBy('logged_at', 'asc')->get();
+        $liftLogsQuery = $exercise->liftLogs()->with('liftSets')->where('user_id', auth()->id())->orderBy('logged_at', 'asc')->get();
 
         $displayExercises = $this->exerciseService->getDisplayExercises(5);
 
-        $chartData = $this->chartService->generateBestPerDay($liftLogs);
+        $chartData = $this->chartService->generateBestPerDay($liftLogsQuery);
 
-        $liftLogs = $liftLogs->reverse();
+        $liftLogsReversed = $liftLogsQuery->reverse();
+
+        // Format data using presenter - hide exercise column since we're showing logs for a specific exercise
+        $tableData = $this->liftLogTablePresenter->formatForTable($liftLogsReversed, true);
 
         $exercises = Exercise::availableToUser(auth()->id())->orderBy('title', 'asc')->get();
 
@@ -225,7 +231,7 @@ class ExerciseController extends Controller
         $reps = $request->input('reps');
         $weight = $request->input('weight');
 
-        return view('exercises.logs', compact('exercise', 'liftLogs', 'chartData', 'displayExercises', 'exercises', 'sets', 'reps', 'weight'));
+        return view('exercises.logs', compact('exercise', 'chartData', 'displayExercises', 'exercises', 'sets', 'reps', 'weight') + $tableData);
     }
 
     public function importTsv(Request $request)

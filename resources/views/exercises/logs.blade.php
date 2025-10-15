@@ -29,7 +29,7 @@
             <canvas id="oneRepMaxChart"></canvas>
         </div>
 
-        <x-lift-logs-table :liftLogs="$liftLogs" hideExerciseColumn="true" />
+        <x-lift-logs-table :liftLogs="$liftLogs" :config="$config" />
 
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>

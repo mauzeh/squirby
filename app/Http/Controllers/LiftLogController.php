@@ -7,6 +7,7 @@ use App\Models\LiftLog;
 use App\Models\LiftSet;
 use App\Services\TsvImporterService;
 use App\Services\ExerciseService;
+use App\Presenters\LiftLogTablePresenter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
@@ -16,11 +17,13 @@ class LiftLogController extends Controller
 {
     protected $tsvImporterService;
     protected $exerciseService;
+    protected $liftLogTablePresenter;
 
-    public function __construct(TsvImporterService $tsvImporterService, ExerciseService $exerciseService)
+    public function __construct(TsvImporterService $tsvImporterService, ExerciseService $exerciseService, LiftLogTablePresenter $liftLogTablePresenter)
     {
         $this->tsvImporterService = $tsvImporterService;
         $this->exerciseService = $exerciseService;
+        $this->liftLogTablePresenter = $liftLogTablePresenter;
     }
     /**
      * Display a listing of the resource.
@@ -32,7 +35,10 @@ class LiftLogController extends Controller
 
         $displayExercises = $this->exerciseService->getDisplayExercises(5);
 
-        return view('lift-logs.index', compact('liftLogs', 'displayExercises', 'exercises'));
+        // Format data using presenter
+        $tableData = $this->liftLogTablePresenter->formatForTable($liftLogs, false);
+
+        return view('lift-logs.index', compact('displayExercises', 'exercises') + $tableData);
     }
     
     /**
