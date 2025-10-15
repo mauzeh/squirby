@@ -389,7 +389,7 @@ class ExerciseTsvImportFeatureTest extends TestCase
         
         // Check that the form has proper structure
         $response->assertSee('TSV Import');
-        $response->assertSee('placeholder="Exercise Name&#9;Description&#9;Is Bodyweight (true/false)"', false);
+        $response->assertSee('placeholder="Title&#9;Description&#9;Is Bodyweight (true/false)&#9;Band Type (resistance/assistance/none)"', false);
         $response->assertSee('Global');
         $response->assertSee('Personal exercises are only visible to you and will be skipped if they conflict with existing global exercises.');
         $response->assertSee('Import Exercises');
@@ -404,7 +404,7 @@ class ExerciseTsvImportFeatureTest extends TestCase
         
         // Check that the form has proper structure but without global option
         $response->assertSee('TSV Import');
-        $response->assertSee('placeholder="Exercise Name&#9;Description&#9;Is Bodyweight (true/false)"', false);
+        $response->assertSee('placeholder="Title&#9;Description&#9;Is Bodyweight (true/false)&#9;Band Type (resistance/assistance/none)"', false);
         $response->assertSee('Import Exercises');
         
         // Should not see admin-specific content
