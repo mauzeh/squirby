@@ -60,15 +60,15 @@
   - Include bulk delete form with proper action and CSRF token
   - _Requirements: 1.1_
 
-- [ ] 4. Create bulk selection controls component
-- [ ] 4.1 Create bulk-selection-controls component
+- [x] 4. Create bulk selection controls component
+- [x] 4.1 Create bulk-selection-controls component
   - Move existing JavaScript logic for select-all functionality
   - Move existing JavaScript logic for bulk delete form handling
   - Maintain exact same behavior as current implementation
   - _Requirements: 2.1, 2.2, 2.3_
 
-- [ ] 5. Update main lift-logs-table component
-- [ ] 5.1 Refactor main table component to use sub-components
+- [-] 5. Update main lift-logs-table component
+- [x] 5.1 Refactor main table component to use sub-components
   - Replace monolithic template with component composition
   - Pass presenter-formatted data to sub-components
   - Include bulk-selection-controls component
