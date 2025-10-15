@@ -13,7 +13,12 @@
                 <th>Exercise</th>
             @endunless
             <th class="hide-on-mobile">Weight (reps x rounds)</th>
-            <th class="hide-on-mobile">1RM (est.)</th>
+            @php
+                $hasNonBandedLiftLogs = $liftLogs->contains(function ($liftLog) { return !$liftLog->exercise->band_type; });
+            @endphp
+            @if($hasNonBandedLiftLogs)
+                <th class="hide-on-mobile">1RM (est.)</th>
+            @endif
             <th class="hide-on-mobile" style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Comments</th>
             <th class="actions-column">Actions</th>
         </tr>
@@ -37,6 +42,7 @@
                     <x-lift-weight-display :liftLog="$liftLog" /><br>
                     <x-lift-reps-sets-display :reps="$liftLog->display_reps" :sets="$liftLog->display_rounds" />
                 </td>
+            @if($hasNonBandedLiftLogs)
                 <td class="hide-on-mobile">
                     @if (!$liftLog->exercise->band_type)
                         @if ($liftLog->exercise->is_bodyweight)
@@ -46,6 +52,7 @@
                         @endif
                     @endif
                 </td>
+            @endif
                 <td class="hide-on-mobile" style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ $liftLog->comments }}">{{ $liftLog->comments }}</td>
                 <td class="actions-column">
                     <div style="display: flex; gap: 5px;">
