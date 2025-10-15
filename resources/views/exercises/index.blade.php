@@ -93,9 +93,9 @@
 
             <div class="form-container">
                 <h3>TSV Export</h3>
-                <textarea id="tsv-output" rows="10" style="width: 100%; background-color: #3a3a3a; color: #f2f2f2; border: 1px solid #555;">@foreach ($exercises as $exercise){{ $exercise->title }}	{{ $exercise->description }}	{{ $exercise->is_bodyweight ? 'true' : 'false' }}
-@endforeach
-                </textarea>
+                <textarea id="tsv-output" rows="10" style="width: 100%; background-color: #3a3a3a; color: #f2f2f2; border: 1px solid #555;">Title	Description	Is Bodyweight	Band Type
+@foreach ($exercises as $exercise){{ $exercise->title }}	{{ $exercise->description ?? '' }}	{{ $exercise->is_bodyweight ? 'true' : 'false' }}	{{ $exercise->band_type ?? 'none' }}
+@endforeach</textarea>
                 <button id="copy-tsv-button" class="button">Copy to Clipboard</button>
             </div>
 
@@ -187,7 +187,7 @@
             <h3>TSV Import</h3>
             <form action="{{ route('exercises.import-tsv') }}" method="POST">
                 @csrf
-                <textarea name="tsv_data" id="tsv_data" rows="10" style="width: 100%; background-color: #3a3a3a; color: #f2f2f2; border: 1px solid #555; margin-bottom: 15px;" placeholder="Exercise Name&#9;Description&#9;Is Bodyweight (true/false)"></textarea>
+                <textarea name="tsv_data" id="tsv_data" rows="10" style="width: 100%; background-color: #3a3a3a; color: #f2f2f2; border: 1px solid #555; margin-bottom: 15px;" placeholder="Title&#9;Description&#9;Is Bodyweight (true/false)&#9;Band Type (resistance/assistance/none)"></textarea>
                 
                 @if(auth()->user()->hasRole('Admin'))
                 <div style="margin-bottom: 15px;">

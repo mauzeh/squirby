@@ -1,12 +1,12 @@
 # Implementation Plan
 
-- [ ] 1. Update Exercise TSV Import Support
+- [x] 1. Update Exercise TSV Import Support
   - Modify `TsvImporterService::importExercises()` to handle band_type column
   - Add band_type validation ('resistance', 'assistance', 'none')
   - Update exercise creation/update logic to handle band_type mapping ('none' → null)
   - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5_
 
-- [ ] 2. Add Exercise TSV Export Functionality
+- [x] 2. Add Exercise TSV Export Functionality
   - Create `ExerciseController::exportTsv()` method
   - Generate TSV format with Title, Description, Is Bodyweight, Band Type columns
   - Map band_type values (null → 'none', preserve 'resistance'/'assistance')

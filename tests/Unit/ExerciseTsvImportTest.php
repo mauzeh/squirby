@@ -364,4 +364,150 @@ class ExerciseTsvImportTest extends TestCase
         $this->assertCount(1, $result['updatedExercises']);
         $this->assertCount(2, $result['skippedExercises']);
     }
+
+    /** @test */
+    public function it_imports_exercises_with_valid_band_types()
+    {
+        $tsvData = "Banded Pull-ups\tPull-ups with resistance band\tfalse\tresistance\n" .
+                   "Assisted Dips\tDips with assistance band\tfalse\tassistance\n" .
+                   "Regular Push-ups\tStandard push-ups\ttrue\tnone";
+
+        $result = $this->tsvImporterService->importExercises($tsvData, $this->user->id);
+
+        $this->assertEquals(3, $result['importedCount']);
+        $this->assertEquals(0, $result['updatedCount']);
+        $this->assertEquals(0, $result['skippedCount']);
+        $this->assertEmpty($result['invalidRows']);
+
+        $exercises = Exercise::where('user_id', $this->user->id)->get();
+        
+        $bandedPullups = $exercises->where('title', 'Banded Pull-ups')->first();
+        $this->assertNotNull($bandedPullups);
+        $this->assertEquals('resistance', $bandedPullups->band_type);
+
+        $assistedDips = $exercises->where('title', 'Assisted Dips')->first();
+        $this->assertNotNull($assistedDips);
+        $this->assertEquals('assistance', $assistedDips->band_type);
+
+        $regularPushups = $exercises->where('title', 'Regular Push-ups')->first();
+        $this->assertNotNull($regularPushups);
+        $this->assertNull($regularPushups->band_type); // 'none' should be converted to null
+
+        // Verify band_type is included in result arrays
+        $importedExercise = $result['importedExercises'][0];
+        $this->assertArrayHasKey('band_type', $importedExercise);
+    }
+
+    /** @test */
+    public function it_rejects_exercises_with_invalid_band_types()
+    {
+        $tsvData = "Valid Exercise\tValid description\ttrue\tresistance\n" .
+                   "Invalid Exercise\tInvalid band type\tfalse\tinvalid_type\n" .
+                   "Another Valid\tAnother valid exercise\tfalse\tnone";
+
+        $result = $this->tsvImporterService->importExercises($tsvData, $this->user->id);
+
+        $this->assertEquals(2, $result['importedCount']); // Only valid exercises
+        $this->assertEquals(0, $result['updatedCount']);
+        $this->assertEquals(0, $result['skippedCount']);
+        $this->assertCount(1, $result['invalidRows']); // One invalid row
+
+        $invalidRow = $result['invalidRows'][0];
+        $this->assertStringContainsString('Invalid band type', $invalidRow);
+        $this->assertStringContainsString('invalid_type', $invalidRow);
+        $this->assertStringContainsString("must be 'resistance', 'assistance', or 'none'", $invalidRow);
+
+        // Verify only valid exercises were created
+        $exercises = Exercise::where('user_id', $this->user->id)->get();
+        $this->assertCount(2, $exercises);
+        $this->assertNull($exercises->where('title', 'Invalid Exercise')->first());
+    }
+
+    /** @test */
+    public function it_updates_existing_exercises_with_band_type_changes()
+    {
+        // Create existing exercise without band_type
+        $existingExercise = Exercise::create([
+            'user_id' => $this->user->id,
+            'title' => 'Banded Exercise',
+            'description' => 'Old description',
+            'is_bodyweight' => false,
+            'band_type' => null,
+        ]);
+
+        $tsvData = "Banded Exercise\tUpdated description\ttrue\tresistance";
+
+        $result = $this->tsvImporterService->importExercises($tsvData, $this->user->id);
+
+        $this->assertEquals(0, $result['importedCount']);
+        $this->assertEquals(1, $result['updatedCount']);
+        $this->assertEquals(0, $result['skippedCount']);
+        $this->assertEmpty($result['invalidRows']);
+
+        $existingExercise->refresh();
+        $this->assertEquals('Updated description', $existingExercise->description);
+        $this->assertTrue($existingExercise->is_bodyweight);
+        $this->assertEquals('resistance', $existingExercise->band_type);
+
+        // Verify change tracking includes band_type
+        $updatedExercise = $result['updatedExercises'][0];
+        $this->assertArrayHasKey('changes', $updatedExercise);
+        $this->assertArrayHasKey('band_type', $updatedExercise['changes']);
+        $this->assertEquals(null, $updatedExercise['changes']['band_type']['from']);
+        $this->assertEquals('resistance', $updatedExercise['changes']['band_type']['to']);
+    }
+
+    /** @test */
+    public function it_handles_band_type_case_insensitivity()
+    {
+        $tsvData = "Exercise 1\tDescription\tfalse\tRESISTANCE\n" .
+                   "Exercise 2\tDescription\tfalse\tAssistance\n" .
+                   "Exercise 3\tDescription\tfalse\tNONE";
+
+        $result = $this->tsvImporterService->importExercises($tsvData, $this->user->id);
+
+        $this->assertEquals(3, $result['importedCount']);
+        $this->assertEmpty($result['invalidRows']);
+
+        $exercises = Exercise::where('user_id', $this->user->id)->get();
+        
+        $this->assertEquals('resistance', $exercises->where('title', 'Exercise 1')->first()->band_type);
+        $this->assertEquals('assistance', $exercises->where('title', 'Exercise 2')->first()->band_type);
+        $this->assertNull($exercises->where('title', 'Exercise 3')->first()->band_type);
+    }
+
+    /** @test */
+    public function it_defaults_to_none_band_type_when_column_missing()
+    {
+        // Test with 3-column format (no band_type column)
+        $tsvData = "Exercise 1\tDescription\tfalse";
+
+        $result = $this->tsvImporterService->importExercises($tsvData, $this->user->id);
+
+        $this->assertEquals(1, $result['importedCount']);
+        $this->assertEmpty($result['invalidRows']);
+
+        $exercise = Exercise::where('user_id', $this->user->id)->first();
+        $this->assertNull($exercise->band_type); // Should default to null (none)
+    }
+
+    /** @test */
+    public function it_imports_global_exercises_with_band_types()
+    {
+        $tsvData = "Global Banded Exercise\tGlobal resistance exercise\tfalse\tresistance";
+
+        $result = $this->tsvImporterService->importExercises($tsvData, $this->admin->id, true);
+
+        $this->assertEquals(1, $result['importedCount']);
+        $this->assertEquals('global', $result['importMode']);
+
+        $globalExercise = Exercise::global()->first();
+        $this->assertNotNull($globalExercise);
+        $this->assertEquals('resistance', $globalExercise->band_type);
+
+        // Verify band_type is included in result
+        $importedExercise = $result['importedExercises'][0];
+        $this->assertEquals('resistance', $importedExercise['band_type']);
+        $this->assertEquals('global', $importedExercise['type']);
+    }
 }

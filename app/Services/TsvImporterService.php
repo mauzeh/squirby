@@ -424,8 +424,19 @@ class TsvImporterService
             $title = $columns[0];
             $description = $columns[1] ?? '';
             $isBodyweight = $this->parseBooleanValue($columns[2] ?? 'false');
+            $bandType = $columns[3] ?? 'none';
 
-            $result = $this->processExerciseImport($title, $description, $isBodyweight, $userId, $importAsGlobal);
+            // Validate band_type
+            if (!$this->isValidBandType($bandType)) {
+                $invalidRows[] = $row . " - Invalid band type '{$bandType}' - must be 'resistance', 'assistance', or 'none'";
+                continue;
+            }
+
+            // Normalize and convert band_type for database storage
+            $normalizedBandType = strtolower(trim($bandType));
+            $bandTypeValue = $normalizedBandType === 'none' ? null : $normalizedBandType;
+
+            $result = $this->processExerciseImport($title, $description, $isBodyweight, $bandTypeValue, $userId, $importAsGlobal);
             
             switch ($result['action']) {
                 case 'imported':
@@ -434,6 +445,7 @@ class TsvImporterService
                         'title' => $result['exercise']->title,
                         'description' => $result['exercise']->description,
                         'is_bodyweight' => $result['exercise']->is_bodyweight,
+                        'band_type' => $result['exercise']->band_type,
                         'type' => $result['exercise']->isGlobal() ? 'global' : 'personal'
                     ];
                     break;
@@ -443,6 +455,7 @@ class TsvImporterService
                         'title' => $result['exercise']->title,
                         'description' => $result['exercise']->description,
                         'is_bodyweight' => $result['exercise']->is_bodyweight,
+                        'band_type' => $result['exercise']->band_type,
                         'type' => $result['exercise']->isGlobal() ? 'global' : 'personal',
                         'changes' => $result['changes'] ?? []
                     ];
@@ -469,16 +482,16 @@ class TsvImporterService
         ];
     }
 
-    private function processExerciseImport(string $title, string $description, bool $isBodyweight, int $userId, bool $importAsGlobal): array
+    private function processExerciseImport(string $title, string $description, bool $isBodyweight, ?string $bandType, int $userId, bool $importAsGlobal): array
     {
         if ($importAsGlobal) {
-            return $this->processGlobalExerciseImport($title, $description, $isBodyweight);
+            return $this->processGlobalExerciseImport($title, $description, $isBodyweight, $bandType);
         } else {
-            return $this->processUserExerciseImport($title, $description, $isBodyweight, $userId);
+            return $this->processUserExerciseImport($title, $description, $isBodyweight, $bandType, $userId);
         }
     }
 
-    private function processGlobalExerciseImport(string $title, string $description, bool $isBodyweight): array
+    private function processGlobalExerciseImport(string $title, string $description, bool $isBodyweight, ?string $bandType): array
     {
         // Check for existing global exercise
         $existingGlobal = Exercise::global()
@@ -494,11 +507,15 @@ class TsvImporterService
             if ($existingGlobal->is_bodyweight !== $isBodyweight) {
                 $changes['is_bodyweight'] = ['from' => $existingGlobal->is_bodyweight, 'to' => $isBodyweight];
             }
+            if ($existingGlobal->band_type !== $bandType) {
+                $changes['band_type'] = ['from' => $existingGlobal->band_type, 'to' => $bandType];
+            }
             
             if (!empty($changes)) {
                 $existingGlobal->update([
                     'description' => $description,
                     'is_bodyweight' => $isBodyweight,
+                    'band_type' => $bandType,
                 ]);
                 return ['action' => 'updated', 'exercise' => $existingGlobal, 'changes' => $changes];
             } else {
@@ -521,12 +538,13 @@ class TsvImporterService
             'title' => $title,
             'description' => $description,
             'is_bodyweight' => $isBodyweight,
+            'band_type' => $bandType,
         ]);
 
         return ['action' => 'imported', 'exercise' => $exercise];
     }
 
-    private function processUserExerciseImport(string $title, string $description, bool $isBodyweight, int $userId): array
+    private function processUserExerciseImport(string $title, string $description, bool $isBodyweight, ?string $bandType, int $userId): array
     {
         // Check for global exercise conflict first
         $globalConflict = Exercise::global()
@@ -551,11 +569,15 @@ class TsvImporterService
             if ($existingUser->is_bodyweight !== $isBodyweight) {
                 $changes['is_bodyweight'] = ['from' => $existingUser->is_bodyweight, 'to' => $isBodyweight];
             }
+            if ($existingUser->band_type !== $bandType) {
+                $changes['band_type'] = ['from' => $existingUser->band_type, 'to' => $bandType];
+            }
             
             if (!empty($changes)) {
                 $existingUser->update([
                     'description' => $description,
                     'is_bodyweight' => $isBodyweight,
+                    'band_type' => $bandType,
                 ]);
                 return ['action' => 'updated', 'exercise' => $existingUser, 'changes' => $changes];
             } else {
@@ -569,6 +591,7 @@ class TsvImporterService
             'title' => $title,
             'description' => $description,
             'is_bodyweight' => $isBodyweight,
+            'band_type' => $bandType,
         ]);
 
         return ['action' => 'imported', 'exercise' => $exercise];
@@ -680,5 +703,11 @@ class TsvImporterService
     {
         $boolValue = strtolower(trim($value));
         return in_array($boolValue, ['true', '1', 'yes', 'y']);
+    }
+
+    private function isValidBandType(string $bandType): bool
+    {
+        $validBandTypes = ['resistance', 'assistance', 'none'];
+        return in_array(strtolower(trim($bandType)), $validBandTypes);
     }
 }
