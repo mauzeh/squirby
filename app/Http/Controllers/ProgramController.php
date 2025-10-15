@@ -110,8 +110,8 @@ class ProgramController extends Controller
                     );
 
                     if ($suggestionDetails) {
-                        $program->suggestedNextWeight = $suggestionDetails->suggestedWeight;
-                        $program->lastWeight = $suggestionDetails->lastWeight;
+                        $program->suggestedNextWeight = $suggestionDetails->suggestedWeight ?? null;
+                        $program->lastWeight = $suggestionDetails->lastWeight ?? null;
                         
                     } else {
                         $program->suggestedNextWeight = null;

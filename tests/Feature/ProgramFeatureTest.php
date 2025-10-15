@@ -7,6 +7,7 @@ use Tests\TestCase;
 use App\Models\User;
 use App\Models\Exercise;
 use App\Models\Program;
+use App\Models\LiftLog;
 use Carbon\Carbon;
 
 class ProgramFeatureTest extends TestCase
@@ -442,7 +443,16 @@ class ProgramFeatureTest extends TestCase
     public function test_program_index_handles_missing_suggested_weight_gracefully()
     {
         $user = User::factory()->create();
-        $exercise = Exercise::factory()->create(['user_id' => $user->id]);
+        // Create a banded exercise
+        $exercise = Exercise::factory()->create(['user_id' => $user->id, 'band_type' => 'resistance']);
+        
+        // Create a LiftLog for the banded exercise to ensure $lastLog is not null
+        LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => Carbon::yesterday(),
+        ]);
+
         Program::factory()->create([
             'user_id' => $user->id,
             'exercise_id' => $exercise->id,
@@ -451,13 +461,13 @@ class ProgramFeatureTest extends TestCase
             'reps' => 5,
         ]);
 
-        // No lift logs for this exercise, so getSuggestionDetails should return null or an empty object
+        // Now, getSuggestionDetails for this banded exercise will return an stdClass without suggestedWeight
         $response = $this->actingAs($user)
             ->get(route('programs.index', ['date' => Carbon::today()->format('Y-m-d')]));
 
-        $response->assertStatus(200);
-        // Assert that the page loads without the "Undefined property" error.
-        // We can assert that suggested weight is not displayed, or that a placeholder is shown.
-        // For now, just asserting 200 status is enough to confirm no fatal error.
+        $response->assertStatus(200); // Expecting 200, but the error should still occur
+        // We expect an error because getSuggestionDetails for a banded exercise with lift logs
+        // will return an stdClass without suggestedWeight, leading to the Undefined property error.
+        // The test should fail if the error is present in the response content.
     }
 }
