@@ -23,6 +23,7 @@
     $repsSets = $liftLog->display_rounds . ' x ' . $liftLog->display_reps;
 @endphp
 
+<div style="margin-bottom: 5px; font-weight: bold;">{{ $liftLog->exercise->title }}</div>
 <div style="margin-top: 7px; margin-bottom: 15px;">
     <span style="background-color: #4a5568; color: white; padding: 4px 8px; border-radius: 12px; font-size: 0.85em; margin-right: 8px;">{{ $liftLog->logged_at->format('n/j') }}</span><span style="background-color: #4a5568; color: white; padding: 4px 8px; border-radius: 12px; font-size: 0.85em;">{{ $repsSets }}</span>
 </div>

@@ -4,7 +4,7 @@
     <td>
         {{ $liftLog['formatted_date'] }}
         <div class="show-on-mobile mobile-summary">
-            <x-lift-logs.mobile-summary :liftLog="$liftLog['raw_lift_log']" />
+            <x-lift-logs.exercise-summary-mobile :liftLog="$liftLog['raw_lift_log']" />
         </div>
     </td>
 @else
