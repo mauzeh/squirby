@@ -344,17 +344,22 @@ class LiftLogController extends Controller
                     );
 
                     if ($suggestionDetails) {
-                        $program->suggestedNextWeight = $suggestionDetails->suggestedWeight;
-                        $program->lastWeight = $suggestionDetails->lastWeight;
-                        $program->lastReps = $suggestionDetails->lastReps;
-                        $program->lastSets = $suggestionDetails->lastSets;
-                        $program->reps = $suggestionDetails->reps;
-                        $program->sets = $suggestionDetails->sets;
-                        
+                        if (isset($suggestionDetails->band_color)) {
+                            $program->suggestedBandColor = $suggestionDetails->band_color;
+                            $program->reps = $suggestionDetails->reps;
+                            $program->sets = $suggestionDetails->sets;
+                        } else {
+                            $program->suggestedNextWeight = $suggestionDetails->suggestedWeight;
+                            $program->lastWeight = $suggestionDetails->lastWeight;
+                            $program->lastReps = $suggestionDetails->lastReps;
+                            $program->lastSets = $suggestionDetails->lastSets;
+                            $program->reps = $suggestionDetails->reps;
+                            $program->sets = $suggestionDetails->sets;
+                        }
                     } else {
                         $program->suggestedNextWeight = null;
                         $program->lastWeight = null;
-                        
+                        $program->suggestedBandColor = null;
                     }
                 } else {
                     $program->suggestedNextWeight = null;

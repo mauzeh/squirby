@@ -174,6 +174,43 @@ class BandedProgramCreationTest extends TestCase
     }
 
     /** @test */
+    public function mobile_entry_page_loads_correctly_for_banded_exercise_in_program()
+    {
+        $this->actingAs($this->user);
+        $exercise = Exercise::factory()->create([
+            'user_id' => $this->user->id,
+            'band_type' => 'resistance',
+        ]);
+        $date = Carbon::today();
+
+        // Log a lift with red band, 9 reps (to get a suggestion of 10 reps)
+        $liftLog = LiftLog::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => $date->copy()->subDay(),
+        ]);
+        LiftSet::factory()->create([
+            'lift_log_id' => $liftLog->id,
+            'reps' => 9,
+            'band_color' => 'red',
+        ]);
+
+        // Add exercise to program for today
+        Program::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $exercise->id,
+            'date' => $date,
+            'sets' => 3,
+            'reps' => 10,
+        ]);
+
+        $response = $this->get(route('lift-logs.mobile-entry', ['date' => $date->toDateString()]));
+
+        $response->assertOk(); // Assert that the page loads successfully (no 500 error)
+        $response->assertSeeText('Suggested: Band: red for 10 reps, 3 sets.');
+    }
+
+    /** @test */
     public function a_user_can_quick_add_a_banded_exercise_to_program()
     {
         $this->actingAs($this->user);

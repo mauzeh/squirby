@@ -79,15 +79,14 @@
                             <a href="{{ route('exercises.show-logs', $loggedLift->exercise_id) }}" class="button">View All Logs for {{ $loggedLift->exercise->title }}</a>
                         </div>
                     @else
-                        @if($program->suggestedNextWeight)
+                        @if(isset($program->suggestedNextWeight) || isset($program->suggestedBandColor))
                             <p class="suggested-weight">
-                                @if(isset($program->lastWeight))
-                                    <span class="last-weight">Last time: {{ number_format($program->lastWeight) }} lbs
-                                        @if(isset($program->lastSets) && isset($program->lastReps))
-                                            (<x-lift-reps-sets-display :reps="$program->lastReps" :sets="$program->lastSets" />)
-                                        @endif
-                                    </span>
+                                Suggested: @if(isset($program->suggestedBandColor)) 
+                                    Band: {{ $program->suggestedBandColor }}
+                                @else
+                                    {{ number_format($program->suggestedNextWeight) }} lbs
                                 @endif
+                                for {{ $program->reps }} reps, {{ $program->sets }} sets.
                             </p>
                         @endif
                         <form action="{{ route('lift-logs.store') }}" method="POST" class="lift-log-form">
