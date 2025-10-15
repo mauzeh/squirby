@@ -13,7 +13,7 @@
   - Add route for exercise TSV export
   - _Requirements: 1.1, 1.2, 1.3, 1.4_
 
-- [ ] 3. Update LiftLog TSV Import Support
+- [x] 3. Update LiftLog TSV Import Support
   - Modify `TsvImporterService::importLiftLogs()` to handle band_color column
   - Add cross-validation between exercise band_type and lift set band_color
   - Validate band_color values against configured bands and 'none'

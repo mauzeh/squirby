@@ -126,6 +126,17 @@ class TsvImporterService
                 $reps = $columns[4];
                 $rounds = $columns[5];
                 $notes = $columns[6] ?? '';
+                $bandColor = $columns[7] ?? 'none';
+
+                // Validate band_color and cross-validate with exercise band_type
+                $bandColorValidation = $this->validateBandColorForExercise($bandColor, $exercise);
+                if (!$bandColorValidation['valid']) {
+                    $invalidRows[] = $row . " - " . $bandColorValidation['error'];
+                    continue;
+                }
+
+                // Normalize band_color for database storage
+                $normalizedBandColor = $bandColorValidation['normalized_value'];
 
                 $entryDescription = $exercise->title . ' on ' . $loggedAt->format('m/d/Y H:i') . ' (' . $weight . 'lbs x ' . $reps . ' reps x ' . $rounds . ' sets)';
 
@@ -141,11 +152,11 @@ class TsvImporterService
                 $matchingLiftLog = null;
 
                 foreach ($existingLiftLogs as $existingLiftLog) {
-                    // Check if the sets match (same count, weight, and reps)
+                    // Check if the sets match (same count, weight, reps, and band_color)
                     if ($existingLiftLog->liftSets->count() === (int)$rounds) {
                         $allSetsMatch = true;
                         foreach ($existingLiftLog->liftSets as $set) {
-                            if (!($set->weight == $weight && $set->reps == $reps)) {
+                            if (!($set->weight == $weight && $set->reps == $reps && $set->band_color == $normalizedBandColor)) {
                                 $allSetsMatch = false;
                                 break;
                             }
@@ -197,6 +208,7 @@ class TsvImporterService
                             'weight' => $weight,
                             'reps' => $reps,
                             'notes' => $notes,
+                            'band_color' => $normalizedBandColor,
                         ]);
                     }
                     $importedCount++;
@@ -709,5 +721,50 @@ class TsvImporterService
     {
         $validBandTypes = ['resistance', 'assistance', 'none'];
         return in_array(strtolower(trim($bandType)), $validBandTypes);
+    }
+
+    private function validateBandColorForExercise(string $bandColor, \App\Models\Exercise $exercise): array
+    {
+        $normalizedBandColor = strtolower(trim($bandColor));
+        $isBandedExercise = in_array($exercise->band_type, ['resistance', 'assistance']);
+        
+        // Get valid band colors from config
+        $validBandColors = array_keys(config('bands.colors', []));
+        
+        if ($normalizedBandColor === 'none') {
+            if ($isBandedExercise) {
+                return [
+                    'valid' => false,
+                    'error' => "Invalid band color 'none' for banded exercise '{$exercise->title}' - must be a valid band color",
+                    'normalized_value' => null
+                ];
+            }
+            return [
+                'valid' => true,
+                'normalized_value' => null
+            ];
+        }
+        
+        if (!in_array($normalizedBandColor, $validBandColors)) {
+            $validColorsString = implode(', ', $validBandColors);
+            return [
+                'valid' => false,
+                'error' => "Invalid band color '{$bandColor}' - must be one of: {$validColorsString}, none",
+                'normalized_value' => null
+            ];
+        }
+        
+        if (!$isBandedExercise) {
+            return [
+                'valid' => false,
+                'error' => "Invalid band color '{$bandColor}' for non-banded exercise '{$exercise->title}' - must be 'none'",
+                'normalized_value' => null
+            ];
+        }
+        
+        return [
+            'valid' => true,
+            'normalized_value' => $normalizedBandColor
+        ];
     }
 }
