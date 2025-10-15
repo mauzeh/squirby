@@ -38,7 +38,7 @@ class LiftLogTablePresenter
             'truncated_comments' => Str::limit($liftLog->comments, 50),
             'full_comments' => $liftLog->comments,
             'edit_url' => route('lift-logs.edit', $liftLog->id),
-            'mobile_summary' => $this->buildMobileSummary($liftLog),
+
             'raw_lift_log' => $liftLog // Keep reference for components that need it
         ];
     }
@@ -97,21 +97,7 @@ class LiftLogTablePresenter
         return $oneRM;
     }
 
-    /**
-     * Build mobile summary for responsive display
-     */
-    private function buildMobileSummary(LiftLog $liftLog): string
-    {
-        $summary = $liftLog->logged_at->format('m/d') . ' - ' . 
-                  $this->formatWeight($liftLog) . ' (' . 
-                  $this->formatRepsSets($liftLog) . ')';
-        
-        if (!$liftLog->exercise->band_type && $liftLog->one_rep_max) {
-            $summary .= '<br><i>1RM: ' . round($liftLog->one_rep_max) . ' lbs</i>';
-        }
-        
-        return $summary;
-    }
+
 
     /**
      * Build table configuration for responsive behavior
