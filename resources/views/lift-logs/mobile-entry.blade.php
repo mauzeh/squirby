@@ -50,9 +50,9 @@
                     @endphp
                     <h2>{{ $program->exercise->title }}
                         @if ($loggedLift)
-                            (<x-lift-reps-sets-display :reps="$loggedLift->display_reps" :sets="$loggedLift->display_rounds" />)
+                            (<x-lift-logs.lift-reps-sets-display :reps="$loggedLift->display_reps" :sets="$loggedLift->display_rounds" />)
                         @else
-                            (<x-lift-reps-sets-display :reps="$program->reps" :sets="$program->sets" />)
+                            (<x-lift-logs.lift-reps-sets-display :reps="$program->reps" :sets="$program->sets" />)
                         @endif
                     </h2>
                     @if($program->comments)
@@ -72,7 +72,7 @@
                                     <button type="submit" class="button-small button-danger">Undo</button>
                                 </form>
                             </div>
-                            <p><x-lift-weight-display :liftLog="$loggedLift" /> (<x-lift-reps-sets-display :reps="$loggedLift->display_reps" :sets="$loggedLift->display_rounds" />)</p>
+                            <p><x-lift-logs.lift-weight-display :liftLog="$loggedLift" /> (<x-lift-logs.lift-reps-sets-display :reps="$loggedLift->display_reps" :sets="$loggedLift->display_rounds" />)</p>
                             @if($loggedLift->comments)
                                 <p><strong>Comments:</strong> {{ $loggedLift->comments }}</p>
                             @endif
@@ -84,7 +84,7 @@
                                 @if(isset($program->lastWeight))
                                     <span class="last-weight">Last time: {{ number_format($program->lastWeight) }} lbs
                                         @if(isset($program->lastSets) && isset($program->lastReps))
-                                            (<x-lift-reps-sets-display :reps="$program->lastReps" :sets="$program->lastSets" />)
+                                            (<x-lift-logs.lift-reps-sets-display :reps="$program->lastReps" :sets="$program->lastSets" />)
                                         @endif
                                     </span>
                                 @endif

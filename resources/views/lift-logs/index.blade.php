@@ -20,7 +20,7 @@
         @if (collect($liftLogs)->isEmpty())
             <p>No lift logs found. Add one to get started!</p>
         @else
-        <x-lift-logs-table :liftLogs="collect($liftLogs)->reverse()" :config="$config" />
+        <x-lift-logs.lift-logs-table :liftLogs="collect($liftLogs)->reverse()" :config="$config" />
 
         <div class="form-container">
             <h3>TSV Export</h3>

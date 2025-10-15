@@ -39,11 +39,11 @@
                             <td>
                                 <div class="hide-on-mobile">
                                     <strong>{{ $program->exercise->title }}</strong>
-                                    <br><x-lift-reps-sets-display :reps="$program->reps" :sets="$program->sets" />
+                                    <br><x-lift-logs.lift-reps-sets-display :reps="$program->reps" :sets="$program->sets" />
                                 </div>
                                 <div class="show-on-mobile">
                                     <strong>{{ $program->exercise->title }}</strong>
-                                    <br><x-lift-reps-sets-display :reps="$program->reps" :sets="$program->sets" />
+                                    <br><x-lift-logs.lift-reps-sets-display :reps="$program->reps" :sets="$program->sets" />
                                     @if($program->suggestedNextWeight)
                                         (<i>{{ number_format($program->suggestedNextWeight) }} lbs</i>)
                                     @endif

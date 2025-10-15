@@ -19,7 +19,7 @@
             <h1>{{ $exercise->title }}</h1>
         </div>
 
-        <x-add-lift-log-form :exercises="$exercises" :selectedExercise="$exercise" :sets="$sets ?? null" :reps="$reps ?? null" :weight="$weight ?? null" />
+        <x-lift-logs.add-lift-log-form :exercises="$exercises" :selectedExercise="$exercise" :sets="$sets ?? null" :reps="$reps ?? null" :weight="$weight ?? null" />
 
         @if ($liftLogs->isEmpty())
             <p>No lift logs found for this exercise.</p>
@@ -29,7 +29,7 @@
             <canvas id="oneRepMaxChart"></canvas>
         </div>
 
-        <x-lift-logs-table :liftLogs="$liftLogs" :config="$config" />
+        <x-lift-logs.lift-logs-table :liftLogs="$liftLogs" :config="$config" />
 
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
