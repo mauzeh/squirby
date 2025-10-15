@@ -510,4 +510,28 @@ class ExerciseTsvImportTest extends TestCase
         $this->assertEquals('resistance', $importedExercise['band_type']);
         $this->assertEquals('global', $importedExercise['type']);
     }
+
+    /** @test */
+    public function it_provides_descriptive_error_messages_for_invalid_band_types()
+    {
+        $tsvData = "Exercise 1\tDescription\tfalse\tinvalid_band\n" .
+                   "Exercise 2\tDescription\tfalse\twrong_type\n" .
+                   "Exercise 3\tDescription\tfalse\tbad_value";
+
+        $result = $this->tsvImporterService->importExercises($tsvData, $this->user->id);
+
+        $this->assertEquals(0, $result['importedCount']);
+        $this->assertCount(3, $result['invalidRows']);
+
+        // Verify each error message contains the specific invalid band type and expected format
+        foreach ($result['invalidRows'] as $invalidRow) {
+            $this->assertStringContainsString("Invalid band type", $invalidRow);
+            $this->assertStringContainsString("must be 'resistance', 'assistance', or 'none'", $invalidRow);
+        }
+
+        // Verify specific error messages
+        $this->assertStringContainsString("invalid_band", $result['invalidRows'][0]);
+        $this->assertStringContainsString("wrong_type", $result['invalidRows'][1]);
+        $this->assertStringContainsString("bad_value", $result['invalidRows'][2]);
+    }
 }

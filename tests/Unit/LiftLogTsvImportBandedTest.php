@@ -223,4 +223,58 @@ class LiftLogTsvImportBandedTest extends TestCase
         // Should have 2 lift logs now
         $this->assertCount(2, LiftLog::all());
     }
+
+    /** @test */
+    public function it_provides_descriptive_error_messages_for_band_color_validation_failures()
+    {
+        $bandedExercise = Exercise::factory()->create([
+            'user_id' => $this->user->id,
+            'title' => 'Banded Exercise',
+            'band_type' => 'resistance'
+        ]);
+
+        $nonBandedExercise = Exercise::factory()->create([
+            'user_id' => $this->user->id,
+            'title' => 'Non-Banded Exercise',
+            'band_type' => null
+        ]);
+
+        $tsvData = "2025-08-26\t08:00\tBanded Exercise\t0\t10\t3\tNo band specified\tnone\n" .
+                   "2025-08-26\t08:15\tNon-Banded Exercise\t135\t8\t3\tWrong band color\tred\n" .
+                   "2025-08-26\t08:30\tBanded Exercise\t0\t12\t3\tInvalid color\tyellow";
+
+        $result = $this->tsvImporterService->importLiftLogs($tsvData, '2025-08-26', $this->user->id);
+
+        $this->assertEquals(0, $result['importedCount']);
+        $this->assertCount(3, $result['invalidRows']);
+
+        // Verify specific error messages for different validation failures
+        $this->assertStringContainsString("Invalid band color 'none' for banded exercise 'Banded Exercise'", $result['invalidRows'][0]);
+        $this->assertStringContainsString("Invalid band color 'red' for non-banded exercise 'Non-Banded Exercise'", $result['invalidRows'][1]);
+        $this->assertStringContainsString("Invalid band color 'yellow' - must be one of: red, blue, green, black, none", $result['invalidRows'][2]);
+    }
+
+    /** @test */
+    public function it_validates_band_colors_against_configured_colors()
+    {
+        $exercise = Exercise::factory()->create([
+            'user_id' => $this->user->id,
+            'title' => 'Banded Exercise',
+            'band_type' => 'resistance'
+        ]);
+
+        // Test with colors not in config
+        $tsvData = "2025-08-26\t08:00\tBanded Exercise\t0\t10\t3\tPurple band\tpurple\n" .
+                   "2025-08-26\t08:15\tBanded Exercise\t0\t10\t3\tOrange band\torange";
+
+        $result = $this->tsvImporterService->importLiftLogs($tsvData, '2025-08-26', $this->user->id);
+
+        $this->assertEquals(0, $result['importedCount']);
+        $this->assertCount(2, $result['invalidRows']);
+
+        // Verify error messages reference the configured colors
+        foreach ($result['invalidRows'] as $invalidRow) {
+            $this->assertStringContainsString("must be one of: red, blue, green, black, none", $invalidRow);
+        }
+    }
 }

@@ -20,7 +20,7 @@
   - Update lift set creation logic to handle band_color mapping ('none' → null)
   - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.6_
 
-- [ ] 4. Add LiftLog TSV Export Functionality
+- [x] 4. Add LiftLog TSV Export Functionality
   - Create `LiftLogController::exportTsv()` method
   - Generate TSV format with existing columns plus Band Color column
   - Map band_color values (null → 'none', preserve actual colors)
@@ -28,7 +28,7 @@
   - Add route for lift log TSV export
   - _Requirements: 3.1, 3.2, 3.3, 3.4_
 
-- [ ] 5. Enhance Import Validation and Error Handling
+- [x] 5. Enhance Import Validation and Error Handling
   - Add descriptive error messages for invalid band_type values
   - Add descriptive error messages for band_color validation failures
   - Validate band_color against configured band colors from config/bands.php

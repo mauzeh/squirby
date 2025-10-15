@@ -440,7 +440,7 @@ class TsvImporterService
 
             // Validate band_type
             if (!$this->isValidBandType($bandType)) {
-                $invalidRows[] = $row . " - Invalid band type '{$bandType}' - must be 'resistance', 'assistance', or 'none'";
+                $invalidRows[] = $row . " - " . $this->getInvalidBandTypeErrorMessage($bandType);
                 continue;
             }
 
@@ -723,19 +723,24 @@ class TsvImporterService
         return in_array(strtolower(trim($bandType)), $validBandTypes);
     }
 
+    private function getInvalidBandTypeErrorMessage(string $bandType): string
+    {
+        return "Invalid band type '{$bandType}' - must be 'resistance', 'assistance', or 'none'";
+    }
+
     private function validateBandColorForExercise(string $bandColor, \App\Models\Exercise $exercise): array
     {
         $normalizedBandColor = strtolower(trim($bandColor));
         $isBandedExercise = in_array($exercise->band_type, ['resistance', 'assistance']);
         
         // Get valid band colors from config
-        $validBandColors = array_keys(config('bands.colors', []));
+        $validBandColors = $this->getValidBandColors();
         
         if ($normalizedBandColor === 'none') {
             if ($isBandedExercise) {
                 return [
                     'valid' => false,
-                    'error' => "Invalid band color 'none' for banded exercise '{$exercise->title}' - must be a valid band color",
+                    'error' => $this->getBandColorValidationErrorMessage('none', $exercise, 'banded_exercise_requires_color'),
                     'normalized_value' => null
                 ];
             }
@@ -746,10 +751,9 @@ class TsvImporterService
         }
         
         if (!in_array($normalizedBandColor, $validBandColors)) {
-            $validColorsString = implode(', ', $validBandColors);
             return [
                 'valid' => false,
-                'error' => "Invalid band color '{$bandColor}' - must be one of: {$validColorsString}, none",
+                'error' => $this->getBandColorValidationErrorMessage($bandColor, $exercise, 'invalid_color', $validBandColors),
                 'normalized_value' => null
             ];
         }
@@ -757,7 +761,7 @@ class TsvImporterService
         if (!$isBandedExercise) {
             return [
                 'valid' => false,
-                'error' => "Invalid band color '{$bandColor}' for non-banded exercise '{$exercise->title}' - must be 'none'",
+                'error' => $this->getBandColorValidationErrorMessage($bandColor, $exercise, 'non_banded_exercise_requires_none'),
                 'normalized_value' => null
             ];
         }
@@ -766,5 +770,40 @@ class TsvImporterService
             'valid' => true,
             'normalized_value' => $normalizedBandColor
         ];
+    }
+
+    private function getBandColorValidationErrorMessage(string $bandColor, \App\Models\Exercise $exercise, string $errorType, array $validColors = []): string
+    {
+        switch ($errorType) {
+            case 'banded_exercise_requires_color':
+                return "Invalid band color 'none' for banded exercise '{$exercise->title}' - must be a valid band color";
+            
+            case 'non_banded_exercise_requires_none':
+                return "Invalid band color '{$bandColor}' for non-banded exercise '{$exercise->title}' - must be 'none'";
+            
+            case 'invalid_color':
+                $validColorsString = implode(', ', $validColors);
+                return "Invalid band color '{$bandColor}' - must be one of: {$validColorsString}, none";
+            
+            default:
+                return "Invalid band color '{$bandColor}' for exercise '{$exercise->title}'";
+        }
+    }
+
+    private function getValidBandColors(): array
+    {
+        return array_keys(config('bands.colors', []));
+    }
+
+    private function isValidBandColor(string $bandColor): bool
+    {
+        $normalizedBandColor = strtolower(trim($bandColor));
+        
+        if ($normalizedBandColor === 'none') {
+            return true;
+        }
+        
+        $validBandColors = $this->getValidBandColors();
+        return in_array($normalizedBandColor, $validBandColors);
     }
 }
