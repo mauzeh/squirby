@@ -51,6 +51,9 @@ class LiftLog extends Model
 
     public function getDisplayWeightAttribute()
     {
+        if ($this->exercise->isBandedResistance() || $this->exercise->isBandedAssistance()) {
+            return $this->liftSets->first()->band_color ?? 'N/A';
+        }
         return $this->liftSets->first()->weight ?? 0;
     }
 

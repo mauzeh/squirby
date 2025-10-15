@@ -19,6 +19,15 @@
 </div>
 
 <div class="form-group">
+    <label for="band_type">Band Type:</label>
+    <select name="band_type" id="band_type" class="form-control">
+        <option value="">None</option>
+        <option value="resistance" {{ isset($program) && $program->exercise->band_type == 'resistance' ? 'selected' : '' }}>Resistance</option>
+        <option value="assistance" {{ isset($program) && $program->exercise->band_type == 'assistance' ? 'selected' : '' }}>Assistance</option>
+    </select>
+</div>
+
+<div class="form-group">
     <label for="sets">Sets</label>
     <input type="number" name="sets" id="sets" class="form-control" value="{{ isset($program) ? $program->sets : 3 }}" required>
 </div>

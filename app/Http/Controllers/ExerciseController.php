@@ -59,6 +59,7 @@ class ExerciseController extends Controller
             'description' => 'nullable|string',
             'is_bodyweight' => 'nullable|boolean',
             'is_global' => 'nullable|boolean',
+            'band_type' => 'nullable|in:resistance,assistance',
         ]);
 
         // Check admin permission for global exercises
@@ -69,10 +70,19 @@ class ExerciseController extends Controller
         // Check for name conflicts
         $this->validateExerciseName($validated['title'], $validated['is_global'] ?? false);
 
+        $isBodyweight = $request->boolean('is_bodyweight');
+        $bandType = $validated['band_type'] ?? null;
+
+        // If a band type is selected, it cannot be a bodyweight exercise
+        if ($bandType !== null) {
+            $isBodyweight = false;
+        }
+
         $exercise = new Exercise([
             'title' => $validated['title'],
             'description' => $validated['description'],
-            'is_bodyweight' => $request->boolean('is_bodyweight'),
+            'is_bodyweight' => $isBodyweight,
+            'band_type' => $bandType,
         ]);
         
         if ($validated['is_global'] ?? false) {
@@ -116,6 +126,7 @@ class ExerciseController extends Controller
             'description' => 'nullable|string',
             'is_bodyweight' => 'nullable|boolean',
             'is_global' => 'nullable|boolean',
+            'band_type' => 'nullable|in:resistance,assistance',
         ]);
 
         // Check admin permission for global exercises
@@ -126,10 +137,19 @@ class ExerciseController extends Controller
         // Check for name conflicts (excluding current exercise)
         $this->validateExerciseNameForUpdate($exercise, $validated['title'], $validated['is_global'] ?? false);
 
+        $isBodyweight = $request->boolean('is_bodyweight');
+        $bandType = $validated['band_type'] ?? null;
+
+        // If a band type is selected, it cannot be a bodyweight exercise
+        if ($bandType !== null) {
+            $isBodyweight = false;
+        }
+
         $exercise->update([
             'title' => $validated['title'],
             'description' => $validated['description'],
-            'is_bodyweight' => $request->boolean('is_bodyweight'),
+            'is_bodyweight' => $isBodyweight,
+            'band_type' => $bandType,
             'user_id' => ($validated['is_global'] ?? false) ? null : auth()->id()
         ]);
 
@@ -218,7 +238,10 @@ class ExerciseController extends Controller
 
         $displayExercises = $this->exerciseService->getDisplayExercises(5);
 
-        $chartData = $this->chartService->generateBestPerDay($liftLogsQuery);
+        $chartData = [];
+        if (!$exercise->band_type) {
+            $chartData = $this->chartService->generateBestPerDay($liftLogsQuery);
+        }
 
         $liftLogsReversed = $liftLogsQuery->reverse();
 

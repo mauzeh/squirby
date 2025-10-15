@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Services\OneRepMaxCalculatorService;
 use App\Services\ProgressionModels\DoubleProgression;
 use App\Services\TrainingProgressionService;
+use App\Services\BandService;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -179,7 +180,9 @@ class DoubleProgressionTest extends TestCase
         $mockOneRepMaxService->method('calculateOneRepMax')->willReturn(100.0);
         $mockOneRepMaxService->method('getWeightFromOneRepMax')->willReturn(85.0);
 
-        $service = new TrainingProgressionService($mockOneRepMaxService);
+        $mockBandService = $this->createMock(BandService::class);
+
+        $service = new TrainingProgressionService($mockOneRepMaxService, $mockBandService);
 
         // Test exercise 1 (should use DoubleProgression)
         $suggestion1 = $service->getSuggestionDetails($this->user->id, $exercise1->id);

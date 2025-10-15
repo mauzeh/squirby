@@ -17,6 +17,7 @@ class LiftSet extends Model
         'weight',
         'reps',
         'notes',
+        'band_color',
     ];
 
     public function liftLog()

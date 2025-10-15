@@ -203,4 +203,28 @@ class ExerciseTest extends TestCase
 
         $this->assertFalse($globalExercise->canBeDeletedBy($admin));
     }
+
+    /** @test */
+    public function is_banded_resistance_returns_true_for_resistance_band_type()
+    {
+        $exercise = Exercise::factory()->create(['band_type' => 'resistance']);
+        $this->assertTrue($exercise->isBandedResistance());
+        $this->assertFalse($exercise->isBandedAssistance());
+    }
+
+    /** @test */
+    public function is_banded_assistance_returns_true_for_assistance_band_type()
+    {
+        $exercise = Exercise::factory()->create(['band_type' => 'assistance']);
+        $this->assertTrue($exercise->isBandedAssistance());
+        $this->assertFalse($exercise->isBandedResistance());
+    }
+
+    /** @test */
+    public function is_banded_resistance_and_assistance_return_false_for_null_band_type()
+    {
+        $exercise = Exercise::factory()->create(['band_type' => null]);
+        $this->assertFalse($exercise->isBandedResistance());
+        $this->assertFalse($exercise->isBandedAssistance());
+    }
 }

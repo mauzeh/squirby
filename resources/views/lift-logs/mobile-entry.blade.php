@@ -79,16 +79,24 @@
                             <a href="{{ route('exercises.show-logs', $loggedLift->exercise_id) }}" class="button">View All Logs for {{ $loggedLift->exercise->title }}</a>
                         </div>
                     @else
-                        @if($program->suggestedNextWeight)
+                        @if(isset($program->suggestedNextWeight) || isset($program->suggestedBandColor))
                             <p class="suggested-weight">
-                                @if(isset($program->lastWeight))
-                                    <span class="last-weight">Last time: {{ number_format($program->lastWeight) }} lbs
-                                        @if(isset($program->lastSets) && isset($program->lastReps))
-                                            (<x-lift-logs.lift-reps-sets-display :reps="$program->lastReps" :sets="$program->lastSets" />)
-                                        @endif
-                                    </span>
+                                Suggested: @if(isset($program->suggestedBandColor)) 
+                                    Band: {{ $program->suggestedBandColor }}
+                                @else
+                                    {{ number_format($program->suggestedNextWeight) }} lbs
                                 @endif
+                                for {{ $program->reps }} reps, {{ $program->sets }} sets.
                             </p>
+                        @if(isset($program->lastWeight))
+                            <p class="suggested-weight">
+                                <span class="last-weight">Last time: {{ number_format($program->lastWeight) }} lbs
+                                    @if(isset($program->lastSets) && isset($program->lastReps))
+                                        (<x-lift-logs.lift-reps-sets-display :reps="$program->lastReps" :sets="$program->lastSets" />)
+                                    @endif
+                                </span>
+                            </p>
+                        @endif
                         @endif
                         <form action="{{ route('lift-logs.store') }}" method="POST" class="lift-log-form">
                             @csrf
@@ -106,12 +114,22 @@
                                     </div>
                                 @endif
                                 <div class="form-group weight-form-group @if($program->exercise->is_bodyweight) hidden @endif" id="weight-form-group-{{ $program->id }}">
-                                    <label for="weight_{{ $program->id }}">@if($program->exercise->is_bodyweight) Extra Weight (lbs): @else Weight (lbs): @endif</label>
-                                    <div class="input-group">
-                                        <button type="button" class="decrement-button" data-field="weight_{{ $program->id }}">-</button>
-                                        <input type="number" name="weight" id="weight_{{ $program->id }}" class="large-input" inputmode="decimal" value="{{ $program->suggestedNextWeight ?? ($program->exercise->is_bodyweight ? 0 : '') }}" @if(!$program->exercise->is_bodyweight) required @endif>
-                                        <button type="button" class="increment-button" data-field="weight_{{ $program->id }}">+</button>
-                                    </div>
+                                    @if ($program->exercise->band_type)
+                                        <label for="band_color_{{ $program->id }}">Band Color:</label>
+                                        <select name="band_color" id="band_color_{{ $program->id }}" class="form-control large-input">
+                                            <option value="">Select Band</option>
+                                            @foreach(config('bands.colors') as $color => $data)
+                                                <option value="{{ $color }}" @if(isset($program->suggestedBandColor) && $program->suggestedBandColor === $color) selected @endif>{{ ucfirst($color) }}</option>
+                                            @endforeach
+                                        </select>
+                                    @else
+                                        <label for="weight_{{ $program->id }}">@if($program->exercise->is_bodyweight) Extra Weight (lbs): @else Weight (lbs): @endif</label>
+                                        <div class="input-group">
+                                            <button type="button" class="decrement-button" data-field="weight_{{ $program->id }}">-</button>
+                                            <input type="number" name="weight" id="weight_{{ $program->id }}" class="large-input" inputmode="decimal" value="{{ $program->suggestedNextWeight ?? ($program->exercise->is_bodyweight ? 0 : '') }}" @if(!$program->exercise->is_bodyweight) required @endif>
+                                            <button type="button" class="increment-button" data-field="weight_{{ $program->id }}">+</button>
+                                        </div>
+                                    @endif
                                 </div>
 
                                 <div class="form-group">

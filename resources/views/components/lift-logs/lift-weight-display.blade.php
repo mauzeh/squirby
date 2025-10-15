@@ -1,6 +1,10 @@
 @props(['liftLog'])
 
-@if ($liftLog->exercise->is_bodyweight)
+@if ($liftLog->exercise->band_type)
+    <span style="font-weight: bold; font-size: 1.2em;">
+        Band: {{ $liftLog->display_weight }}
+    </span>
+@elseif ($liftLog->exercise->is_bodyweight)
     <span style="font-weight: bold; font-size: 1.2em;">
         Bodyweight
         @if ($liftLog->display_weight > 0)

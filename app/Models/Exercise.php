@@ -14,10 +14,12 @@ class Exercise extends Model
         'description',
         'is_bodyweight',
         'user_id',
+        'band_type',
     ];
 
     protected $casts = [
         'is_bodyweight' => 'boolean',
+        'band_type' => 'string',
     ];
 
     public function liftLogs()
@@ -53,6 +55,16 @@ class Exercise extends Model
     public function isGlobal(): bool
     {
         return $this->user_id === null;
+    }
+
+    public function isBandedResistance(): bool
+    {
+        return $this->band_type === 'resistance';
+    }
+
+    public function isBandedAssistance(): bool
+    {
+        return $this->band_type === 'assistance';
     }
 
     public function canBeEditedBy(User $user): bool

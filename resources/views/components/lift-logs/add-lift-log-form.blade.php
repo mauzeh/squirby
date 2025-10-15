@@ -18,8 +18,18 @@
             @endif
         </div>
         <div class="form-group" id="weight-group">
-            <label for="weight">Weight (lbs):</label>
-            <input type="number" name="weight" id="weight" class="form-control" value="{{ $weight ?? null }}" required inputmode="decimal">
+            @if ($selectedExercise && $selectedExercise->band_type)
+                <label for="band_color">Band Color:</label>
+                <select name="band_color" id="band_color" class="form-control">
+                    <option value="">Select Band</option>
+                    @foreach(config('bands.colors') as $color => $data)
+                        <option value="{{ $color }}">{{ ucfirst($color) }}</option>
+                    @endforeach
+                </select>
+            @else
+                <label for="weight">Weight (lbs):</label>
+                <input type="number" name="weight" id="weight" class="form-control" value="{{ $weight ?? null }}" required inputmode="decimal">
+            @endif
         </div>
         <div class="form-group">
             <label for="reps">Reps:</label>

@@ -10,10 +10,12 @@ use Carbon\Carbon;
 class TrainingProgressionService
 {
     protected OneRepMaxCalculatorService $oneRepMaxCalculatorService;
+    protected BandService $bandService;
 
-    public function __construct(OneRepMaxCalculatorService $oneRepMaxCalculatorService)
+    public function __construct(OneRepMaxCalculatorService $oneRepMaxCalculatorService, BandService $bandService)
     {
         $this->oneRepMaxCalculatorService = $oneRepMaxCalculatorService;
+        $this->bandService = $bandService;
     }
 
     public function getSuggestionDetails(int $userId, int $exerciseId, Carbon $forDate = null): ?object
@@ -25,6 +27,39 @@ class TrainingProgressionService
 
         if (!$lastLog) {
             return null;
+        }
+
+        if ($lastLog->exercise->band_type !== null) {
+            $lastLoggedReps = $lastLog->liftSets->first()->reps ?? 0;
+            $lastLoggedBandColor = $lastLog->liftSets->first()->band_color ?? null;
+
+            $maxRepsBeforeBandChange = config('bands.max_reps_before_band_change', 15);
+            $defaultRepsOnBandChange = config('bands.default_reps_on_band_change', 8);
+
+            if ($lastLoggedReps < $maxRepsBeforeBandChange) {
+                $suggestedReps = min($lastLoggedReps + 1, $maxRepsBeforeBandChange);
+                return (object)[
+                    'sets' => $lastLog->liftSets->count(),
+                    'reps' => $suggestedReps,
+                    'band_color' => $lastLoggedBandColor,
+                ];
+            } else {
+                $nextHarderBand = $this->bandService->getNextHarderBand($lastLoggedBandColor, $lastLog->exercise->band_type);
+                if ($nextHarderBand) {
+                    return (object)[
+                        'sets' => $lastLog->liftSets->count(),
+                        'reps' => $defaultRepsOnBandChange,
+                        'band_color' => $nextHarderBand,
+                    ];
+                } else {
+                    // If no harder band, suggest same band with max reps
+                    return (object)[
+                        'sets' => $lastLog->liftSets->count(),
+                        'reps' => $maxRepsBeforeBandChange,
+                        'band_color' => $lastLoggedBandColor,
+                    ];
+                }
+            }
         }
 
         $progressionModel = $this->getProgressionModel($lastLog);
