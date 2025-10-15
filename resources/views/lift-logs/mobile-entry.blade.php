@@ -115,13 +115,19 @@
                                 @endif
                                 <div class="form-group weight-form-group @if($program->exercise->is_bodyweight) hidden @endif" id="weight-form-group-{{ $program->id }}">
                                     @if ($program->exercise->band_type)
-                                        <label for="band_color_{{ $program->id }}">Band Color:</label>
-                                        <select name="band_color" id="band_color_{{ $program->id }}" class="form-control large-input">
-                                            <option value="">Select Band</option>
+                                        <label>Band Color:</label>
+                                        <div class="band-color-selector" id="band-color-selector-{{ $program->id }}">
+                                            <input type="hidden" name="band_color" id="band_color_{{ $program->id }}" value="{{ isset($program->suggestedBandColor) ? $program->suggestedBandColor : '' }}">
                                             @foreach(config('bands.colors') as $color => $data)
-                                                <option value="{{ $color }}" @if(isset($program->suggestedBandColor) && $program->suggestedBandColor === $color) selected @endif>{{ ucfirst($color) }}</option>
+                                                <button type="button"
+                                                        class="band-color-button {{ isset($program->suggestedBandColor) && $program->suggestedBandColor === $color ? 'selected' : '' }} {{ isset($program->suggestedBandColor) && $program->suggestedBandColor === $color ? 'suggested' : '' }}"
+                                                        style="background-color: {{ $color }};"
+                                                        data-color="{{ $color }}"
+                                                        data-program-id="{{ $program->id }}">
+                                                    {{ ucfirst($color) }}
+                                                </button>
                                             @endforeach
-                                        </select>
+                                        </div>
                                     @else
                                         <label for="weight_{{ $program->id }}">@if($program->exercise->is_bodyweight) Extra Weight (lbs): @else Weight (lbs): @endif</label>
                                         <div class="input-group">
@@ -189,6 +195,43 @@
     </div>
 
     <style>
+        .band-color-selector {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+            justify-content: center;
+        }
+        .band-color-button {
+            flex: 1 1 auto;
+            min-width: 80px;
+            padding: 15px 10px;
+            border: 2px solid transparent;
+            border-radius: 5px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            font-size: 1.1em;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .band-color-button.selected {
+            border-color: #007bff;
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(0, 123, 255, 0.6);
+        }
+        .band-color-button.suggested.selected {
+            border-style: dashed;
+            border-color: rgba(255, 193, 7, 0.5); /* Lighter orange for suggested when also selected */
+        }
+        .band-color-button.suggested {
+            border-style: dashed;
+            border-color: #ffc107; /* A yellow/orange color for suggestion */
+        }
         .input-group {
             display: flex;
             align-items: center;
@@ -462,6 +505,23 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.band-color-button').forEach(button => {
+                button.addEventListener('click', function() {
+                    const programId = this.dataset.programId;
+                    const selectedColor = this.dataset.color;
+                    const hiddenInput = document.getElementById('band_color_' + programId);
+                    hiddenInput.value = selectedColor;
+
+                    // Remove 'selected' class from all buttons for this program
+                    document.querySelectorAll(`#band-color-selector-${programId} .band-color-button`).forEach(btn => {
+                        btn.classList.remove('selected');
+                    });
+
+                    // Add 'selected' class to the clicked button
+                    this.classList.add('selected');
+                });
+            });
+
             document.querySelectorAll('.toggle-weight-field').forEach(button => {
                 button.addEventListener('click', function() {
                     const programId = this.dataset.programId;
