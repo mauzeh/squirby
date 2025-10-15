@@ -28,7 +28,7 @@
 @php $liftLog = $liftLogData['raw_lift_log'] @endphp
 {{ $liftLog->logged_at->format('m/d/Y') }} 	 {{ $liftLog->logged_at->format('H:i') }} 	 {{ $liftLog->exercise->title }} 	 {{ $liftLog->display_weight }} 	 {{ $liftLog->display_reps }} 	 {{ $liftLog->display_rounds }} 	 {{ preg_replace('/(
 |
-)+/', ' ', $liftLog->comments) }}
+)+/', ' ', $liftLog->comments) }} 	 {{ $liftLog->liftSets->first()->band_color ?? 'none' }}
 @endforeach
             </textarea>
             <button id="copy-tsv-button" class="button">Copy to Clipboard</button>
