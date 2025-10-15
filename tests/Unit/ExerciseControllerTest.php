@@ -37,8 +37,9 @@ class ExerciseControllerTest extends TestCase
         $exerciseService = $this->createMock(\App\Services\ExerciseService::class);
         $chartService = $this->createMock(\App\Services\ChartService::class);
         $tsvImporterService = $this->createMock(\App\Services\TsvImporterService::class);
+        $liftLogTablePresenter = $this->createMock(\App\Presenters\LiftLogTablePresenter::class);
         
-        $this->controller = new ExerciseController($exerciseService, $chartService, $tsvImporterService);
+        $this->controller = new ExerciseController($exerciseService, $chartService, $tsvImporterService, $liftLogTablePresenter);
     }
 
     public function test_promote_selected_validates_required_exercise_ids(): void
