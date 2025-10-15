@@ -17,14 +17,15 @@
     @endif
     <div class="container">
 
-        @if ($liftLogs->isEmpty())
+        @if (collect($liftLogs)->isEmpty())
             <p>No lift logs found. Add one to get started!</p>
         @else
-        <x-lift-logs-table :liftLogs="$liftLogs->reverse()" />
+        <x-lift-logs.lift-logs-table :liftLogs="collect($liftLogs)->reverse()" :config="$config" />
 
         <div class="form-container">
             <h3>TSV Export</h3>
-            <textarea id="tsv-output" rows="10" style="width: 100%; background-color: #3a3a3a; color: #f2f2f2; border: 1px solid #555;">@foreach ($liftLogs as $liftLog)
+            <textarea id="tsv-output" rows="10" style="width: 100%; background-color: #3a3a3a; color: #f2f2f2; border: 1px solid #555;">@foreach ($liftLogs as $liftLogData)
+@php $liftLog = $liftLogData['raw_lift_log'] @endphp
 {{ $liftLog->logged_at->format('m/d/Y') }} 	 {{ $liftLog->logged_at->format('H:i') }} 	 {{ $liftLog->exercise->title }} 	 {{ $liftLog->display_weight }} 	 {{ $liftLog->display_reps }} 	 {{ $liftLog->display_rounds }} 	 {{ preg_replace('/(
 |
 )+/', ' ', $liftLog->comments) }}

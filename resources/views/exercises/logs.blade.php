@@ -19,12 +19,9 @@
             <h1>{{ $exercise->title }}</h1>
         </div>
 
-        <x-add-lift-log-form :exercises="$exercises" :selectedExercise="$exercise" :sets="$sets ?? null" :reps="$reps ?? null" :weight="$weight ?? null" />
+        <x-lift-logs.add-lift-log-form :exercises="$exercises" :selectedExercise="$exercise" :sets="$sets ?? null" :reps="$reps ?? null" :weight="$weight ?? null" />
 
-        @if ($liftLogs->isEmpty())
-            <p>No lift logs found for this exercise.</p>
-        @else
-            @if (!empty($chartData['datasets'][0]['data']))
+                    @if (!empty($chartData['datasets'][0]['data']))
                 <div class="form-container">
                     <h3>1RM Progress</h3>
                     <canvas id="oneRepMaxChart"></canvas>
@@ -62,7 +59,6 @@
                 </div>
             @endif
 
-            <x-lift-logs-table :liftLogs="$liftLogs" hideExerciseColumn="true" />
-        @endif
+            <x-lift-logs.lift-logs-table :liftLogs="$liftLogs" :config="$config" />
     </div>
 @endsection

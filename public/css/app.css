@@ -427,3 +427,21 @@ footer {
 .no-suggested-weight-available {
     color: #868686;
 }
+
+/* Lift Logs Table Styling Classes */
+.comments-column {
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.mobile-summary {
+    font-size: 0.9em;
+    color: #ccc;
+}
+
+.actions-flex {
+    display: flex;
+    gap: 5px;
+}
