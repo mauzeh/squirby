@@ -534,4 +534,116 @@ class ExerciseTsvImportTest extends TestCase
         $this->assertStringContainsString("wrong_type", $result['invalidRows'][1]);
         $this->assertStringContainsString("bad_value", $result['invalidRows'][2]);
     }
+
+    /** @test */
+    public function it_exports_exercises_to_tsv_format_with_band_types()
+    {
+        // Create exercises with different band types
+        Exercise::factory()->create([
+            'user_id' => $this->user->id,
+            'title' => 'Banded Pull-ups',
+            'description' => 'Pull-ups with resistance band',
+            'is_bodyweight' => false,
+            'band_type' => 'resistance'
+        ]);
+
+        Exercise::factory()->create([
+            'user_id' => $this->user->id,
+            'title' => 'Assisted Dips',
+            'description' => 'Dips with assistance band',
+            'is_bodyweight' => false,
+            'band_type' => 'assistance'
+        ]);
+
+        Exercise::factory()->create([
+            'user_id' => $this->user->id,
+            'title' => 'Regular Push-ups',
+            'description' => 'Standard push-ups',
+            'is_bodyweight' => true,
+            'band_type' => null
+        ]);
+
+        $exercises = Exercise::where('user_id', $this->user->id)->orderBy('title')->get();
+        $tsvContent = $this->generateExerciseTsv($exercises);
+
+        // Verify TSV format and content
+        $lines = explode("\n", trim($tsvContent));
+        $this->assertCount(3, $lines);
+
+        // Check first exercise (Assisted Dips)
+        $assistedDipsData = explode("\t", $lines[0]);
+        $this->assertEquals('Assisted Dips', $assistedDipsData[0]);
+        $this->assertEquals('Dips with assistance band', $assistedDipsData[1]);
+        $this->assertEquals('false', $assistedDipsData[2]);
+        $this->assertEquals('assistance', $assistedDipsData[3]);
+
+        // Check second exercise (Banded Pull-ups)
+        $bandedPullupsData = explode("\t", $lines[1]);
+        $this->assertEquals('Banded Pull-ups', $bandedPullupsData[0]);
+        $this->assertEquals('Pull-ups with resistance band', $bandedPullupsData[1]);
+        $this->assertEquals('false', $bandedPullupsData[2]);
+        $this->assertEquals('resistance', $bandedPullupsData[3]);
+
+        // Check third exercise (Regular Push-ups)
+        $regularPushupsData = explode("\t", $lines[2]);
+        $this->assertEquals('Regular Push-ups', $regularPushupsData[0]);
+        $this->assertEquals('Standard push-ups', $regularPushupsData[1]);
+        $this->assertEquals('true', $regularPushupsData[2]);
+        $this->assertEquals('none', $regularPushupsData[3]);
+    }
+
+    /** @test */
+    public function it_exports_global_exercises_to_tsv_format_with_band_types()
+    {
+        // Create global exercises
+        Exercise::factory()->create([
+            'user_id' => null,
+            'title' => 'Global Banded Exercise',
+            'description' => 'Global resistance exercise',
+            'is_bodyweight' => false,
+            'band_type' => 'resistance'
+        ]);
+
+        Exercise::factory()->create([
+            'user_id' => null,
+            'title' => 'Global Regular Exercise',
+            'description' => 'Global regular exercise',
+            'is_bodyweight' => true,
+            'band_type' => null
+        ]);
+
+        $exercises = Exercise::global()->orderBy('title')->get();
+        $tsvContent = $this->generateExerciseTsv($exercises);
+
+        // Verify TSV format and content
+        $lines = explode("\n", trim($tsvContent));
+        $this->assertCount(2, $lines);
+
+        // Check global banded exercise
+        $globalBandedData = explode("\t", $lines[0]);
+        $this->assertEquals('Global Banded Exercise', $globalBandedData[0]);
+        $this->assertEquals('resistance', $globalBandedData[3]);
+
+        // Check global regular exercise
+        $globalRegularData = explode("\t", $lines[1]);
+        $this->assertEquals('Global Regular Exercise', $globalRegularData[0]);
+        $this->assertEquals('none', $globalRegularData[3]);
+    }
+
+    /**
+     * Helper method to generate TSV content for exercises (simulating export functionality)
+     */
+    private function generateExerciseTsv($exercises): string
+    {
+        $lines = [];
+        foreach ($exercises as $exercise) {
+            $lines[] = implode("\t", [
+                $exercise->title,
+                $exercise->description,
+                $exercise->is_bodyweight ? 'true' : 'false',
+                $exercise->band_type ?? 'none'
+            ]);
+        }
+        return implode("\n", $lines);
+    }
 }

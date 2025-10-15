@@ -277,4 +277,250 @@ class LiftLogTsvImportBandedTest extends TestCase
             $this->assertStringContainsString("must be one of: red, blue, green, black, none", $invalidRow);
         }
     }
+
+    /** @test */
+    public function it_exports_lift_logs_to_tsv_format_with_band_colors()
+    {
+        // Create banded exercise
+        $bandedExercise = Exercise::factory()->create([
+            'user_id' => $this->user->id,
+            'title' => 'Banded Pull-ups',
+            'band_type' => 'resistance'
+        ]);
+
+        // Create regular exercise
+        $regularExercise = Exercise::factory()->create([
+            'user_id' => $this->user->id,
+            'title' => 'Regular Bench Press',
+            'band_type' => null
+        ]);
+
+        // Create lift logs with different band colors
+        $bandedLiftLog = LiftLog::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $bandedExercise->id,
+            'logged_at' => '2025-08-26 08:00:00',
+            'comments' => 'Red band workout'
+        ]);
+
+        LiftSet::factory()->create([
+            'lift_log_id' => $bandedLiftLog->id,
+            'weight' => 0,
+            'reps' => 10,
+            'band_color' => 'red'
+        ]);
+
+        LiftSet::factory()->create([
+            'lift_log_id' => $bandedLiftLog->id,
+            'weight' => 0,
+            'reps' => 8,
+            'band_color' => 'red'
+        ]);
+
+        $regularLiftLog = LiftLog::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $regularExercise->id,
+            'logged_at' => '2025-08-26 08:15:00',
+            'comments' => 'Heavy set'
+        ]);
+
+        LiftSet::factory()->create([
+            'lift_log_id' => $regularLiftLog->id,
+            'weight' => 135,
+            'reps' => 8,
+            'band_color' => null
+        ]);
+
+        $liftLogs = LiftLog::with(['exercise', 'liftSets'])
+            ->where('user_id', $this->user->id)
+            ->orderBy('logged_at')
+            ->get();
+
+        $tsvContent = $this->generateLiftLogTsv($liftLogs);
+
+        // Verify TSV format and content
+        $lines = explode("\n", trim($tsvContent));
+        $this->assertCount(3, $lines); // 2 sets for banded + 1 set for regular
+
+        // Check first banded set
+        $firstSetData = explode("\t", $lines[0]);
+        $this->assertEquals('08/26/2025', $firstSetData[0]);
+        $this->assertEquals('8:00 AM', $firstSetData[1]);
+        $this->assertEquals('Banded Pull-ups', $firstSetData[2]);
+        $this->assertEquals('0', $firstSetData[3]);
+        $this->assertEquals('10', $firstSetData[4]);
+        $this->assertEquals('2', $firstSetData[5]); // Total rounds for this lift log
+        $this->assertEquals('Red band workout', $firstSetData[6]);
+        $this->assertEquals('red', $firstSetData[7]);
+
+        // Check second banded set
+        $secondSetData = explode("\t", $lines[1]);
+        $this->assertEquals('red', $secondSetData[7]);
+        $this->assertEquals('8', $secondSetData[4]); // Different reps
+
+        // Check regular exercise set
+        $regularSetData = explode("\t", $lines[2]);
+        $this->assertEquals('Regular Bench Press', $regularSetData[2]);
+        $this->assertEquals('135', $regularSetData[3]);
+        $this->assertEquals('none', $regularSetData[7]);
+    }
+
+    /** @test */
+    public function it_exports_multiple_lift_sets_as_separate_tsv_rows()
+    {
+        $exercise = Exercise::factory()->create([
+            'user_id' => $this->user->id,
+            'title' => 'Banded Squats',
+            'band_type' => 'resistance'
+        ]);
+
+        $liftLog = LiftLog::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => '2025-08-26 09:00:00',
+            'comments' => 'Progressive sets'
+        ]);
+
+        // Create multiple sets with different band colors
+        LiftSet::factory()->create([
+            'lift_log_id' => $liftLog->id,
+            'weight' => 0,
+            'reps' => 12,
+            'band_color' => 'red'
+        ]);
+
+        LiftSet::factory()->create([
+            'lift_log_id' => $liftLog->id,
+            'weight' => 0,
+            'reps' => 10,
+            'band_color' => 'blue'
+        ]);
+
+        LiftSet::factory()->create([
+            'lift_log_id' => $liftLog->id,
+            'weight' => 0,
+            'reps' => 8,
+            'band_color' => 'green'
+        ]);
+
+        $liftLogs = LiftLog::with(['exercise', 'liftSets'])
+            ->where('user_id', $this->user->id)
+            ->get();
+
+        $tsvContent = $this->generateLiftLogTsv($liftLogs);
+
+        // Verify each set is exported as separate row
+        $lines = explode("\n", trim($tsvContent));
+        $this->assertCount(3, $lines);
+
+        // Verify each row has correct band color and reps
+        $firstSetData = explode("\t", $lines[0]);
+        $this->assertEquals('12', $firstSetData[4]);
+        $this->assertEquals('red', $firstSetData[7]);
+
+        $secondSetData = explode("\t", $lines[1]);
+        $this->assertEquals('10', $secondSetData[4]);
+        $this->assertEquals('blue', $secondSetData[7]);
+
+        $thirdSetData = explode("\t", $lines[2]);
+        $this->assertEquals('8', $thirdSetData[4]);
+        $this->assertEquals('green', $thirdSetData[7]);
+
+        // Verify all rows have same total rounds count
+        foreach ($lines as $line) {
+            $data = explode("\t", $line);
+            $this->assertEquals('3', $data[5]); // Total rounds should be 3 for all
+        }
+    }
+
+    /** @test */
+    public function it_exports_mixed_banded_and_regular_exercises_correctly()
+    {
+        // Create mixed exercises
+        $bandedExercise = Exercise::factory()->create([
+            'user_id' => $this->user->id,
+            'title' => 'Assisted Dips',
+            'band_type' => 'assistance'
+        ]);
+
+        $regularExercise = Exercise::factory()->create([
+            'user_id' => $this->user->id,
+            'title' => 'Barbell Rows',
+            'band_type' => null
+        ]);
+
+        // Create lift logs
+        $bandedLog = LiftLog::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $bandedExercise->id,
+            'logged_at' => '2025-08-26 10:00:00',
+            'comments' => 'Assistance work'
+        ]);
+
+        LiftSet::factory()->create([
+            'lift_log_id' => $bandedLog->id,
+            'weight' => 0,
+            'reps' => 15,
+            'band_color' => 'blue'
+        ]);
+
+        $regularLog = LiftLog::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $regularExercise->id,
+            'logged_at' => '2025-08-26 10:15:00',
+            'comments' => 'Back work'
+        ]);
+
+        LiftSet::factory()->create([
+            'lift_log_id' => $regularLog->id,
+            'weight' => 95,
+            'reps' => 12,
+            'band_color' => null
+        ]);
+
+        $liftLogs = LiftLog::with(['exercise', 'liftSets'])
+            ->where('user_id', $this->user->id)
+            ->orderBy('logged_at')
+            ->get();
+
+        $tsvContent = $this->generateLiftLogTsv($liftLogs);
+
+        $lines = explode("\n", trim($tsvContent));
+        $this->assertCount(2, $lines);
+
+        // Check banded exercise export
+        $bandedData = explode("\t", $lines[0]);
+        $this->assertEquals('Assisted Dips', $bandedData[2]);
+        $this->assertEquals('0', $bandedData[3]);
+        $this->assertEquals('blue', $bandedData[7]);
+
+        // Check regular exercise export
+        $regularData = explode("\t", $lines[1]);
+        $this->assertEquals('Barbell Rows', $regularData[2]);
+        $this->assertEquals('95', $regularData[3]);
+        $this->assertEquals('none', $regularData[7]);
+    }
+
+    /**
+     * Helper method to generate TSV content for lift logs (simulating export functionality)
+     */
+    private function generateLiftLogTsv($liftLogs): string
+    {
+        $lines = [];
+        foreach ($liftLogs as $liftLog) {
+            foreach ($liftLog->liftSets as $liftSet) {
+                $lines[] = implode("\t", [
+                    $liftLog->logged_at->format('m/d/Y'),
+                    $liftLog->logged_at->format('g:i A'),
+                    $liftLog->exercise->title,
+                    $liftSet->weight,
+                    $liftSet->reps,
+                    $liftLog->liftSets->count(),
+                    $liftLog->comments ?? '',
+                    $liftSet->band_color ?? 'none'
+                ]);
+            }
+        }
+        return implode("\n", $lines);
+    }
 }

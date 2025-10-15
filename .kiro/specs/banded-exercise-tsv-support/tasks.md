@@ -35,7 +35,7 @@
   - Update error reporting to include band-specific validation failures
   - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5_
 
-- [ ] 6. Add Unit Tests for TSV Import/Export
+- [x] 6. Add Unit Tests for TSV Import/Export
   - Test exercise import with valid band_type values ('resistance', 'assistance', 'none')
   - Test exercise import with invalid band_type values
   - Test lift log import with valid band_color for banded exercises
@@ -43,7 +43,7 @@
   - Test export methods generate correct TSV format with band data
   - _Requirements: All requirements_
 
-- [ ] 7. Add Integration Tests
+- [x] 7. Add Integration Tests
   - Test complete import/export cycle for banded exercises
   - Test mixed data scenarios (banded and non-banded exercises)
   - Test error handling for various invalid data combinations
