@@ -52,7 +52,7 @@ class UserActivityAnalysis
         $lastWorkoutDate = $this->muscleLastWorked[$muscle];
         
         if ($lastWorkoutDate instanceof Carbon) {
-            return $this->analysisDate->diffInDays($lastWorkoutDate);
+            return $lastWorkoutDate->diffInDays($this->analysisDate);
         }
         
         // Fallback to workload-based estimation if date is not available
@@ -61,6 +61,6 @@ class UserActivityAnalysis
             return null;
         }
         
-        return max(0, (int) round((1.0 - $workloadScore) * 31));
+        return max(0, intval(round((1.0 - $workloadScore) * 31)));
     }
 }
