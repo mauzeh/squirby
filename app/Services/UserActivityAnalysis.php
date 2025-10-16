@@ -45,20 +45,19 @@ class UserActivityAnalysis
      */
     public function getDaysSinceLastWorkout(string $muscle): ?int
     {
-        if (!isset($this->muscleLastWorked[$muscle])) {
-            return null; // Never worked in the analysis period
-        }
-        
-        $lastWorkoutDate = $this->muscleLastWorked[$muscle];
-        
-        if ($lastWorkoutDate instanceof Carbon) {
-            return $lastWorkoutDate->diffInDays($this->analysisDate);
+        // First check if we have actual date data
+        if (isset($this->muscleLastWorked[$muscle])) {
+            $lastWorkoutDate = $this->muscleLastWorked[$muscle];
+            
+            if ($lastWorkoutDate instanceof Carbon) {
+                return $lastWorkoutDate->diffInDays($this->analysisDate);
+            }
         }
         
         // Fallback to workload-based estimation if date is not available
         $workloadScore = $this->getMuscleWorkloadScore($muscle);
         if ($workloadScore === 0.0) {
-            return null;
+            return null; // Never worked in the analysis period
         }
         
         return max(0, intval(round((1.0 - $workloadScore) * 31)));
