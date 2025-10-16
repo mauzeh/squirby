@@ -32,6 +32,11 @@ class Exercise extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function intelligence()
+    {
+        return $this->hasOne(ExerciseIntelligence::class);
+    }
+
     // Scopes for querying
     public function scopeGlobal($query)
     {
@@ -49,6 +54,11 @@ class Exercise extends Model
             $q->whereNull('user_id')        // Global exercises (available to all users)
               ->orWhere('user_id', $userId); // User's own exercises
         })->orderByRaw('user_id IS NULL ASC'); // Prioritize user exercises (user_id IS NOT NULL) over global exercises (user_id IS NULL)
+    }
+
+    public function scopeWithIntelligence($query)
+    {
+        return $query->whereHas('intelligence');
     }
 
     // Helper methods
@@ -81,5 +91,10 @@ class Exercise extends Model
             return false; // Cannot delete if has lift logs
         }
         return $this->canBeEditedBy($user);
+    }
+
+    public function hasIntelligence(): bool
+    {
+        return $this->intelligence !== null;
     }
 }
