@@ -192,9 +192,23 @@
                                 <a href="{{ route('exercises.show-logs', $recommendation['exercise']) }}" class="button">
                                     <i class="fas fa-chart-line"></i> View Exercise History
                                 </a>
-                                <a href="{{ route('lift-logs.index', ['exercise_id' => $recommendation['exercise']->id]) }}" class="button" style="background-color: #4CAF50;">
-                                    <i class="fas fa-plus"></i> Log This Exercise
-                                </a>
+                                @if(isset($todayProgramExercises[$recommendation['exercise']->id]))
+                                    <form action="{{ route('programs.destroy', $todayProgramExercises[$recommendation['exercise']->id]) }}" method="POST" style="display:inline;">
+                                        @csrf
+                                        @method('DELETE')
+                                        <input type="hidden" name="redirect_to" value="recommendations">
+                                        @foreach(request()->query() as $key => $value)
+                                            <input type="hidden" name="{{ $key }}" value="{{ $value }}">
+                                        @endforeach
+                                        <button type="submit" class="button delete" onclick="return confirm('Are you sure you want to remove this exercise from today\'s program?');" title="Remove from Today">
+                                            <i class="fas fa-minus"></i> Remove from Today
+                                        </button>
+                                    </form>
+                                @else
+                                    <a href="{{ route('programs.quick-add', array_merge(['exercise' => $recommendation['exercise']->id, 'date' => \Carbon\Carbon::today()->format('Y-m-d'), 'redirect_to' => 'recommendations'], request()->query())) }}" class="button" style="background-color: #4CAF50;">
+                                        <i class="fas fa-plus"></i> Add to Today
+                                    </a>
+                                @endif
                             </div>
                         </div>
                     @endforeach

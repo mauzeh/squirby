@@ -6,6 +6,7 @@ use App\Services\RecommendationEngine;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\View\View;
+use App\Models\Program;
 
 class RecommendationController extends Controller
 {
@@ -40,13 +41,21 @@ class RecommendationController extends Controller
         $movementArchetypes = ['push', 'pull', 'squat', 'hinge', 'carry', 'core'];
         $difficultyLevels = [1, 2, 3, 4, 5];
 
+        // Get exercises already in today's program, mapped by exercise_id to program_id
+        $todayProgramExercises = \App\Models\Program::where('user_id', auth()->id())
+            ->whereDate('date', \Carbon\Carbon::today())
+            ->get()
+            ->keyBy('exercise_id')
+            ->map(fn($program) => $program->id); // Map exercise_id to program_id
+
         return view('recommendations.index', compact(
             'recommendations',
             'movementArchetypes',
             'difficultyLevels',
             'movementArchetype',
             'difficultyLevel',
-            'count'
+            'count',
+            'todayProgramExercises' // Changed variable name
         ));
     }
 
