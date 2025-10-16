@@ -261,6 +261,12 @@ class ProgramController extends Controller
 
         $date = $request->input('date');
 
+        if ($request->input('redirect_to') === 'recommendations') {
+            // Get all query parameters except 'program', 'redirect_to', and '_method'
+            $queryParams = $request->except(['program', 'redirect_to', '_method']);
+            return redirect()->route('recommendations.index', $queryParams)->with('success', 'Program entry deleted.');
+        }
+
         if ($request->input('redirect_to') === 'mobile-entry') {
             return redirect()->route('lift-logs.mobile-entry', ['date' => $date])->with('success', 'Program entry deleted.');
         }
@@ -334,6 +340,12 @@ class ProgramController extends Controller
             'reps' => $calculatedSetsReps['reps'],
             'priority' => $newPriority,
         ]);
+
+        if ($request->input('redirect_to') === 'recommendations') {
+            // Get all query parameters except 'exercise', 'date', and 'redirect_to'
+            $queryParams = $request->except(['exercise', 'date', 'redirect_to']);
+            return redirect()->route('recommendations.index', $queryParams)->with('success', 'Exercise added to program successfully.');
+        }
 
         if ($request->input('redirect_to') === 'mobile-entry') {
             return redirect()->route('lift-logs.mobile-entry', ['date' => $date])->with('success', 'Exercise added to program successfully.');

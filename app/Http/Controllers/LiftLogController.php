@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 use App\Services\TrainingProgressionService;
+use App\Services\RecommendationEngine;
 
 class LiftLogController extends Controller
 {
@@ -330,7 +331,7 @@ class LiftLogController extends Controller
             ->with('success', $successMessage);
     }
 
-    public function mobileEntry(Request $request, \App\Services\TrainingProgressionService $trainingProgressionService)
+    public function mobileEntry(Request $request, \App\Services\TrainingProgressionService $trainingProgressionService, RecommendationEngine $recommendationEngine)
     {
         $selectedDate = $request->input('date') ? \Carbon\Carbon::parse($request->input('date')) : \Carbon\Carbon::today();
 
@@ -397,6 +398,34 @@ class LiftLogController extends Controller
 
         $exercises = \App\Models\Exercise::availableToUser(auth()->id())->orderBy('title')->get();
 
-        return view('lift-logs.mobile-entry', compact('programs', 'selectedDate', 'submittedLiftLog', 'dailyLiftLogs', 'exercises'));
+        // Get top-3 exercise recommendations
+        $recommendations = [];
+        try {
+            $programExerciseIds = $programs->pluck('exercise_id')->toArray();
+            $targetRecommendations = 3;
+            $maxAttempts = 20; // Get up to 20 recommendations to ensure we can find 3 that aren't in the program
+            
+            $allRecommendations = $recommendationEngine->getRecommendations(auth()->id(), $maxAttempts);
+            
+            // Filter out exercises that are already in today's program and ensure they're global exercises
+            $filteredRecommendations = [];
+            foreach ($allRecommendations as $recommendation) {
+                if (count($filteredRecommendations) >= $targetRecommendations) {
+                    break; // We have enough recommendations
+                }
+                
+                if (!in_array($recommendation['exercise']->id, $programExerciseIds) && 
+                    $recommendation['exercise']->isGlobal()) {
+                    $filteredRecommendations[] = $recommendation;
+                }
+            }
+            
+            $recommendations = $filteredRecommendations;
+        } catch (\Exception $e) {
+            // If recommendations fail, continue without them
+            \Log::warning('Failed to get recommendations for mobile entry: ' . $e->getMessage());
+        }
+
+        return view('lift-logs.mobile-entry', compact('programs', 'selectedDate', 'submittedLiftLog', 'dailyLiftLogs', 'exercises', 'recommendations'));
     }
 }

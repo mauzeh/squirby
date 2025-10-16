@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
             RoleSeeder::class,
             UnitSeeder::class,
             GlobalExercisesSeeder::class,
+            ExerciseIntelligenceSeeder::class,
             UserSeeder::class,
             IngredientSeeder::class,
             // Seed existing users with ingredients after IngredientSeeder runs

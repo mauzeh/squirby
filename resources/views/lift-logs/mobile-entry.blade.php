@@ -176,6 +176,19 @@
         <div id="exercise-list-container" class="hidden">
             <h3>Select an exercise to add:</h3>
             <div class="exercise-list">
+                @if (!empty($recommendations))
+                    <div class="recommendations-header">
+                        <span class="recommendations-label">⭐ Recommended for you:</span>
+                    </div>
+                    @foreach ($recommendations as $recommendation)
+                        <a href="{{ route('programs.quick-add', ['exercise' => $recommendation['exercise']->id, 'date' => $selectedDate->toDateString(), 'redirect_to' => 'mobile-entry']) }}" class="exercise-list-item recommended-exercise">
+                            <div class="exercise-title">{{ $recommendation['exercise']->title }}</div>
+                            <div class="exercise-reasoning">{{ implode(' • ', array_slice($recommendation['reasoning'], 0, 2)) }}</div>
+                        </a>
+                    @endforeach
+                    <div class="recommendations-divider"></div>
+                @endif
+                
                 <a href="#" id="new-exercise-link" class="exercise-list-item new-exercise-item">New...</a>
                 <div id="new-exercise-form-container" class="hidden">
                     <form action="{{ route('programs.quick-create', ['date' => $selectedDate->toDateString()]) }}" method="POST">
@@ -303,6 +316,37 @@
         }
         .new-exercise-item {
             background-color: #4a4a4a;
+        }
+        .recommendations-header {
+            padding: 10px 15px;
+            background-color: #2a2a2a;
+            border-bottom: 1px solid #555;
+        }
+        .recommendations-label {
+            color: #ffc107;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+        .recommended-exercise {
+            background-color: #1a4d3a;
+            border-left: 4px solid #28a745;
+        }
+        .recommended-exercise:hover {
+            background-color: #2a5d4a;
+        }
+        .exercise-title {
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+        .exercise-reasoning {
+            font-size: 0.9em;
+            color: #ccc;
+            line-height: 1.3;
+        }
+        .recommendations-divider {
+            height: 1px;
+            background-color: #555;
+            margin: 10px 0;
         }
         .completed-badge {
             border-left: 5px solid #28a745; /* Green border */

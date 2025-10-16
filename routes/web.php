@@ -15,6 +15,7 @@ use App\Http\Controllers\LiftLogController;
 use App\Http\Controllers\BodyLogController;
 use App\Http\Controllers\MeasurementTypeController;
 use App\Http\Controllers\ProgramController;
+use App\Http\Controllers\RecommendationController; // Keep this import
 
 // Breeze Routes
 Route::get('/', function () {
@@ -67,6 +68,10 @@ Route::middleware('auth')->group(function () {
     Route::resource('programs', ProgramController::class);
     Route::post('programs/destroy-selected', [ProgramController::class, 'destroySelected'])->name('programs.destroy-selected');
 
+    // Exercise Recommendations (Keep these routes)
+    Route::get('recommendations', [RecommendationController::class, 'index'])->name('recommendations.index');
+    Route::get('recommendations/api', [RecommendationController::class, 'api'])->name('recommendations.api');
+
     /*
     |--------------------------------------------------------------------------
     | TSV Import Routes - Development/Testing Only
@@ -102,6 +107,7 @@ require __DIR__.'/auth.php';
 Route::middleware(['auth', 'admin'])->group(function () {
     Route::resource('users', UserController::class);
     Route::get('users/{user}/impersonate', [UserController::class, 'impersonate'])->name('users.impersonate');
+    // Remove all exercise-intelligence routes here
 });
 
 Route::get('users/impersonate/leave', [UserController::class, 'leaveImpersonate'])->name('users.leave-impersonate');    Route::get('lift-logs/quick-add/{exercise}/{date}', [LiftLogController::class, 'quickAdd'])->name('lift-logs.quick-add');

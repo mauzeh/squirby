@@ -66,7 +66,8 @@ class GlobalExercisesSeeder extends Seeder
                 $exercise = [
                     'title' => $exerciseData['title'],
                     'description' => $exerciseData['description'] ?? '',
-                    'user_id' => null
+                    'user_id' => null,
+                    'canonical_name' => $exerciseData['canonical_name'] ?? null,
                 ];
 
                 // Only add is_bodyweight if it's true (to match original seeder behavior)
