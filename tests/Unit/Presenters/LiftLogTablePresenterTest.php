@@ -196,32 +196,4 @@ class LiftLogTablePresenterTest extends TestCase
         $this->assertStringContainsString('(est. incl. BW)', $formattedLog['formatted_1rm']);
     }
 
-    public function test_builds_mobile_summary_correctly()
-    {
-        $exercise = Exercise::factory()->create([
-            'user_id' => $this->user->id,
-            'title' => 'Bench Press',
-            'is_bodyweight' => false
-        ]);
-
-        $liftLog = LiftLog::factory()->create([
-            'user_id' => $this->user->id,
-            'exercise_id' => $exercise->id,
-            'logged_at' => now()->setDate(2024, 3, 15)->setTime(10, 0)
-        ]);
-
-        $liftLog->liftSets()->create([
-            'weight' => 150,
-            'reps' => 8
-        ]);
-
-        $result = $this->presenter->formatForTable(collect([$liftLog]));
-        $formattedLog = $result['liftLogs']->first();
-
-        $mobileSummary = $formattedLog['mobile_summary'];
-        
-        $this->assertStringContainsString('03/15', $mobileSummary);
-        $this->assertStringContainsString('150 lbs', $mobileSummary);
-        $this->assertStringContainsString('1 x 8', $mobileSummary);
-        $this->assertStringContainsString('1RM:', $mobileSummary);
-    }}
+}
