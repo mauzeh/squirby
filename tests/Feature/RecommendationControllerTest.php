@@ -248,169 +248,13 @@ class RecommendationControllerTest extends TestCase
         $response->assertSessionHasErrors(['movement_archetype', 'difficulty_level', 'count']);
     }
 
-    /** @test */
-    public function recommendations_api_returns_json_response()
-    {
-        // Create user activity
-        $liftLog = LiftLog::factory()->create([
-            'user_id' => $this->user->id,
-            'exercise_id' => $this->benchPress->id,
-            'logged_at' => Carbon::now()->subDays(3)
-        ]);
-        
-        LiftSet::factory()->create([
-            'lift_log_id' => $liftLog->id,
-            'reps' => 8,
-            'weight' => 185
-        ]);
 
-        $response = $this->actingAs($this->user)
-            ->getJson(route('recommendations.api'));
-
-        $response->assertStatus(200);
-        $response->assertJsonStructure([
-            'success',
-            'recommendations' => [
-                '*' => [
-                    'exercise' => [
-                        'id',
-                        'title',
-                        'description',
-                        'is_bodyweight',
-                        'band_type'
-                    ],
-                    'intelligence' => [
-                        'movement_archetype',
-                        'category',
-                        'difficulty_level',
-                        'primary_mover',
-                        'largest_muscle',
-                        'recovery_hours',
-                        'muscle_data'
-                    ],
-                    'score',
-                    'reasoning'
-                ]
-            ],
-            'count',
-            'filters'
-        ]);
-        
-        $response->assertJson(['success' => true]);
-    }
-
-    /** @test */
-    public function recommendations_api_applies_filters()
-    {
-        // Create user activity
-        $liftLog = LiftLog::factory()->create([
-            'user_id' => $this->user->id,
-            'exercise_id' => $this->benchPress->id,
-            'logged_at' => Carbon::now()->subDays(5)
-        ]);
-        
-        LiftSet::factory()->create([
-            'lift_log_id' => $liftLog->id,
-            'reps' => 8,
-            'weight' => 185
-        ]);
-
-        $response = $this->actingAs($this->user)
-            ->getJson(route('recommendations.api', [
-                'movement_archetype' => 'pull',
-                'difficulty_level' => 4
-            ]));
-
-        $response->assertStatus(200);
-        $response->assertJson([
-            'success' => true,
-            'filters' => [
-                'movement_archetype' => 'pull',
-                'difficulty_level' => 4
-            ]
-        ]);
-
-        $recommendations = $response->json('recommendations');
-        foreach ($recommendations as $recommendation) {
-            $this->assertEquals('pull', $recommendation['intelligence']['movement_archetype']);
-            $this->assertEquals(4, $recommendation['intelligence']['difficulty_level']);
-        }
-    }
-
-    /** @test */
-    public function recommendations_api_validates_parameters()
-    {
-        $response = $this->actingAs($this->user)
-            ->getJson(route('recommendations.api', [
-                'movement_archetype' => 'invalid',
-                'difficulty_level' => 0,
-                'count' => 25
-            ]));
-
-        $response->assertStatus(422);
-        $response->assertJsonValidationErrors(['movement_archetype', 'difficulty_level', 'count']);
-    }
-
-    /** @test */
-    public function recommendations_api_handles_errors_gracefully()
-    {
-        // Force an error by deleting all exercises
-        Exercise::query()->delete();
-        ExerciseIntelligence::query()->delete();
-
-        $response = $this->actingAs($this->user)
-            ->getJson(route('recommendations.api'));
-
-        $response->assertStatus(200);
-        $response->assertJson([
-            'success' => true,
-            'recommendations' => [],
-            'count' => 0
-        ]);
-    }
-
-    /** @test */
-    public function get_filters_api_returns_available_options()
-    {
-        $response = $this->actingAs($this->user)
-            ->getJson(route('api.recommendations.filters'));
-
-        $response->assertStatus(200);
-        $response->assertJsonStructure([
-            'movement_archetypes',
-            'difficulty_levels',
-            'categories'
-        ]);
-
-        $response->assertJsonFragment([
-            'push' => 'Pushing movements (bench press, overhead press, push-ups)',
-            'pull' => 'Pulling movements (rows, pull-ups, deadlifts)',
-            'squat' => 'Knee-dominant lower body movements (squats, lunges)',
-            'hinge' => 'Hip-dominant movements (deadlifts, hip thrusts, good mornings)',
-            'carry' => 'Loaded carries and holds (farmer\'s walks, suitcase carries)',
-            'core' => 'Core-specific movements (planks, crunches, Russian twists)'
-        ]);
-
-        $response->assertJsonFragment([
-            1 => 'Beginner',
-            2 => 'Novice',
-            3 => 'Intermediate',
-            4 => 'Advanced',
-            5 => 'Expert'
-        ]);
-    }
 
     /** @test */
     public function recommendations_require_authentication()
     {
         $response = $this->get(route('recommendations.index'));
         $response->assertRedirect(route('login'));
-
-        $response = $this->getJson(route('recommendations.api'));
-        $response->assertStatus(401);
-
-        $response = $this->getJson(route('api.recommendations.filters'));
-        $response->assertStatus(401);
     }
 
     /** @test */
@@ -523,11 +367,11 @@ class RecommendationControllerTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->user)
-            ->getJson(route('recommendations.api'));
+            ->get(route('recommendations.index'));
 
         $response->assertStatus(200);
         
-        $recommendations = $response->json('recommendations');
+        $recommendations = $response->viewData('recommendations');
         $recommendedExerciseIds = array_column(array_column($recommendations, 'exercise'), 'id');
 
         // User-specific exercise should NOT be recommended
@@ -538,7 +382,7 @@ class RecommendationControllerTest extends TestCase
         
         // Only global exercises with intelligence should be recommended
         foreach ($recommendations as $recommendation) {
-            $exercise = Exercise::find($recommendation['exercise']['id']);
+            $exercise = Exercise::find($recommendation['exercise']->id);
             $this->assertNull($exercise->user_id, 'Recommended exercise should be global (user_id should be null)');
             $this->assertNotNull($exercise->intelligence, 'Recommended exercise should have intelligence data');
         }
@@ -569,17 +413,6 @@ class RecommendationControllerTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertSee('No Recommendations Available');
-
-        // API should also handle gracefully
-        $apiResponse = $this->actingAs($this->user)
-            ->getJson(route('recommendations.api'));
-
-        $apiResponse->assertStatus(200);
-        $apiResponse->assertJson([
-            'success' => true,
-            'recommendations' => [],
-            'count' => 0
-        ]);
     }
     
     /** @test */

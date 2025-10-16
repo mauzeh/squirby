@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Services\RecommendationEngine;
 use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
 use Illuminate\View\View;
 use App\Models\Program;
 
@@ -32,9 +31,23 @@ class RecommendationController extends Controller
         // Get base recommendations
         $recommendations = $this->recommendationEngine->getRecommendations(auth()->id(), $count);
 
-        // Apply filters if provided
+        // Apply filters if provided - integrated filtering logic
         if ($movementArchetype || $difficultyLevel) {
-            $recommendations = $this->filterRecommendations($recommendations, $movementArchetype, $difficultyLevel);
+            $recommendations = array_filter($recommendations, function ($recommendation) use ($movementArchetype, $difficultyLevel) {
+                $intelligence = $recommendation['intelligence'];
+
+                // Filter by movement archetype
+                if ($movementArchetype && $intelligence->movement_archetype !== $movementArchetype) {
+                    return false;
+                }
+
+                // Filter by difficulty level
+                if ($difficultyLevel && $intelligence->difficulty_level !== $difficultyLevel) {
+                    return false;
+                }
+
+                return true;
+            });
         }
 
         // Get available filter options for the UI
@@ -59,122 +72,5 @@ class RecommendationController extends Controller
         ));
     }
 
-    /**
-     * API endpoint for AJAX-based recommendation requests
-     */
-    public function api(Request $request): JsonResponse
-    {
-        $validated = $request->validate([
-            'movement_archetype' => 'nullable|in:push,pull,squat,hinge,carry,core',
-            'difficulty_level' => 'nullable|integer|min:1|max:5',
-            'count' => 'nullable|integer|min:1|max:20'
-        ]);
 
-        $count = $validated['count'] ?? 5;
-        $movementArchetype = $validated['movement_archetype'] ?? null;
-        $difficultyLevel = $validated['difficulty_level'] ?? null;
-
-        try {
-            // Get base recommendations
-            $recommendations = $this->recommendationEngine->getRecommendations(auth()->id(), $count);
-
-            // Apply filters if provided
-            if ($movementArchetype || $difficultyLevel) {
-                $recommendations = $this->filterRecommendations($recommendations, $movementArchetype, $difficultyLevel);
-            }
-
-            // Format for API response
-            $formattedRecommendations = array_map(function ($recommendation) {
-                return [
-                    'exercise' => [
-                        'id' => $recommendation['exercise']->id,
-                        'title' => $recommendation['exercise']->title,
-                        'description' => $recommendation['exercise']->description,
-                        'is_bodyweight' => $recommendation['exercise']->is_bodyweight,
-                        'band_type' => $recommendation['exercise']->band_type,
-                    ],
-                    'intelligence' => [
-                        'movement_archetype' => $recommendation['intelligence']->movement_archetype,
-                        'category' => $recommendation['intelligence']->category,
-                        'difficulty_level' => $recommendation['intelligence']->difficulty_level,
-                        'primary_mover' => $recommendation['intelligence']->primary_mover,
-                        'largest_muscle' => $recommendation['intelligence']->largest_muscle,
-                        'recovery_hours' => $recommendation['intelligence']->recovery_hours,
-                        'muscle_data' => $recommendation['intelligence']->muscle_data,
-                    ],
-                    'score' => round($recommendation['score'], 2),
-                    'reasoning' => $recommendation['reasoning'],
-                ];
-            }, $recommendations);
-
-            return response()->json([
-                'success' => true,
-                'recommendations' => $formattedRecommendations,
-                'count' => count($formattedRecommendations),
-                'filters' => [
-                    'movement_archetype' => $movementArchetype,
-                    'difficulty_level' => $difficultyLevel,
-                ]
-            ]);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'error' => 'Failed to generate recommendations: ' . $e->getMessage()
-            ], 500);
-        }
-    }
-
-    /**
-     * API endpoint to get available filter options
-     */
-    public function getFilters(): JsonResponse
-    {
-        return response()->json([
-            'movement_archetypes' => [
-                'push' => 'Pushing movements (bench press, overhead press, push-ups)',
-                'pull' => 'Pulling movements (rows, pull-ups, deadlifts)',
-                'squat' => 'Knee-dominant lower body movements (squats, lunges)',
-                'hinge' => 'Hip-dominant movements (deadlifts, hip thrusts, good mornings)',
-                'carry' => 'Loaded carries and holds (farmer\'s walks, suitcase carries)',
-                'core' => 'Core-specific movements (planks, crunches, Russian twists)'
-            ],
-            'difficulty_levels' => [
-                1 => 'Beginner',
-                2 => 'Novice',
-                3 => 'Intermediate',
-                4 => 'Advanced',
-                5 => 'Expert'
-            ],
-            'categories' => [
-                'strength' => 'Traditional resistance training exercises',
-                'cardio' => 'Cardiovascular exercises',
-                'mobility' => 'Flexibility and mobility work',
-                'plyometric' => 'Explosive, jumping movements',
-                'flexibility' => 'Static stretching exercises'
-            ]
-        ]);
-    }
-
-    /**
-     * Filter recommendations based on movement archetype and difficulty level
-     */
-    private function filterRecommendations(array $recommendations, ?string $movementArchetype, ?int $difficultyLevel): array
-    {
-        return array_filter($recommendations, function ($recommendation) use ($movementArchetype, $difficultyLevel) {
-            $intelligence = $recommendation['intelligence'];
-
-            // Filter by movement archetype
-            if ($movementArchetype && $intelligence->movement_archetype !== $movementArchetype) {
-                return false;
-            }
-
-            // Filter by difficulty level
-            if ($difficultyLevel && $intelligence->difficulty_level !== $difficultyLevel) {
-                return false;
-            }
-
-            return true;
-        });
-    }
 }

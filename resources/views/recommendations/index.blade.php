@@ -59,9 +59,6 @@
                 <div style="display: flex; gap: 10px;">
                     <button type="submit" class="button">Apply Filters</button>
                     <a href="{{ route('recommendations.index') }}" class="button" style="background-color: #666;">Clear Filters</a>
-                    <button type="button" id="refresh-recommendations" class="button" style="background-color: #4CAF50;">
-                        <i class="fas fa-sync-alt"></i> Refresh
-                    </button>
                 </div>
             </form>
         </div>
@@ -455,44 +452,6 @@
             filterInputs.forEach(input => {
                 input.addEventListener('change', function() {
                     filterForm.submit();
-                });
-            });
-            
-            // Refresh recommendations button
-            const refreshButton = document.getElementById('refresh-recommendations');
-            refreshButton.addEventListener('click', function() {
-                refreshButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Refreshing...';
-                refreshButton.disabled = true;
-                
-                // Get current form data
-                const formData = new FormData(filterForm);
-                const params = new URLSearchParams(formData);
-                
-                // Make AJAX request to API endpoint
-                fetch(`{{ route('recommendations.api') }}?${params.toString()}`, {
-                    method: 'GET',
-                    headers: {
-                        'Accept': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        // Reload the page to show updated recommendations
-                        window.location.reload();
-                    } else {
-                        alert('Failed to refresh recommendations: ' + (data.error || 'Unknown error'));
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Failed to refresh recommendations. Please try again.');
-                })
-                .finally(() => {
-                    refreshButton.innerHTML = '<i class="fas fa-sync-alt"></i> Refresh';
-                    refreshButton.disabled = false;
                 });
             });
         });

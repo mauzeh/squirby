@@ -70,7 +70,6 @@ Route::middleware('auth')->group(function () {
 
     // Exercise Recommendations (Keep these routes)
     Route::get('recommendations', [RecommendationController::class, 'index'])->name('recommendations.index');
-    Route::get('recommendations/api', [RecommendationController::class, 'api'])->name('recommendations.api');
 
     /*
     |--------------------------------------------------------------------------
