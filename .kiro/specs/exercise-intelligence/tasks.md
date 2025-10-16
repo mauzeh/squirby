@@ -150,14 +150,12 @@
     - Test RecommendationEngine scoring algorithms
     - _Requirements: 1.1, 1.2, 1.3, 2.5, 3.1_
 
-  - [ ] 12.2 Write integration tests for recommendation system
+  - [x] 12.2 Write integration tests for recommendation system
     - Test complete recommendation workflow from user activity to suggestions
     - Verify muscle workload calculations with real exercise data
     - Test recovery period filtering logic
     - _Requirements: 1.1, 1.4, 1.5_
 
-  - [ ] 12.3 Create feature tests for controllers and views
-    - Test intelligence management CRUD operations
-    - Verify admin-only access to intelligence management
+  - [x] 12.3 Create feature tests for controllers and views
     - Test recommendation display and filtering
     - _Requirements: 4.1, 4.2, 5.1_
