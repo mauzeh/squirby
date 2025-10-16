@@ -33,7 +33,7 @@
             @endif
         </div>
 
-        <x-lift-logs.lift-logs-table :liftLogs="$liftLogs" :config="$config" />
+        <x-lift-logs.table :liftLogs="$liftLogs" :config="$config" />
 
         @if (empty($exercise->band_type))
             <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

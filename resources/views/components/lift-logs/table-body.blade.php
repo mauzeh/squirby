@@ -2,6 +2,6 @@
 
 <tbody>
     @foreach ($liftLogs as $liftLog)
-        <x-lift-logs.lift-log-row :liftLog="$liftLog" :config="$config" />
+        <x-lift-logs.row :liftLog="$liftLog" :config="$config" />
     @endforeach
 </tbody>
