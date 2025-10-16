@@ -381,13 +381,52 @@ class ExerciseIntelligenceSeeder extends Seeder
             ],
         ];
 
+        // Map exercise titles to canonical names for lookup
+        $titleToCanonical = [
+            'Back Squat' => 'back_squat',
+            'Front Squat' => 'front_squat',
+            'Deadlift' => 'deadlift',
+            'Romanian Deadlift' => 'romanian_deadlift',
+            'Bench Press' => 'bench_press',
+            'DB Bench Press' => 'db_bench_press',
+            'Strict Press' => 'strict_press',
+            'Push-Up' => 'push_up',
+            'Pull-Ups' => 'pull_ups',
+            'Chin-Ups' => 'chin_ups',
+            'Pendlay Row' => 'pendlay_row',
+            'Hip Thrust (Barbell)' => 'hip_thrust_barbell',
+            'Kettlebell Swing' => 'kettlebell_swing',
+            'Walking Lunge (2-DB)' => 'walking_lunge_2db',
+            'Back Rack Lunge (Step Back)' => 'back_rack_lunge_step_back',
+            'Ring Row' => 'ring_row',
+            'Push Press' => 'push_press',
+            'Power Clean' => 'power_clean',
+            'L-Sit (Tucked, Parallelites)' => 'l_sit_tucked_parallelites',
+        ];
+
         foreach ($intelligenceData as $exerciseTitle => $data) {
-            // Find the exercise by title (global exercises only)
-            $exercise = Exercise::where('title', $exerciseTitle)
-                ->whereNull('user_id')
-                ->first();
+            // Get canonical name for this exercise
+            $canonicalName = $titleToCanonical[$exerciseTitle] ?? null;
+            
+            // Find the exercise by canonical name first, fallback to title
+            $exercise = null;
+            if ($canonicalName) {
+                $exercise = Exercise::where('canonical_name', $canonicalName)
+                    ->whereNull('user_id')
+                    ->first();
+            }
+            
+            // Fallback to title-based lookup if canonical name lookup fails
+            if (!$exercise) {
+                $exercise = Exercise::where('title', $exerciseTitle)
+                    ->whereNull('user_id')
+                    ->first();
+            }
 
             if ($exercise) {
+                // Add canonical_name to the intelligence data
+                $data['canonical_name'] = $canonicalName;
+                
                 // Create or update the intelligence data
                 ExerciseIntelligence::updateOrCreate(
                     ['exercise_id' => $exercise->id],

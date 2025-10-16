@@ -17,6 +17,7 @@ This feature adds intelligent exercise recommendation capabilities to the fitnes
 - **Movement_Archetype**: The fundamental movement pattern of an exercise (e.g., push, pull, squat, hinge)
 - **Recovery_Period**: The recommended time between performing exercises targeting the same muscle groups
 - **Activity_Pattern**: User's exercise history over a specified time period (31 days)
+- **Canonical_Name**: A code-friendly, standardized identifier for exercises using lowercase letters and underscores
 
 ## Requirements
 
@@ -80,3 +81,15 @@ This feature adds intelligent exercise recommendation capabilities to the fitnes
 3. WHEN intelligence data is missing, THE Recommendation_Engine SHALL exclude those exercises from recommendations or use default values
 4. THE Exercise_Model SHALL continue to function normally regardless of intelligence data presence
 5. THE Exercise_Intelligence_System SHALL not cause errors or failures in existing exercise functionality
+
+### Requirement 6
+
+**User Story:** As a fitness app developer, I want exercises to have canonical names for reliable synchronization, so that intelligence data can be consistently matched across different data sources.
+
+#### Acceptance Criteria
+
+1. THE Exercise_Intelligence_System SHALL support canonical names for both Exercise_Model and intelligence data
+2. THE Canonical_Name SHALL use lowercase letters and underscores only for code-friendly identification
+3. THE Canonical_Name SHALL be optional and nullable for all exercises
+4. THE Canonical_Name SHALL be populated only for global exercises, not user-specific exercises
+5. WHEN synchronizing intelligence data, THE Exercise_Intelligence_System SHALL use canonical names for exercise matching instead of titles

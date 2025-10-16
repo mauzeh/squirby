@@ -14,6 +14,7 @@ class ExerciseIntelligence extends Model
 
     protected $fillable = [
         'exercise_id',
+        'canonical_name',
         'muscle_data',
         'primary_mover',
         'largest_muscle',

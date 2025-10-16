@@ -43,19 +43,32 @@ class SyncExerciseIntelligence extends Command
             return Command::FAILURE;
         }
 
-        foreach ($jsonData as $exerciseTitle => $data) {
-            $exercise = Exercise::where('title', $exerciseTitle)
-                ->whereNull('user_id') // Ensure it's a global exercise
-                ->first();
+        foreach ($jsonData as $exerciseKey => $data) {
+            $exercise = null;
+            
+            // First try to find by canonical_name (preferred method)
+            if (isset($data['canonical_name'])) {
+                $exercise = Exercise::where('canonical_name', $data['canonical_name'])
+                    ->whereNull('user_id') // Ensure it's a global exercise
+                    ->first();
+            }
+            
+            // Fallback to title-based lookup if canonical name lookup fails
+            if (!$exercise) {
+                $exercise = Exercise::where('title', $exerciseKey)
+                    ->whereNull('user_id') // Ensure it's a global exercise
+                    ->first();
+            }
 
             if ($exercise) {
                 ExerciseIntelligence::updateOrCreate(
                     ['exercise_id' => $exercise->id],
                     $data
                 );
-                $this->comment("Synchronized intelligence for: {$exerciseTitle}");
+                $exerciseIdentifier = $data['canonical_name'] ?? $exerciseKey;
+                $this->comment("Synchronized intelligence for: {$exerciseIdentifier}");
             } else {
-                $this->warn("Exercise not found or not global: {$exerciseTitle}. Skipping.");
+                $this->warn("Exercise not found or not global: {$exerciseKey}. Skipping.");
             }
         }
 

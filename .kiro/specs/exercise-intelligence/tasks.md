@@ -124,20 +124,39 @@
     - Include bodyweight exercises (push-ups, pull-ups, planks)
     - _Requirements: 3.1, 3.2, 3.3, 4.1_
 
-- [ ] 11. Write comprehensive tests
-  - [ ] 11.1 Create unit tests for models and services
+- [x] 11. Implement canonical name support for exercise synchronization
+  - [x] 11.1 Add canonical name database fields
+    - Complete migration for canonical_name column in exercise_intelligence table
+    - Add canonical_name to Exercise model fillable array
+    - Add canonical_name to ExerciseIntelligence model fillable array
+    - _Requirements: 6.1, 6.2, 6.3_
+
+  - [x] 11.2 Update exercise seeders to support canonical names
+    - Modify CSV data files to include canonical_name column with code-friendly exercise identifiers
+    - Update ExerciseSeeder to read and populate canonical_name from CSV data
+    - Update ExerciseIntelligenceSeeder to use canonical names for exercise matching
+    - _Requirements: 6.2, 6.4, 6.5_
+
+  - [x] 11.3 Update intelligence synchronization to use canonical names
+    - Modify SyncExerciseIntelligence command to use canonical_name for exercise lookup
+    - Update exercise_intelligence_data.json to use canonical names as keys
+    - Add canonical_name field to JSON data structure for explicit storage
+    - _Requirements: 6.5_
+
+- [ ] 12. Write comprehensive tests
+  - [ ] 12.1 Create unit tests for models and services
     - Test ExerciseIntelligence model relationships and helper methods
     - Write tests for UserActivityAnalysis calculations
     - Test RecommendationEngine scoring algorithms
     - _Requirements: 1.1, 1.2, 1.3, 2.5, 3.1_
 
-  - [ ] 11.2 Write integration tests for recommendation system
+  - [ ] 12.2 Write integration tests for recommendation system
     - Test complete recommendation workflow from user activity to suggestions
     - Verify muscle workload calculations with real exercise data
     - Test recovery period filtering logic
     - _Requirements: 1.1, 1.4, 1.5_
 
-  - [ ] 11.3 Create feature tests for controllers and views
+  - [ ] 12.3 Create feature tests for controllers and views
     - Test intelligence management CRUD operations
     - Verify admin-only access to intelligence management
     - Test recommendation display and filtering

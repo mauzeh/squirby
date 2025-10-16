@@ -26,19 +26,25 @@ The Exercise Intelligence System adds smart workout recommendations by creating 
 
 ### Database Design
 
+#### Updated Table: exercises
+```sql
+-- Add canonical_name column to existing exercises table
+ALTER TABLE exercises ADD COLUMN canonical_name VARCHAR(255) NULL;
+```
+
 #### New Table: exercise_intelligence
 
 ```sql
 CREATE TABLE exercise_intelligence (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     exercise_id BIGINT UNSIGNED NOT NULL,
+    canonical_name VARCHAR(255) NULL,
     muscle_data JSON NOT NULL,
     primary_mover VARCHAR(100) NOT NULL,
     largest_muscle VARCHAR(100) NOT NULL,
     movement_archetype ENUM('push', 'pull', 'squat', 'hinge', 'carry', 'core') NOT NULL,
     category ENUM('strength', 'cardio', 'mobility', 'plyometric', 'flexibility') NOT NULL,
     difficulty_level TINYINT UNSIGNED NOT NULL CHECK (difficulty_level BETWEEN 1 AND 5),
-
     recovery_hours INT UNSIGNED NOT NULL DEFAULT 48,
     created_at TIMESTAMP NULL DEFAULT NULL,
     updated_at TIMESTAMP NULL DEFAULT NULL,
@@ -47,7 +53,8 @@ CREATE TABLE exercise_intelligence (
     UNIQUE KEY unique_exercise_intelligence (exercise_id),
     INDEX idx_movement_archetype (movement_archetype),
     INDEX idx_category (category),
-    INDEX idx_difficulty (difficulty_level)
+    INDEX idx_difficulty (difficulty_level),
+    INDEX idx_canonical_name (canonical_name)
 );
 ```
 
@@ -91,19 +98,18 @@ class ExerciseIntelligence extends Model
 {
     protected $fillable = [
         'exercise_id',
+        'canonical_name',
         'muscle_data',
         'primary_mover',
         'largest_muscle', 
         'movement_archetype',
         'category',
         'difficulty_level',
-
         'recovery_hours'
     ];
     
     protected $casts = [
         'muscle_data' => 'array',
-
         'difficulty_level' => 'integer',
         'recovery_hours' => 'integer'
     ];
@@ -129,6 +135,11 @@ class ExerciseIntelligence extends Model
 
 ```php
 // Add to existing Exercise model
+protected $fillable = [
+    // ... existing fields
+    'canonical_name'
+];
+
 public function intelligence(): HasOne
 {
     return $this->hasOne(ExerciseIntelligence::class);
@@ -203,7 +214,88 @@ class RecommendationController extends Controller
 }
 ```
 
+### 7. Intelligence Data Synchronization
+
+#### SyncExerciseIntelligence Command
+
+```php
+class SyncExerciseIntelligence extends Command
+{
+    public function handle(): int;
+    private function loadIntelligenceData(): array;
+    private function syncExercise(string $canonicalName, array $data): void;
+    private function findExerciseByCanonicalName(string $canonicalName): ?Exercise;
+}
+```
+
+#### JSON Data Structure
+
+The system uses a JSON file (`database/seeders/json/exercise_intelligence_data.json`) for synchronization:
+
+```json
+{
+  "back_squat": {
+    "canonical_name": "back_squat",
+    "muscle_data": {
+      "muscles": [
+        {
+          "name": "quadriceps",
+          "role": "primary_mover",
+          "contraction_type": "isotonic"
+        },
+        {
+          "name": "gluteus_maximus",
+          "role": "synergist",
+          "contraction_type": "isotonic"
+        }
+      ]
+    },
+    "primary_mover": "quadriceps",
+    "largest_muscle": "quadriceps",
+    "movement_archetype": "squat",
+    "category": "strength",
+    "difficulty_level": 3,
+    "recovery_hours": 48
+  },
+  "bench_press": {
+    "canonical_name": "bench_press",
+    "muscle_data": {
+      "muscles": [
+        {
+          "name": "pectoralis_major",
+          "role": "primary_mover", 
+          "contraction_type": "isotonic"
+        }
+      ]
+    },
+    "primary_mover": "pectoralis_major",
+    "largest_muscle": "pectoralis_major",
+    "movement_archetype": "push",
+    "category": "strength",
+    "difficulty_level": 2,
+    "recovery_hours": 48
+  }
+}
+```
+
 ## Data Models
+
+### Canonical Names
+
+Canonical names provide code-friendly, standardized identifiers for exercises to enable reliable synchronization across different data sources.
+
+**Format Rules:**
+- Lowercase letters only
+- Underscores for word separation
+- No spaces, special characters, or numbers
+- Examples: `back_squat`, `bench_press`, `overhead_press`, `barbell_row`
+
+**Usage:**
+- Optional field for all exercises (nullable)
+- Populated only for global exercises
+- Used by synchronization commands for exercise matching
+- Not displayed in user interface
+- Enables consistent data import/export across systems
 
 ### Muscle Categories
 

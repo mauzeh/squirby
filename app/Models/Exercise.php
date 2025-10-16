@@ -15,6 +15,7 @@ class Exercise extends Model
         'is_bodyweight',
         'user_id',
         'band_type',
+        'canonical_name',
     ];
 
     protected $casts = [
