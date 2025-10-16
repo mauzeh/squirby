@@ -19,10 +19,6 @@
             <h1>{{ $exercise->title }}</h1>
         </div>
 
-        @if($exercise->isGlobal() && $exercise->hasIntelligence())
-            <x-exercise-intelligence-summary :intelligence="$exercise->intelligence" />
-        @endif
-
         <x-lift-logs.add-lift-log-form :exercises="$exercises" :selectedExercise="$exercise" :sets="$sets ?? null" :reps="$reps ?? null" :weight="$weight ?? null" />
 
         @if ($liftLogs->isEmpty())
