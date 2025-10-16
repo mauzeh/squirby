@@ -401,17 +401,26 @@ class LiftLogController extends Controller
         // Get top-3 exercise recommendations
         $recommendations = [];
         try {
-            $allRecommendations = $recommendationEngine->getRecommendations(auth()->id(), 10);
+            $programExerciseIds = $programs->pluck('exercise_id')->toArray();
+            $targetRecommendations = 3;
+            $maxAttempts = 20; // Get up to 20 recommendations to ensure we can find 3 that aren't in the program
+            
+            $allRecommendations = $recommendationEngine->getRecommendations(auth()->id(), $maxAttempts);
             
             // Filter out exercises that are already in today's program and ensure they're global exercises
-            $programExerciseIds = $programs->pluck('exercise_id')->toArray();
-            $filteredRecommendations = array_filter($allRecommendations, function($recommendation) use ($programExerciseIds) {
-                return !in_array($recommendation['exercise']->id, $programExerciseIds) && 
-                       $recommendation['exercise']->isGlobal();
-            });
+            $filteredRecommendations = [];
+            foreach ($allRecommendations as $recommendation) {
+                if (count($filteredRecommendations) >= $targetRecommendations) {
+                    break; // We have enough recommendations
+                }
+                
+                if (!in_array($recommendation['exercise']->id, $programExerciseIds) && 
+                    $recommendation['exercise']->isGlobal()) {
+                    $filteredRecommendations[] = $recommendation;
+                }
+            }
             
-            // Take top 3 after filtering
-            $recommendations = array_slice($filteredRecommendations, 0, 3);
+            $recommendations = $filteredRecommendations;
         } catch (\Exception $e) {
             // If recommendations fail, continue without them
             \Log::warning('Failed to get recommendations for mobile entry: ' . $e->getMessage());
