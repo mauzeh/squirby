@@ -104,21 +104,21 @@
     - Create partial view for displaying muscle involvement details
     - _Requirements: 5.1, 5.2_
 
-- [ ] 9. Implement routes and middleware
-  - [ ] 9.1 Add routes for intelligence management
+- [x] 9. Implement routes and middleware
+  - [x] 9.1 Add routes for intelligence management
     - Create resource routes for ExerciseIntelligenceController
     - Add routes for recommendation system
     - Implement admin middleware for intelligence management routes
     - _Requirements: 4.1, 4.2_
 
-  - [ ] 9.2 Add API routes for AJAX functionality
+  - [x] 9.2 Add API routes for AJAX functionality
     - Create API routes for getting recommendations
     - Add routes for muscle data lookup and validation
     - Implement routes for exercise intelligence quick lookup
     - _Requirements: 1.5, 5.1_
 
-- [ ] 10. Add database seeders for initial data
-  - [ ] 10.1 Create intelligence data seeder for common exercises
+- [x] 10. Add database seeders for initial data
+  - [x] 10.1 Create intelligence data seeder for common exercises
     - Seed intelligence data for basic compound movements (squats, deadlifts, bench press)
     - Add data for common isolation exercises (bicep curls, tricep extensions)
     - Include bodyweight exercises (push-ups, pull-ups, planks)

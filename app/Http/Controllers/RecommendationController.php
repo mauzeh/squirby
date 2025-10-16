@@ -117,6 +117,37 @@ class RecommendationController extends Controller
     }
 
     /**
+     * API endpoint to get available filter options
+     */
+    public function getFilters(): JsonResponse
+    {
+        return response()->json([
+            'movement_archetypes' => [
+                'push' => 'Pushing movements (bench press, overhead press, push-ups)',
+                'pull' => 'Pulling movements (rows, pull-ups, deadlifts)',
+                'squat' => 'Knee-dominant lower body movements (squats, lunges)',
+                'hinge' => 'Hip-dominant movements (deadlifts, hip thrusts, good mornings)',
+                'carry' => 'Loaded carries and holds (farmer\'s walks, suitcase carries)',
+                'core' => 'Core-specific movements (planks, crunches, Russian twists)'
+            ],
+            'difficulty_levels' => [
+                1 => 'Beginner',
+                2 => 'Novice',
+                3 => 'Intermediate',
+                4 => 'Advanced',
+                5 => 'Expert'
+            ],
+            'categories' => [
+                'strength' => 'Traditional resistance training exercises',
+                'cardio' => 'Cardiovascular exercises',
+                'mobility' => 'Flexibility and mobility work',
+                'plyometric' => 'Explosive, jumping movements',
+                'flexibility' => 'Static stretching exercises'
+            ]
+        ]);
+    }
+
+    /**
      * Filter recommendations based on movement archetype and difficulty level
      */
     private function filterRecommendations(array $recommendations, ?string $movementArchetype, ?int $difficultyLevel): array
