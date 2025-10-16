@@ -54,7 +54,7 @@ class ActivityAnalysisService
                 continue;
             }
             
-            $daysSinceLog = Carbon::now()->diffInDays($liftLog->logged_at);
+            $daysSinceLog = $liftLog->logged_at->diffInDays(Carbon::now());
             $totalSets = $liftLog->liftSets->count();
             
             // Calculate base intensity based on sets and recency
