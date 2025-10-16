@@ -3,7 +3,14 @@
 @section('content')
     <div class="container">
         <h1>Exercises</h1>
-        <a href="{{ route('exercises.create') }}" class="button create">Add Exercise</a>
+        <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+            <a href="{{ route('exercises.create') }}" class="button create">Add Exercise</a>
+            @if(auth()->user()->hasRole('Admin'))
+                <a href="{{ route('exercise-intelligence.index') }}" class="button" style="background-color: #4CAF50;">
+                    <i class="fa-solid fa-brain"></i> Manage Intelligence
+                </a>
+            @endif
+        </div>
         
         @if (session('success'))
             <div class="container success-message-box">
@@ -26,6 +33,7 @@
                         <th>Title</th>
                         <th class="hide-on-mobile">Description</th>
                         <th class="hide-on-mobile">Type</th>
+                        <th class="hide-on-mobile">Intelligence</th>
                         <th class="actions-column">Actions</th>
                     </tr>
                 </thead>
@@ -45,6 +53,15 @@
                                 <div class="show-on-mobile" style="font-size: 0.9em; color: #ccc;">
                                     {{ $exercise->is_bodyweight ? 'Bodyweight' : 'Weighted' }}
                                     • {{ $exercise->isGlobal() ? 'Global' : 'Personal' }}
+                                    @if($exercise->isGlobal() && $exercise->hasIntelligence())
+                                        <br><small style="font-size: 0.8em; color: #4CAF50;">
+                                            <i class="fa-solid fa-brain"></i> {{ ucfirst(str_replace('_', ' ', $exercise->intelligence->movement_archetype)) }} • Level {{ $exercise->intelligence->difficulty_level }}
+                                        </small>
+                                    @elseif($exercise->isGlobal())
+                                        <br><small style="font-size: 0.8em; color: #FFC107;">
+                                            <i class="fa-solid fa-exclamation-triangle"></i> No intelligence data
+                                        </small>
+                                    @endif
                                     @if($exercise->description)
                                         <br><small style="font-size: 0.8em; color: #aaa;">{{ \Illuminate\Support\Str::limit($exercise->description, 50) }}</small>
                                     @endif
@@ -52,16 +69,42 @@
                             </td>
                             <td class="hide-on-mobile">{{ $exercise->description }}</td>
                             <td class="hide-on-mobile">{{ $exercise->is_bodyweight ? 'Bodyweight' : 'Weighted' }}</td>
-                            <td class="actions-column">
-                                <div style="display: flex; gap: 5px;">
-                                    @if($exercise->canBeEditedBy(auth()->user()))
-                                        <a href="{{ route('exercises.edit', $exercise->id) }}" class="button edit"><i class="fa-solid fa-pencil"></i></a>
+                            <td class="hide-on-mobile">
+                                @if($exercise->isGlobal())
+                                    @if($exercise->hasIntelligence())
+                                        <div style="color: #4CAF50;">
+                                            <i class="fa-solid fa-brain"></i> <strong>{{ ucfirst(str_replace('_', ' ', $exercise->intelligence->movement_archetype)) }}</strong>
+                                            <br><small style="color: #aaa;">Level {{ $exercise->intelligence->difficulty_level }} • {{ $exercise->intelligence->recovery_hours }}h recovery</small>
+                                        </div>
+                                    @else
+                                        <div style="color: #FFC107;">
+                                            <i class="fa-solid fa-exclamation-triangle"></i> <strong>No Data</strong>
+                                            <br><small style="color: #aaa;">Intelligence missing</small>
+                                        </div>
                                     @endif
+                                @else
+                                    <span style="color: #666;">—</span>
+                                @endif
+                            </td>
+                            <td class="actions-column">
+                                <div style="display: flex; gap: 5px; flex-wrap: wrap;">
+                                    @if($exercise->canBeEditedBy(auth()->user()))
+                                        <a href="{{ route('exercises.edit', $exercise->id) }}" class="button edit" title="Edit Exercise"><i class="fa-solid fa-pencil"></i></a>
+                                    @endif
+                                    
+                                    @if($exercise->isGlobal() && auth()->user()->hasRole('Admin'))
+                                        @if($exercise->hasIntelligence())
+                                            <a href="{{ route('exercise-intelligence.edit', $exercise->intelligence) }}" class="button" style="background-color: #4CAF50;" title="Edit Intelligence"><i class="fa-solid fa-brain"></i></a>
+                                        @else
+                                            <a href="{{ route('exercise-intelligence.create', $exercise) }}" class="button" style="background-color: #FFC107; color: black;" title="Add Intelligence"><i class="fa-solid fa-plus"></i></a>
+                                        @endif
+                                    @endif
+                                    
                                     @if($exercise->canBeDeletedBy(auth()->user()))
                                         <form action="{{ route('exercises.destroy', $exercise->id) }}" method="POST" style="display:inline;">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="button delete" onclick="return confirm('Are you sure you want to delete this exercise?');"><i class="fa-solid fa-trash"></i></button>
+                                            <button type="submit" class="button delete" onclick="return confirm('Are you sure you want to delete this exercise?');" title="Delete Exercise"><i class="fa-solid fa-trash"></i></button>
                                         </form>
                                     @elseif($exercise->liftLogs()->exists())
                                         <span class="button delete" style="opacity: 0.5; cursor: not-allowed;" title="Cannot delete: has lift logs"><i class="fa-solid fa-trash"></i></span>
@@ -74,7 +117,7 @@
                 <tfoot>
                     <tr>
                         <th><input type="checkbox" id="select-all-exercises-footer"></th>
-                        <th colspan="4" style="text-align:left; font-weight:normal;">
+                        <th colspan="5" style="text-align:left; font-weight:normal;">
                             <form action="{{ route('exercises.destroy-selected') }}" method="POST" id="delete-selected-form" onsubmit="return confirm('Are you sure you want to delete the selected exercises?');" style="display:inline;">
                                 @csrf
                                 <button type="submit" class="button delete"><i class="fa-solid fa-trash"></i> Delete Selected</button>
