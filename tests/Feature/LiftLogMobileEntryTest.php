@@ -604,4 +604,83 @@ class LiftLogMobileEntryTest extends TestCase
             LiftLog::where('user_id', $this->user->id)->delete();
         }
     }
+
+    /** @test */
+    public function mobile_entry_page_displays_exercise_recommendations()
+    {
+        // Create global exercises with intelligence data for recommendations
+        $globalExercise1 = Exercise::factory()->create(['user_id' => null, 'title' => 'Push-ups']);
+        $globalExercise2 = Exercise::factory()->create(['user_id' => null, 'title' => 'Squats']);
+        $globalExercise3 = Exercise::factory()->create(['user_id' => null, 'title' => 'Pull-ups']);
+        
+        // Create intelligence data for these exercises
+        \App\Models\ExerciseIntelligence::factory()->create([
+            'exercise_id' => $globalExercise1->id,
+            'movement_archetype' => 'push',
+            'difficulty_level' => 2,
+            'primary_mover' => 'pectoralis_major'
+        ]);
+        
+        \App\Models\ExerciseIntelligence::factory()->create([
+            'exercise_id' => $globalExercise2->id,
+            'movement_archetype' => 'squat',
+            'difficulty_level' => 2,
+            'primary_mover' => 'quadriceps'
+        ]);
+        
+        \App\Models\ExerciseIntelligence::factory()->create([
+            'exercise_id' => $globalExercise3->id,
+            'movement_archetype' => 'pull',
+            'difficulty_level' => 3,
+            'primary_mover' => 'latissimus_dorsi'
+        ]);
+
+        $response = $this->get(route('lift-logs.mobile-entry'));
+
+        $response->assertStatus(200);
+        
+        // Check that recommendations section appears when clicking add exercise
+        $response->assertSee('⭐ Recommended for you:', false);
+    }
+
+    /** @test */
+    public function mobile_entry_recommendations_exclude_exercises_already_in_program()
+    {
+        // Create global exercises
+        $globalExercise1 = Exercise::factory()->create(['user_id' => null, 'title' => 'Push-ups']);
+        $globalExercise2 = Exercise::factory()->create(['user_id' => null, 'title' => 'Squats']);
+        
+        // Create intelligence data
+        \App\Models\ExerciseIntelligence::factory()->create([
+            'exercise_id' => $globalExercise1->id,
+            'movement_archetype' => 'push',
+            'difficulty_level' => 2,
+            'primary_mover' => 'pectoralis_major'
+        ]);
+        
+        \App\Models\ExerciseIntelligence::factory()->create([
+            'exercise_id' => $globalExercise2->id,
+            'movement_archetype' => 'squat',
+            'difficulty_level' => 2,
+            'primary_mover' => 'quadriceps'
+        ]);
+        
+        // Add one exercise to today's program
+        Program::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $globalExercise1->id,
+            'date' => Carbon::today(),
+            'sets' => 3,
+            'reps' => 10,
+        ]);
+
+        $response = $this->get(route('lift-logs.mobile-entry'));
+
+        $response->assertStatus(200);
+        
+        // Should not see the exercise that's already in the program in recommendations
+        // But should see the other exercise
+        $response->assertSee('Squats');
+        // The push-ups should appear in the program section, not recommendations
+    }
 }

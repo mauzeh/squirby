@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 use App\Services\TrainingProgressionService;
+use App\Services\RecommendationEngine;
 
 class LiftLogController extends Controller
 {
@@ -330,7 +331,7 @@ class LiftLogController extends Controller
             ->with('success', $successMessage);
     }
 
-    public function mobileEntry(Request $request, \App\Services\TrainingProgressionService $trainingProgressionService)
+    public function mobileEntry(Request $request, \App\Services\TrainingProgressionService $trainingProgressionService, RecommendationEngine $recommendationEngine)
     {
         $selectedDate = $request->input('date') ? \Carbon\Carbon::parse($request->input('date')) : \Carbon\Carbon::today();
 
@@ -397,6 +398,25 @@ class LiftLogController extends Controller
 
         $exercises = \App\Models\Exercise::availableToUser(auth()->id())->orderBy('title')->get();
 
-        return view('lift-logs.mobile-entry', compact('programs', 'selectedDate', 'submittedLiftLog', 'dailyLiftLogs', 'exercises'));
+        // Get top-3 exercise recommendations
+        $recommendations = [];
+        try {
+            $allRecommendations = $recommendationEngine->getRecommendations(auth()->id(), 10);
+            
+            // Filter out exercises that are already in today's program and ensure they're global exercises
+            $programExerciseIds = $programs->pluck('exercise_id')->toArray();
+            $filteredRecommendations = array_filter($allRecommendations, function($recommendation) use ($programExerciseIds) {
+                return !in_array($recommendation['exercise']->id, $programExerciseIds) && 
+                       $recommendation['exercise']->isGlobal();
+            });
+            
+            // Take top 3 after filtering
+            $recommendations = array_slice($filteredRecommendations, 0, 3);
+        } catch (\Exception $e) {
+            // If recommendations fail, continue without them
+            \Log::warning('Failed to get recommendations for mobile entry: ' . $e->getMessage());
+        }
+
+        return view('lift-logs.mobile-entry', compact('programs', 'selectedDate', 'submittedLiftLog', 'dailyLiftLogs', 'exercises', 'recommendations'));
     }
 }
