@@ -69,6 +69,12 @@ class TrainingProgressionService
 
     private function getProgressionModel(LiftLog $liftLog): \App\Services\ProgressionModels\ProgressionModel
     {
+        // For bodyweight exercises, always use DoubleProgression since LinearProgression
+        // filters out bodyweight exercises and won't provide suggestions
+        if ($liftLog->exercise->is_bodyweight) {
+            return new DoubleProgression($this->oneRepMaxCalculatorService);
+        }
+
         if ($liftLog->display_reps >= 8 && $liftLog->display_reps <= 12) {
             return new DoubleProgression($this->oneRepMaxCalculatorService);
         }
