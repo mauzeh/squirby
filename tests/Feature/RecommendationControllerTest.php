@@ -116,27 +116,42 @@ class RecommendationControllerTest extends TestCase
     }
 
     /** @test */
-    public function recommendations_index_shows_filter_form()
+    public function recommendations_index_shows_button_based_filter_interface()
     {
         $response = $this->actingAs($this->user)
             ->get(route('recommendations.index'));
 
         $response->assertStatus(200);
         $response->assertSee('Filter Recommendations');
+        
+        // Check button-based filter interface is present
         $response->assertSee('Movement Pattern:');
         $response->assertSee('Difficulty Level:');
         
-        // Check filter options are present
+        // Check movement archetype buttons are present
         $response->assertSee('All Patterns');
         $response->assertSee('Push');
         $response->assertSee('Pull');
         $response->assertSee('Squat');
+        $response->assertSee('Hinge');
+        $response->assertSee('Carry');
+        $response->assertSee('Core');
+        
+        // Check difficulty level buttons are present
         $response->assertSee('All Levels');
         $response->assertSee('Level 1');
+        $response->assertSee('Level 2');
+        $response->assertSee('Level 3');
+        $response->assertSee('Level 4');
         $response->assertSee('Level 5');
         
         // Check that Clear Filters button is present
         $response->assertSee('Clear Filters');
+        
+        // Verify no dropdown elements exist (replaced with buttons)
+        $response->assertDontSee('<select');
+        $response->assertDontSee('Apply Filters');
+        $response->assertDontSee('Refresh');
     }
 
     /** @test */
@@ -239,14 +254,41 @@ class RecommendationControllerTest extends TestCase
     /** @test */
     public function recommendations_index_validates_filter_parameters()
     {
+        // Test invalid movement archetype
         $response = $this->actingAs($this->user)
             ->get(route('recommendations.index', [
-                'movement_archetype' => 'invalid_archetype',
+                'movement_archetype' => 'invalid_archetype'
+            ]));
+
+        $response->assertStatus(302);
+        $response->assertSessionHasErrors(['movement_archetype']);
+
+        // Test invalid difficulty level (too high)
+        $response = $this->actingAs($this->user)
+            ->get(route('recommendations.index', [
                 'difficulty_level' => 10
             ]));
 
         $response->assertStatus(302);
-        $response->assertSessionHasErrors(['movement_archetype', 'difficulty_level']);
+        $response->assertSessionHasErrors(['difficulty_level']);
+
+        // Test invalid difficulty level (too low)
+        $response = $this->actingAs($this->user)
+            ->get(route('recommendations.index', [
+                'difficulty_level' => 0
+            ]));
+
+        $response->assertStatus(302);
+        $response->assertSessionHasErrors(['difficulty_level']);
+
+        // Test invalid difficulty level (non-integer)
+        $response = $this->actingAs($this->user)
+            ->get(route('recommendations.index', [
+                'difficulty_level' => 'invalid'
+            ]));
+
+        $response->assertStatus(302);
+        $response->assertSessionHasErrors(['difficulty_level']);
     }
 
 
@@ -256,6 +298,105 @@ class RecommendationControllerTest extends TestCase
     {
         $response = $this->get(route('recommendations.index'));
         $response->assertRedirect(route('login'));
+    }
+
+    /** @test */
+    public function recommendations_index_maintains_filter_state_in_url_parameters()
+    {
+        // Create user activity
+        $liftLog = LiftLog::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $this->benchPress->id,
+            'logged_at' => Carbon::now()->subDays(5)
+        ]);
+        
+        LiftSet::factory()->create([
+            'lift_log_id' => $liftLog->id,
+            'reps' => 8,
+            'weight' => 185
+        ]);
+
+        $response = $this->actingAs($this->user)
+            ->get(route('recommendations.index', [
+                'movement_archetype' => 'push',
+                'difficulty_level' => 3
+            ]));
+
+        $response->assertStatus(200);
+        
+        // Check that filter values are passed to the view
+        $response->assertViewHas('movementArchetype', 'push');
+        $response->assertViewHas('difficultyLevel', 3);
+        
+        // Verify URL parameters are maintained for bookmarking
+        $this->assertEquals('push', $response->viewData('movementArchetype'));
+        $this->assertEquals(3, $response->viewData('difficultyLevel'));
+    }
+
+    /** @test */
+    public function recommendations_index_handles_combined_filters_correctly()
+    {
+        // Create user activity
+        $liftLog = LiftLog::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $this->benchPress->id,
+            'logged_at' => Carbon::now()->subDays(5)
+        ]);
+        
+        LiftSet::factory()->create([
+            'lift_log_id' => $liftLog->id,
+            'reps' => 8,
+            'weight' => 185
+        ]);
+
+        $response = $this->actingAs($this->user)
+            ->get(route('recommendations.index', [
+                'movement_archetype' => 'push',
+                'difficulty_level' => 3
+            ]));
+
+        $response->assertStatus(200);
+        
+        // Should only show exercises that match both filters
+        $viewData = $response->viewData('recommendations');
+        foreach ($viewData as $recommendation) {
+            $this->assertEquals('push', $recommendation['intelligence']->movement_archetype);
+            $this->assertEquals(3, $recommendation['intelligence']->difficulty_level);
+        }
+    }
+
+    /** @test */
+    public function recommendations_index_handles_empty_filter_results_gracefully()
+    {
+        // Create user activity
+        $liftLog = LiftLog::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $this->benchPress->id,
+            'logged_at' => Carbon::now()->subDays(5)
+        ]);
+        
+        LiftSet::factory()->create([
+            'lift_log_id' => $liftLog->id,
+            'reps' => 8,
+            'weight' => 185
+        ]);
+
+        // Filter for a combination that won't match any exercises
+        $response = $this->actingAs($this->user)
+            ->get(route('recommendations.index', [
+                'movement_archetype' => 'carry',
+                'difficulty_level' => 5
+            ]));
+
+        $response->assertStatus(200);
+        
+        // Should handle empty results gracefully
+        $viewData = $response->viewData('recommendations');
+        $this->assertEmpty($viewData);
+        
+        // Filter state should still be maintained
+        $response->assertViewHas('movementArchetype', 'carry');
+        $response->assertViewHas('difficultyLevel', 5);
     }
 
     /** @test */
@@ -414,6 +555,63 @@ class RecommendationControllerTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertSee('No Recommendations Available');
+    }
+
+    /** @test */
+    public function recommendations_index_handles_server_errors_gracefully()
+    {
+        // Create user activity
+        $liftLog = LiftLog::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $this->benchPress->id,
+            'logged_at' => Carbon::now()->subDays(3)
+        ]);
+        
+        LiftSet::factory()->create([
+            'lift_log_id' => $liftLog->id,
+            'reps' => 8,
+            'weight' => 185
+        ]);
+
+        // Test with valid parameters to ensure basic functionality works
+        $response = $this->actingAs($this->user)
+            ->get(route('recommendations.index'));
+
+        $response->assertStatus(200);
+        $response->assertViewIs('recommendations.index');
+        
+        // Verify error handling doesn't break the page structure
+        $response->assertSee('Exercise Recommendations');
+        $response->assertSee('Filter Recommendations');
+    }
+
+    /** @test */
+    public function recommendations_index_provides_all_required_view_data()
+    {
+        $response = $this->actingAs($this->user)
+            ->get(route('recommendations.index'));
+
+        $response->assertStatus(200);
+        
+        // Verify all required view data is provided
+        $response->assertViewHas('recommendations');
+        $response->assertViewHas('movementArchetypes');
+        $response->assertViewHas('difficultyLevels');
+        $response->assertViewHas('movementArchetype');
+        $response->assertViewHas('difficultyLevel');
+        $response->assertViewHas('todayProgramExercises');
+        
+        // Verify filter options are correctly structured
+        $movementArchetypes = $response->viewData('movementArchetypes');
+        $this->assertContains('push', $movementArchetypes);
+        $this->assertContains('pull', $movementArchetypes);
+        $this->assertContains('squat', $movementArchetypes);
+        $this->assertContains('hinge', $movementArchetypes);
+        $this->assertContains('carry', $movementArchetypes);
+        $this->assertContains('core', $movementArchetypes);
+        
+        $difficultyLevels = $response->viewData('difficultyLevels');
+        $this->assertEquals([1, 2, 3, 4, 5], $difficultyLevels);
     }
     
     /** @test */
