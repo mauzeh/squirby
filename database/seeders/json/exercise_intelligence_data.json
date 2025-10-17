@@ -189,5 +189,352 @@
     "category": "strength",
     "difficulty_level": 4,
     "recovery_hours": 48
+  },
+  "power_clean": {
+    "canonical_name": "power_clean",
+    "muscle_data": {
+      "muscles": [
+        { "name": "gluteus_maximus", "role": "primary_mover", "contraction_type": "isotonic" },
+        { "name": "biceps_femoris", "role": "primary_mover", "contraction_type": "isotonic" },
+        { "name": "rectus_femoris", "role": "primary_mover", "contraction_type": "isotonic" },
+        { "name": "upper_trapezius", "role": "primary_mover", "contraction_type": "isotonic" },
+        { "name": "anterior_deltoid", "role": "synergist", "contraction_type": "isotonic" },
+        { "name": "gastrocnemius", "role": "synergist", "contraction_type": "isotonic" },
+        { "name": "erector_spinae", "role": "stabilizer", "contraction_type": "isometric" },
+        { "name": "rectus_abdominis", "role": "stabilizer", "contraction_type": "isometric" }
+      ]
+    },
+    "primary_mover": "gluteus_maximus",
+    "largest_muscle": "gluteus_maximus",
+    "movement_archetype": "hinge",
+    "category": "strength",
+    "difficulty_level": 5,
+    "recovery_hours": 72
+  },
+  "half_kneeling_db_press": {
+    "canonical_name": "half_kneeling_db_press",
+    "muscle_data": {
+      "muscles": [
+        { "name": "anterior_deltoid", "role": "primary_mover", "contraction_type": "isotonic" },
+        { "name": "medial_deltoid", "role": "synergist", "contraction_type": "isotonic" },
+        { "name": "triceps_brachii", "role": "synergist", "contraction_type": "isotonic" },
+        { "name": "rectus_abdominis", "role": "stabilizer", "contraction_type": "isometric" },
+        { "name": "external_obliques", "role": "stabilizer", "contraction_type": "isometric" },
+        { "name": "gluteus_medius", "role": "stabilizer", "contraction_type": "isometric" }
+      ]
+    },
+    "primary_mover": "anterior_deltoid",
+    "largest_muscle": "anterior_deltoid",
+    "movement_archetype": "push",
+    "category": "strength",
+    "difficulty_level": 3,
+    "recovery_hours": 48
+  },
+  "cyclist_squat_barbell_front_rack": {
+    "canonical_name": "cyclist_squat_barbell_front_rack",
+    "muscle_data": {
+      "muscles": [
+        { "name": "rectus_femoris", "role": "primary_mover", "contraction_type": "isotonic" },
+        { "name": "vastus_lateralis", "role": "primary_mover", "contraction_type": "isotonic" },
+        { "name": "vastus_medialis", "role": "primary_mover", "contraction_type": "isotonic" },
+        { "name": "gluteus_maximus", "role": "synergist", "contraction_type": "isotonic" },
+        { "name": "gastrocnemius", "role": "synergist", "contraction_type": "isotonic" },
+        { "name": "erector_spinae", "role": "stabilizer", "contraction_type": "isometric" },
+        { "name": "rectus_abdominis", "role": "stabilizer", "contraction_type": "isometric" }
+      ]
+    },
+    "primary_mover": "rectus_femoris",
+    "largest_muscle": "rectus_femoris",
+    "movement_archetype": "squat",
+    "category": "strength",
+    "difficulty_level": 4,
+    "recovery_hours": 72
+  },
+  "back_rack_lunge_step_back": {
+    "canonical_name": "back_rack_lunge_step_back",
+    "muscle_data": {
+      "muscles": [
+        { "name": "rectus_femoris", "role": "primary_mover", "contraction_type": "isotonic" },
+        { "name": "gluteus_maximus", "role": "primary_mover", "contraction_type": "isotonic" },
+        { "name": "biceps_femoris", "role": "synergist", "contraction_type": "isotonic" },
+        { "name": "gluteus_medius", "role": "synergist", "contraction_type": "isotonic" },
+        { "name": "gastrocnemius", "role": "synergist", "contraction_type": "isotonic" },
+        { "name": "erector_spinae", "role": "stabilizer", "contraction_type": "isometric" },
+        { "name": "rectus_abdominis", "role": "stabilizer", "contraction_type": "isometric" }
+      ]
+    },
+    "primary_mover": "rectus_femoris",
+    "largest_muscle": "gluteus_maximus",
+    "movement_archetype": "squat",
+    "category": "strength",
+    "difficulty_level": 3,
+    "recovery_hours": 48
+  },
+  "bench_press_2db_seesaw": {
+    "canonical_name": "bench_press_2db_seesaw",
+    "muscle_data": {
+      "muscles": [
+        { "name": "pectoralis_major", "role": "primary_mover", "contraction_type": "isotonic" },
+        { "name": "anterior_deltoid", "role": "synergist", "contraction_type": "isotonic" },
+        { "name": "triceps_brachii", "role": "synergist", "contraction_type": "isotonic" },
+        { "name": "rectus_abdominis", "role": "stabilizer", "contraction_type": "isometric" },
+        { "name": "erector_spinae", "role": "stabilizer", "contraction_type": "isometric" },
+        { "name": "external_obliques", "role": "stabilizer", "contraction_type": "isometric" }
+      ]
+    },
+    "primary_mover": "pectoralis_major",
+    "largest_muscle": "pectoralis_major",
+    "movement_archetype": "push",
+    "category": "strength",
+    "difficulty_level": 4,
+    "recovery_hours": 48
+  },
+  "hip_thrust_barbell": {
+    "canonical_name": "hip_thrust_barbell",
+    "muscle_data": {
+      "muscles": [
+        { "name": "gluteus_maximus", "role": "primary_mover", "contraction_type": "isotonic" },
+        { "name": "biceps_femoris", "role": "synergist", "contraction_type": "isotonic" },
+        { "name": "semitendinosus", "role": "synergist", "contraction_type": "isotonic" },
+        { "name": "rectus_abdominis", "role": "stabilizer", "contraction_type": "isometric" },
+        { "name": "erector_spinae", "role": "stabilizer", "contraction_type": "isometric" }
+      ]
+    },
+    "primary_mover": "gluteus_maximus",
+    "largest_muscle": "gluteus_maximus",
+    "movement_archetype": "hinge",
+    "category": "strength",
+    "difficulty_level": 3,
+    "recovery_hours": 48
+  },
+  "kettlebell_swing": {
+    "canonical_name": "kettlebell_swing",
+    "muscle_data": {
+      "muscles": [
+        { "name": "gluteus_maximus", "role": "primary_mover", "contraction_type": "isotonic" },
+        { "name": "biceps_femoris", "role": "primary_mover", "contraction_type": "isotonic" },
+        { "name": "semitendinosus", "role": "primary_mover", "contraction_type": "isotonic" },
+        { "name": "erector_spinae", "role": "synergist", "contraction_type": "isotonic" },
+        { "name": "anterior_deltoid", "role": "synergist", "contraction_type": "isotonic" },
+        { "name": "rectus_abdominis", "role": "stabilizer", "contraction_type": "isometric" }
+      ]
+    },
+    "primary_mover": "gluteus_maximus",
+    "largest_muscle": "gluteus_maximus",
+    "movement_archetype": "hinge",
+    "category": "strength",
+    "difficulty_level": 3,
+    "recovery_hours": 48
+  },
+  "l_sit_tucked_parallelites": {
+    "canonical_name": "l_sit_tucked_parallelites",
+    "muscle_data": {
+      "muscles": [
+        { "name": "rectus_abdominis", "role": "primary_mover", "contraction_type": "isometric" },
+        { "name": "external_obliques", "role": "primary_mover", "contraction_type": "isometric" },
+        { "name": "rectus_femoris", "role": "synergist", "contraction_type": "isometric" },
+        { "name": "anterior_deltoid", "role": "stabilizer", "contraction_type": "isometric" },
+        { "name": "triceps_brachii", "role": "stabilizer", "contraction_type": "isometric" }
+      ]
+    },
+    "primary_mover": "rectus_abdominis",
+    "largest_muscle": "rectus_abdominis",
+    "movement_archetype": "core",
+    "category": "strength",
+    "difficulty_level": 4,
+    "recovery_hours": 24
+  },
+  "lat_pull_down_kneeled": {
+    "canonical_name": "lat_pull_down_kneeled",
+    "muscle_data": {
+      "muscles": [
+        { "name": "latissimus_dorsi", "role": "primary_mover", "contraction_type": "isotonic" },
+        { "name": "rhomboids", "role": "synergist", "contraction_type": "isotonic" },
+        { "name": "middle_trapezius", "role": "synergist", "contraction_type": "isotonic" },
+        { "name": "biceps_brachii", "role": "synergist", "contraction_type": "isotonic" },
+        { "name": "posterior_deltoid", "role": "synergist", "contraction_type": "isotonic" },
+        { "name": "rectus_abdominis", "role": "stabilizer", "contraction_type": "isometric" }
+      ]
+    },
+    "primary_mover": "latissimus_dorsi",
+    "largest_muscle": "latissimus_dorsi",
+    "movement_archetype": "pull",
+    "category": "strength",
+    "difficulty_level": 2,
+    "recovery_hours": 48
+  },
+  "pendlay_row": {
+    "canonical_name": "pendlay_row",
+    "muscle_data": {
+      "muscles": [
+        { "name": "latissimus_dorsi", "role": "primary_mover", "contraction_type": "isotonic" },
+        { "name": "rhomboids", "role": "primary_mover", "contraction_type": "isotonic" },
+        { "name": "middle_trapezius", "role": "primary_mover", "contraction_type": "isotonic" },
+        { "name": "posterior_deltoid", "role": "synergist", "contraction_type": "isotonic" },
+        { "name": "biceps_brachii", "role": "synergist", "contraction_type": "isotonic" },
+        { "name": "erector_spinae", "role": "stabilizer", "contraction_type": "isometric" },
+        { "name": "rectus_abdominis", "role": "stabilizer", "contraction_type": "isometric" }
+      ]
+    },
+    "primary_mover": "latissimus_dorsi",
+    "largest_muscle": "latissimus_dorsi",
+    "movement_archetype": "pull",
+    "category": "strength",
+    "difficulty_level": 4,
+    "recovery_hours": 48
+  },
+  "push_press": {
+    "canonical_name": "push_press",
+    "muscle_data": {
+      "muscles": [
+        { "name": "anterior_deltoid", "role": "primary_mover", "contraction_type": "isotonic" },
+        { "name": "medial_deltoid", "role": "primary_mover", "contraction_type": "isotonic" },
+        { "name": "triceps_brachii", "role": "synergist", "contraction_type": "isotonic" },
+        { "name": "rectus_femoris", "role": "synergist", "contraction_type": "isotonic" },
+        { "name": "gluteus_maximus", "role": "synergist", "contraction_type": "isotonic" },
+        { "name": "rectus_abdominis", "role": "stabilizer", "contraction_type": "isometric" },
+        { "name": "erector_spinae", "role": "stabilizer", "contraction_type": "isometric" }
+      ]
+    },
+    "primary_mover": "anterior_deltoid",
+    "largest_muscle": "anterior_deltoid",
+    "movement_archetype": "push",
+    "category": "strength",
+    "difficulty_level": 4,
+    "recovery_hours": 48
+  },
+  "ring_row": {
+    "canonical_name": "ring_row",
+    "muscle_data": {
+      "muscles": [
+        { "name": "latissimus_dorsi", "role": "primary_mover", "contraction_type": "isotonic" },
+        { "name": "rhomboids", "role": "primary_mover", "contraction_type": "isotonic" },
+        { "name": "middle_trapezius", "role": "primary_mover", "contraction_type": "isotonic" },
+        { "name": "posterior_deltoid", "role": "synergist", "contraction_type": "isotonic" },
+        { "name": "biceps_brachii", "role": "synergist", "contraction_type": "isotonic" },
+        { "name": "rectus_abdominis", "role": "stabilizer", "contraction_type": "isometric" },
+        { "name": "erector_spinae", "role": "stabilizer", "contraction_type": "isometric" }
+      ]
+    },
+    "primary_mover": "latissimus_dorsi",
+    "largest_muscle": "latissimus_dorsi",
+    "movement_archetype": "pull",
+    "category": "strength",
+    "difficulty_level": 3,
+    "recovery_hours": 48
+  },
+  "lunge_walking_2_db": {
+    "canonical_name": "lunge_walking_2_db",
+    "muscle_data": {
+      "muscles": [
+        { "name": "rectus_femoris", "role": "primary_mover", "contraction_type": "isotonic" },
+        { "name": "gluteus_maximus", "role": "primary_mover", "contraction_type": "isotonic" },
+        { "name": "biceps_femoris", "role": "synergist", "contraction_type": "isotonic" },
+        { "name": "gluteus_medius", "role": "synergist", "contraction_type": "isotonic" },
+        { "name": "gastrocnemius", "role": "synergist", "contraction_type": "isotonic" },
+        { "name": "rectus_abdominis", "role": "stabilizer", "contraction_type": "isometric" },
+        { "name": "erector_spinae", "role": "stabilizer", "contraction_type": "isometric" }
+      ]
+    },
+    "primary_mover": "rectus_femoris",
+    "largest_muscle": "gluteus_maximus",
+    "movement_archetype": "squat",
+    "category": "strength",
+    "difficulty_level": 3,
+    "recovery_hours": 48
+  },
+  "zombie_squat": {
+    "canonical_name": "zombie_squat",
+    "muscle_data": {
+      "muscles": [
+        { "name": "rectus_femoris", "role": "primary_mover", "contraction_type": "isotonic" },
+        { "name": "vastus_lateralis", "role": "primary_mover", "contraction_type": "isotonic" },
+        { "name": "vastus_medialis", "role": "primary_mover", "contraction_type": "isotonic" },
+        { "name": "gluteus_maximus", "role": "synergist", "contraction_type": "isotonic" },
+        { "name": "rectus_abdominis", "role": "stabilizer", "contraction_type": "isometric" },
+        { "name": "erector_spinae", "role": "stabilizer", "contraction_type": "isometric" }
+      ]
+    },
+    "primary_mover": "rectus_femoris",
+    "largest_muscle": "rectus_femoris",
+    "movement_archetype": "squat",
+    "category": "strength",
+    "difficulty_level": 4,
+    "recovery_hours": 72
+  },
+  "split_squat_hungarian_2_db": {
+    "canonical_name": "split_squat_hungarian_2_db",
+    "muscle_data": {
+      "muscles": [
+        { "name": "rectus_femoris", "role": "primary_mover", "contraction_type": "isotonic" },
+        { "name": "gluteus_maximus", "role": "primary_mover", "contraction_type": "isotonic" },
+        { "name": "biceps_femoris", "role": "synergist", "contraction_type": "isotonic" },
+        { "name": "gluteus_medius", "role": "synergist", "contraction_type": "isotonic" },
+        { "name": "gastrocnemius", "role": "synergist", "contraction_type": "isotonic" },
+        { "name": "rectus_abdominis", "role": "stabilizer", "contraction_type": "isometric" },
+        { "name": "erector_spinae", "role": "stabilizer", "contraction_type": "isometric" }
+      ]
+    },
+    "primary_mover": "rectus_femoris",
+    "largest_muscle": "gluteus_maximus",
+    "movement_archetype": "squat",
+    "category": "strength",
+    "difficulty_level": 4,
+    "recovery_hours": 48
+  },
+  "lunge_step_back_2_db": {
+    "canonical_name": "lunge_step_back_2_db",
+    "muscle_data": {
+      "muscles": [
+        { "name": "rectus_femoris", "role": "primary_mover", "contraction_type": "isotonic" },
+        { "name": "gluteus_maximus", "role": "primary_mover", "contraction_type": "isotonic" },
+        { "name": "biceps_femoris", "role": "synergist", "contraction_type": "isotonic" },
+        { "name": "gluteus_medius", "role": "synergist", "contraction_type": "isotonic" },
+        { "name": "gastrocnemius", "role": "synergist", "contraction_type": "isotonic" },
+        { "name": "rectus_abdominis", "role": "stabilizer", "contraction_type": "isometric" },
+        { "name": "erector_spinae", "role": "stabilizer", "contraction_type": "isometric" }
+      ]
+    },
+    "primary_mover": "rectus_femoris",
+    "largest_muscle": "gluteus_maximus",
+    "movement_archetype": "squat",
+    "category": "strength",
+    "difficulty_level": 3,
+    "recovery_hours": 48
+  },
+  "chest_fly_2_db": {
+    "canonical_name": "chest_fly_2_db",
+    "muscle_data": {
+      "muscles": [
+        { "name": "pectoralis_major", "role": "primary_mover", "contraction_type": "isotonic" },
+        { "name": "anterior_deltoid", "role": "synergist", "contraction_type": "isotonic" },
+        { "name": "rectus_abdominis", "role": "stabilizer", "contraction_type": "isometric" },
+        { "name": "erector_spinae", "role": "stabilizer", "contraction_type": "isometric" }
+      ]
+    },
+    "primary_mover": "pectoralis_major",
+    "largest_muscle": "pectoralis_major",
+    "movement_archetype": "push",
+    "category": "strength",
+    "difficulty_level": 2,
+    "recovery_hours": 48
+  },
+  "toes_to_bar": {
+    "canonical_name": "toes_to_bar",
+    "muscle_data": {
+      "muscles": [
+        { "name": "rectus_abdominis", "role": "primary_mover", "contraction_type": "isotonic" },
+        { "name": "external_obliques", "role": "primary_mover", "contraction_type": "isotonic" },
+        { "name": "rectus_femoris", "role": "synergist", "contraction_type": "isotonic" },
+        { "name": "latissimus_dorsi", "role": "stabilizer", "contraction_type": "isometric" },
+        { "name": "biceps_brachii", "role": "stabilizer", "contraction_type": "isometric" }
+      ]
+    },
+    "primary_mover": "rectus_abdominis",
+    "largest_muscle": "rectus_abdominis",
+    "movement_archetype": "core",
+    "category": "strength",
+    "difficulty_level": 4,
+    "recovery_hours": 24
   }
 }

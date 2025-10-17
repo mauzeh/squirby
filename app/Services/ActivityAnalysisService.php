@@ -133,6 +133,12 @@ class ActivityAnalysisService
             foreach ($intelligence->muscle_data['muscles'] as $muscle) {
                 $muscleName = $muscle['name'];
                 
+                // Only track primary mover muscles for recovery purposes
+                // Synergists and stabilizers don't need the same recovery time
+                if ($muscle['role'] !== 'primary_mover') {
+                    continue;
+                }
+                
                 // Track the most recent workout for this muscle
                 if (!isset($muscleLastWorked[$muscleName]) || 
                     $liftLog->logged_at->gt($muscleLastWorked[$muscleName])) {

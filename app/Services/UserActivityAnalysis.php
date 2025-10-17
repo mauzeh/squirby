@@ -43,14 +43,14 @@ class UserActivityAnalysis
      * Get the number of days since a muscle was last worked
      * Returns null if the muscle was never worked in the analysis period
      */
-    public function getDaysSinceLastWorkout(string $muscle): ?int
+    public function getDaysSinceLastWorkout(string $muscle): ?float
     {
         // First check if we have actual date data
         if (isset($this->muscleLastWorked[$muscle])) {
             $lastWorkoutDate = $this->muscleLastWorked[$muscle];
             
             if ($lastWorkoutDate instanceof Carbon) {
-                return $lastWorkoutDate->diffInDays($this->analysisDate);
+                return $lastWorkoutDate->diffInHours($this->analysisDate) / 24.0;
             }
         }
         
