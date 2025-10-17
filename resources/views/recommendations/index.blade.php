@@ -20,19 +20,19 @@
         <div class="form-container">
             <h3>Filter Recommendations</h3>
             <form method="GET" action="{{ route('recommendations.index') }}" id="filter-form">
-                <!-- Hidden form fields to maintain filter state -->
-                <input type="hidden" name="movement_archetype" id="movement_archetype_input" value="{{ $movementArchetype }}">
-                <input type="hidden" name="difficulty_level" id="difficulty_level_input" value="{{ $difficultyLevel }}">
+                <!-- Hidden form fields to maintain filter state for bookmarking and URL parameters -->
+                <input type="hidden" name="movement_archetype" id="movement_archetype_input" value="{{ request('movement_archetype', $movementArchetype) }}">
+                <input type="hidden" name="difficulty_level" id="difficulty_level_input" value="{{ request('difficulty_level', $difficultyLevel) }}">
                 
                 <!-- Movement Pattern Button Group -->
                 <div class="filter-section">
                     <label class="filter-label">Movement Pattern:</label>
                     <div class="button-group" id="movement-buttons">
-                        <button type="button" class="filter-button {{ !$movementArchetype ? 'active' : '' }}" data-filter="movement_archetype" data-value="">
+                        <button type="button" class="filter-button {{ !request('movement_archetype') ? 'active' : '' }}" data-filter="movement_archetype" data-value="">
                             All Patterns
                         </button>
                         @foreach($movementArchetypes as $archetype)
-                            <button type="button" class="filter-button {{ $movementArchetype === $archetype ? 'active' : '' }}" data-filter="movement_archetype" data-value="{{ $archetype }}">
+                            <button type="button" class="filter-button {{ request('movement_archetype') === $archetype ? 'active' : '' }}" data-filter="movement_archetype" data-value="{{ $archetype }}">
                                 {{ ucfirst($archetype) }}
                             </button>
                         @endforeach
@@ -43,11 +43,11 @@
                 <div class="filter-section">
                     <label class="filter-label">Difficulty Level:</label>
                     <div class="button-group" id="difficulty-buttons">
-                        <button type="button" class="filter-button {{ !$difficultyLevel ? 'active' : '' }}" data-filter="difficulty_level" data-value="">
+                        <button type="button" class="filter-button {{ !request('difficulty_level') ? 'active' : '' }}" data-filter="difficulty_level" data-value="">
                             All Levels
                         </button>
                         @foreach($difficultyLevels as $level)
-                            <button type="button" class="filter-button {{ $difficultyLevel == $level ? 'active' : '' }}" data-filter="difficulty_level" data-value="{{ $level }}">
+                            <button type="button" class="filter-button {{ request('difficulty_level') == $level ? 'active' : '' }}" data-filter="difficulty_level" data-value="{{ $level }}">
                                 Level {{ $level }}
                             </button>
                         @endforeach
@@ -192,15 +192,34 @@
                                         @csrf
                                         @method('DELETE')
                                         <input type="hidden" name="redirect_to" value="recommendations">
-                                        @foreach(request()->query() as $key => $value)
-                                            <input type="hidden" name="{{ $key }}" value="{{ $value }}">
-                                        @endforeach
+                                        <!-- Preserve current filter state in form submission -->
+                                        @if(request('movement_archetype'))
+                                            <input type="hidden" name="movement_archetype" value="{{ request('movement_archetype') }}">
+                                        @endif
+                                        @if(request('difficulty_level'))
+                                            <input type="hidden" name="difficulty_level" value="{{ request('difficulty_level') }}">
+                                        @endif
                                         <button type="submit" class="button delete" onclick="return confirm('Are you sure you want to remove this exercise from today\'s program?');" title="Remove from Today">
                                             <i class="fas fa-minus"></i> Remove from Today
                                         </button>
                                     </form>
                                 @else
-                                    <a href="{{ route('programs.quick-add', array_merge(['exercise' => $recommendation['exercise']->id, 'date' => \Carbon\Carbon::today()->format('Y-m-d'), 'redirect_to' => 'recommendations'], request()->query())) }}" class="button" style="background-color: #4CAF50;">
+                                    @php
+                                        $quickAddParams = [
+                                            'exercise' => $recommendation['exercise']->id, 
+                                            'date' => \Carbon\Carbon::today()->format('Y-m-d'), 
+                                            'redirect_to' => 'recommendations'
+                                        ];
+                                        
+                                        // Preserve current filter state in URL parameters
+                                        if (request('movement_archetype')) {
+                                            $quickAddParams['movement_archetype'] = request('movement_archetype');
+                                        }
+                                        if (request('difficulty_level')) {
+                                            $quickAddParams['difficulty_level'] = request('difficulty_level');
+                                        }
+                                    @endphp
+                                    <a href="{{ route('programs.quick-add', $quickAddParams) }}" class="button" style="background-color: #4CAF50;">
                                         <i class="fas fa-plus"></i> Add to Today
                                     </a>
                                 @endif
@@ -656,6 +675,12 @@
             const filterForm = document.getElementById('filter-form');
             const filterButtons = document.querySelectorAll('.filter-button');
             
+            // Initialize button states from URL parameters on page load
+            initializeButtonStatesFromURL();
+            
+            // Synchronize hidden form fields with current URL parameters
+            synchronizeFormFieldsWithURL();
+            
             // Handle filter button clicks
             filterButtons.forEach(button => {
                 button.addEventListener('click', function(e) {
@@ -671,18 +696,90 @@
                     }
                     
                     // Update button active states within the same group
-                    const buttonGroup = this.parentElement;
-                    buttonGroup.querySelectorAll('.filter-button').forEach(btn => {
-                        btn.classList.remove('active');
-                    });
+                    updateButtonStates(filterType, filterValue);
                     
-                    // Add active state to clicked button
-                    this.classList.add('active');
-                    
-                    // Submit form
-                    filterForm.submit();
+                    // Submit form with updated parameters
+                    submitFormWithFilters();
                 });
             });
+            
+            /**
+             * Initialize button states based on current URL parameters
+             */
+            function initializeButtonStatesFromURL() {
+                const urlParams = new URLSearchParams(window.location.search);
+                
+                // Handle movement archetype buttons
+                const movementArchetype = urlParams.get('movement_archetype');
+                updateButtonStates('movement_archetype', movementArchetype || '');
+                
+                // Handle difficulty level buttons
+                const difficultyLevel = urlParams.get('difficulty_level');
+                updateButtonStates('difficulty_level', difficultyLevel || '');
+            }
+            
+            /**
+             * Synchronize hidden form fields with current URL parameters
+             */
+            function synchronizeFormFieldsWithURL() {
+                const urlParams = new URLSearchParams(window.location.search);
+                
+                // Sync movement archetype
+                const movementInput = document.getElementById('movement_archetype_input');
+                if (movementInput) {
+                    movementInput.value = urlParams.get('movement_archetype') || '';
+                }
+                
+                // Sync difficulty level
+                const difficultyInput = document.getElementById('difficulty_level_input');
+                if (difficultyInput) {
+                    difficultyInput.value = urlParams.get('difficulty_level') || '';
+                }
+            }
+            
+            /**
+             * Update button active states for a specific filter type
+             */
+            function updateButtonStates(filterType, filterValue) {
+                const buttons = document.querySelectorAll(`[data-filter="${filterType}"]`);
+                
+                buttons.forEach(btn => {
+                    const btnValue = btn.getAttribute('data-value');
+                    
+                    // Remove active class from all buttons in this group
+                    btn.classList.remove('active');
+                    
+                    // Add active class to the matching button
+                    if (btnValue === filterValue) {
+                        btn.classList.add('active');
+                    }
+                });
+            }
+            
+            /**
+             * Submit form with current filter values, ensuring proper URL parameter handling
+             */
+            function submitFormWithFilters() {
+                // Get current filter values from hidden inputs
+                const movementArchetype = document.getElementById('movement_archetype_input').value;
+                const difficultyLevel = document.getElementById('difficulty_level_input').value;
+                
+                // Build URL with parameters
+                const baseUrl = filterForm.getAttribute('action');
+                const params = new URLSearchParams();
+                
+                // Only add parameters if they have values
+                if (movementArchetype) {
+                    params.set('movement_archetype', movementArchetype);
+                }
+                if (difficultyLevel) {
+                    params.set('difficulty_level', difficultyLevel);
+                }
+                
+                // Navigate to the new URL with parameters
+                const newUrl = params.toString() ? `${baseUrl}?${params.toString()}` : baseUrl;
+                window.location.href = newUrl;
+            }
         });
     </script>
 @endsection

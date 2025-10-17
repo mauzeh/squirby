@@ -125,7 +125,6 @@ class RecommendationControllerTest extends TestCase
         $response->assertSee('Filter Recommendations');
         $response->assertSee('Movement Pattern:');
         $response->assertSee('Difficulty Level:');
-        $response->assertSee('Number of Recommendations:');
         
         // Check filter options are present
         $response->assertSee('All Patterns');
@@ -135,6 +134,9 @@ class RecommendationControllerTest extends TestCase
         $response->assertSee('All Levels');
         $response->assertSee('Level 1');
         $response->assertSee('Level 5');
+        
+        // Check that Clear Filters button is present
+        $response->assertSee('Clear Filters');
     }
 
     /** @test */
@@ -240,12 +242,11 @@ class RecommendationControllerTest extends TestCase
         $response = $this->actingAs($this->user)
             ->get(route('recommendations.index', [
                 'movement_archetype' => 'invalid_archetype',
-                'difficulty_level' => 10,
-                'count' => 50
+                'difficulty_level' => 10
             ]));
 
         $response->assertStatus(302);
-        $response->assertSessionHasErrors(['movement_archetype', 'difficulty_level', 'count']);
+        $response->assertSessionHasErrors(['movement_archetype', 'difficulty_level']);
     }
 
 

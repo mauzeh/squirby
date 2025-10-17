@@ -14,19 +14,21 @@ class RecommendationController extends Controller
     ) {}
 
     /**
-     * Display the recommendations page
+     * Display the recommendations page with proper URL parameter handling and state management
      */
     public function index(Request $request): View
     {
+        // Validate and sanitize URL parameters for filter state management
         $validated = $request->validate([
             'movement_archetype' => 'nullable|in:push,pull,squat,hinge,carry,core',
-            'difficulty_level' => 'nullable|integer|min:1|max:5',
-            'count' => 'nullable|integer|min:1|max:20'
+            'difficulty_level' => 'nullable|integer|min:1|max:5'
         ]);
 
-        $count = $validated['count'] ?? 5;
+        $count = 10; // Fixed default count as per requirements
+        
+        // Extract filter values from validated request for state management
         $movementArchetype = $validated['movement_archetype'] ?? null;
-        $difficultyLevel = $validated['difficulty_level'] ?? null;
+        $difficultyLevel = isset($validated['difficulty_level']) ? (int)$validated['difficulty_level'] : null;
 
         // Get base recommendations
         $recommendations = $this->recommendationEngine->getRecommendations(auth()->id(), $count);
@@ -67,7 +69,6 @@ class RecommendationController extends Controller
             'difficultyLevels',
             'movementArchetype',
             'difficultyLevel',
-            'count',
             'todayProgramExercises' // Changed variable name
         ));
     }
