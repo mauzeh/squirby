@@ -20,45 +20,43 @@
         <div class="form-container">
             <h3>Filter Recommendations</h3>
             <form method="GET" action="{{ route('recommendations.index') }}" id="filter-form">
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px;">
-                    <div>
-                        <label for="movement_archetype" style="display: block; margin-bottom: 5px; color: #f2f2f2;">Movement Pattern:</label>
-                        <select name="movement_archetype" id="movement_archetype" style="width: 100%; padding: 8px; background-color: #3a3a3a; color: #f2f2f2; border: 1px solid #555;">
-                            <option value="">All Patterns</option>
-                            @foreach($movementArchetypes as $archetype)
-                                <option value="{{ $archetype }}" {{ $movementArchetype === $archetype ? 'selected' : '' }}>
-                                    {{ ucfirst($archetype) }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                    
-                    <div>
-                        <label for="difficulty_level" style="display: block; margin-bottom: 5px; color: #f2f2f2;">Difficulty Level:</label>
-                        <select name="difficulty_level" id="difficulty_level" style="width: 100%; padding: 8px; background-color: #3a3a3a; color: #f2f2f2; border: 1px solid #555;">
-                            <option value="">All Levels</option>
-                            @foreach($difficultyLevels as $level)
-                                <option value="{{ $level }}" {{ $difficultyLevel == $level ? 'selected' : '' }}>
-                                    Level {{ $level }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                    
-                    <div>
-                        <label for="count" style="display: block; margin-bottom: 5px; color: #f2f2f2;">Number of Recommendations:</label>
-                        <select name="count" id="count" style="width: 100%; padding: 8px; background-color: #3a3a3a; color: #f2f2f2; border: 1px solid #555;">
-                            <option value="5" {{ $count == 5 ? 'selected' : '' }}>5</option>
-                            <option value="10" {{ $count == 10 ? 'selected' : '' }}>10</option>
-                            <option value="15" {{ $count == 15 ? 'selected' : '' }}>15</option>
-                            <option value="20" {{ $count == 20 ? 'selected' : '' }}>20</option>
-                        </select>
+                <!-- Hidden form fields to maintain filter state -->
+                <input type="hidden" name="movement_archetype" id="movement_archetype_input" value="{{ $movementArchetype }}">
+                <input type="hidden" name="difficulty_level" id="difficulty_level_input" value="{{ $difficultyLevel }}">
+                
+                <!-- Movement Pattern Button Group -->
+                <div class="filter-section">
+                    <label class="filter-label">Movement Pattern:</label>
+                    <div class="button-group" id="movement-buttons">
+                        <button type="button" class="filter-button {{ !$movementArchetype ? 'active' : '' }}" data-filter="movement_archetype" data-value="">
+                            All Patterns
+                        </button>
+                        @foreach($movementArchetypes as $archetype)
+                            <button type="button" class="filter-button {{ $movementArchetype === $archetype ? 'active' : '' }}" data-filter="movement_archetype" data-value="{{ $archetype }}">
+                                {{ ucfirst($archetype) }}
+                            </button>
+                        @endforeach
                     </div>
                 </div>
                 
-                <div style="display: flex; gap: 10px;">
-                    <button type="submit" class="button">Apply Filters</button>
-                    <a href="{{ route('recommendations.index') }}" class="button" style="background-color: #666;">Clear Filters</a>
+                <!-- Difficulty Level Button Group -->
+                <div class="filter-section">
+                    <label class="filter-label">Difficulty Level:</label>
+                    <div class="button-group" id="difficulty-buttons">
+                        <button type="button" class="filter-button {{ !$difficultyLevel ? 'active' : '' }}" data-filter="difficulty_level" data-value="">
+                            All Levels
+                        </button>
+                        @foreach($difficultyLevels as $level)
+                            <button type="button" class="filter-button {{ $difficultyLevel == $level ? 'active' : '' }}" data-filter="difficulty_level" data-value="{{ $level }}">
+                                Level {{ $level }}
+                            </button>
+                        @endforeach
+                    </div>
+                </div>
+                
+                <!-- Clear Filters Button -->
+                <div class="filter-actions">
+                    <a href="{{ route('recommendations.index') }}" class="button clear-button">Clear Filters</a>
                 </div>
             </form>
         </div>
@@ -215,6 +213,216 @@
     </div>
 
     <style>
+        /* Filter Interface Styles */
+        .filter-section {
+            margin-bottom: 24px;
+        }
+        
+        .filter-label {
+            display: block;
+            margin-bottom: 12px;
+            color: #f2f2f2;
+            font-weight: 600;
+            font-size: 1em;
+            letter-spacing: 0.5px;
+        }
+        
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .filter-button {
+            background-color: #3a3a3a;
+            color: #f2f2f2;
+            border: 2px solid #555;
+            padding: 10px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95em;
+            font-weight: 500;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            white-space: nowrap;
+            position: relative;
+            overflow: hidden;
+            min-width: 90px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .filter-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.5s;
+        }
+        
+        .filter-button:hover {
+            background-color: #4a4a4a;
+            border-color: #777;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+        
+        .filter-button:hover::before {
+            left: 100%;
+        }
+        
+        .filter-button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .filter-button.active {
+            background-color: #4CAF50;
+            border-color: #4CAF50;
+            color: white;
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+            transform: translateY(-1px);
+        }
+        
+        .filter-button.active:hover {
+            background-color: #45a049;
+            border-color: #45a049;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 16px rgba(76, 175, 80, 0.4);
+        }
+        
+        .filter-button.active::before {
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        }
+        
+
+        
+        .filter-actions {
+            margin-top: 20px;
+            display: flex;
+            justify-content: flex-start;
+        }
+        
+        .clear-button {
+            background-color: #6c757d !important;
+            color: #f2f2f2 !important;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 0.95em;
+            font-weight: 500;
+            transition: all 0.25s ease;
+            border: 2px solid #6c757d;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .clear-button:hover {
+            background-color: #5a6268 !important;
+            border-color: #5a6268;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+        
+        .clear-button:active {
+            transform: translateY(0);
+        }
+        
+        /* Movement archetype specific colors */
+        .filter-button[data-value="push"].active {
+            background-color: #FF6B6B;
+            border-color: #FF6B6B;
+            box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+        }
+        
+        .filter-button[data-value="pull"].active {
+            background-color: #4ECDC4;
+            border-color: #4ECDC4;
+            box-shadow: 0 4px 12px rgba(78, 205, 196, 0.3);
+        }
+        
+        .filter-button[data-value="squat"].active {
+            background-color: #45B7D1;
+            border-color: #45B7D1;
+            box-shadow: 0 4px 12px rgba(69, 183, 209, 0.3);
+        }
+        
+        .filter-button[data-value="hinge"].active {
+            background-color: #96CEB4;
+            border-color: #96CEB4;
+            box-shadow: 0 4px 12px rgba(150, 206, 180, 0.3);
+        }
+        
+        .filter-button[data-value="carry"].active {
+            background-color: #FFEAA7;
+            border-color: #FFEAA7;
+            color: #333;
+            box-shadow: 0 4px 12px rgba(255, 234, 167, 0.3);
+        }
+        
+        .filter-button[data-value="core"].active {
+            background-color: #DDA0DD;
+            border-color: #DDA0DD;
+            box-shadow: 0 4px 12px rgba(221, 160, 221, 0.3);
+        }
+        
+        /* Difficulty level specific styling */
+        .filter-button[data-filter="difficulty_level"] {
+            min-width: 70px;
+        }
+        
+        .filter-button[data-filter="difficulty_level"].active {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            border-color: #FFD700;
+            color: #333;
+            box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+        }
+        
+        /* Responsive design for filter buttons */
+        @media (max-width: 768px) {
+            .button-group {
+                justify-content: center;
+                gap: 8px;
+            }
+            
+            .filter-button {
+                flex: 1;
+                min-width: 70px;
+                padding: 8px 12px;
+                font-size: 0.9em;
+            }
+            
+            .filter-section {
+                margin-bottom: 20px;
+            }
+            
+            .filter-label {
+                text-align: center;
+                margin-bottom: 10px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .button-group {
+                gap: 6px;
+            }
+            
+            .filter-button {
+                min-width: 60px;
+                padding: 6px 10px;
+                font-size: 0.85em;
+            }
+            
+            .clear-button {
+                padding: 8px 16px;
+                font-size: 0.9em;
+            }
+        }
+        
+
+        
         .recommendations-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
@@ -445,12 +653,33 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Auto-submit form when filters change
             const filterForm = document.getElementById('filter-form');
-            const filterInputs = filterForm.querySelectorAll('select');
+            const filterButtons = document.querySelectorAll('.filter-button');
             
-            filterInputs.forEach(input => {
-                input.addEventListener('change', function() {
+            // Handle filter button clicks
+            filterButtons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    const filterType = this.getAttribute('data-filter');
+                    const filterValue = this.getAttribute('data-value');
+                    
+                    // Update hidden form field
+                    const hiddenInput = document.getElementById(filterType + '_input');
+                    if (hiddenInput) {
+                        hiddenInput.value = filterValue;
+                    }
+                    
+                    // Update button active states within the same group
+                    const buttonGroup = this.parentElement;
+                    buttonGroup.querySelectorAll('.filter-button').forEach(btn => {
+                        btn.classList.remove('active');
+                    });
+                    
+                    // Add active state to clicked button
+                    this.classList.add('active');
+                    
+                    // Submit form
                     filterForm.submit();
                 });
             });
