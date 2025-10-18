@@ -81,7 +81,14 @@
                     @else
                         @if(isset($program->lastWorkoutWeight))
                             <p class="suggested-weight">
-                                <span class="last-weight">Last time: {{ number_format($program->lastWorkoutWeight) }} lbs ({{ $program->lastWorkoutSets }} × {{ $program->lastWorkoutReps }}) - {{ $program->lastWorkoutTimeAgo }}</span>
+                                <span class="last-weight">Last time: 
+                                    @if(isset($program->lastWorkoutIsBanded) && $program->lastWorkoutIsBanded)
+                                        Band: {{ $program->lastWorkoutWeight }}
+                                    @else
+                                        {{ number_format($program->lastWorkoutWeight) }} lbs
+                                    @endif
+                                    ({{ $program->lastWorkoutSets }} × {{ $program->lastWorkoutReps }}) - {{ $program->lastWorkoutTimeAgo }}
+                                </span>
                             </p>
                         @endif
 

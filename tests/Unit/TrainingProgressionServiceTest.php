@@ -218,4 +218,210 @@ class TrainingProgressionServiceTest extends TestCase
         $this->assertEquals(11, $suggestion->reps); // Reps increase by 1
         $this->assertEquals(100, $suggestion->suggestedWeight); // Weight stays same if reps < MAX_REPS
     }
+
+    public function test_infers_double_progression_from_same_weight_increased_reps_pattern()
+    {
+        $user = User::factory()->create();
+        $exercise = Exercise::factory()->create(['band_type' => null]);
+
+        // Create two lift logs showing DoubleProgression pattern: same weight, reps increased
+        $olderLog = LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => Carbon::now()->subDays(3),
+        ]);
+        LiftSet::factory()->create([
+            'lift_log_id' => $olderLog->id,
+            'weight' => 120,
+            'reps' => 5,
+        ]);
+
+        $newerLog = LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => Carbon::yesterday(),
+        ]);
+        LiftSet::factory()->create([
+            'lift_log_id' => $newerLog->id,
+            'weight' => 120,
+            'reps' => 6,
+        ]);
+
+        $suggestion = $this->trainingProgressionService->getSuggestionDetails($user->id, $exercise->id);
+
+        $this->assertNotNull($suggestion);
+        // Should infer DoubleProgression and suggest increasing reps to 7 with same weight
+        $this->assertEquals(120, $suggestion->suggestedWeight);
+        $this->assertEquals(7, $suggestion->reps);
+    }
+
+    public function test_infers_double_progression_from_weight_increase_with_reps_reset_pattern()
+    {
+        $user = User::factory()->create();
+        $exercise = Exercise::factory()->create(['band_type' => null]);
+
+        // Create two lift logs showing DoubleProgression reset pattern: weight increased, reps decreased to 8-12 range
+        $olderLog = LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => Carbon::now()->subDays(3),
+        ]);
+        LiftSet::factory()->create([
+            'lift_log_id' => $olderLog->id,
+            'weight' => 115,
+            'reps' => 12,
+        ]);
+
+        $newerLog = LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => Carbon::yesterday(),
+        ]);
+        LiftSet::factory()->create([
+            'lift_log_id' => $newerLog->id,
+            'weight' => 120,
+            'reps' => 8,
+        ]);
+
+        $suggestion = $this->trainingProgressionService->getSuggestionDetails($user->id, $exercise->id);
+
+        $this->assertNotNull($suggestion);
+        // Should infer DoubleProgression and suggest increasing reps to 9 with same weight
+        $this->assertEquals(120, $suggestion->suggestedWeight);
+        $this->assertEquals(9, $suggestion->reps);
+    }
+
+    public function test_infers_linear_progression_from_weight_increase_same_reps_pattern()
+    {
+        $user = User::factory()->create();
+        $exercise = Exercise::factory()->create(['band_type' => null]);
+
+        // Create two lift logs showing LinearProgression pattern: weight increased, same reps
+        $olderLog = LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => Carbon::now()->subDays(3),
+        ]);
+        LiftSet::factory()->create([
+            'lift_log_id' => $olderLog->id,
+            'weight' => 100,
+            'reps' => 5,
+        ]);
+
+        $newerLog = LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => Carbon::yesterday(),
+        ]);
+        LiftSet::factory()->create([
+            'lift_log_id' => $newerLog->id,
+            'weight' => 105,
+            'reps' => 5,
+        ]);
+
+        $suggestion = $this->trainingProgressionService->getSuggestionDetails($user->id, $exercise->id);
+
+        $this->assertNotNull($suggestion);
+        // Should infer LinearProgression and suggest increasing weight to 110 with same reps
+        $this->assertEquals(110, $suggestion->suggestedWeight);
+        $this->assertEquals(5, $suggestion->reps);
+    }
+
+    public function test_falls_back_to_rep_range_logic_when_pattern_unclear()
+    {
+        $user = User::factory()->create();
+        $exercise = Exercise::factory()->create(['band_type' => null]);
+
+        // Create two lift logs with unclear pattern (both weight and reps changed in unexpected way)
+        $olderLog = LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => Carbon::now()->subDays(3),
+        ]);
+        LiftSet::factory()->create([
+            'lift_log_id' => $olderLog->id,
+            'weight' => 100,
+            'reps' => 8,
+        ]);
+
+        $newerLog = LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => Carbon::yesterday(),
+        ]);
+        LiftSet::factory()->create([
+            'lift_log_id' => $newerLog->id,
+            'weight' => 90,
+            'reps' => 12,
+        ]);
+
+        $suggestion = $this->trainingProgressionService->getSuggestionDetails($user->id, $exercise->id);
+
+        $this->assertNotNull($suggestion);
+        // Should fall back to rep-range logic: 12 reps is in 8-12 range, so DoubleProgression
+        // Since 12 reps >= MAX_REPS (12), DoubleProgression increases weight and resets reps
+        $this->assertEquals(95, $suggestion->suggestedWeight); // Weight increased by 5
+        $this->assertEquals(8, $suggestion->reps); // Reps reset to MIN_REPS (8)
+    }
+
+    public function test_uses_rep_range_logic_when_insufficient_history()
+    {
+        $user = User::factory()->create();
+        $exercise = Exercise::factory()->create(['band_type' => null]);
+
+        // Create only one lift log (insufficient for pattern inference)
+        $liftLog = LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => Carbon::yesterday(),
+        ]);
+        LiftSet::factory()->create([
+            'lift_log_id' => $liftLog->id,
+            'weight' => 100,
+            'reps' => 6,
+        ]);
+
+        $suggestion = $this->trainingProgressionService->getSuggestionDetails($user->id, $exercise->id);
+
+        $this->assertNotNull($suggestion);
+        // Should use rep-range logic: 6 reps < 8, so LinearProgression
+        $this->assertEquals(105, $suggestion->suggestedWeight);
+        $this->assertEquals(6, $suggestion->reps);
+    }
+
+    public function test_bodyweight_exercises_always_use_double_progression()
+    {
+        $user = User::factory()->create();
+        $exercise = Exercise::factory()->create(['is_bodyweight' => true]);
+
+        // Create pattern that would normally suggest LinearProgression
+        $olderLog = LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => Carbon::now()->subDays(3),
+        ]);
+        LiftSet::factory()->create([
+            'lift_log_id' => $olderLog->id,
+            'weight' => 0,
+            'reps' => 5,
+        ]);
+
+        $newerLog = LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => Carbon::yesterday(),
+        ]);
+        LiftSet::factory()->create([
+            'lift_log_id' => $newerLog->id,
+            'weight' => 5,
+            'reps' => 5,
+        ]);
+
+        $suggestion = $this->trainingProgressionService->getSuggestionDetails($user->id, $exercise->id);
+
+        $this->assertNotNull($suggestion);
+        // Should always use DoubleProgression for bodyweight exercises
+        $this->assertEquals(5, $suggestion->suggestedWeight);
+        $this->assertEquals(6, $suggestion->reps);
+    }
 }

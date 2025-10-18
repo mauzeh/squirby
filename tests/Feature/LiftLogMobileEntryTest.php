@@ -477,8 +477,10 @@ class LiftLogMobileEntryTest extends TestCase
         $response = $this->get(route('lift-logs.mobile-entry'));
 
         $response->assertStatus(200);
-        $response->assertSee('Last time: 100 lbs');
-        $response->assertSee('(3 x 5)');
+        $response->assertSee('Last time:');
+        $response->assertSee('100 lbs');
+        $response->assertSee('(3 × 5)');
+        $response->assertSee('1 day ago');
     }
 
     /** @test */

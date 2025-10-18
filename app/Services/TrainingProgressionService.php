@@ -75,10 +75,54 @@ class TrainingProgressionService
             return new DoubleProgression($this->oneRepMaxCalculatorService);
         }
 
+        // Try to infer progression model from recent workout history
+        $inferredModel = $this->inferProgressionModelFromHistory($liftLog->user_id, $liftLog->exercise_id);
+        if ($inferredModel) {
+            return $inferredModel;
+        }
+
+        // Fallback to rep-range based selection
         if ($liftLog->display_reps >= 8 && $liftLog->display_reps <= 12) {
             return new DoubleProgression($this->oneRepMaxCalculatorService);
         }
 
         return new LinearProgression($this->oneRepMaxCalculatorService);
+    }
+
+    private function inferProgressionModelFromHistory(int $userId, int $exerciseId): ?\App\Services\ProgressionModels\ProgressionModel
+    {
+        $recentLogs = LiftLog::where('user_id', $userId)
+            ->where('exercise_id', $exerciseId)
+            ->orderBy('logged_at', 'desc')
+            ->take(2)
+            ->get();
+
+        if ($recentLogs->count() < 2) {
+            return null; // Not enough data to infer
+        }
+
+        $newer = $recentLogs->first();
+        $older = $recentLogs->last();
+
+        $weightChange = $newer->display_weight - $older->display_weight;
+        $repsChange = $newer->display_reps - $older->display_reps;
+
+        // DoubleProgression pattern: same weight, reps increased OR weight increased with reps reset to lower value
+        if ($weightChange == 0 && $repsChange > 0) {
+            // Same weight, reps increased - classic DoubleProgression
+            return new DoubleProgression($this->oneRepMaxCalculatorService);
+        }
+
+        if ($weightChange > 0 && $repsChange < 0 && $newer->display_reps >= 8 && $newer->display_reps <= 12) {
+            // Weight increased, reps decreased to 8-12 range - likely DoubleProgression reset
+            return new DoubleProgression($this->oneRepMaxCalculatorService);
+        }
+
+        // LinearProgression pattern: weight increased, same reps
+        if ($weightChange > 0 && $repsChange == 0) {
+            return new LinearProgression($this->oneRepMaxCalculatorService);
+        }
+
+        return null; // Pattern unclear, use fallback logic
     }
 }

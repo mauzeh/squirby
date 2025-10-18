@@ -390,7 +390,14 @@ class LiftLogController extends Controller
                 ->first();
             
             if ($lastLog) {
-                $program->lastWorkoutWeight = $lastLog->display_weight;
+                // For banded exercises, display_weight returns the band color, not a numeric weight
+                if ($program->exercise->band_type) {
+                    $program->lastWorkoutWeight = $lastLog->display_weight; // This will be the band color
+                    $program->lastWorkoutIsBanded = true;
+                } else {
+                    $program->lastWorkoutWeight = $lastLog->display_weight; // This will be numeric
+                    $program->lastWorkoutIsBanded = false;
+                }
                 $program->lastWorkoutReps = $lastLog->display_reps;
                 $program->lastWorkoutSets = $lastLog->display_rounds;
                 $program->lastWorkoutDate = $lastLog->logged_at;
