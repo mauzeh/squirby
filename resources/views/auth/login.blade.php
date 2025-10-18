@@ -53,6 +53,12 @@
                     </button>
                 </div>
             </form>
+
+            <div class="flex items-center justify-center mt-4">
+                <a href="{{ route('auth.google') }}" class="button button-google">
+                    Sign in with Google
+                </a>
+            </div>
         </div>
     </div>
 @endsection
