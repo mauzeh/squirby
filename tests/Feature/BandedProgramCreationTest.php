@@ -106,7 +106,7 @@ class BandedProgramCreationTest extends TestCase
 
         $response->assertSeeText('Suggested:');
         $response->assertSeeText('Band: blue');
-        $response->assertSeeText('for 8 reps, 3 sets.');
+        $response->assertSeeText('(3 x 8)');
         
         // Verify that the suggested band color is pre-selected in the dropdown
         $this->assertStringContainsString('value="blue"', $response->getContent());
@@ -151,7 +151,7 @@ class BandedProgramCreationTest extends TestCase
 
         $response->assertSeeText('Suggested:');
         $response->assertSeeText('Band: green');
-        $response->assertSeeText('for 8 reps, 3 sets.');
+        $response->assertSeeText('(3 x 8)');
         
         // Verify that the suggested band color is pre-selected in the dropdown
         $this->assertStringContainsString('value="green"', $response->getContent());
@@ -196,7 +196,7 @@ class BandedProgramCreationTest extends TestCase
 
         $response->assertSeeText('Suggested:');
         $response->assertSeeText('Band: red');
-        $response->assertSeeText('for 11 reps, 3 sets.');
+        $response->assertSeeText('(3 x 11)');
         
         // Verify that the suggested band color is pre-selected in the dropdown
         $this->assertStringContainsString('value="red"', $response->getContent());
@@ -242,7 +242,7 @@ class BandedProgramCreationTest extends TestCase
         $response->assertOk(); // Assert that the page loads successfully (no 500 error)
         $response->assertSeeText('Suggested:');
         $response->assertSeeText('Band: red');
-        $response->assertSeeText('for 10 reps, 3 sets.');
+        $response->assertSeeText('(3 x 10)');
         
         // Verify that the suggested band color is pre-selected in the dropdown
         $this->assertStringContainsString('value="red"', $response->getContent());

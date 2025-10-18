@@ -86,7 +86,7 @@
                                 @else
                                     {{ number_format($program->suggestedNextWeight) }} lbs
                                 @endif
-                                for {{ $program->reps }} reps, {{ $program->sets }} sets.
+                                (<x-lift-logs.lift-reps-sets-display :reps="$program->reps" :sets="$program->sets" />)
                             </p>
                         @if(isset($program->lastWeight))
                             <p class="suggested-weight">
@@ -139,20 +139,20 @@
                                 </div>
 
                                 <div class="form-group">
-                                    <label for="reps_{{ $program->id }}">Reps:</label>
-                                    <div class="input-group">
-                                        <button type="button" class="decrement-button" data-field="reps_{{ $program->id }}">-</button>
-                                        <input type="number" name="reps" id="reps_{{ $program->id }}" class="large-input" inputmode="numeric" value="{{ $program->reps }}">
-                                        <button type="button" class="increment-button" data-field="reps_{{ $program->id }}">+</button>
-                                    </div>
-                                </div>
-
-                                <div class="form-group">
                                     <label for="rounds_{{ $program->id }}">Sets:</label>
                                     <div class="input-group">
                                         <button type="button" class="decrement-button" data-field="rounds_{{ $program->id }}">-</button>
                                         <input type="number" name="rounds" id="rounds_{{ $program->id }}" class="large-input" inputmode="numeric" value="{{ $program->sets }}">
                                         <button type="button" class="increment-button" data-field="rounds_{{ $program->id }}">+</button>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="reps_{{ $program->id }}">Reps:</label>
+                                    <div class="input-group">
+                                        <button type="button" class="decrement-button" data-field="reps_{{ $program->id }}">-</button>
+                                        <input type="number" name="reps" id="reps_{{ $program->id }}" class="large-input" inputmode="numeric" value="{{ $program->reps }}">
+                                        <button type="button" class="increment-button" data-field="reps_{{ $program->id }}">+</button>
                                     </div>
                                 </div>
 
