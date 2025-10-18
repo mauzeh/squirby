@@ -31,38 +31,7 @@ class PersistMissingGlobalExercises extends Command
             $this->error('This command can only be run in local environment for security reasons.');
             return Command::FAILURE;
         }
-        
-        // First, promote all exercises with user_id = 1 to global
-        $this->info('Promoting exercises from user_id = 1 to global...');
-        $userOneExercises = Exercise::where('user_id', 1)->get();
-        
-        if ($userOneExercises->isNotEmpty()) {
-            foreach ($userOneExercises as $exercise) {
-                // Generate canonical name if missing
-                if (empty($exercise->canonical_name)) {
-                    $canonicalName = strtolower(str_replace([' ', '(', ')', '-', ','], ['_', '', '', '_', ''], $exercise->title));
-                    $canonicalName = preg_replace('/_{2,}/', '_', $canonicalName);
-                    $canonicalName = trim($canonicalName, '_');
-                    $exercise->canonical_name = $canonicalName;
-                }
                 
-                // Promote to global
-                $exercise->update(['user_id' => null, 'canonical_name' => $exercise->canonical_name]);
-                $this->line("Promoted: {$exercise->title}");
-            }
-            $this->info("Promoted {$userOneExercises->count()} exercises to global.");
-        } else {
-            $this->info('No exercises found for user_id = 1 to promote.');
-        }
-        $this->newLine();
-        
-        // Then, run the GlobalExercisesSeeder to ensure database is up-to-date
-        $this->info('Running GlobalExercisesSeeder to sync CSV with database...');
-        $seeder = new \Database\Seeders\GlobalExercisesSeeder($this);
-        $seeder->run();
-        $this->info('GlobalExercisesSeeder completed.');
-        $this->newLine();
-        
         $csvPath = database_path('seeders/csv/exercises_from_real_world.csv');
         
         if (!file_exists($csvPath)) {
