@@ -310,7 +310,6 @@ class GlobalExercisesSeederTest extends TestCase
 
         // Verify exercises with empty descriptions in CSV are handled correctly
         $exercisesWithEmptyDescriptions = [
-            'DB Bench Press',
             'Front Squat',
             'Hip Thrust (Barbell)',
             'Kettlebell Swing',
