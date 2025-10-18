@@ -22,11 +22,11 @@
                 You are currently impersonating {{ auth()->user()->name }}. <a href="{{ route('users.leave-impersonate') }}" style="color: #000;">Switch Back</a>
             </div>
         @endif
-        @if(app()->environment('production') || app()->environment('staging'))
-            <div class="env-bar production">
-                PRODUCTION / STAGING
+        @if(app()->environment('staging'))
+            <div class="env-bar staging">
+                STAGING ENVIRONMENT
             </div>
-        @else
+        @elseif(app()->environment('local'))
             <div class="env-bar local">
                 LOCAL DEV ENVIRONMENT
             </div>
