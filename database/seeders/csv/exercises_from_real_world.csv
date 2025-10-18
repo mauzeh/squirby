@@ -27,7 +27,7 @@ title,description,is_bodyweight,canonical_name
 "Lunge (Step-Back, 2-DB)","Weights are both dumbbells combined",0,lunge_step_back_2_db
 "Chest Fly (2-DB)","Weight is of a single dumbbell",0,chest_fly_2_db
 Toes-To-Bar,,1,toes_to_bar
-Running,,0,running
+Running,,1,running
 "Split Squat (2-DB)",,0,split_squat_2_db
 "Crush Press (2-DB)",,0,crush_press_2_db
 "Push-Up (Deficit, Paralelites)",,1,push_up_deficit_paralelites

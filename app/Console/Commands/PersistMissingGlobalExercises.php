@@ -58,7 +58,8 @@ class PersistMissingGlobalExercises extends Command
         
         // Then, run the GlobalExercisesSeeder to ensure database is up-to-date
         $this->info('Running GlobalExercisesSeeder to sync CSV with database...');
-        $this->call('db:seed', ['--class' => 'GlobalExercisesSeeder']);
+        $seeder = new \Database\Seeders\GlobalExercisesSeeder($this);
+        $seeder->run();
         $this->info('GlobalExercisesSeeder completed.');
         $this->newLine();
         

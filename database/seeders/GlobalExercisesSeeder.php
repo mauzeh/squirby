@@ -7,6 +7,13 @@ use App\Models\Exercise;
 
 class GlobalExercisesSeeder extends Seeder
 {
+    protected $console;
+    
+    public function __construct($console = null)
+    {
+        $this->console = $console;
+    }
+    
     /**
      * Run the database seeds.
      */
@@ -29,6 +36,7 @@ class GlobalExercisesSeeder extends Seeder
         
         // Process each CSV line directly (simpler approach than IngredientSeeder)
         $header = null;
+        $processedCount = 0;
         
         foreach ($csvLines as $lineNumber => $line) {
             $line = trim($line);
@@ -75,14 +83,48 @@ class GlobalExercisesSeeder extends Seeder
                     $exercise['is_bodyweight'] = true;
                 }
 
-                Exercise::firstOrCreate(
+                // Check if exercise exists to determine if it's new or updated
+                $existingExercise = Exercise::where('title', $exercise['title'])
+                    ->whereNull('user_id')
+                    ->first();
+                
+                $exerciseModel = Exercise::updateOrCreate(
                     ['title' => $exercise['title'], 'user_id' => null],
                     $exercise
                 );
+                
+                // Output changes if console is available
+                if ($this->console) {
+                    if (!$existingExercise) {
+                        $this->console->line("Created: {$exercise['title']}");
+                    } else {
+                        // Check what changed
+                        $changes = [];
+                        if ($existingExercise->canonical_name !== $exercise['canonical_name']) {
+                            $changes[] = "canonical_name: '{$existingExercise->canonical_name}' → '{$exercise['canonical_name']}'";
+                        }
+                        if ($existingExercise->description !== $exercise['description']) {
+                            $changes[] = "description updated";
+                        }
+                        if (($existingExercise->is_bodyweight ?? false) !== ($isBodyweight ?? false)) {
+                            $changes[] = "is_bodyweight: " . ($existingExercise->is_bodyweight ? 'true' : 'false') . " → " . ($isBodyweight ? 'true' : 'false');
+                        }
+                        
+                        if (!empty($changes)) {
+                            $this->console->line("Updated: {$exercise['title']} (" . implode(', ', $changes) . ")");
+                        }
+                    }
+                }
+                
+                $processedCount++;
             } catch (\Exception $e) {
                 // Skip malformed rows gracefully and continue processing
                 continue;
             }
+        }
+        
+        if ($this->console) {
+            $this->console->info("Processed {$processedCount} exercises from CSV");
         }
     }
 }
