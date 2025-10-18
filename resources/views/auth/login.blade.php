@@ -5,6 +5,16 @@
         <div class="form-container" style="max-width: 400px; margin: 50px auto;">
             <h3 style="text-align: center; margin-bottom: 20px;">Log In</h3>
 
+            @if ($errors->any())
+                <div class="error-message-box mb-4">
+                    <ul>
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
             <!-- Session Status -->
             @if (session('status'))
                 <div class="success-message-box mb-4">
@@ -19,18 +29,12 @@
                 <div class="form-group">
                     <label for="email">Email</label>
                     <input id="email" class="form-control" type="email" name="email" value="{{ old('email') }}" required autofocus autocomplete="username" />
-                    @error('email')
-                        <div class="error-message">{{ $message }}</div>
-                    @enderror
                 </div>
 
                 <!-- Password -->
                 <div class="form-group">
                     <label for="password">Password</label>
                     <input id="password" class="form-control" type="password" name="password" required autocomplete="current-password" />
-                    @error('password')
-                        <div class="error-message">{{ $message }}</div>
-                    @enderror
                 </div>
 
                 <!-- Remember Me -->
