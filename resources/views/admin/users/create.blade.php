@@ -3,15 +3,26 @@
 @section('content')
     <div class="container">
         <h1>Add User</h1>
+
+        @if ($errors->any())
+            <div class="error-message">
+                <ul>
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
         <form action="{{ route('users.store') }}" method="POST">
             @csrf
             <div class="form-group">
                 <label for="name">Name:</label>
-                <input type="text" name="name" id="name" class="form-control" required>
+                <input type="text" name="name" id="name" class="form-control" value="{{ old('name') }}" required>
             </div>
             <div class="form-group">
                 <label for="email">Email:</label>
-                <input type="email" name="email" id="email" class="form-control" required>
+                <input type="email" name="email" id="email" class="form-control" value="{{ old('email') }}" required>
             </div>
             <div class="form-group">
                 <label for="password">Password:</label>
@@ -35,7 +46,7 @@
                 <label for="roles">Roles:</label>
                 <select name="roles[]" id="roles" class="form-control" multiple required>
                     @foreach ($roles as $role)
-                        <option value="{{ $role->id }}">{{ $role->name }}</option>
+                        <option value="{{ $role->id }}" {{ in_array($role->id, old('roles', [])) ? 'selected' : '' }}>{{ $role->name }}</option>
                     @endforeach
                 </select>
             </div>
