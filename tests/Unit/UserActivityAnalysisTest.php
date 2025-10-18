@@ -126,12 +126,12 @@ class UserActivityAnalysisTest extends TestCase
 
         // High workload should estimate recent work (low days)
         $pectoralisDays = $analysis->getDaysSinceLastWorkout('pectoralis_major');
-        $this->assertIsInt($pectoralisDays);
+        $this->assertIsFloat($pectoralisDays);
         $this->assertLessThan(10, $pectoralisDays);
 
         // Low workload should estimate older work (higher days)
         $quadricepsDays = $analysis->getDaysSinceLastWorkout('quadriceps');
-        $this->assertIsInt($quadricepsDays);
+        $this->assertIsFloat($quadricepsDays);
         $this->assertGreaterThan(15, $quadricepsDays);
 
         // No workload should return null
