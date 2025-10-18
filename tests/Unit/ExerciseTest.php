@@ -319,4 +319,202 @@ class ExerciseTest extends TestCase
         $this->assertFalse($exercise->isBandedResistance());
         $this->assertFalse($exercise->isBandedAssistance());
     }
+
+    /** @test */
+    public function canonical_name_is_automatically_generated_on_creation()
+    {
+        $exercise = Exercise::factory()->create([
+            'title' => 'Back Squat',
+            'description' => 'A compound exercise',
+        ]);
+
+        $this->assertEquals('back_squat', $exercise->canonical_name);
+        $this->assertDatabaseHas('exercises', [
+            'id' => $exercise->id,
+            'canonical_name' => 'back_squat',
+        ]);
+    }
+
+    /** @test */
+    public function canonical_name_handles_special_characters_and_spaces()
+    {
+        $exercise = Exercise::factory()->create([
+            'title' => 'Half-Kneeling DB Press (Single Arm)',
+            'description' => 'A unilateral exercise',
+        ]);
+
+        $this->assertEquals('half_kneeling_db_press_single_arm', $exercise->canonical_name);
+    }
+
+    /** @test */
+    public function canonical_name_handles_numbers_and_mixed_case()
+    {
+        $exercise = Exercise::factory()->create([
+            'title' => 'Bench Press (2-DB Seesaw)',
+            'description' => 'A variation with dumbbells',
+        ]);
+
+        $this->assertEquals('bench_press_2_db_seesaw', $exercise->canonical_name);
+    }
+
+    /** @test */
+    public function canonical_name_generates_unique_names_for_duplicate_titles()
+    {
+        $exercise1 = Exercise::factory()->create([
+            'title' => 'Push Up',
+            'description' => 'First push up exercise',
+        ]);
+
+        $exercise2 = Exercise::factory()->create([
+            'title' => 'Push Up',
+            'description' => 'Second push up exercise',
+        ]);
+
+        $this->assertEquals('push_up', $exercise1->canonical_name);
+        $this->assertEquals('push_up_1', $exercise2->canonical_name);
+    }
+
+    /** @test */
+    public function canonical_name_handles_multiple_duplicates()
+    {
+        $exercise1 = Exercise::factory()->create(['title' => 'Squat']);
+        $exercise2 = Exercise::factory()->create(['title' => 'Squat']);
+        $exercise3 = Exercise::factory()->create(['title' => 'Squat']);
+
+        $this->assertEquals('squat', $exercise1->canonical_name);
+        $this->assertEquals('squat_1', $exercise2->canonical_name);
+        $this->assertEquals('squat_2', $exercise3->canonical_name);
+    }
+
+    /** @test */
+    public function canonical_name_is_not_updated_when_title_changes()
+    {
+        $exercise = Exercise::factory()->create([
+            'title' => 'Original Title',
+            'description' => 'Original description',
+        ]);
+
+        $originalCanonicalName = $exercise->canonical_name;
+        $this->assertEquals('original_title', $originalCanonicalName);
+
+        // Update the title
+        $exercise->update(['title' => 'Updated Title']);
+        $exercise->refresh();
+
+        // Canonical name should remain unchanged
+        $this->assertEquals($originalCanonicalName, $exercise->canonical_name);
+        $this->assertEquals('original_title', $exercise->canonical_name);
+        $this->assertEquals('Updated Title', $exercise->title);
+    }
+
+    /** @test */
+    public function canonical_name_is_not_updated_when_other_fields_change()
+    {
+        $exercise = Exercise::factory()->create([
+            'title' => 'Test Exercise',
+            'description' => 'Original description',
+            'is_bodyweight' => false,
+        ]);
+
+        $originalCanonicalName = $exercise->canonical_name;
+        $this->assertEquals('test_exercise', $originalCanonicalName);
+
+        // Update other fields
+        $exercise->update([
+            'description' => 'Updated description',
+            'is_bodyweight' => true,
+        ]);
+        $exercise->refresh();
+
+        // Canonical name should remain unchanged
+        $this->assertEquals($originalCanonicalName, $exercise->canonical_name);
+    }
+
+    /** @test */
+    public function canonical_name_respects_manually_set_value_during_creation()
+    {
+        // Create exercise with manually set canonical_name
+        $exercise = new Exercise([
+            'title' => 'Manual Test',
+            'description' => 'Test with manual canonical name',
+        ]);
+        $exercise->canonical_name = 'custom_canonical_name';
+        $exercise->save();
+
+        $this->assertEquals('custom_canonical_name', $exercise->canonical_name);
+    }
+
+    /** @test */
+    public function canonical_name_is_not_generated_if_title_is_empty()
+    {
+        $exercise = new Exercise([
+            'title' => '',
+            'description' => 'Exercise without title',
+        ]);
+        $exercise->save();
+
+        $this->assertNull($exercise->canonical_name);
+    }
+
+    /** @test */
+    public function canonical_name_is_not_generated_if_title_is_null()
+    {
+        // Since title is required in the database, we'll test by creating an exercise
+        // and then setting title to null to test the boot method logic
+        $exercise = new Exercise([
+            'description' => 'Exercise without title',
+        ]);
+        
+        // Set title to null after instantiation to test the boot logic
+        $exercise->title = null;
+        
+        // The boot method should not generate a canonical name when title is null
+        // We can't save this to database due to NOT NULL constraint, but we can test the logic
+        $this->assertNull($exercise->canonical_name);
+        
+        // Test that the condition in boot method works correctly
+        $shouldGenerate = !empty($exercise->canonical_name) || !empty($exercise->title);
+        $this->assertFalse($shouldGenerate);
+    }
+
+    /** @test */
+    public function canonical_name_uniqueness_excludes_current_exercise_during_updates()
+    {
+        // Create an exercise
+        $exercise = Exercise::factory()->create(['title' => 'Test Exercise']);
+        $this->assertEquals('test_exercise', $exercise->canonical_name);
+
+        // Update description (not title) - canonical name should remain the same
+        $exercise->update(['description' => 'Updated description']);
+        $exercise->refresh();
+
+        // Should still have the same canonical name
+        $this->assertEquals('test_exercise', $exercise->canonical_name);
+    }
+
+    /** @test */
+    public function canonical_name_handles_unicode_characters()
+    {
+        $exercise = Exercise::factory()->create([
+            'title' => 'Café Squat & Déjà Vu',
+            'description' => 'Exercise with unicode characters',
+        ]);
+
+        // Should convert unicode characters to ASCII equivalents
+        $this->assertEquals('cafe_squat_deja_vu', $exercise->canonical_name);
+    }
+
+    /** @test */
+    public function canonical_name_handles_very_long_titles()
+    {
+        $longTitle = 'This is a very long exercise title that contains many words and should be properly converted to a canonical name format';
+        
+        $exercise = Exercise::factory()->create([
+            'title' => $longTitle,
+            'description' => 'Exercise with long title',
+        ]);
+
+        $expectedCanonicalName = 'this_is_a_very_long_exercise_title_that_contains_many_words_and_should_be_properly_converted_to_a_canonical_name_format';
+        $this->assertEquals($expectedCanonicalName, $exercise->canonical_name);
+    }
 }

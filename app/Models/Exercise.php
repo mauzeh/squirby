@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class Exercise extends Model
 {
@@ -15,13 +16,23 @@ class Exercise extends Model
         'is_bodyweight',
         'user_id',
         'band_type',
-        'canonical_name',
     ];
 
     protected $casts = [
         'is_bodyweight' => 'boolean',
         'band_type' => 'string',
     ];
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($exercise) {
+            if (empty($exercise->canonical_name) && !empty($exercise->title)) {
+                $exercise->canonical_name = static::generateUniqueCanonicalName($exercise->title);
+            }
+        });
+    }
 
     public function liftLogs()
     {
@@ -122,5 +133,37 @@ class Exercise extends Model
     public function hasIntelligence(): bool
     {
         return $this->intelligence !== null;
+    }
+
+    /**
+     * Generate a unique canonical name from a title
+     */
+    protected static function generateUniqueCanonicalName(string $title, ?int $excludeId = null): string
+    {
+        $baseCanonicalName = Str::slug($title, '_');
+        $canonicalName = $baseCanonicalName;
+        $counter = 1;
+
+        // Keep checking until we find a unique canonical name
+        while (static::canonicalNameExists($canonicalName, $excludeId)) {
+            $canonicalName = $baseCanonicalName . '_' . $counter;
+            $counter++;
+        }
+
+        return $canonicalName;
+    }
+
+    /**
+     * Check if a canonical name already exists
+     */
+    protected static function canonicalNameExists(string $canonicalName, ?int $excludeId = null): bool
+    {
+        $query = static::where('canonical_name', $canonicalName);
+        
+        if ($excludeId) {
+            $query->where('id', '!=', $excludeId);
+        }
+
+        return $query->exists();
     }
 }
