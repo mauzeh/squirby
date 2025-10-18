@@ -28,6 +28,21 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        $userAgent = $request->header('User-Agent');
+        $isMobile = false;
+
+        $mobileKeywords = ['mobile', 'android', 'iphone', 'ipod', 'blackberry', 'windows phone'];
+        foreach ($mobileKeywords as $keyword) {
+            if (stripos($userAgent, $keyword) !== false) {
+                $isMobile = true;
+                break;
+            }
+        }
+
+        if ($isMobile) {
+            return redirect()->intended(route('lift-logs.mobile-entry', absolute: false));
+        }
+
         return redirect()->intended(route('food-logs.index', absolute: false));
     }
 
