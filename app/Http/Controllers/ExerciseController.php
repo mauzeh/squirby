@@ -198,34 +198,23 @@ class ExerciseController extends Controller
     }
 
     /**
-     * Promote selected user exercises to global exercises.
+     * Promote a user exercise to global exercise.
      */
-    public function promoteSelected(Request $request)
+    public function promote(Exercise $exercise)
     {
-        $validated = $request->validate([
-            'exercise_ids' => 'required|array',
-            'exercise_ids.*' => 'exists:exercises,id',
-        ]);
-
-        $exercises = Exercise::whereIn('id', $validated['exercise_ids'])->get();
-
-        // Verify admin permissions and that exercises are user-specific
-        foreach ($exercises as $exercise) {
-            $this->authorize('promoteToGlobal', $exercise);
-            
-            if ($exercise->isGlobal()) {
-                return back()->withErrors(['error' => "Exercise '{$exercise->title}' is already global."]);
-            }
+        $this->authorize('promoteToGlobal', $exercise);
+        
+        if ($exercise->isGlobal()) {
+            return back()->withErrors(['error' => "Exercise '{$exercise->title}' is already global."]);
         }
 
-        // Promote all selected exercises
-        Exercise::whereIn('id', $validated['exercise_ids'])
-            ->update(['user_id' => null]);
+        $exercise->update(['user_id' => null]);
 
-        $count = count($validated['exercise_ids']);
         return redirect()->route('exercises.index')
-            ->with('success', "Successfully promoted {$count} exercise(s) to global status.");
+            ->with('success', "Exercise '{$exercise->title}' promoted to global status successfully.");
     }
+
+
 
     public function showLogs(Request $request, Exercise $exercise)
     {

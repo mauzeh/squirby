@@ -5,12 +5,12 @@
   - Add new individual promotion route `exercises/{exercise}/promote`
   - _Requirements: 2.4_
 
-- [ ] 2. Implement individual promotion controller method
-  - [ ] 2.1 Remove the `promoteSelected` method from ExerciseController
+- [x] 2. Implement individual promotion controller method
+  - [x] 2.1 Remove the `promoteSelected` method from ExerciseController
     - Delete the existing bulk promotion method
     - _Requirements: 2.4_
   
-  - [ ] 2.2 Create new `promote` method for individual exercise promotion
+  - [x] 2.2 Create new `promote` method for individual exercise promotion
     - Add method that accepts Exercise model binding
     - Implement authorization using existing `promoteToGlobal` policy
     - Validate exercise is not already global
