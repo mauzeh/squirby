@@ -10,7 +10,7 @@ use Illuminate\Support\Collection;
 class LinearProgression implements ProgressionModel
 {
     const RESOLUTION = 5.0;
-    const LOOKBACK_WEEKS = 2;
+    const LOOKBACK_WEEKS = 4;
 
     protected OneRepMaxCalculatorService $oneRepMaxCalculatorService;
 

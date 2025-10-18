@@ -382,7 +382,21 @@ class LiftLogController extends Controller
             }
         }
 
-        //dd($programs);
+        // Always fetch last workout data for each exercise, regardless of suggestions
+        foreach ($programs as $program) {
+            $lastLog = \App\Models\LiftLog::where('user_id', auth()->id())
+                ->where('exercise_id', $program->exercise_id)
+                ->orderBy('logged_at', 'desc')
+                ->first();
+            
+            if ($lastLog) {
+                $program->lastWorkoutWeight = $lastLog->display_weight;
+                $program->lastWorkoutReps = $lastLog->display_reps;
+                $program->lastWorkoutSets = $lastLog->display_rounds;
+                $program->lastWorkoutDate = $lastLog->logged_at;
+                $program->lastWorkoutTimeAgo = $lastLog->logged_at->diffForHumans();
+            }
+        }
 
         $submittedLiftLog = null;
         if ($request->has('submitted_lift_log_id')) {
