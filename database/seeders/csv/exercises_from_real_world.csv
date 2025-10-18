@@ -9,8 +9,8 @@ title,description,is_bodyweight,canonical_name
 "Chin-Ups","A bodyweight pulling exercise with supinated grip.",1,"chin_ups"
 "Pull-Ups","A bodyweight pulling exercise with pronated grip.",1,"pull_ups"
 "Back Rack Lunge (Step Back)","Reps are per leg",0,"back_rack_lunge_step_back"
-"Bench Press (2-DB Seesaw)","Weight is that of a single DB",0,"bench_press_2db_seesaw"
-"DB Bench Press","",0,"db_bench_press"
+"Bench Press (2-DB Seesaw)","Weight is that of a single DB",0,"bench_press_2_db_seesaw"
+"Bench Press (2-DB)","Weight is that of a single DB",0,"bench_press_2_db"
 "Front Squat","",0,"front_squat"
 "Hip Thrust (Barbell)","",0,"hip_thrust_barbell"
 "Kettlebell Swing","",0,"kettlebell_swing"
@@ -23,7 +23,12 @@ title,description,is_bodyweight,canonical_name
 "Lunge, Walking (2-DB)","Weight is both dumbbells combined",0,"lunge_walking_2_db"
 "Zombie Squat","",0,"zombie_squat"
 "Romanian Deadlift","",0,"romanian_deadlift"
-"Split Squat (Hungarian, 2-DB)","Reps are per leg. Weight is both dumbbells combined",0,"split_squat_hungarian_2_db"
-"Lunge (Step-Back, 2-DB)","Weights are both dumbbells combined",0,"lunge_step_back_2_db"
-"Chest Fly (2-DB)","Weight is of a single dumbbell",0,"chest_fly_2_db"
-"Toes-To-Bar","",1,"toes_to_bar"
+"Split Squat (Hungarian, 2-DB)","Reps are per leg. Weight is both dumbbells combined",0,split_squat_hungarian_2_db
+"Lunge (Step-Back, 2-DB)","Weights are both dumbbells combined",0,lunge_step_back_2_db
+"Chest Fly (2-DB)","Weight is of a single dumbbell",0,chest_fly_2_db
+Toes-To-Bar,,1,toes_to_bar
+Running,,0,running
+"Split Squat (2-DB)",,0,split_squat_2_db
+"Crush Press (2-DB)",,0,crush_press_2_db
+"Push-Up (Deficit, Paralelites)",,1,push_up_deficit_paralelites
+"Bicep Curl (2-DB)",,0,bicep_curl_2_db
