@@ -42,7 +42,8 @@
                     </label>
                 </div>
 
-                <div class="flex items-center justify-end mt-4">
+                <div class="form-group" style="justify-content: flex-start;">
+                    <label>&nbsp;</label>
                     <button type="submit" class="button ms-3">
                         Log in
                     </button>
