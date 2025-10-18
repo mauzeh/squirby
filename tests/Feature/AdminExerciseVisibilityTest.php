@@ -451,11 +451,9 @@ class AdminExerciseVisibilityTest extends TestCase
         ]);
 
         // Admin should be able to promote other user's exercise
-        $response = $this->post(route('exercises.promote-selected'), [
-            'exercise_ids' => [$userExercise->id],
-        ]);
+        $response = $this->post(route('exercises.promote', $userExercise));
         $response->assertRedirect(route('exercises.index'));
-        $response->assertSessionHas('success');
+        $response->assertSessionHas('success', "Exercise 'User Exercise' promoted to global status successfully.");
 
         // Exercise should now be global
         $this->assertDatabaseHas('exercises', [
@@ -479,9 +477,7 @@ class AdminExerciseVisibilityTest extends TestCase
         ]);
 
         // Regular user should not be able to promote other user's exercise
-        $response = $this->post(route('exercises.promote-selected'), [
-            'exercise_ids' => [$otherUserExercise->id],
-        ]);
+        $response = $this->post(route('exercises.promote', $otherUserExercise));
         $response->assertStatus(403);
     }
 

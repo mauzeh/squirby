@@ -42,87 +42,40 @@ class ExerciseControllerTest extends TestCase
         $this->controller = new ExerciseController($exerciseService, $chartService, $tsvImporterService, $liftLogTablePresenter);
     }
 
-    public function test_promote_selected_validates_required_exercise_ids(): void
-    {
-        $this->actingAs($this->adminUser);
-        
-        $request = Request::create('/exercises/promote-selected', 'POST', []);
-        
-        $this->expectException(\Illuminate\Validation\ValidationException::class);
-        
-        $this->controller->promoteSelected($request);
-    }
-
-    public function test_promote_selected_validates_exercise_ids_array(): void
-    {
-        $this->actingAs($this->adminUser);
-        
-        $request = Request::create('/exercises/promote-selected', 'POST', [
-            'exercise_ids' => 'not-an-array'
-        ]);
-        
-        $this->expectException(\Illuminate\Validation\ValidationException::class);
-        
-        $this->controller->promoteSelected($request);
-    }
-
-    public function test_promote_selected_validates_exercise_ids_exist(): void
-    {
-        $this->actingAs($this->adminUser);
-        
-        $request = Request::create('/exercises/promote-selected', 'POST', [
-            'exercise_ids' => [999, 1000] // Non-existent IDs
-        ]);
-        
-        $this->expectException(\Illuminate\Validation\ValidationException::class);
-        
-        $this->controller->promoteSelected($request);
-    }
-
-    public function test_promote_selected_authorizes_each_exercise(): void
+    public function test_promote_authorizes_exercise(): void
     {
         $this->actingAs($this->regularUser); // Non-admin user
         
         $userExercise = Exercise::factory()->create(['user_id' => $this->regularUser->id]);
         
-        $request = Request::create('/exercises/promote-selected', 'POST', [
-            'exercise_ids' => [$userExercise->id]
-        ]);
-        
         $this->expectException(\Illuminate\Auth\Access\AuthorizationException::class);
         
-        $this->controller->promoteSelected($request);
+        $this->controller->promote($userExercise);
     }
 
-    public function test_promote_selected_rejects_already_global_exercises(): void
+    public function test_promote_rejects_already_global_exercises(): void
     {
         $this->actingAs($this->adminUser);
         
         $globalExercise = Exercise::factory()->create(['user_id' => null]);
         
-        $request = Request::create('/exercises/promote-selected', 'POST', [
-            'exercise_ids' => [$globalExercise->id]
-        ]);
-        
         // This should throw an authorization exception because the policy 
         // prevents promoting already global exercises
         $this->expectException(\Illuminate\Auth\Access\AuthorizationException::class);
         
-        $this->controller->promoteSelected($request);
+        $this->controller->promote($globalExercise);
     }
 
-    public function test_promote_selected_successfully_promotes_user_exercises(): void
+    public function test_promote_successfully_promotes_user_exercise(): void
     {
         $this->actingAs($this->adminUser);
         
-        $userExercise1 = Exercise::factory()->create(['user_id' => $this->regularUser->id]);
-        $userExercise2 = Exercise::factory()->create(['user_id' => $this->regularUser->id]);
-        
-        $request = Request::create('/exercises/promote-selected', 'POST', [
-            'exercise_ids' => [$userExercise1->id, $userExercise2->id]
+        $userExercise = Exercise::factory()->create([
+            'user_id' => $this->regularUser->id,
+            'title' => 'Test Exercise'
         ]);
         
-        $response = $this->controller->promoteSelected($request);
+        $response = $this->controller->promote($userExercise);
         
         // Check response
         $this->assertEquals(302, $response->getStatusCode());
@@ -130,36 +83,15 @@ class ExerciseControllerTest extends TestCase
         
         // Check database changes
         $this->assertDatabaseHas('exercises', [
-            'id' => $userExercise1->id,
-            'user_id' => null
-        ]);
-        $this->assertDatabaseHas('exercises', [
-            'id' => $userExercise2->id,
+            'id' => $userExercise->id,
             'user_id' => null
         ]);
         
         // Check success message
-        $this->assertStringContainsString('Successfully promoted 2 exercise(s)', $response->getSession()->get('success'));
+        $this->assertStringContainsString("Exercise 'Test Exercise' promoted to global status successfully.", $response->getSession()->get('success'));
     }
 
-    public function test_promote_selected_handles_mixed_valid_and_invalid_exercises(): void
-    {
-        $this->actingAs($this->adminUser);
-        
-        $userExercise = Exercise::factory()->create(['user_id' => $this->regularUser->id]);
-        $globalExercise = Exercise::factory()->create(['user_id' => null]);
-        
-        $request = Request::create('/exercises/promote-selected', 'POST', [
-            'exercise_ids' => [$userExercise->id, $globalExercise->id]
-        ]);
-        
-        // Should throw authorization exception when trying to promote global exercise
-        $this->expectException(\Illuminate\Auth\Access\AuthorizationException::class);
-        
-        $this->controller->promoteSelected($request);
-    }
-
-    public function test_promote_selected_preserves_exercise_data_except_user_id(): void
+    public function test_promote_preserves_exercise_data_except_user_id(): void
     {
         $this->actingAs($this->adminUser);
         
@@ -170,11 +102,7 @@ class ExerciseControllerTest extends TestCase
             'is_bodyweight' => true
         ]);
         
-        $request = Request::create('/exercises/promote-selected', 'POST', [
-            'exercise_ids' => [$userExercise->id]
-        ]);
-        
-        $response = $this->controller->promoteSelected($request);
+        $response = $this->controller->promote($userExercise);
         
         // Check that all data is preserved except user_id
         $this->assertDatabaseHas('exercises', [
@@ -186,59 +114,17 @@ class ExerciseControllerTest extends TestCase
         ]);
     }
 
-    public function test_promote_selected_returns_correct_success_message_count(): void
+    public function test_promote_returns_correct_success_message(): void
     {
         $this->actingAs($this->adminUser);
         
-        // Test with single exercise
-        $userExercise = Exercise::factory()->create(['user_id' => $this->regularUser->id]);
-        
-        $request = Request::create('/exercises/promote-selected', 'POST', [
-            'exercise_ids' => [$userExercise->id]
+        $userExercise = Exercise::factory()->create([
+            'user_id' => $this->regularUser->id,
+            'title' => 'My Custom Exercise'
         ]);
         
-        $response = $this->controller->promoteSelected($request);
+        $response = $this->controller->promote($userExercise);
         
-        $this->assertStringContainsString('Successfully promoted 1 exercise(s)', $response->getSession()->get('success'));
-        
-        // Test with multiple exercises
-        $userExercise2 = Exercise::factory()->create(['user_id' => $this->regularUser->id]);
-        $userExercise3 = Exercise::factory()->create(['user_id' => $this->regularUser->id]);
-        
-        $request2 = Request::create('/exercises/promote-selected', 'POST', [
-            'exercise_ids' => [$userExercise2->id, $userExercise3->id]
-        ]);
-        
-        $response2 = $this->controller->promoteSelected($request2);
-        
-        $this->assertStringContainsString('Successfully promoted 2 exercise(s)', $response2->getSession()->get('success'));
+        $this->assertStringContainsString("Exercise 'My Custom Exercise' promoted to global status successfully.", $response->getSession()->get('success'));
     }
-
-    public function test_promote_selected_only_updates_selected_exercises(): void
-    {
-        $this->actingAs($this->adminUser);
-        
-        $selectedExercise = Exercise::factory()->create(['user_id' => $this->regularUser->id]);
-        $unselectedExercise = Exercise::factory()->create(['user_id' => $this->regularUser->id]);
-        
-        $request = Request::create('/exercises/promote-selected', 'POST', [
-            'exercise_ids' => [$selectedExercise->id]
-        ]);
-        
-        $response = $this->controller->promoteSelected($request);
-        
-        // Selected exercise should be promoted
-        $this->assertDatabaseHas('exercises', [
-            'id' => $selectedExercise->id,
-            'user_id' => null
-        ]);
-        
-        // Unselected exercise should remain unchanged
-        $this->assertDatabaseHas('exercises', [
-            'id' => $unselectedExercise->id,
-            'user_id' => $this->regularUser->id
-        ]);
-    }
-
-
 }

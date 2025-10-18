@@ -18,32 +18,32 @@
     - Return redirect with success message
     - _Requirements: 1.3, 1.4, 3.1, 3.2, 3.4_
 
-- [ ] 3. Update exercises index view for individual promotion
-  - [ ] 3.1 Remove bulk promotion UI elements
+- [x] 3. Update exercises index view for individual promotion
+  - [x] 3.1 Remove bulk promotion UI elements
     - Remove bulk promote button from table footer
     - Remove bulk promotion form from footer
     - _Requirements: 2.2_
   
-  - [ ] 3.2 Add individual promote buttons to actions column
+  - [x] 3.2 Add individual promote buttons to actions column
     - Add promote button next to edit/delete buttons for user exercises
     - Show button only for admin users and non-global exercises
     - Style button with globe icon and green background
     - Add JavaScript confirmation dialog
     - _Requirements: 1.1, 1.2, 1.5_
   
-  - [ ] 3.3 Update JavaScript to remove bulk promotion logic
+  - [x] 3.3 Update JavaScript to remove bulk promotion logic
     - Remove bulk promotion form submission handling
     - Keep all bulk deletion JavaScript functionality intact
     - _Requirements: 2.3, 2.5_
 
-- [ ] 4. Update tests for individual promotion
-  - [ ] 4.1 Modify ExerciseBulkPromotionTest for individual promotion
+- [x] 4. Update tests for individual promotion
+  - [x] 4.1 Modify ExerciseBulkPromotionTest for individual promotion
     - Update test class name to ExerciseIndividualPromotionTest
     - Change test methods to use individual promotion route
     - Update assertions for individual promotion responses
     - _Requirements: 1.3, 1.4, 3.1, 3.2, 3.3_
   
-  - [ ] 4.2 Add tests for promote button visibility and functionality
+  - [x] 4.2 Add tests for promote button visibility and functionality
     - Test promote button appears for admin users on user exercises
     - Test promote button does not appear for non-admin users
     - Test promote button does not appear for global exercises
