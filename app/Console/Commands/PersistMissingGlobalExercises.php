@@ -76,14 +76,6 @@ class PersistMissingGlobalExercises extends Command
         $csvFile = fopen($csvPath, 'a');
         
         foreach ($missingExercises as $exercise) {
-            // Generate canonical name if missing
-            if (empty($exercise->canonical_name)) {
-                $canonicalName = strtolower(str_replace([' ', '(', ')', '-', ','], ['_', '', '', '_', ''], $exercise->title));
-                $canonicalName = preg_replace('/_{2,}/', '_', $canonicalName);
-                $canonicalName = trim($canonicalName, '_');
-                $exercise->update(['canonical_name' => $canonicalName]);
-            }
-            
             // Prepare CSV row
             $csvRow = [];
             foreach ($header as $column) {
@@ -109,7 +101,7 @@ class PersistMissingGlobalExercises extends Command
             // Write to CSV
             fputcsv($csvFile, $csvRow);
             
-            $this->info("Added to CSV: {$exercise->title} (canonical: {$exercise->canonical_name})");
+            $this->info("Added to CSV: {$exercise->title}");
         }
         
         fclose($csvFile);
