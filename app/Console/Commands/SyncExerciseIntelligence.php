@@ -13,7 +13,7 @@ class SyncExerciseIntelligence extends Command
      *
      * @var string
      */
-    protected $signature = 'app:sync-exercise-intelligence';
+    protected $signature = 'exercises:sync-intelligence';
 
     /**
      * The console command description.
