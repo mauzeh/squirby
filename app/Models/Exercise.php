@@ -51,6 +51,15 @@ class Exercise extends Model
 
     public function scopeAvailableToUser($query, $userId)
     {
+        // Get the user model to check role
+        $user = User::find($userId);
+        
+        if ($user && $user->hasRole('Admin')) {
+            // Admin users see all exercises
+            return $query->orderByRaw('user_id IS NULL ASC');
+        }
+        
+        // Regular users see global + own exercises (current behavior)
         return $query->where(function ($q) use ($userId) {
             $q->whereNull('user_id')        // Global exercises (available to all users)
               ->orWhere('user_id', $userId); // User's own exercises
@@ -80,8 +89,14 @@ class Exercise extends Model
 
     public function canBeEditedBy(User $user): bool
     {
+        // Admin users can edit all exercises
+        if ($user->hasRole('Admin')) {
+            return true;
+        }
+        
+        // Regular users can only edit global exercises (if admin) or their own exercises
         if ($this->isGlobal()) {
-            return $user->hasRole('Admin');
+            return false; // Regular users cannot edit global exercises
         }
         return $this->user_id === $user->id;
     }
@@ -91,7 +106,17 @@ class Exercise extends Model
         if ($this->liftLogs()->exists()) {
             return false; // Cannot delete if has lift logs
         }
-        return $this->canBeEditedBy($user);
+        
+        // Admin users can delete all exercises (if no lift logs)
+        if ($user->hasRole('Admin')) {
+            return true;
+        }
+        
+        // Regular users can only delete global exercises (if admin) or their own exercises
+        if ($this->isGlobal()) {
+            return false; // Regular users cannot delete global exercises
+        }
+        return $this->user_id === $user->id;
     }
 
     public function hasIntelligence(): bool

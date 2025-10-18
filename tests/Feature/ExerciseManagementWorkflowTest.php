@@ -252,9 +252,9 @@ class ExerciseManagementWorkflowTest extends TestCase
         $adminResponse->assertSee('Global Bench Press');
         $adminResponse->assertSee('Global Squat');
         
-        // Admin should NOT see other users' personal exercises
-        $adminResponse->assertDontSee('User1 Custom Exercise');
-        $adminResponse->assertDontSee('User2 Custom Exercise');
+        // Admin should now see all exercises including other users' personal exercises
+        $adminResponse->assertSee('User1 Custom Exercise');
+        $adminResponse->assertSee('User2 Custom Exercise');
     }
 
     /** @test */

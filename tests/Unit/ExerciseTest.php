@@ -82,7 +82,7 @@ class ExerciseTest extends TestCase
     }
 
     /** @test */
-    public function scope_available_to_user_returns_global_and_user_exercises()
+    public function scope_available_to_user_returns_global_and_user_exercises_for_regular_user()
     {
         $user1 = \App\Models\User::factory()->create();
         $user2 = \App\Models\User::factory()->create();
@@ -100,6 +100,98 @@ class ExerciseTest extends TestCase
         $this->assertTrue($availableToUser1->contains($globalExercise2));
         $this->assertTrue($availableToUser1->contains($user1Exercise));
         $this->assertFalse($availableToUser1->contains($user2Exercise));
+    }
+
+    /** @test */
+    public function scope_available_to_user_returns_all_exercises_for_admin_user()
+    {
+        // Create admin user with role
+        $adminRole = \App\Models\Role::factory()->create(['name' => 'Admin']);
+        $admin = \App\Models\User::factory()->create();
+        $admin->roles()->attach($adminRole);
+        
+        // Create regular users
+        $user1 = \App\Models\User::factory()->create();
+        $user2 = \App\Models\User::factory()->create();
+        
+        // Create exercises
+        $globalExercise1 = Exercise::factory()->create(['user_id' => null, 'title' => 'Global Exercise 1']);
+        $globalExercise2 = Exercise::factory()->create(['user_id' => null, 'title' => 'Global Exercise 2']);
+        $user1Exercise = Exercise::factory()->create(['user_id' => $user1->id, 'title' => 'User 1 Exercise']);
+        $user2Exercise = Exercise::factory()->create(['user_id' => $user2->id, 'title' => 'User 2 Exercise']);
+        $adminExercise = Exercise::factory()->create(['user_id' => $admin->id, 'title' => 'Admin Exercise']);
+
+        $availableToAdmin = Exercise::availableToUser($admin->id)->get();
+
+        // Admin should see all exercises
+        $this->assertCount(5, $availableToAdmin);
+        $this->assertTrue($availableToAdmin->contains($globalExercise1));
+        $this->assertTrue($availableToAdmin->contains($globalExercise2));
+        $this->assertTrue($availableToAdmin->contains($user1Exercise));
+        $this->assertTrue($availableToAdmin->contains($user2Exercise));
+        $this->assertTrue($availableToAdmin->contains($adminExercise));
+    }
+
+    /** @test */
+    public function scope_available_to_user_handles_invalid_user_id()
+    {
+        // Create a real user first
+        $realUser = \App\Models\User::factory()->create();
+        
+        // Create some exercises
+        $globalExercise = Exercise::factory()->create(['user_id' => null, 'title' => 'Global Exercise']);
+        $userExercise = Exercise::factory()->create(['user_id' => $realUser->id, 'title' => 'User Exercise']);
+
+        // Test with non-existent user ID
+        $availableToInvalidUser = Exercise::availableToUser(999)->get();
+
+        // Should return only global exercises (regular user behavior)
+        $this->assertCount(1, $availableToInvalidUser);
+        $this->assertTrue($availableToInvalidUser->contains($globalExercise));
+        $this->assertFalse($availableToInvalidUser->contains($userExercise));
+    }
+
+    /** @test */
+    public function scope_available_to_user_handles_user_with_no_role()
+    {
+        // Create user without any roles
+        $user = \App\Models\User::factory()->create();
+        $otherUser = \App\Models\User::factory()->create();
+        
+        // Create exercises
+        $globalExercise = Exercise::factory()->create(['user_id' => null, 'title' => 'Global Exercise']);
+        $userExercise = Exercise::factory()->create(['user_id' => $user->id, 'title' => 'User Exercise']);
+        $otherUserExercise = Exercise::factory()->create(['user_id' => $otherUser->id, 'title' => 'Other User Exercise']);
+
+        $availableToUser = Exercise::availableToUser($user->id)->get();
+
+        // Should behave like regular user (global + own exercises)
+        $this->assertCount(2, $availableToUser);
+        $this->assertTrue($availableToUser->contains($globalExercise));
+        $this->assertTrue($availableToUser->contains($userExercise));
+        $this->assertFalse($availableToUser->contains($otherUserExercise));
+    }
+
+    /** @test */
+    public function scope_available_to_user_maintains_ordering_for_admin()
+    {
+        // Create admin user with role
+        $adminRole = \App\Models\Role::factory()->create(['name' => 'Admin']);
+        $admin = \App\Models\User::factory()->create();
+        $admin->roles()->attach($adminRole);
+        
+        // Create exercises
+        $globalExercise = Exercise::factory()->create(['user_id' => null, 'title' => 'Global Exercise']);
+        $userExercise = Exercise::factory()->create(['user_id' => $admin->id, 'title' => 'User Exercise']);
+
+        $availableToAdmin = Exercise::availableToUser($admin->id)->get();
+
+        // Should have both exercises
+        $this->assertCount(2, $availableToAdmin);
+        // Should maintain ordering (user exercises first, then global exercises due to orderByRaw 'user_id IS NULL ASC')
+        // user_id IS NULL ASC means: user exercises (user_id IS NOT NULL = 0) come before global exercises (user_id IS NULL = 1)
+        $this->assertEquals($userExercise->id, $availableToAdmin->first()->id);
+        $this->assertEquals($globalExercise->id, $availableToAdmin->last()->id);
     }
 
     /** @test */
