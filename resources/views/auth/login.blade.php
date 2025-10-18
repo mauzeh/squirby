@@ -36,7 +36,7 @@
                 <!-- Remember Me -->
                 <div class="form-group" style="justify-content: flex-start;">
                     <label for="remember_me" style="flex: none; text-align: left;">
-                        <input id="remember_me" type="checkbox" name="remember">
+                        <input id="remember_me" type="checkbox" name="remember" checked>
                         <span class="ms-2 text-sm text-gray-600">Remember me</span>
                     </label>
                 </div>
