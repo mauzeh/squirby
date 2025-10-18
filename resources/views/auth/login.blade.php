@@ -35,6 +35,7 @@
 
                 <!-- Remember Me -->
                 <div class="form-group" style="justify-content: flex-start;">
+                    <label>&nbsp;</label>
                     <label for="remember_me" style="flex: none; text-align: left;">
                         <input id="remember_me" type="checkbox" name="remember" checked>
                         <span class="ms-2 text-sm text-gray-600">Remember me</span>
@@ -42,12 +43,6 @@
                 </div>
 
                 <div class="flex items-center justify-end mt-4">
-                    @if (Route::has('password.request'))
-                        <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('password.request') }}">
-                            Forgot your password?
-                        </a>
-                    @endif
-
                     <button type="submit" class="button ms-3">
                         Log in
                     </button>
