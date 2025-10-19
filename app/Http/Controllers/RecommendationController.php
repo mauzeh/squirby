@@ -24,14 +24,12 @@ class RecommendationController extends Controller
             'difficulty_level' => 'nullable|integer|min:1|max:5'
         ]);
 
-        $count = 10; // Fixed default count as per requirements
-        
         // Extract filter values from validated request for state management
         $movementArchetype = $validated['movement_archetype'] ?? null;
         $difficultyLevel = isset($validated['difficulty_level']) ? (int)$validated['difficulty_level'] : null;
 
-        // Get base recommendations
-        $recommendations = $this->recommendationEngine->getRecommendations(auth()->id(), $count);
+        // Get all recommendations (no limit)
+        $recommendations = $this->recommendationEngine->getRecommendations(auth()->id(), 50);
 
         // Apply filters if provided - integrated filtering logic
         if ($movementArchetype || $difficultyLevel) {
