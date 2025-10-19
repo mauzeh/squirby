@@ -214,6 +214,41 @@ class ExerciseController extends Controller
             ->with('success', "Exercise '{$exercise->title}' promoted to global status successfully.");
     }
 
+    /**
+     * Unpromote a global exercise back to user exercise.
+     */
+    public function unpromote(Exercise $exercise)
+    {
+        $this->authorize('unpromoteToUser', $exercise);
+        
+        if (!$exercise->isGlobal()) {
+            return back()->withErrors(['error' => "Exercise '{$exercise->title}' is not a global exercise."]);
+        }
+
+        // Determine original owner from earliest lift log
+        $originalOwner = $this->determineOriginalOwner($exercise);
+        
+        if (!$originalOwner) {
+            return back()->withErrors(['error' => "Cannot determine original owner for exercise '{$exercise->title}'."]);
+        }
+
+        // Check if other users have lift logs with this exercise
+        $otherUsersCount = $exercise->liftLogs()
+            ->where('user_id', '!=', $originalOwner->id)
+            ->distinct('user_id')
+            ->count('user_id');
+
+        if ($otherUsersCount > 0) {
+            $userText = $otherUsersCount === 1 ? 'user has' : 'users have';
+            return back()->withErrors(['error' => "Cannot unpromote exercise '{$exercise->title}': {$otherUsersCount} other {$userText} workout logs with this exercise. The exercise must remain global to preserve their data."]);
+        }
+
+        $exercise->update(['user_id' => $originalOwner->id]);
+
+        return redirect()->route('exercises.index')
+            ->with('success', "Exercise '{$exercise->title}' unpromoted to personal exercise successfully.");
+    }
+
 
 
     public function showLogs(Request $request, Exercise $exercise)
@@ -400,5 +435,19 @@ class ExerciseController extends Controller
                 ]);
             }
         }
+    }
+
+    /**
+     * Determine the original owner of an exercise based on lift logs.
+     */
+    private function determineOriginalOwner(Exercise $exercise): ?User
+    {
+        // Get the user who has the earliest lift log for this exercise
+        $earliestLog = $exercise->liftLogs()
+            ->with('user')
+            ->orderBy('logged_at', 'asc')
+            ->first();
+
+        return $earliestLog ? $earliestLog->user : null;
     }
 }

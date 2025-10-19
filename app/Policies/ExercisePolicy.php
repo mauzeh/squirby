@@ -44,4 +44,18 @@ class ExercisePolicy
         // Can only promote user-specific exercises (not already global)
         return !$exercise->isGlobal();
     }
+
+    /**
+     * Determine whether the user can unpromote the exercise to user exercise.
+     */
+    public function unpromoteToUser(User $user, Exercise $exercise): bool
+    {
+        // Only admins can unpromote exercises
+        if (!$user->hasRole('Admin')) {
+            return false;
+        }
+        
+        // Can only unpromote global exercises
+        return $exercise->isGlobal();
+    }
 }

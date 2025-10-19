@@ -180,4 +180,31 @@ class ExercisePolicyTest extends TestCase
         
         $this->assertFalse($result);
     }
+
+    public function test_admin_can_unpromote_global_exercises(): void
+    {
+        $globalExercise = Exercise::factory()->create(['user_id' => null]);
+        
+        $result = $this->policy->unpromoteToUser($this->adminUser, $globalExercise);
+        
+        $this->assertTrue($result);
+    }
+
+    public function test_regular_user_cannot_unpromote_exercises(): void
+    {
+        $globalExercise = Exercise::factory()->create(['user_id' => null]);
+        
+        $result = $this->policy->unpromoteToUser($this->regularUser, $globalExercise);
+        
+        $this->assertFalse($result);
+    }
+
+    public function test_admin_cannot_unpromote_non_global_exercises(): void
+    {
+        $userExercise = Exercise::factory()->create(['user_id' => $this->regularUser->id]);
+        
+        $result = $this->policy->unpromoteToUser($this->adminUser, $userExercise);
+        
+        $this->assertFalse($result);
+    }
 }
