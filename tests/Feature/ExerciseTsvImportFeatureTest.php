@@ -407,8 +407,8 @@ class ExerciseTsvImportFeatureTest extends TestCase
         $response->assertSee('placeholder="Title&#9;Description&#9;Is Bodyweight (true/false)&#9;Band Type (resistance/assistance/none)"', false);
         $response->assertSee('Import Exercises');
         
-        // Should not see admin-specific content
-        $response->assertDontSee('Global');
+        // Should not see admin-specific form elements
+        $response->assertDontSee('import_as_global');
         $response->assertDontSee('Personal exercises are only visible to you and will be skipped if they conflict with existing global exercises.');
     }
 

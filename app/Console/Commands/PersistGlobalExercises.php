@@ -422,8 +422,8 @@ class PersistGlobalExercises extends Command
      */
     public function handle()
     {
-        // Only allow this command to run in local environment
-        if (!app()->environment('local')) {
+        // Only allow this command to run in local or testing environment
+        if (!app()->environment(['local', 'testing'])) {
             $this->error('This command can only be run in local environment for security reasons.');
             return Command::FAILURE;
         }

@@ -85,8 +85,8 @@ class PersistGlobalExercisesSyncIntegrationTest extends TestCase
                     // Override CSV path for testing
                     $csvPath = database_path('seeders/csv/test_exercises_sync.csv');
                     
-                    // Only allow this command to run in local environment
-                    if (!app()->environment('local')) {
+                    // Only allow this command to run in local or testing environment
+                    if (!app()->environment(['local', 'testing'])) {
                         $this->error('This command can only be run in local environment for security reasons.');
                         return self::FAILURE;
                     }
@@ -207,7 +207,7 @@ class PersistGlobalExercisesSyncIntegrationTest extends TestCase
                 {
                     $csvPath = database_path('seeders/csv/test_exercises_sync.csv');
                     
-                    if (!app()->environment('local')) {
+                    if (!app()->environment(['local', 'testing'])) {
                         return self::FAILURE;
                     }
                     
@@ -352,13 +352,26 @@ class PersistGlobalExercisesSyncIntegrationTest extends TestCase
 
     public function test_error_handling_for_missing_csv_file()
     {
-        // Don't create CSV file
+        // Temporarily rename the CSV file to simulate it being missing
+        $originalPath = database_path('seeders/csv/exercises_from_real_world.csv');
+        $tempPath = database_path('seeders/csv/exercises_from_real_world.csv.temp');
         
-        $exitCode = Artisan::call('exercises:persist-global');
-        $this->assertEquals(1, $exitCode); // Command should fail
+        if (File::exists($originalPath)) {
+            File::move($originalPath, $tempPath);
+        }
         
-        $output = Artisan::output();
-        $this->assertStringContainsString('CSV file not found', $output);
+        try {
+            $exitCode = Artisan::call('exercises:persist-global');
+            $this->assertEquals(1, $exitCode); // Command should fail
+            
+            $output = Artisan::output();
+            $this->assertStringContainsString('CSV file not found', $output);
+        } finally {
+            // Restore the file
+            if (File::exists($tempPath)) {
+                File::move($tempPath, $originalPath);
+            }
+        }
     }
 
     public function test_error_handling_for_non_local_environment()
