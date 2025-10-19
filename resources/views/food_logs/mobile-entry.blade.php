@@ -37,6 +37,16 @@
 
         <div class="item-list-container hidden" id="food-list-container">
             <div class="food-list item-list">
+                @foreach ($meals as $meal)
+                    <a href="#" class="food-list-item item-list-item meal-item"
+                       data-type="meal"
+                       data-id="{{ $meal->id }}"
+                       data-name="{{ $meal->name }}">
+                        <span class="food-name item-name">{{ $meal->name }}</span>
+                        <span class="food-label item-label"><em>Meal</em></span>
+                    </a>
+                @endforeach
+                
                 @foreach ($ingredients as $ingredient)
                     <a href="#" class="food-list-item item-list-item ingredient-item" 
                        data-type="ingredient" 
@@ -46,16 +56,6 @@
                        data-base-quantity="{{ $ingredient->base_quantity }}">
                         <span class="food-name item-name">{{ $ingredient->name }}</span>
                         <span class="food-label item-label"><em>Ingredient</em></span>
-                    </a>
-                @endforeach
-                
-                @foreach ($meals as $meal)
-                    <a href="#" class="food-list-item item-list-item meal-item"
-                       data-type="meal"
-                       data-id="{{ $meal->id }}"
-                       data-name="{{ $meal->name }}">
-                        <span class="food-name item-name">{{ $meal->name }}</span>
-                        <span class="food-label item-label"><em>Meal</em></span>
                     </a>
                 @endforeach
             </div>
