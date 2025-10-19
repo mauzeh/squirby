@@ -15,6 +15,7 @@
         <title>Nutrition Tracker</title>
 
         <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+        @yield('styles')
     </head>
     <body>
         @if(session()->has('impersonator_id'))

@@ -1,5 +1,10 @@
 @extends('app')
 
+@section('styles')
+    <link rel="stylesheet" href="{{ asset('css/mobile-entry-shared.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/mobile-entry-lift.css') }}">
+@endsection
+
 @section('content')
     <div class="mobile-entry-container">
         <div class="date-navigation-mobile">
@@ -24,6 +29,33 @@
                 {{ $selectedDate->format('M d, Y') }}
             @endif
         </h1>
+
+        {{-- Message system - Error, success, and validation messages --}}
+        @if(session('error'))
+            <div class="message-container message-error" id="error-message">
+                <div class="message-content">
+                    <span class="message-text">{{ session('error') }}</span>
+                    <button type="button" class="message-close" onclick="this.parentElement.parentElement.style.display='none'">&times;</button>
+                </div>
+            </div>
+        @endif
+
+        @if(session('success'))
+            <div class="message-container message-success" id="success-message">
+                <div class="message-content">
+                    <span class="message-text">{{ session('success') }}</span>
+                    <button type="button" class="message-close" onclick="this.parentElement.parentElement.style.display='none'">&times;</button>
+                </div>
+            </div>
+        @endif
+
+        {{-- Client-side validation error display --}}
+        <div id="validation-errors" class="message-container message-validation hidden">
+            <div class="message-content">
+                <span class="message-text"></span>
+                <button type="button" class="message-close" onclick="document.getElementById('validation-errors').classList.add('hidden')">&times;</button>
+            </div>
+        </div>
 
         @if ($programs->isEmpty())
             <p class="no-program-message">No program entries for this day.</p>
@@ -76,7 +108,7 @@
                             @if($loggedLift->comments)
                                 <p><strong>Comments:</strong> {{ $loggedLift->comments }}</p>
                             @endif
-                            <a href="{{ route('exercises.show-logs', $loggedLift->exercise_id) }}" class="button">View All Logs for {{ $loggedLift->exercise->title }}</a>
+                            <a href="{{ route('exercises.show-logs', $loggedLift->exercise_id) }}" class="button-large button-blue">View All Logs for {{ $loggedLift->exercise->title }}</a>
                         </div>
                     @else
                         @if(isset($program->lastWorkoutWeight))
@@ -166,7 +198,7 @@
                                 </div>
                             </div>
 
-                            <button type="submit" class="large-button submit-button">✔ Complete this lift</button>
+                            <button type="submit" class="button-large button-blue submit-button">✔ Complete this lift</button>
                         </form>
                     @endif
                 </div>
@@ -177,9 +209,9 @@
             <button type="button" id="add-exercise-button" class="button-large button-green">Add exercise</button>
         </div>
 
-        <div id="exercise-list-container" class="hidden">
-            <div class="exercise-list">
-                <a href="#" id="new-exercise-link" class="exercise-list-item new-exercise-item">✚ Create new exercise</a>
+        <div id="exercise-list-container" class="item-list-container hidden">
+            <div class="item-list exercise-list">
+                <a href="#" id="new-exercise-link" class="item-list-item exercise-list-item new-exercise-item">✚ Create new exercise</a>
                 <div id="new-exercise-form-container" class="hidden new-exercise-form">
                     <form action="{{ route('programs.quick-create', ['date' => $selectedDate->toDateString()]) }}" method="POST">
                         @csrf
@@ -187,24 +219,24 @@
                         <div class="form-group">
                             <input type="text" name="exercise_name" id="exercise_name" class="large-input" placeholder="Enter new exercise name..." required>
                         </div>
-                        <button type="submit" class="large-button button-green">Add Exercise</button>
+                        <button type="submit" class="button-large button-green">Add Exercise</button>
                     </form>
                 </div>
                 
                 @if (!empty($recommendations))
                     @foreach ($recommendations as $recommendation)
-                        <a href="{{ route('programs.quick-add', ['exercise' => $recommendation['exercise']->id, 'date' => $selectedDate->toDateString(), 'redirect_to' => 'mobile-entry']) }}" class="exercise-list-item recommended-exercise">
-                            <span class="exercise-name">{{ $recommendation['exercise']->title }}</span>
-                            <span class="exercise-label">⭐ <em>Recommended</em></span>
+                        <a href="{{ route('programs.quick-add', ['exercise' => $recommendation['exercise']->id, 'date' => $selectedDate->toDateString(), 'redirect_to' => 'mobile-entry']) }}" class="item-list-item exercise-list-item recommended-exercise">
+                            <span class="item-name exercise-name">{{ $recommendation['exercise']->title }}</span>
+                            <span class="item-label exercise-label">⭐ <em>Recommended</em></span>
                         </a>
                     @endforeach
                 @endif
                 
                 @foreach ($exercises as $exercise)
-                    <a href="{{ route('programs.quick-add', ['exercise' => $exercise->id, 'date' => $selectedDate->toDateString(), 'redirect_to' => 'mobile-entry']) }}" class="exercise-list-item {{ $exercise->is_user_created ? 'user-exercise' : '' }}">
-                        <span class="exercise-name">{{ $exercise->title }}</span>
+                    <a href="{{ route('programs.quick-add', ['exercise' => $exercise->id, 'date' => $selectedDate->toDateString(), 'redirect_to' => 'mobile-entry']) }}" class="item-list-item exercise-list-item {{ $exercise->is_user_created ? 'user-exercise' : '' }}">
+                        <span class="item-name exercise-name">{{ $exercise->title }}</span>
                         @if($exercise->is_user_created)
-                            <span class="exercise-label"><em>Created by you</em></span>
+                            <span class="item-label exercise-label"><em>Created by you</em></span>
                         @endif
                     </a>
                 @endforeach
@@ -212,354 +244,7 @@
         </div>
     </div>
 
-    <style>
-        .band-color-selector {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 10px;
-            justify-content: center;
-        }
-        .band-color-button {
-            flex: 1 1 auto;
-            min-width: 80px;
-            padding: 15px 10px;
-            border: 2px solid transparent;
-            border-radius: 5px;
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-            font-size: 1.1em;
-            text-align: center;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .band-color-button.selected {
-            border-color: #007bff;
-            transform: scale(1.05);
-            box-shadow: 0 0 15px rgba(0, 123, 255, 0.6);
-        }
-        .band-color-button.suggested.selected {
-            border-style: dashed;
-            border-color: rgba(255, 193, 7, 0.5); /* Lighter orange for suggested when also selected */
-        }
-        .band-color-button.suggested {
-            border-style: dashed;
-            border-color: #ffc107; /* A yellow/orange color for suggestion */
-        }
-        .input-group {
-            display: flex;
-            align-items: center;
-        }
-        .input-group .large-input {
-            text-align: center;
-            flex-grow: 1;
-            border-radius: 0; /* Remove radius from input to make it seamless with buttons */
-            font-size: 2.2em;
-            border: none;
-            padding: 15px 10px;
-        }
-        .decrement-button, .increment-button {
-            background-color: #6c757d;
-            color: white;
-            border: none;
-            padding: 15px 20px;
-            cursor: pointer;
-            font-size: 1.5em;
 
-
-            touch-action: manipulation;
-
-        }
-        .decrement-button {
-            border-top-left-radius: 5px;
-            border-bottom-left-radius: 5px;
-        }
-        .increment-button {
-            border-top-right-radius: 5px;
-            border-bottom-right-radius: 5px;
-        }
-        .add-exercise-container {
-            margin-top: 20px;
-        }
-        .button-green {
-            background-color: #28a745;
-            color: white;
-            text-align: center;
-            display: block;
-            width: 100%;
-            box-sizing: border-box;
-            border: none;
-            padding: 15px 25px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 1.5em;
-            font-weight: bold;
-        }
-        .exercise-list-container {
-            margin-top: 20px;
-            padding: 20px;
-            background-color: #3a3a3a;
-            border-radius: 8px;
-        }
-        .exercise-list {
-            display: flex;
-            flex-direction: column;
-        }
-        .exercise-list-item {
-            color: #f2f2f2;
-            padding: 15px;
-            text-decoration: none;
-            border-bottom: 1px solid #555;
-            font-size: 1.2em;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: relative;
-        }
-        .exercise-name {
-            flex: 1;
-            min-width: 0;
-            z-index: 2;
-            position: relative;
-            background: inherit;
-            padding-right: 10px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        .exercise-label {
-            flex-shrink: 0;
-            font-size: 0.9em;
-            opacity: 0.8;
-            z-index: 1;
-        }
-        .exercise-list-item:hover {
-            background-color: #4a4a4a;
-        }
-        .new-exercise-item {
-            background-color: #4a4a4a;
-        }
-        .new-exercise-item:hover {
-            background-color: #5a5a5a;
-        }
-        .new-exercise-form {
-            margin-bottom: 10px;
-        }
-        .recommended-exercise {
-            background-color: #4a4a2d;
-        }
-        .recommended-exercise:hover {
-            background-color: #5a5a3a;
-        }
-        .user-exercise {
-            background-color: #2d3a4a;
-        }
-        .user-exercise:hover {
-            background-color: #3a4a5a;
-        }
-
-        .completed-badge {
-            border-left: 5px solid #28a745; /* Green border */
-            padding-left: 20px;
-            position: relative;
-        }
-        .badge-icon {
-            position: absolute;
-            left: -15px;
-            top: 50%;
-            transform: translateY(-50%);
-            background-color: #28a745;
-            color: white;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2em;
-            font-weight: bold;
-        }
-        .mobile-entry-container {
-            max-width: 600px;
-            margin: 20px auto;
-            padding: 15px;
-            background-color: #2a2a2a;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-            color: #f2f2f2;
-        }
-        .date-navigation-mobile {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            font-size: 1.2em;
-        }
-        .date-navigation-mobile .nav-button {
-            background-color: #007bff;
-            color: white;
-            padding: 10px 15px;
-            border-radius: 5px;
-            text-decoration: none;
-            font-weight: bold;
-        }
-        .date-navigation-mobile .current-date {
-            font-weight: bold;
-        }
-        h1 {
-            text-align: center;
-            color: #007bff;
-            margin-bottom: 25px;
-        }
-        .no-program-message {
-            text-align: center;
-            color: #aaa;
-            font-size: 1.1em;
-            padding: 20px;
-            border: 1px dashed #555;
-            border-radius: 5px;
-        }
-        .program-card {
-            background-color: #3a3a3a;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-            position: relative;
-        }
-        .program-card-actions {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            display: flex;
-        }
-        .program-action-button {
-            background-color: #6c757d;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            font-size: 1.2em;
-            line-height: 30px;
-            text-align: center;
-            cursor: pointer;
-            margin-left: 5px;
-            text-decoration: none;
-            display: inline-block;
-        }
-        .delete-program-button {
-            background-color: #dc3545;
-        }
-        .program-card h2 {
-            color: orange;
-            margin-top: 0;
-            margin-bottom: 10px;
-            font-size: 1.8em;
-            padding-right: 80px; /* Make space for the buttons */
-        }
-        .program-card .details {
-            font-size: 1.1em;
-            color: #ccc;
-            margin-bottom: 10px;
-        }
-        .program-card .suggested-weight {
-            font-size: 1.2em;
-            color: #28a745; /* Green for suggested weight */
-            font-weight: bold;
-            margin-bottom: 15px;
-        }
-        .lift-log-form .form-group {
-            margin-bottom: 15px;
-        }
-        .lift-log-form label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: bold;
-            font-size: 1.1em;
-        }
-        .large-input, .large-textarea {
-            width: calc(100% - 20px);
-            padding: 15px 10px;
-            border: 1px solid #555;
-            border-radius: 5px;
-            background-color: #4a4a4a;
-            color: #f2f2f2;
-            font-size: 1.2em;
-            box-sizing: border-box;
-        }
-        .large-textarea {
-            resize: vertical;
-        }
-        .button-change {
-            background-color: #6c757d;
-            color: white;
-            padding: 10px 15px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 1em;
-            margin-top: 5px;
-            display: inline-block;
-        }
-        .button-change:hover {
-            background-color: #5a6268;
-        }
-        .button-small {
-            background-color: #6c757d;
-            color: white;
-            padding: 8px 12px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 0.9em;
-            margin-top: 5px;
-            display: inline-block;
-        }
-        .button-small:hover {
-            background-color: #5a6268;
-        }
-        .button-danger {
-            background-color: #dc3545;
-        }
-        .button-danger:hover {
-            background-color: #c82333;
-        }
-        .submit-button {
-            background-color: #007bff;
-            color: white;
-            padding: 15px 25px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 1.5em;
-            font-weight: bold;
-            width: 100%;
-            margin-top: 20px;
-        }
-        .submit-button:hover {
-            background-color: #0056b3;
-        }
-        .hidden {
-            display: none;
-        }
-        @media (max-width: 768px) {
-            .lift-log-form .form-group {
-                display: flex;
-                flex-direction: column;
-                align-items: stretch;
-            }
-            .lift-log-form label {
-                flex: none;
-                text-align: left;
-                margin-bottom: 5px;
-            }
-        }
-    </style>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -594,6 +279,19 @@
                     this.parentElement.style.display = 'none';
                 });
             });
+
+            // Message system functionality - Auto-hide success/error messages after 5 seconds
+            setTimeout(function() {
+                const errorMessage = document.getElementById('error-message');
+                const successMessage = document.getElementById('success-message');
+                
+                if (errorMessage) {
+                    errorMessage.style.display = 'none';
+                }
+                if (successMessage) {
+                    successMessage.style.display = 'none';
+                }
+            }, 5000);
         });
     </script>
 
@@ -630,5 +328,43 @@
                 });
             });
         });
+
+        // Message system functions for validation errors
+        function showValidationError(message) {
+            const errorContainer = document.getElementById('validation-errors');
+            const errorText = errorContainer.querySelector('.message-text');
+            
+            errorText.textContent = message;
+            errorContainer.classList.remove('hidden');
+            
+            // Scroll to error message
+            errorContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        function hideValidationError() {
+            const errorContainer = document.getElementById('validation-errors');
+            errorContainer.classList.add('hidden');
+        }
+
+        // Form validation function for lift logs
+        function validateLiftForm(formData) {
+            const weight = formData.get('weight');
+            const reps = formData.get('reps');
+            const sets = formData.get('sets');
+            
+            if (weight && (isNaN(parseFloat(weight)) || parseFloat(weight) < 0)) {
+                return { isValid: false, message: 'Weight must be a positive number.' };
+            }
+            
+            if (reps && (isNaN(parseInt(reps)) || parseInt(reps) <= 0)) {
+                return { isValid: false, message: 'Reps must be a positive number.' };
+            }
+            
+            if (sets && (isNaN(parseInt(sets)) || parseInt(sets) <= 0)) {
+                return { isValid: false, message: 'Sets must be a positive number.' };
+            }
+            
+            return { isValid: true };
+        }
     </script>
 @endsection

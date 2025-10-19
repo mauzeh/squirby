@@ -1,0 +1,1477 @@
+/* Mobile Entry Shared CSS Foundation
+ * Consolidated styles for food-logs and lift-logs mobile entry forms
+ * Requirements: 1.1, 1.2, 1.3, 2.1, 2.2, 7.1, 7.4
+ */
+
+/* Base Container and Layout Styles */
+.mobile-entry-container {
+    max-width: 600px;
+    margin: 20px auto;
+    padding: 15px;
+    background-color: #2a2a2a;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    color: #f2f2f2;
+}
+
+/* Date Navigation - Standardized from lift-logs design (Requirement 1.1, 1.2, 1.3) */
+.date-navigation-mobile {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    font-size: 1.2em;
+}
+
+.nav-button {
+    background-color: #007bff;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.nav-button:hover {
+    background-color: #0056b3;
+}
+
+/* Page Title Styling */
+h1 {
+    text-align: center;
+    color: #007bff;
+    margin-bottom: 25px;
+    font-size: 2em;
+}
+
+/* Button System - Consolidated (Requirements 3.1, 3.2, 3.3, 3.4, 3.5, 3.6) */
+.button-large {
+    color: white;
+    text-align: center;
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    border: none;
+    padding: 15px 25px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1.5em;
+    font-weight: bold;
+    text-decoration: none;
+    transition: background-color 0.2s ease;
+}
+
+/* Button Color Variants - Consistent across both forms */
+.button-green {
+    background-color: #28a745;
+}
+
+.button-green:hover {
+    background-color: #218838;
+}
+
+.button-blue {
+    background-color: #007bff;
+}
+
+.button-blue:hover {
+    background-color: #0056b3;
+}
+
+.button-gray {
+    background-color: #6c757d;
+}
+
+.button-gray:hover {
+    background-color: #545b62;
+}
+
+.button-danger {
+    background-color: #dc3545;
+}
+
+.button-danger:hover {
+    background-color: #c82333;
+}
+
+/* Button Size Variants */
+.button-small {
+    background-color: #6c757d;
+    color: white;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9em;
+    display: inline-block;
+    text-decoration: none;
+    transition: background-color 0.2s ease;
+}
+
+.button-small:hover {
+    background-color: #5a6268;
+}
+
+.button-small.button-danger {
+    background-color: #dc3545;
+}
+
+.button-small.button-danger:hover {
+    background-color: #c82333;
+}
+
+/* Form Action Button Styling */
+.form-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 25px;
+}
+
+.form-actions .button-large {
+    flex: 1;
+}
+
+/* Standardized Delete Button - Lift-logs Implementation (Requirements 3.4, 3.5) */
+.delete-button {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.delete-button:hover {
+    background-color: #c82333;
+    transform: scale(1.05);
+}
+
+.delete-button:active {
+    transform: scale(0.95);
+}
+
+/* Delete Form Styling */
+.delete-form {
+    margin: 0;
+    display: inline-block;
+}
+
+/* Button Utility Classes */
+.button-change {
+    background-color: #6c757d;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+    margin-top: 5px;
+    display: inline-block;
+    text-decoration: none;
+    transition: background-color 0.2s ease;
+}
+
+.button-change:hover {
+    background-color: #5a6268;
+}
+
+/* Toggle Button Styling */
+.toggle-button {
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9em;
+    width: 100%;
+    text-align: center;
+    transition: background-color 0.2s ease;
+}
+
+.toggle-button:hover {
+    background-color: #5a6268;
+}
+
+/* Form Input System - Consolidated (Requirements 4.1, 4.2, 4.3, 4.4, 4.5, 7.4) */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: #f2f2f2;
+    font-weight: bold;
+    font-size: 1.1em;
+}
+
+/* Input Group with Increment/Decrement Buttons */
+.input-group {
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+/* Large Input - Consolidated styling for both forms */
+.large-input {
+    text-align: center;
+    flex-grow: 1;
+    border-radius: 0;
+    font-size: 2.2em;
+    border: none;
+    padding: 15px 10px;
+    background-color: #4a4a4a;
+    color: #f2f2f2;
+    box-sizing: border-box;
+    font-weight: bold;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.large-input:focus {
+    background-color: #1a1a1a;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+/* Large Textarea - Consolidated styling for both forms */
+.large-textarea {
+    width: 100%;
+    background-color: #2a2a2a;
+    border: 1px solid #555;
+    border-radius: 5px;
+    color: #f2f2f2;
+    font-size: 1.1em;
+    padding: 15px;
+    resize: vertical;
+    min-height: 80px;
+    box-sizing: border-box;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.large-textarea:focus {
+    background-color: #1a1a1a;
+    border-color: #007bff;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+/* Increment/Decrement Buttons - Standardized behavior */
+.decrement-button,
+.increment-button {
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    padding: 15px 20px;
+    cursor: pointer;
+    font-size: 1.5em;
+    touch-action: manipulation;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+    user-select: none;
+}
+
+.decrement-button {
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
+}
+
+.increment-button {
+    border-top-right-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+
+.decrement-button:hover,
+.increment-button:hover {
+    background-color: #5a6268;
+}
+
+.decrement-button:active,
+.increment-button:active {
+    background-color: #495057;
+    transform: scale(0.98);
+}
+
+.decrement-button:disabled,
+.increment-button:disabled {
+    background-color: #495057;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+/* Unit Display */
+.unit-display {
+    display: block;
+    text-align: center;
+    color: #aaa;
+    font-size: 1em;
+    margin-top: 5px;
+}
+
+/* Input Validation States - Shared error styling patterns */
+.large-input.input-error,
+.large-textarea.input-error {
+    border: 2px solid #dc3545 !important;
+    background-color: #2a1f1f !important;
+    box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.25) !important;
+}
+
+.large-input.input-error:focus,
+.large-textarea.input-error:focus {
+    border-color: #dc3545 !important;
+    background-color: #1a1a1a !important;
+    box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.4) !important;
+}
+
+.large-input.input-success,
+.large-textarea.input-success {
+    border: 2px solid #28a745 !important;
+    background-color: #1f2a1f !important;
+    box-shadow: 0 0 0 2px rgba(40, 167, 69, 0.25) !important;
+}
+
+.large-input.input-success:focus,
+.large-textarea.input-success:focus {
+    border-color: #28a745 !important;
+    background-color: #1a1a1a !important;
+    box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.4) !important;
+}
+
+/* Form Field Validation Messages */
+.field-error {
+    color: #dc3545;
+    font-size: 0.9em;
+    margin-top: 5px;
+    display: block;
+}
+
+.field-success {
+    color: #28a745;
+    font-size: 0.9em;
+    margin-top: 5px;
+    display: block;
+}
+
+/* Required Field Indicator */
+.form-group label.required::after {
+    content: " *";
+    color: #dc3545;
+}
+
+/* Form Group States */
+.form-group.has-error label {
+    color: #dc3545;
+}
+
+.form-group.has-success label {
+    color: #28a745;
+}
+
+/* Input Group Enhancements */
+.input-group .large-input[readonly] {
+    background-color: #3a3a3a;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.input-group .large-input[disabled] {
+    background-color: #3a3a3a;
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+/* Placeholder Styling */
+.large-input::placeholder,
+.large-textarea::placeholder {
+    color: #888;
+    opacity: 1;
+}
+
+.large-input:focus::placeholder,
+.large-textarea:focus::placeholder {
+    color: #666;
+}
+
+/* Form Field Focus Ring for Accessibility */
+.large-input:focus-visible,
+.large-textarea:focus-visible {
+    outline: 2px solid #007bff;
+    outline-offset: 2px;
+}
+
+/* Input Group Button States */
+.input-group .decrement-button:focus,
+.input-group .increment-button:focus {
+    outline: 2px solid #007bff;
+    outline-offset: 2px;
+    z-index: 1;
+}
+
+/* Generic List Interface System (Requirements 5.1, 5.2, 5.3, 5.4, 5.5) */
+.item-list-container {
+    margin-top: 20px;
+    padding: 20px;
+    background-color: #3a3a3a;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.item-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.item-list-item {
+    color: #f2f2f2;
+    padding: 15px;
+    text-decoration: none;
+    border-bottom: 1px solid #555;
+    font-size: 1.2em;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background-color: transparent;
+}
+
+/* Remove border from last item */
+.item-list-item:last-child {
+    border-bottom: none;
+}
+
+/* Item name and label structure for consistent layout */
+.item-name {
+    flex: 1;
+    min-width: 0;
+    z-index: 2;
+    position: relative;
+    background: inherit;
+    padding-right: 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-weight: 500;
+}
+
+.item-label {
+    flex-shrink: 0;
+    font-size: 0.9em;
+    opacity: 0.8;
+    z-index: 1;
+    color: #ccc;
+    font-weight: normal;
+}
+
+/* Hover states and visual feedback patterns */
+.item-list-item:hover {
+    background-color: #4a4a4a;
+    transform: translateX(2px);
+    box-shadow: 2px 0 4px rgba(0, 0, 0, 0.1);
+}
+
+.item-list-item:active {
+    background-color: #5a5a5a;
+    transform: translateX(1px);
+}
+
+/* Focus states for accessibility */
+.item-list-item:focus {
+    outline: 2px solid #007bff;
+    outline-offset: 2px;
+    background-color: #4a4a4a;
+}
+
+/* Modifier classes for different item types (food vs exercise) */
+
+/* Food-specific item modifiers */
+.item-list-item.food-item {
+    border-left: 3px solid #28a745;
+}
+
+.item-list-item.food-item:hover {
+    border-left-color: #34ce57;
+    background-color: rgba(40, 167, 69, 0.1);
+}
+
+.item-list-item.ingredient-item {
+    border-left: 3px solid #17a2b8;
+}
+
+.item-list-item.ingredient-item:hover {
+    border-left-color: #20c997;
+    background-color: rgba(23, 162, 184, 0.1);
+}
+
+.item-list-item.meal-item {
+    border-left: 3px solid #fd7e14;
+}
+
+.item-list-item.meal-item:hover {
+    border-left-color: #ff922b;
+    background-color: rgba(253, 126, 20, 0.1);
+}
+
+/* Exercise-specific item modifiers */
+.item-list-item.exercise-item {
+    border-left: 3px solid #6f42c1;
+}
+
+.item-list-item.exercise-item:hover {
+    border-left-color: #8a63d2;
+    background-color: rgba(111, 66, 193, 0.1);
+}
+
+.item-list-item.recommended-exercise {
+    border-left: 3px solid #ffc107;
+}
+
+.item-list-item.recommended-exercise:hover {
+    border-left-color: #ffcd39;
+    background-color: rgba(255, 193, 7, 0.1);
+}
+
+.item-list-item.user-exercise {
+    border-left: 3px solid #007bff;
+}
+
+.item-list-item.user-exercise:hover {
+    border-left-color: #339af0;
+    background-color: rgba(0, 123, 255, 0.1);
+}
+
+/* Program-specific item modifiers */
+.item-list-item.program-item {
+    border-left: 3px solid #e83e8c;
+}
+
+.item-list-item.program-item:hover {
+    border-left-color: #f06292;
+    background-color: rgba(232, 62, 140, 0.1);
+}
+
+/* State modifiers */
+.item-list-item.selected {
+    background-color: rgba(0, 123, 255, 0.2);
+    border-left: 4px solid #007bff;
+}
+
+.item-list-item.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.item-list-item.completed {
+    background-color: rgba(40, 167, 69, 0.1);
+    border-left: 3px solid #28a745;
+}
+
+.item-list-item.completed .item-name {
+    text-decoration: line-through;
+    opacity: 0.7;
+}
+
+/* Priority indicators */
+.item-list-item.priority-high {
+    border-left: 4px solid #dc3545;
+}
+
+.item-list-item.priority-medium {
+    border-left: 4px solid #ffc107;
+}
+
+.item-list-item.priority-low {
+    border-left: 4px solid #6c757d;
+}
+
+/* Item actions container */
+.item-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-left: 10px;
+}
+
+/* Item metadata */
+.item-metadata {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+}
+
+.item-metadata .item-label {
+    font-size: 0.8em;
+    opacity: 0.7;
+}
+
+/* Empty state for lists */
+.item-list-empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: #888;
+    font-style: italic;
+}
+
+.item-list-empty::before {
+    content: "📝";
+    display: block;
+    font-size: 2em;
+    margin-bottom: 10px;
+    opacity: 0.5;
+}
+
+/* Loading state */
+.item-list-loading {
+    text-align: center;
+    padding: 40px 20px;
+    color: #888;
+}
+
+.item-list-loading::before {
+    content: "⏳";
+    display: block;
+    font-size: 2em;
+    margin-bottom: 10px;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+}
+
+/* Message System - Comprehensive from food-logs */
+.message-container {
+    margin: 15px 0;
+    padding: 0;
+    border-radius: 8px;
+    animation: slideIn 0.3s ease-out;
+}
+
+.message-error {
+    background-color: #dc3545;
+    border-left: 4px solid #a71e2a;
+}
+
+.message-success {
+    background-color: #28a745;
+    border-left: 4px solid #1e7e34;
+}
+
+.message-validation {
+    background-color: #ffc107;
+    border-left: 4px solid #d39e00;
+}
+
+.message-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+}
+
+.message-text {
+    color: white;
+    font-weight: bold;
+    font-size: 1em;
+    flex: 1;
+}
+
+.message-validation .message-text {
+    color: #212529;
+}
+
+.message-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5em;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0;
+    margin-left: 15px;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color 0.2s;
+}
+
+.message-validation .message-close {
+    color: #212529;
+}
+
+.message-close:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Legacy Input Validation Styles - Maintained for backward compatibility */
+.input-error {
+    border: 2px solid #dc3545 !important;
+    background-color: #2a1f1f !important;
+    box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.25) !important;
+}
+
+.input-error:focus {
+    border-color: #dc3545 !important;
+    background-color: #1a1a1a !important;
+    box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.4) !important;
+}
+
+/* Utility Classes */
+.hidden {
+    display: none;
+}
+
+/* Additional consolidated styles from both templates */
+
+/* Selected food/exercise display - shared pattern */
+.selected-food-display,
+.selected-exercise-display {
+    text-align: center;
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: #4a4a4a;
+    border-radius: 5px;
+}
+
+.selected-food-display h3,
+.selected-exercise-display h3 {
+    margin: 0 0 5px 0;
+    color: #f2f2f2;
+    font-size: 1.4em;
+}
+
+.selected-food-display span,
+.selected-exercise-display span {
+    color: #aaa;
+    font-style: italic;
+    font-size: 0.9em;
+}
+
+/* Log entries - shared pattern for both food and lift logs */
+.log-entry {
+    background-color: #3a3a3a;
+    border-radius: 8px;
+    padding: 15px;
+    border-left: 4px solid #007bff;
+    margin-bottom: 10px;
+}
+
+.log-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.log-time {
+    color: #aaa;
+    font-size: 0.9em;
+    font-weight: bold;
+}
+
+.log-details {
+    margin-bottom: 10px;
+}
+
+.log-name {
+    color: #f2f2f2;
+    font-size: 1.1em;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.log-quantity,
+.log-weight-reps {
+    color: #aaa;
+    font-size: 0.9em;
+    margin-bottom: 5px;
+}
+
+.log-notes {
+    color: #ccc;
+    font-size: 0.85em;
+    font-style: italic;
+    margin-top: 5px;
+}
+
+/* No logs message - shared pattern */
+.no-logs-message,
+.no-program-message {
+    text-align: center;
+    color: #aaa;
+    font-size: 1.1em;
+    padding: 30px 20px;
+    margin-top: 30px;
+    background-color: #3a3a3a;
+    border-radius: 8px;
+    font-style: italic;
+    border: 1px dashed #555;
+}
+
+/* Existing logs section - shared pattern */
+.existing-logs-section {
+    margin-top: 30px;
+}
+
+.existing-logs-section h2 {
+    color: #f2f2f2;
+    font-size: 1.4em;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.logs-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* Suggested weight display - lift-specific but consolidated */
+.suggested-weight {
+    font-size: 1.2em;
+    color: #28a745;
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+
+.last-weight {
+    display: block;
+    font-size: 1em;
+    color: #aaa;
+    font-weight: normal;
+    margin-bottom: 5px;
+}
+
+/* Form field containers - consolidated pattern */
+.form-fields {
+    margin-bottom: 20px;
+}
+
+.lift-log-form-fields {
+    margin-bottom: 20px;
+}
+
+/* Weight form group - lift-specific */
+.weight-form-group {
+    margin-bottom: 15px;
+}
+
+.weight-form-group.hidden {
+    display: none;
+}
+
+/* Mobile-First Responsive Design - Consolidated (Requirements 7.1, 7.2, 7.3, 7.4, 7.5, 7.6) */
+@media (max-width: 768px) {
+    /* Container and layout adjustments */
+    .mobile-entry-container {
+        margin: 10px;
+        padding: 10px;
+    }
+    
+    /* Date navigation responsive behavior */
+    .date-navigation-mobile {
+        font-size: 1.1em;
+    }
+    
+    .date-navigation-mobile .nav-button {
+        padding: 8px 12px;
+        font-size: 0.9em;
+    }
+    
+    /* Typography adjustments */
+    h1 {
+        font-size: 1.8em;
+        margin-bottom: 20px;
+    }
+    
+    /* Form fields on separate lines for mobile (Requirement 7.4) */
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        margin-bottom: 15px;
+    }
+    
+    .form-group label {
+        flex: none;
+        text-align: left;
+        margin-bottom: 8px;
+        font-size: 1em;
+    }
+    
+    /* Ensure input groups stack properly on mobile */
+    .input-group {
+        width: 100%;
+    }
+    
+    /* Adjust form validation messages for mobile */
+    .field-error,
+    .field-success {
+        font-size: 0.85em;
+        margin-top: 3px;
+    }
+    
+    /* Consistent minimum touch targets (44px) - Requirement 7.2 */
+    .nav-button {
+        min-height: 44px;
+        min-width: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .item-list-item {
+        min-height: 44px;
+        padding: 12px 15px;
+        font-size: 1.1em;
+    }
+    
+    .item-list-container {
+        margin-top: 15px;
+        padding: 15px;
+    }
+    
+    .item-name {
+        font-size: 1em;
+    }
+    
+    .item-label {
+        font-size: 0.85em;
+    }
+    
+    .item-actions {
+        gap: 6px;
+    }
+    
+    .item-metadata .item-label {
+        font-size: 0.75em;
+    }
+    
+    .decrement-button,
+    .increment-button {
+        min-width: 44px;
+        min-height: 44px;
+        padding: 12px 16px;
+    }
+    
+    .large-input {
+        min-height: 44px;
+        font-size: 2em;
+    }
+    
+    .large-textarea {
+        min-height: 80px;
+        font-size: 1em;
+    }
+    
+    .delete-button {
+        min-width: 32px;
+        min-height: 32px;
+        width: 32px;
+        height: 32px;
+        font-size: 18px;
+    }
+    
+    .button-large {
+        font-size: 1.3em;
+        padding: 12px 20px;
+        min-height: 44px;
+    }
+    
+    .button-small {
+        min-height: 36px;
+        padding: 6px 10px;
+    }
+    
+    .button-change {
+        min-height: 44px;
+        padding: 10px 15px;
+    }
+    
+    .toggle-button {
+        min-height: 44px;
+        padding: 10px 15px;
+    }
+    
+    /* Message system responsive adjustments */
+    .message-container {
+        margin: 10px 0;
+    }
+    
+    .message-content {
+        padding: 12px 15px;
+    }
+    
+    .message-text {
+        font-size: 0.9em;
+    }
+    
+    .message-close {
+        width: 28px;
+        height: 28px;
+        font-size: 1.3em;
+    }
+    
+    /* Form actions responsive behavior */
+    .form-actions {
+        gap: 8px;
+        margin-top: 20px;
+    }
+    
+    .form-actions .button-large {
+        font-size: 1.2em;
+        padding: 10px 18px;
+    }
+}
+
+/* Smaller mobile devices - Requirement 7.3 */
+@media (max-width: 480px) {
+    /* Further container adjustments */
+    .mobile-entry-container {
+        margin: 5px;
+        padding: 8px;
+    }
+    
+    /* Navigation adjustments for small screens */
+    .date-navigation-mobile .nav-button {
+        padding: 6px 10px;
+        font-size: 0.8em;
+        min-width: 40px;
+        min-height: 40px;
+    }
+    
+    /* Typography for small screens */
+    h1 {
+        font-size: 1.6em;
+    }
+    
+    /* List adjustments for small screens */
+    .item-list-container {
+        margin-top: 10px;
+        padding: 10px;
+    }
+    
+    .item-list-item {
+        padding: 10px 12px;
+        font-size: 1em;
+        min-height: 40px;
+    }
+    
+    .item-name {
+        font-size: 0.95em;
+    }
+    
+    .item-label {
+        font-size: 0.8em;
+    }
+    
+    .item-actions {
+        gap: 4px;
+    }
+    
+    /* Form adjustments for small screens */
+    .form-group {
+        margin-bottom: 12px;
+    }
+    
+    .form-group label {
+        font-size: 0.95em;
+        margin-bottom: 6px;
+    }
+    
+    .large-input {
+        font-size: 1.8em;
+        padding: 12px 8px;
+        min-height: 40px;
+    }
+    
+    .large-textarea {
+        font-size: 0.95em;
+        padding: 12px;
+        min-height: 70px;
+    }
+    
+    .decrement-button,
+    .increment-button {
+        min-width: 40px;
+        min-height: 40px;
+        padding: 10px 14px;
+        font-size: 1.3em;
+    }
+    
+    .button-large {
+        font-size: 1.2em;
+        padding: 10px 16px;
+        min-height: 40px;
+    }
+    
+    .button-small {
+        min-height: 32px;
+        padding: 5px 8px;
+        font-size: 0.85em;
+    }
+    
+    .delete-button {
+        min-width: 28px;
+        min-height: 28px;
+        width: 28px;
+        height: 28px;
+        font-size: 16px;
+    }
+    
+    /* Message system for small screens */
+    .message-content {
+        padding: 10px 12px;
+    }
+    
+    .message-text {
+        font-size: 0.85em;
+    }
+    
+    .message-close {
+        width: 24px;
+        height: 24px;
+        font-size: 1.2em;
+    }
+}
+
+/* Landscape orientation adjustments for mobile devices */
+@media (max-width: 768px) and (orientation: landscape) {
+    .mobile-entry-container {
+        margin: 5px auto;
+        max-width: 90%;
+    }
+    
+    .date-navigation-mobile {
+        margin-bottom: 15px;
+    }
+    
+    h1 {
+        font-size: 1.6em;
+        margin-bottom: 15px;
+    }
+    
+    .form-group {
+        margin-bottom: 12px;
+    }
+    
+    .item-list-container {
+        margin-top: 12px;
+        padding: 12px;
+    }
+}
+
+/* High DPI/Retina display adjustments */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    .delete-button,
+    .message-close,
+    .nav-button {
+        /* Ensure crisp rendering on high DPI displays */
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+}
+
+/* Accessibility: Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+    .item-list-item,
+    .button-large,
+    .button-small,
+    .nav-button,
+    .delete-button,
+    .message-container {
+        transition: none;
+        animation: none;
+    }
+    
+    .item-list-item:hover {
+        transform: none;
+    }
+    
+    .delete-button:hover,
+    .delete-button:active {
+        transform: none;
+    }
+}
+
+/* Food-specific responsive styles - consolidated from food-logs template */
+@media (max-width: 768px) {
+    /* Daily nutrition totals responsive behavior */
+    .daily-nutrition-totals {
+        margin-top: 25px;
+        padding: 15px;
+    }
+    
+    .totals-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+    
+    .total-item {
+        padding: 12px;
+    }
+    
+    .total-value {
+        font-size: 1.5em;
+    }
+    
+    .total-label {
+        font-size: 0.8em;
+    }
+    
+    .additional-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+    }
+    
+    .additional-item {
+        padding: 6px 10px;
+    }
+    
+    .additional-label,
+    .additional-value {
+        font-size: 0.8em;
+    }
+    
+    /* Food log entries responsive behavior */
+    .food-log-entry {
+        padding: 12px;
+    }
+    
+    .log-nutrition {
+        gap: 10px;
+    }
+    
+    .nutrition-item {
+        gap: 2px;
+    }
+    
+    .nutrition-label,
+    .nutrition-value {
+        font-size: 0.75em;
+    }
+}
+
+@media (max-width: 480px) {
+    /* Further adjustments for small screens */
+    .totals-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+    }
+    
+    .total-item {
+        padding: 10px;
+    }
+    
+    .total-value {
+        font-size: 1.3em;
+    }
+    
+    .additional-grid {
+        grid-template-columns: 1fr;
+        gap: 6px;
+    }
+    
+    .additional-item {
+        padding: 5px 8px;
+    }
+    
+    .additional-label,
+    .additional-value {
+        font-size: 0.75em;
+    }
+}
+
+/* Lift-specific responsive styles - consolidated from lift-logs template */
+@media (max-width: 768px) {
+    /* Program card responsive behavior */
+    .program-card {
+        padding: 15px;
+        margin-bottom: 15px;
+    }
+    
+    .program-card h2 {
+        font-size: 1.6em;
+        padding-right: 70px;
+    }
+    
+    .program-card-actions {
+        top: 8px;
+        right: 8px;
+    }
+    
+    .program-action-button {
+        width: 28px;
+        height: 28px;
+        font-size: 1.1em;
+        line-height: 28px;
+        margin-left: 4px;
+    }
+    
+    /* Band color selector responsive behavior */
+    .band-color-selector {
+        gap: 8px;
+        margin-top: 8px;
+    }
+    
+    .band-color-button {
+        min-width: 70px;
+        padding: 12px 8px;
+        font-size: 1em;
+    }
+    
+    /* Completed badge responsive behavior */
+    .completed-badge {
+        padding-left: 18px;
+    }
+    
+    .badge-icon {
+        width: 28px;
+        height: 28px;
+        left: -14px;
+        font-size: 1.1em;
+    }
+    
+    /* Exercise list responsive behavior */
+    .exercise-list-container {
+        margin-top: 15px;
+        padding: 15px;
+    }
+    
+    .exercise-list-item {
+        padding: 12px 15px;
+        font-size: 1.1em;
+    }
+    
+    .exercise-name {
+        font-size: 1em;
+    }
+    
+    .exercise-label {
+        font-size: 0.85em;
+    }
+    
+    /* New exercise form responsive behavior */
+    .new-exercise-form {
+        margin-bottom: 8px;
+    }
+    
+    .new-exercise-form .large-input {
+        font-size: 1.2em;
+        padding: 12px 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    /* Further program card adjustments */
+    .program-card {
+        padding: 12px;
+    }
+    
+    .program-card h2 {
+        font-size: 1.4em;
+        padding-right: 60px;
+    }
+    
+    .program-action-button {
+        width: 26px;
+        height: 26px;
+        font-size: 1em;
+        line-height: 26px;
+    }
+    
+    /* Band selector adjustments */
+    .band-color-button {
+        min-width: 60px;
+        padding: 10px 6px;
+        font-size: 0.9em;
+    }
+    
+    /* Exercise list adjustments */
+    .exercise-list-item {
+        padding: 10px 12px;
+        font-size: 1em;
+    }
+    
+    .exercise-name {
+        font-size: 0.95em;
+    }
+    
+    .exercise-label {
+        font-size: 0.8em;
+    }
+}
+
+/* Print styles for mobile entry forms */
+@media print {
+    .mobile-entry-container {
+        box-shadow: none;
+        background-color: white;
+        color: black;
+        margin: 0;
+        padding: 20px;
+    }
+    
+    .date-navigation-mobile,
+    .form-actions,
+    .delete-button,
+    .message-close,
+    .button-large,
+    .button-small,
+    .button-change,
+    .toggle-button,
+    .program-card-actions,
+    .band-color-selector {
+        display: none;
+    }
+    
+    .item-list-item {
+        border-bottom: 1px solid #ccc;
+        background-color: transparent;
+    }
+    
+    .message-container {
+        border: 1px solid #ccc;
+        background-color: #f8f9fa;
+        color: black;
+    }
+    
+    .program-card {
+        background-color: #f8f9fa;
+        border: 1px solid #ccc;
+        color: black;
+    }
+    
+    .daily-nutrition-totals,
+    .food-log-entry {
+        background-color: #f8f9fa;
+        border: 1px solid #ccc;
+        color: black;
+    }
+}

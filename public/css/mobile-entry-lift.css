@@ -1,0 +1,590 @@
+/* Mobile Entry Lift-Specific CSS Extensions
+ * Lift-logs specific styling for mobile entry forms
+ * Requirements: 2.5, 8.3
+ */
+
+/* Program Cards */
+.program-card {
+    background-color: #3a3a3a;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    position: relative;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.program-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+}
+
+.program-card h2 {
+    color: orange;
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 1.8em;
+    padding-right: 80px; /* Make space for the action buttons */
+    line-height: 1.2;
+}
+
+.program-card .details {
+    font-size: 1.1em;
+    color: #ccc;
+    margin-bottom: 10px;
+    line-height: 1.4;
+}
+
+/* Program Card Actions */
+.program-card-actions {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    gap: 5px;
+}
+
+.program-action-button {
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    font-size: 1.2em;
+    line-height: 30px;
+    text-align: center;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.program-action-button:hover {
+    background-color: #5a6268;
+    transform: scale(1.1);
+}
+
+.delete-program-button {
+    background-color: #dc3545;
+}
+
+.delete-program-button:hover {
+    background-color: #c82333;
+}
+
+/* Suggested Weight Display */
+.suggested-weight {
+    font-size: 1.2em;
+    color: #28a745;
+    font-weight: bold;
+    margin-bottom: 15px;
+    padding: 10px;
+    background-color: rgba(40, 167, 69, 0.1);
+    border-radius: 5px;
+    border-left: 3px solid #28a745;
+}
+
+.last-weight {
+    display: block;
+    font-size: 1em;
+    color: #aaa;
+    font-weight: normal;
+    margin-bottom: 5px;
+    padding: 8px;
+    background-color: rgba(108, 117, 125, 0.1);
+    border-radius: 4px;
+}
+
+/* Band Color Selector */
+.band-color-selector {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 10px;
+    justify-content: center;
+}
+
+.band-color-button {
+    flex: 1 1 auto;
+    min-width: 80px;
+    padding: 15px 10px;
+    border: 2px solid transparent;
+    border-radius: 5px;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    font-size: 1.1em;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    background: none;
+}
+
+.band-color-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+}
+
+.band-color-button.selected {
+    border-color: #007bff;
+    transform: scale(1.05);
+    box-shadow: 0 0 15px rgba(0, 123, 255, 0.6);
+}
+
+.band-color-button.suggested {
+    border-style: dashed;
+    border-color: #ffc107;
+    animation: pulse-suggestion 2s ease-in-out infinite;
+}
+
+.band-color-button.suggested.selected {
+    border-style: dashed;
+    border-color: rgba(255, 193, 7, 0.5);
+}
+
+@keyframes pulse-suggestion {
+    0%, 100% { 
+        border-color: #ffc107;
+        opacity: 0.8;
+    }
+    50% { 
+        border-color: #ffcd39;
+        opacity: 1;
+    }
+}
+
+/* Completion Badge */
+.completed-badge {
+    border-left: 5px solid #28a745;
+    padding-left: 20px;
+    position: relative;
+    background-color: rgba(40, 167, 69, 0.1);
+    border-radius: 5px;
+    padding: 15px 15px 15px 35px;
+}
+
+.badge-icon {
+    position: absolute;
+    left: -15px;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: #28a745;
+    color: white;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2em;
+    font-weight: bold;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.logged-summary {
+    margin-top: 15px;
+}
+
+.logged-summary h3 {
+    color: #28a745;
+    margin: 0 0 10px 0;
+    font-size: 1.3em;
+}
+
+.logged-summary p {
+    margin: 5px 0;
+    color: #f2f2f2;
+}
+
+/* Exercise Selection Interface */
+.add-exercise-container {
+    margin-top: 20px;
+}
+
+#exercise-list-container {
+    margin-top: 20px;
+    padding: 20px;
+    background-color: #3a3a3a;
+    border-radius: 8px;
+}
+
+.exercise-list {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Exercise List Item Variants - extends shared base styling */
+.exercise-list-item {
+    color: #f2f2f2;
+    padding: 15px;
+    text-decoration: none;
+    border-bottom: 1px solid #555;
+    font-size: 1.2em;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background-color: transparent;
+}
+
+.exercise-list-item:hover {
+    background-color: #4a4a4a;
+    transform: translateX(2px);
+}
+
+.exercise-list-item:last-child {
+    border-bottom: none;
+}
+
+/* Exercise name and label styling */
+.exercise-name {
+    flex: 1;
+    min-width: 0;
+    z-index: 2;
+    position: relative;
+    background: inherit;
+    padding-right: 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-weight: 500;
+}
+
+.exercise-label {
+    flex-shrink: 0;
+    font-size: 0.9em;
+    opacity: 0.8;
+    z-index: 1;
+    color: #ccc;
+    font-weight: normal;
+}
+
+/* Exercise type variants */
+.new-exercise-item {
+    background-color: #4a4a4a;
+    border-left: 3px solid #6c757d;
+    font-weight: bold;
+}
+
+.new-exercise-item:hover {
+    background-color: #5a5a5a;
+    border-left-color: #868e96;
+}
+
+.recommended-exercise {
+    background-color: #4a4a2d;
+    border-left: 3px solid #ffc107;
+}
+
+.recommended-exercise:hover {
+    background-color: #5a5a3a;
+    border-left-color: #ffcd39;
+    background-color: rgba(255, 193, 7, 0.15);
+}
+
+.user-exercise {
+    background-color: #2d3a4a;
+    border-left: 3px solid #007bff;
+}
+
+.user-exercise:hover {
+    background-color: #3a4a5a;
+    border-left-color: #339af0;
+    background-color: rgba(0, 123, 255, 0.15);
+}
+
+/* New Exercise Form */
+.new-exercise-form {
+    margin-bottom: 10px;
+    padding: 15px;
+    background-color: #4a4a4a;
+    border-radius: 5px;
+    border-left: 3px solid #28a745;
+}
+
+#new-exercise-form-container {
+    margin-top: 10px;
+}
+
+.new-exercise-form .large-input {
+    font-size: 1.3em;
+    padding: 12px 15px;
+    margin-bottom: 15px;
+    background-color: #2a2a2a;
+    border: 1px solid #555;
+    border-radius: 5px;
+}
+
+.new-exercise-form .large-input:focus {
+    border-color: #28a745;
+    box-shadow: 0 0 0 2px rgba(40, 167, 69, 0.25);
+}
+
+/* Lift Log Form Fields */
+.lift-log-form {
+    margin-top: 15px;
+}
+
+.lift-log-form-fields {
+    margin-bottom: 20px;
+}
+
+.lift-log-form .form-group {
+    margin-bottom: 15px;
+}
+
+.lift-log-form label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    font-size: 1.1em;
+    color: #f2f2f2;
+}
+
+/* Weight Form Group - Bodyweight Exercise Support */
+.weight-form-group {
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+
+.weight-form-group.hidden {
+    display: none;
+}
+
+/* Submit Button for Lift Completion */
+.submit-button {
+    background-color: #007bff;
+    color: white;
+    padding: 15px 25px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1.5em;
+    font-weight: bold;
+    width: 100%;
+    margin-top: 20px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.submit-button:hover {
+    background-color: #0056b3;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+}
+
+.submit-button:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 123, 255, 0.3);
+}
+
+.submit-button:disabled {
+    background-color: #6c757d;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* Large Button Variant for Lift-logs */
+.large-button {
+    background-color: #28a745;
+    color: white;
+    text-align: center;
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    border: none;
+    padding: 15px 25px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1.5em;
+    font-weight: bold;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.large-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Lift-specific responsive adjustments are now consolidated in mobile-entry-shared.css */
+
+/* Lift-specific print styles */
+@media print {
+    .program-card {
+        background-color: #f8f9fa;
+        border: 1px solid #ccc;
+        color: black;
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+    
+    .program-card h2 {
+        color: black;
+        padding-right: 0;
+    }
+    
+    .program-card .details {
+        color: #333;
+    }
+    
+    .program-card-actions,
+    .add-exercise-container,
+    #exercise-list-container,
+    .lift-log-form,
+    .band-color-selector {
+        display: none;
+    }
+    
+    .suggested-weight,
+    .last-weight {
+        background-color: #f8f9fa;
+        border: 1px solid #ddd;
+        color: black;
+    }
+    
+    .completed-badge {
+        background-color: #d4edda;
+        border: 1px solid #c3e6cb;
+        color: black;
+    }
+    
+    .badge-icon {
+        background-color: #28a745;
+        color: white;
+    }
+    
+    .exercise-list-item {
+        border-bottom: 1px solid #ccc;
+        background-color: transparent;
+        color: black;
+    }
+}
+
+/* Lift-specific accessibility enhancements */
+.program-card:focus-within {
+    outline: 2px solid #007bff;
+    outline-offset: 2px;
+}
+
+.exercise-list-item:focus {
+    outline: 2px solid #007bff;
+    outline-offset: 2px;
+}
+
+.band-color-button:focus {
+    outline: 2px solid #007bff;
+    outline-offset: 2px;
+}
+
+.program-action-button:focus {
+    outline: 2px solid #007bff;
+    outline-offset: 2px;
+}
+
+/* High contrast mode support for lift elements */
+@media (prefers-contrast: high) {
+    .program-card {
+        border: 2px solid #000;
+    }
+    
+    .recommended-exercise {
+        border-left-width: 4px;
+        border-left-color: #ffff00;
+    }
+    
+    .user-exercise {
+        border-left-width: 4px;
+        border-left-color: #0000ff;
+    }
+    
+    .completed-badge {
+        border-left-width: 6px;
+        border-left-color: #00ff00;
+    }
+    
+    .band-color-button {
+        border-width: 3px;
+    }
+    
+    .band-color-button.selected {
+        border-color: #ffffff;
+        box-shadow: 0 0 0 2px #000000;
+    }
+}
+
+/* Reduced motion preferences for lift elements */
+@media (prefers-reduced-motion: reduce) {
+    .program-card,
+    .exercise-list-item,
+    .band-color-button,
+    .program-action-button,
+    .submit-button,
+    .large-button {
+        transition: none;
+        animation: none;
+    }
+    
+    .program-card:hover,
+    .exercise-list-item:hover,
+    .submit-button:hover,
+    .large-button:hover {
+        transform: none;
+        box-shadow: none;
+    }
+    
+    .band-color-button.suggested {
+        animation: none;
+    }
+}
+
+/* Focus management for lift forms */
+.lift-log-form input:focus,
+.lift-log-form textarea:focus,
+.lift-log-form select:focus {
+    outline: 2px solid #007bff;
+    outline-offset: 2px;
+}
+
+/* Loading states for lift-specific elements */
+.program-card.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.program-card.loading::after {
+    content: "⏳";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 2em;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+.exercise-list.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.exercise-list.loading::after {
+    content: "Loading exercises...";
+    display: block;
+    text-align: center;
+    padding: 20px;
+    color: #888;
+    font-style: italic;
+}
