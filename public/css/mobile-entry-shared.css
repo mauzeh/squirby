@@ -12,6 +12,15 @@
     max-width: 100%;
 }
 
+/* Ensure all containers respect viewport boundaries */
+.mobile-entry-container,
+.mobile-entry-container .program-card,
+.mobile-entry-container .item-list-container {
+    max-width: 100%;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+}
+
 /* Base Container and Layout Styles */
 .mobile-entry-container {
     max-width: 600px;
@@ -21,7 +30,6 @@
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
     color: #f2f2f2;
-    width: 100%;
     box-sizing: border-box;
     overflow-x: hidden;
 }
@@ -920,7 +928,6 @@ h1 {
         margin: 10px;
         padding: 10px;
         max-width: calc(100vw - 20px);
-        width: calc(100vw - 20px);
     }
     
     /* Date navigation responsive behavior */
@@ -1086,7 +1093,6 @@ h1 {
         margin: 5px;
         padding: 8px;
         max-width: calc(100vw - 10px);
-        width: calc(100vw - 10px);
     }
     
     /* Navigation adjustments for small screens */
@@ -1196,7 +1202,7 @@ h1 {
 @media (max-width: 768px) and (orientation: landscape) {
     .mobile-entry-container {
         margin: 5px auto;
-        max-width: 90%;
+        max-width: calc(90vw - 10px);
     }
     
     .date-navigation-mobile {
