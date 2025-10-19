@@ -63,6 +63,12 @@
                                             <button type="submit" class="button" style="background-color: #4CAF50;" onclick="return confirm('Are you sure you want to promote this exercise to global status?');" title="Promote to global exercise"><i class="fa-solid fa-globe"></i></button>
                                         </form>
                                     @endif
+                                    @if(auth()->user()->hasRole('Admin') && $exercise->isGlobal())
+                                        <form action="{{ route('exercises.unpromote', $exercise->id) }}" method="POST" style="display:inline;">
+                                            @csrf
+                                            <button type="submit" class="button" style="background-color: #FF9800;" onclick="return confirm('Are you sure you want to unpromote this exercise back to personal status? This will only work if no other users have workout logs with this exercise.');" title="Unpromote to personal exercise"><i class="fa-solid fa-user"></i></button>
+                                        </form>
+                                    @endif
                                     @if($exercise->canBeDeletedBy(auth()->user()))
                                         <form action="{{ route('exercises.destroy', $exercise->id) }}" method="POST" style="display:inline;">
                                             @csrf

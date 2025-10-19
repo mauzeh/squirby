@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Exercise;
+use App\Models\User;
 use App\Services\ExerciseService;
 use App\Services\ChartService;
 use App\Presenters\LiftLogTablePresenter;

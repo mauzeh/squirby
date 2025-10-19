@@ -37,15 +37,15 @@
   - Follow existing naming convention with exercises.unpromote
   - _Requirements: 1.1_
 
-- [ ] 4. Update exercises index view
-  - [ ] 4.1 Add unpromote button to actions column
+- [x] 4. Update exercises index view
+  - [x] 4.1 Add unpromote button to actions column
     - Add unpromote button next to existing action buttons for global exercises
     - Show button only for admin users and global exercises
     - Style button with orange background and user icon
     - Position after promote button, before delete button
     - _Requirements: 1.1, 5.1, 5.3, 5.4_
   
-  - [ ] 4.2 Add confirmation dialog and tooltip
+  - [x] 4.2 Add confirmation dialog and tooltip
     - Add JavaScript confirmation with detailed explanation
     - Include tooltip explaining unpromote functionality
     - Match styling patterns of existing action buttons
