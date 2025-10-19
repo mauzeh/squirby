@@ -12,6 +12,9 @@
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
     position: relative;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
+    width: 100%;
+    box-sizing: border-box;
+    overflow-x: hidden;
 }
 
 .program-card:hover {
@@ -105,11 +108,14 @@
     gap: 10px;
     margin-top: 10px;
     justify-content: center;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .band-color-button {
     flex: 1 1 auto;
     min-width: 80px;
+    max-width: calc(50% - 5px);
     padding: 15px 10px;
     border: 2px solid transparent;
     border-radius: 5px;
@@ -125,6 +131,7 @@
     justify-content: center;
     transition: all 0.2s ease;
     background: none;
+    box-sizing: border-box;
 }
 
 .band-color-button:hover {
@@ -208,12 +215,7 @@
     margin-top: 20px;
 }
 
-#exercise-list-container {
-    margin-top: 20px;
-    padding: 20px;
-    background-color: #3a3a3a;
-    border-radius: 8px;
-}
+/* Exercise List Container - Use shared .item-list-container class */
 
 .exercise-list {
     display: flex;
@@ -443,7 +445,7 @@
     
     .program-card-actions,
     .add-exercise-container,
-    #exercise-list-container,
+    .item-list-container,
     .lift-log-form,
     .band-color-selector {
         display: none;

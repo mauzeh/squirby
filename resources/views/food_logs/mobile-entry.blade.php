@@ -35,7 +35,7 @@
             <button type="button" id="add-food-button" class="button-large button-green">Add Food</button>
         </div>
 
-        <div id="food-list-container" class="item-list-container hidden">
+        <div class="item-list-container hidden" id="food-list-container">
             <div class="food-list item-list">
                 @foreach ($ingredients as $ingredient)
                     <a href="#" class="food-list-item item-list-item ingredient-item" 
@@ -80,7 +80,7 @@
         @endif
 
         {{-- Dynamic form fields for logging --}}
-        <div id="logging-form-container" class="hidden">
+        <div class="item-list-container hidden" id="logging-form-container">
             <form id="food-logging-form" method="POST" action="{{ route('food-logs.store') }}">
                 @csrf
                 <input type="hidden" name="redirect_to" value="mobile-entry">

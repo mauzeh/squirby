@@ -26,13 +26,7 @@
     background-color: rgba(253, 126, 20, 0.15);
 }
 
-/* Food-specific list container styling */
-#food-list-container {
-    margin-top: 20px;
-    padding: 20px;
-    background-color: #3a3a3a;
-    border-radius: 8px;
-}
+/* Food-specific list container styling - Use shared .item-list-container class */
 
 .food-list {
     display: flex;
@@ -67,13 +61,7 @@
     margin-top: 20px;
 }
 
-/* Food Logging Form Container */
-#logging-form-container {
-    margin-top: 20px;
-    padding: 20px;
-    background-color: #3a3a3a;
-    border-radius: 8px;
-}
+/* Food Logging Form Container - Use shared .item-list-container class */
 
 /* Selected Food Display */
 .selected-food-display {
@@ -285,11 +273,7 @@
 
 /* Food-specific responsive adjustments */
 @media (max-width: 768px) {
-    /* Food list responsive behavior */
-    #food-list-container {
-        margin-top: 15px;
-        padding: 15px;
-    }
+    /* Food list responsive behavior - handled by shared .item-list-container */
     
     .food-list-item {
         padding: 12px 15px;
@@ -304,11 +288,7 @@
         font-size: 0.85em;
     }
     
-    /* Food logging form responsive behavior */
-    #logging-form-container {
-        margin-top: 15px;
-        padding: 15px;
-    }
+    /* Food logging form responsive behavior - handled by shared .item-list-container */
     
     .selected-food-display {
         padding: 12px;
@@ -440,10 +420,7 @@
         font-size: 0.8em;
     }
     
-    /* Form adjustments */
-    #logging-form-container {
-        padding: 12px;
-    }
+    /* Form adjustments - handled by shared .item-list-container */
     
     .selected-food-display {
         padding: 10px;
@@ -487,7 +464,7 @@
     }
     
     .add-food-container,
-    #logging-form-container {
+    .item-list-container {
         display: none;
     }
 }

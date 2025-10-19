@@ -209,7 +209,7 @@
             <button type="button" id="add-exercise-button" class="button-large button-green">Add exercise</button>
         </div>
 
-        <div id="exercise-list-container" class="item-list-container hidden">
+        <div class="item-list-container hidden" id="exercise-list-container">
             <div class="item-list exercise-list">
                 <a href="#" id="new-exercise-link" class="item-list-item exercise-list-item new-exercise-item">✚ Create new exercise</a>
                 <div id="new-exercise-form-container" class="hidden new-exercise-form">
