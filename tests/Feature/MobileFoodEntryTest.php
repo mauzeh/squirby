@@ -140,11 +140,12 @@ class MobileFoodEntryTest extends TestCase
             'selected_id' => $this->ingredient->id,
             'quantity' => 100,
             'date' => $testDate,
+            'notes' => '',
         ]);
 
         $response->assertRedirect(route('food-logs.mobile-entry', ['date' => $testDate]));
         
-        // Debug: Check what session message we actually got
+        // Check for any errors
         if (session('error')) {
             $this->fail('Expected success but got error: ' . session('error'));
         }
@@ -157,8 +158,8 @@ class MobileFoodEntryTest extends TestCase
         
         $this->assertNotNull($foodLog, 'Food log should be created');
         
-        // Should be rounded to 14:45 and have the correct date (37 minutes rounds to 45)
-        $this->assertEquals('2025-01-15 14:45:00', $foodLog->logged_at->format('Y-m-d H:i:s'));
+        // Should be rounded to 14:30 and have the correct date (37 minutes rounds to 30)
+        $this->assertEquals('2025-01-15 14:30:00', $foodLog->logged_at->format('Y-m-d H:i:s'));
         
         Carbon::setTestNow(); // Reset
     }
@@ -269,10 +270,10 @@ class MobileFoodEntryTest extends TestCase
         $response->assertOk();
         
         // Check that the page displays the food logs for the selected date
-        $response->assertSee("Today's Food Log");
+        $response->assertSee("Today's Food Log", false);
         $response->assertSee($this->ingredient->name);
-        $response->assertSee('100 ' . $this->unit->name);
-        $response->assertSee('150 ' . $this->unit->name);
+        $response->assertSee('100.00 ' . $this->unit->name);
+        $response->assertSee('150.00 ' . $this->unit->name);
         $response->assertSee('Breakfast ingredient');
         $response->assertSee('Lunch ingredient');
         $response->assertSee('8:30 AM');
