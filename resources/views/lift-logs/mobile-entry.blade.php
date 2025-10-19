@@ -178,22 +178,8 @@
         </div>
 
         <div id="exercise-list-container" class="hidden">
-            <h3>Select an exercise to add:</h3>
             <div class="exercise-list">
-                @if (!empty($recommendations))
-                    <div class="recommendations-header">
-                        <span class="recommendations-label">⭐ Recommended for you:</span>
-                    </div>
-                    @foreach ($recommendations as $recommendation)
-                        <a href="{{ route('programs.quick-add', ['exercise' => $recommendation['exercise']->id, 'date' => $selectedDate->toDateString(), 'redirect_to' => 'mobile-entry']) }}" class="exercise-list-item recommended-exercise">
-                            <div class="exercise-title">{{ $recommendation['exercise']->title }}</div>
-                            <div class="exercise-reasoning">{{ implode(' • ', array_slice($recommendation['reasoning'], 0, 2)) }}</div>
-                        </a>
-                    @endforeach
-                    <div class="recommendations-divider"></div>
-                @endif
-                
-                <a href="#" id="new-exercise-link" class="exercise-list-item new-exercise-item">New...</a>
+                <a href="#" id="new-exercise-link" class="exercise-list-item new-exercise-item">New exercise...</a>
                 <div id="new-exercise-form-container" class="hidden">
                     <form action="{{ route('programs.quick-create', ['date' => $selectedDate->toDateString()]) }}" method="POST">
                         @csrf
@@ -204,6 +190,13 @@
                         <button type="submit" class="large-button button-green">Add Exercise</button>
                     </form>
                 </div>
+                
+                @if (!empty($recommendations))
+                    @foreach ($recommendations as $recommendation)
+                        <a href="{{ route('programs.quick-add', ['exercise' => $recommendation['exercise']->id, 'date' => $selectedDate->toDateString(), 'redirect_to' => 'mobile-entry']) }}" class="exercise-list-item recommended-exercise">{{ $recommendation['exercise']->title }} ⭐ <em>Recommended</em></a>
+                    @endforeach
+                @endif
+                
                 @foreach ($exercises as $exercise)
                     <a href="{{ route('programs.quick-add', ['exercise' => $exercise->id, 'date' => $selectedDate->toDateString(), 'redirect_to' => 'mobile-entry']) }}" class="exercise-list-item">{{ $exercise->title }}</a>
                 @endforeach
@@ -321,37 +314,16 @@
         .new-exercise-item {
             background-color: #4a4a4a;
         }
-        .recommendations-header {
-            padding: 10px 15px;
-            background-color: #2a2a2a;
-            border-bottom: 1px solid #555;
-        }
-        .recommendations-label {
-            color: #ffc107;
-            font-weight: bold;
-            font-size: 1.1em;
+        .new-exercise-item:hover {
+            background-color: #5a5a5a;
         }
         .recommended-exercise {
-            background-color: #1a4d3a;
-            border-left: 4px solid #28a745;
+            background-color: #2d4a3a;
         }
         .recommended-exercise:hover {
-            background-color: #2a5d4a;
+            background-color: #3a5a4a;
         }
-        .exercise-title {
-            font-weight: bold;
-            margin-bottom: 4px;
-        }
-        .exercise-reasoning {
-            font-size: 0.9em;
-            color: #ccc;
-            line-height: 1.3;
-        }
-        .recommendations-divider {
-            height: 1px;
-            background-color: #555;
-            margin: 10px 0;
-        }
+
         .completed-badge {
             border-left: 5px solid #28a745; /* Green border */
             padding-left: 20px;
