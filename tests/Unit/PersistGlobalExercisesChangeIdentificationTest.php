@@ -113,4 +113,103 @@ class PersistGlobalExercisesChangeIdentificationTest extends TestCase
         
         $this->assertArrayHasKey('push_up', $changes['new_entries']);
     }
+
+    public function test_identify_changes_handles_band_type_differences()
+    {
+        $command = $this->getCommand();
+        
+        // Exercise with band_type in database
+        $exercise = new Exercise();
+        $exercise->title = 'Band Pull';
+        $exercise->description = 'Pull with resistance band';
+        $exercise->canonical_name = 'band_pull';
+        $exercise->is_bodyweight = false;
+        $exercise->band_type = 'resistance';
+        
+        $exercises = collect([$exercise]);
+        
+        // CSV data without band_type
+        $csvData = [
+            'band_pull' => [
+                'title' => 'Band Pull',
+                'description' => 'Pull with resistance band',
+                'canonical_name' => 'band_pull',
+                'is_bodyweight' => '0',
+                'band_type' => ''
+            ]
+        ];
+        
+        $changes = $this->callPrivateMethod($command, 'identifyChanges', [$exercises, $csvData]);
+        
+        // Should detect band_type difference
+        $this->assertEquals(1, $changes['summary']['updates_count']);
+        $this->assertEquals(0, $changes['summary']['new_entries_count']);
+        $this->assertEquals(0, $changes['summary']['no_change_count']);
+        
+        $this->assertArrayHasKey('band_pull', $changes['updates_needed']);
+        $this->assertArrayHasKey('band_type', $changes['updates_needed']['band_pull']['differences']);
+        $this->assertContains('band_type', $changes['updates_needed']['band_pull']['field_changes']);
+    }
+
+    public function test_identify_changes_categorizes_mixed_scenarios()
+    {
+        $command = $this->getCommand();
+        
+        // Create exercises with different scenarios
+        $exercise1 = new Exercise();
+        $exercise1->title = 'Unchanged Exercise';
+        $exercise1->canonical_name = 'unchanged';
+        $exercise1->is_bodyweight = true;
+        $exercise1->band_type = null;
+        
+        $exercise2 = new Exercise();
+        $exercise2->title = 'Updated Exercise';
+        $exercise2->canonical_name = 'updated';
+        $exercise2->is_bodyweight = false;
+        $exercise2->band_type = 'resistance';
+        
+        $exercise3 = new Exercise();
+        $exercise3->title = 'New Exercise';
+        $exercise3->canonical_name = 'new_exercise';
+        $exercise3->is_bodyweight = true;
+        $exercise3->band_type = 'assistance';
+        
+        $exercises = collect([$exercise1, $exercise2, $exercise3]);
+        
+        // CSV data - unchanged matches, updated has differences, new_exercise missing
+        $csvData = [
+            'unchanged' => [
+                'title' => 'Unchanged Exercise',
+                'description' => '',
+                'canonical_name' => 'unchanged',
+                'is_bodyweight' => '1',
+                'band_type' => ''
+            ],
+            'updated' => [
+                'title' => 'Old Title', // Different title
+                'description' => '',
+                'canonical_name' => 'updated',
+                'is_bodyweight' => '0',
+                'band_type' => '' // Different band_type
+            ]
+        ];
+        
+        $changes = $this->callPrivateMethod($command, 'identifyChanges', [$exercises, $csvData]);
+        
+        // Verify counts
+        $this->assertEquals(3, $changes['summary']['total_global_exercises']);
+        $this->assertEquals(1, $changes['summary']['updates_count']);
+        $this->assertEquals(1, $changes['summary']['new_entries_count']);
+        $this->assertEquals(1, $changes['summary']['no_change_count']);
+        
+        // Verify categorization
+        $this->assertArrayHasKey('unchanged', $changes['no_change']);
+        $this->assertArrayHasKey('updated', $changes['updates_needed']);
+        $this->assertArrayHasKey('new_exercise', $changes['new_entries']);
+        
+        // Verify update details
+        $updateInfo = $changes['updates_needed']['updated'];
+        $this->assertContains('title', $updateInfo['field_changes']);
+        $this->assertContains('band_type', $updateInfo['field_changes']);
+    }
 }
