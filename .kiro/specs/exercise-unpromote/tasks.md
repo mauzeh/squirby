@@ -52,13 +52,13 @@
     - _Requirements: 5.2, 5.5_
 
 - [ ] 5. Add comprehensive tests
-  - [ ] 5.1 Add policy tests for unpromote authorization
+  - [x] 5.1 Add policy tests for unpromote authorization
     - Test admin users can unpromote global exercises
     - Test non-admin users cannot unpromote exercises
     - Test cannot unpromote non-global exercises
     - _Requirements: 4.1, 4.2_
   
-  - [ ] 5.2 Add controller tests for unpromote functionality
+  - [x] 5.2 Add controller tests for unpromote functionality
     - Test successful unpromote when safe (no other users' logs)
     - Test blocked unpromote when other users have logs
     - Test original owner determination from lift logs
@@ -66,7 +66,7 @@
     - Test authorization failures return 403
     - _Requirements: 1.3, 2.1, 2.2, 3.4, 4.2_
   
-  - [ ] 5.3 Add integration tests for UI functionality
+  - [x] 5.3 Add integration tests for UI functionality
     - Test unpromote button appears for admin users on global exercises
     - Test unpromote button does not appear for non-admin users
     - Test unpromote button does not appear for user exercises
