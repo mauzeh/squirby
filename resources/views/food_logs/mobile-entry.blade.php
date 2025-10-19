@@ -42,7 +42,8 @@
                        data-type="ingredient" 
                        data-id="{{ $ingredient->id }}"
                        data-name="{{ $ingredient->name }}"
-                       data-unit="{{ $ingredient->baseUnit->name }}">
+                       data-unit="{{ $ingredient->baseUnit->name }}"
+                       data-base-quantity="{{ $ingredient->base_quantity }}">
                         <span class="food-name item-name">{{ $ingredient->name }}</span>
                         <span class="food-label item-label"><em>Ingredient</em></span>
                     </a>
@@ -286,6 +287,7 @@
                     const id = this.dataset.id;
                     const name = this.dataset.name;
                     const unit = this.dataset.unit;
+                    const baseQuantity = this.dataset.baseQuantity;
                     
                     // Validate that the selected item still exists (handle deleted ingredients/meals)
                     if (!id || !name) {
@@ -320,8 +322,8 @@
                         // Set unit display
                         document.getElementById('ingredient-unit').textContent = unit || '';
                         
-                        // Reset ingredient form values
-                        document.getElementById('quantity').value = '1';
+                        // Reset ingredient form values - use base_quantity as default
+                        document.getElementById('quantity').value = baseQuantity || '1';
                         document.getElementById('ingredient-notes').value = '';
                     } else if (type === 'meal') {
                         mealFields.classList.remove('hidden');

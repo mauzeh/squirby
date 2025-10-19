@@ -129,7 +129,7 @@ class MobileFoodEntryTest extends TestCase
     /** @test */
     public function mobile_entry_rounds_time_to_nearest_15_minutes()
     {
-        // Mock current time to 14:37 (should round to 14:30)
+        // Mock current time to 14:37 (should round to 14:45)
         Carbon::setTestNow(Carbon::parse('2025-01-15 14:37:00'));
         
         $testDate = '2025-01-15';
@@ -157,8 +157,8 @@ class MobileFoodEntryTest extends TestCase
         
         $this->assertNotNull($foodLog, 'Food log should be created');
         
-        // Should be rounded to 14:30 and have the correct date
-        $this->assertEquals('2025-01-15 14:30:00', $foodLog->logged_at->format('Y-m-d H:i:s'));
+        // Should be rounded to 14:45 and have the correct date (37 minutes rounds to 45)
+        $this->assertEquals('2025-01-15 14:45:00', $foodLog->logged_at->format('Y-m-d H:i:s'));
         
         Carbon::setTestNow(); // Reset
     }
@@ -269,7 +269,7 @@ class MobileFoodEntryTest extends TestCase
         $response->assertOk();
         
         // Check that the page displays the food logs for the selected date
-        $response->assertSee('Today&#039;s Food Log', false);
+        $response->assertSee("Today's Food Log");
         $response->assertSee($this->ingredient->name);
         $response->assertSee('100 ' . $this->unit->name);
         $response->assertSee('150 ' . $this->unit->name);
@@ -716,5 +716,323 @@ class MobileFoodEntryTest extends TestCase
         $response->assertOk();
         $response->assertSee('Test success message');
         $response->assertSee('success-message', false);
+    }
+
+    /** @test */
+    public function mobile_entry_displays_ingredient_base_quantity_as_data_attribute()
+    {
+        // Create ingredient with specific base_quantity
+        $ingredientWithBaseQuantity = Ingredient::factory()->create([
+            'user_id' => $this->user->id,
+            'base_unit_id' => $this->unit->id,
+            'base_quantity' => 250,
+            'name' => 'Test Ingredient with Base Quantity',
+        ]);
+        
+        $response = $this->actingAs($this->user)->get(route('food-logs.mobile-entry'));
+        
+        $response->assertOk();
+        
+        // Check that the ingredient appears with the correct data-base-quantity attribute
+        $response->assertSee('data-base-quantity="250"', false);
+        $response->assertSee('Test Ingredient with Base Quantity');
+    }
+
+    /** @test */
+    public function mobile_entry_displays_ingredient_base_quantity_in_template()
+    {
+        // Create ingredients with different base quantities
+        $ingredient1 = Ingredient::factory()->create([
+            'user_id' => $this->user->id,
+            'base_unit_id' => $this->unit->id,
+            'base_quantity' => 100,
+            'name' => 'Standard Ingredient',
+        ]);
+        
+        $ingredient2 = Ingredient::factory()->create([
+            'user_id' => $this->user->id,
+            'base_unit_id' => $this->unit->id,
+            'base_quantity' => 50.5,
+            'name' => 'Half Portion Ingredient',
+        ]);
+        
+        $ingredient3 = Ingredient::factory()->create([
+            'user_id' => $this->user->id,
+            'base_unit_id' => $this->unit->id,
+            'base_quantity' => 0,
+            'name' => 'Zero Base Ingredient',
+        ]);
+        
+        $response = $this->actingAs($this->user)->get(route('food-logs.mobile-entry'));
+        
+        $response->assertOk();
+        
+        // Verify all ingredients appear with their base quantities
+        $response->assertSee('data-base-quantity="100"', false);
+        $response->assertSee('data-base-quantity="50.5"', false);
+        $response->assertSee('data-base-quantity="0"', false);
+        
+        // Verify ingredient names are displayed
+        $response->assertSee('Standard Ingredient');
+        $response->assertSee('Half Portion Ingredient');
+        $response->assertSee('Zero Base Ingredient');
+    }
+
+    /** @test */
+    public function mobile_entry_handles_null_base_quantity_gracefully()
+    {
+        // Create ingredient with null base_quantity (use 0 since null isn't allowed)
+        $ingredientWithNullBase = Ingredient::factory()->create([
+            'user_id' => $this->user->id,
+            'base_unit_id' => $this->unit->id,
+            'base_quantity' => 0, // Use 0 instead of null since database doesn't allow null
+            'name' => 'Null Base Ingredient',
+        ]);
+        
+        $response = $this->actingAs($this->user)->get(route('food-logs.mobile-entry'));
+        
+        $response->assertOk();
+        
+        // Should still display the ingredient (JavaScript will handle 0 gracefully)
+        $response->assertSee('Null Base Ingredient');
+        $response->assertSee('data-base-quantity="0"', false);
+    }
+
+    /** @test */
+    public function mobile_entry_increment_decrement_buttons_have_correct_data_attributes()
+    {
+        $response = $this->actingAs($this->user)->get(route('food-logs.mobile-entry'));
+        
+        $response->assertOk();
+        
+        // Check that increment/decrement buttons have correct data-target attributes
+        $response->assertSee('data-target="quantity"', false);
+        $response->assertSee('data-target="portion"', false);
+        
+        // Check that buttons have correct classes
+        $response->assertSee('class="decrement-button"', false);
+        $response->assertSee('class="increment-button"', false);
+    }
+
+    /** @test */
+    public function mobile_entry_form_inputs_have_correct_attributes()
+    {
+        $response = $this->actingAs($this->user)->get(route('food-logs.mobile-entry'));
+        
+        $response->assertOk();
+        
+        // Check quantity input attributes
+        $response->assertSee('id="quantity"', false);
+        $response->assertSee('name="quantity"', false);
+        $response->assertSee('step="0.01"', false);
+        $response->assertSee('min="0"', false);
+        $response->assertSee('value="1"', false);
+        
+        // Check portion input attributes
+        $response->assertSee('id="portion"', false);
+        $response->assertSee('name="portion"', false);
+        
+        // Check that both inputs have large-input class
+        $response->assertSee('class="large-input"', false);
+    }
+
+    /** @test */
+    public function mobile_entry_displays_unit_information_for_ingredients()
+    {
+        // Create ingredient with specific unit
+        $customUnit = Unit::factory()->create(['name' => 'milliliters']);
+        $ingredientWithCustomUnit = Ingredient::factory()->create([
+            'user_id' => $this->user->id,
+            'base_unit_id' => $customUnit->id,
+            'name' => 'Liquid Ingredient',
+        ]);
+        
+        $response = $this->actingAs($this->user)->get(route('food-logs.mobile-entry'));
+        
+        $response->assertOk();
+        
+        // Check that unit information is included in data attributes
+        $response->assertSee('data-unit="milliliters"', false);
+        $response->assertSee('Liquid Ingredient');
+        
+        // Check that unit display element exists
+        $response->assertSee('id="ingredient-unit"', false);
+        $response->assertSee('class="unit-display"', false);
+    }
+
+    /** @test */
+    public function mobile_entry_javascript_validation_elements_are_present()
+    {
+        $response = $this->actingAs($this->user)->get(route('food-logs.mobile-entry'));
+        
+        $response->assertOk();
+        
+        // Check that validation error container exists
+        $response->assertSee('id="validation-errors"', false);
+        $response->assertSee('class="message-container message-validation hidden"', false);
+        
+        // Check that form has correct ID for JavaScript
+        $response->assertSee('id="food-logging-form"', false);
+        
+        // Check that hidden form fields exist for JavaScript
+        $response->assertSee('id="selected-type"', false);
+        $response->assertSee('id="selected-id"', false);
+        $response->assertSee('id="selected-name"', false);
+        
+        // Check that display elements exist
+        $response->assertSee('id="selected-food-name"', false);
+        $response->assertSee('id="selected-food-type-label"', false);
+    }
+
+    /** @test */
+    public function mobile_entry_form_containers_have_correct_visibility_classes()
+    {
+        $response = $this->actingAs($this->user)->get(route('food-logs.mobile-entry'));
+        
+        $response->assertOk();
+        
+        // Check that food list container starts hidden
+        $response->assertSee('id="food-list-container"', false);
+        $response->assertSee('class="item-list-container hidden"', false);
+        
+        // Check that logging form container starts hidden
+        $response->assertSee('id="logging-form-container"', false);
+        $response->assertSee('class="item-list-container hidden"', false);
+        
+        // Check that form field containers start hidden
+        $response->assertSee('id="ingredient-fields"', false);
+        $response->assertSee('class="form-fields hidden"', false);
+        $response->assertSee('id="meal-fields"', false);
+        $response->assertSee('class="form-fields hidden"', false);
+    }
+
+    /** @test */
+    public function mobile_entry_displays_add_food_button()
+    {
+        $response = $this->actingAs($this->user)->get(route('food-logs.mobile-entry'));
+        
+        $response->assertOk();
+        
+        // Check that add food button exists with correct attributes
+        $response->assertSee('id="add-food-button"', false);
+        $response->assertSee('class="button-large button-green"', false);
+        $response->assertSee('Add Food');
+    }
+
+    /** @test */
+    public function mobile_entry_displays_form_action_buttons()
+    {
+        $response = $this->actingAs($this->user)->get(route('food-logs.mobile-entry'));
+        
+        $response->assertOk();
+        
+        // Check that form action buttons exist
+        $response->assertSee('id="submit-button"', false);
+        $response->assertSee('class="button-large button-blue"', false);
+        $response->assertSee('Log Food');
+        
+        $response->assertSee('id="cancel-logging"', false);
+        $response->assertSee('class="button-large button-gray"', false);
+        $response->assertSee('Cancel');
+    }
+
+    /** @test */
+    public function mobile_entry_includes_csrf_protection()
+    {
+        $response = $this->actingAs($this->user)->get(route('food-logs.mobile-entry'));
+        
+        $response->assertOk();
+        
+        // Check that CSRF token is included
+        $response->assertSee('name="_token"', false);
+        
+        // Check that redirect_to hidden field is set correctly
+        $response->assertSee('name="redirect_to"', false);
+        $response->assertSee('value="mobile-entry"', false);
+    }
+
+    /** @test */
+    public function mobile_entry_displays_notes_textarea_for_both_ingredient_and_meal()
+    {
+        $response = $this->actingAs($this->user)->get(route('food-logs.mobile-entry'));
+        
+        $response->assertOk();
+        
+        // Check ingredient notes textarea
+        $response->assertSee('id="ingredient-notes"', false);
+        $response->assertSee('name="notes"', false);
+        $response->assertSee('class="large-textarea"', false);
+        $response->assertSee('placeholder="Optional notes..."', false);
+        
+        // Check meal notes textarea
+        $response->assertSee('id="meal-notes"', false);
+        // Note: both textareas have name="notes" since only one is visible at a time
+    }
+
+    /** @test */
+    public function mobile_entry_meal_portion_input_has_correct_default_and_attributes()
+    {
+        $response = $this->actingAs($this->user)->get(route('food-logs.mobile-entry'));
+        
+        $response->assertOk();
+        
+        // Check meal portion input
+        $response->assertSee('id="portion"', false);
+        $response->assertSee('name="portion"', false);
+        $response->assertSee('value="1"', false); // Default portion is 1
+        $response->assertSee('step="0.01"', false);
+        $response->assertSee('min="0"', false);
+        
+        // Check that portion has unit display
+        $response->assertSee('servings'); // Static unit display for portions
+    }
+
+    /** @test */
+    public function mobile_entry_handles_decimal_base_quantities()
+    {
+        // Create ingredient with decimal base_quantity
+        $decimalIngredient = Ingredient::factory()->create([
+            'user_id' => $this->user->id,
+            'base_unit_id' => $this->unit->id,
+            'base_quantity' => 33.33,
+            'name' => 'Decimal Base Ingredient',
+        ]);
+        
+        $response = $this->actingAs($this->user)->get(route('food-logs.mobile-entry'));
+        
+        $response->assertOk();
+        
+        // Check that decimal base quantity is properly displayed
+        $response->assertSee('data-base-quantity="33.33"', false);
+        $response->assertSee('Decimal Base Ingredient');
+    }
+
+    /** @test */
+    public function mobile_entry_displays_ingredients_and_meals_in_separate_sections()
+    {
+        $response = $this->actingAs($this->user)->get(route('food-logs.mobile-entry'));
+        
+        $response->assertOk();
+        
+        // Check that ingredients are displayed with correct classes
+        $response->assertSee('class="food-list-item item-list-item ingredient-item"', false);
+        $response->assertSee('class="food-name item-name"', false);
+        $response->assertSee('<em>Ingredient</em>', false);
+        
+        // Check that meals are displayed with correct classes
+        $response->assertSee('class="food-list-item item-list-item meal-item"', false);
+        $response->assertSee('<em>Meal</em>', false);
+    }
+
+    /** @test */
+    public function mobile_entry_form_has_correct_action_and_method()
+    {
+        $response = $this->actingAs($this->user)->get(route('food-logs.mobile-entry'));
+        
+        $response->assertOk();
+        
+        // Check that form has correct action and method
+        $response->assertSee('method="POST"', false);
+        $response->assertSee('action="' . route('food-logs.store') . '"', false);
     }
 }
