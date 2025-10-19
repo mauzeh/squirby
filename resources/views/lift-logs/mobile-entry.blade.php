@@ -193,12 +193,20 @@
                 
                 @if (!empty($recommendations))
                     @foreach ($recommendations as $recommendation)
-                        <a href="{{ route('programs.quick-add', ['exercise' => $recommendation['exercise']->id, 'date' => $selectedDate->toDateString(), 'redirect_to' => 'mobile-entry']) }}" class="exercise-list-item recommended-exercise">{{ $recommendation['exercise']->title }} ⭐ <em>Recommended</em></a>
+                        <a href="{{ route('programs.quick-add', ['exercise' => $recommendation['exercise']->id, 'date' => $selectedDate->toDateString(), 'redirect_to' => 'mobile-entry']) }}" class="exercise-list-item recommended-exercise">
+                            <span class="exercise-name">{{ $recommendation['exercise']->title }}</span>
+                            <span class="exercise-label">⭐ <em>Recommended</em></span>
+                        </a>
                     @endforeach
                 @endif
                 
                 @foreach ($exercises as $exercise)
-                    <a href="{{ route('programs.quick-add', ['exercise' => $exercise->id, 'date' => $selectedDate->toDateString(), 'redirect_to' => 'mobile-entry']) }}" class="exercise-list-item">{{ $exercise->title }}</a>
+                    <a href="{{ route('programs.quick-add', ['exercise' => $exercise->id, 'date' => $selectedDate->toDateString(), 'redirect_to' => 'mobile-entry']) }}" class="exercise-list-item {{ $exercise->is_user_created ? 'user-exercise' : '' }}">
+                        <span class="exercise-name">{{ $exercise->title }}</span>
+                        @if($exercise->is_user_created)
+                            <span class="exercise-label"><em>Created by you</em></span>
+                        @endif
+                    </a>
                 @endforeach
             </div>
         </div>
@@ -307,6 +315,27 @@
             text-decoration: none;
             border-bottom: 1px solid #555;
             font-size: 1.2em;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+        }
+        .exercise-name {
+            flex: 1;
+            min-width: 0;
+            z-index: 2;
+            position: relative;
+            background: inherit;
+            padding-right: 10px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .exercise-label {
+            flex-shrink: 0;
+            font-size: 0.9em;
+            opacity: 0.8;
+            z-index: 1;
         }
         .exercise-list-item:hover {
             background-color: #4a4a4a;
@@ -322,6 +351,12 @@
         }
         .recommended-exercise:hover {
             background-color: #3a5a4a;
+        }
+        .user-exercise {
+            background-color: #2d3a4a;
+        }
+        .user-exercise:hover {
+            background-color: #3a4a5a;
         }
 
         .completed-badge {
