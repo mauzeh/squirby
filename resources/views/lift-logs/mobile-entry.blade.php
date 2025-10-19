@@ -180,7 +180,7 @@
         <div id="exercise-list-container" class="hidden">
             <div class="exercise-list">
                 <a href="#" id="new-exercise-link" class="exercise-list-item new-exercise-item">✚ Create new exercise</a>
-                <div id="new-exercise-form-container" class="hidden">
+                <div id="new-exercise-form-container" class="hidden new-exercise-form">
                     <form action="{{ route('programs.quick-create', ['date' => $selectedDate->toDateString()]) }}" method="POST">
                         @csrf
                         <input type="hidden" name="redirect_to" value="mobile-entry">
@@ -346,11 +346,14 @@
         .new-exercise-item:hover {
             background-color: #5a5a5a;
         }
+        .new-exercise-form {
+            margin-bottom: 10px;
+        }
         .recommended-exercise {
-            background-color: #2d4a3a;
+            background-color: #4a4a2d;
         }
         .recommended-exercise:hover {
-            background-color: #3a5a4a;
+            background-color: #5a5a3a;
         }
         .user-exercise {
             background-color: #2d3a4a;
