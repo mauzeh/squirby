@@ -144,10 +144,21 @@ class MobileFoodEntryTest extends TestCase
 
         $response->assertRedirect(route('food-logs.mobile-entry', ['date' => $testDate]));
         
-        $foodLog = FoodLog::where('user_id', $this->user->id)->first();
+        // Debug: Check what session message we actually got
+        if (session('error')) {
+            $this->fail('Expected success but got error: ' . session('error'));
+        }
         
-        // Should be rounded to 14:30
-        $this->assertEquals('14:30:00', $foodLog->logged_at->format('H:i:s'));
+        $response->assertSessionHas('success', 'Ingredient logged successfully!');
+        
+        $foodLog = FoodLog::where('user_id', $this->user->id)
+            ->where('ingredient_id', $this->ingredient->id)
+            ->first();
+        
+        $this->assertNotNull($foodLog, 'Food log should be created');
+        
+        // Should be rounded to 14:30 and have the correct date
+        $this->assertEquals('2025-01-15 14:30:00', $foodLog->logged_at->format('Y-m-d H:i:s'));
         
         Carbon::setTestNow(); // Reset
     }
@@ -186,12 +197,16 @@ class MobileFoodEntryTest extends TestCase
     public function mobile_entry_only_allows_user_owned_ingredients_and_meals()
     {
         $otherUser = User::factory()->create();
-        $otherIngredient = Ingredient::factory()->create(['user_id' => $otherUser->id]);
+        $otherUnit = Unit::factory()->create(['name' => 'other_grams']);
+        $otherIngredient = Ingredient::factory()->create([
+            'user_id' => $otherUser->id,
+            'base_unit_id' => $otherUnit->id,
+        ]);
         $otherMeal = Meal::factory()->create(['user_id' => $otherUser->id]);
         
         $testDate = '2025-01-15';
         
-        // Try to log other user's ingredient
+        // Try to log other user's ingredient - should redirect with error
         $response = $this->actingAs($this->user)->post(route('food-logs.store'), [
             'redirect_to' => 'mobile-entry',
             'selected_type' => 'ingredient',
@@ -200,9 +215,10 @@ class MobileFoodEntryTest extends TestCase
             'date' => $testDate,
         ]);
 
-        $response->assertStatus(404); // Should not find the ingredient
+        $response->assertRedirect(route('food-logs.mobile-entry', ['date' => $testDate]));
+        $response->assertSessionHas('error');
         
-        // Try to log other user's meal
+        // Try to log other user's meal - should redirect with error
         $response = $this->actingAs($this->user)->post(route('food-logs.store'), [
             'redirect_to' => 'mobile-entry',
             'selected_type' => 'meal',
@@ -211,7 +227,8 @@ class MobileFoodEntryTest extends TestCase
             'date' => $testDate,
         ]);
 
-        $response->assertStatus(404); // Should not find the meal
+        $response->assertRedirect(route('food-logs.mobile-entry', ['date' => $testDate]));
+        $response->assertSessionHas('error');
     }
 
     /** @test */
