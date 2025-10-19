@@ -62,14 +62,14 @@
     - Add comprehensive CSV file existence and permission checks
     - _Requirements: 4.1, 4.2_
 
-- [-] 7. Update GlobalExercisesSeeder to handle band_type field
-  - [-] 7.1 Add band_type field processing to seeder
+- [x] 7. Update GlobalExercisesSeeder to handle band_type field
+  - [x] 7.1 Add band_type field processing to seeder
     - Read band_type column from CSV
     - Validate band_type values ('resistance', 'assistance', or empty)
     - Set band_type field on exercise model during import
     - _Requirements: 6.1, 6.2, 6.3_
   
-  - [ ] 7.2 Add band_type change reporting to seeder
+  - [x] 7.2 Add band_type change reporting to seeder
     - Include band_type changes in console output when updating exercises
     - Show old and new band_type values when changes occur
     - _Requirements: 6.4_

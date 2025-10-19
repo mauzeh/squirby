@@ -83,6 +83,15 @@ class GlobalExercisesSeeder extends Seeder
                     $exercise['is_bodyweight'] = true;
                 }
 
+                // Handle band_type field
+                if (isset($exerciseData['band_type']) && !empty(trim($exerciseData['band_type']))) {
+                    $bandType = trim($exerciseData['band_type']);
+                    $validBandTypes = ['resistance', 'assistance'];
+                    if (in_array($bandType, $validBandTypes)) {
+                        $exercise['band_type'] = $bandType;
+                    }
+                }
+
                 // Check if exercise exists to determine if it's new or updated
                 $existingExercise = Exercise::where('title', $exercise['title'])
                     ->whereNull('user_id')
@@ -108,6 +117,11 @@ class GlobalExercisesSeeder extends Seeder
                         }
                         if (($existingExercise->is_bodyweight ?? false) !== ($isBodyweight ?? false)) {
                             $changes[] = "is_bodyweight: " . ($existingExercise->is_bodyweight ? 'true' : 'false') . " → " . ($isBodyweight ? 'true' : 'false');
+                        }
+                        if (($existingExercise->band_type ?? null) !== ($exercise['band_type'] ?? null)) {
+                            $oldBandType = $existingExercise->band_type ?? 'null';
+                            $newBandType = $exercise['band_type'] ?? 'null';
+                            $changes[] = "band_type: '{$oldBandType}' → '{$newBandType}'";
                         }
                         
                         if (!empty($changes)) {
