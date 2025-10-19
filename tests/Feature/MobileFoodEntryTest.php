@@ -407,8 +407,7 @@ class MobileFoodEntryTest extends TestCase
         
         $response->assertOk();
         
-        // Check that daily totals section is displayed
-        $response->assertSee('Daily Totals');
+        // Check that daily totals section is displayed (without heading since it's now at the top)
         
         // Expected totals:
         // Ingredient1 (100g): 105 calories, 10g protein, 5g carbs, 5g fats
@@ -437,8 +436,7 @@ class MobileFoodEntryTest extends TestCase
         
         $response->assertOk();
         
-        // Check that daily totals section is displayed with zeros
-        $response->assertSee('Daily Totals');
+        // Check that daily totals section is displayed with zeros (without heading since it's now at the top)
         $response->assertSee('0'); // Calories should be 0
         $response->assertSee('0g'); // Protein, carbs, fats should be 0g
     }

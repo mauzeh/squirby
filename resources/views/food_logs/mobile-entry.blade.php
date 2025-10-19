@@ -30,6 +30,71 @@
             @endif
         </h1>
 
+        {{-- Daily nutrition totals display --}}
+        <div class="daily-nutrition-totals">
+            <div class="totals-grid">
+                <div class="total-item calories">
+                    <div class="total-value">{{ round($dailyTotals['calories']) }}</div>
+                    <div class="total-label">Calories</div>
+                </div>
+                <div class="total-item protein">
+                    <div class="total-value">{{ round($dailyTotals['protein'], 1) }}g</div>
+                    <div class="total-label">Protein</div>
+                </div>
+                <div class="total-item carbs">
+                    <div class="total-value">{{ round($dailyTotals['carbs'], 1) }}g</div>
+                    <div class="total-label">Carbs</div>
+                </div>
+                <div class="total-item fats">
+                    <div class="total-value">{{ round($dailyTotals['fats'], 1) }}g</div>
+                    <div class="total-label">Fats</div>
+                </div>
+            </div>
+            
+            {{-- Additional nutrition details (collapsible) --}}
+            <div class="additional-totals">
+                <button type="button" id="toggle-additional-totals" class="toggle-button">
+                    Show More Details
+                </button>
+                <div id="additional-totals-content" class="additional-content hidden">
+                    <div class="additional-grid">
+                        <div class="additional-item">
+                            <span class="additional-label">Fiber:</span>
+                            <span class="additional-value">{{ round($dailyTotals['fiber'], 1) }}g</span>
+                        </div>
+                        <div class="additional-item">
+                            <span class="additional-label">Added Sugars:</span>
+                            <span class="additional-value">{{ round($dailyTotals['added_sugars'], 1) }}g</span>
+                        </div>
+                        <div class="additional-item">
+                            <span class="additional-label">Sodium:</span>
+                            <span class="additional-value">{{ round($dailyTotals['sodium'], 1) }}mg</span>
+                        </div>
+                        <div class="additional-item">
+                            <span class="additional-label">Calcium:</span>
+                            <span class="additional-value">{{ round($dailyTotals['calcium'], 1) }}mg</span>
+                        </div>
+                        <div class="additional-item">
+                            <span class="additional-label">Iron:</span>
+                            <span class="additional-value">{{ round($dailyTotals['iron'], 1) }}mg</span>
+                        </div>
+                        <div class="additional-item">
+                            <span class="additional-label">Potassium:</span>
+                            <span class="additional-value">{{ round($dailyTotals['potassium'], 1) }}mg</span>
+                        </div>
+                        <div class="additional-item">
+                            <span class="additional-label">Caffeine:</span>
+                            <span class="additional-value">{{ round($dailyTotals['caffeine'], 1) }}mg</span>
+                        </div>
+                        <div class="additional-item">
+                            <span class="additional-label">Cost:</span>
+                            <span class="additional-value">${{ number_format($dailyTotals['cost'], 2) }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         {{-- Food selection interface --}}
         <div class="add-food-container">
             <button type="button" id="add-food-button" class="button-large button-green">Add Food</button>
@@ -200,71 +265,7 @@
             </div>
         @endif
 
-        {{-- Daily nutrition totals display --}}
-        <div class="daily-nutrition-totals">
-            <h2>Daily Totals</h2>
-            <div class="totals-grid">
-                <div class="total-item calories">
-                    <div class="total-value">{{ round($dailyTotals['calories']) }}</div>
-                    <div class="total-label">Calories</div>
-                </div>
-                <div class="total-item protein">
-                    <div class="total-value">{{ round($dailyTotals['protein'], 1) }}g</div>
-                    <div class="total-label">Protein</div>
-                </div>
-                <div class="total-item carbs">
-                    <div class="total-value">{{ round($dailyTotals['carbs'], 1) }}g</div>
-                    <div class="total-label">Carbs</div>
-                </div>
-                <div class="total-item fats">
-                    <div class="total-value">{{ round($dailyTotals['fats'], 1) }}g</div>
-                    <div class="total-label">Fats</div>
-                </div>
-            </div>
-            
-            {{-- Additional nutrition details (collapsible) --}}
-            <div class="additional-totals">
-                <button type="button" id="toggle-additional-totals" class="toggle-button">
-                    Show More Details
-                </button>
-                <div id="additional-totals-content" class="additional-content hidden">
-                    <div class="additional-grid">
-                        <div class="additional-item">
-                            <span class="additional-label">Fiber:</span>
-                            <span class="additional-value">{{ round($dailyTotals['fiber'], 1) }}g</span>
-                        </div>
-                        <div class="additional-item">
-                            <span class="additional-label">Added Sugars:</span>
-                            <span class="additional-value">{{ round($dailyTotals['added_sugars'], 1) }}g</span>
-                        </div>
-                        <div class="additional-item">
-                            <span class="additional-label">Sodium:</span>
-                            <span class="additional-value">{{ round($dailyTotals['sodium'], 1) }}mg</span>
-                        </div>
-                        <div class="additional-item">
-                            <span class="additional-label">Calcium:</span>
-                            <span class="additional-value">{{ round($dailyTotals['calcium'], 1) }}mg</span>
-                        </div>
-                        <div class="additional-item">
-                            <span class="additional-label">Iron:</span>
-                            <span class="additional-value">{{ round($dailyTotals['iron'], 1) }}mg</span>
-                        </div>
-                        <div class="additional-item">
-                            <span class="additional-label">Potassium:</span>
-                            <span class="additional-value">{{ round($dailyTotals['potassium'], 1) }}mg</span>
-                        </div>
-                        <div class="additional-item">
-                            <span class="additional-label">Caffeine:</span>
-                            <span class="additional-value">{{ round($dailyTotals['caffeine'], 1) }}mg</span>
-                        </div>
-                        <div class="additional-item">
-                            <span class="additional-label">Cost:</span>
-                            <span class="additional-value">${{ number_format($dailyTotals['cost'], 2) }}</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+
     </div>
 
 

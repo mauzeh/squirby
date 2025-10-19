@@ -140,17 +140,18 @@
 
 /* Daily Nutrition Totals Display */
 .daily-nutrition-totals {
-    margin-top: 30px;
-    padding: 20px;
+    margin-top: 15px;
+    margin-bottom: 20px;
+    padding: 12px;
     background-color: #3a3a3a;
-    border-radius: 8px;
-    border-left: 4px solid #28a745;
+    border-radius: 6px;
+    border-left: 3px solid #28a745;
 }
 
 .daily-nutrition-totals h2 {
     color: #f2f2f2;
-    font-size: 1.4em;
-    margin-bottom: 20px;
+    font-size: 1.2em;
+    margin-bottom: 12px;
     text-align: center;
 }
 
@@ -158,14 +159,14 @@
 .totals-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 15px;
-    margin-bottom: 20px;
+    gap: 8px;
+    margin-bottom: 12px;
 }
 
 .total-item {
     background-color: #4a4a4a;
-    border-radius: 8px;
-    padding: 15px;
+    border-radius: 6px;
+    padding: 10px;
     text-align: center;
     border-left: 3px solid #007bff;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -194,44 +195,44 @@
 }
 
 .total-value {
-    font-size: 1.8em;
+    font-size: 1.4em;
     font-weight: bold;
     color: #f2f2f2;
-    margin-bottom: 5px;
-    line-height: 1.2;
+    margin-bottom: 3px;
+    line-height: 1.1;
 }
 
 .total-label {
-    font-size: 0.9em;
+    font-size: 0.8em;
     color: #aaa;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.3px;
     font-weight: 500;
 }
 
 /* Additional nutrition details (collapsible) */
 .additional-totals {
     border-top: 1px solid #555;
-    padding-top: 15px;
+    padding-top: 10px;
 }
 
 .additional-content {
-    margin-top: 15px;
+    margin-top: 10px;
 }
 
 .additional-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 10px;
+    gap: 6px;
 }
 
 .additional-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 8px 12px;
+    padding: 6px 8px;
     background-color: #2a2a2a;
-    border-radius: 5px;
+    border-radius: 4px;
     transition: background-color 0.2s ease;
 }
 
@@ -305,45 +306,46 @@
     
     /* Daily nutrition totals responsive behavior */
     .daily-nutrition-totals {
-        margin-top: 25px;
-        padding: 15px;
+        margin-top: 12px;
+        margin-bottom: 15px;
+        padding: 10px;
     }
     
     .daily-nutrition-totals h2 {
-        font-size: 1.2em;
-        margin-bottom: 15px;
+        font-size: 1.1em;
+        margin-bottom: 10px;
     }
     
     .totals-grid {
         grid-template-columns: 1fr 1fr;
-        gap: 10px;
-        margin-bottom: 15px;
+        gap: 6px;
+        margin-bottom: 10px;
     }
     
     .total-item {
-        padding: 12px;
+        padding: 8px;
     }
     
     .total-value {
-        font-size: 1.5em;
+        font-size: 1.2em;
     }
     
     .total-label {
-        font-size: 0.8em;
+        font-size: 0.75em;
     }
     
     .additional-grid {
         grid-template-columns: 1fr 1fr;
-        gap: 8px;
+        gap: 5px;
     }
     
     .additional-item {
-        padding: 6px 10px;
+        padding: 4px 6px;
     }
     
     .additional-label,
     .additional-value {
-        font-size: 0.8em;
+        font-size: 0.75em;
     }
     
     /* Food log entries responsive behavior */
@@ -377,33 +379,33 @@
     /* Further adjustments for small screens */
     .totals-grid {
         grid-template-columns: 1fr 1fr;
-        gap: 8px;
+        gap: 5px;
     }
     
     .total-item {
-        padding: 10px;
+        padding: 6px;
     }
     
     .total-value {
-        font-size: 1.3em;
+        font-size: 1.1em;
     }
     
     .total-label {
-        font-size: 0.75em;
+        font-size: 0.7em;
     }
     
     .additional-grid {
         grid-template-columns: 1fr;
-        gap: 6px;
+        gap: 4px;
     }
     
     .additional-item {
-        padding: 5px 8px;
+        padding: 3px 5px;
     }
     
     .additional-label,
     .additional-value {
-        font-size: 0.75em;
+        font-size: 0.7em;
     }
     
     /* Food list adjustments */
