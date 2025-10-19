@@ -55,6 +55,25 @@
             </div>
         </div>
 
+        {{-- Error display section --}}
+        @if(session('error'))
+            <div class="error-message" id="error-message">
+                <div class="error-content">
+                    <span class="error-text">{{ session('error') }}</span>
+                    <button type="button" class="error-close" onclick="this.parentElement.parentElement.style.display='none'">&times;</button>
+                </div>
+            </div>
+        @endif
+
+        @if(session('success'))
+            <div class="success-message" id="success-message">
+                <div class="success-content">
+                    <span class="success-text">{{ session('success') }}</span>
+                    <button type="button" class="success-close" onclick="this.parentElement.parentElement.style.display='none'">&times;</button>
+                </div>
+            </div>
+        @endif
+
         {{-- Dynamic form fields for logging --}}
         <div id="logging-form-container" class="hidden">
             <form id="food-logging-form" method="POST" action="{{ route('food-logs.store') }}">
@@ -64,6 +83,14 @@
                 <input type="hidden" name="selected_type" id="selected-type">
                 <input type="hidden" name="selected_id" id="selected-id">
                 <input type="hidden" name="selected_name" id="selected-name">
+
+                {{-- Client-side validation error display --}}
+                <div id="validation-errors" class="validation-errors hidden">
+                    <div class="validation-content">
+                        <span class="validation-text"></span>
+                        <button type="button" class="validation-close" onclick="document.getElementById('validation-errors').classList.add('hidden')">&times;</button>
+                    </div>
+                </div>
 
                 <div class="selected-food-display">
                     <h3 id="selected-food-name"></h3>
@@ -105,7 +132,7 @@
                 </div>
 
                 <div class="form-actions">
-                    <button type="submit" class="button-large button-blue">Log Food</button>
+                    <button type="submit" id="submit-button" class="button-large button-blue">Log Food</button>
                     <button type="button" id="cancel-logging" class="button-large button-gray">Cancel</button>
                 </div>
             </form>
@@ -167,9 +194,70 @@
             </div>
         @endif
 
-        {{-- Daily nutrition totals will be added in later task --}}
-        <div class="nutrition-totals-placeholder">
-            <p class="placeholder-message">Daily nutrition totals will be implemented in a later task.</p>
+        {{-- Daily nutrition totals display --}}
+        <div class="daily-nutrition-totals">
+            <h2>Daily Totals</h2>
+            <div class="totals-grid">
+                <div class="total-item calories">
+                    <div class="total-value">{{ round($dailyTotals['calories']) }}</div>
+                    <div class="total-label">Calories</div>
+                </div>
+                <div class="total-item protein">
+                    <div class="total-value">{{ round($dailyTotals['protein'], 1) }}g</div>
+                    <div class="total-label">Protein</div>
+                </div>
+                <div class="total-item carbs">
+                    <div class="total-value">{{ round($dailyTotals['carbs'], 1) }}g</div>
+                    <div class="total-label">Carbs</div>
+                </div>
+                <div class="total-item fats">
+                    <div class="total-value">{{ round($dailyTotals['fats'], 1) }}g</div>
+                    <div class="total-label">Fats</div>
+                </div>
+            </div>
+            
+            {{-- Additional nutrition details (collapsible) --}}
+            <div class="additional-totals">
+                <button type="button" id="toggle-additional-totals" class="toggle-button">
+                    Show More Details
+                </button>
+                <div id="additional-totals-content" class="additional-content hidden">
+                    <div class="additional-grid">
+                        <div class="additional-item">
+                            <span class="additional-label">Fiber:</span>
+                            <span class="additional-value">{{ round($dailyTotals['fiber'], 1) }}g</span>
+                        </div>
+                        <div class="additional-item">
+                            <span class="additional-label">Added Sugars:</span>
+                            <span class="additional-value">{{ round($dailyTotals['added_sugars'], 1) }}g</span>
+                        </div>
+                        <div class="additional-item">
+                            <span class="additional-label">Sodium:</span>
+                            <span class="additional-value">{{ round($dailyTotals['sodium'], 1) }}mg</span>
+                        </div>
+                        <div class="additional-item">
+                            <span class="additional-label">Calcium:</span>
+                            <span class="additional-value">{{ round($dailyTotals['calcium'], 1) }}mg</span>
+                        </div>
+                        <div class="additional-item">
+                            <span class="additional-label">Iron:</span>
+                            <span class="additional-value">{{ round($dailyTotals['iron'], 1) }}mg</span>
+                        </div>
+                        <div class="additional-item">
+                            <span class="additional-label">Potassium:</span>
+                            <span class="additional-value">{{ round($dailyTotals['potassium'], 1) }}mg</span>
+                        </div>
+                        <div class="additional-item">
+                            <span class="additional-label">Caffeine:</span>
+                            <span class="additional-value">{{ round($dailyTotals['caffeine'], 1) }}mg</span>
+                        </div>
+                        <div class="additional-item">
+                            <span class="additional-label">Cost:</span>
+                            <span class="additional-value">${{ number_format($dailyTotals['cost'], 2) }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -635,6 +723,219 @@
             font-style: italic;
         }
 
+        /* Daily nutrition totals styles */
+        .daily-nutrition-totals {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #3a3a3a;
+            border-radius: 8px;
+            border-left: 4px solid #28a745;
+        }
+
+        .daily-nutrition-totals h2 {
+            color: #f2f2f2;
+            font-size: 1.4em;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .totals-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .total-item {
+            background-color: #4a4a4a;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            border-left: 3px solid #007bff;
+        }
+
+        .total-item.calories {
+            border-left-color: #ff6b35;
+        }
+
+        .total-item.protein {
+            border-left-color: #28a745;
+        }
+
+        .total-item.carbs {
+            border-left-color: #ffc107;
+        }
+
+        .total-item.fats {
+            border-left-color: #dc3545;
+        }
+
+        .total-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #f2f2f2;
+            margin-bottom: 5px;
+        }
+
+        .total-label {
+            font-size: 0.9em;
+            color: #aaa;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .additional-totals {
+            border-top: 1px solid #555;
+            padding-top: 15px;
+        }
+
+        .toggle-button {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            width: 100%;
+            text-align: center;
+        }
+
+        .toggle-button:hover {
+            background-color: #5a6268;
+        }
+
+        .additional-content {
+            margin-top: 15px;
+        }
+
+        .additional-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .additional-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            background-color: #2a2a2a;
+            border-radius: 5px;
+        }
+
+        .additional-label {
+            color: #aaa;
+            font-size: 0.85em;
+        }
+
+        .additional-value {
+            color: #f2f2f2;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        /* Error and success message styles */
+        .error-message,
+        .success-message,
+        .validation-errors {
+            margin: 15px 0;
+            padding: 0;
+            border-radius: 8px;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .error-message {
+            background-color: #dc3545;
+            border-left: 4px solid #a71e2a;
+        }
+
+        .success-message {
+            background-color: #28a745;
+            border-left: 4px solid #1e7e34;
+        }
+
+        .validation-errors {
+            background-color: #ffc107;
+            border-left: 4px solid #d39e00;
+        }
+
+        .error-content,
+        .success-content,
+        .validation-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+        }
+
+        .error-text,
+        .success-text,
+        .validation-text {
+            color: white;
+            font-weight: bold;
+            font-size: 1em;
+            flex: 1;
+        }
+
+        .validation-text {
+            color: #212529;
+        }
+
+        .error-close,
+        .success-close,
+        .validation-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5em;
+            font-weight: bold;
+            cursor: pointer;
+            padding: 0;
+            margin-left: 15px;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background-color 0.2s;
+        }
+
+        .validation-close {
+            color: #212529;
+        }
+
+        .error-close:hover,
+        .success-close:hover,
+        .validation-close:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+
+
+        /* Input validation styles */
+        .input-error {
+            border: 2px solid #dc3545 !important;
+            background-color: #2a1f1f !important;
+        }
+
+        .input-error:focus {
+            border-color: #dc3545 !important;
+            background-color: #1a1a1a !important;
+        }
+
         /* Ensure minimum touch target sizes for mobile */
         @media (max-width: 768px) {
             .nav-button {
@@ -677,6 +978,38 @@
             .nutrition-item {
                 gap: 2px;
             }
+
+            /* Mobile responsive styles for daily totals */
+            .totals-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+            }
+
+            .total-item {
+                padding: 12px;
+            }
+
+            .total-value {
+                font-size: 1.5em;
+            }
+
+            .total-label {
+                font-size: 0.8em;
+            }
+
+            .additional-grid {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+
+            .additional-item {
+                padding: 6px 10px;
+            }
+
+            .additional-label,
+            .additional-value {
+                font-size: 0.8em;
+            }
         }
     </style>
 
@@ -699,9 +1032,18 @@
                     const name = this.dataset.name;
                     const unit = this.dataset.unit;
                     
+                    // Validate that the selected item still exists (handle deleted ingredients/meals)
+                    if (!id || !name) {
+                        showValidationError('Selected item is no longer available. Please refresh the page.');
+                        return;
+                    }
+                    
                     // Hide food list and show logging form
                     document.getElementById('food-list-container').classList.add('hidden');
                     document.getElementById('logging-form-container').classList.remove('hidden');
+                    
+                    // Clear any previous validation errors
+                    hideValidationError();
                     
                     // Set hidden form values
                     document.getElementById('selected-type').value = type;
@@ -770,6 +1112,36 @@
                     
                     // Round to 2 decimal places to avoid floating point issues
                     input.value = Math.round(currentValue * 100) / 100;
+                    
+                    // Clear validation error styling when user interacts with input
+                    input.classList.remove('input-error');
+                    hideValidationError();
+                });
+            });
+
+            // Add input validation on manual entry
+            document.querySelectorAll('#quantity, #portion').forEach(input => {
+                input.addEventListener('input', function() {
+                    // Clear validation error styling when user types
+                    this.classList.remove('input-error');
+                    hideValidationError();
+                    
+                    // Validate positive numbers
+                    const value = parseFloat(this.value);
+                    if (this.value && (isNaN(value) || value < 0)) {
+                        this.classList.add('input-error');
+                        showValidationError('Please enter a positive number.');
+                    }
+                });
+
+                input.addEventListener('blur', function() {
+                    // Ensure minimum value on blur
+                    const value = parseFloat(this.value);
+                    if (this.value && (isNaN(value) || value <= 0)) {
+                        this.value = '1';
+                        this.classList.remove('input-error');
+                        hideValidationError();
+                    }
                 });
             });
 
@@ -802,30 +1174,147 @@
                 return 1; // Default
             }
 
-            // Form submission handling
+            // Form submission handling with comprehensive validation
             document.getElementById('food-logging-form').addEventListener('submit', function(event) {
-                const type = document.getElementById('selected-type').value;
+                event.preventDefault(); // Prevent default submission for validation
                 
-                // Disable form to prevent double submission
-                const submitButton = this.querySelector('button[type="submit"]');
+                const type = document.getElementById('selected-type').value;
+                const selectedId = document.getElementById('selected-id').value;
+                const selectedName = document.getElementById('selected-name').value;
+                
+                // Clear any previous validation errors
+                hideValidationError();
+                
+                // Validate form data
+                const validationResult = validateForm(type);
+                if (!validationResult.isValid) {
+                    showValidationError(validationResult.message);
+                    return;
+                }
+                
+                // Check if selected item still exists (edge case handling)
+                if (!selectedId || !selectedName) {
+                    showValidationError('Selected item is no longer available. Please select a food item again.');
+                    return;
+                }
+                
+                // Disable submit button to prevent double submission
+                const submitButton = document.getElementById('submit-button');
                 submitButton.disabled = true;
                 submitButton.textContent = 'Logging...';
                 
-                // The form will submit normally to the existing store route
-                // The controller will handle the redirect back to mobile-entry
+                // Submit the form
+                this.submit();
             });
 
-            // Delete form handling
+            // Delete form handling - prevent double submission
             document.querySelectorAll('.delete-form').forEach(form => {
                 form.addEventListener('submit', function(event) {
                     const deleteButton = this.querySelector('.delete-button');
                     
-                    // Change button appearance during deletion
-                    deleteButton.style.backgroundColor = '#6c757d';
-                    deleteButton.textContent = '...';
+                    // Disable button to prevent double submission
                     deleteButton.disabled = true;
                 });
             });
+
+            // Toggle additional nutrition details
+            const toggleButton = document.getElementById('toggle-additional-totals');
+            const additionalContent = document.getElementById('additional-totals-content');
+            
+            if (toggleButton && additionalContent) {
+                toggleButton.addEventListener('click', function() {
+                    const isHidden = additionalContent.classList.contains('hidden');
+                    
+                    if (isHidden) {
+                        additionalContent.classList.remove('hidden');
+                        this.textContent = 'Show Less Details';
+                    } else {
+                        additionalContent.classList.add('hidden');
+                        this.textContent = 'Show More Details';
+                    }
+                });
+            }
+
+            // Auto-hide success/error messages after 5 seconds
+            setTimeout(function() {
+                const errorMessage = document.getElementById('error-message');
+                const successMessage = document.getElementById('success-message');
+                
+                if (errorMessage) {
+                    errorMessage.style.display = 'none';
+                }
+                if (successMessage) {
+                    successMessage.style.display = 'none';
+                }
+            }, 5000);
+        });
+
+        // Validation functions
+        function validateForm(type) {
+            if (type === 'ingredient') {
+                const quantity = document.getElementById('quantity').value;
+                const quantityNum = parseFloat(quantity);
+                
+                if (!quantity || quantity.trim() === '') {
+                    return { isValid: false, message: 'Please enter a quantity for the ingredient.' };
+                }
+                
+                if (isNaN(quantityNum) || quantityNum <= 0) {
+                    return { isValid: false, message: 'Quantity must be a positive number.' };
+                }
+                
+                if (quantityNum > 10000) {
+                    return { isValid: false, message: 'Quantity seems too large. Please check your input.' };
+                }
+                
+            } else if (type === 'meal') {
+                const portion = document.getElementById('portion').value;
+                const portionNum = parseFloat(portion);
+                
+                if (!portion || portion.trim() === '') {
+                    return { isValid: false, message: 'Please enter a portion size for the meal.' };
+                }
+                
+                if (isNaN(portionNum) || portionNum <= 0) {
+                    return { isValid: false, message: 'Portion must be a positive number.' };
+                }
+                
+                if (portionNum > 100) {
+                    return { isValid: false, message: 'Portion size seems too large. Please check your input.' };
+                }
+            } else {
+                return { isValid: false, message: 'Please select a food item first.' };
+            }
+            
+            return { isValid: true };
+        }
+
+        function showValidationError(message) {
+            const errorContainer = document.getElementById('validation-errors');
+            const errorText = errorContainer.querySelector('.validation-text');
+            
+            errorText.textContent = message;
+            errorContainer.classList.remove('hidden');
+            
+            // Scroll to error message
+            errorContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        function hideValidationError() {
+            const errorContainer = document.getElementById('validation-errors');
+            errorContainer.classList.add('hidden');
+        }
+
+        // Handle page visibility changes to re-enable form if needed
+        document.addEventListener('visibilitychange', function() {
+            if (document.visibilityState === 'visible') {
+                // Re-enable submit button if page becomes visible again
+                const submitButton = document.getElementById('submit-button');
+                if (submitButton && submitButton.disabled) {
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'Log Food';
+                }
+            }
         });
     </script>
 @endsection

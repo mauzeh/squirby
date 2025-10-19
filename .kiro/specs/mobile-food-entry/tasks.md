@@ -48,14 +48,14 @@
   - Implement delete functionality for logged entries
   - _Requirements: 7.1, 7.2, 7.3, 7.4, 7.5_
 
-- [ ] 8. Add daily nutrition totals display
+- [x] 8. Add daily nutrition totals display
   - Calculate and display daily totals using NutritionService
   - Show calories, protein, carbs, fats prominently
   - Update totals after form submission via redirect
   - Style totals for mobile readability
   - _Requirements: 3.4, 3.5_
 
-- [ ] 9. Add comprehensive error handling and validation
+- [x] 9. Add comprehensive error handling and validation
   - Implement client-side validation for positive quantities
   - Add form validation error display
   - Handle edge cases for deleted ingredients/meals

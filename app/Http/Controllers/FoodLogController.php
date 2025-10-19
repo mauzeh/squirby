@@ -106,84 +106,158 @@ class FoodLogController extends Controller
      */
     private function storeMobileEntry(Request $request)
     {
-        $validated = $request->validate([
-            'selected_type' => 'required|in:ingredient,meal',
-            'selected_id' => 'required|numeric',
-            'date' => 'required|date',
-            'notes' => 'nullable|string',
-            'quantity' => 'nullable|numeric|min:0.01',
-            'portion' => 'nullable|numeric|min:0.01',
-        ]);
-
-        $selectedDate = Carbon::parse($validated['date']);
-        $currentTime = Carbon::now();
-        
-        // Round to nearest 15 minutes for real-time logging
-        $minutes = $currentTime->minute;
-        $roundedMinutes = round($minutes / 15) * 15;
-        $loggedAt = $currentTime->setMinute($roundedMinutes)->setSecond(0);
-        
-        // Set the date part to the selected date but keep the rounded time
-        $loggedAt = $selectedDate->setTimeFrom($loggedAt);
-
-        if ($validated['selected_type'] === 'ingredient') {
-            // Handle ingredient logging
-            $ingredient = Ingredient::where('id', $validated['selected_id'])
-                ->where('user_id', auth()->id())
-                ->firstOrFail();
-
-            if (!isset($validated['quantity'])) {
-                return redirect()->route('food-logs.mobile-entry', ['date' => $validated['date']])
-                    ->with('error', 'Quantity is required for ingredients.');
-            }
-
-            FoodLog::create([
-                'ingredient_id' => $ingredient->id,
-                'unit_id' => $ingredient->base_unit_id,
-                'quantity' => $validated['quantity'],
-                'logged_at' => $loggedAt,
-                'notes' => $validated['notes'],
-                'user_id' => auth()->id(),
+        try {
+            $validated = $request->validate([
+                'selected_type' => 'required|in:ingredient,meal',
+                'selected_id' => 'required|numeric|min:1',
+                'date' => 'required|date',
+                'notes' => 'nullable|string|max:1000',
+                'quantity' => 'nullable|numeric|min:0.01|max:10000',
+                'portion' => 'nullable|numeric|min:0.01|max:100',
+            ], [
+                'selected_type.required' => 'Please select a food item.',
+                'selected_type.in' => 'Invalid food type selected.',
+                'selected_id.required' => 'Please select a valid food item.',
+                'selected_id.numeric' => 'Invalid food item selected.',
+                'selected_id.min' => 'Invalid food item selected.',
+                'date.required' => 'Date is required.',
+                'date.date' => 'Please provide a valid date.',
+                'notes.max' => 'Notes cannot exceed 1000 characters.',
+                'quantity.min' => 'Quantity must be at least 0.01.',
+                'quantity.max' => 'Quantity cannot exceed 10,000.',
+                'quantity.numeric' => 'Quantity must be a valid number.',
+                'portion.min' => 'Portion must be at least 0.01.',
+                'portion.max' => 'Portion cannot exceed 100.',
+                'portion.numeric' => 'Portion must be a valid number.',
             ]);
 
-            $message = 'Ingredient logged successfully!';
+            $selectedDate = Carbon::parse($validated['date']);
+            $currentTime = Carbon::now();
+            
+            // Round to nearest 15 minutes for real-time logging
+            $minutes = $currentTime->minute;
+            $roundedMinutes = round($minutes / 15) * 15;
+            $loggedAt = $currentTime->setMinute($roundedMinutes)->setSecond(0);
+            
+            // Set the date part to the selected date but keep the rounded time
+            $loggedAt = $selectedDate->setTimeFrom($loggedAt);
 
-        } elseif ($validated['selected_type'] === 'meal') {
-            // Handle meal logging
-            $meal = Meal::with('ingredients')
-                ->where('id', $validated['selected_id'])
-                ->where('user_id', auth()->id())
-                ->firstOrFail();
+            if ($validated['selected_type'] === 'ingredient') {
+                // Handle ingredient logging with edge case handling
+                $ingredient = Ingredient::where('id', $validated['selected_id'])
+                    ->where('user_id', auth()->id())
+                    ->first();
 
-            if (!isset($validated['portion'])) {
-                return redirect()->route('food-logs.mobile-entry', ['date' => $validated['date']])
-                    ->with('error', 'Portion is required for meals.');
-            }
-
-            foreach ($meal->ingredients as $ingredient) {
-                $notes = $meal->name . ' (Portion: ' . (float)$validated['portion'] . ')';
-                if (!empty($meal->comments)) {
-                    $notes .= ' - ' . $meal->comments;
+                if (!$ingredient) {
+                    return redirect()->route('food-logs.mobile-entry', ['date' => $validated['date']])
+                        ->with('error', 'The selected ingredient no longer exists or you do not have permission to access it.');
                 }
-                if (!empty($validated['notes'])) {
-                    $notes .= ': ' . $validated['notes'];
+
+                if (!isset($validated['quantity'])) {
+                    return redirect()->route('food-logs.mobile-entry', ['date' => $validated['date']])
+                        ->with('error', 'Quantity is required for ingredients.');
+                }
+
+                // Check if ingredient has a valid base unit
+                if (!$ingredient->base_unit_id || !$ingredient->baseUnit) {
+                    return redirect()->route('food-logs.mobile-entry', ['date' => $validated['date']])
+                        ->with('error', 'The selected ingredient does not have a valid unit configured.');
                 }
 
                 FoodLog::create([
                     'ingredient_id' => $ingredient->id,
                     'unit_id' => $ingredient->base_unit_id,
-                    'quantity' => $ingredient->pivot->quantity * $validated['portion'],
+                    'quantity' => $validated['quantity'],
                     'logged_at' => $loggedAt,
-                    'notes' => $notes,
+                    'notes' => $validated['notes'],
                     'user_id' => auth()->id(),
                 ]);
+
+                $message = 'Ingredient logged successfully!';
+
+            } elseif ($validated['selected_type'] === 'meal') {
+                // Handle meal logging with edge case handling
+                $meal = Meal::with('ingredients.baseUnit')
+                    ->where('id', $validated['selected_id'])
+                    ->where('user_id', auth()->id())
+                    ->first();
+
+                if (!$meal) {
+                    return redirect()->route('food-logs.mobile-entry', ['date' => $validated['date']])
+                        ->with('error', 'The selected meal no longer exists or you do not have permission to access it.');
+                }
+
+                if (!isset($validated['portion'])) {
+                    return redirect()->route('food-logs.mobile-entry', ['date' => $validated['date']])
+                        ->with('error', 'Portion is required for meals.');
+                }
+
+                if ($meal->ingredients->isEmpty()) {
+                    return redirect()->route('food-logs.mobile-entry', ['date' => $validated['date']])
+                        ->with('error', 'The selected meal has no ingredients configured.');
+                }
+
+                $loggedCount = 0;
+                $skippedIngredients = [];
+
+                foreach ($meal->ingredients as $ingredient) {
+                    // Check if ingredient still exists and has valid unit
+                    if (!$ingredient->baseUnit) {
+                        $skippedIngredients[] = $ingredient->name;
+                        continue;
+                    }
+
+                    $notes = $meal->name . ' (Portion: ' . (float)$validated['portion'] . ')';
+                    if (!empty($meal->comments)) {
+                        $notes .= ' - ' . $meal->comments;
+                    }
+                    if (!empty($validated['notes'])) {
+                        $notes .= ': ' . $validated['notes'];
+                    }
+
+                    FoodLog::create([
+                        'ingredient_id' => $ingredient->id,
+                        'unit_id' => $ingredient->base_unit_id,
+                        'quantity' => $ingredient->pivot->quantity * $validated['portion'],
+                        'logged_at' => $loggedAt,
+                        'notes' => $notes,
+                        'user_id' => auth()->id(),
+                    ]);
+
+                    $loggedCount++;
+                }
+
+                if ($loggedCount === 0) {
+                    return redirect()->route('food-logs.mobile-entry', ['date' => $validated['date']])
+                        ->with('error', 'No ingredients from the meal could be logged due to configuration issues.');
+                }
+
+                $message = 'Meal logged successfully!';
+                if (!empty($skippedIngredients)) {
+                    $message .= ' Note: Some ingredients were skipped due to missing unit configuration: ' . implode(', ', $skippedIngredients);
+                }
             }
 
-            $message = 'Meal logged successfully!';
-        }
+            return redirect()->route('food-logs.mobile-entry', ['date' => $validated['date']])
+                ->with('success', $message);
 
-        return redirect()->route('food-logs.mobile-entry', ['date' => $validated['date']])
-            ->with('success', $message);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // Handle validation errors
+            $errors = $e->validator->errors()->all();
+            return redirect()->route('food-logs.mobile-entry', ['date' => $request->input('date', Carbon::today()->toDateString())])
+                ->with('error', 'Validation failed: ' . implode(' ', $errors));
+
+        } catch (\Exception $e) {
+            // Handle unexpected errors
+            \Log::error('Mobile food entry error: ' . $e->getMessage(), [
+                'user_id' => auth()->id(),
+                'request_data' => $request->all(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return redirect()->route('food-logs.mobile-entry', ['date' => $request->input('date', Carbon::today()->toDateString())])
+                ->with('error', 'An unexpected error occurred while logging your food. Please try again.');
+        }
     }
 
     public function edit(FoodLog $foodLog)
@@ -449,31 +523,86 @@ class FoodLogController extends Controller
      */
     public function mobileEntry(Request $request)
     {
-        $selectedDate = $request->input('date') ? 
-            Carbon::parse($request->input('date')) : Carbon::today();
-        
-        // Get user ingredients and meals for autocomplete
-        $ingredients = Ingredient::where('user_id', auth()->id())
-            ->with('baseUnit')
-            ->orderBy('name')
-            ->get();
-        
-        $meals = Meal::where('user_id', auth()->id())
-            ->orderBy('name')
-            ->get();
-        
-        // Get existing food logs for the date
-        $foodLogs = FoodLog::with(['ingredient', 'unit'])
-            ->where('user_id', auth()->id())
-            ->whereDate('logged_at', $selectedDate->toDateString())
-            ->orderBy('logged_at', 'desc')
-            ->get();
-        
-        // Calculate daily totals
-        $dailyTotals = $this->nutritionService->calculateFoodLogTotals($foodLogs);
-        
-        return view('food_logs.mobile-entry', compact(
-            'selectedDate', 'ingredients', 'meals', 'foodLogs', 'dailyTotals'
-        ))->with('nutritionService', $this->nutritionService);
+        try {
+            $selectedDate = $request->input('date') ? 
+                Carbon::parse($request->input('date')) : Carbon::today();
+            
+            // Validate date is not too far in the future or past
+            $maxDate = Carbon::today()->addYear();
+            $minDate = Carbon::today()->subYears(5);
+            
+            if ($selectedDate->gt($maxDate) || $selectedDate->lt($minDate)) {
+                $selectedDate = Carbon::today();
+            }
+            
+            // Get user ingredients and meals for autocomplete with error handling
+            $ingredients = Ingredient::where('user_id', auth()->id())
+                ->with('baseUnit')
+                ->whereHas('baseUnit') // Only include ingredients with valid units
+                ->orderBy('name')
+                ->get();
+            
+            $meals = Meal::where('user_id', auth()->id())
+                ->whereHas('ingredients') // Only include meals with ingredients
+                ->orderBy('name')
+                ->get();
+            
+            // Get existing food logs for the date with error handling
+            $foodLogs = FoodLog::with(['ingredient', 'unit'])
+                ->where('user_id', auth()->id())
+                ->whereDate('logged_at', $selectedDate->toDateString())
+                ->whereHas('ingredient') // Only include logs with valid ingredients
+                ->whereHas('unit') // Only include logs with valid units
+                ->orderBy('logged_at', 'desc')
+                ->get();
+            
+            // Calculate daily totals with error handling
+            try {
+                $dailyTotals = $this->nutritionService->calculateFoodLogTotals($foodLogs);
+            } catch (\Exception $e) {
+                \Log::warning('Error calculating daily totals: ' . $e->getMessage());
+                $dailyTotals = [
+                    'calories' => 0,
+                    'protein' => 0,
+                    'carbs' => 0,
+                    'fats' => 0,
+                    'fiber' => 0,
+                    'added_sugars' => 0,
+                    'sodium' => 0,
+                    'calcium' => 0,
+                    'iron' => 0,
+                    'potassium' => 0,
+                    'caffeine' => 0,
+                    'cost' => 0,
+                ];
+            }
+            
+            return view('food_logs.mobile-entry', compact(
+                'selectedDate', 'ingredients', 'meals', 'foodLogs', 'dailyTotals'
+            ))->with('nutritionService', $this->nutritionService);
+
+        } catch (\Exception $e) {
+            \Log::error('Mobile food entry page error: ' . $e->getMessage(), [
+                'user_id' => auth()->id(),
+                'date' => $request->input('date'),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            // Fallback to today's date with empty data
+            $selectedDate = Carbon::today();
+            $ingredients = collect();
+            $meals = collect();
+            $foodLogs = collect();
+            $dailyTotals = [
+                'calories' => 0, 'protein' => 0, 'carbs' => 0, 'fats' => 0,
+                'fiber' => 0, 'added_sugars' => 0, 'sodium' => 0, 'calcium' => 0,
+                'iron' => 0, 'potassium' => 0, 'caffeine' => 0, 'cost' => 0,
+            ];
+
+            return view('food_logs.mobile-entry', compact(
+                'selectedDate', 'ingredients', 'meals', 'foodLogs', 'dailyTotals'
+            ))->with('nutritionService', $this->nutritionService)
+              ->with('error', 'There was an issue loading the food entry page. Some features may not work properly.');
+        }
     }
 }
