@@ -71,7 +71,7 @@ a {
     width: 100%;
 }
 .content {
-    padding: 20px; /* Add horizontal padding */
+    padding: 10px; /* Add horizontal padding */
 }
 h1, h2 {
     color: #f2f2f2; /* Light headings */
@@ -329,6 +329,9 @@ select:focus {
     .form-row label {
         text-align: left;
         margin-bottom: 5px;
+    }
+    .content {
+        padding: 5px; /* Even less padding on mobile */
     }
 }
 

@@ -34,6 +34,14 @@
     overflow-x: hidden;
 }
 
+/* Mobile-first approach - use more space on smaller screens */
+@media (max-width: 600px) {
+    .mobile-entry-container {
+        margin: 2px auto;
+        max-width: calc(100vw - 4px);
+    }
+}
+
 /* Date Navigation - Standardized from lift-logs design (Requirement 1.1, 1.2, 1.3) */
 .date-navigation-mobile {
     display: flex;
@@ -925,9 +933,9 @@ h1 {
 @media (max-width: 768px) {
     /* Container and layout adjustments */
     .mobile-entry-container {
-        margin: 10px;
+        margin: 1px;
         padding: 10px;
-        max-width: calc(100vw - 20px);
+        max-width: calc(100vw - 2px);
     }
     
     /* Date navigation responsive behavior */
@@ -1090,9 +1098,9 @@ h1 {
 @media (max-width: 480px) {
     /* Further container adjustments */
     .mobile-entry-container {
-        margin: 5px;
+        margin: 1px;
         padding: 8px;
-        max-width: calc(100vw - 10px);
+        max-width: calc(100vw - 2px);
     }
     
     /* Navigation adjustments for small screens */
@@ -1201,8 +1209,8 @@ h1 {
 /* Landscape orientation adjustments for mobile devices */
 @media (max-width: 768px) and (orientation: landscape) {
     .mobile-entry-container {
-        margin: 5px auto;
-        max-width: calc(90vw - 10px);
+        margin: 1px auto;
+        max-width: calc(100vw - 2px);
     }
     
     .date-navigation-mobile {
