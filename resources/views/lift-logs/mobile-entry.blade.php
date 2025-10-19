@@ -179,7 +179,7 @@
 
         <div id="exercise-list-container" class="hidden">
             <div class="exercise-list">
-                <a href="#" id="new-exercise-link" class="exercise-list-item new-exercise-item">New exercise...</a>
+                <a href="#" id="new-exercise-link" class="exercise-list-item new-exercise-item">✚ Create new exercise</a>
                 <div id="new-exercise-form-container" class="hidden">
                     <form action="{{ route('programs.quick-create', ['date' => $selectedDate->toDateString()]) }}" method="POST">
                         @csrf

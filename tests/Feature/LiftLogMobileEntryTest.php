@@ -641,8 +641,8 @@ class LiftLogMobileEntryTest extends TestCase
 
         $response->assertStatus(200);
         
-        // Check that recommendations section appears when clicking add exercise
-        $response->assertSee('⭐ Recommended for you:', false);
+        // Check that recommendations appear in the exercise list
+        $response->assertSee('⭐ <em>Recommended</em>', false);
     }
 
     /** @test */
@@ -681,8 +681,8 @@ class LiftLogMobileEntryTest extends TestCase
         // Should not see the exercise that's already in the program in recommendations section
         // (it will still appear in the regular exercise list, but not in recommendations)
         
-        // Should still see recommendations section
-        $response->assertSee('⭐ Recommended for you:', false);
+        // Should still see recommendations in the exercise list
+        $response->assertSee('⭐ <em>Recommended</em>', false);
         
         // Should see other exercises in recommendations
         $response->assertSee('Squats');
@@ -726,8 +726,8 @@ class LiftLogMobileEntryTest extends TestCase
 
         $response->assertStatus(200);
         
-        // Should still show recommendations section
-        $response->assertSee('⭐ Recommended for you:', false);
+        // Should still show recommendations in the exercise list
+        $response->assertSee('⭐ <em>Recommended</em>', false);
         
         // Should not see the exercises that are already in the program in recommendations
         // (they will still appear in the regular exercise list, but not in recommendations)
