@@ -72,6 +72,12 @@ class FoodLogController extends Controller
      */
     public function store(Request $request)
     {
+        // Handle mobile entry submissions
+        if ($request->has('redirect_to') && $request->input('redirect_to') === 'mobile-entry') {
+            return $this->storeMobileEntry($request);
+        }
+
+        // Original desktop store logic
         $request->merge([
             'quantity' => str_replace(',', '.', $request->input('quantity')),
         ]);
@@ -93,6 +99,91 @@ class FoodLogController extends Controller
         $logEntry = FoodLog::create(array_merge($validated, ['user_id' => auth()->id()]));
 
         return redirect()->route('food-logs.index', ['date' => $validated['date']])->with('success', 'Log entry added successfully!');
+    }
+
+    /**
+     * Handle mobile entry form submissions.
+     */
+    private function storeMobileEntry(Request $request)
+    {
+        $validated = $request->validate([
+            'selected_type' => 'required|in:ingredient,meal',
+            'selected_id' => 'required|numeric',
+            'date' => 'required|date',
+            'notes' => 'nullable|string',
+            'quantity' => 'nullable|numeric|min:0.01',
+            'portion' => 'nullable|numeric|min:0.01',
+        ]);
+
+        $selectedDate = Carbon::parse($validated['date']);
+        $currentTime = Carbon::now();
+        
+        // Round to nearest 15 minutes for real-time logging
+        $minutes = $currentTime->minute;
+        $roundedMinutes = round($minutes / 15) * 15;
+        $loggedAt = $currentTime->setMinute($roundedMinutes)->setSecond(0);
+        
+        // Set the date part to the selected date but keep the rounded time
+        $loggedAt = $selectedDate->setTimeFrom($loggedAt);
+
+        if ($validated['selected_type'] === 'ingredient') {
+            // Handle ingredient logging
+            $ingredient = Ingredient::where('id', $validated['selected_id'])
+                ->where('user_id', auth()->id())
+                ->firstOrFail();
+
+            if (!isset($validated['quantity'])) {
+                return redirect()->route('food-logs.mobile-entry', ['date' => $validated['date']])
+                    ->with('error', 'Quantity is required for ingredients.');
+            }
+
+            FoodLog::create([
+                'ingredient_id' => $ingredient->id,
+                'unit_id' => $ingredient->base_unit_id,
+                'quantity' => $validated['quantity'],
+                'logged_at' => $loggedAt,
+                'notes' => $validated['notes'],
+                'user_id' => auth()->id(),
+            ]);
+
+            $message = 'Ingredient logged successfully!';
+
+        } elseif ($validated['selected_type'] === 'meal') {
+            // Handle meal logging
+            $meal = Meal::with('ingredients')
+                ->where('id', $validated['selected_id'])
+                ->where('user_id', auth()->id())
+                ->firstOrFail();
+
+            if (!isset($validated['portion'])) {
+                return redirect()->route('food-logs.mobile-entry', ['date' => $validated['date']])
+                    ->with('error', 'Portion is required for meals.');
+            }
+
+            foreach ($meal->ingredients as $ingredient) {
+                $notes = $meal->name . ' (Portion: ' . (float)$validated['portion'] . ')';
+                if (!empty($meal->comments)) {
+                    $notes .= ' - ' . $meal->comments;
+                }
+                if (!empty($validated['notes'])) {
+                    $notes .= ': ' . $validated['notes'];
+                }
+
+                FoodLog::create([
+                    'ingredient_id' => $ingredient->id,
+                    'unit_id' => $ingredient->base_unit_id,
+                    'quantity' => $ingredient->pivot->quantity * $validated['portion'],
+                    'logged_at' => $loggedAt,
+                    'notes' => $notes,
+                    'user_id' => auth()->id(),
+                ]);
+            }
+
+            $message = 'Meal logged successfully!';
+        }
+
+        return redirect()->route('food-logs.mobile-entry', ['date' => $validated['date']])
+            ->with('success', $message);
     }
 
     public function edit(FoodLog $foodLog)
@@ -128,13 +219,19 @@ class FoodLogController extends Controller
         return redirect()->route('food-logs.index', ['date' => $validated['date']])->with('success', 'Log entry updated successfully!');
     }
 
-    public function destroy(FoodLog $foodLog)
+    public function destroy(FoodLog $foodLog, Request $request)
     {
         if ($foodLog->user_id !== auth()->id()) {
             abort(403, 'Unauthorized action.');
         }
         $date = $foodLog->logged_at->format('Y-m-d');
         $foodLog->delete();
+
+        // Check if request came from mobile entry interface
+        $referer = $request->header('referer');
+        if ($referer && str_contains($referer, 'mobile-entry')) {
+            return redirect()->route('food-logs.mobile-entry', ['date' => $date])->with('success', 'Log entry deleted successfully!');
+        }
 
         return redirect()->route('food-logs.index', ['date' => $date])->with('success', 'Log entry deleted successfully!');
     }
@@ -345,5 +442,38 @@ class FoodLogController extends Controller
         };
 
         return response()->stream($callback, 200, $headers);
+    }
+
+    /**
+     * Display the mobile food entry interface.
+     */
+    public function mobileEntry(Request $request)
+    {
+        $selectedDate = $request->input('date') ? 
+            Carbon::parse($request->input('date')) : Carbon::today();
+        
+        // Get user ingredients and meals for autocomplete
+        $ingredients = Ingredient::where('user_id', auth()->id())
+            ->with('baseUnit')
+            ->orderBy('name')
+            ->get();
+        
+        $meals = Meal::where('user_id', auth()->id())
+            ->orderBy('name')
+            ->get();
+        
+        // Get existing food logs for the date
+        $foodLogs = FoodLog::with(['ingredient', 'unit'])
+            ->where('user_id', auth()->id())
+            ->whereDate('logged_at', $selectedDate->toDateString())
+            ->orderBy('logged_at', 'desc')
+            ->get();
+        
+        // Calculate daily totals
+        $dailyTotals = $this->nutritionService->calculateFoodLogTotals($foodLogs);
+        
+        return view('food_logs.mobile-entry', compact(
+            'selectedDate', 'ingredients', 'meals', 'foodLogs', 'dailyTotals'
+        ))->with('nutritionService', $this->nutritionService);
     }
 }

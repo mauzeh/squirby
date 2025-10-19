@@ -33,7 +33,7 @@
         @endif
         @auth
         <div class="navbar">
-            <a href="{{ route('food-logs.index') }}" class="top-level-nav-item {{ Request::routeIs(['food-logs.*', 'meals.*', 'ingredients.*']) ? 'active' : '' }}"><i class="fas fa-utensils"></i> Food</a>
+            <a id="food-nav-link" href="{{ route('food-logs.index') }}" class="top-level-nav-item {{ Request::routeIs(['food-logs.*', 'meals.*', 'ingredients.*']) ? 'active' : '' }}"><i class="fas fa-utensils"></i> Food</a>
             <a id="lifts-nav-link" href="{{ route('lift-logs.index') }}" class="top-level-nav-item {{ Request::routeIs(['exercises.*', 'lift-logs.*', 'programs.*', 'recommendations.*']) ? 'active' : '' }}"><i class="fas fa-dumbbell"></i> Lifts</a>
             <a href="{{ route('body-logs.index') }}" class="top-level-nav-item {{ Request::routeIs(['body-logs.*', 'measurement-types.*']) ? 'active' : '' }}"><i class="fas fa-heartbeat"></i> Body</a>
 
@@ -54,7 +54,8 @@
         @if (Request::routeIs(['food-logs.*', 'meals.*', 'ingredients.*', 'exercises.*', 'lift-logs.*', 'programs.*', 'recommendations.*', 'body-logs.*', 'measurement-types.*']))
         <div class="navbar sub-navbar">
             @if (Request::routeIs(['food-logs.*', 'meals.*', 'ingredients.*']))
-                <a href="{{ route('food-logs.index') }}" class="{{ Request::routeIs('food-logs.*') ? 'active' : '' }}">Log</a>
+                <a href="{{ route('food-logs.mobile-entry') }}" class="{{ Request::routeIs('food-logs.mobile-entry') ? 'active' : '' }}"><i class="fas fa-mobile-alt"></i></a>
+                <a href="{{ route('food-logs.index') }}" class="{{ Request::routeIs(['food-logs.index', 'food-logs.edit', 'food-logs.destroy-selected', 'food-logs.export', 'food-logs.export-all']) ? 'active' : '' }}">Log</a>
                 <a href="{{ route('meals.index') }}" class="{{ Request::routeIs('meals.*') ? 'active' : '' }}">Meals</a>
                 <a href="{{ route('ingredients.index') }}" class="{{ Request::routeIs('ingredients.*') ? 'active' : '' }}">Ingredients</a>
             @endif
@@ -93,15 +94,21 @@
         @endauth
 
         <script>
-            // This script enhances the user experience on mobile devices by redirecting the main "Lifts" navigation link.
+            // This script enhances the user experience on mobile devices by redirecting navigation links.
             document.addEventListener('DOMContentLoaded', function() {
-                // Select the "Lifts" navigation link using its unique ID.
+                // Select the navigation links using their unique IDs.
+                const foodNavLink = document.getElementById('food-nav-link');
                 const liftsNavLink = document.getElementById('lifts-nav-link');
 
-                // Check if the link exists and if the screen width is indicative of a mobile device (768px or less).
-                if (liftsNavLink && window.innerWidth <= 768) {
-                    // If on a mobile device, change the link's destination to the mobile-specific entry page.
-                    liftsNavLink.href = "{{ route('lift-logs.mobile-entry') }}";
+                // Check if the screen width is indicative of a mobile device (768px or less).
+                if (window.innerWidth <= 768) {
+                    // If on a mobile device, change the links' destinations to the mobile-specific entry pages.
+                    if (foodNavLink) {
+                        foodNavLink.href = "{{ route('food-logs.mobile-entry') }}";
+                    }
+                    if (liftsNavLink) {
+                        liftsNavLink.href = "{{ route('lift-logs.mobile-entry') }}";
+                    }
                 }
 
                 // Initialize password visibility toggles
