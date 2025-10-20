@@ -148,7 +148,6 @@
                             @if($loggedLift->comments)
                                 <p><strong>Comments:</strong> {{ $loggedLift->comments }}</p>
                             @endif
-                            <a href="{{ route('exercises.show-logs', $loggedLift->exercise_id) }}" class="button-large button-blue">View All Logs</a>
                         </div>
                     @else
                         @if(isset($program->lastWorkoutWeight))
