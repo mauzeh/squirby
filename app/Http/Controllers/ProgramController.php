@@ -268,7 +268,7 @@ class ProgramController extends Controller
         }
 
         if ($request->input('redirect_to') === 'mobile-entry') {
-            return redirect()->route('lift-logs.mobile-entry', ['date' => $date])->with('success', 'Program entry deleted.');
+            return redirect()->route('lift-logs.mobile-entry', ['date' => $date]);
         }
 
         return redirect()->route('programs.index', ['date' => $date])->with('success', 'Program entry deleted.');
@@ -348,7 +348,7 @@ class ProgramController extends Controller
         }
 
         if ($request->input('redirect_to') === 'mobile-entry') {
-            return redirect()->route('lift-logs.mobile-entry', ['date' => $date])->with('success', 'Exercise added to program successfully.');
+            return redirect()->route('lift-logs.mobile-entry', ['date' => $date]);
         }
 
         return redirect()->route('programs.index', ['date' => $date])->with('success', 'Exercise added to program successfully.');
@@ -382,7 +382,7 @@ class ProgramController extends Controller
         ]);
 
         if ($request->input('redirect_to') === 'mobile-entry') {
-            return redirect()->route('lift-logs.mobile-entry', ['date' => $date])->with('success', 'New exercise created and added to program successfully.');
+            return redirect()->route('lift-logs.mobile-entry', ['date' => $date]);
         }
 
         return redirect()->route('programs.index', ['date' => $date])->with('success', 'New exercise created and added to program successfully.');

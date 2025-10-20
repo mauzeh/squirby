@@ -270,7 +270,6 @@ class ProgramEdgeCasesFeatureTest extends TestCase
             ->get(route('programs.quick-add', ['exercise' => $exercise->id, 'date' => $date, 'redirect_to' => 'mobile-entry']));
 
         $response->assertRedirect(route('lift-logs.mobile-entry', ['date' => $date]));
-        $response->assertSessionHas('success', 'Exercise added to program successfully.');
 
         // Verify program was created with default values despite service failure
         $program = Program::where('user_id', $user->id)
