@@ -59,7 +59,7 @@ This document outlines the step-by-step tasks for implementing the "Banded Movem
                 'red' => ['resistance' => 10, 'order' => 1],
                 'blue' => ['resistance' => 20, 'order' => 2],
                 'green' => ['resistance' => 30, 'order' => 3],
-                'black' => ['resistance' => 40, 'order' => 4],
+
             ],
             'default_reps_on_band_change' => 8,
             'max_reps_before_band_change' => 15,
@@ -146,7 +146,7 @@ This document outlines the step-by-step tasks for implementing the "Banded Movem
 #### 3.2.1 Adjust input for banded exercises
 - **Instructions:**
     - For exercises where `exercise->band_type` is not null:
-        - Replace the `weight` input field with a `band_color` dropdown selector (Red, Blue, Green, Black, based on `config/bands.php`).
+        - Replace the `weight` input field with a `band_color` dropdown selector (Red, Blue, Green, based on `config/bands.php`).
         - The `reps` input field remains.
     - For exercises where `exercise->band_type` is null, retain the `weight` input.
     - **Backend (`LiftLogController`):**

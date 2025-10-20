@@ -129,7 +129,7 @@ Date	Time	Exercise	Weight	Reps	Rounds	Comments	Band Color
 // Band color validation  
 "Invalid band color '{$bandColor}' for banded exercise '{$exerciseTitle}' - must be a valid band color"
 "Invalid band color '{$bandColor}' for non-banded exercise '{$exerciseTitle}' - must be 'none'"
-"Invalid band color '{$bandColor}' - must be one of: red, blue, green, black"
+"Invalid band color '{$bandColor}' - must be one of: red, blue, green"
 ```
 
 ## Testing Strategy

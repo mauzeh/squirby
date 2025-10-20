@@ -343,41 +343,42 @@ class LiftLogController extends Controller
 
         if ($selectedDate->isToday() || $selectedDate->isTomorrow() || $selectedDate->copy()->addDay()->isTomorrow()) {
             foreach ($programs as $program) {
-                if (!$program->exercise->is_bodyweight) {
-                    $suggestionDetails = $trainingProgressionService->getSuggestionDetails(
-                        auth()->id(),
-                        $program->exercise_id,
-                        $selectedDate
-                    );
+                $suggestionDetails = $trainingProgressionService->getSuggestionDetails(
+                    auth()->id(),
+                    $program->exercise_id,
+                    $selectedDate
+                );
 
-                    if ($suggestionDetails) {
-                        if (isset($suggestionDetails->band_color)) {
-                            $program->suggestedBandColor = $suggestionDetails->band_color;
-                            $program->reps = $suggestionDetails->reps;
-                            $program->sets = $suggestionDetails->sets;
-                        } else {
-                            $program->suggestedNextWeight = $suggestionDetails->suggestedWeight;
-                            $program->lastWeight = $suggestionDetails->lastWeight;
-                            $program->lastReps = $suggestionDetails->lastReps;
-                            $program->lastSets = $suggestionDetails->lastSets;
-                            $program->reps = $suggestionDetails->reps;
-                            $program->sets = $suggestionDetails->sets;
-                        }
-                    } else {
+                if ($suggestionDetails) {
+                    if (isset($suggestionDetails->band_color)) {
+                        // Banded exercise
+                        $program->suggestedBandColor = $suggestionDetails->band_color;
+                        $program->reps = $suggestionDetails->reps;
+                        $program->sets = $suggestionDetails->sets;
                         $program->suggestedNextWeight = null;
                         $program->lastWeight = null;
+                    } else {
+                        // Regular weighted exercise
+                        $program->suggestedNextWeight = $suggestionDetails->suggestedWeight ?? null;
+                        $program->lastWeight = $suggestionDetails->lastWeight ?? null;
+                        $program->lastReps = $suggestionDetails->lastReps ?? null;
+                        $program->lastSets = $suggestionDetails->lastSets ?? null;
+                        $program->reps = $suggestionDetails->reps;
+                        $program->sets = $suggestionDetails->sets;
                         $program->suggestedBandColor = null;
                     }
                 } else {
+                    // No suggestion details available
                     $program->suggestedNextWeight = null;
                     $program->lastWeight = null;
-                    
+                    $program->suggestedBandColor = null;
                 }
             }
         } else {
             foreach ($programs as $program) {
                 $program->suggestedNextWeight = null;
                 $program->lastWeight = null;
+                $program->suggestedBandColor = null;
                 
             }
         }

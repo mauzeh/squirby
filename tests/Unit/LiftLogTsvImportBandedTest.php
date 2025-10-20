@@ -28,7 +28,6 @@ class LiftLogTsvImportBandedTest extends TestCase
             'red' => ['resistance' => 10, 'order' => 1],
             'blue' => ['resistance' => 20, 'order' => 2],
             'green' => ['resistance' => 30, 'order' => 3],
-            'black' => ['resistance' => 40, 'order' => 4],
         ]]);
     }
 
@@ -130,7 +129,7 @@ class LiftLogTsvImportBandedTest extends TestCase
 
         $this->assertEquals(0, $result['importedCount']);
         $this->assertCount(1, $result['invalidRows']);
-        $this->assertStringContainsString("Invalid band color 'yellow' - must be one of: red, blue, green, black, none", $result['invalidRows'][0]);
+        $this->assertStringContainsString("Invalid band color 'yellow' - must be one of: red, blue, green, none", $result['invalidRows'][0]);
     }
 
     /** @test */
@@ -251,7 +250,7 @@ class LiftLogTsvImportBandedTest extends TestCase
         // Verify specific error messages for different validation failures
         $this->assertStringContainsString("Invalid band color 'none' for banded exercise 'Banded Exercise'", $result['invalidRows'][0]);
         $this->assertStringContainsString("Invalid band color 'red' for non-banded exercise 'Non-Banded Exercise'", $result['invalidRows'][1]);
-        $this->assertStringContainsString("Invalid band color 'yellow' - must be one of: red, blue, green, black, none", $result['invalidRows'][2]);
+        $this->assertStringContainsString("Invalid band color 'yellow' - must be one of: red, blue, green, none", $result['invalidRows'][2]);
     }
 
     /** @test */
@@ -274,7 +273,7 @@ class LiftLogTsvImportBandedTest extends TestCase
 
         // Verify error messages reference the configured colors
         foreach ($result['invalidRows'] as $invalidRow) {
-            $this->assertStringContainsString("must be one of: red, blue, green, black, none", $invalidRow);
+            $this->assertStringContainsString("must be one of: red, blue, green, none", $invalidRow);
         }
     }
 

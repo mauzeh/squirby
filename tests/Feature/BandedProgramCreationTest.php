@@ -29,7 +29,6 @@ class BandedProgramCreationTest extends TestCase
             'red' => ['resistance' => 10, 'order' => 1],
             'blue' => ['resistance' => 20, 'order' => 2],
             'green' => ['resistance' => 30, 'order' => 3],
-            'black' => ['resistance' => 40, 'order' => 4],
         ]]);
         config(['bands.max_reps_before_band_change' => 15]);
         config(['bands.default_reps_on_band_change' => 8]);
@@ -123,7 +122,7 @@ class BandedProgramCreationTest extends TestCase
         ]);
         $date = Carbon::today();
 
-        // Log a lift with black band, 15 reps (max reps before band change)
+        // Log a lift with green band, 15 reps (max reps before band change)
         $liftLog = LiftLog::factory()->create([
             'user_id' => $this->user->id,
             'exercise_id' => $exercise->id,
@@ -134,7 +133,7 @@ class BandedProgramCreationTest extends TestCase
             LiftSet::factory()->create([
                 'lift_log_id' => $liftLog->id,
                 'reps' => 15,
-                'band_color' => 'black',
+                'band_color' => 'green',
             ]);
         }
 
@@ -150,11 +149,11 @@ class BandedProgramCreationTest extends TestCase
         $response = $this->get(route('lift-logs.mobile-entry', ['date' => $date->toDateString()]));
 
         $response->assertSeeText('Suggested:');
-        $response->assertSeeText('Band: green');
+        $response->assertSeeText('Band: blue');
         $response->assertSeeText('(3 x 8)');
         
         // Verify that the suggested band color is pre-selected in the dropdown
-        $this->assertStringContainsString('value="green"', $response->getContent());
+        $this->assertStringContainsString('value="blue"', $response->getContent());
         $this->assertStringContainsString('selected', $response->getContent());
     }
 

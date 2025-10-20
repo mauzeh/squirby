@@ -23,7 +23,7 @@ This plan outlines the steps to introduce "banded movements" as a new type of ex
 
 ### 1.3 Configuration
 - **Create `config/bands.php`:**
-    - Define an array of band colors, their order (easiest to hardest), and associated resistance values (e.g., `['red' => 10, 'blue' => 20, 'green' => 30, 'black' => 40]`). This will be used for progression logic.
+    - Define an array of band colors, their order (easiest to hardest), and associated resistance values (e.g., `['red' => 10, 'blue' => 20, 'green' => 30]`). This will be used for progression logic.
 
 ## Phase 2: Business Logic & Services
 
@@ -59,7 +59,7 @@ This plan outlines the steps to introduce "banded movements" as a new type of ex
 
 ### 3.2 Lift Log Entry Forms (`lift-logs/mobile-entry.blade.php`, `lift-logs/edit.blade.php`)
 - For exercises where `exercise->isBanded()` is true:
-    - Replace the `weight` input field with a `band_color` dropdown selector (Red, Blue, Green, Black).
+    - Replace the `weight` input field with a `band_color` dropdown selector (Red, Blue, Green).
     - The `reps` input field remains.
 - For exercises where `exercise->isBanded()` is false, retain the `weight` input.
 

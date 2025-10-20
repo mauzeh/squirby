@@ -20,7 +20,6 @@ class BandServiceTest extends TestCase
             'red' => ['resistance' => 10, 'order' => 1],
             'blue' => ['resistance' => 20, 'order' => 2],
             'green' => ['resistance' => 30, 'order' => 3],
-            'black' => ['resistance' => 40, 'order' => 4],
         ]]);
         config(['bands.max_reps_before_band_change' => 15]);
         config(['bands.default_reps_on_band_change' => 8]);
@@ -37,7 +36,7 @@ class BandServiceTest extends TestCase
     public function test_get_band_resistance_returns_correct_value()
     {
         $this->assertEquals(10, $this->bandService->getBandResistance('red'));
-        $this->assertEquals(40, $this->bandService->getBandResistance('black'));
+        $this->assertEquals(30, $this->bandService->getBandResistance('green'));
         $this->assertNull($this->bandService->getBandResistance('nonexistent'));
     }
 
@@ -45,14 +44,12 @@ class BandServiceTest extends TestCase
     {
         $this->assertEquals('blue', $this->bandService->getNextHarderBand('red', 'resistance'));
         $this->assertEquals('green', $this->bandService->getNextHarderBand('blue', 'resistance'));
-        $this->assertEquals('black', $this->bandService->getNextHarderBand('green', 'resistance'));
-        $this->assertNull($this->bandService->getNextHarderBand('black', 'resistance')); // Hardest band
+        $this->assertNull($this->bandService->getNextHarderBand('green', 'resistance')); // Hardest band
         $this->assertNull($this->bandService->getNextHarderBand('nonexistent', 'resistance'));
     }
 
     public function test_get_previous_easier_band_returns_correct_band()
     {
-        $this->assertEquals('green', $this->bandService->getPreviousEasierBand('black', 'resistance'));
         $this->assertEquals('blue', $this->bandService->getPreviousEasierBand('green', 'resistance'));
         $this->assertEquals('red', $this->bandService->getPreviousEasierBand('blue', 'resistance'));
         $this->assertNull($this->bandService->getPreviousEasierBand('red', 'resistance')); // Easiest band
@@ -64,7 +61,6 @@ class BandServiceTest extends TestCase
         // For assistance, harder means less assistance, so previous band in order
         $this->assertEquals('red', $this->bandService->getNextHarderBand('blue', 'assistance'));
         $this->assertEquals('blue', $this->bandService->getNextHarderBand('green', 'assistance'));
-        $this->assertEquals('green', $this->bandService->getNextHarderBand('black', 'assistance'));
         $this->assertNull($this->bandService->getNextHarderBand('red', 'assistance')); // Hardest assistance band
     }
 
@@ -73,7 +69,6 @@ class BandServiceTest extends TestCase
         // For assistance, easier means more assistance, so next band in order
         $this->assertEquals('blue', $this->bandService->getPreviousEasierBand('red', 'assistance'));
         $this->assertEquals('green', $this->bandService->getPreviousEasierBand('blue', 'assistance'));
-        $this->assertEquals('black', $this->bandService->getPreviousEasierBand('green', 'assistance'));
-        $this->assertNull($this->bandService->getPreviousEasierBand('black', 'assistance')); // Easiest assistance band
+        $this->assertNull($this->bandService->getPreviousEasierBand('green', 'assistance')); // Easiest assistance band
     }
 }

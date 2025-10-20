@@ -28,7 +28,6 @@ class BandedLiftLoggingTest extends TestCase
             'red' => ['resistance' => 10, 'order' => 1],
             'blue' => ['resistance' => 20, 'order' => 2],
             'green' => ['resistance' => 30, 'order' => 3],
-            'black' => ['resistance' => 40, 'order' => 4],
         ]]);
     }
 
