@@ -143,10 +143,9 @@ class GlobalExercisesSeederTest extends TestCase
 
         // Verify bodyweight exercises are marked correctly (is_bodyweight = 1 in CSV)
         $bodyweightExercises = [
-            'Chin-Ups', 
-            'Pull-Ups', 
+            'Chin-Up', 
+            'Pull-Up', 
             'L-Sit (Tucked, Parallelites)',
-            'Lat Pull-Down (Kneeled)',
             'Push-Up',
             'Ring Row'
         ];
@@ -155,6 +154,18 @@ class GlobalExercisesSeederTest extends TestCase
             $exercise = Exercise::where('title', $exerciseTitle)->first();
             $this->assertNotNull($exercise, "Exercise '{$exerciseTitle}' should exist");
             $this->assertTrue($exercise->is_bodyweight, "Exercise '{$exerciseTitle}' should be marked as bodyweight");
+        }
+
+        // Verify banded exercises are not marked as bodyweight but have band_type set
+        $bandedExercises = [
+            'Lat Pull-Down (Kneeled)' => 'resistance'
+        ];
+        
+        foreach ($bandedExercises as $exerciseTitle => $expectedBandType) {
+            $exercise = Exercise::where('title', $exerciseTitle)->first();
+            $this->assertNotNull($exercise, "Exercise '{$exerciseTitle}' should exist");
+            $this->assertFalse($exercise->is_bodyweight, "Exercise '{$exerciseTitle}' should not be marked as bodyweight");
+            $this->assertEquals($expectedBandType, $exercise->band_type, "Exercise '{$exerciseTitle}' should have band_type '{$expectedBandType}'");
         }
 
         // Verify non-bodyweight exercises are not marked as bodyweight (is_bodyweight = 0 in CSV)
@@ -171,6 +182,7 @@ class GlobalExercisesSeederTest extends TestCase
             $exercise = Exercise::where('title', $exerciseTitle)->first();
             $this->assertNotNull($exercise, "Exercise '{$exerciseTitle}' should exist");
             $this->assertFalse($exercise->is_bodyweight, "Exercise '{$exerciseTitle}' should not be marked as bodyweight");
+            $this->assertNull($exercise->band_type, "Exercise '{$exerciseTitle}' should not have a band_type");
         }
     }
 

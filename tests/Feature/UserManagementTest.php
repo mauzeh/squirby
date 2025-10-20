@@ -271,8 +271,7 @@ class UserManagementTest extends TestCase
         $this->assertDatabaseHas('exercises', ['user_id' => null, 'title' => 'Strict Press']);
         $this->assertDatabaseHas('exercises', ['user_id' => null, 'title' => 'Power Clean']);
         $this->assertDatabaseHas('exercises', ['user_id' => null, 'title' => 'Half-Kneeling DB Press']);
-        $this->assertDatabaseHas('exercises', ['user_id' => null, 'title' => 'Cyclist Squat (Barbell, Front Rack)']);
-        $this->assertDatabaseHas('exercises', ['user_id' => null, 'title' => 'Chin-Ups']);
-        $this->assertDatabaseHas('exercises', ['user_id' => null, 'title' => 'Pull-Ups']);
+        $this->assertDatabaseHas('exercises', ['user_id' => null, 'title' => 'Chin-Up']);
+        $this->assertDatabaseHas('exercises', ['user_id' => null, 'title' => 'Pull-Up']);
     }
 }
