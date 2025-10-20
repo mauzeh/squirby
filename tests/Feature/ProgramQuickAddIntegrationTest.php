@@ -262,11 +262,11 @@ class ProgramQuickAddIntegrationTest extends TestCase
         $program1 = Program::where('exercise_id', $exercise1->id)->first();
         $this->assertEquals(100, $program1->priority);
 
-        // Add second exercise (should get priority 101)
+        // Add second exercise (should get priority 99, appearing at top)
         $this->get(route('programs.quick-add', ['exercise' => $exercise2->id, 'date' => $date]));
         
         $program2 = Program::where('exercise_id', $exercise2->id)->first();
-        $this->assertEquals(101, $program2->priority);
+        $this->assertEquals(99, $program2->priority); // 100-1=99
     }
 
     /** @test */
@@ -347,10 +347,10 @@ class ProgramQuickAddIntegrationTest extends TestCase
         $this->get(route('programs.quick-add', ['exercise' => $exercise2->id, 'date' => $date]));
         $this->get(route('programs.quick-add', ['exercise' => $exercise3->id, 'date' => $date]));
 
-        // Verify all programs were created
+        // Verify all programs were created with correct priorities (newest at top)
         $this->assertDatabaseHas('programs', ['exercise_id' => $exercise1->id, 'priority' => 100]);
-        $this->assertDatabaseHas('programs', ['exercise_id' => $exercise2->id, 'priority' => 101]);
-        $this->assertDatabaseHas('programs', ['exercise_id' => $exercise3->id, 'priority' => 102]);
+        $this->assertDatabaseHas('programs', ['exercise_id' => $exercise2->id, 'priority' => 99]); // 100-1=99
+        $this->assertDatabaseHas('programs', ['exercise_id' => $exercise3->id, 'priority' => 98]); // 99-1=98
 
         // Verify they all appear on the programs index
         $response = $this->get(route('programs.index', ['date' => $date]));

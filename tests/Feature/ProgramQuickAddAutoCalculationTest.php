@@ -91,14 +91,14 @@ class ProgramQuickAddAutoCalculationTest extends TestCase
 
         $response->assertRedirect(route('programs.index', ['date' => $date]));
 
-        // Verify new program has priority higher than existing
+        // Verify new program has priority lower than existing (appears at top)
         $program = Program::where('user_id', $this->user->id)
             ->where('exercise_id', $this->exercise->id)
             ->where('date', Carbon::parse($date)->startOfDay())
             ->first();
 
         $this->assertNotNull($program);
-        $this->assertEquals(151, $program->priority);
+        $this->assertEquals(149, $program->priority); // 150-1=149
     }
 
     /** @test */
@@ -191,11 +191,11 @@ class ProgramQuickAddAutoCalculationTest extends TestCase
 
         $response->assertRedirect(route('programs.index', ['date' => $date]));
 
-        // Verify new program has priority higher than existing
+        // Verify new program has priority lower than existing (appears at top)
         $exercise = Exercise::where('title', $exerciseName)->first();
         $program = Program::where('exercise_id', $exercise->id)->first();
 
-        $this->assertEquals(201, $program->priority);
+        $this->assertEquals(199, $program->priority); // 200-1=199
     }
 
     /** @test */

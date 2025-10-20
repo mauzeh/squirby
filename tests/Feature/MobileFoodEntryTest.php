@@ -286,7 +286,7 @@ class MobileFoodEntryTest extends TestCase
         $response->assertSee('F:');
         
         // Check that delete buttons are present
-        $response->assertSee('×'); // Delete button symbol
+        $response->assertSee('fa-trash'); // Delete button icon class
         
         // Verify the food logs are passed to the view
         $foodLogs = $response->viewData('foodLogs');

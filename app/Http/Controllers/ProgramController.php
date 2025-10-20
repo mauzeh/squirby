@@ -325,12 +325,12 @@ class ProgramController extends Controller
         // Use the same robust calculation method as store()
         $calculatedSetsReps = $this->calculateSetsAndReps($exercise->id, Carbon::parse($date));
 
-        // Find the highest priority for the given date
-        $maxPriority = Program::where('user_id', auth()->id())
+        // Find the lowest priority for the given date to add new exercises at the top
+        $minPriority = Program::where('user_id', auth()->id())
             ->whereDate('date', $date)
-            ->max('priority');
+            ->min('priority');
 
-        $newPriority = $maxPriority !== null ? $maxPriority + 1 : 100;
+        $newPriority = $minPriority !== null ? $minPriority - 1 : 100;
 
         Program::create([
             'exercise_id' => $exercise->id,
@@ -368,9 +368,9 @@ class ProgramController extends Controller
         // Use robust default calculation for new exercises (no progression data expected)
         $defaultSetsReps = $this->getDefaultSetsAndReps();
 
-        $maxPriority = Program::where('user_id', auth()->id())
+        $minPriority = Program::where('user_id', auth()->id())
             ->whereDate('date', $date)
-            ->max('priority');
+            ->min('priority');
 
         Program::create([
             'exercise_id' => $exercise->id,
@@ -378,7 +378,7 @@ class ProgramController extends Controller
             'date' => $date,
             'sets' => $defaultSetsReps['sets'],
             'reps' => $defaultSetsReps['reps'],
-            'priority' => $maxPriority + 1,
+            'priority' => $minPriority !== null ? $minPriority - 1 : 100,
         ]);
 
         if ($request->input('redirect_to') === 'mobile-entry') {

@@ -437,7 +437,7 @@ class ProgramFeatureTest extends TestCase
             ->get(route('programs.create', ['date' => Carbon::today()->format('Y-m-d')]));
 
         $response->assertStatus(200);
-        $response->assertViewHas('defaultPriority', 100);
+        $response->assertViewHas('defaultPriority', 100); // Regular create form adds at bottom with default priority
     }
 
     public function test_program_index_handles_missing_suggested_weight_gracefully()
