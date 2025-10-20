@@ -900,21 +900,35 @@ h1 {
     gap: 10px;
 }
 
-/* Suggested weight display - lift-specific but consolidated */
-.suggested-weight {
+/* Workout info display - lift-specific but consolidated */
+.workout-info-box {
     font-size: 1.2em;
-    color: #28a745;
-    font-weight: bold;
+    color: white;
+    font-weight: normal;
     margin-bottom: 15px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
 }
 
-.last-weight {
-    display: block;
-    font-size: 1em;
-    color: #aaa;
-    font-weight: normal;
-    margin-bottom: 5px;
+.label-green {
+    color: #28a745;
+    font-weight: bold;
+    flex-shrink: 0;
 }
+
+.workout-details {
+    flex: 1;
+}
+
+.time-ago {
+    font-style: italic;
+    font-size: 0.8em;
+}
+
+
+
+
 
 /* Form field containers - consolidated pattern */
 .form-fields {
@@ -972,6 +986,12 @@ h1 {
         text-align: left;
         margin-bottom: 8px;
         font-size: 1em;
+    }
+    
+    /* Centered form labels - reusable across forms */
+    .form-group .form-label-centered {
+        text-align: center;
+        display: block;
     }
     
     /* Ensure input groups stack properly on mobile */

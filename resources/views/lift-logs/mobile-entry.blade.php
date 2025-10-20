@@ -124,26 +124,31 @@
                         </div>
                     @else
                         @if(isset($program->lastWorkoutWeight))
-                            <p class="suggested-weight">
-                                <span class="last-weight">Last time: 
+                            <p class="workout-info-box">
+                                <span class="label-green">Last time:</span>
+                                <span class="workout-details">
                                     @if(isset($program->lastWorkoutIsBanded) && $program->lastWorkoutIsBanded)
                                         Band: {{ $program->lastWorkoutWeight }}
                                     @else
                                         {{ number_format($program->lastWorkoutWeight) }} lbs
                                     @endif
-                                    ({{ $program->lastWorkoutSets }} × {{ $program->lastWorkoutReps }}) - {{ $program->lastWorkoutTimeAgo }}
+                                    ({{ $program->lastWorkoutSets }} × {{ $program->lastWorkoutReps }})
+                                    <br><span class="time-ago">{{ $program->lastWorkoutTimeAgo }}</span>
                                 </span>
                             </p>
                         @endif
 
                         @if(isset($program->suggestedNextWeight) || isset($program->suggestedBandColor))
-                            <p class="suggested-weight">
-                                Suggested: @if(isset($program->suggestedBandColor)) 
-                                    Band: {{ $program->suggestedBandColor }}
-                                @else
-                                    {{ number_format($program->suggestedNextWeight) }} lbs
-                                @endif
-                                (<x-lift-logs.lift-reps-sets-display :reps="$program->reps" :sets="$program->sets" />)
+                            <p class="workout-info-box">
+                                <span class="label-green">Suggested:</span>
+                                <span class="workout-details">
+                                    @if(isset($program->suggestedBandColor)) 
+                                        Band: {{ $program->suggestedBandColor }}
+                                    @else
+                                        {{ number_format($program->suggestedNextWeight) }} lbs
+                                    @endif
+                                    (<x-lift-logs.lift-reps-sets-display :reps="$program->reps" :sets="$program->sets" />)
+                                </span>
                             </p>
                         @endif
                         <form action="{{ route('lift-logs.store') }}" method="POST" class="lift-log-form">
@@ -163,7 +168,7 @@
                                 @endif
                                 <div class="form-group weight-form-group @if($program->exercise->is_bodyweight) hidden @endif" id="weight-form-group-{{ $program->id }}">
                                     @if ($program->exercise->band_type)
-                                        <label>Band Color:</label>
+                                        <label class="form-label-centered">Band Color:</label>
                                         <div class="band-color-selector" id="band-color-selector-{{ $program->id }}">
                                             <input type="hidden" name="band_color" id="band_color_{{ $program->id }}" value="{{ isset($program->suggestedBandColor) ? $program->suggestedBandColor : '' }}">
                                             @foreach(config('bands.colors') as $color => $data)
@@ -177,7 +182,7 @@
                                             @endforeach
                                         </div>
                                     @else
-                                        <label for="weight_{{ $program->id }}">@if($program->exercise->is_bodyweight) Extra Weight (lbs): @else Weight (lbs): @endif</label>
+                                        <label for="weight_{{ $program->id }}" class="form-label-centered">@if($program->exercise->is_bodyweight) Extra Weight (lbs): @else Weight (lbs): @endif</label>
                                         <div class="input-group">
                                             <button type="button" class="decrement-button" data-field="weight_{{ $program->id }}">-</button>
                                             <input type="number" name="weight" id="weight_{{ $program->id }}" class="large-input" inputmode="decimal" value="{{ $program->suggestedNextWeight ?? ($program->exercise->is_bodyweight ? 0 : '') }}" @if(!$program->exercise->is_bodyweight) required @endif>
@@ -187,7 +192,7 @@
                                 </div>
 
                                 <div class="form-group">
-                                    <label for="rounds_{{ $program->id }}">Sets:</label>
+                                    <label for="rounds_{{ $program->id }}" class="form-label-centered">Sets:</label>
                                     <div class="input-group">
                                         <button type="button" class="decrement-button" data-field="rounds_{{ $program->id }}">-</button>
                                         <input type="number" name="rounds" id="rounds_{{ $program->id }}" class="large-input" inputmode="numeric" value="{{ $program->sets }}">
@@ -196,7 +201,7 @@
                                 </div>
 
                                 <div class="form-group">
-                                    <label for="reps_{{ $program->id }}">Reps:</label>
+                                    <label for="reps_{{ $program->id }}" class="form-label-centered">Reps:</label>
                                     <div class="input-group">
                                         <button type="button" class="decrement-button" data-field="reps_{{ $program->id }}">-</button>
                                         <input type="number" name="reps" id="reps_{{ $program->id }}" class="large-input" inputmode="numeric" value="{{ $program->reps }}">

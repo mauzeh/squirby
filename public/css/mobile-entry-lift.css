@@ -77,28 +77,37 @@
     background-color: #c82333;
 }
 
-/* Suggested Weight Display */
-.suggested-weight {
+/* Workout Info Display (Last time and Suggested) */
+.workout-info-box {
     font-size: 1.2em;
-    color: #28a745;
-    font-weight: bold;
+    color: white;
+    font-weight: normal;
     margin-bottom: 15px;
     padding: 10px;
     background-color: rgba(40, 167, 69, 0.1);
     border-radius: 5px;
     border-left: 3px solid #28a745;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
 }
 
-.last-weight {
-    display: block;
-    font-size: 1em;
-    color: #aaa;
-    font-weight: normal;
-    margin-bottom: 5px;
-    padding: 8px;
-    background-color: rgba(108, 117, 125, 0.1);
-    border-radius: 4px;
+.label-green {
+    color: #28a745;
+    font-weight: bold;
+    flex-shrink: 0;
 }
+
+.workout-details {
+    flex: 1;
+}
+
+.time-ago {
+    font-style: italic;
+    font-size: 0.8em;
+}
+
+
 
 /* Band Color Selector */
 .band-color-selector {
@@ -452,8 +461,7 @@
         display: none;
     }
     
-    .suggested-weight,
-    .last-weight {
+    .workout-info-box {
         background-color: #f8f9fa;
         border: 1px solid #ddd;
         color: black;
