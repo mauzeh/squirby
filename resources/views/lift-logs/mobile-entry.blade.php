@@ -61,41 +61,14 @@
             <button type="button" id="add-exercise-button" class="button-large button-green">Add exercise</button>
         </div>
 
-        <div class="item-list-container hidden" id="exercise-list-container">
-            <div class="item-list exercise-list">
-                <a href="#" id="new-exercise-link" class="item-list-item exercise-list-item new-exercise-item">✚ Create new exercise</a>
-                <div id="new-exercise-form-container" class="hidden">
-                    <form action="{{ route('programs.quick-create', ['date' => $selectedDate->toDateString()]) }}" method="POST" class="new-exercise-form">
-                        @csrf
-                        <input type="hidden" name="redirect_to" value="mobile-entry">
-                        <div class="form-group">
-                            <div class="input-group">
-                                <input type="text" name="exercise_name" id="exercise_name" class="large-input large-input-text" required>
-                            </div>
-                        </div>
-                        <button type="submit" class="button-large button-green">Add Exercise</button>
-                    </form>
-                </div>
-                
-                @if (!empty($recommendations))
-                    @foreach ($recommendations as $recommendation)
-                        <a href="{{ route('programs.quick-add', ['exercise' => $recommendation['exercise']->id, 'date' => $selectedDate->toDateString(), 'redirect_to' => 'mobile-entry']) }}" class="item-list-item exercise-list-item recommended-exercise">
-                            <span class="item-name exercise-name">{{ $recommendation['exercise']->title }}</span>
-                            <span class="item-label exercise-label">⭐ <em>Recommended</em></span>
-                        </a>
-                    @endforeach
-                @endif
-                
-                @foreach ($exercises as $exercise)
-                    <a href="{{ route('programs.quick-add', ['exercise' => $exercise->id, 'date' => $selectedDate->toDateString(), 'redirect_to' => 'mobile-entry']) }}" class="item-list-item exercise-list-item {{ $exercise->is_user_created ? 'user-exercise' : '' }}">
-                        <span class="item-name exercise-name">{{ $exercise->title }}</span>
-                        @if($exercise->is_user_created)
-                            <span class="item-label exercise-label"><em>Created by you</em></span>
-                        @endif
-                    </a>
-                @endforeach
-            </div>
-        </div>
+        <x-lift-logs.mobile-entry.exercise-list 
+            container-id="exercise-list-container"
+            form-id="new-exercise-form-container"
+            input-id="exercise_name"
+            link-id="new-exercise-link"
+            :selected-date="$selectedDate"
+            :recommendations="$recommendations"
+            :exercises="$exercises" />
 
         @if ($programs->isEmpty())
             <p class="no-program-message">No program entries for this day.</p>
@@ -242,6 +215,20 @@
                     @endif
                 </div>
             @endforeach
+            
+            {{-- Duplicate "Add exercise" button at the bottom when there are programs --}}
+            <div class="add-exercise-container">
+                <button type="button" id="add-exercise-button-bottom" class="button-large button-green">Add exercise</button>
+            </div>
+
+            <x-lift-logs.mobile-entry.exercise-list 
+                container-id="exercise-list-container-bottom"
+                form-id="new-exercise-form-container-bottom"
+                input-id="exercise_name_bottom"
+                link-id="new-exercise-link-bottom"
+                :selected-date="$selectedDate"
+                :recommendations="$recommendations"
+                :exercises="$exercises" />
         @endif
     </div>
 
@@ -297,17 +284,80 @@
     </script>
 
     <script>
-        document.getElementById('add-exercise-button').addEventListener('click', function() {
-            document.getElementById('exercise-list-container').classList.remove('hidden');
-            this.style.display = 'none';
-        });
+        // Generic function to handle add-exercise buttons
+        function setupAddExerciseButton(buttonId, containerId) {
+            const button = document.getElementById(buttonId);
+            if (button) {
+                button.addEventListener('click', function() {
+                    // Hide all other exercise lists and show their buttons
+                    hideAllExerciseLists();
+                    
+                    // Show this exercise list and hide this button
+                    document.getElementById(containerId).classList.remove('hidden');
+                    this.style.display = 'none';
+                });
+            }
+        }
 
-        document.getElementById('new-exercise-link').addEventListener('click', function(event) {
-            event.preventDefault();
-            document.getElementById('new-exercise-form-container').classList.remove('hidden');
-            document.getElementById('exercise_name').focus();
-            this.style.display = 'none';
-        });
+        // Function to hide all exercise lists and show all buttons
+        function hideAllExerciseLists() {
+            // Hide all exercise lists
+            const containers = ['exercise-list-container', 'exercise-list-container-bottom'];
+            containers.forEach(containerId => {
+                const container = document.getElementById(containerId);
+                if (container) {
+                    container.classList.add('hidden');
+                }
+            });
+
+            // Show all buttons
+            const buttons = ['add-exercise-button', 'add-exercise-button-bottom'];
+            buttons.forEach(buttonId => {
+                const button = document.getElementById(buttonId);
+                if (button) {
+                    button.style.display = '';
+                }
+            });
+
+            // Hide all new exercise forms
+            const forms = ['new-exercise-form-container', 'new-exercise-form-container-bottom'];
+            forms.forEach(formId => {
+                const form = document.getElementById(formId);
+                if (form) {
+                    form.classList.add('hidden');
+                }
+            });
+
+            // Show all new exercise links
+            const links = ['new-exercise-link', 'new-exercise-link-bottom'];
+            links.forEach(linkId => {
+                const link = document.getElementById(linkId);
+                if (link) {
+                    link.style.display = '';
+                }
+            });
+        }
+
+        // Generic function to handle new-exercise links
+        function setupNewExerciseLink(linkId, formId, inputId) {
+            const link = document.getElementById(linkId);
+            if (link) {
+                link.addEventListener('click', function(event) {
+                    event.preventDefault();
+                    document.getElementById(formId).classList.remove('hidden');
+                    document.getElementById(inputId).focus();
+                    this.style.display = 'none';
+                });
+            }
+        }
+
+        // Setup top exercise controls
+        setupAddExerciseButton('add-exercise-button', 'exercise-list-container');
+        setupNewExerciseLink('new-exercise-link', 'new-exercise-form-container', 'exercise_name');
+
+        // Setup bottom exercise controls
+        setupAddExerciseButton('add-exercise-button-bottom', 'exercise-list-container-bottom');
+        setupNewExerciseLink('new-exercise-link-bottom', 'new-exercise-form-container-bottom', 'exercise_name_bottom');
     </script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
