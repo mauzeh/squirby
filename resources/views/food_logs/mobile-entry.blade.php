@@ -215,7 +215,7 @@
                 <h2>Today's Food Log</h2>
                 <div class="food-logs-list">
                     @foreach($foodLogs as $log)
-                        <div class="food-log-entry program-card">
+                        <div class="program-card">
                             <div class="program-card-actions">
                                 <form method="POST" action="{{ route('food-logs.destroy', $log) }}" class="delete-form" onsubmit="return confirm('Are you sure you want to delete this entry?')">
                                     @csrf
