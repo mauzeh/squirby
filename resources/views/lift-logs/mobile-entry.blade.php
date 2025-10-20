@@ -212,12 +212,14 @@
         <div class="item-list-container hidden" id="exercise-list-container">
             <div class="item-list exercise-list">
                 <a href="#" id="new-exercise-link" class="item-list-item exercise-list-item new-exercise-item">✚ Create new exercise</a>
-                <div id="new-exercise-form-container" class="hidden new-exercise-form">
-                    <form action="{{ route('programs.quick-create', ['date' => $selectedDate->toDateString()]) }}" method="POST">
+                <div id="new-exercise-form-container" class="hidden">
+                    <form action="{{ route('programs.quick-create', ['date' => $selectedDate->toDateString()]) }}" method="POST" class="new-exercise-form">
                         @csrf
                         <input type="hidden" name="redirect_to" value="mobile-entry">
                         <div class="form-group">
-                            <input type="text" name="exercise_name" id="exercise_name" class="large-input" placeholder="Enter new exercise name..." required>
+                            <div class="input-group">
+                                <input type="text" name="exercise_name" id="exercise_name" class="large-input large-input-text" placeholder="Enter new exercise name..." required>
+                            </div>
                         </div>
                         <button type="submit" class="button-large button-green">Add Exercise</button>
                     </form>

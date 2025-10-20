@@ -273,6 +273,11 @@ h1 {
     min-width: 0;
 }
 
+/* Text Input Variant - Left-aligned for text entry */
+.large-input.large-input-text {
+    text-align: left;
+}
+
 .large-input:focus {
     background-color: #1a1a1a;
     outline: none;
