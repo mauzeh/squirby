@@ -215,20 +215,22 @@
                 <h2>Today's Food Log</h2>
                 <div class="food-logs-list">
                     @foreach($foodLogs as $log)
-                        <div class="food-log-entry">
-                            <div class="log-header">
-                                <div class="log-time">{{ $log->logged_at->format('g:i A') }}</div>
+                        <div class="food-log-entry program-card">
+                            <div class="program-card-actions">
                                 <form method="POST" action="{{ route('food-logs.destroy', $log) }}" class="delete-form" onsubmit="return confirm('Are you sure you want to delete this entry?')">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="delete-button" title="Delete entry">×</button>
+                                    <button type="submit" class="program-action-button delete-program-button" title="Delete entry"><i class="fa-solid fa-trash"></i></button>
                                 </form>
                             </div>
+                            <h2>{{ $log->ingredient->name }}</h2>
+                            <div class="log-header">
+                                <div class="log-time">{{ $log->logged_at->format('g:i A') }}</div>
+                            </div>
                             <div class="log-details">
-                                <div class="ingredient-name">{{ $log->ingredient->name }}</div>
                                 <div class="quantity-unit">{{ number_format($log->quantity, 2) }} {{ $log->unit->name }}</div>
                                 @if($log->notes)
-                                    <div class="log-notes">{{ $log->notes }}</div>
+                                    <div class="log-notes details">{{ $log->notes }}</div>
                                 @endif
                             </div>
                             <div class="log-nutrition">

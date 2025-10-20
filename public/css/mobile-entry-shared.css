@@ -162,7 +162,7 @@ h1 {
     min-width: 0;
 }
 
-/* Standardized Delete Button - Lift-logs Implementation (Requirements 3.4, 3.5) */
+/* Standardized Delete Button - Shared Implementation (Requirements 3.4, 3.5) */
 .delete-button {
     background-color: #dc3545;
     color: white;
@@ -193,6 +193,81 @@ h1 {
 .delete-form {
     margin: 0;
     display: inline-block;
+}
+
+/* Program Cards - Shared Implementation */
+.program-card {
+    background-color: #3a3a3a;
+    border-radius: 8px;
+    padding: 20px;
+    margin-top: 20px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    position: relative;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    width: 100%;
+    box-sizing: border-box;
+    overflow-x: hidden;
+}
+
+.program-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+}
+
+.program-card h2 {
+    color: orange;
+    margin-top: 0;
+    margin-bottom: 10px;
+    padding-right: 80px; /* Make space for the action buttons */
+    line-height: 1.2;
+}
+
+.program-card .details {
+    font-size: 1.1em;
+    color: #ccc;
+    margin-bottom: 10px;
+    line-height: 1.4;
+}
+
+/* Program Card Actions - Shared Implementation */
+.program-card-actions {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    gap: 5px;
+}
+
+/* Program Action Buttons - Shared Implementation */
+.program-action-button {
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    font-size: 1.2em;
+    line-height: 30px;
+    text-align: center;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.program-action-button:hover {
+    background-color: #5a6268;
+    transform: scale(1.1);
+}
+
+.delete-program-button {
+    background-color: #dc3545;
+}
+
+.delete-program-button:hover {
+    background-color: #c82333;
 }
 
 /* Button Utility Classes */
@@ -1117,6 +1192,30 @@ h1 {
         font-size: 1.2em;
         padding: 10px 18px;
     }
+    
+    /* Program card responsive behavior */
+    .program-card {
+        padding: 15px;
+        margin-bottom: 15px;
+    }
+    
+    .program-card h2 {
+        font-size: 1.2em;
+        padding-right: 70px;
+    }
+    
+    .program-card-actions {
+        top: 8px;
+        right: 8px;
+    }
+    
+    .program-action-button {
+        width: 28px;
+        height: 28px;
+        font-size: 1.1em;
+        line-height: 28px;
+        margin-left: 4px;
+    }
 }
 
 /* Smaller mobile devices - Requirement 7.3 */
@@ -1497,6 +1596,42 @@ h1 {
     
     .exercise-label {
         font-size: 0.8em;
+    }
+}
+
+/* Program Card Accessibility Enhancements */
+.program-card:focus-within {
+    outline: 2px solid #007bff;
+    outline-offset: 2px;
+}
+
+.program-action-button:focus {
+    outline: 2px solid #007bff;
+    outline-offset: 2px;
+}
+
+/* High contrast mode support for program cards */
+@media (prefers-contrast: high) {
+    .program-card {
+        border: 2px solid #000;
+    }
+}
+
+/* Reduced motion preferences for program cards */
+@media (prefers-reduced-motion: reduce) {
+    .program-card,
+    .program-action-button {
+        transition: none;
+        animation: none;
+    }
+    
+    .program-card:hover {
+        transform: none;
+        box-shadow: none;
+    }
+    
+    .program-action-button:hover {
+        transform: none;
     }
 }
 

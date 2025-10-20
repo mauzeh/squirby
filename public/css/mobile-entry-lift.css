@@ -3,79 +3,8 @@
  * Requirements: 2.5, 8.3
  */
 
-/* Program Cards */
-.program-card {
-    background-color: #3a3a3a;
-    border-radius: 8px;
-    padding: 20px;
-    margin-top: 20px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-    position: relative;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    width: 100%;
-    box-sizing: border-box;
-    overflow-x: hidden;
-}
 
-.program-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
-}
 
-.program-card h2 {
-    color: orange;
-    margin-top: 0;
-    margin-bottom: 10px;
-    padding-right: 80px; /* Make space for the action buttons */
-    line-height: 1.2;
-}
-
-.program-card .details {
-    font-size: 1.1em;
-    color: #ccc;
-    margin-bottom: 10px;
-    line-height: 1.4;
-}
-
-/* Program Card Actions */
-.program-card-actions {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    display: flex;
-    gap: 5px;
-}
-
-.program-action-button {
-    background-color: #6c757d;
-    color: white;
-    border: none;
-    border-radius: 50%;
-    width: 30px;
-    height: 30px;
-    font-size: 1.2em;
-    line-height: 30px;
-    text-align: center;
-    cursor: pointer;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s ease;
-}
-
-.program-action-button:hover {
-    background-color: #5a6268;
-    transform: scale(1.1);
-}
-
-.delete-program-button {
-    background-color: #dc3545;
-}
-
-.delete-program-button:hover {
-    background-color: #c82333;
-}
 
 /* Workout Info Display (Last time and Suggested) */
 .workout-info-box {
@@ -436,24 +365,6 @@
 
 /* Lift-specific print styles */
 @media print {
-    .program-card {
-        background-color: #f8f9fa;
-        border: 1px solid #ccc;
-        color: black;
-        break-inside: avoid;
-        page-break-inside: avoid;
-    }
-    
-    .program-card h2 {
-        color: black;
-        padding-right: 0;
-    }
-    
-    .program-card .details {
-        color: #333;
-    }
-    
-    .program-card-actions,
     .add-exercise-container,
     .item-list-container,
     .lift-log-form,
@@ -486,11 +397,6 @@
 }
 
 /* Lift-specific accessibility enhancements */
-.program-card:focus-within {
-    outline: 2px solid #007bff;
-    outline-offset: 2px;
-}
-
 .exercise-list-item:focus {
     outline: 2px solid #007bff;
     outline-offset: 2px;
@@ -501,16 +407,8 @@
     outline-offset: 2px;
 }
 
-.program-action-button:focus {
-    outline: 2px solid #007bff;
-    outline-offset: 2px;
-}
-
 /* High contrast mode support for lift elements */
 @media (prefers-contrast: high) {
-    .program-card {
-        border: 2px solid #000;
-    }
     
     .recommended-exercise {
         border-left-width: 4px;
@@ -539,17 +437,14 @@
 
 /* Reduced motion preferences for lift elements */
 @media (prefers-reduced-motion: reduce) {
-    .program-card,
     .exercise-list-item,
     .band-color-button,
-    .program-action-button,
     .submit-button,
     .large-button {
         transition: none;
         animation: none;
     }
     
-    .program-card:hover,
     .exercise-list-item:hover,
     .submit-button:hover,
     .large-button:hover {
