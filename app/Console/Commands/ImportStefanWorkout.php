@@ -104,7 +104,7 @@ class ImportStefanWorkout extends Command
     private function importExercise(array $exerciseData, User $user, Carbon $loggedAt): void
     {
         // Find or create exercise
-        $exercise = $this->findOrCreateExercise($exerciseData['exercise'], $user);
+        $exercise = $this->findOrCreateExercise($exerciseData, $user);
 
         // Create lift log
         $liftLog = LiftLog::create([
@@ -130,18 +130,13 @@ class ImportStefanWorkout extends Command
     /**
      * Find existing exercise or create a new one
      */
-    private function findOrCreateExercise(string $exerciseName, User $user): Exercise
+    private function findOrCreateExercise(array $exerciseData, User $user): Exercise
     {
-        // Normalize exercise name for matching
-        $normalizedName = $this->normalizeExerciseName($exerciseName);
-
-        // Try to find existing exercise (global or user-specific)
+        $canonicalName = $exerciseData['canonical_name'];
+        
+        // Try to find existing exercise by canonical name
         $exercise = Exercise::availableToUser($user->id)
-            ->where(function ($query) use ($normalizedName, $exerciseName) {
-                $query->whereRaw('LOWER(title) = ?', [strtolower($exerciseName)])
-                      ->orWhereRaw('LOWER(title) = ?', [strtolower($normalizedName)])
-                      ->orWhere('canonical_name', str_replace(' ', '_', strtolower($normalizedName)));
-            })
+            ->where('canonical_name', $canonicalName)
             ->first();
 
         if ($exercise) {
@@ -150,71 +145,11 @@ class ImportStefanWorkout extends Command
 
         // Create new exercise for the user
         return Exercise::create([
-            'title' => $normalizedName,
+            'title' => $exerciseData['exercise'],
+            'canonical_name' => $canonicalName,
             'description' => "Imported from Stefan's workout log",
-            'is_bodyweight' => $this->isBodyweightExercise($normalizedName),
+            'is_bodyweight' => $exerciseData['is_bodyweight'] ?? false,
             'user_id' => $user->id
         ]);
-    }
-
-    /**
-     * Normalize exercise names for better matching
-     */
-    private function normalizeExerciseName(string $name): string
-    {
-        // Common abbreviations and normalizations
-        $replacements = [
-            'db' => 'dumbbell',
-            'kb' => 'kettlebell',
-            'bb' => 'barbell',
-            'tricep' => 'triceps',
-            'bicep' => 'biceps',
-        ];
-
-        $normalized = strtolower($name);
-        
-        foreach ($replacements as $abbrev => $full) {
-            $normalized = str_replace($abbrev, $full, $normalized);
-        }
-
-        // Clean up spacing and capitalize properly
-        $normalized = ucwords(trim($normalized));
-        
-        return $normalized;
-    }
-
-    /**
-     * Determine if an exercise is bodyweight based on name
-     */
-    private function isBodyweightExercise(string $name): bool
-    {
-        $bodyweightKeywords = [
-            'plank',
-            'push up',
-            'pushup',
-            'pull up',
-            'pullup',
-            'chin up',
-            'chinup',
-            'dip',
-            'lunge',
-            'squat' // Can be bodyweight or weighted
-        ];
-
-        $lowerName = strtolower($name);
-        
-        foreach ($bodyweightKeywords as $keyword) {
-            if (strpos($lowerName, $keyword) !== false) {
-                // Special case: if it mentions weight/dumbbell/barbell, it's not bodyweight
-                if (strpos($lowerName, 'dumbbell') !== false || 
-                    strpos($lowerName, 'barbell') !== false ||
-                    strpos($lowerName, 'weight') !== false) {
-                    return false;
-                }
-                return true;
-            }
-        }
-
-        return false;
     }
 }

@@ -1,180 +1,238 @@
 [
     {
         "exercise": "Bench Press",
+        "canonical_name": "bench_press",
         "weight": 225,
         "reps": 5,
-        "sets": 1
+        "sets": 1,
+        "is_bodyweight": false
     },
     {
         "exercise": "Dumbbell Pull",
+        "canonical_name": "dumbbell_pull",
         "weight": 90,
         "reps": 10,
-        "sets": 1
+        "sets": 1,
+        "is_bodyweight": false
     },
     {
         "exercise": "Incline Bench Press",
+        "canonical_name": "incline_bench_press",
         "weight": 175,
         "reps": 5,
-        "sets": 1
+        "sets": 1,
+        "is_bodyweight": false
     },
     {
         "exercise": "Dumbbell Incline Bench Press",
+        "canonical_name": "dumbbell_incline_bench_press",
         "weight": 140,
         "reps": 5,
-        "sets": 1
+        "sets": 1,
+        "is_bodyweight": false
     },
     {
         "exercise": "Tricep Pushdown",
+        "canonical_name": "tricep_pushdown",
         "weight": 52.5,
         "reps": 8,
-        "sets": 1
+        "sets": 1,
+        "is_bodyweight": false
     },
     {
         "exercise": "Strict Press",
+        "canonical_name": "strict_press",
         "weight": 110,
         "reps": 4,
-        "sets": 1
+        "sets": 1,
+        "is_bodyweight": false
     },
     {
         "exercise": "Barbell Curl",
+        "canonical_name": "barbell_curl",
         "weight": 100,
         "reps": 8,
-        "sets": 1
+        "sets": 1,
+        "is_bodyweight": false
     },
     {
         "exercise": "Dumbbell Pull Up",
+        "canonical_name": "dumbbell_pull_up",
         "weight": 15,
         "reps": 1,
         "sets": 1,
+        "is_bodyweight": true,
         "notes": "bodyweight assisted"
     },
     {
         "exercise": "Shoulder Press",
+        "canonical_name": "shoulder_press",
         "weight": 110,
         "reps": 7,
-        "sets": 1
+        "sets": 1,
+        "is_bodyweight": false
     },
     {
         "exercise": "Squat",
+        "canonical_name": "squat",
         "weight": 255,
         "reps": 8,
-        "sets": 1
+        "sets": 1,
+        "is_bodyweight": false
     },
     {
         "exercise": "Leg Press",
+        "canonical_name": "leg_press",
         "weight": 450,
         "reps": 12,
-        "sets": 1
+        "sets": 1,
+        "is_bodyweight": false
     },
     {
         "exercise": "Seated Leg Press",
+        "canonical_name": "seated_leg_press",
         "weight": 290,
         "reps": 1,
-        "sets": 1
+        "sets": 1,
+        "is_bodyweight": false
     },
     {
         "exercise": "Glute Drive",
+        "canonical_name": "glute_drive",
         "weight": 315,
         "reps": 8,
-        "sets": 1
+        "sets": 1,
+        "is_bodyweight": false
     },
     {
         "exercise": "Leg Curl",
+        "canonical_name": "leg_curl",
         "weight": 140,
         "reps": 12,
-        "sets": 1
+        "sets": 1,
+        "is_bodyweight": false
     },
     {
         "exercise": "Seated Leg Curl",
+        "canonical_name": "seated_leg_curl",
         "weight": 110,
         "reps": 8,
-        "sets": 1
+        "sets": 1,
+        "is_bodyweight": false
     },
     {
         "exercise": "Standing Calf Raise",
+        "canonical_name": "standing_calf_raise",
         "weight": 235,
         "reps": 12,
-        "sets": 1
+        "sets": 1,
+        "is_bodyweight": false
     },
     {
         "exercise": "Barbell Row",
+        "canonical_name": "barbell_row",
         "weight": 165,
         "reps": 8,
-        "sets": 1
+        "sets": 1,
+        "is_bodyweight": false
     },
     {
         "exercise": "Decline Bench Press",
+        "canonical_name": "decline_bench_press",
         "weight": 170,
         "reps": 7,
-        "sets": 1
+        "sets": 1,
+        "is_bodyweight": false
     },
     {
         "exercise": "Seated Row",
+        "canonical_name": "seated_row",
         "weight": 140,
         "reps": 8,
-        "sets": 1
+        "sets": 1,
+        "is_bodyweight": false
     },
     {
         "exercise": "Pec Fly",
+        "canonical_name": "pec_fly",
         "weight": 155,
         "reps": 8,
-        "sets": 1
+        "sets": 1,
+        "is_bodyweight": false
     },
     {
         "exercise": "Deadlift",
+        "canonical_name": "deadlift",
         "weight": 275,
         "reps": 1,
-        "sets": 1
+        "sets": 1,
+        "is_bodyweight": false
     },
     {
         "exercise": "Overhead Lunge",
+        "canonical_name": "overhead_lunge",
         "weight": 40,
         "reps": 10,
-        "sets": 1
+        "sets": 1,
+        "is_bodyweight": false
     },
     {
         "exercise": "Dumbbell Pull Through",
+        "canonical_name": "dumbbell_pull_through",
         "weight": 40,
         "reps": 8,
-        "sets": 1
+        "sets": 1,
+        "is_bodyweight": false
     },
     {
         "exercise": "Kettlebell Swing",
+        "canonical_name": "kettlebell_swing",
         "weight": 50,
         "reps": 25,
-        "sets": 1
+        "sets": 1,
+        "is_bodyweight": false
     },
     {
         "exercise": "Glute Drive",
+        "canonical_name": "glute_drive_2",
         "weight": 305,
         "reps": 8,
         "sets": 1,
+        "is_bodyweight": false,
         "notes": "second variation"
     },
     {
         "exercise": "Seated Calf Raise",
+        "canonical_name": "seated_calf_raise",
         "weight": 80,
         "reps": 12,
-        "sets": 1
+        "sets": 1,
+        "is_bodyweight": false
     },
     {
         "exercise": "Leg Extension",
+        "canonical_name": "leg_extension",
         "weight": 145,
         "reps": 8,
-        "sets": 1
+        "sets": 1,
+        "is_bodyweight": false
     },
     {
         "exercise": "Plank",
+        "canonical_name": "plank",
         "weight": 0,
         "reps": 90,
         "sets": 1,
+        "is_bodyweight": true,
         "notes": "time in seconds"
     },
     {
         "exercise": "Side Plank",
+        "canonical_name": "side_plank",
         "weight": 0,
         "reps": 40,
         "sets": 1,
+        "is_bodyweight": true,
         "notes": "time in seconds"
     }
 ]
