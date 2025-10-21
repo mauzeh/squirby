@@ -103,6 +103,10 @@ Route::middleware('auth')->group(function () {
     Route::get('lift-logs/mobile-entry', [LiftLogController::class, 'mobileEntry'])->name('lift-logs.mobile-entry');
 });
 
+// Google OAuth routes
+Route::get('auth/google', [App\Http\Controllers\Auth\SocialiteController::class, 'redirectToGoogle'])->name('auth.google');
+Route::get('auth/google/callback', [App\Http\Controllers\Auth\SocialiteController::class, 'handleGoogleCallback']);
+
 require __DIR__.'/auth.php';
 
 Route::middleware(['auth', 'admin'])->group(function () {
