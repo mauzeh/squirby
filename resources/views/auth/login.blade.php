@@ -22,6 +22,13 @@
                 </div>
             @endif
 
+            <!-- Error Messages -->
+            @if (session('error'))
+                <div class="error-message-box mb-4">
+                    {{ session('error') }}
+                </div>
+            @endif
+
             <form method="POST" action="{{ route('login') }}">
                 @csrf
 
