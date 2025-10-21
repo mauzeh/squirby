@@ -44,7 +44,7 @@ class SocialiteController extends Controller
 
             Auth::login($user);
 
-            return redirect('/dashboard'); // Redirect to your desired dashboard route
+            return redirect('/lift-logs/mobile-entry'); // Redirect to your desired dashboard route
         } catch (\Exception $e) {
             // Log the actual exception for debugging
             \Log::error('Google OAuth failed: ' . $e->getMessage(), [
