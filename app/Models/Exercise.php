@@ -13,6 +13,7 @@ class Exercise extends Model
     protected $fillable = [
         'title',
         'description',
+        'canonical_name',
         'is_bodyweight',
         'user_id',
         'band_type',
