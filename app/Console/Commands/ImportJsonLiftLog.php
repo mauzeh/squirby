@@ -16,7 +16,7 @@ class ImportJsonLiftLog extends Command
      *
      * @var string
      */
-    protected $signature = 'lift-log:import-json {file} {--user-email=} {--date=}';
+    protected $signature = 'lift-log:import-json {file} {--user-email=} {--date=} {--overwrite : Overwrite existing lift logs for the same date}';
 
     /**
      * The console command description.
@@ -74,12 +74,52 @@ class ImportJsonLiftLog extends Command
 
         $this->info("Found " . count($exercises) . " exercises to import");
 
+        // Check for duplicates
+        $duplicates = $this->findDuplicates($exercises, $user, $loggedAt);
+        $skipDuplicates = false;
+        
+        if (!empty($duplicates) && !$this->option('overwrite')) {
+            $this->warn("Found " . count($duplicates) . " potential duplicate lift logs:");
+            foreach ($duplicates as $duplicate) {
+                $this->line("  - {$duplicate['exercise']} ({$duplicate['weight']}lbs x {$duplicate['reps']} reps)");
+            }
+            
+            $choice = $this->choice(
+                'What would you like to do?',
+                ['Skip duplicates and import new ones only', 'Overwrite existing lift logs', 'Cancel import'],
+                0
+            );
+            
+            if ($choice === 'Cancel import') {
+                $this->info('Import cancelled by user.');
+                return Command::SUCCESS;
+            } elseif ($choice === 'Overwrite existing lift logs') {
+                $this->deleteDuplicateLiftLogs($duplicates, $user, $loggedAt);
+                $this->info('Existing lift logs deleted. Proceeding with import...');
+            } elseif ($choice === 'Skip duplicates and import new ones only') {
+                $skipDuplicates = true;
+            }
+        } elseif (!empty($duplicates) && $this->option('overwrite')) {
+            $this->deleteDuplicateLiftLogs($duplicates, $user, $loggedAt);
+            $this->info('Overwrite flag detected. Existing lift logs deleted. Proceeding with import...');
+        }
+
         // Import each exercise
         $imported = 0;
         $skipped = 0;
 
         foreach ($exercises as $exerciseData) {
             try {
+                $shouldSkip = $skipDuplicates && 
+                             !empty($duplicates) && 
+                             $this->isDuplicate($exerciseData, $duplicates);
+                
+                if ($shouldSkip) {
+                    $skipped++;
+                    $this->line("⚠ Skipped duplicate: {$exerciseData['exercise']}");
+                    continue;
+                }
+                
                 $this->importExercise($exerciseData, $user, $loggedAt);
                 $imported++;
                 $this->line("✓ Imported: {$exerciseData['exercise']}");
@@ -204,6 +244,89 @@ class ImportJsonLiftLog extends Command
                 if (!$this->confirm('Try again?')) {
                     throw new \Exception('User cancelled exercise mapping');
                 }
+            }
+        }
+    }
+
+    /**
+     * Find duplicate lift logs for the given exercises and date
+     */
+    private function findDuplicates(array $exercises, User $user, Carbon $loggedAt): array
+    {
+        $duplicates = [];
+        $dateOnly = $loggedAt->format('Y-m-d');
+        
+        foreach ($exercises as $exerciseData) {
+            // Try to find the exercise first
+            $exercise = Exercise::global()
+                ->where('canonical_name', $exerciseData['canonical_name'])
+                ->first();
+            
+            if (!$exercise) {
+                continue; // Skip if exercise doesn't exist yet
+            }
+            
+            // Check for existing lift logs on the same date with same weight/reps
+            $existingLog = LiftLog::where('user_id', $user->id)
+                ->where('exercise_id', $exercise->id)
+                ->whereDate('logged_at', $dateOnly)
+                ->whereHas('liftSets', function ($query) use ($exerciseData) {
+                    $query->where('weight', $exerciseData['weight'])
+                          ->where('reps', $exerciseData['reps']);
+                })
+                ->first();
+            
+            if ($existingLog) {
+                $duplicates[] = [
+                    'exercise' => $exerciseData['exercise'],
+                    'canonical_name' => $exerciseData['canonical_name'],
+                    'weight' => $exerciseData['weight'],
+                    'reps' => $exerciseData['reps'],
+                    'exercise_id' => $exercise->id
+                ];
+            }
+        }
+        
+        return $duplicates;
+    }
+
+    /**
+     * Check if an exercise data matches any duplicate
+     */
+    private function isDuplicate(array $exerciseData, array $duplicates): bool
+    {
+        foreach ($duplicates as $duplicate) {
+            if ($duplicate['canonical_name'] === $exerciseData['canonical_name'] &&
+                $duplicate['weight'] == $exerciseData['weight'] &&
+                $duplicate['reps'] == $exerciseData['reps']) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Delete existing lift logs that match the duplicates
+     */
+    private function deleteDuplicateLiftLogs(array $duplicates, User $user, Carbon $loggedAt): void
+    {
+        $dateOnly = $loggedAt->format('Y-m-d');
+        
+        foreach ($duplicates as $duplicate) {
+            $liftLogs = LiftLog::where('user_id', $user->id)
+                ->where('exercise_id', $duplicate['exercise_id'])
+                ->whereDate('logged_at', $dateOnly)
+                ->whereHas('liftSets', function ($query) use ($duplicate) {
+                    $query->where('weight', $duplicate['weight'])
+                          ->where('reps', $duplicate['reps']);
+                })
+                ->get();
+            
+            foreach ($liftLogs as $liftLog) {
+                // Delete associated lift sets first
+                $liftLog->liftSets()->delete();
+                // Then delete the lift log
+                $liftLog->delete();
             }
         }
     }

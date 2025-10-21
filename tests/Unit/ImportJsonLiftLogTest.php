@@ -478,4 +478,457 @@ class ImportJsonLiftLogTest extends TestCase
             'reps' => 8
         ]);
     }
-}
+
+    public function test_running_command_multiple_times_with_overwrite_flag_creates_new_lift_logs()
+    {
+        $user = $this->createTestUser();
+        $exercise = $this->createGlobalExercise('Bench Press', 'bench_press');
+        
+        $exercises = [
+            [
+                'exercise' => 'Bench Press',
+                'canonical_name' => 'bench_press',
+                'weight' => 225,
+                'reps' => 5,
+                'sets' => 1,
+                'is_bodyweight' => false
+            ]
+        ];
+        
+        $tempFile = $this->createTestJsonFile($exercises);
+        
+        try {
+            // Run the command first time
+            $this->artisan('lift-log:import-json', [
+                'file' => $tempFile,
+                '--user-email' => 'test@example.com',
+                '--date' => '2024-01-15'
+            ])->assertExitCode(Command::SUCCESS);
+            
+            // Verify first import
+            $this->assertDatabaseCount('lift_logs', 1);
+            $this->assertDatabaseCount('lift_sets', 1);
+            
+            // Run the command second time with overwrite flag
+            $this->artisan('lift-log:import-json', [
+                'file' => $tempFile,
+                '--user-email' => 'test@example.com',
+                '--date' => '2024-01-15',
+                '--overwrite' => true
+            ])->assertExitCode(Command::SUCCESS);
+            
+            // Should still have only 1 lift log (old deleted, new created)
+            $this->assertDatabaseCount('lift_logs', 1);
+            $this->assertDatabaseCount('lift_sets', 1);
+            
+            // Verify the lift log has the import comment
+            $liftLog = LiftLog::first();
+            $this->assertEquals('Imported from JSON file', $liftLog->comments);
+            
+        } finally {
+            unlink($tempFile);
+        }
+    }
+
+    public function test_running_command_multiple_times_does_not_create_duplicate_exercises()
+    {
+        $user = $this->createTestUser();
+        
+        $exercises = [
+            [
+                'exercise' => 'New Exercise',
+                'canonical_name' => 'new_exercise',
+                'weight' => 100,
+                'reps' => 10,
+                'sets' => 1,
+                'is_bodyweight' => false
+            ]
+        ];
+        
+        $tempFile = $this->createTestJsonFile($exercises);
+        
+        try {
+            // First run - exercise doesn't exist, would normally prompt user
+            // For this test, we'll create the exercise manually to simulate user choosing "create"
+            $this->createGlobalExercise('New Exercise', 'new_exercise');
+            
+            // Run the command first time
+            $this->artisan('lift-log:import-json', [
+                'file' => $tempFile,
+                '--user-email' => 'test@example.com',
+                '--overwrite' => true  // Use overwrite to avoid prompts
+            ])->assertExitCode(Command::SUCCESS);
+            
+            // Verify exercise count
+            $exerciseCount = Exercise::where('canonical_name', 'new_exercise')->count();
+            $this->assertEquals(1, $exerciseCount);
+            
+            // Run the command second time with overwrite
+            $this->artisan('lift-log:import-json', [
+                'file' => $tempFile,
+                '--user-email' => 'test@example.com',
+                '--overwrite' => true  // Use overwrite to avoid prompts
+            ])->assertExitCode(Command::SUCCESS);
+            
+            // Verify no duplicate exercises were created
+            $exerciseCount = Exercise::where('canonical_name', 'new_exercise')->count();
+            $this->assertEquals(1, $exerciseCount);
+            
+        } finally {
+            unlink($tempFile);
+        }
+    }
+
+    public function test_duplicate_detection_finds_existing_lift_logs()
+    {
+        $user = $this->createTestUser();
+        $exercise = $this->createGlobalExercise('Bench Press', 'bench_press');
+        
+        // Create existing lift log
+        $existingLiftLog = LiftLog::create([
+            'exercise_id' => $exercise->id,
+            'user_id' => $user->id,
+            'logged_at' => '2024-01-15 10:00:00',
+            'comments' => 'Existing log'
+        ]);
+        
+        LiftSet::create([
+            'lift_log_id' => $existingLiftLog->id,
+            'weight' => 225,
+            'reps' => 5
+        ]);
+        
+        $exercises = [
+            [
+                'exercise' => 'Bench Press',
+                'canonical_name' => 'bench_press',
+                'weight' => 225,
+                'reps' => 5,
+                'sets' => 1,
+                'is_bodyweight' => false
+            ]
+        ];
+        
+        $tempFile = $this->createTestJsonFile($exercises);
+        
+        try {
+            // Should detect duplicate and prompt user
+            $this->artisan('lift-log:import-json', [
+                'file' => $tempFile,
+                '--user-email' => 'test@example.com',
+                '--date' => '2024-01-15'
+            ])
+            ->expectsChoice(
+                'What would you like to do?',
+                'Cancel import',
+                ['Skip duplicates and import new ones only', 'Overwrite existing lift logs', 'Cancel import']
+            )
+            ->assertExitCode(Command::SUCCESS);
+            
+            // Should still have only the original lift log
+            $this->assertDatabaseCount('lift_logs', 1);
+            $this->assertDatabaseCount('lift_sets', 1);
+            
+        } finally {
+            unlink($tempFile);
+        }
+    }
+
+    public function test_overwrite_flag_deletes_existing_lift_logs()
+    {
+        $user = $this->createTestUser();
+        $exercise = $this->createGlobalExercise('Bench Press', 'bench_press');
+        
+        // Create existing lift log
+        $existingLiftLog = LiftLog::create([
+            'exercise_id' => $exercise->id,
+            'user_id' => $user->id,
+            'logged_at' => '2024-01-15 10:00:00',
+            'comments' => 'Existing log'
+        ]);
+        
+        LiftSet::create([
+            'lift_log_id' => $existingLiftLog->id,
+            'weight' => 225,
+            'reps' => 5
+        ]);
+        
+        $exercises = [
+            [
+                'exercise' => 'Bench Press',
+                'canonical_name' => 'bench_press',
+                'weight' => 225,
+                'reps' => 5,
+                'sets' => 1,
+                'is_bodyweight' => false
+            ]
+        ];
+        
+        $tempFile = $this->createTestJsonFile($exercises);
+        
+        try {
+            $this->artisan('lift-log:import-json', [
+                'file' => $tempFile,
+                '--user-email' => 'test@example.com',
+                '--date' => '2024-01-15',
+                '--overwrite' => true
+            ])->assertExitCode(Command::SUCCESS);
+            
+            // Should have new lift log (old one deleted, new one created)
+            $this->assertDatabaseCount('lift_logs', 1);
+            $this->assertDatabaseCount('lift_sets', 1);
+            
+            // Verify the new lift log has the import comment
+            $newLiftLog = LiftLog::first();
+            $this->assertEquals('Imported from JSON file', $newLiftLog->comments);
+            
+        } finally {
+            unlink($tempFile);
+        }
+    }
+
+    public function test_skip_duplicates_imports_only_new_exercises()
+    {
+        $user = $this->createTestUser();
+        $benchPress = $this->createGlobalExercise('Bench Press', 'bench_press');
+        $squat = $this->createGlobalExercise('Squat', 'squat');
+        
+        // Create existing lift log for bench press only
+        $existingLiftLog = LiftLog::create([
+            'exercise_id' => $benchPress->id,
+            'user_id' => $user->id,
+            'logged_at' => '2024-01-15 10:00:00',
+            'comments' => 'Existing log'
+        ]);
+        
+        LiftSet::create([
+            'lift_log_id' => $existingLiftLog->id,
+            'weight' => 225,
+            'reps' => 5
+        ]);
+        
+        $exercises = [
+            [
+                'exercise' => 'Bench Press',
+                'canonical_name' => 'bench_press',
+                'weight' => 225,
+                'reps' => 5,
+                'sets' => 1,
+                'is_bodyweight' => false
+            ],
+            [
+                'exercise' => 'Squat',
+                'canonical_name' => 'squat',
+                'weight' => 315,
+                'reps' => 8,
+                'sets' => 1,
+                'is_bodyweight' => false
+            ]
+        ];
+        
+        $tempFile = $this->createTestJsonFile($exercises);
+        
+        try {
+            $this->artisan('lift-log:import-json', [
+                'file' => $tempFile,
+                '--user-email' => 'test@example.com',
+                '--date' => '2024-01-15'
+            ])
+            ->expectsChoice(
+                'What would you like to do?',
+                'Skip duplicates and import new ones only',
+                ['Skip duplicates and import new ones only', 'Overwrite existing lift logs', 'Cancel import']
+            )
+            ->assertExitCode(Command::SUCCESS);
+            
+            // Should have 2 lift logs (1 existing + 1 new squat)
+            $this->assertDatabaseCount('lift_logs', 2);
+            $this->assertDatabaseCount('lift_sets', 2);
+            
+            // Verify squat was imported
+            $squatLog = LiftLog::where('exercise_id', $squat->id)->first();
+            $this->assertNotNull($squatLog);
+            $this->assertEquals('Imported from JSON file', $squatLog->comments);
+            
+        } finally {
+            unlink($tempFile);
+        }
+    }
+
+    public function test_no_duplicates_imports_normally()
+    {
+        $user = $this->createTestUser();
+        $exercise = $this->createGlobalExercise('Bench Press', 'bench_press');
+        
+        $exercises = [
+            [
+                'exercise' => 'Bench Press',
+                'canonical_name' => 'bench_press',
+                'weight' => 225,
+                'reps' => 5,
+                'sets' => 1,
+                'is_bodyweight' => false
+            ]
+        ];
+        
+        $tempFile = $this->createTestJsonFile($exercises);
+        
+        try {
+            $this->artisan('lift-log:import-json', [
+                'file' => $tempFile,
+                '--user-email' => 'test@example.com',
+                '--date' => '2024-01-15'
+            ])->assertExitCode(Command::SUCCESS);
+            
+            // Should have 1 lift log
+            $this->assertDatabaseCount('lift_logs', 1);
+            $this->assertDatabaseCount('lift_sets', 1);
+            
+        } finally {
+            unlink($tempFile);
+        }
+    }
+
+    public function test_duplicate_detection_considers_different_weights_as_non_duplicates()
+    {
+        $user = $this->createTestUser();
+        $exercise = $this->createGlobalExercise('Bench Press', 'bench_press');
+        
+        // Create existing lift log with different weight
+        $existingLiftLog = LiftLog::create([
+            'exercise_id' => $exercise->id,
+            'user_id' => $user->id,
+            'logged_at' => '2024-01-15 10:00:00',
+            'comments' => 'Existing log'
+        ]);
+        
+        LiftSet::create([
+            'lift_log_id' => $existingLiftLog->id,
+            'weight' => 200, // Different weight
+            'reps' => 5
+        ]);
+        
+        $exercises = [
+            [
+                'exercise' => 'Bench Press',
+                'canonical_name' => 'bench_press',
+                'weight' => 225, // Different weight
+                'reps' => 5,
+                'sets' => 1,
+                'is_bodyweight' => false
+            ]
+        ];
+        
+        $tempFile = $this->createTestJsonFile($exercises);
+        
+        try {
+            $this->artisan('lift-log:import-json', [
+                'file' => $tempFile,
+                '--user-email' => 'test@example.com',
+                '--date' => '2024-01-15'
+            ])->assertExitCode(Command::SUCCESS);
+            
+            // Should have 2 lift logs (not considered duplicates)
+            $this->assertDatabaseCount('lift_logs', 2);
+            $this->assertDatabaseCount('lift_sets', 2);
+            
+        } finally {
+            unlink($tempFile);
+        }
+    }
+
+    public function test_duplicate_detection_considers_different_reps_as_non_duplicates()
+    {
+        $user = $this->createTestUser();
+        $exercise = $this->createGlobalExercise('Bench Press', 'bench_press');
+        
+        // Create existing lift log with different reps
+        $existingLiftLog = LiftLog::create([
+            'exercise_id' => $exercise->id,
+            'user_id' => $user->id,
+            'logged_at' => '2024-01-15 10:00:00',
+            'comments' => 'Existing log'
+        ]);
+        
+        LiftSet::create([
+            'lift_log_id' => $existingLiftLog->id,
+            'weight' => 225,
+            'reps' => 3 // Different reps
+        ]);
+        
+        $exercises = [
+            [
+                'exercise' => 'Bench Press',
+                'canonical_name' => 'bench_press',
+                'weight' => 225,
+                'reps' => 5, // Different reps
+                'sets' => 1,
+                'is_bodyweight' => false
+            ]
+        ];
+        
+        $tempFile = $this->createTestJsonFile($exercises);
+        
+        try {
+            $this->artisan('lift-log:import-json', [
+                'file' => $tempFile,
+                '--user-email' => 'test@example.com',
+                '--date' => '2024-01-15'
+            ])->assertExitCode(Command::SUCCESS);
+            
+            // Should have 2 lift logs (not considered duplicates)
+            $this->assertDatabaseCount('lift_logs', 2);
+            $this->assertDatabaseCount('lift_sets', 2);
+            
+        } finally {
+            unlink($tempFile);
+        }
+    }
+
+    public function test_duplicate_detection_only_affects_same_date()
+    {
+        $user = $this->createTestUser();
+        $exercise = $this->createGlobalExercise('Bench Press', 'bench_press');
+        
+        // Create existing lift log on different date
+        $existingLiftLog = LiftLog::create([
+            'exercise_id' => $exercise->id,
+            'user_id' => $user->id,
+            'logged_at' => '2024-01-14 10:00:00', // Different date
+            'comments' => 'Existing log'
+        ]);
+        
+        LiftSet::create([
+            'lift_log_id' => $existingLiftLog->id,
+            'weight' => 225,
+            'reps' => 5
+        ]);
+        
+        $exercises = [
+            [
+                'exercise' => 'Bench Press',
+                'canonical_name' => 'bench_press',
+                'weight' => 225,
+                'reps' => 5,
+                'sets' => 1,
+                'is_bodyweight' => false
+            ]
+        ];
+        
+        $tempFile = $this->createTestJsonFile($exercises);
+        
+        try {
+            $this->artisan('lift-log:import-json', [
+                'file' => $tempFile,
+                '--user-email' => 'test@example.com',
+                '--date' => '2024-01-15' // Different date
+            ])->assertExitCode(Command::SUCCESS);
+            
+            // Should have 2 lift logs (different dates, not duplicates)
+            $this->assertDatabaseCount('lift_logs', 2);
+            $this->assertDatabaseCount('lift_sets', 2);
+            
+        } finally {
+            unlink($tempFile);
+        }
+    }}
