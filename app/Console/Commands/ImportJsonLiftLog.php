@@ -9,6 +9,77 @@ use App\Models\LiftSet;
 use App\Models\User;
 use Carbon\Carbon;
 
+/**
+ * Import lift log data from a structured JSON file with duplicate detection and interactive prompts.
+ * 
+ * This command allows administrators to import workout data for users from JSON files.
+ * It includes smart duplicate detection, interactive prompts for handling conflicts,
+ * and an overwrite flag for automated workflows.
+ * 
+ * USAGE EXAMPLES:
+ * 
+ * 1. Basic import with interactive prompts:
+ *    php artisan lift-log:import-json stefan_workout.json --user-email=stefan@example.com
+ * 
+ * 2. Import for specific date:
+ *    php artisan lift-log:import-json workout_data.json --user-email=john@example.com --date="2024-01-15"
+ * 
+ * 3. Automated import with overwrite (no prompts):
+ *    php artisan lift-log:import-json backup_data.json --user-email=maria@example.com --overwrite
+ * 
+ * 4. Import historical data:
+ *    php artisan lift-log:import-json old_workouts.json --user-email=alex@example.com --date="2023-12-01"
+ * 
+ * 5. Bulk import with overwrite for data migration:
+ *    php artisan lift-log:import-json migration_data.json --user-email=admin@example.com --date="2024-02-01" --overwrite
+ * 
+ * JSON FORMAT REQUIREMENTS:
+ * The JSON file must contain an array of exercise objects with the following structure:
+ * 
+ * [
+ *   {
+ *     "exercise": "Bench Press",
+ *     "canonical_name": "bench_press",
+ *     "weight": 225,
+ *     "reps": 5,
+ *     "sets": 1,
+ *     "is_bodyweight": false,
+ *     "notes": "Optional notes about the exercise"
+ *   }
+ * ]
+ * 
+ * DUPLICATE DETECTION:
+ * The command detects duplicates based on:
+ * - Same user
+ * - Same exercise (by canonical_name)
+ * - Same date
+ * - Same weight and reps
+ * 
+ * INTERACTIVE PROMPTS:
+ * When duplicates are found (without --overwrite flag), users can choose:
+ * - Skip duplicates and import new ones only
+ * - Overwrite existing lift logs
+ * - Cancel import
+ * 
+ * EXERCISE MAPPING:
+ * If an exercise doesn't exist in the global exercises, the command will prompt to:
+ * - Create a new global exercise
+ * - Map to an existing exercise by canonical name
+ * 
+ * ADMIN WORKFLOWS:
+ * 
+ * For user onboarding:
+ *   php artisan lift-log:import-json new_user_data.json --user-email=newuser@example.com
+ * 
+ * For data corrections (overwrite existing):
+ *   php artisan lift-log:import-json corrected_data.json --user-email=user@example.com --overwrite
+ * 
+ * For historical data import:
+ *   php artisan lift-log:import-json historical_2023.json --user-email=user@example.com --date="2023-06-15"
+ * 
+ * For automated scripts (CI/CD):
+ *   php artisan lift-log:import-json backup.json --user-email=user@example.com --overwrite --no-interaction
+ */
 class ImportJsonLiftLog extends Command
 {
     /**
@@ -23,10 +94,19 @@ class ImportJsonLiftLog extends Command
      *
      * @var string
      */
-    protected $description = 'Import lift log data from a JSON file';
+    protected $description = 'Import lift log data from a JSON file with duplicate detection and interactive prompts';
 
     /**
      * Execute the console command.
+     * 
+     * Main workflow:
+     * 1. Validate file and user
+     * 2. Parse JSON data
+     * 3. Check for duplicates
+     * 4. Handle user interaction (if needed)
+     * 5. Import exercises with duplicate handling
+     * 
+     * @return int Command exit code
      */
     public function handle()
     {
@@ -249,7 +329,18 @@ class ImportJsonLiftLog extends Command
     }
 
     /**
-     * Find duplicate lift logs for the given exercises and date
+     * Find duplicate lift logs for the given exercises and date.
+     * 
+     * Duplicates are identified by matching:
+     * - User ID
+     * - Exercise ID (from canonical_name)
+     * - Date (same day, ignoring time)
+     * - Weight and reps (exact match)
+     * 
+     * @param array $exercises Array of exercise data from JSON
+     * @param User $user The target user for import
+     * @param Carbon $loggedAt The target date for import
+     * @return array Array of duplicate exercise data
      */
     private function findDuplicates(array $exercises, User $user, Carbon $loggedAt): array
     {
@@ -306,7 +397,15 @@ class ImportJsonLiftLog extends Command
     }
 
     /**
-     * Delete existing lift logs that match the duplicates
+     * Delete existing lift logs that match the duplicates.
+     * 
+     * This method safely removes lift logs and their associated lift sets
+     * for the specified duplicates. It only affects exact matches based on
+     * the duplicate detection criteria.
+     * 
+     * @param array $duplicates Array of duplicate data to delete
+     * @param User $user The user whose lift logs to delete
+     * @param Carbon $loggedAt The date to filter by
      */
     private function deleteDuplicateLiftLogs(array $duplicates, User $user, Carbon $loggedAt): void
     {
@@ -331,3 +430,53 @@ class ImportJsonLiftLog extends Command
         }
     }
 }
+
+/*
+ * ADDITIONAL ADMIN EXAMPLES AND USE CASES:
+ * 
+ * 1. ONBOARDING NEW USERS:
+ *    # Import Stefan's historical workout data
+ *    php artisan lift-log:import-json stefan_workout_formatted.json --user-email=stefan@swaans.com --date="2024-01-15"
+ * 
+ * 2. DATA MIGRATION FROM OTHER SYSTEMS:
+ *    # Migrate from MyFitnessPal export
+ *    php artisan lift-log:import-json myfitnesspal_export.json --user-email=user@example.com --overwrite
+ * 
+ * 3. BULK IMPORT FOR MULTIPLE DATES:
+ *    # Import January workouts
+ *    php artisan lift-log:import-json january_workouts.json --user-email=athlete@example.com --date="2024-01-01"
+ *    # Import February workouts  
+ *    php artisan lift-log:import-json february_workouts.json --user-email=athlete@example.com --date="2024-02-01"
+ * 
+ * 4. CORRECTING IMPORTED DATA:
+ *    # Fix incorrect data by overwriting
+ *    php artisan lift-log:import-json corrected_workouts.json --user-email=user@example.com --date="2024-01-10" --overwrite
+ * 
+ * 5. AUTOMATED BACKUP RESTORATION:
+ *    # Restore from backup without prompts
+ *    php artisan lift-log:import-json backup_20240115.json --user-email=user@example.com --overwrite --no-interaction
+ * 
+ * 6. TESTING WITH SAMPLE DATA:
+ *    # Import test data for development
+ *    php artisan lift-log:import-json test_workouts.json --user-email=testuser@example.com
+ * 
+ * 7. IMPORTING COMPETITION DATA:
+ *    # Import powerlifting meet results
+ *    php artisan lift-log:import-json meet_results.json --user-email=powerlifter@example.com --date="2024-03-15"
+ * 
+ * TROUBLESHOOTING:
+ * 
+ * - If exercises don't exist, the command will prompt to create them or map to existing ones
+ * - Use --overwrite to skip duplicate prompts in automated scripts
+ * - Check that canonical_name values match existing exercises in the database
+ * - Ensure the user email exists in the system before importing
+ * - Verify JSON format matches the required structure
+ * 
+ * ERROR HANDLING:
+ * 
+ * - File not found: Check file path and permissions
+ * - User not found: Verify email address exists in users table
+ * - Invalid JSON: Validate JSON syntax and structure
+ * - Exercise mapping: Follow prompts to create or map exercises
+ * - Duplicate detection: Choose appropriate action based on your needs
+ */
