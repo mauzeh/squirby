@@ -9,21 +9,21 @@ use App\Models\LiftSet;
 use App\Models\User;
 use Carbon\Carbon;
 
-class ImportStefanWorkout extends Command
+class ImportJsonLiftLog extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'workout:import-stefan {file} {--user-email=} {--date=}';
+    protected $signature = 'lift-log:import-json {file} {--user-email=} {--date=}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Import Stefan\'s workout data from a JSON file';
+    protected $description = 'Import lift log data from a JSON file';
 
     /**
      * Execute the console command.
@@ -55,7 +55,7 @@ class ImportStefanWorkout extends Command
         // Parse date or use today
         $loggedAt = $date ? Carbon::parse($date) : Carbon::now();
 
-        $this->info("Importing workout data for {$user->name} ({$user->email})");
+        $this->info("Importing lift log data for {$user->name} ({$user->email})");
         $this->info("Date: {$loggedAt->format('Y-m-d H:i:s')}");
 
         // Read and parse the JSON file
@@ -111,7 +111,7 @@ class ImportStefanWorkout extends Command
             'exercise_id' => $exercise->id,
             'user_id' => $user->id,
             'logged_at' => $loggedAt,
-            'comments' => 'Imported from Stefan\'s workout log'
+            'comments' => 'Imported from JSON file'
         ]);
 
         // Create lift sets based on the sets count
@@ -134,8 +134,8 @@ class ImportStefanWorkout extends Command
     {
         $canonicalName = $exerciseData['canonical_name'];
         
-        // Try to find existing exercise by canonical name
-        $exercise = Exercise::availableToUser($user->id)
+        // Look only in global exercises
+        $exercise = Exercise::global()
             ->where('canonical_name', $canonicalName)
             ->first();
 
@@ -143,13 +143,68 @@ class ImportStefanWorkout extends Command
             return $exercise;
         }
 
-        // Create new exercise for the user
+        // Exercise not found in global exercises, prompt user
+        $this->warn("Exercise '{$exerciseData['exercise']}' (canonical: {$canonicalName}) not found in global exercises.");
+        
+        $choice = $this->choice(
+            'What would you like to do?',
+            ['Create new global exercise', 'Map to existing exercise'],
+            0
+        );
+
+        if ($choice === 'Create new global exercise') {
+            return $this->createNewGlobalExercise($exerciseData);
+        } else {
+            return $this->mapToExistingExercise($exerciseData);
+        }
+    }
+
+    /**
+     * Create a new global exercise
+     */
+    private function createNewGlobalExercise(array $exerciseData): Exercise
+    {
         return Exercise::create([
             'title' => $exerciseData['exercise'],
-            'canonical_name' => $canonicalName,
-            'description' => "Imported from Stefan's workout log",
+            'canonical_name' => $exerciseData['canonical_name'],
+            'description' => "Imported from JSON file",
             'is_bodyweight' => $exerciseData['is_bodyweight'] ?? false,
-            'user_id' => $user->id
+            'user_id' => null // Global exercise
         ]);
+    }
+
+    /**
+     * Map to an existing exercise by canonical name
+     */
+    private function mapToExistingExercise(array $exerciseData): Exercise
+    {
+        while (true) {
+            $existingCanonicalName = $this->ask('Enter the canonical name of the existing exercise to map to');
+            
+            $exercise = Exercise::global()
+                ->where('canonical_name', $existingCanonicalName)
+                ->first();
+
+            if ($exercise) {
+                $this->info("Mapping '{$exerciseData['exercise']}' to '{$exercise->title}'");
+                return $exercise;
+            } else {
+                $this->error("Exercise with canonical name '{$existingCanonicalName}' not found in global exercises.");
+                $this->info("Available global exercises:");
+                
+                $globalExercises = Exercise::global()
+                    ->select('title', 'canonical_name')
+                    ->orderBy('title')
+                    ->get();
+                
+                foreach ($globalExercises as $globalExercise) {
+                    $this->line("  - {$globalExercise->title} (canonical: {$globalExercise->canonical_name})");
+                }
+                
+                if (!$this->confirm('Try again?')) {
+                    throw new \Exception('User cancelled exercise mapping');
+                }
+            }
+        }
     }
 }
