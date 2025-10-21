@@ -33,7 +33,12 @@ class SocialiteController extends Controller
 
             return redirect('/dashboard'); // Redirect to your desired dashboard route
         } catch (\Exception $e) {
-            // Handle error, e.g., log it and redirect to login with an error message
+            // Log the actual exception for debugging
+            \Log::error('Google OAuth failed: ' . $e->getMessage(), [
+                'exception' => $e,
+                'trace' => $e->getTraceAsString()
+            ]);
+            
             return redirect('/login')->with('error', 'Google authentication failed.');
         }
     }
