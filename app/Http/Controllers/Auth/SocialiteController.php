@@ -18,15 +18,28 @@ class SocialiteController extends Controller
     {
         try {
             $googleUser = Socialite::driver('google')->user();
+            
+            // First check if user exists with this google_id
             $user = User::where('google_id', $googleUser->getId())->first();
 
             if (!$user) {
-                $user = User::create([
-                    'name' => $googleUser->getName(),
-                    'email' => $googleUser->getEmail(),
-                    'google_id' => $googleUser->getId(),
-                    'password' => bcrypt(str()->random(16)), // Random password for socialite users
-                ]);
+                // Check if user exists with this email
+                $user = User::where('email', $googleUser->getEmail())->first();
+                
+                if ($user) {
+                    // User exists with this email, update with google_id
+                    $user->update([
+                        'google_id' => $googleUser->getId(),
+                    ]);
+                } else {
+                    // Create new user
+                    $user = User::create([
+                        'name' => $googleUser->getName(),
+                        'email' => $googleUser->getEmail(),
+                        'google_id' => $googleUser->getId(),
+                        'password' => bcrypt(str()->random(16)), // Random password for socialite users
+                    ]);
+                }
             }
 
             Auth::login($user);
