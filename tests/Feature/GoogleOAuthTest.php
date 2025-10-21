@@ -47,6 +47,9 @@ class GoogleOAuthTest extends TestCase
     /** @test */
     public function it_creates_new_user_on_first_google_signin()
     {
+        // Create the athlete role for testing
+        \App\Models\Role::create(['name' => 'athlete']);
+
         // Mock Google user data
         $googleUser = Mockery::mock(SocialiteUser::class);
         $googleUser->shouldReceive('getId')->andReturn('google_123');
@@ -71,6 +74,10 @@ class GoogleOAuthTest extends TestCase
             'name' => 'John Doe',
             'google_id' => 'google_123',
         ]);
+
+        // Assert user has athlete role
+        $user = User::where('email', 'john@example.com')->first();
+        $this->assertTrue($user->hasRole('athlete'));
 
         // Assert user is logged in
         $this->assertAuthenticated();
@@ -246,6 +253,39 @@ class GoogleOAuthTest extends TestCase
         $this->assertNotNull($user->password);
         $this->assertTrue(password_verify('test', $user->password) === false); // Should not be 'test'
         $this->assertStringStartsWith('$2y$', $user->password); // Should be bcrypt hash
+    }
+
+    /** @test */
+    public function it_assigns_athlete_role_to_new_users()
+    {
+        // Create the athlete role for testing
+        \App\Models\Role::create(['name' => 'athlete']);
+
+        // Mock Google user data
+        $googleUser = Mockery::mock(SocialiteUser::class);
+        $googleUser->shouldReceive('getId')->andReturn('google_role_test');
+        $googleUser->shouldReceive('getName')->andReturn('Role Test User');
+        $googleUser->shouldReceive('getEmail')->andReturn('roletest@example.com');
+
+        // Mock Socialite
+        Socialite::shouldReceive('driver')
+            ->with('google')
+            ->once()
+            ->andReturnSelf();
+        
+        Socialite::shouldReceive('user')
+            ->once()
+            ->andReturn($googleUser);
+
+        $response = $this->get(route('auth.google.callback'));
+
+        // Assert user was created with athlete role
+        $user = User::where('email', 'roletest@example.com')->first();
+        $this->assertNotNull($user);
+        $this->assertTrue($user->hasRole('athlete'));
+        $this->assertFalse($user->hasRole('admin'));
+
+        $response->assertRedirect('/lift-logs/mobile-entry');
     }
 
     /** @test */

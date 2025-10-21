@@ -40,6 +40,13 @@ class SocialiteController extends Controller
                         'google_id' => $googleUser->getId(),
                         'password' => bcrypt(str()->random(16)), // Random password for socialite users
                     ]);
+                    
+                    // Assign athlete role to new users
+                    $athleteRole = \App\Models\Role::where('name', 'athlete')->first();
+                    if ($athleteRole) {
+                        $user->roles()->attach($athleteRole);
+                    }
+                    
                     $isNewUser = true;
                 }
             }
