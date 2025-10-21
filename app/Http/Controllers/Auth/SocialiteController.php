@@ -18,6 +18,7 @@ class SocialiteController extends Controller
     {
         try {
             $googleUser = Socialite::driver('google')->user();
+            $isNewUser = false;
             
             // First check if user exists with this google_id
             $user = User::where('google_id', $googleUser->getId())->first();
@@ -39,12 +40,18 @@ class SocialiteController extends Controller
                         'google_id' => $googleUser->getId(),
                         'password' => bcrypt(str()->random(16)), // Random password for socialite users
                     ]);
+                    $isNewUser = true;
                 }
             }
 
             Auth::login($user);
 
-            return redirect('/lift-logs/mobile-entry'); // Redirect to your desired dashboard route
+            // Show welcome message for new users
+            if ($isNewUser) {
+                return redirect('/lift-logs/mobile-entry')->with('success', 'Welcome to our app! Thanks for trying us out. We\'re excited to help you track your fitness journey!');
+            }
+
+            return redirect('/lift-logs/mobile-entry');
         } catch (\Exception $e) {
             // Log the actual exception for debugging
             \Log::error('Google OAuth failed: ' . $e->getMessage(), [
