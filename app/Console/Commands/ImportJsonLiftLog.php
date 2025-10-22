@@ -354,13 +354,20 @@ class ImportJsonLiftLog extends Command
      */
     private function createNewUserExercise(array $exerciseData, User $user): Exercise
     {
-        return Exercise::create([
+        $exerciseAttributes = [
             'title' => $exerciseData['exercise'],
             'canonical_name' => $exerciseData['canonical_name'],
             'description' => $exerciseData['description'] ?? "Imported from JSON file",
             'is_bodyweight' => $exerciseData['is_bodyweight'] ?? false,
             'user_id' => $user->id // User-specific exercise
-        ]);
+        ];
+
+        // Add band_type if provided and valid
+        if (isset($exerciseData['band_type']) && in_array($exerciseData['band_type'], ['resistance', 'assistance'])) {
+            $exerciseAttributes['band_type'] = $exerciseData['band_type'];
+        }
+
+        return Exercise::create($exerciseAttributes);
     }
 
     /**
