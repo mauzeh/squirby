@@ -92,6 +92,13 @@ use Carbon\Carbon;
  *    multiple identical lift sets. For workouts with varying weights/reps per set, you must
  *    create separate lift log entries for each weight/rep combination.
  * 
+ * BANDED EXERCISE REQUIREMENTS:
+ * For data integrity, banded exercises have strict validation requirements:
+ * - If band_type is provided, ALL lift logs must include band_color
+ * - If any lift log has band_color, the exercise MUST have a valid band_type
+ * - Valid band_type values: "resistance" or "assistance"
+ * - This ensures complete tracking of which specific bands were used
+ * 
  * INTERACTIVE PROMPTS:
  * When duplicates are found (without --overwrite flag), users can choose:
  * - Skip duplicates and import new ones only
@@ -274,6 +281,9 @@ class ImportJsonLiftLog extends Command
      */
     private function importExercise(array $exerciseData, User $user, Carbon $loggedAt): array
     {
+        // Validate banded exercise requirements
+        $this->validateBandedExerciseData($exerciseData);
+
         // Find or create exercise
         $result = $this->findOrCreateExercise($exerciseData, $user);
         $exercise = $result['exercise'];
@@ -395,6 +405,60 @@ class ImportJsonLiftLog extends Command
         }
 
         return Exercise::create($exerciseAttributes);
+    }
+
+    /**
+     * Validate banded exercise data requirements
+     * 
+     * For data integrity, banded exercises must have both band_type and band_color:
+     * - If band_type is provided, all lift logs must have band_color
+     * - If any lift log has band_color, exercise must have band_type
+     * 
+     * @param array $exerciseData Exercise data from JSON
+     * @throws \Exception If validation fails
+     */
+    private function validateBandedExerciseData(array $exerciseData): void
+    {
+        $hasBandType = isset($exerciseData['band_type']) && 
+                      in_array($exerciseData['band_type'], ['resistance', 'assistance']);
+        
+        $liftLogs = $exerciseData['lift_logs'] ?? [];
+        $liftLogsWithBandColor = [];
+        $liftLogsWithoutBandColor = [];
+        
+        foreach ($liftLogs as $index => $liftLog) {
+            $hasBandColor = isset($liftLog['band_color']) && !empty(trim($liftLog['band_color']));
+            
+            if ($hasBandColor) {
+                $liftLogsWithBandColor[] = $index + 1; // 1-based for user display
+            } else {
+                $liftLogsWithoutBandColor[] = $index + 1;
+            }
+        }
+        
+        // Rule 1: If exercise has band_type, ALL lift logs must have band_color
+        if ($hasBandType && !empty($liftLogsWithoutBandColor)) {
+            $exerciseName = $exerciseData['exercise'] ?? $exerciseData['canonical_name'];
+            $bandType = $exerciseData['band_type'];
+            $missingColorLogs = implode(', ', $liftLogsWithoutBandColor);
+            
+            throw new \Exception(
+                "Exercise '{$exerciseName}' has band_type '{$bandType}' but lift log(s) #{$missingColorLogs} are missing band_color. " .
+                "All lift logs for banded exercises must specify which band color was used."
+            );
+        }
+        
+        // Rule 2: If any lift log has band_color, exercise must have band_type
+        if (!empty($liftLogsWithBandColor) && !$hasBandType) {
+            $exerciseName = $exerciseData['exercise'] ?? $exerciseData['canonical_name'];
+            $coloredLogs = implode(', ', $liftLogsWithBandColor);
+            $providedBandType = $exerciseData['band_type'] ?? 'not provided';
+            
+            throw new \Exception(
+                "Exercise '{$exerciseName}' has lift log(s) #{$coloredLogs} with band_color but no valid band_type. " .
+                "Band type '{$providedBandType}' is invalid. Must be 'resistance' or 'assistance' for banded exercises."
+            );
+        }
     }
 
     /**
