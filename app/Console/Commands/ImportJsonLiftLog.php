@@ -42,6 +42,9 @@ use Carbon\Carbon;
  * JSON FORMAT REQUIREMENTS:
  * The JSON file must contain an array of exercise objects with the following structure:
  * 
+ * IMPORTANT: Each exercise can only appear ONCE per import (one lift log per exercise per day).
+ * Each lift log entry creates multiple identical sets - individual sets cannot have different weights/reps.
+ * 
  * [
  *   {
  *     "exercise": "Bench Press",
@@ -73,6 +76,21 @@ use Carbon\Carbon;
  * - Same exercise (by canonical_name)
  * - Same date
  * - Same weight and reps
+ * 
+ * CURRENT LIMITATIONS:
+ * These limitations are intentional and will remain until future requirements necessitate changes:
+ * 
+ * 1. SINGLE LIFT LOG PER EXERCISE PER DAY:
+ *    The import does not support multiple lift-log entries for the same exercise on the same day.
+ *    Each exercise can only have one lift log entry per import date. If you need to track
+ *    multiple sessions of the same exercise on the same day, you must import them separately
+ *    with different timestamps or combine them into a single lift log entry.
+ * 
+ * 2. NO INDIVIDUAL LIFT SET SUPPORT:
+ *    The import does not support importing individual lift sets with different weights/reps.
+ *    All sets within a lift log must have the same weight and reps. The 'sets' field creates
+ *    multiple identical lift sets. For workouts with varying weights/reps per set, you must
+ *    create separate lift log entries for each weight/rep combination.
  * 
  * INTERACTIVE PROMPTS:
  * When duplicates are found (without --overwrite flag), users can choose:
@@ -573,6 +591,24 @@ class ImportJsonLiftLog extends Command
  * - Check that canonical_name values match existing exercises in the database
  * - Ensure the user email exists in the system before importing
  * - Verify JSON format matches the required structure
+ * 
+ * WORKING WITH LIMITATIONS:
+ * 
+ * For multiple sessions of same exercise on same day:
+ *   # Import morning session
+ *   php artisan lift-log:import-json morning_workout.json --user-email=user@example.com --date="2024-01-15 08:00:00"
+ *   # Import evening session  
+ *   php artisan lift-log:import-json evening_workout.json --user-email=user@example.com --date="2024-01-15 18:00:00"
+ * 
+ * For sets with different weights (e.g., pyramid sets):
+ *   Instead of: 225lbs x 5 reps, 245lbs x 3 reps, 265lbs x 1 rep
+ *   Create separate lift log entries:
+ *   [
+ *     {"exercise": "Bench Press", "lift_logs": [{"weight": 225, "reps": 5, "sets": 1}]},
+ *     {"exercise": "Bench Press", "lift_logs": [{"weight": 245, "reps": 3, "sets": 1}]},
+ *     {"exercise": "Bench Press", "lift_logs": [{"weight": 265, "reps": 1, "sets": 1}]}
+ *   ]
+ *   Note: This will create 3 separate lift logs for the same exercise on the same day.
  * 
  * ERROR HANDLING:
  * 
