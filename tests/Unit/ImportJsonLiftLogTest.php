@@ -236,8 +236,10 @@ class ImportJsonLiftLogTest extends TestCase
         $this->assertEquals($exercise->id, $result->id);
     }
 
-    public function test_create_new_global_exercise()
+    public function test_create_new_user_exercise()
     {
+        $user = User::factory()->create();
+        
         $exerciseData = [
             'exercise' => 'New Exercise',
             'canonical_name' => 'new_exercise',
@@ -245,20 +247,20 @@ class ImportJsonLiftLogTest extends TestCase
         ];
         
         $command = $this->getCommand();
-        $result = $this->callPrivateMethod($command, 'createNewGlobalExercise', [$exerciseData]);
+        $result = $this->callPrivateMethod($command, 'createNewUserExercise', [$exerciseData, $user]);
         
         $this->assertDatabaseHas('exercises', [
             'title' => 'New Exercise',
             'canonical_name' => 'new_exercise',
             'is_bodyweight' => true,
-            'user_id' => null,
+            'user_id' => $user->id,
             'description' => 'Imported from JSON file'
         ]);
         
         $this->assertEquals('New Exercise', $result->title);
         $this->assertEquals('new_exercise', $result->canonical_name);
         $this->assertTrue($result->is_bodyweight);
-        $this->assertNull($result->user_id);
+        $this->assertEquals($user->id, $result->user_id);
     }
 
     public function test_handle_uses_provided_date()
@@ -931,4 +933,47 @@ class ImportJsonLiftLogTest extends TestCase
         } finally {
             unlink($tempFile);
         }
-    }}
+    }
+
+    public function test_create_exercises_flag_automatically_creates_user_exercises()
+    {
+        $user = $this->createTestUser();
+        
+        $exercises = [
+            [
+                'exercise' => 'Auto Created Exercise',
+                'canonical_name' => 'auto_created_exercise',
+                'weight' => 100,
+                'reps' => 10,
+                'sets' => 1,
+                'is_bodyweight' => true
+            ]
+        ];
+        
+        $tempFile = $this->createTestJsonFile($exercises);
+        
+        try {
+            $this->artisan('lift-log:import-json', [
+                'file' => $tempFile,
+                '--user-email' => 'test@example.com',
+                '--date' => '2024-01-15',
+                '--create-exercises' => true
+            ])->assertExitCode(Command::SUCCESS);
+            
+            // Verify user-specific exercise was created automatically
+            $this->assertDatabaseHas('exercises', [
+                'title' => 'Auto Created Exercise',
+                'canonical_name' => 'auto_created_exercise',
+                'is_bodyweight' => true,
+                'user_id' => $user->id
+            ]);
+            
+            // Verify lift log was created
+            $this->assertDatabaseCount('lift_logs', 1);
+            $this->assertDatabaseCount('lift_sets', 1);
+            
+        } finally {
+            unlink($tempFile);
+        }
+    }
+}

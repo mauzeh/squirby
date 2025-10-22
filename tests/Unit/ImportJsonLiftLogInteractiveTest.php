@@ -31,8 +31,10 @@ class ImportJsonLiftLogInteractiveTest extends TestCase
         ]);
     }
 
-    public function test_create_new_global_exercise_creates_exercise_with_correct_attributes()
+    public function test_create_new_user_exercise_creates_exercise_with_correct_attributes()
     {
+        $user = User::factory()->create();
+        
         $exerciseData = [
             'exercise' => 'Custom Exercise',
             'canonical_name' => 'custom_exercise',
@@ -40,7 +42,7 @@ class ImportJsonLiftLogInteractiveTest extends TestCase
         ];
         
         $command = new ImportJsonLiftLog();
-        $result = $this->callPrivateMethod($command, 'createNewGlobalExercise', [$exerciseData]);
+        $result = $this->callPrivateMethod($command, 'createNewUserExercise', [$exerciseData, $user]);
         
         // Verify exercise was created with correct attributes
         $this->assertDatabaseHas('exercises', [
@@ -48,18 +50,20 @@ class ImportJsonLiftLogInteractiveTest extends TestCase
             'canonical_name' => 'custom_exercise',
             'description' => 'Imported from JSON file',
             'is_bodyweight' => true,
-            'user_id' => null
+            'user_id' => $user->id
         ]);
         
         $this->assertEquals('Custom Exercise', $result->title);
         $this->assertEquals('custom_exercise', $result->canonical_name);
         $this->assertEquals('Imported from JSON file', $result->description);
         $this->assertTrue($result->is_bodyweight);
-        $this->assertNull($result->user_id);
+        $this->assertEquals($user->id, $result->user_id);
     }
 
-    public function test_create_new_global_exercise_defaults_is_bodyweight_to_false()
+    public function test_create_new_user_exercise_defaults_is_bodyweight_to_false()
     {
+        $user = User::factory()->create();
+        
         $exerciseData = [
             'exercise' => 'Weighted Exercise',
             'canonical_name' => 'weighted_exercise'
@@ -67,17 +71,18 @@ class ImportJsonLiftLogInteractiveTest extends TestCase
         ];
         
         $command = new ImportJsonLiftLog();
-        $result = $this->callPrivateMethod($command, 'createNewGlobalExercise', [$exerciseData]);
+        $result = $this->callPrivateMethod($command, 'createNewUserExercise', [$exerciseData, $user]);
         
-        // Verify is_bodyweight defaults to false
+        // Verify is_bodyweight defaults to false and it's a user exercise
         $this->assertDatabaseHas('exercises', [
             'title' => 'Weighted Exercise',
             'canonical_name' => 'weighted_exercise',
             'is_bodyweight' => false,
-            'user_id' => null
+            'user_id' => $user->id
         ]);
         
         $this->assertFalse($result->is_bodyweight);
+        $this->assertEquals($user->id, $result->user_id);
     }
 
     public function test_find_or_create_exercise_finds_existing_global_exercise_by_canonical_name()
@@ -163,27 +168,31 @@ class ImportJsonLiftLogInteractiveTest extends TestCase
         $this->assertNotContains('user_exercise', $globalCanonicalNames);
     }
 
-    public function test_create_new_global_exercise_sets_user_id_to_null()
+    public function test_create_new_user_exercise_sets_user_id_correctly()
     {
+        $user = User::factory()->create();
+        
         $exerciseData = [
-            'exercise' => 'Global Exercise',
-            'canonical_name' => 'global_exercise',
+            'exercise' => 'User Exercise',
+            'canonical_name' => 'user_exercise',
             'is_bodyweight' => false
         ];
         
         $command = new ImportJsonLiftLog();
-        $result = $this->callPrivateMethod($command, 'createNewGlobalExercise', [$exerciseData]);
+        $result = $this->callPrivateMethod($command, 'createNewUserExercise', [$exerciseData, $user]);
         
-        // Verify it's created as a global exercise (user_id = null)
-        $this->assertNull($result->user_id);
+        // Verify it's created as a user-specific exercise
+        $this->assertEquals($user->id, $result->user_id);
         $this->assertDatabaseHas('exercises', [
-            'canonical_name' => 'global_exercise',
-            'user_id' => null
+            'canonical_name' => 'user_exercise',
+            'user_id' => $user->id
         ]);
     }
 
-    public function test_create_new_global_exercise_uses_provided_exercise_title()
+    public function test_create_new_user_exercise_uses_provided_exercise_title()
     {
+        $user = User::factory()->create();
+        
         $exerciseData = [
             'exercise' => 'Custom Exercise Title',
             'canonical_name' => 'custom_canonical_name',
@@ -191,16 +200,57 @@ class ImportJsonLiftLogInteractiveTest extends TestCase
         ];
         
         $command = new ImportJsonLiftLog();
-        $result = $this->callPrivateMethod($command, 'createNewGlobalExercise', [$exerciseData]);
+        $result = $this->callPrivateMethod($command, 'createNewUserExercise', [$exerciseData, $user]);
         
         // Verify it uses the exercise title from the data
         $this->assertEquals('Custom Exercise Title', $result->title);
         // The canonical name should be preserved as provided (not auto-generated from title)
         $this->assertEquals('custom_canonical_name', $result->canonical_name);
+        $this->assertEquals($user->id, $result->user_id);
         
         $this->assertDatabaseHas('exercises', [
             'title' => 'Custom Exercise Title',
-            'canonical_name' => 'custom_canonical_name'
+            'canonical_name' => 'custom_canonical_name',
+            'user_id' => $user->id
         ]);
+    }
+
+    public function test_find_or_create_exercise_with_create_exercises_flag_automatically_creates_user_exercise()
+    {
+        $user = User::factory()->create();
+        
+        $exerciseData = [
+            'exercise' => 'New Exercise',
+            'canonical_name' => 'new_exercise',
+            'is_bodyweight' => false
+        ];
+        
+        // Mock the command with --create-exercises flag
+        $command = $this->getMockBuilder(ImportJsonLiftLog::class)
+            ->onlyMethods(['option', 'line'])
+            ->getMock();
+        
+        $command->expects($this->once())
+            ->method('option')
+            ->with('create-exercises')
+            ->willReturn(true);
+        
+        $command->expects($this->once())
+            ->method('line')
+            ->with("⚠ Exercise 'New Exercise' not found. Creating user-specific exercise...");
+        
+        $result = $this->callPrivateMethod($command, 'findOrCreateExercise', [$exerciseData, $user]);
+        
+        // Verify it created a user-specific exercise
+        $this->assertDatabaseHas('exercises', [
+            'title' => 'New Exercise',
+            'canonical_name' => 'new_exercise',
+            'is_bodyweight' => false,
+            'user_id' => $user->id
+        ]);
+        
+        $this->assertEquals('New Exercise', $result->title);
+        $this->assertEquals('new_exercise', $result->canonical_name);
+        $this->assertEquals($user->id, $result->user_id);
     }
 }

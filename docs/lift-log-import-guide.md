@@ -91,8 +91,8 @@ When duplicates are found, you'll see an interactive prompt with options:
 ## Exercise Mapping
 
 If an exercise doesn't exist in the global database, you'll be prompted to:
-1. **Create new global exercise** - Add it to the global exercise list
-2. **Map to existing exercise** - Link to an existing exercise by canonical name
+1. **Create new user exercise** - Add it as a user-specific exercise
+2. **Map to existing global exercise** - Link to an existing global exercise by canonical name
 
 ## Flags and Options
 
@@ -124,9 +124,10 @@ cat your_file.json | python -m json.tool
 ```
 
 **Exercise mapping issues**
-- Follow the interactive prompts to create or map exercises
+- Follow the interactive prompts to create user exercises or map to global exercises
 - Check that canonical_name values are lowercase with underscores
 - Ensure exercise names are descriptive and unique
+- New exercises will be created as user-specific, not global
 
 ### Best Practices
 

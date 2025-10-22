@@ -27,10 +27,16 @@ use Carbon\Carbon;
  * 3. Automated import with overwrite (no prompts):
  *    php artisan lift-log:import-json backup_data.json --user-email=maria@example.com --overwrite
  * 
- * 4. Import historical data:
+ * 4. Automated import with exercise creation (no prompts):
+ *    php artisan lift-log:import-json new_data.json --user-email=user@example.com --create-exercises
+ * 
+ * 5. Fully automated import (no prompts for duplicates or exercises):
+ *    php artisan lift-log:import-json migration_data.json --user-email=admin@example.com --overwrite --create-exercises
+ * 
+ * 6. Import historical data:
  *    php artisan lift-log:import-json old_workouts.json --user-email=alex@example.com --date="2023-12-01"
  * 
- * 5. Bulk import with overwrite for data migration:
+ * 7. Bulk import with overwrite for data migration:
  *    php artisan lift-log:import-json migration_data.json --user-email=admin@example.com --date="2024-02-01" --overwrite
  * 
  * JSON FORMAT REQUIREMENTS:
@@ -62,9 +68,9 @@ use Carbon\Carbon;
  * - Cancel import
  * 
  * EXERCISE MAPPING:
- * If an exercise doesn't exist in the global exercises, the command will prompt to:
- * - Create a new global exercise
- * - Map to an existing exercise by canonical name
+ * If an exercise doesn't exist in the global exercises:
+ * - With --create-exercises flag: Automatically creates user-specific exercises
+ * - Without flag: Prompts to create new user exercise or map to existing global exercise
  * 
  * ADMIN WORKFLOWS:
  * 
@@ -78,7 +84,7 @@ use Carbon\Carbon;
  *   php artisan lift-log:import-json historical_2023.json --user-email=user@example.com --date="2023-06-15"
  * 
  * For automated scripts (CI/CD):
- *   php artisan lift-log:import-json backup.json --user-email=user@example.com --overwrite --no-interaction
+ *   php artisan lift-log:import-json backup.json --user-email=user@example.com --overwrite --create-exercises --no-interaction
  */
 class ImportJsonLiftLog extends Command
 {
@@ -87,7 +93,7 @@ class ImportJsonLiftLog extends Command
      *
      * @var string
      */
-    protected $signature = 'lift-log:import-json {file} {--user-email=} {--date=} {--overwrite : Overwrite existing lift logs for the same date}';
+    protected $signature = 'lift-log:import-json {file} {--user-email=} {--date=} {--overwrite : Overwrite existing lift logs for the same date} {--create-exercises : Automatically create user exercises when not found}';
 
     /**
      * The console command description.
@@ -263,33 +269,40 @@ class ImportJsonLiftLog extends Command
             return $exercise;
         }
 
-        // Exercise not found in global exercises, prompt user
+        // Exercise not found in global exercises
+        if ($this->option('create-exercises')) {
+            // Automatically create user exercise without prompting
+            $this->line("⚠ Exercise '{$exerciseData['exercise']}' not found. Creating user-specific exercise...");
+            return $this->createNewUserExercise($exerciseData, $user);
+        }
+
+        // Interactive mode - prompt user
         $this->warn("Exercise '{$exerciseData['exercise']}' (canonical: {$canonicalName}) not found in global exercises.");
         
         $choice = $this->choice(
             'What would you like to do?',
-            ['Create new global exercise', 'Map to existing exercise'],
+            ['Create new user exercise', 'Map to existing global exercise'],
             0
         );
 
-        if ($choice === 'Create new global exercise') {
-            return $this->createNewGlobalExercise($exerciseData);
+        if ($choice === 'Create new user exercise') {
+            return $this->createNewUserExercise($exerciseData, $user);
         } else {
             return $this->mapToExistingExercise($exerciseData);
         }
     }
 
     /**
-     * Create a new global exercise
+     * Create a new user-specific exercise
      */
-    private function createNewGlobalExercise(array $exerciseData): Exercise
+    private function createNewUserExercise(array $exerciseData, User $user): Exercise
     {
         return Exercise::create([
             'title' => $exerciseData['exercise'],
             'canonical_name' => $exerciseData['canonical_name'],
             'description' => "Imported from JSON file",
             'is_bodyweight' => $exerciseData['is_bodyweight'] ?? false,
-            'user_id' => null // Global exercise
+            'user_id' => $user->id // User-specific exercise
         ]);
     }
 
@@ -454,7 +467,7 @@ class ImportJsonLiftLog extends Command
  * 
  * 5. AUTOMATED BACKUP RESTORATION:
  *    # Restore from backup without prompts
- *    php artisan lift-log:import-json backup_20240115.json --user-email=user@example.com --overwrite --no-interaction
+ *    php artisan lift-log:import-json backup_20240115.json --user-email=user@example.com --overwrite --create-exercises --no-interaction
  * 
  * 6. TESTING WITH SAMPLE DATA:
  *    # Import test data for development
