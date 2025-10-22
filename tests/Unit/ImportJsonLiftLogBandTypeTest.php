@@ -734,4 +734,158 @@ class ImportJsonLiftLogBandTypeTest extends TestCase
         } finally {
             unlink($tempFile);
         }
+    }
+
+    public function test_validates_invalid_band_colors()
+    {
+        $user = $this->createTestUser();
+        
+        $exercises = [
+            [
+                'exercise' => 'Exercise with Invalid Band Color',
+                'canonical_name' => 'exercise_invalid_band_color',
+                'description' => 'Exercise with invalid band color',
+                'is_bodyweight' => false,
+                'band_type' => 'resistance',
+                'lift_logs' => [
+                    [
+                        'weight' => 0,
+                        'reps' => 10,
+                        'sets' => 1,
+                        'band_color' => 'whatever', // Invalid color
+                        'notes' => 'Should fail validation'
+                    ]
+                ]
+            ]
+        ];
+        
+        $tempFile = $this->createTestJsonFile($exercises);
+        
+        try {
+            $this->artisan('lift-log:import-json', [
+                'file' => $tempFile,
+                '--user-email' => 'test@example.com',
+                '--create-exercises' => true
+            ])
+            ->assertExitCode(Command::SUCCESS);
+            
+            // Verify no exercise was created due to validation failure
+            $exercise = Exercise::where('canonical_name', 'exercise_invalid_band_color')->first();
+            $this->assertNull($exercise);
+            
+        } finally {
+            unlink($tempFile);
+        }
+    }
+
+    public function test_validates_multiple_invalid_band_colors()
+    {
+        $user = $this->createTestUser();
+        
+        $exercises = [
+            [
+                'exercise' => 'Exercise with Multiple Invalid Colors',
+                'canonical_name' => 'exercise_multiple_invalid_colors',
+                'description' => 'Exercise with multiple invalid band colors',
+                'is_bodyweight' => false,
+                'band_type' => 'assistance',
+                'lift_logs' => [
+                    [
+                        'weight' => 0,
+                        'reps' => 8,
+                        'sets' => 1,
+                        'band_color' => 'purple', // Invalid color
+                        'notes' => 'First invalid color'
+                    ],
+                    [
+                        'weight' => 0,
+                        'reps' => 10,
+                        'sets' => 1,
+                        'band_color' => 'yellow', // Invalid color
+                        'notes' => 'Second invalid color'
+                    ],
+                    [
+                        'weight' => 0,
+                        'reps' => 12,
+                        'sets' => 1,
+                        'band_color' => 'red', // Valid color
+                        'notes' => 'Valid color but exercise still fails'
+                    ]
+                ]
+            ]
+        ];
+        
+        $tempFile = $this->createTestJsonFile($exercises);
+        
+        try {
+            $this->artisan('lift-log:import-json', [
+                'file' => $tempFile,
+                '--user-email' => 'test@example.com',
+                '--create-exercises' => true
+            ])
+            ->assertExitCode(Command::SUCCESS);
+            
+            // Verify no exercise was created due to validation failure
+            $exercise = Exercise::where('canonical_name', 'exercise_multiple_invalid_colors')->first();
+            $this->assertNull($exercise);
+            
+        } finally {
+            unlink($tempFile);
+        }
+    }
+
+    public function test_accepts_valid_band_colors_from_config()
+    {
+        $user = $this->createTestUser();
+        
+        // Get valid colors from config
+        $validColors = array_keys(config('bands.colors', []));
+        $this->assertNotEmpty($validColors, 'No valid band colors found in config');
+        
+        $exercises = [];
+        foreach ($validColors as $index => $color) {
+            $exercises[] = [
+                'exercise' => "Exercise with {$color} band",
+                'canonical_name' => "exercise_with_{$color}_band",
+                'description' => "Exercise using {$color} band",
+                'is_bodyweight' => false,
+                'band_type' => 'resistance',
+                'lift_logs' => [
+                    [
+                        'weight' => 0,
+                        'reps' => 10,
+                        'sets' => 1,
+                        'band_color' => $color,
+                        'notes' => "Using {$color} band"
+                    ]
+                ]
+            ];
+        }
+        
+        $tempFile = $this->createTestJsonFile($exercises);
+        
+        try {
+            $this->artisan('lift-log:import-json', [
+                'file' => $tempFile,
+                '--user-email' => 'test@example.com',
+                '--create-exercises' => true
+            ])
+            ->assertExitCode(Command::SUCCESS);
+            
+            // Verify all exercises were created successfully
+            foreach ($validColors as $color) {
+                $exercise = Exercise::where('canonical_name', "exercise_with_{$color}_band")->first();
+                $this->assertNotNull($exercise, "Exercise with {$color} band was not created");
+                $this->assertEquals('resistance', $exercise->band_type);
+                
+                // Verify lift sets have correct band color
+                $liftSets = $exercise->liftLogs()->first()->liftSets;
+                foreach ($liftSets as $liftSet) {
+                    $this->assertEquals($color, $liftSet->band_color);
+                }
+            }
+            
+        } finally {
+            unlink($tempFile);
+        }
     }}
