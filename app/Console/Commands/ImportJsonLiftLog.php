@@ -204,6 +204,7 @@ class ImportJsonLiftLog extends Command
         // Import each exercise
         $imported = 0;
         $skipped = 0;
+        $totalLiftLogs = 0;
 
         foreach ($exercises as $exerciseData) {
             try {
@@ -219,11 +220,19 @@ class ImportJsonLiftLog extends Command
                 
                 $result = $this->importExercise($exerciseData, $user, $loggedAt);
                 $imported++;
+                $totalLiftLogs += count($result['imported_lift_logs']);
+                
                 if ($result['exercise_created']) {
                     $this->line("✓ Imported: {$exerciseData['exercise']}");
                 } else {
-                    $this->line("⚠ Skipped exercise creation (already exists), imported lift logs: {$exerciseData['exercise']}");
+                    $this->line("✓ Imported lift logs for: {$exerciseData['exercise']}");
                 }
+                
+                // Display each imported lift log
+                foreach ($result['imported_lift_logs'] as $liftLogInfo) {
+                    $this->line("  → {$liftLogInfo['weight']}lbs × {$liftLogInfo['reps']} reps × {$liftLogInfo['sets']} sets on {$liftLogInfo['date']}");
+                }
+                
             } catch (\Exception $e) {
                 $skipped++;
                 $this->warn("✗ Skipped: {$exerciseData['exercise']} - {$e->getMessage()}");
@@ -231,8 +240,9 @@ class ImportJsonLiftLog extends Command
         }
 
         $this->info("\nImport completed:");
-        $this->info("Imported: {$imported}");
-        $this->info("Skipped: {$skipped}");
+        $this->info("Exercises imported: {$imported}");
+        $this->info("Total lift logs imported: {$totalLiftLogs}");
+        $this->info("Exercises skipped: {$skipped}");
 
         return Command::SUCCESS;
     }
@@ -250,6 +260,7 @@ class ImportJsonLiftLog extends Command
 
         // Import each lift log for this exercise
         $liftLogs = $exerciseData['lift_logs'] ?? [];
+        $importedLiftLogs = [];
         
         foreach ($liftLogs as $liftLogData) {
             // Create lift log
@@ -271,9 +282,20 @@ class ImportJsonLiftLog extends Command
                     'notes' => $liftLogData['notes'] ?? null
                 ]);
             }
+            
+            // Track imported lift log info for display
+            $importedLiftLogs[] = [
+                'weight' => $liftLogData['weight'],
+                'reps' => $liftLogData['reps'],
+                'sets' => $sets,
+                'date' => $loggedAt->format('Y-m-d H:i:s')
+            ];
         }
         
-        return ['exercise_created' => $result['created']];
+        return [
+            'exercise_created' => $result['created'],
+            'imported_lift_logs' => $importedLiftLogs
+        ];
     }
 
     /**

@@ -276,7 +276,7 @@ class ImportJsonLiftLogTest extends TestCase
         $command = $this->getCommand();
         $result = $this->callPrivateMethod($command, 'findOrCreateExercise', [$exerciseData, $user]);
         
-        $this->assertEquals($exercise->id, $result->id);
+        $this->assertEquals($exercise->id, $result['exercise']->id);
     }
 
     public function test_create_new_user_exercise()

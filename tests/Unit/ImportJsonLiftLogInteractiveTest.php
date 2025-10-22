@@ -100,9 +100,9 @@ class ImportJsonLiftLogInteractiveTest extends TestCase
         $result = $this->callPrivateMethod($command, 'findOrCreateExercise', [$exerciseData, $user]);
         
         // Should return the existing exercise
-        $this->assertEquals($existingExercise->id, $result->id);
-        $this->assertEquals('Existing Exercise', $result->title);
-        $this->assertEquals('existing_exercise', $result->canonical_name);
+        $this->assertEquals($existingExercise->id, $result['exercise']->id);
+        $this->assertEquals('Existing Exercise', $result['exercise']->title);
+        $this->assertEquals('existing_exercise', $result['exercise']->canonical_name);
     }
 
     public function test_exercise_lookup_only_searches_global_exercises()
@@ -249,8 +249,8 @@ class ImportJsonLiftLogInteractiveTest extends TestCase
             'user_id' => $user->id
         ]);
         
-        $this->assertEquals('New Exercise', $result->title);
-        $this->assertEquals('new_exercise', $result->canonical_name);
-        $this->assertEquals($user->id, $result->user_id);
+        $this->assertEquals('New Exercise', $result['exercise']->title);
+        $this->assertEquals('new_exercise', $result['exercise']->canonical_name);
+        $this->assertEquals($user->id, $result['exercise']->user_id);
     }
 }
