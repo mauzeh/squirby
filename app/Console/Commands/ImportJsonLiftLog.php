@@ -46,11 +46,22 @@ use Carbon\Carbon;
  *   {
  *     "exercise": "Bench Press",
  *     "canonical_name": "bench_press",
- *     "weight": 225,
- *     "reps": 5,
- *     "sets": 1,
+ *     "description": "Barbell bench press exercise for chest development",
  *     "is_bodyweight": false,
- *     "notes": "Optional notes about the exercise"
+ *     "lift_logs": [
+ *       {
+ *         "weight": 225,
+ *         "reps": 5,
+ *         "sets": 1,
+ *         "notes": "Optional notes about this specific lift"
+ *       },
+ *       {
+ *         "weight": 215,
+ *         "reps": 6,
+ *         "sets": 1,
+ *         "notes": "Second set with different weight"
+ *       }
+ *     ]
  *   }
  * ]
  * 
@@ -225,31 +236,36 @@ class ImportJsonLiftLog extends Command
 
 
     /**
-     * Import a single exercise
+     * Import a single exercise with its lift logs
      */
     private function importExercise(array $exerciseData, User $user, Carbon $loggedAt): void
     {
         // Find or create exercise
         $exercise = $this->findOrCreateExercise($exerciseData, $user);
 
-        // Create lift log
-        $liftLog = LiftLog::create([
-            'exercise_id' => $exercise->id,
-            'user_id' => $user->id,
-            'logged_at' => $loggedAt,
-            'comments' => 'Imported from JSON file'
-        ]);
-
-        // Create lift sets based on the sets count
-        $sets = $exerciseData['sets'] ?? 1;
+        // Import each lift log for this exercise
+        $liftLogs = $exerciseData['lift_logs'] ?? [];
         
-        for ($i = 0; $i < $sets; $i++) {
-            LiftSet::create([
-                'lift_log_id' => $liftLog->id,
-                'weight' => $exerciseData['weight'],
-                'reps' => $exerciseData['reps'],
-                'notes' => $exerciseData['notes'] ?? null
+        foreach ($liftLogs as $liftLogData) {
+            // Create lift log
+            $liftLog = LiftLog::create([
+                'exercise_id' => $exercise->id,
+                'user_id' => $user->id,
+                'logged_at' => $loggedAt,
+                'comments' => 'Imported from JSON file'
             ]);
+
+            // Create lift sets based on the sets count
+            $sets = $liftLogData['sets'] ?? 1;
+            
+            for ($i = 0; $i < $sets; $i++) {
+                LiftSet::create([
+                    'lift_log_id' => $liftLog->id,
+                    'weight' => $liftLogData['weight'],
+                    'reps' => $liftLogData['reps'],
+                    'notes' => $liftLogData['notes'] ?? null
+                ]);
+            }
         }
     }
 
@@ -300,7 +316,7 @@ class ImportJsonLiftLog extends Command
         return Exercise::create([
             'title' => $exerciseData['exercise'],
             'canonical_name' => $exerciseData['canonical_name'],
-            'description' => "Imported from JSON file",
+            'description' => $exerciseData['description'] ?? "Imported from JSON file",
             'is_bodyweight' => $exerciseData['is_bodyweight'] ?? false,
             'user_id' => $user->id // User-specific exercise
         ]);
@@ -370,24 +386,29 @@ class ImportJsonLiftLog extends Command
                 continue; // Skip if exercise doesn't exist yet
             }
             
-            // Check for existing lift logs on the same date with same weight/reps
-            $existingLog = LiftLog::where('user_id', $user->id)
-                ->where('exercise_id', $exercise->id)
-                ->whereDate('logged_at', $dateOnly)
-                ->whereHas('liftSets', function ($query) use ($exerciseData) {
-                    $query->where('weight', $exerciseData['weight'])
-                          ->where('reps', $exerciseData['reps']);
-                })
-                ->first();
+            // Check each lift log in this exercise for duplicates
+            $liftLogs = $exerciseData['lift_logs'] ?? [];
             
-            if ($existingLog) {
-                $duplicates[] = [
-                    'exercise' => $exerciseData['exercise'],
-                    'canonical_name' => $exerciseData['canonical_name'],
-                    'weight' => $exerciseData['weight'],
-                    'reps' => $exerciseData['reps'],
-                    'exercise_id' => $exercise->id
-                ];
+            foreach ($liftLogs as $liftLogData) {
+                // Check for existing lift logs on the same date with same weight/reps
+                $existingLog = LiftLog::where('user_id', $user->id)
+                    ->where('exercise_id', $exercise->id)
+                    ->whereDate('logged_at', $dateOnly)
+                    ->whereHas('liftSets', function ($query) use ($liftLogData) {
+                        $query->where('weight', $liftLogData['weight'])
+                              ->where('reps', $liftLogData['reps']);
+                    })
+                    ->first();
+                
+                if ($existingLog) {
+                    $duplicates[] = [
+                        'exercise' => $exerciseData['exercise'],
+                        'canonical_name' => $exerciseData['canonical_name'],
+                        'weight' => $liftLogData['weight'],
+                        'reps' => $liftLogData['reps'],
+                        'exercise_id' => $exercise->id
+                    ];
+                }
             }
         }
         
@@ -399,11 +420,15 @@ class ImportJsonLiftLog extends Command
      */
     private function isDuplicate(array $exerciseData, array $duplicates): bool
     {
-        foreach ($duplicates as $duplicate) {
-            if ($duplicate['canonical_name'] === $exerciseData['canonical_name'] &&
-                $duplicate['weight'] == $exerciseData['weight'] &&
-                $duplicate['reps'] == $exerciseData['reps']) {
-                return true;
+        $liftLogs = $exerciseData['lift_logs'] ?? [];
+        
+        foreach ($liftLogs as $liftLogData) {
+            foreach ($duplicates as $duplicate) {
+                if ($duplicate['canonical_name'] === $exerciseData['canonical_name'] &&
+                    $duplicate['weight'] == $liftLogData['weight'] &&
+                    $duplicate['reps'] == $liftLogData['reps']) {
+                    return true;
+                }
             }
         }
         return false;

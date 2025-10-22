@@ -50,8 +50,34 @@ class ImportJsonLiftLogTest extends TestCase
 
     private function createTestJsonFile(array $exercises): string
     {
+        // Convert old format to new format if needed
+        $formattedExercises = [];
+        
+        foreach ($exercises as $exercise) {
+            if (isset($exercise['lift_logs'])) {
+                // Already in new format
+                $formattedExercises[] = $exercise;
+            } else {
+                // Convert from old format to new format
+                $formattedExercises[] = [
+                    'exercise' => $exercise['exercise'],
+                    'canonical_name' => $exercise['canonical_name'],
+                    'description' => $exercise['description'] ?? 'Test exercise',
+                    'is_bodyweight' => $exercise['is_bodyweight'] ?? false,
+                    'lift_logs' => [
+                        [
+                            'weight' => $exercise['weight'] ?? 0,
+                            'reps' => $exercise['reps'] ?? 1,
+                            'sets' => $exercise['sets'] ?? 1,
+                            'notes' => $exercise['notes'] ?? null
+                        ]
+                    ]
+                ];
+            }
+        }
+        
         $tempFile = tempnam(sys_get_temp_dir(), 'test_json');
-        file_put_contents($tempFile, json_encode($exercises));
+        file_put_contents($tempFile, json_encode($formattedExercises));
         return $tempFile;
     }
 
@@ -131,10 +157,16 @@ class ImportJsonLiftLogTest extends TestCase
         $exerciseData = [
             'exercise' => 'Bench Press',
             'canonical_name' => 'bench_press',
-            'weight' => 225,
-            'reps' => 5,
-            'sets' => 1,
-            'is_bodyweight' => false
+            'description' => 'Test exercise',
+            'is_bodyweight' => false,
+            'lift_logs' => [
+                [
+                    'weight' => 225,
+                    'reps' => 5,
+                    'sets' => 1,
+                    'notes' => null
+                ]
+            ]
         ];
         
         $command = $this->getCommand();
@@ -166,10 +198,16 @@ class ImportJsonLiftLogTest extends TestCase
         $exerciseData = [
             'exercise' => 'Bench Press',
             'canonical_name' => 'bench_press',
-            'weight' => 225,
-            'reps' => 5,
-            'sets' => 3,
-            'is_bodyweight' => false
+            'description' => 'Test exercise',
+            'is_bodyweight' => false,
+            'lift_logs' => [
+                [
+                    'weight' => 225,
+                    'reps' => 5,
+                    'sets' => 3,
+                    'notes' => null
+                ]
+            ]
         ];
         
         $command = $this->getCommand();
@@ -197,11 +235,16 @@ class ImportJsonLiftLogTest extends TestCase
         $exerciseData = [
             'exercise' => 'Plank',
             'canonical_name' => 'plank',
-            'weight' => 0,
-            'reps' => 90,
-            'sets' => 1,
+            'description' => 'Test exercise',
             'is_bodyweight' => true,
-            'notes' => 'time in seconds'
+            'lift_logs' => [
+                [
+                    'weight' => 0,
+                    'reps' => 90,
+                    'sets' => 1,
+                    'notes' => 'time in seconds'
+                ]
+            ]
         ];
         
         $command = $this->getCommand();
@@ -407,10 +450,16 @@ class ImportJsonLiftLogTest extends TestCase
         $exerciseData = [
             'exercise' => 'Bench Press',
             'canonical_name' => 'bench_press',
-            'weight' => 225,
-            'reps' => 5,
-            'is_bodyweight' => false
-            // Note: 'sets' is not provided
+            'description' => 'Test exercise',
+            'is_bodyweight' => false,
+            'lift_logs' => [
+                [
+                    'weight' => 225,
+                    'reps' => 5,
+                    // Note: 'sets' is not provided, should default to 1
+                    'notes' => null
+                ]
+            ]
         ];
         
         $command = $this->getCommand();
@@ -433,10 +482,16 @@ class ImportJsonLiftLogTest extends TestCase
         $exerciseData = [
             'exercise' => 'Plank',
             'canonical_name' => 'plank',
-            'weight' => 0,
-            'reps' => 60,
-            'sets' => 1,
-            'is_bodyweight' => true
+            'description' => 'Test exercise',
+            'is_bodyweight' => true,
+            'lift_logs' => [
+                [
+                    'weight' => 0,
+                    'reps' => 60,
+                    'sets' => 1,
+                    'notes' => null
+                ]
+            ]
         ];
         
         $command = $this->getCommand();
@@ -461,10 +516,16 @@ class ImportJsonLiftLogTest extends TestCase
         $exerciseData = [
             'exercise' => 'Tricep Pushdown',
             'canonical_name' => 'tricep_pushdown',
-            'weight' => 52.5,
-            'reps' => 8,
-            'sets' => 1,
-            'is_bodyweight' => false
+            'description' => 'Test exercise',
+            'is_bodyweight' => false,
+            'lift_logs' => [
+                [
+                    'weight' => 52.5,
+                    'reps' => 8,
+                    'sets' => 1,
+                    'notes' => null
+                ]
+            ]
         ];
         
         $command = $this->getCommand();

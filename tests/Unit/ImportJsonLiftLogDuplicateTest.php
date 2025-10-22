@@ -73,10 +73,16 @@ class ImportJsonLiftLogDuplicateTest extends TestCase
             [
                 'exercise' => 'Bench Press',
                 'canonical_name' => 'bench_press',
-                'weight' => 225,
-                'reps' => 5,
-                'sets' => 1,
-                'is_bodyweight' => false
+                'description' => 'Test exercise',
+                'is_bodyweight' => false,
+                'lift_logs' => [
+                    [
+                        'weight' => 225,
+                        'reps' => 5,
+                        'sets' => 1,
+                        'notes' => null
+                    ]
+                ]
             ]
         ];
         
@@ -114,10 +120,16 @@ class ImportJsonLiftLogDuplicateTest extends TestCase
             [
                 'exercise' => 'Bench Press',
                 'canonical_name' => 'bench_press',
-                'weight' => 225, // Different weight
-                'reps' => 5,
-                'sets' => 1,
-                'is_bodyweight' => false
+                'description' => 'Test exercise',
+                'is_bodyweight' => false,
+                'lift_logs' => [
+                    [
+                        'weight' => 225, // Different weight
+                        'reps' => 5,
+                        'sets' => 1,
+                        'notes' => null
+                    ]
+                ]
             ]
         ];
         
@@ -152,10 +164,16 @@ class ImportJsonLiftLogDuplicateTest extends TestCase
             [
                 'exercise' => 'Bench Press',
                 'canonical_name' => 'bench_press',
-                'weight' => 225,
-                'reps' => 5, // Different reps
-                'sets' => 1,
-                'is_bodyweight' => false
+                'description' => 'Test exercise',
+                'is_bodyweight' => false,
+                'lift_logs' => [
+                    [
+                        'weight' => 225,
+                        'reps' => 5, // Different reps
+                        'sets' => 1,
+                        'notes' => null
+                    ]
+                ]
             ]
         ];
         
@@ -190,10 +208,16 @@ class ImportJsonLiftLogDuplicateTest extends TestCase
             [
                 'exercise' => 'Bench Press',
                 'canonical_name' => 'bench_press',
-                'weight' => 225,
-                'reps' => 5,
-                'sets' => 1,
-                'is_bodyweight' => false
+                'description' => 'Test exercise',
+                'is_bodyweight' => false,
+                'lift_logs' => [
+                    [
+                        'weight' => 225,
+                        'reps' => 5,
+                        'sets' => 1,
+                        'notes' => null
+                    ]
+                ]
             ]
         ];
         
@@ -229,10 +253,16 @@ class ImportJsonLiftLogDuplicateTest extends TestCase
             [
                 'exercise' => 'Bench Press',
                 'canonical_name' => 'bench_press',
-                'weight' => 225,
-                'reps' => 5,
-                'sets' => 1,
-                'is_bodyweight' => false
+                'description' => 'Test exercise',
+                'is_bodyweight' => false,
+                'lift_logs' => [
+                    [
+                        'weight' => 225,
+                        'reps' => 5,
+                        'sets' => 1,
+                        'notes' => null
+                    ]
+                ]
             ]
         ];
         
@@ -252,10 +282,16 @@ class ImportJsonLiftLogDuplicateTest extends TestCase
             [
                 'exercise' => 'Nonexistent Exercise',
                 'canonical_name' => 'nonexistent_exercise',
-                'weight' => 225,
-                'reps' => 5,
-                'sets' => 1,
-                'is_bodyweight' => false
+                'description' => 'Test exercise',
+                'is_bodyweight' => false,
+                'lift_logs' => [
+                    [
+                        'weight' => 225,
+                        'reps' => 5,
+                        'sets' => 1,
+                        'notes' => null
+                    ]
+                ]
             ]
         ];
         
@@ -271,8 +307,12 @@ class ImportJsonLiftLogDuplicateTest extends TestCase
     {
         $exerciseData = [
             'canonical_name' => 'bench_press',
-            'weight' => 225,
-            'reps' => 5
+            'lift_logs' => [
+                [
+                    'weight' => 225,
+                    'reps' => 5
+                ]
+            ]
         ];
         
         $duplicates = [
@@ -298,8 +338,12 @@ class ImportJsonLiftLogDuplicateTest extends TestCase
     {
         $exerciseData = [
             'canonical_name' => 'deadlift',
-            'weight' => 275,
-            'reps' => 3
+            'lift_logs' => [
+                [
+                    'weight' => 275,
+                    'reps' => 3
+                ]
+            ]
         ];
         
         $duplicates = [
@@ -396,10 +440,16 @@ class ImportJsonLiftLogDuplicateTest extends TestCase
             [
                 'exercise' => 'Bench Press',
                 'canonical_name' => 'bench_press',
-                'weight' => 225,
-                'reps' => 5,
-                'sets' => 1,
-                'is_bodyweight' => false
+                'description' => 'Test exercise',
+                'is_bodyweight' => false,
+                'lift_logs' => [
+                    [
+                        'weight' => 225,
+                        'reps' => 5,
+                        'sets' => 1,
+                        'notes' => null
+                    ]
+                ]
             ]
         ];
         
