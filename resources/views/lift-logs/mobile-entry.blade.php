@@ -352,6 +352,14 @@
                     document.getElementById(formId).classList.remove('hidden');
                     document.getElementById(inputId).focus();
                     this.style.display = 'none';
+                    
+                    // Scroll to the form to ensure it's visible
+                    setTimeout(() => {
+                        document.getElementById(formId).scrollIntoView({ 
+                            behavior: 'smooth', 
+                            block: 'start' 
+                        });
+                    }, 100);
                 });
             }
         }

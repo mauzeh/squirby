@@ -336,6 +336,14 @@
                         document.getElementById('portion').value = '1';
                         document.getElementById('meal-notes').value = '';
                     }
+                    
+                    // Scroll to the logging form to ensure it's visible
+                    setTimeout(() => {
+                        document.getElementById('logging-form-container').scrollIntoView({ 
+                            behavior: 'smooth', 
+                            block: 'start' 
+                        });
+                    }, 100);
                 });
             });
 
