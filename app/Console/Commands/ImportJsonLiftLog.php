@@ -217,9 +217,13 @@ class ImportJsonLiftLog extends Command
                     continue;
                 }
                 
-                $this->importExercise($exerciseData, $user, $loggedAt);
+                $result = $this->importExercise($exerciseData, $user, $loggedAt);
                 $imported++;
-                $this->line("✓ Imported: {$exerciseData['exercise']}");
+                if ($result['exercise_created']) {
+                    $this->line("✓ Imported: {$exerciseData['exercise']}");
+                } else {
+                    $this->line("⚠ Skipped exercise creation (already exists), imported lift logs: {$exerciseData['exercise']}");
+                }
             } catch (\Exception $e) {
                 $skipped++;
                 $this->warn("✗ Skipped: {$exerciseData['exercise']} - {$e->getMessage()}");
@@ -238,10 +242,11 @@ class ImportJsonLiftLog extends Command
     /**
      * Import a single exercise with its lift logs
      */
-    private function importExercise(array $exerciseData, User $user, Carbon $loggedAt): void
+    private function importExercise(array $exerciseData, User $user, Carbon $loggedAt): array
     {
         // Find or create exercise
-        $exercise = $this->findOrCreateExercise($exerciseData, $user);
+        $result = $this->findOrCreateExercise($exerciseData, $user);
+        $exercise = $result['exercise'];
 
         // Import each lift log for this exercise
         $liftLogs = $exerciseData['lift_logs'] ?? [];
@@ -267,29 +272,41 @@ class ImportJsonLiftLog extends Command
                 ]);
             }
         }
+        
+        return ['exercise_created' => $result['created']];
     }
 
     /**
      * Find existing exercise or create a new one
      */
-    private function findOrCreateExercise(array $exerciseData, User $user): Exercise
+    private function findOrCreateExercise(array $exerciseData, User $user): array
     {
         $canonicalName = $exerciseData['canonical_name'];
         
-        // Look only in global exercises
+        // Look in global exercises first
         $exercise = Exercise::global()
             ->where('canonical_name', $canonicalName)
             ->first();
 
         if ($exercise) {
-            return $exercise;
+            return ['exercise' => $exercise, 'created' => false];
         }
 
-        // Exercise not found in global exercises
+        // Look in user-specific exercises
+        $userExercise = Exercise::where('user_id', $user->id)
+            ->where('canonical_name', $canonicalName)
+            ->first();
+
+        if ($userExercise) {
+            return ['exercise' => $userExercise, 'created' => false];
+        }
+
+        // Exercise not found in global or user exercises
         if ($this->option('create-exercises')) {
             // Automatically create user exercise without prompting
             $this->line("⚠ Exercise '{$exerciseData['exercise']}' not found. Creating user-specific exercise...");
-            return $this->createNewUserExercise($exerciseData, $user);
+            $newExercise = $this->createNewUserExercise($exerciseData, $user);
+            return ['exercise' => $newExercise, 'created' => true];
         }
 
         // Interactive mode - prompt user
@@ -302,9 +319,11 @@ class ImportJsonLiftLog extends Command
         );
 
         if ($choice === 'Create new user exercise') {
-            return $this->createNewUserExercise($exerciseData, $user);
+            $newExercise = $this->createNewUserExercise($exerciseData, $user);
+            return ['exercise' => $newExercise, 'created' => true];
         } else {
-            return $this->mapToExistingExercise($exerciseData);
+            $existingExercise = $this->mapToExistingExercise($exerciseData);
+            return ['exercise' => $existingExercise, 'created' => false];
         }
     }
 
