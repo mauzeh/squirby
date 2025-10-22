@@ -1,0 +1,74 @@
+[
+    {
+        "exercise": "Bench Press",
+        "canonical_name": "bench_press",
+        "description": "Example of a WEIGHTED EXERCISE - uses existing global exercise from database. Standard barbell/dumbbell exercise with weight tracking.",
+        "is_bodyweight": false,
+        "lift_logs": [
+            {
+                "weight": 225,
+                "reps": 5,
+                "sets": 3,
+                "notes": "Example weighted lift log - weight in lbs, multiple sets of same weight/reps"
+            }
+        ]
+    },
+    {
+        "exercise": "Pull-Up",
+        "canonical_name": "pull_ups",
+        "description": "Example of a BODYWEIGHT EXERCISE - uses existing global exercise. is_bodyweight=true indicates no external weight needed.",
+        "is_bodyweight": true,
+        "lift_logs": [
+            {
+                "weight": 0,
+                "reps": 12,
+                "sets": 4,
+                "notes": "Example bodyweight lift log - weight=0 for pure bodyweight, or add weight for weighted bodyweight exercises"
+            }
+        ]
+    },
+    {
+        "exercise": "Lat Pull-Down (Kneeled)",
+        "canonical_name": "lat_pull_down_kneeled",
+        "description": "Example of BANDED RESISTANCE EXERCISE - uses existing global exercise. band_type='resistance' indicates resistance band usage.",
+        "is_bodyweight": false,
+        "band_type": "resistance",
+        "lift_logs": [
+            {
+                "weight": 0,
+                "reps": 15,
+                "sets": 3,
+                "notes": "Example resistance band lift log - weight=0 since resistance comes from band, not external weight"
+            }
+        ]
+    },
+    {
+        "exercise": "Assisted Pull-Up",
+        "canonical_name": "assisted_pull_up",
+        "description": "Example of BANDED ASSISTANCE EXERCISE - this will create a NEW user exercise. band_type='assistance' indicates assistance band usage.",
+        "is_bodyweight": true,
+        "band_type": "assistance",
+        "lift_logs": [
+            {
+                "weight": 0,
+                "reps": 8,
+                "sets": 3,
+                "notes": "Example assistance band lift log - bodyweight exercise made easier with assistance band"
+            }
+        ]
+    },
+    {
+        "exercise": "Farmer's Walk",
+        "canonical_name": "farmers_walk",
+        "description": "Example of NEW EXERCISE CREATION - this canonical_name doesn't exist in database, will trigger exercise creation workflow.",
+        "is_bodyweight": false,
+        "lift_logs": [
+            {
+                "weight": 200,
+                "reps": 50,
+                "sets": 3,
+                "notes": "Example new exercise lift log - demonstrates how new exercises are imported and created"
+            }
+        ]
+    }
+]
