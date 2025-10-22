@@ -48,11 +48,13 @@ use Carbon\Carbon;
  *     "canonical_name": "bench_press",
  *     "description": "Barbell bench press exercise for chest development",
  *     "is_bodyweight": false,
+ *     "band_type": "resistance", // Optional: "resistance" or "assistance" for banded exercises
  *     "lift_logs": [
  *       {
  *         "weight": 225,
  *         "reps": 5,
  *         "sets": 1,
+ *         "band_color": "red", // Optional: color of band used (for banded exercises)
  *         "notes": "Optional notes about this specific lift"
  *       },
  *       {
@@ -275,12 +277,19 @@ class ImportJsonLiftLog extends Command
             $sets = $liftLogData['sets'] ?? 1;
             
             for ($i = 0; $i < $sets; $i++) {
-                LiftSet::create([
+                $liftSetData = [
                     'lift_log_id' => $liftLog->id,
                     'weight' => $liftLogData['weight'],
                     'reps' => $liftLogData['reps'],
                     'notes' => $liftLogData['notes'] ?? null
-                ]);
+                ];
+
+                // Add band_color if provided
+                if (isset($liftLogData['band_color']) && !empty($liftLogData['band_color'])) {
+                    $liftSetData['band_color'] = $liftLogData['band_color'];
+                }
+
+                LiftSet::create($liftSetData);
             }
             
             // Track imported lift log info for display

@@ -38,7 +38,8 @@
                 "weight": 0,
                 "reps": 15,
                 "sets": 3,
-                "notes": "Example resistance band lift log - weight=0 since resistance comes from band, not external weight"
+                "band_color": "red",
+                "notes": "Example resistance band lift log - band_color specifies which resistance band was used"
             }
         ]
     },
@@ -53,7 +54,8 @@
                 "weight": 0,
                 "reps": 8,
                 "sets": 3,
-                "notes": "Example assistance band lift log - bodyweight exercise made easier with assistance band"
+                "band_color": "green",
+                "notes": "Example assistance band lift log - band_color tracks which assistance band provided the help"
             }
         ]
     },

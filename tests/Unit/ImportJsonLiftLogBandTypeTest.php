@@ -354,4 +354,160 @@ class ImportJsonLiftLogBandTypeTest extends TestCase
             unlink($tempFile);
         }
     }
-}
+
+    public function test_creates_lift_sets_with_band_color()
+    {
+        $user = $this->createTestUser();
+        
+        $exercises = [
+            [
+                'exercise' => 'Banded Exercise with Color',
+                'canonical_name' => 'banded_exercise_with_color',
+                'description' => 'Exercise with band color tracking',
+                'is_bodyweight' => false,
+                'band_type' => 'resistance',
+                'lift_logs' => [
+                    [
+                        'weight' => 0,
+                        'reps' => 12,
+                        'sets' => 3,
+                        'band_color' => 'red',
+                        'notes' => 'Using red resistance band'
+                    ]
+                ]
+            ]
+        ];
+        
+        $tempFile = $this->createTestJsonFile($exercises);
+        
+        try {
+            $this->artisan('lift-log:import-json', [
+                'file' => $tempFile,
+                '--user-email' => 'test@example.com',
+                '--create-exercises' => true
+            ])
+            ->assertExitCode(Command::SUCCESS);
+            
+            // Verify exercise was created
+            $exercise = Exercise::where('canonical_name', 'banded_exercise_with_color')->first();
+            $this->assertNotNull($exercise);
+            $this->assertEquals('resistance', $exercise->band_type);
+            
+            // Verify lift log and sets were created with band_color
+            $liftLog = $exercise->liftLogs()->first();
+            $this->assertNotNull($liftLog);
+            
+            $liftSets = $liftLog->liftSets;
+            $this->assertCount(3, $liftSets);
+            
+            // All sets should have the same band_color
+            foreach ($liftSets as $liftSet) {
+                $this->assertEquals('red', $liftSet->band_color);
+                $this->assertEquals(0, $liftSet->weight);
+                $this->assertEquals(12, $liftSet->reps);
+            }
+            
+        } finally {
+            unlink($tempFile);
+        }
+    }
+
+    public function test_creates_lift_sets_without_band_color_when_not_provided()
+    {
+        $user = $this->createTestUser();
+        
+        $exercises = [
+            [
+                'exercise' => 'Banded Exercise without Color',
+                'canonical_name' => 'banded_exercise_without_color',
+                'description' => 'Exercise without band color',
+                'is_bodyweight' => false,
+                'band_type' => 'assistance',
+                'lift_logs' => [
+                    [
+                        'weight' => 0,
+                        'reps' => 8,
+                        'sets' => 2,
+                        'notes' => 'No band color specified'
+                    ]
+                ]
+            ]
+        ];
+        
+        $tempFile = $this->createTestJsonFile($exercises);
+        
+        try {
+            $this->artisan('lift-log:import-json', [
+                'file' => $tempFile,
+                '--user-email' => 'test@example.com',
+                '--create-exercises' => true
+            ])
+            ->assertExitCode(Command::SUCCESS);
+            
+            // Verify exercise was created
+            $exercise = Exercise::where('canonical_name', 'banded_exercise_without_color')->first();
+            $this->assertNotNull($exercise);
+            $this->assertEquals('assistance', $exercise->band_type);
+            
+            // Verify lift sets were created without band_color
+            $liftLog = $exercise->liftLogs()->first();
+            $this->assertNotNull($liftLog);
+            
+            $liftSets = $liftLog->liftSets;
+            $this->assertCount(2, $liftSets);
+            
+            // All sets should have null band_color
+            foreach ($liftSets as $liftSet) {
+                $this->assertNull($liftSet->band_color);
+                $this->assertEquals(0, $liftSet->weight);
+                $this->assertEquals(8, $liftSet->reps);
+            }
+            
+        } finally {
+            unlink($tempFile);
+        }
+    }
+
+    public function test_ignores_empty_band_color()
+    {
+        $user = $this->createTestUser();
+        
+        $exercises = [
+            [
+                'exercise' => 'Banded Exercise with Empty Color',
+                'canonical_name' => 'banded_exercise_empty_color',
+                'description' => 'Exercise with empty band color',
+                'is_bodyweight' => false,
+                'band_type' => 'resistance',
+                'lift_logs' => [
+                    [
+                        'weight' => 0,
+                        'reps' => 10,
+                        'sets' => 1,
+                        'band_color' => '',
+                        'notes' => 'Empty band color should be ignored'
+                    ]
+                ]
+            ]
+        ];
+        
+        $tempFile = $this->createTestJsonFile($exercises);
+        
+        try {
+            $this->artisan('lift-log:import-json', [
+                'file' => $tempFile,
+                '--user-email' => 'test@example.com',
+                '--create-exercises' => true
+            ])
+            ->assertExitCode(Command::SUCCESS);
+            
+            // Verify lift set was created without band_color (empty string ignored)
+            $exercise = Exercise::where('canonical_name', 'banded_exercise_empty_color')->first();
+            $liftSet = $exercise->liftLogs()->first()->liftSets()->first();
+            
+            $this->assertNull($liftSet->band_color);
+            
+        } finally {
+            unlink($tempFile);
+        }
+    }}
