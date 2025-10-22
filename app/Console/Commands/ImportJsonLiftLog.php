@@ -418,10 +418,17 @@ class ImportJsonLiftLog extends Command
         $dateOnly = $loggedAt->format('Y-m-d');
         
         foreach ($exercises as $exerciseData) {
-            // Try to find the exercise first
+            // Try to find the exercise first - check both global and user-specific exercises
             $exercise = Exercise::global()
                 ->where('canonical_name', $exerciseData['canonical_name'])
                 ->first();
+            
+            // If not found in global exercises, check user-specific exercises
+            if (!$exercise) {
+                $exercise = Exercise::where('user_id', $user->id)
+                    ->where('canonical_name', $exerciseData['canonical_name'])
+                    ->first();
+            }
             
             if (!$exercise) {
                 continue; // Skip if exercise doesn't exist yet
