@@ -426,7 +426,7 @@ class SyncExerciseIntelligenceCommandTest extends TestCase
 
         $this->artisan('exercises:sync-intelligence', ['--file' => 'empty_intelligence.json'])
             ->expectsOutput('Starting synchronization of exercise intelligence data...')
-            ->expectsOutput('Exercise intelligence synchronization completed.')
+            ->expectsOutput('No exercise intelligence data found in the file')
             ->assertExitCode(0);
     }
 
