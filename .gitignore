@@ -25,3 +25,4 @@ Homestead.yaml
 Thumbs.db
 cookies.txt
 pull_db.sh
+database_backup.sqlite
