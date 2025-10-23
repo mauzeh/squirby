@@ -23,6 +23,7 @@ class User extends Authenticatable
         'email',
         'password',
         'google_id',
+        'show_global_exercises',
     ];
 
     /**
@@ -45,6 +46,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'show_global_exercises' => 'boolean',
         ];
     }
 
@@ -56,6 +58,11 @@ class User extends Authenticatable
     public function hasRole(string $role): bool
     {
         return $this->roles()->where('name', $role)->exists();
+    }
+
+    public function shouldShowGlobalExercises(): bool
+    {
+        return $this->show_global_exercises ?? true;
     }
 
     public function exercises()

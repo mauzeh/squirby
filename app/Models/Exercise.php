@@ -61,21 +61,27 @@ class Exercise extends Model
         return $query->where('user_id', $userId);
     }
 
-    public function scopeAvailableToUser($query, $userId)
+    public function scopeAvailableToUser($query, $userId, $showGlobal = true)
     {
         // Get the user model to check role
         $user = User::find($userId);
         
         if ($user && $user->hasRole('Admin')) {
-            // Admin users see all exercises
+            // Admin users see all exercises regardless of preference
             return $query->orderByRaw('user_id IS NULL ASC');
         }
         
-        // Regular users see global + own exercises (current behavior)
-        return $query->where(function ($q) use ($userId) {
-            $q->whereNull('user_id')        // Global exercises (available to all users)
-              ->orWhere('user_id', $userId); // User's own exercises
-        })->orderByRaw('user_id IS NULL ASC'); // Prioritize user exercises (user_id IS NOT NULL) over global exercises (user_id IS NULL)
+        if ($showGlobal) {
+            // Show global + own exercises (current behavior)
+            return $query->where(function ($q) use ($userId) {
+                $q->whereNull('user_id')        // Global exercises (available to all users)
+                  ->orWhere('user_id', $userId); // User's own exercises
+            })->orderByRaw('user_id IS NULL ASC'); // Prioritize user exercises (user_id IS NOT NULL) over global exercises (user_id IS NULL)
+        } else {
+            // Show only user's own exercises
+            return $query->where('user_id', $userId)
+                        ->orderBy('title', 'asc');
+        }
     }
 
     public function scopeWithIntelligence($query)
