@@ -1100,4 +1100,251 @@ class ImportJsonLiftLogTest extends TestCase
             unlink($tempFile);
         }
     }
+
+    /** @test */
+    public function it_sets_user_global_exercise_preference_during_import()
+    {
+        $user = $this->createTestUser();
+        $user->update(['show_global_exercises' => true]); // Start with preference enabled
+        
+        $exercise = $this->createGlobalExercise('Bench Press', 'bench_press');
+        
+        $jsonData = [
+            [
+                'exercise' => 'Bench Press',
+                'canonical_name' => 'bench_press',
+                'description' => 'Barbell bench press',
+                'is_bodyweight' => false,
+                'lift_logs' => [
+                    [
+                        'weight' => 225,
+                        'reps' => 5,
+                        'sets' => 1
+                    ]
+                ]
+            ]
+        ];
+        
+        $tempFile = tempnam(sys_get_temp_dir(), 'test_import');
+        file_put_contents($tempFile, json_encode($jsonData));
+        
+        try {
+            $this->artisan('lift-log:import-json', [
+                'file' => $tempFile,
+                '--user-email' => $user->email,
+                '--show-global-exercises' => 'false',
+                '--no-interaction' => true
+            ])
+            ->expectsOutputToContain('Updated user\'s global exercise preference to: disabled')
+            ->expectsOutputToContain('Previous preference was: enabled')
+            ->expectsOutputToContain('✓ Imported lift logs for: Bench Press')
+            ->assertExitCode(Command::SUCCESS);
+            
+            // Verify the preference was actually updated
+            $user->refresh();
+            $this->assertFalse($user->show_global_exercises);
+            
+            // Verify the lift log was still imported
+            $this->assertDatabaseHas('lift_logs', [
+                'user_id' => $user->id,
+                'exercise_id' => $exercise->id
+            ]);
+            
+        } finally {
+            unlink($tempFile);
+        }
+    }
+
+    /** @test */
+    public function it_previews_global_exercise_preference_change_in_dry_run()
+    {
+        $user = $this->createTestUser();
+        $user->update(['show_global_exercises' => false]); // Start with preference disabled
+        
+        $this->createGlobalExercise('Bench Press', 'bench_press');
+        
+        $jsonData = [
+            [
+                'exercise' => 'Bench Press',
+                'canonical_name' => 'bench_press',
+                'description' => 'Barbell bench press',
+                'is_bodyweight' => false,
+                'lift_logs' => [
+                    [
+                        'weight' => 225,
+                        'reps' => 5,
+                        'sets' => 1
+                    ]
+                ]
+            ]
+        ];
+        
+        $tempFile = tempnam(sys_get_temp_dir(), 'test_import');
+        file_put_contents($tempFile, json_encode($jsonData));
+        
+        try {
+            $this->artisan('lift-log:import-json', [
+                'file' => $tempFile,
+                '--user-email' => $user->email,
+                '--show-global-exercises' => 'true',
+                '--dry-run' => true,
+                '--no-interaction' => true
+            ])
+            ->expectsOutputToContain('DRY RUN: Would set user\'s global exercise preference to: enabled')
+            ->expectsOutputToContain('Current preference: disabled')
+            ->expectsOutputToContain('DRY RUN: Would import lift logs for: Bench Press')
+            ->assertExitCode(Command::SUCCESS);
+            
+            // Verify the preference was NOT actually updated in dry run
+            $user->refresh();
+            $this->assertFalse($user->show_global_exercises);
+            
+            // Verify no lift log was created in dry run
+            $this->assertDatabaseMissing('lift_logs', [
+                'user_id' => $user->id
+            ]);
+            
+        } finally {
+            unlink($tempFile);
+        }
+    }
+
+    /** @test */
+    public function it_validates_global_exercise_preference_option()
+    {
+        $user = $this->createTestUser();
+        
+        $jsonData = [
+            [
+                'exercise' => 'Bench Press',
+                'canonical_name' => 'bench_press',
+                'description' => 'Barbell bench press',
+                'is_bodyweight' => false,
+                'lift_logs' => [
+                    [
+                        'weight' => 225,
+                        'reps' => 5,
+                        'sets' => 1
+                    ]
+                ]
+            ]
+        ];
+        
+        $tempFile = tempnam(sys_get_temp_dir(), 'test_import');
+        file_put_contents($tempFile, json_encode($jsonData));
+        
+        try {
+            $this->artisan('lift-log:import-json', [
+                'file' => $tempFile,
+                '--user-email' => $user->email,
+                '--show-global-exercises' => 'invalid-value',
+                '--no-interaction' => true
+            ])
+            ->expectsOutputToContain('Invalid value for --show-global-exercises. Use \'true\' or \'false\'.')
+            ->assertExitCode(Command::FAILURE);
+            
+        } finally {
+            unlink($tempFile);
+        }
+    }
+
+    /** @test */
+    public function it_works_without_global_exercise_preference_option()
+    {
+        $user = $this->createTestUser();
+        // Set a specific preference value to test against
+        $user->update(['show_global_exercises' => false]);
+        $originalPreference = $user->show_global_exercises;
+        
+        $exercise = $this->createGlobalExercise('Bench Press', 'bench_press');
+        
+        $jsonData = [
+            [
+                'exercise' => 'Bench Press',
+                'canonical_name' => 'bench_press',
+                'description' => 'Barbell bench press',
+                'is_bodyweight' => false,
+                'lift_logs' => [
+                    [
+                        'weight' => 225,
+                        'reps' => 5,
+                        'sets' => 1
+                    ]
+                ]
+            ]
+        ];
+        
+        $tempFile = tempnam(sys_get_temp_dir(), 'test_import');
+        file_put_contents($tempFile, json_encode($jsonData));
+        
+        try {
+            $this->artisan('lift-log:import-json', [
+                'file' => $tempFile,
+                '--user-email' => $user->email,
+                '--no-interaction' => true
+            ])
+            ->expectsOutputToContain('✓ Imported lift logs for: Bench Press')
+            ->assertExitCode(Command::SUCCESS);
+            
+            // Verify the preference was NOT changed when option not provided
+            $user->refresh();
+            $this->assertEquals($originalPreference, $user->show_global_exercises);
+            
+            // Verify the lift log was still imported
+            $this->assertDatabaseHas('lift_logs', [
+                'user_id' => $user->id,
+                'exercise_id' => $exercise->id
+            ]);
+            
+        } finally {
+            unlink($tempFile);
+        }
+    }
+
+    /** @test */
+    public function it_shows_current_preference_in_dry_run_without_option()
+    {
+        $user = $this->createTestUser();
+        $user->update(['show_global_exercises' => false]);
+        
+        $this->createGlobalExercise('Bench Press', 'bench_press');
+        
+        $jsonData = [
+            [
+                'exercise' => 'Bench Press',
+                'canonical_name' => 'bench_press',
+                'description' => 'Barbell bench press',
+                'is_bodyweight' => false,
+                'lift_logs' => [
+                    [
+                        'weight' => 225,
+                        'reps' => 5,
+                        'sets' => 1
+                    ]
+                ]
+            ]
+        ];
+        
+        $tempFile = tempnam(sys_get_temp_dir(), 'test_import');
+        file_put_contents($tempFile, json_encode($jsonData));
+        
+        try {
+            $this->artisan('lift-log:import-json', [
+                'file' => $tempFile,
+                '--user-email' => $user->email,
+                '--dry-run' => true,
+                '--no-interaction' => true
+            ])
+            ->expectsOutputToContain('Current user\'s global exercise preference: disabled')
+            ->expectsOutputToContain('DRY RUN: Would import lift logs for: Bench Press')
+            ->assertExitCode(Command::SUCCESS);
+            
+            // Verify the preference was NOT changed in dry run
+            $user->refresh();
+            $this->assertFalse($user->show_global_exercises);
+            
+        } finally {
+            unlink($tempFile);
+        }
+    }
 }

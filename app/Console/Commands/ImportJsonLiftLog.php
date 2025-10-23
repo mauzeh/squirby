@@ -42,6 +42,12 @@ use Carbon\Carbon;
  * 8. Preview import without making changes (dry run):
  *    php artisan lift-log:import-json workout_data.json --user-email=user@example.com --dry-run
  * 
+ * 9. Import and set user's global exercise visibility preference:
+ *    php artisan lift-log:import-json workout_data.json --user-email=user@example.com --show-global-exercises=false
+ * 
+ * 10. Fully automated import with preference setting:
+ *     php artisan lift-log:import-json data.json --user-email=user@example.com --overwrite --create-exercises --show-global-exercises=true
+ * 
  * JSON FORMAT REQUIREMENTS:
  * The JSON file must contain an array of exercise objects with the following structure:
  * 
@@ -130,6 +136,9 @@ use Carbon\Carbon;
  * 
  * For previewing imports before execution:
  *   php artisan lift-log:import-json data.json --user-email=user@example.com --dry-run
+ * 
+ * For setting user preferences during import:
+ *   php artisan lift-log:import-json data.json --user-email=user@example.com --show-global-exercises=false
  */
 class ImportJsonLiftLog extends Command
 {
@@ -138,7 +147,7 @@ class ImportJsonLiftLog extends Command
      *
      * @var string
      */
-    protected $signature = 'lift-log:import-json {file} {--user-email=} {--date=} {--overwrite : Overwrite existing lift logs for the same date} {--create-exercises : Automatically create user exercises when not found} {--dry-run : Preview what would be imported without making changes}';
+    protected $signature = 'lift-log:import-json {file} {--user-email=} {--date=} {--overwrite : Overwrite existing lift logs for the same date} {--create-exercises : Automatically create user exercises when not found} {--dry-run : Preview what would be imported without making changes} {--show-global-exercises= : Set user\'s global exercise visibility preference (true/false)}';
 
     /**
      * The console command description.
@@ -187,6 +196,7 @@ class ImportJsonLiftLog extends Command
         $loggedAt = $date ? Carbon::parse($date) : Carbon::now();
 
         $isDryRun = $this->option('dry-run');
+        $showGlobalExercisesOption = $this->option('show-global-exercises');
         
         if ($isDryRun) {
             $this->info("DRY RUN MODE - No changes will be made to the database");
@@ -195,6 +205,31 @@ class ImportJsonLiftLog extends Command
             $this->info("Importing lift log data for {$user->name} ({$user->email})");
         }
         $this->info("Date: {$loggedAt->format('Y-m-d H:i:s')}");
+        
+        // Get current preference for display
+        $currentPreference = $user->shouldShowGlobalExercises();
+        
+        // Handle global exercise preference setting
+        if ($showGlobalExercisesOption !== null) {
+            $newPreference = filter_var($showGlobalExercisesOption, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+            
+            if ($newPreference === null) {
+                $this->error("Invalid value for --show-global-exercises. Use 'true' or 'false'.");
+                return Command::FAILURE;
+            }
+            
+            if ($isDryRun) {
+                $this->info("DRY RUN: Would set user's global exercise preference to: " . ($newPreference ? 'enabled' : 'disabled'));
+                $this->info("Current preference: " . ($currentPreference ? 'enabled' : 'disabled'));
+            } else {
+                $user->update(['show_global_exercises' => $newPreference]);
+                $this->info("Updated user's global exercise preference to: " . ($newPreference ? 'enabled' : 'disabled'));
+                $this->info("Previous preference was: " . ($currentPreference ? 'enabled' : 'disabled'));
+            }
+        } else if ($isDryRun) {
+            // Always show current preference during dry-run, even when option not provided
+            $this->info("Current user's global exercise preference: " . ($currentPreference ? 'enabled' : 'disabled'));
+        }
 
         // Read and parse the JSON file
         $content = file_get_contents($filePath);
@@ -777,6 +812,8 @@ class ImportJsonLiftLog extends Command
  * 1. ONBOARDING NEW USERS:
  *    # Import Stefan's historical workout data
  *    php artisan lift-log:import-json stefan_workout_formatted.json --user-email=stefan@swaans.com --date="2024-01-15"
+ *    # Import user data and set their preference for minimal exercise lists
+ *    php artisan lift-log:import-json new_user_data.json --user-email=newuser@example.com --show-global-exercises=false
  * 
  * 2. DATA MIGRATION FROM OTHER SYSTEMS:
  *    # Migrate from MyFitnessPal export
@@ -808,7 +845,13 @@ class ImportJsonLiftLog extends Command
  *    # Preview what would be imported without making changes
  *    php artisan lift-log:import-json new_data.json --user-email=user@example.com --dry-run
  *    # Preview with all options to see full simulation
- *    php artisan lift-log:import-json data.json --user-email=user@example.com --dry-run --overwrite --create-exercises
+ *    php artisan lift-log:import-json data.json --user-email=user@example.com --dry-run --overwrite --create-exercises --show-global-exercises=false
+ * 
+ * 9. USER PREFERENCE MANAGEMENT:
+ *    # Import data and disable global exercises for user who prefers minimal exercise lists
+ *    php artisan lift-log:import-json personal_workouts.json --user-email=user@example.com --show-global-exercises=false
+ *    # Import data and ensure global exercises are enabled for comprehensive access
+ *    php artisan lift-log:import-json comprehensive_data.json --user-email=user@example.com --show-global-exercises=true
  * 
  * TROUBLESHOOTING:
  * 
