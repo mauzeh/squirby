@@ -8,7 +8,7 @@
             {
                 "weight": 225,
                 "reps": 5,
-                "sets": 1,
+                "sets": 3,
                 "notes": null
             }
         ]
@@ -22,7 +22,7 @@
             {
                 "weight": 90,
                 "reps": 10,
-                "sets": 1,
+                "sets": 3,
                 "notes": null
             }
         ]
@@ -36,7 +36,7 @@
             {
                 "weight": 175,
                 "reps": 5,
-                "sets": 1,
+                "sets": 3,
                 "notes": null
             }
         ]
@@ -50,7 +50,7 @@
             {
                 "weight": 140,
                 "reps": 5,
-                "sets": 1,
+                "sets": 3,
                 "notes": null
             }
         ]
@@ -64,7 +64,7 @@
             {
                 "weight": 52.5,
                 "reps": 8,
-                "sets": 1,
+                "sets": 3,
                 "notes": null
             }
         ]
@@ -78,7 +78,7 @@
             {
                 "weight": 110,
                 "reps": 4,
-                "sets": 1,
+                "sets": 3,
                 "notes": null
             }
         ]
@@ -92,7 +92,7 @@
             {
                 "weight": 100,
                 "reps": 8,
-                "sets": 1,
+                "sets": 3,
                 "notes": null
             }
         ]
@@ -106,7 +106,7 @@
             {
                 "weight": 15,
                 "reps": 1,
-                "sets": 1,
+                "sets": 3,
                 "notes": "bodyweight assisted"
             }
         ]
@@ -120,7 +120,7 @@
             {
                 "weight": 110,
                 "reps": 7,
-                "sets": 1,
+                "sets": 3,
                 "notes": null
             }
         ]
@@ -134,7 +134,7 @@
             {
                 "weight": 255,
                 "reps": 8,
-                "sets": 1,
+                "sets": 3,
                 "notes": null
             }
         ]
@@ -148,7 +148,7 @@
             {
                 "weight": 450,
                 "reps": 12,
-                "sets": 1,
+                "sets": 3,
                 "notes": null
             }
         ]
@@ -162,7 +162,7 @@
             {
                 "weight": 290,
                 "reps": 1,
-                "sets": 1,
+                "sets": 3,
                 "notes": null
             }
         ]
@@ -176,13 +176,13 @@
             {
                 "weight": 315,
                 "reps": 8,
-                "sets": 1,
+                "sets": 3,
                 "notes": null
             },
             {
                 "weight": 305,
                 "reps": 8,
-                "sets": 1,
+                "sets": 3,
                 "notes": "second variation with slightly less weight"
             }
         ]
@@ -196,7 +196,7 @@
             {
                 "weight": 140,
                 "reps": 12,
-                "sets": 1,
+                "sets": 3,
                 "notes": null
             }
         ]
@@ -210,7 +210,7 @@
             {
                 "weight": 110,
                 "reps": 8,
-                "sets": 1,
+                "sets": 3,
                 "notes": null
             }
         ]
@@ -224,7 +224,7 @@
             {
                 "weight": 235,
                 "reps": 12,
-                "sets": 1,
+                "sets": 3,
                 "notes": null
             }
         ]
@@ -238,7 +238,7 @@
             {
                 "weight": 165,
                 "reps": 8,
-                "sets": 1,
+                "sets": 3,
                 "notes": null
             }
         ]
@@ -252,7 +252,7 @@
             {
                 "weight": 170,
                 "reps": 7,
-                "sets": 1,
+                "sets": 3,
                 "notes": null
             }
         ]
@@ -266,7 +266,7 @@
             {
                 "weight": 140,
                 "reps": 8,
-                "sets": 1,
+                "sets": 3,
                 "notes": null
             }
         ]
@@ -280,7 +280,7 @@
             {
                 "weight": 155,
                 "reps": 8,
-                "sets": 1,
+                "sets": 3,
                 "notes": null
             }
         ]
@@ -294,7 +294,7 @@
             {
                 "weight": 275,
                 "reps": 1,
-                "sets": 1,
+                "sets": 3,
                 "notes": null
             }
         ]
@@ -308,7 +308,7 @@
             {
                 "weight": 40,
                 "reps": 10,
-                "sets": 1,
+                "sets": 3,
                 "notes": null
             }
         ]
@@ -322,7 +322,7 @@
             {
                 "weight": 40,
                 "reps": 8,
-                "sets": 1,
+                "sets": 3,
                 "notes": null
             }
         ]
@@ -336,7 +336,7 @@
             {
                 "weight": 50,
                 "reps": 25,
-                "sets": 1,
+                "sets": 3,
                 "notes": null
             }
         ]
@@ -350,7 +350,7 @@
             {
                 "weight": 80,
                 "reps": 12,
-                "sets": 1,
+                "sets": 3,
                 "notes": null
             }
         ]
@@ -364,7 +364,7 @@
             {
                 "weight": 145,
                 "reps": 8,
-                "sets": 1,
+                "sets": 3,
                 "notes": null
             }
         ]
@@ -378,7 +378,7 @@
             {
                 "weight": 0,
                 "reps": 90,
-                "sets": 1,
+                "sets": 3,
                 "notes": "time in seconds"
             }
         ]
@@ -392,7 +392,7 @@
             {
                 "weight": 0,
                 "reps": 40,
-                "sets": 1,
+                "sets": 3,
                 "notes": "time in seconds"
             }
         ]
