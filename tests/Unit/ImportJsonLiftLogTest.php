@@ -1037,4 +1037,67 @@ class ImportJsonLiftLogTest extends TestCase
             unlink($tempFile);
         }
     }
+
+    public function test_dry_run_flag_never_writes_to_database()
+    {
+        $user = $this->createTestUser();
+        
+        // Create exercises that will be found (no duplicates to avoid complexity)
+        $exercise1 = $this->createGlobalExercise('Squat', 'squat');
+        
+        $exercises = [
+            [
+                'exercise' => 'Squat',
+                'canonical_name' => 'squat',
+                'weight' => 315,
+                'reps' => 8,
+                'sets' => 3,
+                'is_bodyweight' => false
+            ],
+            [
+                'exercise' => 'New Exercise',
+                'canonical_name' => 'new_exercise',
+                'weight' => 100,
+                'reps' => 10,
+                'sets' => 2,
+                'is_bodyweight' => true
+            ]
+        ];
+        
+        $tempFile = $this->createTestJsonFile($exercises);
+        
+        try {
+            // Record initial database state
+            $initialExerciseCount = Exercise::count();
+            $initialLiftLogCount = LiftLog::count();
+            $initialLiftSetCount = LiftSet::count();
+            
+            // Run dry-run with all flags that would normally create/modify data
+            $this->artisan('lift-log:import-json', [
+                'file' => $tempFile,
+                '--user-email' => 'test@example.com',
+                '--date' => '2024-01-15',
+                '--dry-run' => true,
+                '--create-exercises' => true
+            ])
+            ->assertExitCode(Command::SUCCESS)
+            ->expectsOutputToContain('DRY RUN MODE - No changes will be made to the database')
+            ->expectsOutputToContain('Dry run completed:')
+            ->expectsOutputToContain('Exercises that would be imported: 2')
+            ->expectsOutputToContain('Total lift logs that would be imported: 2');
+            
+            // Verify NO changes were made to the database
+            $this->assertEquals($initialExerciseCount, Exercise::count(), 'Dry run should not create any exercises');
+            $this->assertEquals($initialLiftLogCount, LiftLog::count(), 'Dry run should not create any lift logs');
+            $this->assertEquals($initialLiftSetCount, LiftSet::count(), 'Dry run should not create any lift sets');
+            
+            // Verify no new exercises were created (even with --create-exercises flag)
+            $this->assertDatabaseMissing('exercises', [
+                'canonical_name' => 'new_exercise'
+            ]);
+            
+        } finally {
+            unlink($tempFile);
+        }
+    }
 }

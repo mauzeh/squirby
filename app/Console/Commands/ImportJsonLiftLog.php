@@ -39,6 +39,9 @@ use Carbon\Carbon;
  * 7. Bulk import with overwrite for data migration:
  *    php artisan lift-log:import-json migration_data.json --user-email=admin@example.com --date="2024-02-01" --overwrite
  * 
+ * 8. Preview import without making changes (dry run):
+ *    php artisan lift-log:import-json workout_data.json --user-email=user@example.com --dry-run
+ * 
  * JSON FORMAT REQUIREMENTS:
  * The JSON file must contain an array of exercise objects with the following structure:
  * 
@@ -124,6 +127,9 @@ use Carbon\Carbon;
  * 
  * For automated scripts (CI/CD):
  *   php artisan lift-log:import-json backup.json --user-email=user@example.com --overwrite --create-exercises --no-interaction
+ * 
+ * For previewing imports before execution:
+ *   php artisan lift-log:import-json data.json --user-email=user@example.com --dry-run
  */
 class ImportJsonLiftLog extends Command
 {
@@ -132,7 +138,7 @@ class ImportJsonLiftLog extends Command
      *
      * @var string
      */
-    protected $signature = 'lift-log:import-json {file} {--user-email=} {--date=} {--overwrite : Overwrite existing lift logs for the same date} {--create-exercises : Automatically create user exercises when not found}';
+    protected $signature = 'lift-log:import-json {file} {--user-email=} {--date=} {--overwrite : Overwrite existing lift logs for the same date} {--create-exercises : Automatically create user exercises when not found} {--dry-run : Preview what would be imported without making changes}';
 
     /**
      * The console command description.
@@ -180,7 +186,14 @@ class ImportJsonLiftLog extends Command
         // Parse date or use today
         $loggedAt = $date ? Carbon::parse($date) : Carbon::now();
 
-        $this->info("Importing lift log data for {$user->name} ({$user->email})");
+        $isDryRun = $this->option('dry-run');
+        
+        if ($isDryRun) {
+            $this->info("DRY RUN MODE - No changes will be made to the database");
+            $this->info("Previewing lift log data import for {$user->name} ({$user->email})");
+        } else {
+            $this->info("Importing lift log data for {$user->name} ({$user->email})");
+        }
         $this->info("Date: {$loggedAt->format('Y-m-d H:i:s')}");
 
         // Read and parse the JSON file
@@ -209,24 +222,33 @@ class ImportJsonLiftLog extends Command
                 $this->line("  - {$duplicate['exercise']} ({$duplicate['weight']}lbs x {$duplicate['reps']} reps)");
             }
             
-            $choice = $this->choice(
-                'What would you like to do?',
-                ['Skip duplicates and import new ones only', 'Overwrite existing lift logs', 'Cancel import'],
-                0
-            );
-            
-            if ($choice === 'Cancel import') {
-                $this->info('Import cancelled by user.');
-                return Command::SUCCESS;
-            } elseif ($choice === 'Overwrite existing lift logs') {
-                $this->deleteDuplicateLiftLogs($duplicates, $user, $loggedAt);
-                $this->info('Existing lift logs deleted. Proceeding with import...');
-            } elseif ($choice === 'Skip duplicates and import new ones only') {
-                $skipDuplicates = true;
+            if ($isDryRun) {
+                $this->info('DRY RUN: Would prompt for duplicate handling in actual import');
+                $skipDuplicates = true; // Default behavior for dry run
+            } else {
+                $choice = $this->choice(
+                    'What would you like to do?',
+                    ['Skip duplicates and import new ones only', 'Overwrite existing lift logs', 'Cancel import'],
+                    0
+                );
+                
+                if ($choice === 'Cancel import') {
+                    $this->info('Import cancelled by user.');
+                    return Command::SUCCESS;
+                } elseif ($choice === 'Overwrite existing lift logs') {
+                    $this->deleteDuplicateLiftLogs($duplicates, $user, $loggedAt);
+                    $this->info('Existing lift logs deleted. Proceeding with import...');
+                } elseif ($choice === 'Skip duplicates and import new ones only') {
+                    $skipDuplicates = true;
+                }
             }
         } elseif (!empty($duplicates) && $this->option('overwrite')) {
-            $this->deleteDuplicateLiftLogs($duplicates, $user, $loggedAt);
-            $this->info('Overwrite flag detected. Existing lift logs deleted. Proceeding with import...');
+            if ($isDryRun) {
+                $this->info('DRY RUN: Would delete existing duplicate lift logs and proceed with import');
+            } else {
+                $this->deleteDuplicateLiftLogs($duplicates, $user, $loggedAt);
+                $this->info('Overwrite flag detected. Existing lift logs deleted. Proceeding with import...');
+            }
         }
 
         // Import each exercise
@@ -242,40 +264,87 @@ class ImportJsonLiftLog extends Command
                 
                 if ($shouldSkip) {
                     $skipped++;
-                    $this->line("⚠ Skipped duplicate: {$exerciseData['exercise']}");
+                    $prefix = $isDryRun ? "DRY RUN: Would skip duplicate" : "⚠ Skipped duplicate";
+                    $this->line("{$prefix}: {$exerciseData['exercise']}");
                     continue;
                 }
                 
-                $result = $this->importExercise($exerciseData, $user, $loggedAt);
+                if ($isDryRun) {
+                    $result = $this->previewExerciseImport($exerciseData, $user, $loggedAt);
+                } else {
+                    $result = $this->importExercise($exerciseData, $user, $loggedAt);
+                }
+                
                 $imported++;
                 $totalLiftLogs += count($result['imported_lift_logs']);
                 
+                $prefix = $isDryRun ? "DRY RUN: Would import" : "✓ Imported";
                 if ($result['exercise_created']) {
-                    $this->line("✓ Imported: {$exerciseData['exercise']}");
+                    $this->line("{$prefix}: {$exerciseData['exercise']}");
                 } else {
-                    $this->line("✓ Imported lift logs for: {$exerciseData['exercise']}");
+                    $this->line("{$prefix} lift logs for: {$exerciseData['exercise']}");
                 }
                 
                 // Display each imported lift log
                 foreach ($result['imported_lift_logs'] as $liftLogInfo) {
-                    $this->line("  → {$liftLogInfo['weight']}lbs × {$liftLogInfo['reps']} reps × {$liftLogInfo['sets']} sets on {$liftLogInfo['date']}");
+                    $arrow = $isDryRun ? "  → Would create" : "  →";
+                    $this->line("{$arrow} {$liftLogInfo['weight']}lbs × {$liftLogInfo['reps']} reps × {$liftLogInfo['sets']} sets on {$liftLogInfo['date']}");
                 }
                 
             } catch (\Exception $e) {
                 $skipped++;
-                $this->warn("✗ Skipped: {$exerciseData['exercise']} - {$e->getMessage()}");
+                $prefix = $isDryRun ? "DRY RUN: Would skip" : "✗ Skipped";
+                $this->warn("{$prefix}: {$exerciseData['exercise']} - {$e->getMessage()}");
             }
         }
 
-        $this->info("\nImport completed:");
-        $this->info("Exercises imported: {$imported}");
-        $this->info("Total lift logs imported: {$totalLiftLogs}");
-        $this->info("Exercises skipped: {$skipped}");
+        $summaryTitle = $isDryRun ? "\nDry run completed:" : "\nImport completed:";
+        $importedLabel = $isDryRun ? "Exercises that would be imported" : "Exercises imported";
+        $liftLogsLabel = $isDryRun ? "Total lift logs that would be imported" : "Total lift logs imported";
+        $skippedLabel = $isDryRun ? "Exercises that would be skipped" : "Exercises skipped";
+        
+        $this->info($summaryTitle);
+        $this->info("{$importedLabel}: {$imported}");
+        $this->info("{$liftLogsLabel}: {$totalLiftLogs}");
+        $this->info("{$skippedLabel}: {$skipped}");
 
         return Command::SUCCESS;
     }
 
 
+
+    /**
+     * Preview what would be imported for a single exercise (dry-run mode)
+     */
+    private function previewExerciseImport(array $exerciseData, User $user, Carbon $loggedAt): array
+    {
+        // Validate banded exercise requirements
+        $this->validateBandedExerciseData($exerciseData);
+
+        // Check if exercise exists or would be created
+        $result = $this->previewFindOrCreateExercise($exerciseData, $user);
+
+        // Preview each lift log for this exercise
+        $liftLogs = $exerciseData['lift_logs'] ?? [];
+        $importedLiftLogs = [];
+        
+        foreach ($liftLogs as $liftLogData) {
+            $sets = $liftLogData['sets'] ?? 1;
+            
+            // Track what would be imported
+            $importedLiftLogs[] = [
+                'weight' => $liftLogData['weight'],
+                'reps' => $liftLogData['reps'],
+                'sets' => $sets,
+                'date' => $loggedAt->format('Y-m-d H:i:s')
+            ];
+        }
+        
+        return [
+            'exercise_created' => $result['created'],
+            'imported_lift_logs' => $importedLiftLogs
+        ];
+    }
 
     /**
      * Import a single exercise with its lift logs
@@ -334,6 +403,56 @@ class ImportJsonLiftLog extends Command
             'exercise_created' => $result['created'],
             'imported_lift_logs' => $importedLiftLogs
         ];
+    }
+
+    /**
+     * Preview finding or creating exercise (dry-run mode)
+     */
+    private function previewFindOrCreateExercise(array $exerciseData, User $user): array
+    {
+        $canonicalName = $exerciseData['canonical_name'];
+        
+        // Look in global exercises first
+        $exercise = Exercise::global()
+            ->where('canonical_name', $canonicalName)
+            ->first();
+
+        if ($exercise) {
+            return ['exercise' => $exercise, 'created' => false];
+        }
+
+        // Look in user-specific exercises
+        $userExercise = Exercise::where('user_id', $user->id)
+            ->where('canonical_name', $canonicalName)
+            ->first();
+
+        if ($userExercise) {
+            return ['exercise' => $userExercise, 'created' => false];
+        }
+
+        // Exercise not found - would be created
+        if ($this->option('create-exercises')) {
+            $this->line("⚠ Exercise '{$exerciseData['exercise']}' not found. Would create user-specific exercise...");
+            // Return a mock exercise object for preview
+            $mockExercise = new Exercise([
+                'title' => $exerciseData['exercise'],
+                'canonical_name' => $exerciseData['canonical_name'],
+                'user_id' => $user->id
+            ]);
+            return ['exercise' => $mockExercise, 'created' => true];
+        }
+
+        // Interactive mode - would prompt user
+        $this->warn("Exercise '{$exerciseData['exercise']}' (canonical: {$canonicalName}) not found in global exercises.");
+        $this->info('DRY RUN: Would prompt to create new user exercise or map to existing global exercise');
+        
+        // Return a mock exercise for preview
+        $mockExercise = new Exercise([
+            'title' => $exerciseData['exercise'],
+            'canonical_name' => $exerciseData['canonical_name'],
+            'user_id' => $user->id
+        ]);
+        return ['exercise' => $mockExercise, 'created' => true];
     }
 
     /**
@@ -684,6 +803,12 @@ class ImportJsonLiftLog extends Command
  * 7. IMPORTING COMPETITION DATA:
  *    # Import powerlifting meet results
  *    php artisan lift-log:import-json meet_results.json --user-email=powerlifter@example.com --date="2024-03-15"
+ * 
+ * 8. PREVIEW IMPORTS (DRY RUN):
+ *    # Preview what would be imported without making changes
+ *    php artisan lift-log:import-json new_data.json --user-email=user@example.com --dry-run
+ *    # Preview with all options to see full simulation
+ *    php artisan lift-log:import-json data.json --user-email=user@example.com --dry-run --overwrite --create-exercises
  * 
  * TROUBLESHOOTING:
  * 
