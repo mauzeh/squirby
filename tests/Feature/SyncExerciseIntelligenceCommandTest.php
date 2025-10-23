@@ -81,7 +81,7 @@ class SyncExerciseIntelligenceCommandTest extends TestCase
 
         $this->artisan('exercises:sync-intelligence')
             ->expectsOutput('Starting synchronization of exercise intelligence data...')
-            ->expectsOutput('Synchronized intelligence for: bench_press')
+            ->expectsOutput('Synchronized intelligence for: bench_press (Type: global)')
             ->expectsOutput('Exercise intelligence synchronization completed.')
             ->assertExitCode(0);
 
@@ -136,7 +136,7 @@ class SyncExerciseIntelligenceCommandTest extends TestCase
 
         $this->artisan('exercises:sync-intelligence', ['--file' => 'test_intelligence.json'])
             ->expectsOutput('Starting synchronization of exercise intelligence data...')
-            ->expectsOutput('Synchronized intelligence for: squat')
+            ->expectsOutput('Synchronized intelligence for: squat (Type: global)')
             ->expectsOutput('Exercise intelligence synchronization completed.')
             ->assertExitCode(0);
 
@@ -193,7 +193,7 @@ class SyncExerciseIntelligenceCommandTest extends TestCase
         );
 
         $this->artisan('exercises:sync-intelligence', ['--file' => 'test_intelligence.json'])
-            ->expectsOutput('Synchronized intelligence for: deadlift')
+            ->expectsOutput('Synchronized intelligence for: deadlift (Type: global)')
             ->assertExitCode(0);
 
         // Assert intelligence was updated
@@ -244,7 +244,7 @@ class SyncExerciseIntelligenceCommandTest extends TestCase
             '--dry-run' => true
         ])
             ->expectsOutput('DRY RUN MODE - No changes will be made to the database')
-            ->expectsOutput("[DRY RUN] Would CREATE intelligence for: push_up (Exercise ID: {$exercise->id})")
+            ->expectsOutput("[DRY RUN] Would CREATE intelligence for: push_up (Exercise ID: {$exercise->id}, Type: global)")
             ->expectsOutput('DRY RUN completed - No changes were made to the database.')
             ->assertExitCode(0);
 
@@ -299,12 +299,12 @@ class SyncExerciseIntelligenceCommandTest extends TestCase
             '--file' => 'test_intelligence.json',
             '--dry-run' => true
         ])
-            ->expectsOutput("[DRY RUN] Would UPDATE intelligence for: pull_up (Exercise ID: {$exercise->id})")
+            ->expectsOutput("[DRY RUN] Would UPDATE intelligence for: pull_up (Exercise ID: {$exercise->id}, Type: global)")
             ->assertExitCode(0);
     }
 
     #[\PHPUnit\Framework\Attributes\Test]
-    public function it_skips_user_exercises()
+    public function it_skips_user_exercises_by_default()
     {
         $user = User::factory()->create();
         
@@ -389,7 +389,7 @@ class SyncExerciseIntelligenceCommandTest extends TestCase
         );
 
         $this->artisan('exercises:sync-intelligence', ['--file' => 'test_intelligence.json'])
-            ->expectsOutput('Synchronized intelligence for: bench_press')
+            ->expectsOutput('Synchronized intelligence for: bench_press (Type: global)')
             ->assertExitCode(0);
 
         // Assert intelligence was created using title fallback
@@ -508,8 +508,8 @@ class SyncExerciseIntelligenceCommandTest extends TestCase
         );
 
         $this->artisan('exercises:sync-intelligence', ['--file' => 'test_intelligence.json'])
-            ->expectsOutput('Synchronized intelligence for: bench_press')
-            ->expectsOutput('Synchronized intelligence for: squat')
+            ->expectsOutput('Synchronized intelligence for: bench_press (Type: global)')
+            ->expectsOutput('Synchronized intelligence for: squat (Type: global)')
             ->expectsOutput('Exercise not found or not global: nonexistent_exercise. Skipping.')
             ->assertExitCode(0);
 
@@ -523,5 +523,211 @@ class SyncExerciseIntelligenceCommandTest extends TestCase
             'exercise_id' => $exercise2->id,
             'primary_mover' => 'rectus_femoris'
         ]);
+    }
+
+    #[\PHPUnit\Framework\Attributes\Test]
+    public function it_includes_user_exercises_when_flag_is_set()
+    {
+        $user = User::factory()->create();
+        
+        // Create both global and user exercises
+        $globalExercise = Exercise::factory()->create([
+            'canonical_name' => 'global_exercise',
+            'user_id' => null
+        ]);
+        
+        $userExercise = Exercise::factory()->create([
+            'canonical_name' => 'user_exercise',
+            'user_id' => $user->id
+        ]);
+
+        // Create test intelligence data
+        $intelligenceData = [
+            'global_exercise' => [
+                'canonical_name' => 'global_exercise',
+                'muscle_data' => [
+                    'muscles' => [
+                        [
+                            'name' => 'some_muscle',
+                            'role' => 'primary_mover',
+                            'contraction_type' => 'isotonic'
+                        ]
+                    ]
+                ],
+                'primary_mover' => 'some_muscle',
+                'largest_muscle' => 'some_muscle',
+                'movement_archetype' => 'push',
+                'category' => 'strength',
+                'difficulty_level' => 1,
+                'recovery_hours' => 24
+            ],
+            'user_exercise' => [
+                'canonical_name' => 'user_exercise',
+                'muscle_data' => [
+                    'muscles' => [
+                        [
+                            'name' => 'user_muscle',
+                            'role' => 'primary_mover',
+                            'contraction_type' => 'isotonic'
+                        ]
+                    ]
+                ],
+                'primary_mover' => 'user_muscle',
+                'largest_muscle' => 'user_muscle',
+                'movement_archetype' => 'pull',
+                'category' => 'strength',
+                'difficulty_level' => 2,
+                'recovery_hours' => 48
+            ]
+        ];
+
+        File::put(
+            database_path('imports/test_intelligence.json'),
+            json_encode($intelligenceData, JSON_PRETTY_PRINT)
+        );
+
+        $this->artisan('exercises:sync-intelligence', [
+            '--file' => 'test_intelligence.json',
+            '--include-user-exercises' => true
+        ])
+            ->expectsOutput('Including user exercises in synchronization')
+            ->expectsOutput('Synchronized intelligence for: global_exercise (Type: global)')
+            ->expectsOutput('Synchronized intelligence for: user_exercise (Type: user)')
+            ->assertExitCode(0);
+
+        // Assert both exercises got intelligence data
+        $this->assertDatabaseHas('exercise_intelligence', [
+            'exercise_id' => $globalExercise->id,
+            'primary_mover' => 'some_muscle'
+        ]);
+
+        $this->assertDatabaseHas('exercise_intelligence', [
+            'exercise_id' => $userExercise->id,
+            'primary_mover' => 'user_muscle'
+        ]);
+    }
+
+    #[\PHPUnit\Framework\Attributes\Test]
+    public function it_shows_correct_exercise_type_in_dry_run_mode()
+    {
+        $user = User::factory()->create();
+        
+        // Create both global and user exercises
+        $globalExercise = Exercise::factory()->create([
+            'canonical_name' => 'global_exercise',
+            'user_id' => null
+        ]);
+        
+        $userExercise = Exercise::factory()->create([
+            'canonical_name' => 'user_exercise',
+            'user_id' => $user->id
+        ]);
+
+        // Create test intelligence data
+        $intelligenceData = [
+            'global_exercise' => [
+                'canonical_name' => 'global_exercise',
+                'muscle_data' => [
+                    'muscles' => [
+                        [
+                            'name' => 'some_muscle',
+                            'role' => 'primary_mover',
+                            'contraction_type' => 'isotonic'
+                        ]
+                    ]
+                ],
+                'primary_mover' => 'some_muscle',
+                'largest_muscle' => 'some_muscle',
+                'movement_archetype' => 'push',
+                'category' => 'strength',
+                'difficulty_level' => 1,
+                'recovery_hours' => 24
+            ],
+            'user_exercise' => [
+                'canonical_name' => 'user_exercise',
+                'muscle_data' => [
+                    'muscles' => [
+                        [
+                            'name' => 'user_muscle',
+                            'role' => 'primary_mover',
+                            'contraction_type' => 'isotonic'
+                        ]
+                    ]
+                ],
+                'primary_mover' => 'user_muscle',
+                'largest_muscle' => 'user_muscle',
+                'movement_archetype' => 'pull',
+                'category' => 'strength',
+                'difficulty_level' => 2,
+                'recovery_hours' => 48
+            ]
+        ];
+
+        File::put(
+            database_path('imports/test_intelligence.json'),
+            json_encode($intelligenceData, JSON_PRETTY_PRINT)
+        );
+
+        $this->artisan('exercises:sync-intelligence', [
+            '--file' => 'test_intelligence.json',
+            '--include-user-exercises' => true,
+            '--dry-run' => true
+        ])
+            ->expectsOutput("[DRY RUN] Would CREATE intelligence for: global_exercise (Exercise ID: {$globalExercise->id}, Type: global)")
+            ->expectsOutput("[DRY RUN] Would CREATE intelligence for: user_exercise (Exercise ID: {$userExercise->id}, Type: user)")
+            ->assertExitCode(0);
+
+        // Assert no intelligence was created in dry run
+        $this->assertDatabaseMissing('exercise_intelligence', [
+            'exercise_id' => $globalExercise->id
+        ]);
+
+        $this->assertDatabaseMissing('exercise_intelligence', [
+            'exercise_id' => $userExercise->id
+        ]);
+    }
+
+    #[\PHPUnit\Framework\Attributes\Test]
+    public function it_shows_different_error_messages_based_on_include_user_exercises_flag()
+    {
+        // Create test intelligence data for non-existent exercise
+        $intelligenceData = [
+            'nonexistent_exercise' => [
+                'canonical_name' => 'nonexistent_exercise',
+                'muscle_data' => [
+                    'muscles' => [
+                        [
+                            'name' => 'some_muscle',
+                            'role' => 'primary_mover',
+                            'contraction_type' => 'isotonic'
+                        ]
+                    ]
+                ],
+                'primary_mover' => 'some_muscle',
+                'largest_muscle' => 'some_muscle',
+                'movement_archetype' => 'unknown',
+                'category' => 'strength',
+                'difficulty_level' => 1,
+                'recovery_hours' => 24
+            ]
+        ];
+
+        File::put(
+            database_path('imports/test_intelligence.json'),
+            json_encode($intelligenceData, JSON_PRETTY_PRINT)
+        );
+
+        // Test without include-user-exercises flag
+        $this->artisan('exercises:sync-intelligence', ['--file' => 'test_intelligence.json'])
+            ->expectsOutput('Exercise not found or not global: nonexistent_exercise. Skipping.')
+            ->assertExitCode(0);
+
+        // Test with include-user-exercises flag
+        $this->artisan('exercises:sync-intelligence', [
+            '--file' => 'test_intelligence.json',
+            '--include-user-exercises' => true
+        ])
+            ->expectsOutput('Exercise not found: nonexistent_exercise. Skipping.')
+            ->assertExitCode(0);
     }
 }

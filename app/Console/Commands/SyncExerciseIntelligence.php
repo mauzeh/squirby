@@ -13,14 +13,14 @@ class SyncExerciseIntelligence extends Command
      *
      * @var string
      */
-    protected $signature = 'exercises:sync-intelligence {--file= : Custom JSON file path relative to database/imports/} {--dry-run : Preview changes without executing them}';
+    protected $signature = 'exercises:sync-intelligence {--file= : Custom JSON file path relative to database/imports/} {--dry-run : Preview changes without executing them} {--include-user-exercises : Allow updating user exercises in addition to global exercises}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Synchronizes exercise intelligence data from JSON file to the database. Use --file option to specify custom file and --dry-run to preview changes.';
+    protected $description = 'Synchronizes exercise intelligence data from JSON file to the database. Use --file option to specify custom file, --dry-run to preview changes, and --include-user-exercises to update user exercises.';
 
     /**
      * Execute the console command.
@@ -28,9 +28,14 @@ class SyncExerciseIntelligence extends Command
     public function handle()
     {
         $dryRun = $this->option('dry-run');
+        $includeUserExercises = $this->option('include-user-exercises');
         
         if ($dryRun) {
             $this->info('DRY RUN MODE - No changes will be made to the database');
+        }
+        
+        if ($includeUserExercises) {
+            $this->info('Including user exercises in synchronization');
         }
         
         $this->info('Starting synchronization of exercise intelligence data...');
@@ -60,38 +65,50 @@ class SyncExerciseIntelligence extends Command
             
             // First try to find by canonical_name (preferred method)
             if (isset($data['canonical_name'])) {
-                $exercise = Exercise::where('canonical_name', $data['canonical_name'])
-                    ->whereNull('user_id') // Ensure it's a global exercise
-                    ->first();
+                $query = Exercise::where('canonical_name', $data['canonical_name']);
+                
+                // Only restrict to global exercises if not including user exercises
+                if (!$includeUserExercises) {
+                    $query->whereNull('user_id');
+                }
+                
+                $exercise = $query->first();
             }
             
             // Fallback to title-based lookup if canonical name lookup fails
             if (!$exercise) {
-                $exercise = Exercise::where('title', $exerciseKey)
-                    ->whereNull('user_id') // Ensure it's a global exercise
-                    ->first();
+                $query = Exercise::where('title', $exerciseKey);
+                
+                // Only restrict to global exercises if not including user exercises
+                if (!$includeUserExercises) {
+                    $query->whereNull('user_id');
+                }
+                
+                $exercise = $query->first();
             }
 
             if ($exercise) {
                 $exerciseIdentifier = $data['canonical_name'] ?? $exerciseKey;
+                $exerciseType = $exercise->user_id ? 'user' : 'global';
                 
                 if ($dryRun) {
                     // Check if intelligence already exists
                     $existingIntelligence = ExerciseIntelligence::where('exercise_id', $exercise->id)->first();
                     if ($existingIntelligence) {
-                        $this->comment("[DRY RUN] Would UPDATE intelligence for: {$exerciseIdentifier} (Exercise ID: {$exercise->id})");
+                        $this->comment("[DRY RUN] Would UPDATE intelligence for: {$exerciseIdentifier} (Exercise ID: {$exercise->id}, Type: {$exerciseType})");
                     } else {
-                        $this->comment("[DRY RUN] Would CREATE intelligence for: {$exerciseIdentifier} (Exercise ID: {$exercise->id})");
+                        $this->comment("[DRY RUN] Would CREATE intelligence for: {$exerciseIdentifier} (Exercise ID: {$exercise->id}, Type: {$exerciseType})");
                     }
                 } else {
                     ExerciseIntelligence::updateOrCreate(
                         ['exercise_id' => $exercise->id],
                         $data
                     );
-                    $this->comment("Synchronized intelligence for: {$exerciseIdentifier}");
+                    $this->comment("Synchronized intelligence for: {$exerciseIdentifier} (Type: {$exerciseType})");
                 }
             } else {
-                $this->warn("Exercise not found or not global: {$exerciseKey}. Skipping.");
+                $restrictionMessage = $includeUserExercises ? 'Exercise not found' : 'Exercise not found or not global';
+                $this->warn("{$restrictionMessage}: {$exerciseKey}. Skipping.");
             }
         }
 
