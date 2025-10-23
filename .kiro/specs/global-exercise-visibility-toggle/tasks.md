@@ -18,7 +18,7 @@
   - Preserve existing ordering logic
   - _Requirements: 1.2, 1.3_
 
-- [ ] 4. Update ProfileUpdateRequest validation
+- [x] 4. Update ProfileUpdateRequest validation
   - Add validation rule for `show_global_exercises` field as nullable boolean
   - Ensure backward compatibility with existing form submissions
   - _Requirements: 1.4, 2.2_
