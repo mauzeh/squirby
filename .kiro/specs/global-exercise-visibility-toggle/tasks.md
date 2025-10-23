@@ -36,13 +36,13 @@
   - Maintain existing exercise filtering and mapping logic
   - _Requirements: 1.2, 1.3, 2.1_
 
-- [ ] 7. Write unit tests for new functionality
+- [x] 7. Write unit tests for new functionality
   - Test User model `shouldShowGlobalExercises()` method
   - Test Exercise scope `availableToUser` with preference parameter
   - Test ProfileUpdateRequest validation with new field
   - _Requirements: 1.1, 1.2, 1.3, 1.4_
 
-- [ ] 8. Write feature tests for complete workflow
+- [x] 8. Write feature tests for complete workflow
   - Test profile settings form submission with global exercise preference
   - Test mobile entry interface respects user preference
   - Test admin users always see all exercises

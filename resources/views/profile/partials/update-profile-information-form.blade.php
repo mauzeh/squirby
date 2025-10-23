@@ -54,6 +54,8 @@
         <div class="form-group">
             <div class="flex items-start">
                 <div class="flex items-center h-5">
+                    <!-- Hidden input to ensure a value is always sent -->
+                    <input type="hidden" name="show_global_exercises" value="0" />
                     <input 
                         id="show_global_exercises" 
                         name="show_global_exercises" 
