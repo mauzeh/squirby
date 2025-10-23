@@ -437,17 +437,23 @@ class LiftLogController extends Controller
             $targetRecommendations = 3;
             $maxAttempts = 20; // Get up to 20 recommendations to ensure we can find 3 that aren't in the program
             
-            $allRecommendations = $recommendationEngine->getRecommendations(auth()->id(), $maxAttempts);
+            $allRecommendations = $recommendationEngine->getRecommendations(auth()->id(), $maxAttempts, $showGlobalExercises);
             
-            // Filter out exercises that are already in today's program and ensure they're global exercises
+            // Filter out exercises that are already in today's program and respect user's global exercise preference
             $filteredRecommendations = [];
             foreach ($allRecommendations as $recommendation) {
                 if (count($filteredRecommendations) >= $targetRecommendations) {
                     break; // We have enough recommendations
                 }
                 
-                if (!in_array($recommendation['exercise']->id, $programExerciseIds) && 
-                    $recommendation['exercise']->isGlobal()) {
+                $exercise = $recommendation['exercise'];
+                $isExerciseInProgram = in_array($exercise->id, $programExerciseIds);
+                
+                // If user wants to see global exercises, show global exercises
+                // If user doesn't want global exercises, show only their own exercises
+                $shouldIncludeExercise = $showGlobalExercises ? $exercise->isGlobal() : !$exercise->isGlobal();
+                
+                if (!$isExerciseInProgram && $shouldIncludeExercise) {
                     $filteredRecommendations[] = $recommendation;
                 }
             }

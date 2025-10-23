@@ -398,6 +398,103 @@ class RecommendationEngineTest extends TestCase
         $this->assertCount(3, $recommendations);
     }
 
+    /** @test */
+    public function get_recommendations_returns_global_exercises_when_show_global_is_true()
+    {
+        $user = User::factory()->create();
+        
+        // Create global exercises with intelligence
+        $globalExercise = Exercise::factory()->create(['user_id' => null]);
+        $globalIntelligence = ExerciseIntelligence::factory()->create(['exercise_id' => $globalExercise->id]);
+        
+        // Create user exercises with intelligence
+        $userExercise = Exercise::factory()->create(['user_id' => $user->id]);
+        $userIntelligence = ExerciseIntelligence::factory()->create(['exercise_id' => $userExercise->id]);
+
+        $mockAnalysis = new UserActivityAnalysis(
+            muscleWorkload: [],
+            movementArchetypes: [],
+            recentExercises: [],
+            analysisDate: Carbon::now()
+        );
+        
+        $this->mockActivityService
+            ->shouldReceive('analyzeLiftLogs')
+            ->with($user->id)
+            ->once()
+            ->andReturn($mockAnalysis);
+
+        $recommendations = $this->recommendationEngine->getRecommendations($user->id, 5, true);
+
+        $this->assertCount(1, $recommendations);
+        $this->assertEquals($globalExercise->id, $recommendations[0]['exercise']->id);
+    }
+
+    /** @test */
+    public function get_recommendations_returns_user_exercises_when_show_global_is_false()
+    {
+        $user = User::factory()->create();
+        
+        // Create global exercises with intelligence
+        $globalExercise = Exercise::factory()->create(['user_id' => null]);
+        $globalIntelligence = ExerciseIntelligence::factory()->create(['exercise_id' => $globalExercise->id]);
+        
+        // Create user exercises with intelligence
+        $userExercise = Exercise::factory()->create(['user_id' => $user->id]);
+        $userIntelligence = ExerciseIntelligence::factory()->create(['exercise_id' => $userExercise->id]);
+
+        $mockAnalysis = new UserActivityAnalysis(
+            muscleWorkload: [],
+            movementArchetypes: [],
+            recentExercises: [],
+            analysisDate: Carbon::now()
+        );
+        
+        $this->mockActivityService
+            ->shouldReceive('analyzeLiftLogs')
+            ->with($user->id)
+            ->once()
+            ->andReturn($mockAnalysis);
+
+        $recommendations = $this->recommendationEngine->getRecommendations($user->id, 5, false);
+
+        $this->assertCount(1, $recommendations);
+        $this->assertEquals($userExercise->id, $recommendations[0]['exercise']->id);
+    }
+
+    /** @test */
+    public function get_recommendations_defaults_to_global_exercises_when_show_global_not_specified()
+    {
+        $user = User::factory()->create();
+        
+        // Create global exercises with intelligence
+        $globalExercise = Exercise::factory()->create(['user_id' => null]);
+        $globalIntelligence = ExerciseIntelligence::factory()->create(['exercise_id' => $globalExercise->id]);
+        
+        // Create user exercises with intelligence
+        $userExercise = Exercise::factory()->create(['user_id' => $user->id]);
+        $userIntelligence = ExerciseIntelligence::factory()->create(['exercise_id' => $userExercise->id]);
+
+        $mockAnalysis = new UserActivityAnalysis(
+            muscleWorkload: [],
+            movementArchetypes: [],
+            recentExercises: [],
+            analysisDate: Carbon::now()
+        );
+        
+        $this->mockActivityService
+            ->shouldReceive('analyzeLiftLogs')
+            ->with($user->id)
+            ->once()
+            ->andReturn($mockAnalysis);
+
+        // Call without showGlobalExercises parameter (should default to true)
+        $recommendations = $this->recommendationEngine->getRecommendations($user->id, 5);
+
+        $this->assertCount(1, $recommendations);
+        $this->assertEquals($globalExercise->id, $recommendations[0]['exercise']->id);
+    }
+
     protected function tearDown(): void
     {
         Mockery::close();

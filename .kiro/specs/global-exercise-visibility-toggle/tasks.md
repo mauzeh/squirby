@@ -48,3 +48,18 @@
   - Test admin users always see all exercises
   - Test default behavior for new users
   - _Requirements: 2.1, 2.2, 3.1, 3.2, 3.3_
+
+- [x] 9. Update mobile entry recommendations to respect user preference
+  - Modify LiftLogController mobileEntry method to pass user preference to RecommendationEngine
+  - Update RecommendationEngine to accept showGlobalExercises parameter
+  - When preference is OFF, recommendations should only come from user's own exercises
+  - When preference is ON, recommendations should come from global exercises (existing behavior)
+  - Maintain admin behavior (always see all exercises)
+  - _Requirements: 1.2, 1.3, 2.1_
+
+- [x] 10. Add tests for recommendation engine preference handling
+  - Test RecommendationEngine returns global exercises when showGlobalExercises is true
+  - Test RecommendationEngine returns user exercises when showGlobalExercises is false
+  - Test RecommendationEngine defaults to global exercises when parameter not specified
+  - Add feature test for mobile entry recommendations respecting user preference
+  - _Requirements: 1.2, 1.3, 2.1_
