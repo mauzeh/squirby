@@ -17,7 +17,8 @@ class ExerciseService
             ->limit($limit)
             ->pluck('exercise_id');
 
-        return Exercise::whereIn('id', $topExercisesIds)
+        return Exercise::availableToUser()
+            ->whereIn('id', $topExercisesIds)
             ->withCount('liftLogs')
             ->orderBy('lift_logs_count', 'desc')
             ->get();
@@ -36,8 +37,7 @@ class ExerciseService
         $needed = $limit - $topExercises->count();
         if ($needed > 0) {
             $topExerciseIds = $topExercises->pluck('id')->toArray();
-            $recentExercises = Exercise::availableToUser(Auth::id())
-                                        ->whereNotIn('id', $topExerciseIds) // Exclude already selected top exercises
+            $recentExercises = Exercise::availableToUser()->whereNotIn('id', $topExerciseIds) // Exclude already selected top exercises
                                         ->orderBy('created_at', 'desc')
                                         ->limit($needed)
                                         ->get();

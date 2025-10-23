@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Auth;
 
 class Exercise extends Model
 {
@@ -33,6 +34,8 @@ class Exercise extends Model
                 $exercise->canonical_name = static::generateUniqueCanonicalName($exercise->title);
             }
         });
+
+
     }
 
     public function liftLogs()
@@ -61,27 +64,69 @@ class Exercise extends Model
         return $query->where('user_id', $userId);
     }
 
-    public function scopeAvailableToUser($query, $userId, $showGlobal = true)
+    /**
+     * Scope that applies user-specific exercise filtering based on preferences
+     */
+    public function scopeAvailableToUser($query, $userId = null, $showGlobal = null)
     {
-        // Get the user model to check role
+        $userId = $userId ?? Auth::id();
+        
+        if (!$userId) {
+            // If no user, show no exercises at all
+            return $query->whereRaw('1 = 0'); // This will return no results
+        }
+        
         $user = User::find($userId);
         
-        if ($user && $user->hasRole('Admin')) {
-            // Admin users see all exercises regardless of preference
+        if (!$user) {
+            // If user doesn't exist, show no exercises
+            return $query->whereRaw('1 = 0'); // This will return no results
+        }
+        
+        // Admin users see all exercises regardless of preference
+        if ($user->hasRole('Admin')) {
             return $query->orderByRaw('user_id IS NULL ASC');
         }
         
-        if ($showGlobal) {
-            // Show global + own exercises (current behavior)
+        // Use provided showGlobal parameter or fall back to user preference
+        $shouldShowGlobal = $showGlobal !== null ? $showGlobal : $user->shouldShowGlobalExercises();
+        
+        if ($shouldShowGlobal) {
+            // Show global + own exercises
             return $query->where(function ($q) use ($userId) {
-                $q->whereNull('user_id')        // Global exercises (available to all users)
+                $q->whereNull('user_id')        // Global exercises
                   ->orWhere('user_id', $userId); // User's own exercises
-            })->orderByRaw('user_id IS NULL ASC'); // Prioritize user exercises (user_id IS NOT NULL) over global exercises (user_id IS NULL)
+            })->orderByRaw('user_id IS NULL ASC');
         } else {
             // Show only user's own exercises
             return $query->where('user_id', $userId)
                         ->orderBy('title', 'asc');
         }
+    }
+
+    /**
+     * Scope to show all exercises without any filtering (for admin operations)
+     */
+    public function scopeWithoutUserFiltering($query)
+    {
+        return $query;
+    }
+
+    /**
+     * Scope to force showing only global exercises
+     */
+    public function scopeOnlyGlobal($query)
+    {
+        return $query->whereNull('user_id');
+    }
+
+    /**
+     * Scope to force showing only user-specific exercises for a given user
+     */
+    public function scopeOnlyUserSpecific($query, $userId = null)
+    {
+        $userId = $userId ?? Auth::id();
+        return $query->where('user_id', $userId);
     }
 
     public function scopeWithIntelligence($query)

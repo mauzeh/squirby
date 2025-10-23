@@ -33,7 +33,7 @@ class ExerciseController extends Controller
      */
     public function index()
     {
-        $exercises = Exercise::availableToUser(auth()->id())
+        $exercises = Exercise::availableToUser()
             ->with('user') // Load user relationship for displaying user names
             ->orderBy('user_id') // Global exercises (null) first, then user exercises
             ->orderBy('title', 'asc')
@@ -255,7 +255,7 @@ class ExerciseController extends Controller
     public function showLogs(Request $request, Exercise $exercise)
     {
         // Only allow viewing logs for exercises available to the user
-        $availableExercise = Exercise::availableToUser(auth()->id())->find($exercise->id);
+        $availableExercise = Exercise::availableToUser()->find($exercise->id);
         if (!$availableExercise) {
             abort(403, 'Unauthorized action.');
         }
@@ -273,7 +273,7 @@ class ExerciseController extends Controller
         // Format data using presenter - hide exercise column since we're showing logs for a specific exercise
         $tableData = $this->liftLogTablePresenter->formatForTable($liftLogsReversed, true);
 
-        $exercises = Exercise::availableToUser(auth()->id())->orderBy('title', 'asc')->get();
+        $exercises = Exercise::availableToUser()->orderBy('title', 'asc')->get();
 
         $sets = $request->input('sets');
         $reps = $request->input('reps');

@@ -142,7 +142,7 @@ class ProgramController extends Controller
 
         // Fetch exercise data for the selector
         $displayExercises = $this->exerciseService->getDisplayExercises(5);
-        $allExercises = Exercise::availableToUser(auth()->id())->orderBy('title')->get();
+        $allExercises = Exercise::availableToUser()->orderBy('title')->get();
 
         return view('programs.index', compact('programs', 'selectedDate', 'navigationData', 'displayExercises', 'allExercises'));
     }
@@ -153,7 +153,7 @@ class ProgramController extends Controller
     public function create(Request $request)
     {
         $date = $request->input('date') ? Carbon::parse($request->input('date')) : Carbon::today();
-        $exercises = Exercise::availableToUser(auth()->id())->orderBy('title')->get();
+        $exercises = Exercise::availableToUser()->orderBy('title')->get();
         $highestPriority = Program::where('user_id', auth()->id())
             ->whereDate('date', $date->toDateString())
             ->max('priority');
@@ -219,7 +219,7 @@ class ProgramController extends Controller
             abort(403);
         }
 
-        $exercises = Exercise::availableToUser(auth()->id())->orderBy('title')->get();
+        $exercises = Exercise::availableToUser()->orderBy('title')->get();
 
         return view('programs.edit', compact('program', 'exercises'));
     }
