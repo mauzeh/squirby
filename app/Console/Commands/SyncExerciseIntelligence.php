@@ -19,31 +19,31 @@ use App\Models\ExerciseIntelligence;
  *    php artisan exercises:sync-intelligence
  * 
  * 2. Sync custom intelligence data:
- *    php artisan exercises:sync-intelligence --file=stefan_intelligence.json
+ *    php artisan exercises:sync-intelligence --file=database/imports/stefan_intelligence.json
  * 
  * 3. Preview changes without executing (dry run):
- *    php artisan exercises:sync-intelligence --file=custom_data.json --dry-run
+ *    php artisan exercises:sync-intelligence --file=data/custom_data.json --dry-run
  * 
  * 4. Include user exercises in synchronization:
  *    php artisan exercises:sync-intelligence --include-user-exercises
  * 
  * 5. Sync custom file with user exercises included:
- *    php artisan exercises:sync-intelligence --file=user_data.json --include-user-exercises
+ *    php artisan exercises:sync-intelligence --file=database/imports/user_data.json --include-user-exercises
  * 
  * 6. Preview sync including user exercises:
- *    php artisan exercises:sync-intelligence --file=test_data.json --include-user-exercises --dry-run
+ *    php artisan exercises:sync-intelligence --file=data/test_data.json --include-user-exercises --dry-run
  * 
  * 7. Update specific user's exercise intelligence:
- *    php artisan exercises:sync-intelligence --file=personal_intelligence.json --include-user-exercises
+ *    php artisan exercises:sync-intelligence --file=database/imports/personal_intelligence.json --include-user-exercises
  * 
  * 8. Bulk intelligence update for global exercises:
- *    php artisan exercises:sync-intelligence --file=comprehensive_intelligence.json
+ *    php artisan exercises:sync-intelligence --file=data/comprehensive_intelligence.json
  * 
  * 9. Test intelligence data before applying:
- *    php artisan exercises:sync-intelligence --file=new_intelligence.json --dry-run
+ *    php artisan exercises:sync-intelligence --file=data/new_intelligence.json --dry-run
  * 
  * 10. Full sync with all options:
- *     php artisan exercises:sync-intelligence --file=complete_data.json --include-user-exercises --dry-run
+ *     php artisan exercises:sync-intelligence --file=database/imports/complete_data.json --include-user-exercises --dry-run
  * 
  * JSON FORMAT REQUIREMENTS:
  * The JSON file must contain an object with exercise canonical names as keys and intelligence data as values:
@@ -215,14 +215,14 @@ class SyncExerciseIntelligence extends Command
      *
      * @var string
      */
-    protected $signature = 'exercises:sync-intelligence {--file= : Custom JSON file path relative to database/imports/} {--dry-run : Preview changes without executing them} {--include-user-exercises : Allow updating user exercises in addition to global exercises}';
+    protected $signature = 'exercises:sync-intelligence {--file= : Custom JSON file path relative to project root} {--dry-run : Preview changes without executing them} {--include-user-exercises : Allow updating user exercises in addition to global exercises}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Synchronizes exercise intelligence data from JSON file to the database. Use --file option to specify custom file, --dry-run to preview changes, and --include-user-exercises to update user exercises.';
+    protected $description = 'Synchronizes exercise intelligence data from JSON file to the database. Use --file option to specify custom file (relative to project root), --dry-run to preview changes, and --include-user-exercises to update user exercises.';
 
     /**
      * Execute the console command.
@@ -258,7 +258,7 @@ class SyncExerciseIntelligence extends Command
         // Determine JSON file path based on --file option
         $customFile = $this->option('file');
         if ($customFile) {
-            $jsonPath = database_path('imports/' . $customFile);
+            $jsonPath = base_path($customFile);
             $this->info("Using custom file: {$customFile}");
         } else {
             $jsonPath = database_path('seeders/json/exercise_intelligence_data.json');
@@ -481,70 +481,71 @@ class SyncExerciseIntelligence extends Command
  * 
  * 1. SYSTEM MAINTENANCE AND UPDATES:
  *    # Update global exercise intelligence with new research data
- *    php artisan exercises:sync-intelligence --file=updated_intelligence_2024.json
+ *    php artisan exercises:sync-intelligence --file=data/updated_intelligence_2024.json
  *    # Preview system-wide intelligence updates before applying
- *    php artisan exercises:sync-intelligence --file=new_research_data.json --dry-run
+ *    php artisan exercises:sync-intelligence --file=data/new_research_data.json --dry-run
  * 
  * 2. USER-SPECIFIC INTELLIGENCE MANAGEMENT:
  *    # Import intelligence for user-created exercises
- *    php artisan exercises:sync-intelligence --file=user_exercise_intelligence.json --include-user-exercises
+ *    php artisan exercises:sync-intelligence --file=database/imports/user_exercise_intelligence.json --include-user-exercises
  *    # Update intelligence for personal trainer's custom exercises
- *    php artisan exercises:sync-intelligence --file=trainer_intelligence.json --include-user-exercises
+ *    php artisan exercises:sync-intelligence --file=database/imports/trainer_intelligence.json --include-user-exercises
  * 
  * 3. DATA MIGRATION AND IMPORTS:
  *    # Import Stefan's exercise intelligence data
- *    php artisan exercises:sync-intelligence --file=stefan_intelligence.json
+ *    php artisan exercises:sync-intelligence --file=database/imports/stefan_intelligence.json
  *    # Migrate intelligence from external fitness database
- *    php artisan exercises:sync-intelligence --file=external_intelligence.json --include-user-exercises
+ *    php artisan exercises:sync-intelligence --file=data/external_intelligence.json --include-user-exercises
  * 
  * 4. TESTING AND VALIDATION:
  *    # Test new intelligence data structure
- *    php artisan exercises:sync-intelligence --file=test_intelligence.json --dry-run
+ *    php artisan exercises:sync-intelligence --file=data/test_intelligence.json --dry-run
  *    # Validate user exercise intelligence before deployment
- *    php artisan exercises:sync-intelligence --file=user_data.json --include-user-exercises --dry-run
+ *    php artisan exercises:sync-intelligence --file=database/imports/user_data.json --include-user-exercises --dry-run
  * 
  * 5. BULK INTELLIGENCE UPDATES:
  *    # Update all exercise intelligence (global and user)
- *    php artisan exercises:sync-intelligence --file=comprehensive_intelligence.json --include-user-exercises
+ *    php artisan exercises:sync-intelligence --file=data/comprehensive_intelligence.json --include-user-exercises
  *    # Update only global exercises (safer for production)
- *    php artisan exercises:sync-intelligence --file=global_intelligence.json
+ *    php artisan exercises:sync-intelligence --file=data/global_intelligence.json
  * 
  * 6. RECOMMENDATION ENGINE PREPARATION:
  *    # Prepare intelligence data for recommendation engine updates
- *    php artisan exercises:sync-intelligence --file=recommendation_intelligence.json
+ *    php artisan exercises:sync-intelligence --file=data/recommendation_intelligence.json
  *    # Update muscle activation patterns for better recommendations
- *    php artisan exercises:sync-intelligence --file=muscle_patterns.json --dry-run
+ *    php artisan exercises:sync-intelligence --file=data/muscle_patterns.json --dry-run
  * 
  * 7. RESEARCH DATA INTEGRATION:
  *    # Import biomechanical research findings
- *    php artisan exercises:sync-intelligence --file=research_2024.json
+ *    php artisan exercises:sync-intelligence --file=research/research_2024.json
  *    # Update recovery time recommendations based on new studies
- *    php artisan exercises:sync-intelligence --file=recovery_updates.json --dry-run
+ *    php artisan exercises:sync-intelligence --file=research/recovery_updates.json --dry-run
  * 
  * 8. AUTOMATED WORKFLOWS (CI/CD):
  *    # Automated intelligence updates in deployment pipeline
- *    php artisan exercises:sync-intelligence --file=production_intelligence.json --no-interaction
+ *    php artisan exercises:sync-intelligence --file=deploy/production_intelligence.json --no-interaction
  *    # Scheduled intelligence updates with logging
- *    php artisan exercises:sync-intelligence --file=scheduled_updates.json > intelligence_sync.log 2>&1
+ *    php artisan exercises:sync-intelligence --file=deploy/scheduled_updates.json > intelligence_sync.log 2>&1
  * 
  * 9. DEVELOPMENT AND STAGING:
  *    # Sync development intelligence data
- *    php artisan exercises:sync-intelligence --file=dev_intelligence.json --include-user-exercises
+ *    php artisan exercises:sync-intelligence --file=dev/dev_intelligence.json --include-user-exercises
  *    # Test staging environment with production-like data
- *    php artisan exercises:sync-intelligence --file=staging_intelligence.json --dry-run
+ *    php artisan exercises:sync-intelligence --file=staging/staging_intelligence.json --dry-run
  * 
  * 10. BACKUP AND RECOVERY:
  *     # Restore intelligence from backup
- *     php artisan exercises:sync-intelligence --file=backup_intelligence.json --include-user-exercises
+ *     php artisan exercises:sync-intelligence --file=backups/backup_intelligence.json --include-user-exercises
  *     # Verify backup data before restoration
- *     php artisan exercises:sync-intelligence --file=backup_intelligence.json --dry-run
+ *     php artisan exercises:sync-intelligence --file=backups/backup_intelligence.json --dry-run
  * 
  * WORKING WITH DIFFERENT FILE LOCATIONS:
  * 
- * All custom files must be placed in database/imports/ directory:
+ * Custom files can be placed anywhere in the project, paths are relative to project root:
  *   database/imports/stefan_intelligence.json
- *   database/imports/user_data.json
- *   database/imports/research_updates.json
+ *   data/user_data.json
+ *   research/research_updates.json
+ *   backups/backup_intelligence.json
  * 
  * Default file location (when --file is not specified):
  *   database/seeders/json/exercise_intelligence_data.json

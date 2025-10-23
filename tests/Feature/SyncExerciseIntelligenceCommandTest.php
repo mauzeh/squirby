@@ -18,8 +18,8 @@ class SyncExerciseIntelligenceCommandTest extends TestCase
         parent::setUp();
         
         // Create test directory if it doesn't exist
-        if (!File::exists(database_path('imports'))) {
-            File::makeDirectory(database_path('imports'), 0755, true);
+        if (!File::exists(base_path('test_data'))) {
+            File::makeDirectory(base_path('test_data'), 0755, true);
         }
     }
 
@@ -27,15 +27,20 @@ class SyncExerciseIntelligenceCommandTest extends TestCase
     {
         // Clean up test files
         $testFiles = [
-            database_path('imports/test_intelligence.json'),
-            database_path('imports/invalid_json.json'),
-            database_path('imports/empty_intelligence.json'),
+            base_path('test_data/test_intelligence.json'),
+            base_path('test_data/invalid_json.json'),
+            base_path('test_data/empty_intelligence.json'),
         ];
 
         foreach ($testFiles as $file) {
             if (File::exists($file)) {
                 File::delete($file);
             }
+        }
+        
+        // Clean up test directory if empty
+        if (File::exists(base_path('test_data')) && count(File::files(base_path('test_data'))) === 0) {
+            File::deleteDirectory(base_path('test_data'));
         }
 
         parent::tearDown();
@@ -130,11 +135,11 @@ class SyncExerciseIntelligenceCommandTest extends TestCase
         ];
 
         File::put(
-            database_path('imports/test_intelligence.json'),
+            base_path('test_data/test_intelligence.json'),
             json_encode($intelligenceData, JSON_PRETTY_PRINT)
         );
 
-        $this->artisan('exercises:sync-intelligence', ['--file' => 'test_intelligence.json'])
+        $this->artisan('exercises:sync-intelligence', ['--file' => 'test_data/test_intelligence.json'])
             ->expectsOutput('Starting synchronization of exercise intelligence data...')
             ->expectsOutput('Synchronized intelligence for: squat (Type: global)')
             ->expectsOutput('Exercise intelligence synchronization completed.')
@@ -188,11 +193,11 @@ class SyncExerciseIntelligenceCommandTest extends TestCase
         ];
 
         File::put(
-            database_path('imports/test_intelligence.json'),
+            base_path('test_data/test_intelligence.json'),
             json_encode($intelligenceData, JSON_PRETTY_PRINT)
         );
 
-        $this->artisan('exercises:sync-intelligence', ['--file' => 'test_intelligence.json'])
+        $this->artisan('exercises:sync-intelligence', ['--file' => 'test_data/test_intelligence.json'])
             ->expectsOutput('Synchronized intelligence for: deadlift (Type: global)')
             ->assertExitCode(0);
 
@@ -235,12 +240,12 @@ class SyncExerciseIntelligenceCommandTest extends TestCase
         ];
 
         File::put(
-            database_path('imports/test_intelligence.json'),
+            base_path('test_data/test_intelligence.json'),
             json_encode($intelligenceData, JSON_PRETTY_PRINT)
         );
 
         $this->artisan('exercises:sync-intelligence', [
-            '--file' => 'test_intelligence.json',
+            '--file' => 'test_data/test_intelligence.json',
             '--dry-run' => true
         ])
             ->expectsOutput('DRY RUN MODE - No changes will be made to the database')
@@ -291,12 +296,12 @@ class SyncExerciseIntelligenceCommandTest extends TestCase
         ];
 
         File::put(
-            database_path('imports/test_intelligence.json'),
+            base_path('test_data/test_intelligence.json'),
             json_encode($intelligenceData, JSON_PRETTY_PRINT)
         );
 
         $this->artisan('exercises:sync-intelligence', [
-            '--file' => 'test_intelligence.json',
+            '--file' => 'test_data/test_intelligence.json',
             '--dry-run' => true
         ])
             ->expectsOutput("[DRY RUN] Would UPDATE intelligence for: pull_up (Exercise ID: {$exercise->id}, Type: global)")
@@ -337,11 +342,11 @@ class SyncExerciseIntelligenceCommandTest extends TestCase
         ];
 
         File::put(
-            database_path('imports/test_intelligence.json'),
+            base_path('test_data/test_intelligence.json'),
             json_encode($intelligenceData, JSON_PRETTY_PRINT)
         );
 
-        $this->artisan('exercises:sync-intelligence', ['--file' => 'test_intelligence.json'])
+        $this->artisan('exercises:sync-intelligence', ['--file' => 'test_data/test_intelligence.json'])
             ->expectsOutput('Exercise not found or not global: user_exercise. Skipping.')
             ->assertExitCode(0);
 
@@ -384,11 +389,11 @@ class SyncExerciseIntelligenceCommandTest extends TestCase
         ];
 
         File::put(
-            database_path('imports/test_intelligence.json'),
+            base_path('test_data/test_intelligence.json'),
             json_encode($intelligenceData, JSON_PRETTY_PRINT)
         );
 
-        $this->artisan('exercises:sync-intelligence', ['--file' => 'test_intelligence.json'])
+        $this->artisan('exercises:sync-intelligence', ['--file' => 'test_data/test_intelligence.json'])
             ->expectsOutput('Synchronized intelligence for: bench_press (Type: global)')
             ->assertExitCode(0);
 
@@ -403,7 +408,7 @@ class SyncExerciseIntelligenceCommandTest extends TestCase
     public function it_handles_missing_file_gracefully()
     {
         $this->artisan('exercises:sync-intelligence', ['--file' => 'nonexistent.json'])
-            ->expectsOutput('Exercise intelligence JSON file not found at: ' . database_path('imports/nonexistent.json'))
+            ->expectsOutput('Exercise intelligence JSON file not found at: ' . base_path('nonexistent.json'))
             ->assertExitCode(1);
     }
 
@@ -411,9 +416,9 @@ class SyncExerciseIntelligenceCommandTest extends TestCase
     public function it_handles_invalid_json_gracefully()
     {
         // Create invalid JSON file
-        File::put(database_path('imports/invalid_json.json'), '{ invalid json }');
+        File::put(base_path('test_data/invalid_json.json'), '{ invalid json }');
 
-        $this->artisan('exercises:sync-intelligence', ['--file' => 'invalid_json.json'])
+        $this->artisan('exercises:sync-intelligence', ['--file' => 'test_data/invalid_json.json'])
             ->expectsOutputToContain('Error decoding JSON file:')
             ->assertExitCode(1);
     }
@@ -422,9 +427,9 @@ class SyncExerciseIntelligenceCommandTest extends TestCase
     public function it_handles_empty_json_data()
     {
         // Create empty JSON file
-        File::put(database_path('imports/empty_intelligence.json'), '{}');
+        File::put(base_path('test_data/empty_intelligence.json'), '{}');
 
-        $this->artisan('exercises:sync-intelligence', ['--file' => 'empty_intelligence.json'])
+        $this->artisan('exercises:sync-intelligence', ['--file' => 'test_data/empty_intelligence.json'])
             ->expectsOutput('Starting synchronization of exercise intelligence data...')
             ->expectsOutput('No exercise intelligence data found in the file')
             ->assertExitCode(0);
@@ -503,11 +508,11 @@ class SyncExerciseIntelligenceCommandTest extends TestCase
         ];
 
         File::put(
-            database_path('imports/test_intelligence.json'),
+            base_path('test_data/test_intelligence.json'),
             json_encode($intelligenceData, JSON_PRETTY_PRINT)
         );
 
-        $this->artisan('exercises:sync-intelligence', ['--file' => 'test_intelligence.json'])
+        $this->artisan('exercises:sync-intelligence', ['--file' => 'test_data/test_intelligence.json'])
             ->expectsOutput('Synchronized intelligence for: bench_press (Type: global)')
             ->expectsOutput('Synchronized intelligence for: squat (Type: global)')
             ->expectsOutput('Exercise not found or not global: nonexistent_exercise. Skipping.')
@@ -582,12 +587,12 @@ class SyncExerciseIntelligenceCommandTest extends TestCase
         ];
 
         File::put(
-            database_path('imports/test_intelligence.json'),
+            base_path('test_data/test_intelligence.json'),
             json_encode($intelligenceData, JSON_PRETTY_PRINT)
         );
 
         $this->artisan('exercises:sync-intelligence', [
-            '--file' => 'test_intelligence.json',
+            '--file' => 'test_data/test_intelligence.json',
             '--include-user-exercises' => true
         ])
             ->expectsOutput('Including user exercises in synchronization')
@@ -664,12 +669,12 @@ class SyncExerciseIntelligenceCommandTest extends TestCase
         ];
 
         File::put(
-            database_path('imports/test_intelligence.json'),
+            base_path('test_data/test_intelligence.json'),
             json_encode($intelligenceData, JSON_PRETTY_PRINT)
         );
 
         $this->artisan('exercises:sync-intelligence', [
-            '--file' => 'test_intelligence.json',
+            '--file' => 'test_data/test_intelligence.json',
             '--include-user-exercises' => true,
             '--dry-run' => true
         ])
@@ -713,18 +718,18 @@ class SyncExerciseIntelligenceCommandTest extends TestCase
         ];
 
         File::put(
-            database_path('imports/test_intelligence.json'),
+            base_path('test_data/test_intelligence.json'),
             json_encode($intelligenceData, JSON_PRETTY_PRINT)
         );
 
         // Test without include-user-exercises flag
-        $this->artisan('exercises:sync-intelligence', ['--file' => 'test_intelligence.json'])
+        $this->artisan('exercises:sync-intelligence', ['--file' => 'test_data/test_intelligence.json'])
             ->expectsOutput('Exercise not found or not global: nonexistent_exercise. Skipping.')
             ->assertExitCode(0);
 
         // Test with include-user-exercises flag
         $this->artisan('exercises:sync-intelligence', [
-            '--file' => 'test_intelligence.json',
+            '--file' => 'test_data/test_intelligence.json',
             '--include-user-exercises' => true
         ])
             ->expectsOutput('Exercise not found: nonexistent_exercise. Skipping.')
