@@ -23,14 +23,14 @@
   - Ensure backward compatibility with existing form submissions
   - _Requirements: 1.4, 2.2_
 
-- [ ] 5. Add global exercise preference to profile settings form
+- [x] 5. Add global exercise preference to profile settings form
   - Add checkbox input for global exercise visibility in `update-profile-information-form.blade.php`
   - Include proper label "Show global exercises in mobile entry"
   - Add help text explaining the setting
   - Ensure form includes the field in submission
   - _Requirements: 1.1, 1.4, 3.3_
 
-- [ ] 6. Update LiftLogController to respect user preference
+- [x] 6. Update LiftLogController to respect user preference
   - Modify `mobileEntry` method to get user's global exercise preference
   - Pass preference to Exercise query using updated scope method
   - Maintain existing exercise filtering and mapping logic

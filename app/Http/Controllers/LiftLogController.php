@@ -418,7 +418,11 @@ class LiftLogController extends Controller
             ->get()
             ->keyBy('exercise_id'); // Key by exercise_id for easy lookup
 
-        $exercises = \App\Models\Exercise::availableToUser(auth()->id())
+        // Get user's global exercise preference
+        $user = auth()->user();
+        $showGlobalExercises = $user->shouldShowGlobalExercises();
+        
+        $exercises = \App\Models\Exercise::availableToUser(auth()->id(), $showGlobalExercises)
             ->orderBy('title')
             ->get()
             ->map(function ($exercise) {

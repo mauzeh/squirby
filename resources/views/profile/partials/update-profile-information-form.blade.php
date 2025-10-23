@@ -51,6 +51,32 @@
             @endif
         </div>
 
+        <div class="form-group">
+            <div class="flex items-start">
+                <div class="flex items-center h-5">
+                    <input 
+                        id="show_global_exercises" 
+                        name="show_global_exercises" 
+                        type="checkbox" 
+                        class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded"
+                        value="1"
+                        {{ old('show_global_exercises', $user->show_global_exercises ?? true) ? 'checked' : '' }}
+                    />
+                </div>
+                <div class="ml-3 text-sm">
+                    <label for="show_global_exercises" class="font-medium text-gray-700">
+                        Show global exercises in mobile entry
+                    </label>
+                    <p class="text-gray-500">
+                        When enabled, you'll see both your personal exercises and global exercises in the mobile lift entry interface. When disabled, only your personal exercises will be shown.
+                    </p>
+                </div>
+            </div>
+            @error('show_global_exercises')
+                <div class="error-message">{{ $message }}</div>
+            @enderror
+        </div>
+
         <div class="flex items-center gap-4">
             <button type="submit" class="button">Save</button>
 
