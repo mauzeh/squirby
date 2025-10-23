@@ -1,0 +1,3 @@
+Merge feature/stefan-workout-import into main
+
+This merge incorporates the new JSON lift log import functionality, global exercise visibility toggle, and associated tests and documentation.

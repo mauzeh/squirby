@@ -1,0 +1,31 @@
+bench max 225 (5)
+db pull max 90 (10)
+incline bench max 175 (5) / dumbbell max 140 (5)
+tricep pushdown max 52.5 (8)
+
+strict press max 110 (4)
+barbell curl max 100 (8) stay
+db pull up max 15 stay
+shoulder press max 110 (7)
+bicep curl machine max ? (8)
+
+squat max 255 (8) / leg press max 450 (12) / seated leg press max 290
+glute drive max 315 (8)
+leg curl max 140 (12) stay / seated leg curl max 110 (8)
+standing calf raise max 235 (12)
+
+barbell row max 165 (8)
+decline bench max 170 (7)
+seated row max 140 (8)
+pec fly max 155 (8)
+
+deadlift max 275 
+A.
+overhead lunge max 40 (10)
+db pull thru max 40 (8)
+kb swing max 50 (25)
+B.
+glute drive max 305 (8)
+seated calf raise max 80 (12)
+leg extension max 145 (8)
+plank 90s side plank 40s

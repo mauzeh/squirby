@@ -517,4 +517,99 @@ class ExerciseTest extends TestCase
         $expectedCanonicalName = 'this_is_a_very_long_exercise_title_that_contains_many_words_and_should_be_properly_converted_to_a_canonical_name_format';
         $this->assertEquals($expectedCanonicalName, $exercise->canonical_name);
     }
+
+    /** @test */
+    public function scope_available_to_user_respects_show_global_preference_false()
+    {
+        $user = \App\Models\User::factory()->create();
+        $otherUser = \App\Models\User::factory()->create();
+        
+        // Create exercises
+        $globalExercise1 = Exercise::factory()->create(['user_id' => null, 'title' => 'Global Exercise 1']);
+        $globalExercise2 = Exercise::factory()->create(['user_id' => null, 'title' => 'Global Exercise 2']);
+        $userExercise = Exercise::factory()->create(['user_id' => $user->id, 'title' => 'User Exercise']);
+        $otherUserExercise = Exercise::factory()->create(['user_id' => $otherUser->id, 'title' => 'Other User Exercise']);
+
+        // Test with showGlobal = false
+        $availableToUser = Exercise::availableToUser($user->id, false)->get();
+
+        // Should only show user's own exercises
+        $this->assertCount(1, $availableToUser);
+        $this->assertTrue($availableToUser->contains($userExercise));
+        $this->assertFalse($availableToUser->contains($globalExercise1));
+        $this->assertFalse($availableToUser->contains($globalExercise2));
+        $this->assertFalse($availableToUser->contains($otherUserExercise));
+    }
+
+    /** @test */
+    public function scope_available_to_user_respects_show_global_preference_true()
+    {
+        $user = \App\Models\User::factory()->create();
+        $otherUser = \App\Models\User::factory()->create();
+        
+        // Create exercises
+        $globalExercise1 = Exercise::factory()->create(['user_id' => null, 'title' => 'Global Exercise 1']);
+        $globalExercise2 = Exercise::factory()->create(['user_id' => null, 'title' => 'Global Exercise 2']);
+        $userExercise = Exercise::factory()->create(['user_id' => $user->id, 'title' => 'User Exercise']);
+        $otherUserExercise = Exercise::factory()->create(['user_id' => $otherUser->id, 'title' => 'Other User Exercise']);
+
+        // Test with showGlobal = true (explicit)
+        $availableToUser = Exercise::availableToUser($user->id, true)->get();
+
+        // Should show global + user exercises
+        $this->assertCount(3, $availableToUser);
+        $this->assertTrue($availableToUser->contains($globalExercise1));
+        $this->assertTrue($availableToUser->contains($globalExercise2));
+        $this->assertTrue($availableToUser->contains($userExercise));
+        $this->assertFalse($availableToUser->contains($otherUserExercise));
+    }
+
+    /** @test */
+    public function scope_available_to_user_admin_sees_all_exercises_regardless_of_preference()
+    {
+        // Create admin user with role
+        $adminRole = \App\Models\Role::factory()->create(['name' => 'Admin']);
+        $admin = \App\Models\User::factory()->create();
+        $admin->roles()->attach($adminRole);
+        
+        // Create regular users
+        $user1 = \App\Models\User::factory()->create();
+        $user2 = \App\Models\User::factory()->create();
+        
+        // Create exercises
+        $globalExercise = Exercise::factory()->create(['user_id' => null, 'title' => 'Global Exercise']);
+        $user1Exercise = Exercise::factory()->create(['user_id' => $user1->id, 'title' => 'User 1 Exercise']);
+        $user2Exercise = Exercise::factory()->create(['user_id' => $user2->id, 'title' => 'User 2 Exercise']);
+        $adminExercise = Exercise::factory()->create(['user_id' => $admin->id, 'title' => 'Admin Exercise']);
+
+        // Test admin with showGlobal = false (should still see all)
+        $availableToAdmin = Exercise::availableToUser($admin->id, false)->get();
+
+        // Admin should see all exercises regardless of preference
+        $this->assertCount(4, $availableToAdmin);
+        $this->assertTrue($availableToAdmin->contains($globalExercise));
+        $this->assertTrue($availableToAdmin->contains($user1Exercise));
+        $this->assertTrue($availableToAdmin->contains($user2Exercise));
+        $this->assertTrue($availableToAdmin->contains($adminExercise));
+    }
+
+    /** @test */
+    public function scope_available_to_user_maintains_ordering_when_show_global_false()
+    {
+        $user = \App\Models\User::factory()->create();
+        
+        // Create user exercises with different titles to test ordering
+        $userExercise1 = Exercise::factory()->create(['user_id' => $user->id, 'title' => 'Z Exercise']);
+        $userExercise2 = Exercise::factory()->create(['user_id' => $user->id, 'title' => 'A Exercise']);
+        $globalExercise = Exercise::factory()->create(['user_id' => null, 'title' => 'Global Exercise']);
+
+        // Test with showGlobal = false
+        $availableToUser = Exercise::availableToUser($user->id, false)->get();
+
+        // Should only show user exercises, ordered by title
+        $this->assertCount(2, $availableToUser);
+        $this->assertEquals($userExercise2->id, $availableToUser->first()->id); // 'A Exercise' comes first
+        $this->assertEquals($userExercise1->id, $availableToUser->last()->id);  // 'Z Exercise' comes last
+        $this->assertFalse($availableToUser->contains($globalExercise));
+    }
 }

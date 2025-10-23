@@ -187,4 +187,53 @@ class ProfileTest extends TestCase
         $response->assertSee('The name field is required.');
         $response->assertSee('The email field must be a valid email address.');
     }
+
+    /** @test */
+    public function test_show_global_exercises_field_accepts_valid_boolean_values(): void
+    {
+        $user = User::factory()->create();
+
+        // Test with true
+        $response = $this
+            ->actingAs($user)
+            ->patch('/profile', [
+                'name' => $user->name,
+                'email' => $user->email,
+                'show_global_exercises' => true,
+            ]);
+
+        $response->assertSessionHasNoErrors();
+
+        // Test with false
+        $response = $this
+            ->actingAs($user)
+            ->patch('/profile', [
+                'name' => $user->name,
+                'email' => $user->email,
+                'show_global_exercises' => false,
+            ]);
+
+        $response->assertSessionHasNoErrors();
+
+        // Test with null (should be allowed)
+        $response = $this
+            ->actingAs($user)
+            ->patch('/profile', [
+                'name' => $user->name,
+                'email' => $user->email,
+                'show_global_exercises' => null,
+            ]);
+
+        $response->assertSessionHasNoErrors();
+
+        // Test without the field (backward compatibility)
+        $response = $this
+            ->actingAs($user)
+            ->patch('/profile', [
+                'name' => $user->name,
+                'email' => $user->email,
+            ]);
+
+        $response->assertSessionHasNoErrors();
+    }
 }
