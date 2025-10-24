@@ -24,7 +24,6 @@ class LiftLogLoggingTest extends TestCase {
         $response = $this->get(route('exercises.show-logs', ['exercise' => $exercise->id]));
 
         $response->assertStatus(200);
-        $response->assertSee('Add Lift Log');
     }
 
     /** @test */
@@ -384,70 +383,5 @@ class LiftLogLoggingTest extends TestCase {
         $response->assertSee($expected1RM . ' lbs (est. incl. BW)');
     }
 
-    /** @test */
-    public function regular_form_time_select_contains_only_15_minute_intervals()
-    {
-        $exercise = \App\Models\Exercise::factory()->create(['user_id' => $this->user->id]);
-        
-        $response = $this->get(route('exercises.show-logs', ['exercise' => $exercise->id]));
-        
-        $response->assertStatus(200);
-        
-        // Verify that the time select contains 15-minute intervals
-        $expectedTimes = [
-            '00:00', '00:15', '00:30', '00:45',
-            '01:00', '01:15', '01:30', '01:45',
-            '12:00', '12:15', '12:30', '12:45',
-            '23:00', '23:15', '23:30', '23:45'
-        ];
-        
-        foreach ($expectedTimes as $time) {
-            $response->assertSee('value="' . $time . '"', false);
-        }
-        
-        // Verify that non-15-minute intervals are NOT present
-        $unexpectedTimes = [
-            '00:01', '00:05', '00:10', '00:20', '00:25',
-            '12:07', '12:13', '12:22', '12:37', '12:52',
-            '23:03', '23:08', '23:17', '23:33', '23:59'
-        ];
-        
-        foreach ($unexpectedTimes as $time) {
-            $response->assertDontSee('value="' . $time . '"', false);
-        }
-    }
 
-    /** @test */
-    public function regular_form_saves_time_exactly_as_selected_from_dropdown()
-    {
-        $exercise = \App\Models\Exercise::factory()->create(['user_id' => $this->user->id]);
-
-        // Test that times from the dropdown are saved exactly as selected
-        $testTimes = ['08:15', '14:30', '20:45', '23:00'];
-
-        foreach ($testTimes as $selectedTime) {
-            $liftLogData = [
-                'exercise_id' => $exercise->id,
-                'weight' => 100,
-                'reps' => 5,
-                'rounds' => 3,
-                'comments' => 'Regular form time test',
-                'date' => now()->format('Y-m-d'),
-                'logged_at' => $selectedTime,
-            ];
-
-            $response = $this->post(route('lift-logs.store'), $liftLogData);
-
-            // Verify the lift log was created with the exact selected time
-            $expectedDateTime = \Carbon\Carbon::today()->setTimeFromTimeString($selectedTime);
-            $this->assertDatabaseHas('lift_logs', [
-                'user_id' => $this->user->id,
-                'exercise_id' => $exercise->id,
-                'logged_at' => $expectedDateTime->format('Y-m-d H:i:s'),
-            ]);
-
-            // Clean up for next iteration
-            \App\Models\LiftLog::where('user_id', $this->user->id)->delete();
-        }
-    }
 }

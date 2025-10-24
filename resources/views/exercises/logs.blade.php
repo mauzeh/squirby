@@ -19,8 +19,6 @@
             <h1>{{ $exercise->title }}</h1>
         </div>
 
-        <x-lift-logs.add-lift-log-form :exercises="$exercises" :selectedExercise="$exercise" :sets="$sets ?? null" :reps="$reps ?? null" :weight="$weight ?? null" />
-
         @if ($liftLogs->isEmpty())
             <p>No lift logs found for this exercise.</p>
         @else

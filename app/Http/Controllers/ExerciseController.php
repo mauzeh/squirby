@@ -275,11 +275,7 @@ class ExerciseController extends Controller
 
         $exercises = Exercise::availableToUser()->orderBy('title', 'asc')->get();
 
-        $sets = $request->input('sets');
-        $reps = $request->input('reps');
-        $weight = $request->input('weight');
-
-        return view('exercises.logs', compact('exercise', 'chartData', 'displayExercises', 'exercises', 'sets', 'reps', 'weight') + $tableData);
+        return view('exercises.logs', compact('exercise', 'chartData', 'displayExercises', 'exercises') + $tableData);
     }
 
     public function importTsv(Request $request)
