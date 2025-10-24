@@ -29,6 +29,11 @@ class TrainingProgressionService
             return null;
         }
 
+        return $this->getSuggestionDetailsWithLog($lastLog, $userId, $exerciseId, $forDate);
+    }
+
+    public function getSuggestionDetailsWithLog(LiftLog $lastLog, int $userId, int $exerciseId, Carbon $forDate = null): ?object
+    {
         if ($lastLog->exercise->band_type !== null) {
             $lastLoggedReps = $lastLog->liftSets->first()->reps ?? 0;
             $lastLoggedBandColor = $lastLog->liftSets->first()->band_color ?? null;

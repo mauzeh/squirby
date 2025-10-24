@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Exercise;
 use App\Models\ExerciseIntelligence;
+use App\Models\LiftLog;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 
@@ -19,10 +20,15 @@ class RecommendationEngine
      * @param int $userId The user to generate recommendations for
      * @param int $count Number of recommendations to return (default: 5)
      * @param bool $showGlobalExercises Whether to include global exercises (optional override)
+     * @param bool $lightweightMode Skip expensive analysis for faster results (default: false)
      * @return array Array of recommended exercises with scores and reasoning
      */
-    public function getRecommendations(int $userId, int $count = 5, bool $showGlobalExercises = null): array
+    public function getRecommendations(int $userId, int $count = 5, bool $showGlobalExercises = null, bool $lightweightMode = false): array
     {
+        if ($lightweightMode) {
+            return $this->getLightweightRecommendations($userId, $count, $showGlobalExercises);
+        }
+
         // Analyze user's recent activity
         $userActivity = $this->analyzeUserActivity($userId);
         
@@ -48,6 +54,44 @@ class RecommendationEngine
         
         // Return top recommendations
         return array_slice($scoredExercises, 0, $count);
+    }
+
+    /**
+     * Get lightweight recommendations without expensive analysis
+     * Just returns exercises with intelligence data, randomly shuffled
+     */
+    private function getLightweightRecommendations(int $userId, int $count = 5, bool $showGlobalExercises = null): array
+    {
+        // Get recent exercises to avoid recommending them
+        $recentExerciseIds = LiftLog::where('user_id', $userId)
+            ->where('logged_at', '>=', Carbon::now()->subDays(7))
+            ->pluck('exercise_id')
+            ->unique()
+            ->toArray();
+
+        $exercises = Exercise::availableToUser($userId, $showGlobalExercises)
+            ->withIntelligence()
+            ->with('intelligence')
+            ->whereNotIn('id', $recentExerciseIds)
+            ->inRandomOrder()
+            ->take($count * 2) // Get more than needed to have options
+            ->get();
+
+        $recommendations = [];
+        foreach ($exercises as $exercise) {
+            if (count($recommendations) >= $count) {
+                break;
+            }
+
+            $recommendations[] = [
+                'exercise' => $exercise,
+                'intelligence' => $exercise->intelligence,
+                'score' => 1.0, // Simple score for lightweight mode
+                'reasoning' => ['Quick recommendation based on available exercises']
+            ];
+        }
+
+        return $recommendations;
     }
 
     /**

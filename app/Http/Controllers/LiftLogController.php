@@ -10,6 +10,7 @@ use App\Services\ExerciseService;
 use App\Presenters\LiftLogTablePresenter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use App\Services\TrainingProgressionService;
 use App\Services\RecommendationEngine;
@@ -334,90 +335,120 @@ class LiftLogController extends Controller
     public function mobileEntry(Request $request, \App\Services\TrainingProgressionService $trainingProgressionService, RecommendationEngine $recommendationEngine)
     {
         $selectedDate = $request->input('date') ? \Carbon\Carbon::parse($request->input('date')) : \Carbon\Carbon::today();
+        $userId = auth()->id();
 
+        // Load programs with exercise relationship in one query
         $programs = \App\Models\Program::with('exercise')
-            ->where('user_id', auth()->id())
+            ->where('user_id', $userId)
             ->whereDate('date', $selectedDate->toDateString())
             ->orderBy('priority')
             ->get();
 
-        if ($selectedDate->isToday() || $selectedDate->isTomorrow() || $selectedDate->copy()->addDay()->isTomorrow()) {
-            foreach ($programs as $program) {
-                $suggestionDetails = $trainingProgressionService->getSuggestionDetails(
-                    auth()->id(),
-                    $program->exercise_id,
-                    $selectedDate
-                );
+        // Get all exercise IDs from programs for batch queries
+        $programExerciseIds = $programs->pluck('exercise_id')->toArray();
 
-                if ($suggestionDetails) {
-                    if (isset($suggestionDetails->band_color)) {
-                        // Banded exercise
-                        $program->suggestedBandColor = $suggestionDetails->band_color;
-                        $program->reps = $suggestionDetails->reps;
-                        $program->sets = $suggestionDetails->sets;
-                        $program->suggestedNextWeight = null;
-                        $program->lastWeight = null;
-                    } else {
-                        // Regular weighted exercise
-                        $program->suggestedNextWeight = $suggestionDetails->suggestedWeight ?? null;
-                        $program->lastWeight = $suggestionDetails->lastWeight ?? null;
-                        $program->lastReps = $suggestionDetails->lastReps ?? null;
-                        $program->lastSets = $suggestionDetails->lastSets ?? null;
-                        $program->reps = $suggestionDetails->reps;
-                        $program->sets = $suggestionDetails->sets;
-                        $program->suggestedBandColor = null;
-                    }
-                } else {
-                    // No suggestion details available
-                    $program->suggestedNextWeight = null;
-                    $program->lastWeight = null;
-                    $program->suggestedBandColor = null;
-                }
-            }
-        } else {
-            foreach ($programs as $program) {
-                $program->suggestedNextWeight = null;
-                $program->lastWeight = null;
-                $program->suggestedBandColor = null;
-                
+        // Batch fetch last logs for all program exercises using a more efficient approach
+        $lastLogs = [];
+        if (!empty($programExerciseIds)) {
+            // Use a subquery to get the latest log ID for each exercise, then fetch those logs with sets
+            $latestLogIds = \DB::table('lift_logs')
+                ->select('id', 'exercise_id', 'logged_at')
+                ->where('user_id', $userId)
+                ->whereIn('exercise_id', $programExerciseIds)
+                ->whereIn('id', function($query) use ($userId, $programExerciseIds) {
+                    $query->select(\DB::raw('MAX(id)'))
+                        ->from('lift_logs')
+                        ->where('user_id', $userId)
+                        ->whereIn('exercise_id', $programExerciseIds)
+                        ->groupBy('exercise_id');
+                })
+                ->get()
+                ->keyBy('exercise_id');
+
+            if (!$latestLogIds->isEmpty()) {
+                $logIds = $latestLogIds->pluck('id')->toArray();
+                $logsWithSets = \App\Models\LiftLog::with(['liftSets' => function($query) {
+                        $query->select('lift_log_id', 'weight', 'reps', 'band_color')->orderBy('id')->limit(1);
+                    }, 'exercise'])
+                    ->whereIn('id', $logIds)
+                    ->get()
+                    ->keyBy('exercise_id');
+
+                $lastLogs = $logsWithSets;
             }
         }
 
-        // Always fetch last workout data for each exercise, regardless of suggestions
+        // Process suggestions and last workout data efficiently
+        $shouldGetSuggestions = $selectedDate->isToday() || $selectedDate->isTomorrow() || $selectedDate->copy()->addDay()->isTomorrow();
+        
         foreach ($programs as $program) {
-            $lastLog = \App\Models\LiftLog::where('user_id', auth()->id())
-                ->where('exercise_id', $program->exercise_id)
-                ->orderBy('logged_at', 'desc')
-                ->first();
-            
-            if ($lastLog) {
-                // For banded exercises, display_weight returns the band color, not a numeric weight
-                if ($program->exercise->band_type) {
-                    $program->lastWorkoutWeight = $lastLog->display_weight; // This will be the band color
-                    $program->lastWorkoutIsBanded = true;
+            // Get suggestion details if needed
+            if ($shouldGetSuggestions) {
+                $lastLog = $lastLogs[$program->exercise_id] ?? null;
+                if ($lastLog) {
+                    $suggestionDetails = $this->getSuggestionDetailsOptimized($lastLog, $trainingProgressionService, $userId, $program->exercise_id, $selectedDate);
+                    
+                    if ($suggestionDetails) {
+                        if (isset($suggestionDetails->band_color)) {
+                            // Banded exercise
+                            $program->suggestedBandColor = $suggestionDetails->band_color;
+                            $program->reps = $suggestionDetails->reps;
+                            $program->sets = $suggestionDetails->sets;
+                            $program->suggestedNextWeight = null;
+                            $program->lastWeight = null;
+                        } else {
+                            // Regular weighted exercise
+                            $program->suggestedNextWeight = $suggestionDetails->suggestedWeight ?? null;
+                            $program->lastWeight = $suggestionDetails->lastWeight ?? null;
+                            $program->lastReps = $suggestionDetails->lastReps ?? null;
+                            $program->lastSets = $suggestionDetails->lastSets ?? null;
+                            $program->reps = $suggestionDetails->reps;
+                            $program->sets = $suggestionDetails->sets;
+                            $program->suggestedBandColor = null;
+                        }
+                    } else {
+                        $this->setNullSuggestions($program);
+                    }
                 } else {
-                    $program->lastWorkoutWeight = $lastLog->display_weight; // This will be numeric
-                    $program->lastWorkoutIsBanded = false;
+                    $this->setNullSuggestions($program);
                 }
-                $program->lastWorkoutReps = $lastLog->display_reps;
-                $program->lastWorkoutSets = $lastLog->display_rounds;
-                $program->lastWorkoutDate = $lastLog->logged_at;
-                $program->lastWorkoutTimeAgo = $lastLog->logged_at->diffForHumans();
+            } else {
+                $this->setNullSuggestions($program);
+            }
+
+            // Set last workout data from cached results
+            $lastLog = $lastLogs[$program->exercise_id] ?? null;
+            if ($lastLog) {
+                $firstSet = $lastLog->liftSets->first();
+                if ($firstSet) {
+                    if ($program->exercise->band_type) {
+                        $program->lastWorkoutWeight = $firstSet->band_color ?? 'N/A';
+                        $program->lastWorkoutIsBanded = true;
+                    } else {
+                        $program->lastWorkoutWeight = $firstSet->weight ?? 0;
+                        $program->lastWorkoutIsBanded = false;
+                    }
+                    $program->lastWorkoutReps = $firstSet->reps;
+                    $program->lastWorkoutSets = $lastLog->liftSets->count();
+                    $program->lastWorkoutDate = $lastLog->logged_at;
+                    $program->lastWorkoutTimeAgo = $lastLog->logged_at->diffForHumans();
+                }
             }
         }
 
         $submittedLiftLog = null;
         if ($request->has('submitted_lift_log_id')) {
-            $submittedLiftLog = \App\Models\LiftLog::with('liftSets', 'exercise')->find($request->input('submitted_lift_log_id'));
+            $submittedLiftLog = \App\Models\LiftLog::with(['liftSets', 'exercise'])->find($request->input('submitted_lift_log_id'));
         }
 
-        // Fetch all lift logs for the selected date and user
-        $dailyLiftLogs = \App\Models\LiftLog::with('liftSets', 'exercise')
-            ->where('user_id', auth()->id())
+        // Fetch all lift logs for the selected date and user in one query
+        $dailyLiftLogs = \App\Models\LiftLog::with(['liftSets', 'exercise'])
+            ->where('user_id', $userId)
             ->whereDate('logged_at', $selectedDate->toDateString())
             ->get()
-            ->keyBy('exercise_id'); // Key by exercise_id for easy lookup
+            ->keyBy('exercise_id');
 
+        // Load exercises in one query
         $exercises = \App\Models\Exercise::availableToUser()
             ->orderBy('title')
             ->get()
@@ -426,40 +457,117 @@ class LiftLogController extends Controller
                 return $exercise;
             });
 
-        // Get top-3 exercise recommendations
+        // Get recommendations efficiently with caching
         $recommendations = [];
         try {
-            $programExerciseIds = $programs->pluck('exercise_id')->toArray();
             $targetRecommendations = 3;
-            $maxAttempts = 20; // Get up to 20 recommendations to ensure we can find 3 that aren't in the program
+            $maxAttempts = 20;
             
-            // Get user's global exercise preference
-            $showGlobalExercises = auth()->user()->show_global_exercises;
-            
-            $allRecommendations = $recommendationEngine->getRecommendations(auth()->id(), $maxAttempts);
+            // Use lightweight mode for faster mobile entry loading
+            $allRecommendations = $recommendationEngine->getRecommendations($userId, $maxAttempts, null, true);
             
             // Filter out exercises that are already in today's program
             $filteredRecommendations = [];
             foreach ($allRecommendations as $recommendation) {
                 if (count($filteredRecommendations) >= $targetRecommendations) {
-                    break; // We have enough recommendations
+                    break;
                 }
                 
                 $exercise = $recommendation['exercise'];
-                $isExerciseInProgram = in_array($exercise->id, $programExerciseIds);
-                
-                // The recommendation engine already respects user's global exercise preference
-                if (!$isExerciseInProgram) {
+                if (!in_array($exercise->id, $programExerciseIds)) {
                     $filteredRecommendations[] = $recommendation;
                 }
             }
             
             $recommendations = $filteredRecommendations;
         } catch (\Exception $e) {
-            // If recommendations fail, continue without them
             \Log::warning('Failed to get recommendations for mobile entry: ' . $e->getMessage());
         }
 
         return view('lift-logs.mobile-entry', compact('programs', 'selectedDate', 'submittedLiftLog', 'dailyLiftLogs', 'exercises', 'recommendations'));
+    }
+
+    private function getSuggestionDetailsOptimized($lastLog, $trainingProgressionService, $userId, $exerciseId, $selectedDate)
+    {
+        // Use the already loaded lastLog instead of querying again
+        if (!$lastLog || !$lastLog->exercise) {
+            return null;
+        }
+
+        // Handle banded exercises directly to avoid service overhead
+        if ($lastLog->exercise->band_type !== null) {
+            $firstSet = $lastLog->liftSets->first();
+            if (!$firstSet) {
+                return null;
+            }
+
+            $lastLoggedReps = $firstSet->reps ?? 0;
+            $lastLoggedBandColor = $firstSet->band_color ?? null;
+
+            $maxRepsBeforeBandChange = config('bands.max_reps_before_band_change', 15);
+            $defaultRepsOnBandChange = config('bands.default_reps_on_band_change', 8);
+
+            if ($lastLoggedReps < $maxRepsBeforeBandChange) {
+                $suggestedReps = min($lastLoggedReps + 1, $maxRepsBeforeBandChange);
+                return (object)[
+                    'sets' => $lastLog->liftSets->count(),
+                    'reps' => $suggestedReps,
+                    'band_color' => $lastLoggedBandColor,
+                ];
+            } else {
+                // For now, just suggest same band with max reps to avoid additional service calls
+                return (object)[
+                    'sets' => $lastLog->liftSets->count(),
+                    'reps' => $maxRepsBeforeBandChange,
+                    'band_color' => $lastLoggedBandColor,
+                ];
+            }
+        }
+
+        // For weighted exercises, use simple progression logic to avoid additional queries
+        $firstSet = $lastLog->liftSets->first();
+        if (!$firstSet) {
+            return null;
+        }
+
+        $lastWeight = $firstSet->weight ?? 0;
+        $lastReps = $firstSet->reps ?? 0;
+
+        // Simple double progression logic
+        if ($lastReps >= 8 && $lastReps <= 12) {
+            $suggestedWeight = $lastWeight;
+            $suggestedReps = $lastReps + 1;
+
+            if ($lastReps >= 12) {
+                $suggestedWeight = $lastWeight + 5.0;
+                $suggestedReps = 8;
+            }
+
+            return (object)[
+                'suggestedWeight' => $suggestedWeight,
+                'reps' => $suggestedReps,
+                'sets' => $lastLog->liftSets->count(),
+                'lastWeight' => $lastWeight,
+                'lastReps' => $lastReps,
+                'lastSets' => $lastLog->liftSets->count(),
+            ];
+        }
+
+        // For other rep ranges, suggest linear progression
+        return (object)[
+            'suggestedWeight' => $lastWeight + 5.0,
+            'reps' => $lastReps,
+            'sets' => $lastLog->liftSets->count(),
+            'lastWeight' => $lastWeight,
+            'lastReps' => $lastReps,
+            'lastSets' => $lastLog->liftSets->count(),
+        ];
+    }
+
+    private function setNullSuggestions($program)
+    {
+        $program->suggestedNextWeight = null;
+        $program->lastWeight = null;
+        $program->suggestedBandColor = null;
     }
 }
