@@ -37,10 +37,9 @@ class ExerciseControllerTest extends TestCase
         // Create controller instance with mocked dependencies
         $exerciseService = $this->createMock(\App\Services\ExerciseService::class);
         $chartService = $this->createMock(\App\Services\ChartService::class);
-        $tsvImporterService = $this->createMock(\App\Services\TsvImporterService::class);
         $liftLogTablePresenter = $this->createMock(\App\Presenters\LiftLogTablePresenter::class);
         
-        $this->controller = new ExerciseController($exerciseService, $chartService, $tsvImporterService, $liftLogTablePresenter);
+        $this->controller = new ExerciseController($exerciseService, $chartService, $liftLogTablePresenter);
     }
 
     public function test_promote_authorizes_exercise(): void

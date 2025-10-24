@@ -59,39 +59,5 @@
             </table>
         @endif
 
-        <div class="form-container">
-            <h3>TSV Export</h3>
-            <textarea id="tsv-output" rows="10" style="width: 100%; background-color: #3a3a3a; color: #f2f2f2; border: 1px solid #555;">Ingredient	Amount	Type	Calories	Fat (g)	Sodium (mg)	Carb (g)	Fiber (g)	Added Sugar (g)	Protein (g)	Calcium (mg)	Potassium (mg)	Caffeine (mg)	Iron (mg)	Cost ($)
-@foreach ($ingredients as $ingredient){{ $ingredient->name }}	{{ $ingredient->base_quantity }}	{{ $ingredient->baseUnit->abbreviation }}	{{ $ingredient->calories }}	{{ $ingredient->fats }}	{{ $ingredient->sodium }}	{{ $ingredient->carbs }}	{{ $ingredient->fiber }}	{{ $ingredient->added_sugars }}	{{ $ingredient->protein }}	{{ $ingredient->calcium }}	{{ $ingredient->potassium }}	{{ $ingredient->caffeine }}	{{ $ingredient->iron }}	{{ $ingredient->cost_per_unit }}
-@endforeach
-            </textarea>
-            <button id="copy-tsv-button" class="button">Copy to Clipboard</button>
-        </div>
-
-        @if (!app()->environment(['production', 'staging']))
-        <div class="form-container">
-            <h3>TSV Import</h3>
-            <form action="{{ route('ingredients.import-tsv') }}" method="POST">
-                @csrf
-                <textarea name="tsv_data" rows="10" style="width: 100%; background-color: #3a3a3a; color: #f2f2f2; border: 1px solid #555;"></textarea>
-                <button type="submit" class="button">Import TSV</button>
-            </form>
-        </div>
-        @endif
-
     </div>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const copyTsvButton = document.getElementById('copy-tsv-button');
-            if (copyTsvButton) {
-                copyTsvButton.addEventListener('click', function() {
-                    var tsvOutput = document.getElementById('tsv-output');
-                    tsvOutput.select();
-                    document.execCommand('copy');
-                    alert('TSV data copied to clipboard!');
-                });
-            }
-        });
-    </script>
 @endsection

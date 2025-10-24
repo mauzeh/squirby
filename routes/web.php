@@ -73,31 +73,7 @@ Route::middleware('auth')->group(function () {
     // Exercise Recommendations (Keep these routes)
     Route::get('recommendations', [RecommendationController::class, 'index'])->name('recommendations.index');
 
-    /*
-    |--------------------------------------------------------------------------
-    | TSV Import Routes - Development/Testing Only
-    |--------------------------------------------------------------------------
-    |
-    | These routes handle TSV (Tab-Separated Values) data imports for various
-    | data types. They are restricted to production and staging environments for
-    | security reasons to prevent unauthorized data manipulation in live systems.
-    |
-    | Protection layers:
-    | 1. Environment check: Routes only registered in development/testing
-    | 2. Middleware: Additional protection via 'no.tsv.in.production' middleware
-    | 3. UI hiding: Import forms hidden in production/staging via Blade conditionals
-    |
-    */
-    if (!app()->environment(['production', 'staging'])) {
-        Route::middleware('no.tsv.in.production')->group(function () {
-            Route::post('food-logs/import-tsv', [FoodLogController::class, 'importTsv'])->name('food-logs.import-tsv');
-            Route::post('ingredients/import-tsv', [IngredientController::class, 'importTsv'])->name('ingredients.import-tsv');
-            Route::post('body-logs/import-tsv', [BodyLogController::class, 'importTsv'])->name('body-logs.import-tsv');
-            Route::post('exercises/import-tsv', [ExerciseController::class, 'importTsv'])->name('exercises.import-tsv');
-            Route::post('lift-logs/import-tsv', [LiftLogController::class, 'importTsv'])->name('lift-logs.import-tsv');
-            Route::post('programs/import', [ProgramController::class, 'import'])->name('programs.import');
-        });
-    }
+
 
     Route::post('lift-logs/destroy-selected', [LiftLogController::class, 'destroySelected'])->name('lift-logs.destroy-selected');
     Route::get('lift-logs/mobile-entry', [LiftLogController::class, 'mobileEntry'])->name('lift-logs.mobile-entry');

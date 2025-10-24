@@ -211,21 +211,5 @@ class FoodLogMultiUserTest extends TestCase
         $this->assertDatabaseMissing('food_logs', ['user_id' => $this->user1->id]);
     }
 
-    /** @test */
-    public function authenticated_user_can_import_food_logs()
-    {
-        $tsvData = "2025-01-03\t10:00\t" . $this->ingredient1->name . "\tNote\t100";
 
-        $response = $this->actingAs($this->user1)->post(route('food-logs.import-tsv'), [
-            'tsv_data' => $tsvData,
-            'date' => '2025-01-03',
-        ]);
-
-        $response->assertRedirect(route('food-logs.index', ['date' => '2025-01-03']));
-        $this->assertDatabaseHas('food_logs', [
-            'user_id' => $this->user1->id,
-            'ingredient_id' => $this->ingredient1->id,
-            'quantity' => 100,
-        ]);
-    }
 }

@@ -4,35 +4,24 @@ namespace App\Http\Controllers;
 
 use App\Models\BodyLog;
 use App\Models\MeasurementType;
-use App\Services\TsvImporterService;
+
 use App\Services\ChartService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 
 class BodyLogController extends Controller
 {
-    protected $tsvImporterService;
     protected $chartService;
 
-    public function __construct(TsvImporterService $tsvImporterService, ChartService $chartService)
+    public function __construct(ChartService $chartService)
     {
-        $this->tsvImporterService = $tsvImporterService;
         $this->chartService = $chartService;
     }
 
     public function index()
     {
         $bodyLogs = BodyLog::with('measurementType')->where('user_id', auth()->id())->orderBy('logged_at', 'desc')->get();
-        $tsv = '';
-        foreach ($bodyLogs->reverse() as $bodyLog) {
-            $tsv .= $bodyLog->logged_at->format('m/d/Y') . "\t";
-            $tsv .= $bodyLog->logged_at->format('H:i') . "\t";
-            $tsv .= $bodyLog->measurementType->name . "\t";
-            $tsv .= $bodyLog->value . "\t";
-            $tsv .= $bodyLog->measurementType->default_unit . "\t";
-            $tsv .= $bodyLog->comments . "\n";
-        }
-        return view('body-logs.index', compact('bodyLogs', 'tsv'));
+        return view('body-logs.index', compact('bodyLogs'));
     }
 
     public function create(Request $request)
@@ -129,67 +118,7 @@ class BodyLogController extends Controller
         return redirect()->route('body-logs.index')->with('success', 'Selected body logs deleted successfully!');
     }
 
-    public function importTsv(Request $request)
-    {
-        $validated = $request->validate([
-            'tsv_data' => 'nullable|string',
-        ]);
 
-        $tsvData = trim($validated['tsv_data']);
-        if (empty($tsvData)) {
-            return redirect()
-                ->route('body-logs.index')
-                ->with('error', 'TSV data cannot be empty.');
-        }
-
-        $result = $this->tsvImporterService->importMeasurements($tsvData, auth()->id());
-
-        // Handle errors first
-        if ($result['importedCount'] === 0 && !empty($result['invalidRows'])) {
-            $invalidRowCount = count($result['invalidRows']);
-            
-            if ($invalidRowCount > 10) {
-                $errorMessage = 'No measurements were imported due to invalid data in ' . $invalidRowCount . ' rows.';
-            } else {
-                $errorMessage = 'No measurements were imported due to invalid data in rows: ' . implode(', ', array_map(function($row) { return '"' . $row . '"'; }, $result['invalidRows']));
-            }
-
-            return redirect()
-                ->route('body-logs.index')
-                ->with('error', $errorMessage);
-        }
-
-        // Build success message
-        $successMessage = 'TSV data processed successfully! ';
-        
-        if ($result['importedCount'] > 0) {
-            $successMessage .= $result['importedCount'] . ' measurement(s) imported.';
-        } else {
-            $successMessage .= 'No new data was imported - all entries already exist with the same data.';
-        }
-
-        // Add detailed list if total < 10
-        if ($result['importedCount'] > 0 && $result['importedCount'] < 10) {
-            if (!empty($result['importedEntries'])) {
-                $successMessage .= '<br><br><strong>Imported:</strong><ul><li>' . implode('</li><li>', array_map('htmlspecialchars', $result['importedEntries'])) . '</li></ul>';
-            }
-        }
-
-        // Add invalid rows warning if any
-        if (!empty($result['invalidRows'])) {
-            $invalidRowCount = count($result['invalidRows']);
-            
-            if ($invalidRowCount > 10) {
-                $successMessage .= '<br><br><strong>Warning:</strong> ' . $invalidRowCount . ' rows had invalid data and were skipped.';
-            } else {
-                $successMessage .= '<br><br><strong>Warning:</strong> Some rows were invalid: ' . implode(', ', array_map(function($row) { return '"' . htmlspecialchars($row) . '"'; }, $result['invalidRows']));
-            }
-        }
-
-        return redirect()
-            ->route('body-logs.index')
-            ->with('success', $successMessage);
-    }
 
     public function showByType(MeasurementType $measurementType)
     {

@@ -17,14 +17,13 @@ class ExerciseController extends Controller
     
     protected $exerciseService;
     protected $chartService;
-    protected $tsvImporterService;
+
     protected $liftLogTablePresenter;
 
-    public function __construct(ExerciseService $exerciseService, \App\Services\ChartService $chartService, \App\Services\TsvImporterService $tsvImporterService, LiftLogTablePresenter $liftLogTablePresenter)
+    public function __construct(ExerciseService $exerciseService, \App\Services\ChartService $chartService, LiftLogTablePresenter $liftLogTablePresenter)
     {
         $this->exerciseService = $exerciseService;
         $this->chartService = $chartService;
-        $this->tsvImporterService = $tsvImporterService;
         $this->liftLogTablePresenter = $liftLogTablePresenter;
     }
 
@@ -278,100 +277,7 @@ class ExerciseController extends Controller
         return view('exercises.logs', compact('exercise', 'chartData', 'displayExercises', 'exercises') + $tableData);
     }
 
-    public function importTsv(Request $request)
-    {
-        $validated = $request->validate([
-            'tsv_data' => 'required|string',
-            'import_as_global' => 'boolean'
-        ]);
 
-        $tsvData = trim($validated['tsv_data']);
-        $importAsGlobal = $request->boolean('import_as_global', false);
-
-        if (empty($tsvData)) {
-            return redirect()
-                ->route('exercises.index')
-                ->with('error', 'TSV data cannot be empty.');
-        }
-
-        // Validate admin permission for global imports
-        if ($importAsGlobal && !auth()->user()->hasRole('Admin')) {
-            return redirect()
-                ->route('exercises.index')
-                ->with('error', 'Only administrators can import global exercises.');
-        }
-
-        try {
-            $result = $this->tsvImporterService->importExercises($tsvData, auth()->id(), $importAsGlobal);
-
-            $message = $this->buildImportSuccessMessage($result);
-            
-            return redirect()
-                ->route('exercises.index')
-                ->with('success', $message);
-
-        } catch (\Exception $e) {
-            return redirect()
-                ->route('exercises.index')
-                ->with('error', 'Import failed: ' . $e->getMessage());
-        }
-    }
-
-    /**
-     * Build detailed import success message with lists of imported, updated, and skipped exercises.
-     */
-    private function buildImportSuccessMessage(array $result): string
-    {
-        $mode = $result['importMode'] === 'global' ? 'global' : 'personal';
-        $html = "<p>TSV data processed successfully!</p>";
-
-        // Imported exercises
-        if ($result['importedCount'] > 0) {
-            $html .= "<p>Imported {$result['importedCount']} new {$mode} exercises:</p><ul>";
-            foreach ($result['importedExercises'] as $exercise) {
-                $bodyweightText = $exercise['is_bodyweight'] ? ' (bodyweight)' : '';
-                $html .= "<li>" . e($exercise['title']) . e($bodyweightText) . "</li>";
-            }
-            $html .= "</ul>";
-        }
-
-        // Updated exercises
-        if ($result['updatedCount'] > 0) {
-            $html .= "<p>Updated {$result['updatedCount']} existing {$mode} exercises:</p><ul>";
-            foreach ($result['updatedExercises'] as $exercise) {
-                $changeDetails = [];
-                foreach ($exercise['changes'] as $field => $change) {
-                    if ($field === 'is_bodyweight') {
-                        $changeDetails[] = "bodyweight: " . ($change['from'] ? 'yes' : 'no') . " → " . ($change['to'] ? 'yes' : 'no');
-                    } else {
-                        $changeDetails[] = e($field) . ": '" . e($change['from']) . "' → '" . e($change['to']) . "'";
-                    }
-                }
-                $html .= "<li>" . e($exercise['title']) . " (" . implode(', ', $changeDetails) . ")</li>";
-            }
-            $html .= "</ul>";
-        }
-
-        // Skipped exercises
-        if ($result['skippedCount'] > 0) {
-            $html .= "<p>Skipped {$result['skippedCount']} exercises:</p><ul>";
-            foreach ($result['skippedExercises'] as $exercise) {
-                $html .= "<li>" . e($exercise['title']) . " - " . e($exercise['reason']) . "</li>";
-            }
-            $html .= "</ul>";
-        }
-
-        // Invalid rows
-        if (count($result['invalidRows']) > 0) {
-            $html .= "<p>Found " . count($result['invalidRows']) . " invalid rows that were skipped.</p>";
-        }
-
-        if ($result['importedCount'] === 0 && $result['updatedCount'] === 0) {
-            $html .= "<p>No new data was imported or updated - all entries already exist with the same data.</p>";
-        }
-
-        return $html;
-    }
 
     /**
      * Validate exercise name for conflicts when creating new exercise.

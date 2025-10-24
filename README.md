@@ -41,16 +41,6 @@ This is a comprehensive web application built with Laravel for tracking nutritio
 - **Admin Role:** Administrators can manage users, global exercises, and have access to all data within the application. They also have the ability to impersonate users for support and testing purposes.
 - **User Role:** Regular users can manage their own data, including food logs, lift logs, personal exercises, and more.
 
-### Data Import/Export
-- **TSV Support:** Import and export data in TSV (Tab-Separated Values) format for a variety of data types, including:
-    - Food Logs
-    - Ingredients
-    - Body Logs
-    - Exercises
-    - Lift Logs
-    - Programs
-- **Environment-Specific:** This feature is restricted to development and testing environments to ensure the security and integrity of production data.
-
 ## Technologies Used
 
 -   **Backend:** Laravel (PHP Framework)
