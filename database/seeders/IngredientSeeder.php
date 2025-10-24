@@ -8,21 +8,13 @@ use App\Models\Unit;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Log;
-use App\Services\IngredientTsvProcessorService;
 
 /**
  * Class IngredientSeeder
  *
- * This seeder is responsible for populating the 'ingredients' table in the database.
- * It reads ingredient data from a CSV file and uses the IngredientTsvProcessorService
- * to process and import the data.
- *
- * The reason for converting CSV to TSV within the seeder is that the
- * IngredientTsvProcessorService is designed to work with TSV (Tab-Separated Values) data,
- * as it's also used by the user-facing import feature which uses TSV.
- * The source data file (ingredients_from_real_world.csv) is, however, a CSV (Comma-Separated Values) file.
- * To maintain consistency and leverage the shared processing logic in IngredientTsvProcessorService,
- * the CSV content is first converted to TSV format before being passed to the processor.
+ * This seeder is responsible for populating the 'ingredients' table in the database
+ * with a minimal but comprehensive set of hardcoded ingredients covering major food categories.
+ * This replaces the previous CSV/TSV-based approach for improved performance and simplicity.
  */
 class IngredientSeeder extends Seeder
 {
@@ -31,79 +23,308 @@ class IngredientSeeder extends Seeder
      */
     public function run(): void
     {
-        // Find the admin user to associate the seeded ingredients with.
-        $adminUser = User::where('email', 'admin@example.com')->first();
-
-        // Instantiate the IngredientTsvProcessorService which contains the core logic
-        // for parsing and processing ingredient data from TSV format.
-        $processor = new IngredientTsvProcessorService();
-        
-        // Read the CSV file content line by line.
-        $csvLines = file(database_path('seeders/csv/ingredients_from_real_world.csv'));
-        $tsvContent = '';
-
-        // Convert CSV content to TSV content.
-        // The IngredientTsvProcessorService expects TSV data, but the source file is CSV.
-        // This loop reads each CSV line, parses it using str_getcsv (which handles CSV by default),
-        // and then implodes the resulting array with tabs to create a TSV formatted line.
-        foreach ($csvLines as $line) {
-            $data = str_getcsv($line); // Parses CSV line into an array
-            $tsvContent .= implode("\t", $data) . "\n"; // Joins array elements with tabs for TSV
-        }
-
-        // Define the expected header for the TSV data.
-        // This header must exactly match the format expected by the IngredientTsvProcessorService.
-        $expectedHeader = [
-            'Ingredient', 'Amount', 'Type', 'Calories', 'Fat (g)', 'Sodium (mg)', 'Carb (g)', 'Fiber (g)', 'Added Sugar (g)', 'Protein (g)', 'Calcium (mg)', 'Potassium (mg)', 'Caffeine (mg)', 'Iron (mg)', 'Cost ($)'
-        ];
-
-        // Process the TSV content using the IngredientTsvProcessorService.
-        // The processor iterates through each row and applies the provided callback function.
-        $result = $processor->processTsv(
-            $tsvContent,
-            $expectedHeader,
-            function ($rowData) use ($adminUser, $processor) {
-                // Get the Unit model based on the 'Type' abbreviation from the row data.
-                $unit = $processor->getUnitFromAbbreviation($rowData['Type']);
-
-                // If the unit is not found, log an error and skip this row.
-                if (!$unit) {
-                    Log::info('Unit not found for abbreviation: ' . $rowData['Type']);
-                    return;
-                }
-
-                // Create a new Ingredient record in the database.
-                // Note: Seeders typically create new records and do not update existing ones,
-                // unlike the import feature which performs an upsert.
-                Ingredient::create([
-                    'user_id' => $adminUser->id, // Associate with the admin user
-                    'name' => $rowData['Ingredient'],
-                    'protein' => (float)($rowData['Protein (g)'] ?? 0),
-                    'carbs' => (float)($rowData['Carb (g)'] ?? 0),
-                    'added_sugars' => (float)($rowData['Added Sugar (g)'] ?? 0),
-                    'fats' => (float)($rowData['Fat (g)'] ?? 0),
-                    'sodium' => (float)($rowData['Sodium (mg)'] ?? 0),
-                    'iron' => (float)($rowData['Iron (mg)'] ?? 0),
-                    'potassium' => (float)($rowData['Potassium (mg)'] ?? 0),
-                    'fiber' => (float)($rowData['Fiber (g)'] ?? 0),
-                    'calcium' => (float)($rowData['Calcium (mg)'] ?? 0),
-                    'caffeine' => (float)($rowData['Caffeine (mg)'] ?? 0),
-                    'base_quantity' => (float)($rowData['Amount'] ?? 1),
-                    'base_unit_id' => $unit->id,
-                    'cost_per_unit' => (float)(str_replace("$", "", $rowData['Cost ($)']) ?? 0)
-                ]);
+        try {
+            // Find the admin user to associate the seeded ingredients with.
+            $adminUser = User::where('email', 'admin@example.com')->first();
+            
+            if (!$adminUser) {
+                $this->command->error('Admin user not found. Please run UserSeeder first.');
+                return;
             }
-        );
 
-        // Log any errors or invalid rows encountered during the processing,
-        // which helps in debugging the seeder.
-        if (!empty($result['errors'])) {
-            Log::error('IngredientSeeder errors: ' . implode(', ', $result['errors']));
+            $this->seedIngredients($adminUser);
+            $this->command->info('Successfully seeded ingredients');
+        } catch (\Exception $e) {
+            $this->command->error('Failed to seed ingredients: ' . $e->getMessage());
+            throw $e;
         }
-        if (!empty($result['invalidRows'])) {
-            Log::error('IngredientSeeder invalid rows: ' . implode(', ', $result['invalidRows']));
+    }
+
+    /**
+     * Seed ingredients using hardcoded data arrays
+     */
+    private function seedIngredients(User $adminUser): void
+    {
+        $ingredients = $this->getHardcodedIngredients();
+        
+        foreach ($ingredients as $ingredientData) {
+            // Get the unit by abbreviation
+            $unit = Unit::where('abbreviation', $ingredientData['unit_abbreviation'])->first();
+            
+            if (!$unit) {
+                Log::warning('Unit not found for abbreviation: ' . $ingredientData['unit_abbreviation']);
+                continue;
+            }
+
+            // Create ingredient record
+            Ingredient::firstOrCreate(
+                [
+                    'name' => $ingredientData['name'],
+                    'user_id' => $adminUser->id
+                ],
+                [
+                    'protein' => $ingredientData['protein'],
+                    'carbs' => $ingredientData['carbs'],
+                    'added_sugars' => $ingredientData['added_sugars'],
+                    'fats' => $ingredientData['fats'],
+                    'sodium' => $ingredientData['sodium'],
+                    'iron' => $ingredientData['iron'],
+                    'potassium' => $ingredientData['potassium'],
+                    'fiber' => $ingredientData['fiber'],
+                    'calcium' => $ingredientData['calcium'],
+                    'caffeine' => $ingredientData['caffeine'],
+                    'base_quantity' => $ingredientData['base_quantity'],
+                    'base_unit_id' => $unit->id,
+                    'cost_per_unit' => $ingredientData['cost_per_unit']
+                ]
+            );
         }
-        Log::info('IngredientSeeder processed count: ' . $result['processedCount']);
+
+        Log::info('IngredientSeeder processed count: ' . count($ingredients));
+    }
+
+    /**
+     * Get hardcoded ingredient dataset covering major food categories
+     * 
+     * @return array Array of ingredient data with complete nutritional information
+     */
+    private function getHardcodedIngredients(): array
+    {
+        return [
+            // PROTEINS
+            [
+                'name' => 'Chicken Breast',
+                'base_quantity' => 100,
+                'unit_abbreviation' => 'g',
+                'protein' => 31.0,
+                'carbs' => 0.0,
+                'added_sugars' => 0.0,
+                'fats' => 3.6,
+                'sodium' => 74,
+                'iron' => 0.7,
+                'potassium' => 256,
+                'fiber' => 0.0,
+                'calcium' => 15,
+                'caffeine' => 0.0,
+                'cost_per_unit' => 0.12
+            ],
+            [
+                'name' => 'Salmon Fillet',
+                'base_quantity' => 100,
+                'unit_abbreviation' => 'g',
+                'protein' => 25.4,
+                'carbs' => 0.0,
+                'added_sugars' => 0.0,
+                'fats' => 13.4,
+                'sodium' => 59,
+                'iron' => 0.8,
+                'potassium' => 363,
+                'fiber' => 0.0,
+                'calcium' => 12,
+                'caffeine' => 0.0,
+                'cost_per_unit' => 0.25
+            ],
+            [
+                'name' => 'Eggs',
+                'base_quantity' => 1,
+                'unit_abbreviation' => 'pc',
+                'protein' => 6.3,
+                'carbs' => 0.6,
+                'added_sugars' => 0.0,
+                'fats' => 5.3,
+                'sodium' => 62,
+                'iron' => 0.9,
+                'potassium' => 69,
+                'fiber' => 0.0,
+                'calcium' => 28,
+                'caffeine' => 0.0,
+                'cost_per_unit' => 0.25
+            ],
+            [
+                'name' => 'Greek Yogurt',
+                'base_quantity' => 100,
+                'unit_abbreviation' => 'g',
+                'protein' => 10.0,
+                'carbs' => 3.6,
+                'added_sugars' => 0.0,
+                'fats' => 0.4,
+                'sodium' => 36,
+                'iron' => 0.1,
+                'potassium' => 141,
+                'fiber' => 0.0,
+                'calcium' => 110,
+                'caffeine' => 0.0,
+                'cost_per_unit' => 0.08
+            ],
+
+            // CARBOHYDRATES
+            [
+                'name' => 'Brown Rice',
+                'base_quantity' => 100,
+                'unit_abbreviation' => 'g',
+                'protein' => 2.6,
+                'carbs' => 23.0,
+                'added_sugars' => 0.0,
+                'fats' => 0.9,
+                'sodium' => 5,
+                'iron' => 0.4,
+                'potassium' => 43,
+                'fiber' => 1.8,
+                'calcium' => 10,
+                'caffeine' => 0.0,
+                'cost_per_unit' => 0.03
+            ],
+            [
+                'name' => 'Oats',
+                'base_quantity' => 100,
+                'unit_abbreviation' => 'g',
+                'protein' => 16.9,
+                'carbs' => 66.3,
+                'added_sugars' => 0.0,
+                'fats' => 6.9,
+                'sodium' => 2,
+                'iron' => 4.7,
+                'potassium' => 429,
+                'fiber' => 10.6,
+                'calcium' => 54,
+                'caffeine' => 0.0,
+                'cost_per_unit' => 0.04
+            ],
+            [
+                'name' => 'Banana',
+                'base_quantity' => 1,
+                'unit_abbreviation' => 'pc',
+                'protein' => 1.1,
+                'carbs' => 22.8,
+                'added_sugars' => 0.0,
+                'fats' => 0.3,
+                'sodium' => 1,
+                'iron' => 0.3,
+                'potassium' => 358,
+                'fiber' => 2.6,
+                'calcium' => 5,
+                'caffeine' => 0.0,
+                'cost_per_unit' => 0.25
+            ],
+            [
+                'name' => 'Sweet Potato',
+                'base_quantity' => 100,
+                'unit_abbreviation' => 'g',
+                'protein' => 2.0,
+                'carbs' => 20.1,
+                'added_sugars' => 0.0,
+                'fats' => 0.1,
+                'sodium' => 7,
+                'iron' => 0.6,
+                'potassium' => 337,
+                'fiber' => 3.0,
+                'calcium' => 30,
+                'caffeine' => 0.0,
+                'cost_per_unit' => 0.05
+            ],
+
+            // FATS
+            [
+                'name' => 'Avocado',
+                'base_quantity' => 100,
+                'unit_abbreviation' => 'g',
+                'protein' => 2.0,
+                'carbs' => 8.5,
+                'added_sugars' => 0.0,
+                'fats' => 14.7,
+                'sodium' => 7,
+                'iron' => 0.6,
+                'potassium' => 485,
+                'fiber' => 6.7,
+                'calcium' => 12,
+                'caffeine' => 0.0,
+                'cost_per_unit' => 0.15
+            ],
+            [
+                'name' => 'Olive Oil',
+                'base_quantity' => 1,
+                'unit_abbreviation' => 'tbsp',
+                'protein' => 0.0,
+                'carbs' => 0.0,
+                'added_sugars' => 0.0,
+                'fats' => 13.5,
+                'sodium' => 0,
+                'iron' => 0.1,
+                'potassium' => 0,
+                'fiber' => 0.0,
+                'calcium' => 0,
+                'caffeine' => 0.0,
+                'cost_per_unit' => 0.20
+            ],
+            [
+                'name' => 'Almonds',
+                'base_quantity' => 30,
+                'unit_abbreviation' => 'g',
+                'protein' => 6.0,
+                'carbs' => 6.1,
+                'added_sugars' => 0.0,
+                'fats' => 14.2,
+                'sodium' => 0,
+                'iron' => 1.1,
+                'potassium' => 208,
+                'fiber' => 3.5,
+                'calcium' => 76,
+                'caffeine' => 0.0,
+                'cost_per_unit' => 0.50
+            ],
+
+            // VEGETABLES
+            [
+                'name' => 'Broccoli',
+                'base_quantity' => 100,
+                'unit_abbreviation' => 'g',
+                'protein' => 2.8,
+                'carbs' => 6.6,
+                'added_sugars' => 0.0,
+                'fats' => 0.4,
+                'sodium' => 33,
+                'iron' => 0.7,
+                'potassium' => 316,
+                'fiber' => 2.6,
+                'calcium' => 47,
+                'caffeine' => 0.0,
+                'cost_per_unit' => 0.06
+            ],
+            [
+                'name' => 'Spinach',
+                'base_quantity' => 100,
+                'unit_abbreviation' => 'g',
+                'protein' => 2.9,
+                'carbs' => 3.6,
+                'added_sugars' => 0.0,
+                'fats' => 0.4,
+                'sodium' => 79,
+                'iron' => 2.7,
+                'potassium' => 558,
+                'fiber' => 2.2,
+                'calcium' => 99,
+                'caffeine' => 0.0,
+                'cost_per_unit' => 0.08
+            ],
+
+            // DAIRY
+            [
+                'name' => 'Milk',
+                'base_quantity' => 1,
+                'unit_abbreviation' => 'cup',
+                'protein' => 8.1,
+                'carbs' => 12.2,
+                'added_sugars' => 0.0,
+                'fats' => 3.2,
+                'sodium' => 107,
+                'iron' => 0.1,
+                'potassium' => 366,
+                'fiber' => 0.0,
+                'calcium' => 276,
+                'caffeine' => 0.0,
+                'cost_per_unit' => 0.30
+            ]
+        ];
     }
 }
 

@@ -8,7 +8,7 @@ use App\Http\Requests\StoreProgramRequest;
 use App\Http\Requests\UpdateProgramRequest;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use App\Services\ProgramTsvImporterService;
+
 use App\Services\TrainingProgressionService;
 use App\Services\DateNavigationService;
 use App\Services\ExerciseService;
@@ -293,32 +293,7 @@ class ProgramController extends Controller
         return redirect()->route('programs.index', ['date' => $date])->with('success', 'Selected program entries deleted.');
     }
 
-    public function import(Request $request, ProgramTsvImporterService $importerService)
-    {
-        $request->validate([
-            'tsv_content' => 'required|string',
-            'date' => 'required|date',
-        ]);
 
-        $date = Carbon::parse($request->input('date'));
-        $tsvContent = $request->input('tsv_content');
-
-        $result = $importerService->import($tsvContent, auth()->id());
-
-        $message = 'Successfully imported ' . $result['importedCount'] . ' program entries.';
-        if (count($result['notFound']) > 0) {
-            $message .= ' Some exercises not found: ' . implode(', ', array_unique($result['notFound'])) . '.';
-        }
-        if (count($result['invalidRows']) > 0) {
-            $message .= ' Some rows were invalid.';
-        }
-
-        if (count($result['notFound']) > 0 || count($result['invalidRows']) > 0) {
-            return redirect()->route('programs.index', ['date' => $date->format('Y-m-d')])->withErrors($result['invalidRows'])->with('error', $message);
-        } else {
-            return redirect()->route('programs.index', ['date' => $date->format('Y-m-d')])->with('success', $message);
-        }
-    }
 
     public function quickAdd(Request $request, Exercise $exercise, $date)
     {

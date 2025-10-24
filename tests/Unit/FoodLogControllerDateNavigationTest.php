@@ -7,7 +7,7 @@ use App\Models\FoodLog;
 use App\Models\Ingredient;
 use App\Models\User;
 use App\Services\NutritionService;
-use App\Services\TsvImporterService;
+
 use App\Services\DateNavigationService;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -29,10 +29,9 @@ class FoodLogControllerDateNavigationTest extends TestCase
         parent::setUp();
         
         $nutritionService = $this->createMock(NutritionService::class);
-        $tsvImporterService = $this->createMock(TsvImporterService::class);
         $dateNavigationService = new DateNavigationService();
         
-        $this->controller = new FoodLogController($nutritionService, $tsvImporterService, $dateNavigationService);
+        $this->controller = new FoodLogController($nutritionService, $dateNavigationService);
         $this->user = User::factory()->create();
         $this->ingredient = IngredientFactory::new()->create(['user_id' => $this->user->id]);
         

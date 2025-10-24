@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Exercise;
 use App\Models\LiftLog;
 use App\Models\LiftSet;
-use App\Services\TsvImporterService;
+
 use App\Services\ExerciseService;
 use App\Presenters\LiftLogTablePresenter;
 use Illuminate\Http\Request;
@@ -17,13 +17,11 @@ use App\Services\RecommendationEngine;
 
 class LiftLogController extends Controller
 {
-    protected $tsvImporterService;
     protected $exerciseService;
     protected $liftLogTablePresenter;
 
-    public function __construct(TsvImporterService $tsvImporterService, ExerciseService $exerciseService, LiftLogTablePresenter $liftLogTablePresenter)
+    public function __construct(ExerciseService $exerciseService, LiftLogTablePresenter $liftLogTablePresenter)
     {
-        $this->tsvImporterService = $tsvImporterService;
         $this->exerciseService = $exerciseService;
         $this->liftLogTablePresenter = $liftLogTablePresenter;
     }
@@ -235,102 +233,7 @@ class LiftLogController extends Controller
         return redirect()->route('lift-logs.index')->with('success', 'Selected lift logs deleted successfully!');
     }
 
-    public function importTsv(Request $request)
-    {
-        $validated = $request->validate([
-            'tsv_data' => 'nullable|string',
-            'date' => 'required|date',
-        ]);
 
-        $tsvData = trim($validated['tsv_data']);
-        if (empty($tsvData)) {
-            return redirect()
-                ->route('lift-logs.index')
-                ->with('error', 'TSV data cannot be empty.');
-        }
-
-        $result = $this->tsvImporterService->importLiftLogs($tsvData, $validated['date'], auth()->id());
-
-        // Handle errors first
-        if ($result['importedCount'] === 0 && !empty($result['notFound'])) {
-            $uniqueNotFound = array_unique($result['notFound']);
-            $notFoundCount = count($uniqueNotFound);
-            
-            if ($notFoundCount > 10) {
-                $errorMessage = 'No exercises were found for ' . $notFoundCount . ' exercise names in the import data.';
-            } else {
-                $errorHtml = 'No exercises were found for the following names:<ul>';
-                foreach ($uniqueNotFound as $notFoundExercise) {
-                    $errorHtml .= '<li>' . htmlspecialchars($notFoundExercise) . '</li>';
-                }
-                $errorHtml .= '</ul>';
-                $errorMessage = $errorHtml;
-            }
-
-            return redirect()
-                ->route('lift-logs.index')
-                ->with('error', $errorMessage);
-        } elseif ($result['importedCount'] === 0 && !empty($result['invalidRows'])) {
-            return redirect()
-                ->route('lift-logs.index')
-                ->with('error', 'No lift logs imported due to invalid data in rows: ' . implode(', ', array_map(function($row) { return '"' . $row . '"' ; }, $result['invalidRows'])));
-        }
-
-        // Build success message
-        $successMessage = 'TSV data processed successfully! ';
-        $totalProcessed = $result['importedCount'] + $result['updatedCount'];
-        
-        // Add counts
-        $countParts = [];
-        if ($result['importedCount'] > 0) {
-            $countParts[] = $result['importedCount'] . ' lift log(s) imported';
-        }
-        if ($result['updatedCount'] > 0) {
-            $countParts[] = $result['updatedCount'] . ' lift log(s) updated';
-        }
-        
-        if (!empty($countParts)) {
-            $successMessage .= implode(', ', $countParts) . '.';
-        } else {
-            // Handle case where nothing was imported or updated (all duplicates)
-            $successMessage .= 'No new data was imported or updated - all entries already exist with the same data.';
-        }
-
-        // Add detailed list if total < 10
-        if ($totalProcessed < 10) {
-            if (!empty($result['importedEntries'])) {
-                $successMessage .= '<br><br><strong>Imported:</strong><ul><li>' . implode('</li><li>', array_map('htmlspecialchars', $result['importedEntries'])) . '</li></ul>';
-            }
-            if (!empty($result['updatedEntries'])) {
-                $successMessage .= '<br><br><strong>Updated:</strong><ul><li>' . implode('</li><li>', array_map('htmlspecialchars', $result['updatedEntries'])) . '</li></ul>';
-            }
-        }
-
-        // Add invalid rows warning if any
-        if (!empty($result['invalidRows'])) {
-            $successMessage .= '<br><br><strong>Warning:</strong> Some rows were invalid: ' . implode(', ', array_map(function($row) { return '"' . htmlspecialchars($row) . '"'; }, $result['invalidRows']));
-        }
-
-        // Add missing exercises warning if any (for partial success cases)
-        if (!empty($result['notFound'])) {
-            $uniqueNotFound = array_unique($result['notFound']);
-            $notFoundCount = count($uniqueNotFound);
-            
-            if ($notFoundCount > 10) {
-                $successMessage .= '<br><br><strong>Warning:</strong> ' . $notFoundCount . ' exercise names were not found and their rows were skipped.';
-            } else {
-                $successMessage .= '<br><br><strong>Warning:</strong> The following exercises were not found and their rows were skipped:<ul>';
-                foreach ($uniqueNotFound as $notFoundExercise) {
-                    $successMessage .= '<li>' . htmlspecialchars($notFoundExercise) . '</li>';
-                }
-                $successMessage .= '</ul>';
-            }
-        }
-
-        return redirect()
-            ->route('lift-logs.index')
-            ->with('success', $successMessage);
-    }
 
     public function mobileEntry(Request $request, \App\Services\TrainingProgressionService $trainingProgressionService, RecommendationEngine $recommendationEngine)
     {

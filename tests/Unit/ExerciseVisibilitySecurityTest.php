@@ -6,7 +6,7 @@ use App\Models\Exercise;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\ExerciseService;
-use App\Services\TsvImporterService;
+
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Auth;
 use Tests\TestCase;
@@ -177,35 +177,7 @@ class ExerciseVisibilitySecurityTest extends TestCase
         $this->assertNotContains('Other User Exercise', $exerciseTitles);
     }
 
-    /** @test */
-    public function tsv_importer_service_respects_user_constraints()
-    {
-        $user = User::factory()->create(['show_global_exercises' => false]);
-        $otherUser = User::factory()->create();
-        
-        // Create exercises
-        $globalExercise = Exercise::factory()->create(['title' => 'Global Exercise']);
-        $userExercise = Exercise::factory()->create(['user_id' => $user->id, 'title' => 'User Exercise']);
-        $otherUserExercise = Exercise::factory()->create(['user_id' => $otherUser->id, 'title' => 'Other User Exercise']);
-        
-        $tsvImporter = app(TsvImporterService::class);
-        
-        // Test that TSV importer only finds exercises available to the user
-        $tsvData = "1/1/2024\t6:00 AM\tGlobal Exercise\t100\t5\t3\tTest";
-        $result = $tsvImporter->importLiftLogs($tsvData, '2024-01-01', $user->id);
-        
-        // Should not find the global exercise since user has global exercises disabled
-        $this->assertEquals(0, $result['importedCount']);
-        $this->assertCount(1, $result['notFound']);
-        
-        // Test with user's own exercise
-        $tsvData = "1/1/2024\t6:00 AM\tUser Exercise\t100\t5\t3\tTest";
-        $result = $tsvImporter->importLiftLogs($tsvData, '2024-01-01', $user->id);
-        
-        // Should find and import the user's exercise
-        $this->assertEquals(1, $result['importedCount']);
-        $this->assertEmpty($result['notFound']);
-    }
+
 
     /** @test */
     public function sql_injection_protection_in_user_id_parameter()

@@ -10,20 +10,19 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use App\Services\NutritionService;
-use App\Services\TsvImporterService;
+
 use App\Services\DateNavigationService;
 use Carbon\Carbon;
 
 class FoodLogController extends Controller
 {
     protected $nutritionService;
-    protected $tsvImporterService;
+
     protected $dateNavigationService;
 
-    public function __construct(NutritionService $nutritionService, TsvImporterService $tsvImporterService, DateNavigationService $dateNavigationService)
+    public function __construct(NutritionService $nutritionService, DateNavigationService $dateNavigationService)
     {
         $this->nutritionService = $nutritionService;
-        $this->tsvImporterService = $tsvImporterService;
         $this->dateNavigationService = $dateNavigationService;
     }
 
@@ -373,39 +372,7 @@ class FoodLogController extends Controller
         return redirect()->route('food-logs.index', ['date' => $validated['meal_date']])->with('success', 'Meal added to log successfully!');
     }
 
-    public function importTsv(Request $request)
-    {
-        $validated = $request->validate([
-            'tsv_data' => 'nullable|string',
-            'date' => 'required|date',
-        ]);
 
-        $tsvData = trim($validated['tsv_data']);
-        if (empty($tsvData)) {
-            return redirect()
-                ->route('food-logs.index', ['date' => $validated['date']])
-                ->with('error', 'TSV data cannot be empty.');
-        }
-
-        $result = $this->tsvImporterService->importFoodLogs($tsvData, $validated['date'], auth()->id());
-
-        if ($result['importedCount'] === 0 && !empty($result['notFound'])) {
-            return redirect()
-                ->route('food-logs.index', ['date' => $validated['date']])
-                ->with('error', 'No ingredients found for: ' . implode(', ', $result['notFound']));
-        }
-
-        $message = 'TSV data processed successfully! ';
-        if ($result['importedCount'] > 0) {
-            $message .= $result['importedCount'] . ' food log(s) imported.';
-        } else {
-            $message .= 'No new data was imported - all entries already exist with the same data.';
-        }
-
-        return redirect()
-            ->route('food-logs.index', ['date' => $validated['date']])
-            ->with('success', $message);
-    }
 
     public function export(Request $request)
     {

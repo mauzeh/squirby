@@ -96,22 +96,7 @@
                 </tfoot>
             </table>
 
-            <div class="form-container">
-                <h3>TSV Export</h3>
-                <textarea id="tsv-output" rows="10" style="width: 100%; background-color: #3a3a3a; color: #f2f2f2; border: 1px solid #555;">Title	Description	Is Bodyweight	Band Type
-@foreach ($exercises as $exercise){{ $exercise->title }}	{{ $exercise->description ?? '' }}	{{ $exercise->is_bodyweight ? 'true' : 'false' }}	{{ $exercise->band_type ?? 'none' }}
-@endforeach</textarea>
-                <button id="copy-tsv-button" class="button">Copy to Clipboard</button>
-            </div>
-
             <script>
-                document.getElementById('copy-tsv-button').addEventListener('click', function() {
-                    var tsvOutput = document.getElementById('tsv-output');
-                    tsvOutput.select();
-                    document.execCommand('copy');
-                    alert('TSV data copied to clipboard!');
-                });
-
                 // Select all functionality for exercises
                 document.getElementById('select-all-exercises').addEventListener('change', function() {
                     var checkboxes = document.querySelectorAll('.exercise-checkbox:not([disabled])');
@@ -154,26 +139,6 @@
             </script>
         @endif
 
-        @if (!app()->environment(['production', 'staging']))
-        <div class="form-container">
-            <h3>TSV Import</h3>
-            <form action="{{ route('exercises.import-tsv') }}" method="POST">
-                @csrf
-                <textarea name="tsv_data" id="tsv_data" rows="10" style="width: 100%; background-color: #3a3a3a; color: #f2f2f2; border: 1px solid #555; margin-bottom: 15px;" placeholder="Title&#9;Description&#9;Is Bodyweight (true/false)&#9;Band Type (resistance/assistance/none)"></textarea>
-                
-                @if(auth()->user()->hasRole('Admin'))
-                <div style="margin-bottom: 15px;">
-                    <input type="checkbox" name="import_as_global" id="import_as_global" value="1" style="margin-right: 8px;">
-                    <label for="import_as_global" style="color: #f2f2f2; cursor: pointer;">Global</label>
-                    <small style="color: #aaa; font-size: 0.85em; margin-left: 8px;">
-                        Global exercises will be available to all users and can only be managed by administrators. Personal exercises are only visible to you and will be skipped if they conflict with existing global exercises.
-                    </small>
-                </div>
-                @endif
-                
-                <button type="submit" class="button">Import Exercises</button>
-            </form>
-        </div>
-        @endif
+
     </div>
 @endsection
