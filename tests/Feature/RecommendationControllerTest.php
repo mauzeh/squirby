@@ -463,9 +463,9 @@ class RecommendationControllerTest extends TestCase
     }
 
     /** @test */
-    public function recommendations_only_include_global_exercises_with_intelligence()
+    public function recommendations_include_available_exercises_with_intelligence()
     {
-        // Create a user-specific exercise (should not be recommended)
+        // Create a user-specific exercise (should be recommended since user has global exercises enabled by default)
         $userExercise = Exercise::factory()->create([
             'user_id' => $this->user->id,
             'title' => 'User Custom Exercise'
@@ -516,16 +516,15 @@ class RecommendationControllerTest extends TestCase
         $recommendations = $response->viewData('recommendations');
         $recommendedExerciseIds = array_column(array_column($recommendations, 'exercise'), 'id');
 
-        // User-specific exercise should NOT be recommended
-        $this->assertNotContains($userExercise->id, $recommendedExerciseIds);
+        // User-specific exercise should be recommended (user has global exercises enabled by default)
+        $this->assertContains($userExercise->id, $recommendedExerciseIds);
         
         // Global exercise without intelligence should NOT be recommended
         $this->assertNotContains($globalExerciseNoIntelligence->id, $recommendedExerciseIds);
         
-        // Only global exercises with intelligence should be recommended
+        // All recommended exercises should have intelligence data
         foreach ($recommendations as $recommendation) {
             $exercise = Exercise::find($recommendation['exercise']->id);
-            $this->assertNull($exercise->user_id, 'Recommended exercise should be global (user_id should be null)');
             $this->assertNotNull($exercise->intelligence, 'Recommended exercise should have intelligence data');
         }
     }

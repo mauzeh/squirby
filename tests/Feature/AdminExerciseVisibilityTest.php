@@ -516,9 +516,9 @@ class AdminExerciseVisibilityTest extends TestCase
         // Test with non-existent user ID
         $availableExercises = Exercise::availableToUser(999)->get();
         
-        // Should return only global exercises (regular user behavior for invalid user)
-        $this->assertCount(1, $availableExercises);
-        $this->assertTrue($availableExercises->contains($globalExercise));
+        // Should return no exercises for security (invalid user ID)
+        $this->assertCount(0, $availableExercises);
+        $this->assertFalse($availableExercises->contains($globalExercise));
         $this->assertFalse($availableExercises->contains($userExercise));
         $this->assertFalse($availableExercises->contains($otherUserExercise));
     }

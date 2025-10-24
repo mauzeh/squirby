@@ -28,7 +28,7 @@ class RecommendationController extends Controller
         $movementArchetype = $validated['movement_archetype'] ?? null;
         $difficultyLevel = isset($validated['difficulty_level']) ? (int)$validated['difficulty_level'] : null;
 
-        // Get all recommendations (no limit)
+        // Get all recommendations (no limit) - automatically respects user's global exercise preference
         $recommendations = $this->recommendationEngine->getRecommendations(auth()->id(), 50);
 
         // Apply filters if provided - integrated filtering logic

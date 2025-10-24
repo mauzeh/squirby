@@ -145,9 +145,9 @@ class ExerciseTest extends TestCase
         // Test with non-existent user ID
         $availableToInvalidUser = Exercise::availableToUser(999)->get();
 
-        // Should return only global exercises (regular user behavior)
-        $this->assertCount(1, $availableToInvalidUser);
-        $this->assertTrue($availableToInvalidUser->contains($globalExercise));
+        // Should return no exercises for security (invalid user ID)
+        $this->assertCount(0, $availableToInvalidUser);
+        $this->assertFalse($availableToInvalidUser->contains($globalExercise));
         $this->assertFalse($availableToInvalidUser->contains($userExercise));
     }
 

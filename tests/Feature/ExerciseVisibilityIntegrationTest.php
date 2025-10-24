@@ -354,4 +354,73 @@ class ExerciseVisibilityIntegrationTest extends TestCase
         $this->assertFalse($user2Exercises->contains('title', 'Global Exercise'));
         $this->assertTrue($user2Exercises->contains('title', 'Other User Exercise'));
     }
+
+    /** @test */
+    public function recommendations_controller_respects_user_preference()
+    {
+        // Create exercise intelligence for recommendations
+        \App\Models\ExerciseIntelligence::factory()->create([
+            'exercise_id' => $this->globalExercise->id,
+            'movement_archetype' => 'push',
+            'difficulty_level' => 3,
+            'primary_mover' => 'pectoralis_major'
+        ]);
+        \App\Models\ExerciseIntelligence::factory()->create([
+            'exercise_id' => $this->userExercise->id,
+            'movement_archetype' => 'pull',
+            'difficulty_level' => 2,
+            'primary_mover' => 'latissimus_dorsi'
+        ]);
+        
+        // Test with global exercises enabled
+        $this->user->update(['show_global_exercises' => true]);
+        $response = $this->actingAs($this->user)->get(route('recommendations.index'));
+        
+        $response->assertStatus(200);
+        $response->assertSee('Global Exercise');
+        $response->assertSee('User Exercise');
+        $response->assertDontSee('Other User Exercise');
+        
+        // Test with global exercises disabled
+        $this->user->update(['show_global_exercises' => false]);
+        $response = $this->actingAs($this->user)->get(route('recommendations.index'));
+        
+        $response->assertStatus(200);
+        $response->assertDontSee('Global Exercise');
+        $response->assertSee('User Exercise');
+        $response->assertDontSee('Other User Exercise');
+    }
+
+    /** @test */
+    public function recommendations_admin_users_see_all_exercises()
+    {
+        // Create exercise intelligence for recommendations
+        \App\Models\ExerciseIntelligence::factory()->create([
+            'exercise_id' => $this->globalExercise->id,
+            'movement_archetype' => 'push',
+            'difficulty_level' => 3,
+            'primary_mover' => 'pectoralis_major'
+        ]);
+        \App\Models\ExerciseIntelligence::factory()->create([
+            'exercise_id' => $this->userExercise->id,
+            'movement_archetype' => 'pull',
+            'difficulty_level' => 2,
+            'primary_mover' => 'latissimus_dorsi'
+        ]);
+        \App\Models\ExerciseIntelligence::factory()->create([
+            'exercise_id' => $this->otherUserExercise->id,
+            'movement_archetype' => 'squat',
+            'difficulty_level' => 4,
+            'primary_mover' => 'quadriceps'
+        ]);
+        
+        // Admin has show_global_exercises = false but should still see all exercises
+        $this->assertFalse($this->adminUser->show_global_exercises);
+        
+        $response = $this->actingAs($this->adminUser)->get(route('recommendations.index'));
+        $response->assertStatus(200);
+        $response->assertSee('Global Exercise');
+        $response->assertSee('User Exercise');
+        $response->assertSee('Other User Exercise');
+    }
 }

@@ -15,7 +15,19 @@ class ExerciseIntelligenceSeeder extends Seeder
     {
         // Load intelligence data from JSON file
         $jsonPath = database_path('seeders/json/exercise_intelligence_data.json');
+        
+        // Check if the file exists before trying to load it
+        if (!file_exists($jsonPath)) {
+            // Skip seeding if the intelligence data file doesn't exist
+            return;
+        }
+        
         $intelligenceData = json_decode(file_get_contents($jsonPath), true);
+
+        if (!$intelligenceData) {
+            // Skip if the JSON is invalid or empty
+            return;
+        }
 
         foreach ($intelligenceData as $canonicalName => $data) {
             // Find the exercise by canonical name

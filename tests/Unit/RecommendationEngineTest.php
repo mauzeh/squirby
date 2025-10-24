@@ -399,7 +399,7 @@ class RecommendationEngineTest extends TestCase
     }
 
     /** @test */
-    public function get_recommendations_returns_global_exercises_when_show_global_is_true()
+    public function get_recommendations_returns_available_exercises_when_show_global_is_true()
     {
         $user = User::factory()->create();
         
@@ -426,8 +426,12 @@ class RecommendationEngineTest extends TestCase
 
         $recommendations = $this->recommendationEngine->getRecommendations($user->id, 5, true);
 
-        $this->assertCount(1, $recommendations);
-        $this->assertEquals($globalExercise->id, $recommendations[0]['exercise']->id);
+        // Should return both global and user exercises when show_global_exercises is true
+        $this->assertCount(2, $recommendations);
+        $exerciseIds = array_column($recommendations, 'exercise');
+        $exerciseIds = array_map(fn($ex) => $ex->id, $exerciseIds);
+        $this->assertContains($globalExercise->id, $exerciseIds);
+        $this->assertContains($userExercise->id, $exerciseIds);
     }
 
     /** @test */
@@ -463,9 +467,9 @@ class RecommendationEngineTest extends TestCase
     }
 
     /** @test */
-    public function get_recommendations_defaults_to_global_exercises_when_show_global_not_specified()
+    public function get_recommendations_defaults_to_user_preference_when_show_global_not_specified()
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create(['show_global_exercises' => true]); // Explicitly set to true
         
         // Create global exercises with intelligence
         $globalExercise = Exercise::factory()->create(['user_id' => null]);
@@ -488,11 +492,15 @@ class RecommendationEngineTest extends TestCase
             ->once()
             ->andReturn($mockAnalysis);
 
-        // Call without showGlobalExercises parameter (should default to true)
+        // Call without showGlobalExercises parameter (should use user's preference)
         $recommendations = $this->recommendationEngine->getRecommendations($user->id, 5);
 
-        $this->assertCount(1, $recommendations);
-        $this->assertEquals($globalExercise->id, $recommendations[0]['exercise']->id);
+        // Should return both global and user exercises since user has show_global_exercises = true
+        $this->assertCount(2, $recommendations);
+        $exerciseIds = array_column($recommendations, 'exercise');
+        $exerciseIds = array_map(fn($ex) => $ex->id, $exerciseIds);
+        $this->assertContains($globalExercise->id, $exerciseIds);
+        $this->assertContains($userExercise->id, $exerciseIds);
     }
 
     protected function tearDown(): void

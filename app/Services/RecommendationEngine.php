@@ -18,28 +18,20 @@ class RecommendationEngine
      * 
      * @param int $userId The user to generate recommendations for
      * @param int $count Number of recommendations to return (default: 5)
-     * @param bool $showGlobalExercises Whether to include global exercises (default: true)
+     * @param bool $showGlobalExercises Whether to include global exercises (optional override)
      * @return array Array of recommended exercises with scores and reasoning
      */
-    public function getRecommendations(int $userId, int $count = 5, bool $showGlobalExercises = true): array
+    public function getRecommendations(int $userId, int $count = 5, bool $showGlobalExercises = null): array
     {
         // Analyze user's recent activity
         $userActivity = $this->analyzeUserActivity($userId);
         
-        // Get exercises with intelligence data based on user preference
-        if ($showGlobalExercises) {
-            // Get global exercises only (original behavior)
-            $exercises = Exercise::global()
-                ->withIntelligence()
-                ->with('intelligence')
-                ->get();
-        } else {
-            // Get user's own exercises only
-            $exercises = Exercise::userSpecific($userId)
-                ->withIntelligence()
-                ->with('intelligence')
-                ->get();
-        }
+        // Get exercises with intelligence data using the availableToUser scope
+        // This automatically respects the user's global exercise preference
+        $exercises = Exercise::availableToUser($userId, $showGlobalExercises)
+            ->withIntelligence()
+            ->with('intelligence')
+            ->get();
         
         if ($exercises->isEmpty()) {
             return [];
