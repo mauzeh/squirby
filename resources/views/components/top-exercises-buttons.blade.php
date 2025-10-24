@@ -15,26 +15,29 @@
             @endif
         @endforeach
 
-        <div class="dropdown">
-            <button class="button demure dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                More...
-            </button>
-            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                @php
-                    $topExerciseIds = $exercises->pluck('id')->toArray();
-                    $remainingExercises = $allExercises->reject(function ($exercise) use ($topExerciseIds) {
-                        return in_array($exercise->id, $topExerciseIds);
-                    });
-                @endphp
-                @foreach ($remainingExercises as $exercise)
-                    @if($routeType === 'programs')
-                        <a class="dropdown-item" href="{{ route('programs.quick-add', ['exercise' => $exercise->id, 'date' => $date]) }}">{{ $exercise->title }}</a>
-                    @else
-                        <a class="dropdown-item" href="{{ route('exercises.show-logs', ['exercise' => $exercise->id]) }}">{{ $exercise->title }}</a>
-                    @endif
-                @endforeach
+        @php
+            $topExerciseIds = $exercises->pluck('id')->toArray();
+            $remainingExercises = $allExercises->reject(function ($exercise) use ($topExerciseIds) {
+                return in_array($exercise->id, $topExerciseIds);
+            });
+        @endphp
+        
+        @if($remainingExercises->count() > 0)
+            <div class="dropdown">
+                <button class="button demure dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    More...
+                </button>
+                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                    @foreach ($remainingExercises as $exercise)
+                        @if($routeType === 'programs')
+                            <a class="dropdown-item" href="{{ route('programs.quick-add', ['exercise' => $exercise->id, 'date' => $date]) }}">{{ $exercise->title }}</a>
+                        @else
+                            <a class="dropdown-item" href="{{ route('exercises.show-logs', ['exercise' => $exercise->id]) }}">{{ $exercise->title }}</a>
+                        @endif
+                    @endforeach
+                </div>
             </div>
-        </div>
+        @endif
     </div>
 
 <style>
