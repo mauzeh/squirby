@@ -23,28 +23,14 @@ class IngredientSeeder extends Seeder
      */
     public function run(): void
     {
-        try {
-            // Find the admin user to associate the seeded ingredients with.
-            $adminUser = User::where('email', 'admin@example.com')->first();
-            
-            if (!$adminUser) {
-                $this->command->error('Admin user not found. Please run UserSeeder first.');
-                return;
-            }
-
-            $this->seedIngredients($adminUser);
-            $this->command->info('Successfully seeded ingredients');
-        } catch (\Exception $e) {
-            $this->command->error('Failed to seed ingredients: ' . $e->getMessage());
-            throw $e;
+        // Find the admin user to associate the seeded ingredients with.
+        $adminUser = User::where('email', 'admin@example.com')->first();
+        
+        if (!$adminUser) {
+            $this->command->error('Admin user not found. Please run UserSeeder first.');
+            return;
         }
-    }
 
-    /**
-     * Seed ingredients using hardcoded data arrays
-     */
-    private function seedIngredients(User $adminUser): void
-    {
         $ingredients = $this->getHardcodedIngredients();
         
         foreach ($ingredients as $ingredientData) {
@@ -57,30 +43,26 @@ class IngredientSeeder extends Seeder
             }
 
             // Create ingredient record
-            Ingredient::firstOrCreate(
-                [
-                    'name' => $ingredientData['name'],
-                    'user_id' => $adminUser->id
-                ],
-                [
-                    'protein' => $ingredientData['protein'],
-                    'carbs' => $ingredientData['carbs'],
-                    'added_sugars' => $ingredientData['added_sugars'],
-                    'fats' => $ingredientData['fats'],
-                    'sodium' => $ingredientData['sodium'],
-                    'iron' => $ingredientData['iron'],
-                    'potassium' => $ingredientData['potassium'],
-                    'fiber' => $ingredientData['fiber'],
-                    'calcium' => $ingredientData['calcium'],
-                    'caffeine' => $ingredientData['caffeine'],
-                    'base_quantity' => $ingredientData['base_quantity'],
-                    'base_unit_id' => $unit->id,
-                    'cost_per_unit' => $ingredientData['cost_per_unit']
-                ]
-            );
+            Ingredient::create([
+                'name' => $ingredientData['name'],
+                'user_id' => $adminUser->id,
+                'protein' => $ingredientData['protein'],
+                'carbs' => $ingredientData['carbs'],
+                'added_sugars' => $ingredientData['added_sugars'],
+                'fats' => $ingredientData['fats'],
+                'sodium' => $ingredientData['sodium'],
+                'iron' => $ingredientData['iron'],
+                'potassium' => $ingredientData['potassium'],
+                'fiber' => $ingredientData['fiber'],
+                'calcium' => $ingredientData['calcium'],
+                'caffeine' => $ingredientData['caffeine'],
+                'base_quantity' => $ingredientData['base_quantity'],
+                'base_unit_id' => $unit->id,
+                'cost_per_unit' => $ingredientData['cost_per_unit']
+            ]);
         }
 
-        Log::info('IngredientSeeder processed count: ' . count($ingredients));
+        $this->command->info('Successfully created ' . count($ingredients) . ' ingredients');
     }
 
     /**

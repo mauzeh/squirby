@@ -7,73 +7,19 @@ use App\Models\Exercise;
 
 class GlobalExercisesSeeder extends Seeder
 {
-    protected $console;
-    
-    public function __construct($console = null)
-    {
-        $this->console = $console;
-    }
     
     /**
      * Run the database seeds.
      */
     public function run(): void
     {
-        try {
-            $exercises = $this->getHardcodedExercises();
-            $processedCount = 0;
-            
-            foreach ($exercises as $exerciseData) {
-                // Check if exercise exists to determine if it's new or updated
-                $existingExercise = Exercise::where('title', $exerciseData['title'])
-                    ->whereNull('user_id')
-                    ->first();
-                
-                $exerciseModel = Exercise::updateOrCreate(
-                    ['title' => $exerciseData['title'], 'user_id' => null],
-                    $exerciseData
-                );
-                
-                // Output changes if console is available
-                if ($this->console) {
-                    if (!$existingExercise) {
-                        $this->console->line("Created: {$exerciseData['title']}");
-                    } else {
-                        // Check what changed
-                        $changes = [];
-                        if ($existingExercise->canonical_name !== $exerciseData['canonical_name']) {
-                            $changes[] = "canonical_name: '{$existingExercise->canonical_name}' → '{$exerciseData['canonical_name']}'";
-                        }
-                        if ($existingExercise->description !== $exerciseData['description']) {
-                            $changes[] = "description updated";
-                        }
-                        if (($existingExercise->is_bodyweight ?? false) !== ($exerciseData['is_bodyweight'] ?? false)) {
-                            $changes[] = "is_bodyweight: " . ($existingExercise->is_bodyweight ? 'true' : 'false') . " → " . ($exerciseData['is_bodyweight'] ? 'true' : 'false');
-                        }
-                        if (($existingExercise->band_type ?? null) !== ($exerciseData['band_type'] ?? null)) {
-                            $oldBandType = $existingExercise->band_type ?? 'null';
-                            $newBandType = $exerciseData['band_type'] ?? 'null';
-                            $changes[] = "band_type: '{$oldBandType}' → '{$newBandType}'";
-                        }
-                        
-                        if (!empty($changes)) {
-                            $this->console->line("Updated: {$exerciseData['title']} (" . implode(', ', $changes) . ")");
-                        }
-                    }
-                }
-                
-                $processedCount++;
-            }
-            
-            if ($this->console) {
-                $this->console->info("Successfully processed {$processedCount} exercises from hardcoded data");
-            }
-        } catch (\Exception $e) {
-            if ($this->console) {
-                $this->console->error('Failed to seed exercises: ' . $e->getMessage());
-            }
-            throw $e;
+        $exercises = $this->getHardcodedExercises();
+        
+        foreach ($exercises as $exerciseData) {
+            Exercise::create($exerciseData);
         }
+        
+        $this->command->info("Successfully created " . count($exercises) . " exercises");
     }
     
     /**

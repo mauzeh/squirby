@@ -36,11 +36,11 @@ class ExerciseIntelligenceSeeder extends Seeder
                 ->first();
 
             if ($exercise) {
-                // Create or update the intelligence data
-                ExerciseIntelligence::updateOrCreate(
+                // Create the intelligence data
+                ExerciseIntelligence::create(array_merge(
                     ['exercise_id' => $exercise->id],
                     $data
-                );
+                ));
             }
         }
     }
