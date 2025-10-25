@@ -35,32 +35,72 @@ class LiftLog extends Model
 
     public function getOneRepMaxAttribute()
     {
-        $calculator = new OneRepMaxCalculatorService();
-        return $calculator->getLiftLogOneRepMax($this);
+        // Cache the result to avoid recalculating
+        if (!isset($this->attributes['cached_one_rep_max'])) {
+            try {
+                $calculator = new OneRepMaxCalculatorService();
+                $this->attributes['cached_one_rep_max'] = $calculator->getLiftLogOneRepMax($this);
+            } catch (\Exception $e) {
+                $this->attributes['cached_one_rep_max'] = 0;
+            }
+        }
+        return $this->attributes['cached_one_rep_max'];
     }
 
     public function getDisplayRepsAttribute()
     {
-        return $this->liftSets->first()->reps ?? 0;
+        // Use relationLoaded to check if liftSets are already loaded
+        if ($this->relationLoaded('liftSets')) {
+            return $this->liftSets->first()->reps ?? 0;
+        }
+        
+        // Fallback to a single query if not loaded
+        return $this->liftSets()->first()->reps ?? 0;
     }
 
     public function getDisplayRoundsAttribute()
     {
-        return $this->liftSets->count();
+        // Use relationLoaded to check if liftSets are already loaded
+        if ($this->relationLoaded('liftSets')) {
+            return $this->liftSets->count();
+        }
+        
+        // Fallback to a count query if not loaded
+        return $this->liftSets()->count();
     }
 
     public function getDisplayWeightAttribute()
     {
-        if ($this->exercise->isBandedResistance() || $this->exercise->isBandedAssistance()) {
-            return $this->liftSets->first()->band_color ?? 'N/A';
+        // Check if exercise is loaded to avoid N+1
+        if (!$this->relationLoaded('exercise')) {
+            $this->load('exercise');
         }
-        return $this->liftSets->first()->weight ?? 0;
+        
+        if ($this->exercise->isBandedResistance() || $this->exercise->isBandedAssistance()) {
+            if ($this->relationLoaded('liftSets')) {
+                return $this->liftSets->first()->band_color ?? 'N/A';
+            }
+            return $this->liftSets()->first()->band_color ?? 'N/A';
+        }
+        
+        if ($this->relationLoaded('liftSets')) {
+            return $this->liftSets->first()->weight ?? 0;
+        }
+        return $this->liftSets()->first()->weight ?? 0;
     }
 
     public function getBestOneRepMaxAttribute()
     {
-        $calculator = new OneRepMaxCalculatorService();
-        return $calculator->getBestLiftLogOneRepMax($this);
+        // Cache the result to avoid recalculating
+        if (!isset($this->attributes['cached_best_one_rep_max'])) {
+            try {
+                $calculator = new OneRepMaxCalculatorService();
+                $this->attributes['cached_best_one_rep_max'] = $calculator->getBestLiftLogOneRepMax($this);
+            } catch (\Exception $e) {
+                $this->attributes['cached_best_one_rep_max'] = 0;
+            }
+        }
+        return $this->attributes['cached_best_one_rep_max'];
     }
 
     public function user()

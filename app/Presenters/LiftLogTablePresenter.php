@@ -49,8 +49,9 @@ class LiftLogTablePresenter
     private function formatWeight(LiftLog $liftLog): string
     {
         if (!empty($liftLog->exercise->band_type)) {
-            $bandColor = $liftLog->liftSets->first()->band_color ?? null;
-            if ($bandColor) {
+            // Use the display_weight accessor which is now optimized
+            $bandColor = $liftLog->display_weight;
+            if ($bandColor && $bandColor !== 'N/A') {
                 return 'Band: ' . $bandColor;
             }
             return 'Band: ' . $liftLog->exercise->band_type;
@@ -58,8 +59,9 @@ class LiftLogTablePresenter
 
         if ($liftLog->exercise->is_bodyweight) {
             $weight = 'Bodyweight';
-            if ($liftLog->display_weight > 0) {
-                $weight .= ' +' . $liftLog->display_weight . ' lbs';
+            $displayWeight = $liftLog->display_weight;
+            if ($displayWeight > 0) {
+                $weight .= ' +' . $displayWeight . ' lbs';
             }
             return $weight;
         }

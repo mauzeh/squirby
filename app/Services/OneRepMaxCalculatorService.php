@@ -79,7 +79,7 @@ class OneRepMaxCalculatorService
             return 0;
         }
 
-        $liftLog->load('exercise');
+        // Exercise should already be loaded via eager loading
         if ($liftLog->exercise->band_type !== null) {
             throw new NotApplicableException('1RM calculation is not applicable for banded exercises.');
         }
@@ -96,12 +96,12 @@ class OneRepMaxCalculatorService
 
         $isBodyweightExercise = $liftLog->exercise->is_bodyweight ?? false;
         $userId = $liftLog->user_id;
-        $date = $liftLog->logged_at; // Assuming lift log has a logged_at date
+        $date = $liftLog->logged_at;
 
         if ($isUniform) {
-            return $this->calculateOneRepMax($firstSet->weight, $firstSet->reps, $isBodyweightExercise, $userId, $date);
+            return $this->calculateOneRepMaxOptimized($firstSet->weight, $firstSet->reps, $isBodyweightExercise, $liftLog);
         } else {
-            return $this->calculateOneRepMax($firstSet->weight, $firstSet->reps, $isBodyweightExercise, $userId, $date);
+            return $this->calculateOneRepMaxOptimized($firstSet->weight, $firstSet->reps, $isBodyweightExercise, $liftLog);
         }
     }
 
@@ -118,17 +118,57 @@ class OneRepMaxCalculatorService
             return 0;
         }
 
-        $liftLog->load('exercise');
+        // Exercise should already be loaded via eager loading
         if ($liftLog->exercise->band_type !== null) {
             throw new NotApplicableException('1RM calculation is not applicable for banded exercises.');
         }
 
         $isBodyweightExercise = $liftLog->exercise->is_bodyweight ?? false;
-        $userId = $liftLog->user_id;
-        $date = $liftLog->logged_at; // Assuming lift log has a logged_at date
 
-        return $liftLog->liftSets->max(function ($liftSet) use ($isBodyweightExercise, $userId, $date) {
-            return $this->calculateOneRepMax($liftSet->weight, $liftSet->reps, $isBodyweightExercise, $userId, $date);
+        return $liftLog->liftSets->max(function ($liftSet) use ($isBodyweightExercise, $liftLog) {
+            return $this->calculateOneRepMaxOptimized($liftSet->weight, $liftSet->reps, $isBodyweightExercise, $liftLog);
         });
+    }
+
+    /**
+     * Optimized 1RM calculation that uses cached bodyweight to avoid database queries
+     * Falls back to original behavior if cached bodyweight is not available
+     *
+     * @param float $weight
+     * @param int $reps
+     * @param bool $isBodyweightExercise
+     * @param \App\Models\LiftLog $liftLog
+     * @return float
+     * @throws NotApplicableException
+     */
+    private function calculateOneRepMaxOptimized(float $weight, int $reps, bool $isBodyweightExercise, $liftLog): float
+    {
+        $bodyweight = 0;
+        if ($isBodyweightExercise) {
+            if (isset($liftLog->cached_bodyweight)) {
+                // Use cached bodyweight for optimized performance
+                $bodyweight = $liftLog->cached_bodyweight;
+            } else {
+                // Fall back to original database query for backward compatibility
+                $bodyweightMeasurement = BodyLog::where('user_id', $liftLog->user_id)
+                    ->whereHas('measurementType', function ($query) {
+                        $query->where('name', 'Bodyweight');
+                    })
+                    ->whereDate('logged_at', '<=', $liftLog->logged_at->toDateString())
+                    ->orderBy('logged_at', 'desc')
+                    ->first();
+
+                if ($bodyweightMeasurement) {
+                    $bodyweight = $bodyweightMeasurement->value;
+                }
+            }
+        }
+
+        $totalWeight = $weight + $bodyweight;
+
+        if ($reps === 1) {
+            return $totalWeight;
+        }
+        return $totalWeight * (1 + (0.0333 * $reps));
     }
 }
