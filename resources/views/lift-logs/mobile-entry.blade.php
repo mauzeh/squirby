@@ -7,59 +7,18 @@
 
 @section('content')
     <div class="mobile-entry-container">
-        <div class="date-navigation-mobile">
-            @php
-                $today = \Carbon\Carbon::today();
-                $prevDay = $selectedDate->copy()->subDay();
-                $nextDay = $selectedDate->copy()->addDay();
-            @endphp
-            <a href="{{ route('lift-logs.mobile-entry', ['date' => $prevDay->toDateString()]) }}" class="nav-button">&lt; Prev</a>
-            <a href="{{ route('lift-logs.mobile-entry', ['date' => $today->toDateString()]) }}" class="nav-button">Today</a>
-            <a href="{{ route('lift-logs.mobile-entry', ['date' => $nextDay->toDateString()]) }}" class="nav-button">Next &gt;</a>
-        </div>
+        <x-mobile-entry.date-navigation 
+            :selected-date="$selectedDate"
+            route-name="lift-logs.mobile-entry" />
 
-        <h1>
-            @if ($selectedDate->isToday())
-                Today
-            @elseif ($selectedDate->isYesterday())
-                Yesterday
-            @elseif ($selectedDate->isTomorrow())
-                Tomorrow
-            @else
-                {{ $selectedDate->format('M d, Y') }}
-            @endif
-        </h1>
+        <x-mobile-entry.page-title :selected-date="$selectedDate" />
 
-        {{-- Message system - Error, success, and validation messages --}}
-        @if(session('error'))
-            <div class="message-container message-error" id="error-message">
-                <div class="message-content">
-                    <span class="message-text">{{ session('error') }}</span>
-                    <button type="button" class="message-close" onclick="this.parentElement.parentElement.style.display='none'">&times;</button>
-                </div>
-            </div>
-        @endif
+        <x-mobile-entry.message-system :errors="$errors ?? null" />
 
-        @if(session('success'))
-            <div class="message-container message-success" id="success-message">
-                <div class="message-content">
-                    <span class="message-text">{{ session('success') }}</span>
-                    <button type="button" class="message-close" onclick="this.parentElement.parentElement.style.display='none'">&times;</button>
-                </div>
-            </div>
-        @endif
-
-        {{-- Client-side validation error display --}}
-        <div id="validation-errors" class="message-container message-validation hidden">
-            <div class="message-content">
-                <span class="message-text"></span>
-                <button type="button" class="message-close" onclick="document.getElementById('validation-errors').classList.add('hidden')">&times;</button>
-            </div>
-        </div>
-
-        <div class="add-exercise-container">
-            <button type="button" id="add-exercise-button" class="button-large button-green">Add exercise</button>
-        </div>
+        <x-mobile-entry.add-item-button
+            id="add-exercise-button"
+            label="Add exercise"
+            target-container="exercise-list-container" />
 
         <x-lift-logs.mobile-entry.exercise-list 
             container-id="exercise-list-container"
@@ -74,32 +33,46 @@
             <p class="no-program-message">No program entries for this day.</p>
         @else
             @foreach ($programs as $program)
-                <div class="program-card">
-                    <div class="program-card-actions">
-                        @if(!$loop->first)
-                            <a href="{{ route('programs.move-up', $program->id) }}" class="program-action-button">&uarr;</a>
-                        @endif
-                        @if(!$loop->last)
-                            <a href="{{ route('programs.move-down', $program->id) }}" class="program-action-button">&darr;</a>
-                        @endif
-                        <form action="{{ route('programs.destroy', $program->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to remove this exercise from the program?');">
-                            @csrf
-                            @method('DELETE')
-                            <input type="hidden" name="redirect_to" value="mobile-entry">
-                            <input type="hidden" name="date" value="{{ $selectedDate->toDateString() }}">
-                            <button type="submit" class="program-action-button delete-program-button"><i class="fa-solid fa-trash"></i></button>
-                        </form>
-                    </div>
-                    @php
-                        $loggedLift = $dailyLiftLogs->get($program->exercise->id);
-                    @endphp
-                    <h2>{{ $program->exercise->title }}
-                        @if ($loggedLift)
-                            (<x-lift-logs.lift-reps-sets-display :reps="$loggedLift->display_reps" :sets="$loggedLift->display_rounds" />)
-                        @else
-                            (<x-lift-logs.lift-reps-sets-display :reps="$program->reps" :sets="$program->sets" />)
-                        @endif
-                    </h2>
+                @php
+                    $loggedLift = $dailyLiftLogs->get($program->exercise->id);
+                    
+                    // Build move actions HTML
+                    $moveActions = '';
+                    if (!$loop->first) {
+                        $moveActions .= '<a href="' . route('programs.move-up', $program->id) . '" class="program-action-button">&uarr;</a>';
+                    }
+                    if (!$loop->last) {
+                        $moveActions .= '<a href="' . route('programs.move-down', $program->id) . '" class="program-action-button">&darr;</a>';
+                    }
+                    
+                    // Build card title with reps/sets display
+                    $cardTitle = $program->exercise->title;
+                    if ($loggedLift) {
+                        $cardTitle .= ' (<x-lift-logs.lift-reps-sets-display :reps="' . $loggedLift->display_reps . '" :sets="' . $loggedLift->display_rounds . '" />)';
+                    } else {
+                        $cardTitle .= ' (<x-lift-logs.lift-reps-sets-display :reps="' . $program->reps . '" :sets="' . $program->sets . '" />)';
+                    }
+                @endphp
+                
+                @php
+                    // Build complete title with reps/sets display
+                    $titleWithReps = $program->exercise->title . ' ';
+                    if ($loggedLift) {
+                        $titleWithReps .= '(' . $loggedLift->display_reps . ' reps × ' . $loggedLift->display_rounds . ' sets)';
+                    } else {
+                        $titleWithReps .= '(' . $program->reps . ' reps × ' . $program->sets . ' sets)';
+                    }
+                @endphp
+                
+                <x-mobile-entry.item-card
+                    :title="$titleWithReps"
+                    :delete-route="route('programs.destroy', $program->id)"
+                    delete-confirm-text="Are you sure you want to remove this exercise from the program?"
+                    :hidden-fields="[
+                        'redirect_to' => 'mobile-entry',
+                        'date' => $selectedDate->toDateString()
+                    ]"
+                    :move-actions="$moveActions">
                     @if($program->comments)
                         <p class="details"><strong>Notes:</strong> {{ $program->comments }}</p>
                     @endif
@@ -182,32 +155,32 @@
                                             @endforeach
                                         </div>
                                     @else
-                                        <label for="weight_{{ $program->id }}" class="form-label-centered">@if($program->exercise->is_bodyweight) Extra Weight (lbs): @else Weight (lbs): @endif</label>
-                                        <div class="input-group">
-                                            <button type="button" class="decrement-button" data-field="weight_{{ $program->id }}">-</button>
-                                            <input type="number" name="weight" id="weight_{{ $program->id }}" class="large-input" inputmode="decimal" value="{{ $program->suggestedNextWeight ?? ($program->exercise->is_bodyweight ? 0 : '') }}" @if(!$program->exercise->is_bodyweight) required @endif>
-                                            <button type="button" class="increment-button" data-field="weight_{{ $program->id }}">+</button>
-                                        </div>
+                                        <x-mobile-entry.number-input
+                                            name="weight"
+                                            id="weight_{{ $program->id }}"
+                                            :value="$program->suggestedNextWeight ?? ($program->exercise->is_bodyweight ? 0 : '')"
+                                            label="@if($program->exercise->is_bodyweight) Extra Weight (lbs): @else Weight (lbs): @endif"
+                                            :step="5"
+                                            :min="0"
+                                            :required="!$program->exercise->is_bodyweight" />
                                     @endif
                                 </div>
 
-                                <div class="form-group">
-                                    <label for="rounds_{{ $program->id }}" class="form-label-centered">Sets:</label>
-                                    <div class="input-group">
-                                        <button type="button" class="decrement-button" data-field="rounds_{{ $program->id }}">-</button>
-                                        <input type="number" name="rounds" id="rounds_{{ $program->id }}" class="large-input" inputmode="numeric" value="{{ $program->sets }}">
-                                        <button type="button" class="increment-button" data-field="rounds_{{ $program->id }}">+</button>
-                                    </div>
-                                </div>
+                                <x-mobile-entry.number-input
+                                    name="rounds"
+                                    id="rounds_{{ $program->id }}"
+                                    :value="$program->sets"
+                                    label="Sets:"
+                                    :step="1"
+                                    :min="1" />
 
-                                <div class="form-group">
-                                    <label for="reps_{{ $program->id }}" class="form-label-centered">Reps:</label>
-                                    <div class="input-group">
-                                        <button type="button" class="decrement-button" data-field="reps_{{ $program->id }}">-</button>
-                                        <input type="number" name="reps" id="reps_{{ $program->id }}" class="large-input" inputmode="numeric" value="{{ $program->reps }}">
-                                        <button type="button" class="increment-button" data-field="reps_{{ $program->id }}">+</button>
-                                    </div>
-                                </div>
+                                <x-mobile-entry.number-input
+                                    name="reps"
+                                    id="reps_{{ $program->id }}"
+                                    :value="$program->reps"
+                                    label="Reps:"
+                                    :step="1"
+                                    :min="1" />
 
                                 <div class="form-group">
                                     <label for="comments_{{ $program->id }}">Comments:</label>
@@ -218,22 +191,14 @@
                             <button type="submit" class="button-large button-blue submit-button">✔ Complete this lift</button>
                         </form>
                     @endif
-                </div>
+                </x-mobile-entry.item-card>
             @endforeach
             
-            {{-- Duplicate "Add exercise" button at the bottom when there are programs --}}
-            <div class="add-exercise-container">
-                <button type="button" id="add-exercise-button-bottom" class="button-large button-green">Add exercise</button>
-            </div>
-
-            <x-lift-logs.mobile-entry.exercise-list 
-                container-id="exercise-list-container-bottom"
-                form-id="new-exercise-form-container-bottom"
-                input-id="exercise_name_bottom"
-                link-id="new-exercise-link-bottom"
-                :selected-date="$selectedDate"
-                :recommendations="$recommendations"
-                :exercises="$exercises" />
+            {{-- Bottom add exercise button - reuses the same exercise list --}}
+            <x-mobile-entry.add-item-button
+                id="add-exercise-button-bottom"
+                label="Add exercise"
+                target-container="exercise-list-container" />
         @endif
     </div>
 
@@ -273,47 +238,20 @@
                 });
             });
 
-            // Message system functionality - Auto-hide success/error messages after 5 seconds
-            setTimeout(function() {
-                const errorMessage = document.getElementById('error-message');
-                const successMessage = document.getElementById('success-message');
-                
-                if (errorMessage) {
-                    errorMessage.style.display = 'none';
-                }
-                if (successMessage) {
-                    successMessage.style.display = 'none';
-                }
-            }, 5000);
+
         });
     </script>
 
     <script>
-        // Generic function to handle add-exercise buttons
-        function setupAddExerciseButton(buttonId, containerId) {
-            const button = document.getElementById(buttonId);
-            if (button) {
-                button.addEventListener('click', function() {
-                    // Hide all other exercise lists and show their buttons
-                    hideAllExerciseLists();
-                    
-                    // Show this exercise list and hide this button
-                    document.getElementById(containerId).classList.remove('hidden');
-                    this.style.display = 'none';
-                });
-            }
-        }
+
 
         // Function to hide all exercise lists and show all buttons
         function hideAllExerciseLists() {
-            // Hide all exercise lists
-            const containers = ['exercise-list-container', 'exercise-list-container-bottom'];
-            containers.forEach(containerId => {
-                const container = document.getElementById(containerId);
-                if (container) {
-                    container.classList.add('hidden');
-                }
-            });
+            // Hide exercise list
+            const container = document.getElementById('exercise-list-container');
+            if (container) {
+                container.classList.add('hidden');
+            }
 
             // Show all buttons
             const buttons = ['add-exercise-button', 'add-exercise-button-bottom'];
@@ -324,23 +262,17 @@
                 }
             });
 
-            // Hide all new exercise forms
-            const forms = ['new-exercise-form-container', 'new-exercise-form-container-bottom'];
-            forms.forEach(formId => {
-                const form = document.getElementById(formId);
-                if (form) {
-                    form.classList.add('hidden');
-                }
-            });
+            // Hide new exercise form
+            const form = document.getElementById('new-exercise-form-container');
+            if (form) {
+                form.classList.add('hidden');
+            }
 
-            // Show all new exercise links
-            const links = ['new-exercise-link', 'new-exercise-link-bottom'];
-            links.forEach(linkId => {
-                const link = document.getElementById(linkId);
-                if (link) {
-                    link.style.display = '';
-                }
-            });
+            // Show new exercise link
+            const link = document.getElementById('new-exercise-link');
+            if (link) {
+                link.style.display = '';
+            }
         }
 
         // Generic function to handle new-exercise links
@@ -364,51 +296,20 @@
             }
         }
 
-        // Setup top exercise controls
-        setupAddExerciseButton('add-exercise-button', 'exercise-list-container');
+        // Setup new exercise link
         setupNewExerciseLink('new-exercise-link', 'new-exercise-form-container', 'exercise_name');
-
-        // Setup bottom exercise controls
-        setupAddExerciseButton('add-exercise-button-bottom', 'exercise-list-container-bottom');
-        setupNewExerciseLink('new-exercise-link-bottom', 'new-exercise-form-container-bottom', 'exercise_name_bottom');
+        
+        // Listen for add item button clicks to hide other buttons
+        document.addEventListener('addItemClicked', function(event) {
+            if (event.detail.buttonId === 'add-exercise-button' || event.detail.buttonId === 'add-exercise-button-bottom') {
+                hideAllExerciseLists();
+            }
+        });
     </script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            document.querySelectorAll('.increment-button, .decrement-button').forEach(button => {
-                button.addEventListener('click', function() {
-                    const fieldId = this.dataset.field;
-                    const input = document.getElementById(fieldId);
-                    const step = this.classList.contains('increment-button') ? 1 : -1;
-                    let value = parseFloat(input.value) || 0;
-                    if (fieldId.includes('weight')) {
-                        value += step * 5;
-                    } else {
-                        value += step;
-                    }
-                    if (value < 0) {
-                        value = 0;
-                    }
-                    input.value = value;
-                });
-            });
-        });
 
-        // Message system functions for validation errors
-        function showValidationError(message) {
-            const errorContainer = document.getElementById('validation-errors');
-            const errorText = errorContainer.querySelector('.message-text');
-            
-            errorText.textContent = message;
-            errorContainer.classList.remove('hidden');
-            
-            // Scroll to error message
-            errorContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
 
-        function hideValidationError() {
-            const errorContainer = document.getElementById('validation-errors');
-            errorContainer.classList.add('hidden');
-        }
+
 
         // Form validation function for lift logs
         function validateLiftForm(formData) {
