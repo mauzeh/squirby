@@ -66,11 +66,11 @@ class UserSeederService
     {
         // Get the specific ingredients we want to copy for the sample meal
         $ingredientNames = [
-            'Chicken Breast (Raw)', // Updated to match CSV data
-            'Rice, Brown Jasmine (Dry - Trader Joe\'s)', // Updated to match CSV data
-            'Broccoli (raw)',
-            'Olive oil', // Updated to match CSV data (lowercase)
-            'Egg (L) whole', // Updated to match CSV data
+            'Chicken Breast',
+            'Brown Rice',
+            'Broccoli',
+            'Olive Oil',
+            'Eggs',
         ];
 
         foreach ($ingredientNames as $ingredientName) {
@@ -120,84 +120,84 @@ class UserSeederService
 
         $ingredients = [
             [
-                'name' => 'Chicken Breast (Raw)',
+                'name' => 'Chicken Breast',
                 'base_quantity' => 100,
-                'protein' => 25,
-                'carbs' => 0,
-                'added_sugars' => 0,
-                'fats' => 3,
-                'sodium' => 60,
-                'iron' => 0,
-                'potassium' => 250,
-                'fiber' => 0,
+                'protein' => 31.0,
+                'carbs' => 0.0,
+                'added_sugars' => 0.0,
+                'fats' => 3.6,
+                'sodium' => 74,
+                'iron' => 0.7,
+                'potassium' => 256,
+                'fiber' => 0.0,
+                'calcium' => 15,
+                'caffeine' => 0.0,
+                'base_unit_id' => $gramUnit->id,
+                'cost_per_unit' => 0.12,
+            ],
+            [
+                'name' => 'Brown Rice',
+                'base_quantity' => 100,
+                'protein' => 2.6,
+                'carbs' => 23.0,
+                'added_sugars' => 0.0,
+                'fats' => 0.9,
+                'sodium' => 5,
+                'iron' => 0.4,
+                'potassium' => 43,
+                'fiber' => 1.8,
                 'calcium' => 10,
-                'caffeine' => 0,
+                'caffeine' => 0.0,
                 'base_unit_id' => $gramUnit->id,
-                'cost_per_unit' => 0,
+                'cost_per_unit' => 0.03,
             ],
             [
-                'name' => 'Rice, Brown Jasmine (Dry - Trader Joe\'s)',
-                'base_quantity' => 45,
-                'protein' => 4,
-                'carbs' => 34,
-                'added_sugars' => 0,
-                'fats' => 1.5,
-                'sodium' => 0,
-                'iron' => 1.1,
-                'potassium' => 100,
-                'fiber' => 2,
-                'calcium' => 0,
-                'caffeine' => 0,
-                'base_unit_id' => $gramUnit->id,
-                'cost_per_unit' => 0.13,
-            ],
-            [
-                'name' => 'Broccoli (raw)',
+                'name' => 'Broccoli',
                 'base_quantity' => 100,
                 'protein' => 2.8,
                 'carbs' => 6.6,
-                'added_sugars' => 0,
+                'added_sugars' => 0.0,
                 'fats' => 0.4,
-                'sodium' => 0,
-                'iron' => 0,
-                'potassium' => 0,
-                'fiber' => 0,
-                'calcium' => 0,
-                'caffeine' => 0,
+                'sodium' => 33,
+                'iron' => 0.7,
+                'potassium' => 316,
+                'fiber' => 2.6,
+                'calcium' => 47,
+                'caffeine' => 0.0,
                 'base_unit_id' => $gramUnit->id,
-                'cost_per_unit' => 0,
+                'cost_per_unit' => 0.06,
             ],
             [
-                'name' => 'Olive oil',
+                'name' => 'Olive Oil',
                 'base_quantity' => 1,
-                'protein' => 0,
-                'carbs' => 0,
-                'added_sugars' => 0,
-                'fats' => 14,
+                'protein' => 0.0,
+                'carbs' => 0.0,
+                'added_sugars' => 0.0,
+                'fats' => 13.5,
                 'sodium' => 0,
-                'iron' => 0,
+                'iron' => 0.1,
                 'potassium' => 0,
-                'fiber' => 0,
+                'fiber' => 0.0,
                 'calcium' => 0,
-                'caffeine' => 0,
+                'caffeine' => 0.0,
                 'base_unit_id' => Unit::where('abbreviation', 'tbsp')->first()->id ?? $milliliterUnit->id,
                 'cost_per_unit' => 0.20,
             ],
             [
-                'name' => 'Egg (L) whole',
+                'name' => 'Eggs',
                 'base_quantity' => 1,
                 'protein' => 6.3,
-                'carbs' => 0.8,
-                'added_sugars' => 0,
-                'fats' => 4.6,
-                'sodium' => 63,
-                'iron' => 0.6,
-                'potassium' => 73,
-                'fiber' => 0,
-                'calcium' => 24,
-                'caffeine' => 0,
+                'carbs' => 0.6,
+                'added_sugars' => 0.0,
+                'fats' => 5.3,
+                'sodium' => 62,
+                'iron' => 0.9,
+                'potassium' => 69,
+                'fiber' => 0.0,
+                'calcium' => 28,
+                'caffeine' => 0.0,
                 'base_unit_id' => $pieceUnit->id,
-                'cost_per_unit' => 0.62,
+                'cost_per_unit' => 0.25,
             ],
         ];
 
@@ -217,11 +217,11 @@ class UserSeederService
             'comments' => 'A balanced meal with protein, carbs, and vegetables.',
         ]);
 
-        // Attach ingredients to the sample meal using the correct names from CSV
-        $chickenBreast = $user->ingredients()->where('name', 'Chicken Breast (Raw)')->first();
-        $rice = $user->ingredients()->where('name', 'Rice, Brown Jasmine (Dry - Trader Joe\'s)')->first();
-        $broccoli = $user->ingredients()->where('name', 'Broccoli (raw)')->first();
-        $oliveOil = $user->ingredients()->where('name', 'Olive oil')->first();
+        // Attach ingredients to the sample meal
+        $chickenBreast = $user->ingredients()->where('name', 'Chicken Breast')->first();
+        $rice = $user->ingredients()->where('name', 'Brown Rice')->first();
+        $broccoli = $user->ingredients()->where('name', 'Broccoli')->first();
+        $oliveOil = $user->ingredients()->where('name', 'Olive Oil')->first();
 
         if ($chickenBreast) {
             $sampleMeal->ingredients()->attach($chickenBreast->id, ['quantity' => 150]);

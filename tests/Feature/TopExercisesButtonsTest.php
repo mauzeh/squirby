@@ -25,7 +25,6 @@ class TopExercisesButtonsTest extends TestCase
     {
         // User has no personal exercises and global visibility is off
         $response = $this->get(route('lift-logs.index'));
-        
         $response->assertStatus(200);
         $response->assertDontSee('More...');
     }

@@ -42,11 +42,11 @@ class UserRegistrationWithSeededDataTest extends TestCase
         // Verify default ingredients were created
         $this->assertCount(5, $user->ingredients);
         $expectedIngredients = [
-            'Chicken Breast (Raw)',
-            'Rice, Brown Jasmine (Dry - Trader Joe\'s)',
-            'Broccoli (raw)',
-            'Olive oil',
-            'Egg (L) whole'
+            'Chicken Breast',
+            'Brown Rice',
+            'Broccoli',
+            'Olive Oil',
+            'Eggs'
         ];
         
         foreach ($expectedIngredients as $ingredientName) {
@@ -65,17 +65,17 @@ class UserRegistrationWithSeededDataTest extends TestCase
         // Verify meal has the correct ingredients attached
         $this->assertCount(4, $meal->ingredients);
         $mealIngredientNames = $meal->ingredients->pluck('name')->toArray();
-        $expectedMealIngredients = ['Chicken Breast (Raw)', 'Rice, Brown Jasmine (Dry - Trader Joe\'s)', 'Broccoli (raw)', 'Olive oil'];
+        $expectedMealIngredients = ['Chicken Breast', 'Brown Rice', 'Broccoli', 'Olive Oil'];
         
         foreach ($expectedMealIngredients as $ingredientName) {
             $this->assertContains($ingredientName, $mealIngredientNames);
         }
 
         // Verify ingredient quantities in the meal
-        $chickenPivot = $meal->ingredients()->where('name', 'Chicken Breast (Raw)')->first()->pivot;
-        $ricePivot = $meal->ingredients()->where('name', 'Rice, Brown Jasmine (Dry - Trader Joe\'s)')->first()->pivot;
-        $broccoliPivot = $meal->ingredients()->where('name', 'Broccoli (raw)')->first()->pivot;
-        $oilPivot = $meal->ingredients()->where('name', 'Olive oil')->first()->pivot;
+        $chickenPivot = $meal->ingredients()->where('name', 'Chicken Breast')->first()->pivot;
+        $ricePivot = $meal->ingredients()->where('name', 'Brown Rice')->first()->pivot;
+        $broccoliPivot = $meal->ingredients()->where('name', 'Broccoli')->first()->pivot;
+        $oilPivot = $meal->ingredients()->where('name', 'Olive Oil')->first()->pivot;
 
         $this->assertEquals(150, $chickenPivot->quantity);
         $this->assertEquals(100, $ricePivot->quantity);
@@ -112,7 +112,7 @@ class UserRegistrationWithSeededDataTest extends TestCase
 
         // Verify specific seeded data
         $this->assertTrue($user->measurementTypes->contains('name', 'Bodyweight'));
-        $this->assertTrue($user->ingredients->contains('name', 'Chicken Breast (Raw)'));
+        $this->assertTrue($user->ingredients->contains('name', 'Chicken Breast'));
         $this->assertEquals('Chicken, Rice & Broccoli', $user->meals->first()->name);
     }
 
