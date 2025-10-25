@@ -6,18 +6,24 @@
 /* ========================================
    Form Group Base Styles
    ======================================== */
-.form-group {
+.mobile-entry-container .form-group {
+  display: block !important; /* Override app.css flex layout */
   margin-bottom: 20px;
   width: 100%;
   box-sizing: border-box;
+  align-items: initial !important; /* Reset flex alignment */
 }
 
-.form-group label {
-  display: block;
+.mobile-entry-container .form-group label {
+  display: block !important; /* Override app.css flex layout */
+  flex: none !important; /* Override fixed width from app.css */
   margin-bottom: 8px;
+  margin-right: 0 !important; /* Reset margin from app.css */
+  text-align: left !important; /* Override right alignment from app.css */
   color: var(--entry-text, #f2f2f2);
   font-weight: bold;
   font-size: 1.1em;
+  width: 100% !important; /* Full width for mobile */
 }
 
 .form-group label.required::after {
@@ -37,20 +43,21 @@
 /* ========================================
    Input Group Component
    ======================================== */
-.input-group {
+.mobile-entry-container .input-group {
   display: flex;
   align-items: center;
   position: relative;
   width: 100%;
   box-sizing: border-box;
+  margin-top: 0; /* Ensure no extra margin */
 }
 
 /* ========================================
    Large Input Component
    ======================================== */
-.large-input {
+.mobile-entry-container .large-input {
   text-align: center;
-  flex-grow: 1;
+  flex-grow: 1 !important; /* Override app.css flex settings */
   border-radius: 0;
   font-size: 2.2em;
   border: none;
@@ -105,8 +112,9 @@
 /* ========================================
    Large Textarea Component
    ======================================== */
-.large-textarea {
-  width: 100%;
+.mobile-entry-container .large-textarea {
+  width: 100% !important; /* Override app.css width settings */
+  flex: none !important; /* Override app.css flex settings */
   background-color: var(--entry-bg, #2a2a2a);
   border: 1px solid var(--entry-border, #555);
   border-radius: var(--entry-border-radius-sm, 5px);
