@@ -1536,14 +1536,19 @@ h1 {
         font-size: 0.85em;
     }
     
-    /* New exercise form responsive behavior */
-    .new-exercise-form {
+    /* Exercise autocomplete responsive behavior */
+    .exercise-autocomplete-container {
         margin-bottom: 8px;
     }
     
-    .new-exercise-form .large-input {
+    .exercise-search-input {
         font-size: 1.2em;
         padding: 12px 10px;
+    }
+    
+    .save-as-new-button {
+        font-size: 1.2em;
+        padding: 12px 20px;
     }
 }
 
@@ -1585,6 +1590,17 @@ h1 {
     
     .exercise-label {
         font-size: 0.8em;
+    }
+    
+    /* Exercise autocomplete adjustments */
+    .exercise-search-input {
+        font-size: 1.1em;
+        padding: 10px 8px;
+    }
+    
+    .save-as-new-button {
+        font-size: 1.1em;
+        padding: 10px 16px;
     }
 }
 

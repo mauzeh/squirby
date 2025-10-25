@@ -324,53 +324,205 @@
                 }
             });
 
-            // Hide all new exercise forms
-            const forms = ['new-exercise-form-container', 'new-exercise-form-container-bottom'];
-            forms.forEach(formId => {
-                const form = document.getElementById(formId);
-                if (form) {
-                    form.classList.add('hidden');
+            // Reset all autocomplete interfaces
+            const autocompleteContainers = ['exercise-list-container', 'exercise-list-container-bottom'];
+            autocompleteContainers.forEach(containerId => {
+                const searchInput = document.getElementById(`exercise-search-${containerId}`);
+                const saveAsNewButton = document.getElementById(`save-as-new-${containerId}`);
+                const noExercisesFound = document.getElementById(`no-exercises-found-${containerId}`);
+                
+                if (searchInput) {
+                    searchInput.value = '';
                 }
-            });
-
-            // Show all new exercise links
-            const links = ['new-exercise-link', 'new-exercise-link-bottom'];
-            links.forEach(linkId => {
-                const link = document.getElementById(linkId);
-                if (link) {
-                    link.style.display = '';
+                if (saveAsNewButton) {
+                    saveAsNewButton.classList.add('hidden');
                 }
+                if (noExercisesFound) {
+                    noExercisesFound.classList.add('hidden');
+                }
+                
+                // Show all exercise suggestions
+                const suggestions = document.querySelectorAll(`#${containerId} .exercise-suggestion`);
+                suggestions.forEach(suggestion => {
+                    suggestion.style.display = '';
+                });
             });
         }
 
-        // Generic function to handle new-exercise links
-        function setupNewExerciseLink(linkId, formId, inputId) {
-            const link = document.getElementById(linkId);
-            if (link) {
-                link.addEventListener('click', function(event) {
-                    event.preventDefault();
-                    document.getElementById(formId).classList.remove('hidden');
-                    document.getElementById(inputId).focus();
-                    this.style.display = 'none';
-                    
-                    // Scroll to the form to ensure it's visible
-                    setTimeout(() => {
-                        document.getElementById(formId).scrollIntoView({ 
-                            behavior: 'smooth', 
-                            block: 'start' 
-                        });
-                    }, 100);
+        // Exercise Autocomplete Class
+        class ExerciseAutocomplete {
+            constructor(containerId, selectedDate) {
+                this.containerId = containerId;
+                this.selectedDate = selectedDate;
+                this.searchInput = document.getElementById(`exercise-search-${containerId}`);
+                this.suggestionsContainer = document.getElementById(`exercise-suggestions-${containerId}`);
+                this.saveAsNewButton = document.getElementById(`save-as-new-${containerId}`);
+                this.noExercisesFound = document.getElementById(`no-exercises-found-${containerId}`);
+                this.allSuggestions = document.querySelectorAll(`#${containerId} .exercise-suggestion`);
+                this.currentQuery = '';
+                
+                this.init();
+            }
+            
+            init() {
+                if (!this.searchInput) return;
+                
+                // Add event listeners
+                this.searchInput.addEventListener('input', (e) => {
+                    this.handleInput(e.target.value);
                 });
+                
+                this.searchInput.addEventListener('focus', () => {
+                    this.showInitialRecommendations();
+                });
+                
+                // Setup save as new button
+                if (this.saveAsNewButton) {
+                    this.saveAsNewButton.addEventListener('click', () => {
+                        this.handleSaveAsNew();
+                    });
+                }
+                
+                // Setup keyboard navigation
+                this.searchInput.addEventListener('keydown', (e) => {
+                    this.handleKeydown(e);
+                });
+            }
+            
+            handleInput(query) {
+                this.currentQuery = query.trim().toLowerCase();
+                this.filterExercises();
+                this.updateSaveAsNewButton();
+            }
+            
+            filterExercises() {
+                let visibleCount = 0;
+                
+                this.allSuggestions.forEach(suggestion => {
+                    const exerciseName = suggestion.dataset.exerciseName.toLowerCase();
+                    const matches = exerciseName.includes(this.currentQuery);
+                    
+                    if (matches || this.currentQuery === '') {
+                        suggestion.style.display = '';
+                        visibleCount++;
+                    } else {
+                        suggestion.style.display = 'none';
+                    }
+                });
+                
+                // Show/hide no results message
+                if (visibleCount === 0 && this.currentQuery !== '') {
+                    this.noExercisesFound.classList.remove('hidden');
+                } else {
+                    this.noExercisesFound.classList.add('hidden');
+                }
+            }
+            
+            updateSaveAsNewButton() {
+                if (this.currentQuery === '') {
+                    this.saveAsNewButton.classList.add('hidden');
+                    return;
+                }
+                
+                // Check if query exactly matches any existing exercise
+                const exactMatch = Array.from(this.allSuggestions).some(suggestion => {
+                    const exerciseName = suggestion.dataset.exerciseName.toLowerCase();
+                    return exerciseName === this.currentQuery && suggestion.style.display !== 'none';
+                });
+                
+                if (exactMatch) {
+                    this.saveAsNewButton.classList.add('hidden');
+                } else {
+                    this.saveAsNewButton.classList.remove('hidden');
+                    this.saveAsNewButton.textContent = `Save as new exercise "${this.searchInput.value}"`;
+                }
+            }
+            
+            showInitialRecommendations() {
+                // Show all suggestions when focused
+                this.allSuggestions.forEach(suggestion => {
+                    suggestion.style.display = '';
+                });
+                this.noExercisesFound.classList.add('hidden');
+            }
+            
+            handleSaveAsNew() {
+                const exerciseName = this.searchInput.value.trim();
+                if (!exerciseName) return;
+                
+                // Create form and submit to quick-create endpoint
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = `/programs/quick-create/${this.selectedDate}`;
+                
+                // Add CSRF token
+                const csrfToken = document.querySelector('meta[name="csrf-token"]');
+                if (csrfToken) {
+                    const csrfInput = document.createElement('input');
+                    csrfInput.type = 'hidden';
+                    csrfInput.name = '_token';
+                    csrfInput.value = csrfToken.getAttribute('content');
+                    form.appendChild(csrfInput);
+                }
+                
+                // Add exercise name
+                const nameInput = document.createElement('input');
+                nameInput.type = 'hidden';
+                nameInput.name = 'exercise_name';
+                nameInput.value = exerciseName;
+                form.appendChild(nameInput);
+                
+                // Add redirect parameter
+                const redirectInput = document.createElement('input');
+                redirectInput.type = 'hidden';
+                redirectInput.name = 'redirect_to';
+                redirectInput.value = 'mobile-entry';
+                form.appendChild(redirectInput);
+                
+                // Submit form
+                document.body.appendChild(form);
+                form.submit();
+            }
+            
+            handleKeydown(e) {
+                if (e.key === 'Escape') {
+                    hideAllExerciseLists();
+                } else if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (!this.saveAsNewButton.classList.contains('hidden')) {
+                        this.handleSaveAsNew();
+                    }
+                }
             }
         }
 
+        // Initialize autocomplete for both containers
+        let topAutocomplete, bottomAutocomplete;
+
         // Setup top exercise controls
         setupAddExerciseButton('add-exercise-button', 'exercise-list-container');
-        setupNewExerciseLink('new-exercise-link', 'new-exercise-form-container', 'exercise_name');
-
-        // Setup bottom exercise controls
+        
+        // Setup bottom exercise controls  
         setupAddExerciseButton('add-exercise-button-bottom', 'exercise-list-container-bottom');
-        setupNewExerciseLink('new-exercise-link-bottom', 'new-exercise-form-container-bottom', 'exercise_name_bottom');
+        
+        // Initialize autocomplete instances when containers are shown
+        document.getElementById('add-exercise-button')?.addEventListener('click', function() {
+            setTimeout(() => {
+                if (!topAutocomplete) {
+                    topAutocomplete = new ExerciseAutocomplete('exercise-list-container', '{{ $selectedDate->toDateString() }}');
+                }
+                document.getElementById('exercise-search-exercise-list-container')?.focus();
+            }, 100);
+        });
+        
+        document.getElementById('add-exercise-button-bottom')?.addEventListener('click', function() {
+            setTimeout(() => {
+                if (!bottomAutocomplete) {
+                    bottomAutocomplete = new ExerciseAutocomplete('exercise-list-container-bottom', '{{ $selectedDate->toDateString() }}');
+                }
+                document.getElementById('exercise-search-exercise-list-container-bottom')?.focus();
+            }, 100);
+        });
     </script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
