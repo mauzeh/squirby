@@ -75,39 +75,39 @@
   - Implement mobile-first media queries with progressive enhancement approach
   - _Requirements: 4.4, 7.1, 7.3_
 
-- [ ] 5. Refactor lift-logs mobile-entry template
-- [ ] 5.1 Replace duplicate components in lift-logs template
+- [x] 5. Refactor lift-logs mobile-entry template
+- [x] 5.1 Replace duplicate components in lift-logs template
   - Replace message system markup with shared message-system component
   - Replace date navigation with shared date-navigation component
   - Replace page title logic with shared page-title component
   - _Requirements: 1.1, 6.1, 9.4_
 
-- [ ] 5.2 Consolidate lift-logs card components
+- [x] 5.2 Consolidate lift-logs card components
   - Replace program card markup with shared item-card component
   - Implement lift-specific content slots for exercise forms and completion badges
   - Remove duplicate exercise list components and consolidate into single instance
   - _Requirements: 3.2, 6.1, 9.1_
 
-- [ ] 5.3 Update lift-logs form components
+- [x] 5.3 Update lift-logs form components
   - Replace form input groups with shared number-input components
   - Replace add exercise buttons with shared add-item-button components
   - Update JavaScript to use shared utilities and event handlers
   - _Requirements: 6.1, 6.4, 9.1_
 
 - [ ] 6. Refactor food-logs mobile-entry template
-- [ ] 6.1 Replace duplicate components in food-logs template
+- [x] 6.1 Replace duplicate components in food-logs template
   - Replace message system markup with shared message-system component
   - Replace date navigation with shared date-navigation component
   - Replace page title logic with shared page-title component
   - _Requirements: 1.1, 6.2, 9.4_
 
-- [ ] 6.2 Consolidate food-logs card components
+- [x] 6.2 Consolidate food-logs card components
   - Replace food log card markup with shared item-card component
   - Implement food-specific content slots for nutrition data and timestamps
   - Replace empty state messaging with shared empty-state component
   - _Requirements: 3.4, 6.2, 9.1_
 
-- [ ] 6.3 Update food-logs form components
+- [x] 6.3 Update food-logs form components
   - Replace form input groups with shared number-input components
   - Replace add food buttons with shared add-item-button components
   - Update JavaScript to use shared utilities and event handlers

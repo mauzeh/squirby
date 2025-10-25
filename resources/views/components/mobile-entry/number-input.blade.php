@@ -34,7 +34,7 @@ Consolidates form input patterns from lift-logs and food-logs templates.
 <div class="form-group{{ $groupClass ? ' ' . $groupClass : '' }}">
     <label for="{{ $id }}" class="form-label-centered">{{ $label }}</label>
     <div class="input-group">
-        <button type="button" class="decrement-button" data-field="{{ $id }}" data-step="{{ $step }}" data-min="{{ $min }}">-</button>
+        <button type="button" class="decrement-button" data-target="{{ $id }}" data-step="{{ $step }}" data-min="{{ $min }}">-</button>
         <input 
             type="number" 
             name="{{ $name }}" 
@@ -47,7 +47,7 @@ Consolidates form input patterns from lift-logs and food-logs templates.
             @if($max !== null) max="{{ $max }}" @endif
             @if($required) required @endif
         >
-        <button type="button" class="increment-button" data-field="{{ $id }}" data-step="{{ $step }}" data-max="{{ $max }}">+</button>
+        <button type="button" class="increment-button" data-target="{{ $id }}" data-step="{{ $step }}" data-max="{{ $max }}">+</button>
     </div>
     @if($unit)
         <span class="unit-display">{{ $unit }}</span>
@@ -57,14 +57,14 @@ Consolidates form input patterns from lift-logs and food-logs templates.
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Setup increment/decrement functionality for this specific input
-    const incrementButton = document.querySelector('[data-field="{{ $id }}"].increment-button');
-    const decrementButton = document.querySelector('[data-field="{{ $id }}"].decrement-button');
+    const incrementButton = document.querySelector('[data-target="{{ $id }}"].increment-button');
+    const decrementButton = document.querySelector('[data-target="{{ $id }}"].decrement-button');
     const input = document.getElementById('{{ $id }}');
     
     if (incrementButton && decrementButton && input) {
         [incrementButton, decrementButton].forEach(button => {
             button.addEventListener('click', function() {
-                const fieldId = this.dataset.field;
+                const fieldId = this.dataset.target;
                 const stepValue = parseFloat(this.dataset.step) || 1;
                 const minValue = parseFloat(this.dataset.min) || 0;
                 const maxValue = this.dataset.max ? parseFloat(this.dataset.max) : null;

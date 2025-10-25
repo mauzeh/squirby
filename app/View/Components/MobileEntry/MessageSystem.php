@@ -3,6 +3,7 @@
 namespace App\View\Components\MobileEntry;
 
 use Illuminate\Support\MessageBag;
+use Illuminate\Support\ViewErrorBag;
 
 /**
  * Mobile Entry Message System Component
@@ -12,7 +13,7 @@ use Illuminate\Support\MessageBag;
  */
 class MessageSystem extends BaseComponent
 {
-    public ?MessageBag $errors;
+    public MessageBag|ViewErrorBag|null $errors;
     public ?string $success;
     public bool $showValidation;
 
@@ -20,7 +21,7 @@ class MessageSystem extends BaseComponent
      * Create a new component instance.
      */
     public function __construct(
-        ?MessageBag $errors = null,
+        MessageBag|ViewErrorBag|null $errors = null,
         ?string $success = null,
         bool $showValidation = true
     ) {

@@ -7,28 +7,12 @@
 
 @section('content')
     <div class="mobile-entry-container">
-        <div class="date-navigation-mobile">
-            @php
-                $today = \Carbon\Carbon::today();
-                $prevDay = $selectedDate->copy()->subDay();
-                $nextDay = $selectedDate->copy()->addDay();
-            @endphp
-            <a href="{{ route('food-logs.mobile-entry', ['date' => $prevDay->toDateString()]) }}" class="nav-button">&lt; Prev</a>
-            <a href="{{ route('food-logs.mobile-entry', ['date' => $today->toDateString()]) }}" class="nav-button">Today</a>
-            <a href="{{ route('food-logs.mobile-entry', ['date' => $nextDay->toDateString()]) }}" class="nav-button">Next &gt;</a>
-        </div>
+        <x-mobile-entry.date-navigation 
+            :selected-date="$selectedDate" 
+            route-name="food-logs.mobile-entry" 
+        />
 
-        <h1>
-            @if ($selectedDate->isToday())
-                Today
-            @elseif ($selectedDate->isYesterday())
-                Yesterday
-            @elseif ($selectedDate->isTomorrow())
-                Tomorrow
-            @else
-                {{ $selectedDate->format('M d, Y') }}
-            @endif
-        </h1>
+        <x-mobile-entry.page-title :selected-date="$selectedDate" />
 
         {{-- Daily nutrition totals display --}}
         <div class="daily-nutrition-totals">
@@ -96,9 +80,12 @@
         </div>
 
         {{-- Food selection interface --}}
-        <div class="add-food-container">
-            <button type="button" id="add-food-button" class="button-large button-green">Add Food</button>
-        </div>
+        <x-mobile-entry.add-item-button 
+            id="add-food-button"
+            label="Add Food"
+            target-container="food-list-container"
+            container-class="add-food-container"
+        />
 
         <div class="item-list-container hidden" id="food-list-container">
             <div class="food-list item-list">
@@ -126,24 +113,8 @@
             </div>
         </div>
 
-        {{-- Message system - Error, success, and validation messages --}}
-        @if(session('error'))
-            <div class="message-container message-error" id="error-message">
-                <div class="message-content">
-                    <span class="message-text">{{ session('error') }}</span>
-                    <button type="button" class="message-close" onclick="this.parentElement.parentElement.style.display='none'">&times;</button>
-                </div>
-            </div>
-        @endif
-
-        @if(session('success'))
-            <div class="message-container message-success" id="success-message">
-                <div class="message-content">
-                    <span class="message-text">{{ session('success') }}</span>
-                    <button type="button" class="message-close" onclick="this.parentElement.parentElement.style.display='none'">&times;</button>
-                </div>
-            </div>
-        @endif
+        {{-- Message system using shared component --}}
+        <x-mobile-entry.message-system :errors="$errors ?? null" />
 
         {{-- Dynamic form fields for logging --}}
         <div class="item-list-container hidden" id="logging-form-container">
@@ -155,13 +126,7 @@
                 <input type="hidden" name="selected_id" id="selected-id">
                 <input type="hidden" name="selected_name" id="selected-name">
 
-                {{-- Client-side validation error display --}}
-                <div id="validation-errors" class="message-container message-validation hidden">
-                    <div class="message-content">
-                        <span class="message-text"></span>
-                        <button type="button" class="message-close" onclick="document.getElementById('validation-errors').classList.add('hidden')">&times;</button>
-                    </div>
-                </div>
+
 
                 <div class="selected-food-display">
                     <h3 id="selected-food-name"></h3>
@@ -171,14 +136,15 @@
                 {{-- Ingredient form fields --}}
                 <div id="ingredient-fields" class="form-fields hidden">
                     <div class="form-group">
-                        <label for="quantity">Quantity:</label>
+                        <label for="quantity" class="form-label-centered">Quantity:</label>
                         <div class="input-group">
                             <button type="button" class="decrement-button" data-target="quantity">-</button>
-                            <input type="number" name="quantity" id="quantity" class="large-input" step="0.01" min="0" value="1">
+                            <input type="number" name="quantity" id="quantity" class="large-input" inputmode="decimal" value="1" step="0.01" min="0">
                             <button type="button" class="increment-button" data-target="quantity">+</button>
                         </div>
                         <span class="unit-display" id="ingredient-unit"></span>
                     </div>
+                    
                     <div class="form-group">
                         <label for="ingredient-notes">Notes:</label>
                         <textarea name="notes" id="ingredient-notes" class="large-textarea" placeholder="Optional notes..."></textarea>
@@ -187,15 +153,16 @@
 
                 {{-- Meal form fields --}}
                 <div id="meal-fields" class="form-fields hidden">
-                    <div class="form-group">
-                        <label for="portion">Portion:</label>
-                        <div class="input-group">
-                            <button type="button" class="decrement-button" data-target="portion">-</button>
-                            <input type="number" name="portion" id="portion" class="large-input" step="0.01" min="0" value="1">
-                            <button type="button" class="increment-button" data-target="portion">+</button>
-                        </div>
-                        <span class="unit-display">servings</span>
-                    </div>
+                    <x-mobile-entry.number-input 
+                        name="portion"
+                        id="portion"
+                        :value="1"
+                        label="Portion:"
+                        unit="servings"
+                        :step="0.01"
+                        :min="0"
+                    />
+                    
                     <div class="form-group">
                         <label for="meal-notes">Notes:</label>
                         <textarea name="notes" id="meal-notes" class="large-textarea" placeholder="Optional notes..."></textarea>
@@ -215,15 +182,12 @@
                 <h2>Today's Food Log</h2>
                 <div class="food-logs-list">
                     @foreach($foodLogs as $log)
-                        <div class="program-card">
-                            <div class="program-card-actions">
-                                <form method="POST" action="{{ route('food-logs.destroy', $log) }}" class="delete-form" onsubmit="return confirm('Are you sure you want to delete this entry?')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="program-action-button delete-program-button" title="Delete entry"><i class="fa-solid fa-trash"></i></button>
-                                </form>
-                            </div>
-                            <h2>{{ $log->ingredient->name }}</h2>
+                        <x-mobile-entry.item-card 
+                            :title="$log->ingredient->name"
+                            :delete-route="route('food-logs.destroy', $log)"
+                            delete-confirm-text="Are you sure you want to delete this entry?"
+                            :hidden-fields="[]"
+                        >
                             <div class="log-header">
                                 <div class="log-time">{{ $log->logged_at->format('g:i A') }}</div>
                             </div>
@@ -257,14 +221,12 @@
                                     <span class="nutrition-value">{{ round($fats, 1) }}g</span>
                                 </div>
                             </div>
-                        </div>
+                        </x-mobile-entry.item-card>
                     @endforeach
                 </div>
             </div>
         @else
-            <div class="no-logs-message">
-                <p>No food logged for this date yet.</p>
-            </div>
+            <x-mobile-entry.empty-state message="No food logged for this date yet." />
         @endif
 
 
@@ -274,12 +236,7 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Food selection interface functionality
-            document.getElementById('add-food-button').addEventListener('click', function() {
-                const foodListContainer = document.getElementById('food-list-container');
-                foodListContainer.classList.remove('hidden');
-                this.style.display = 'none';
-            });
+            // Food selection interface functionality is handled by shared add-item-button component
 
             // Food item selection - show appropriate form fields
             document.querySelectorAll('.food-list-item').forEach(item => {
@@ -294,7 +251,9 @@
                     
                     // Validate that the selected item still exists (handle deleted ingredients/meals)
                     if (!id || !name) {
-                        showValidationError('Selected item is no longer available. Please refresh the page.');
+                        if (window.showValidationError) {
+                            window.showValidationError('Selected item is no longer available. Please refresh the page.');
+                        }
                         return;
                     }
                     
@@ -303,7 +262,9 @@
                     document.getElementById('logging-form-container').classList.remove('hidden');
                     
                     // Clear any previous validation errors
-                    hideValidationError();
+                    if (window.hideValidationError) {
+                        window.hideValidationError();
+                    }
                     
                     // Set hidden form values
                     document.getElementById('selected-type').value = type;
@@ -351,7 +312,10 @@
             document.getElementById('cancel-logging').addEventListener('click', function() {
                 // Hide logging form and show add food button
                 document.getElementById('logging-form-container').classList.add('hidden');
-                document.getElementById('add-food-button').style.display = 'block';
+                const addButton = document.getElementById('add-food-button');
+                if (addButton) {
+                    addButton.style.display = 'block';
+                }
                 
                 // Reset form
                 document.getElementById('food-logging-form').reset();
@@ -361,20 +325,18 @@
                 document.getElementById('meal-fields').classList.add('hidden');
             });
 
-            // Increment/decrement button functionality
-            document.querySelectorAll('.increment-button, .decrement-button').forEach(button => {
+            // Increment/decrement functionality for quantity (needs custom logic for dynamic units)
+            document.querySelectorAll('[data-target="quantity"]').forEach(button => {
                 button.addEventListener('click', function() {
-                    const target = this.dataset.target;
-                    const input = document.getElementById(target);
+                    const input = document.getElementById('quantity');
                     const isIncrement = this.classList.contains('increment-button');
                     
                     let currentValue = parseFloat(input.value) || 0;
-                    let incrementAmount = getIncrementAmount(target);
+                    let incrementAmount = getIncrementAmountForQuantity();
                     
                     if (isIncrement) {
                         currentValue += incrementAmount;
                     } else {
-                        // Prevent negative quantities (Requirement 6.4)
                         currentValue = Math.max(0, currentValue - incrementAmount);
                     }
                     
@@ -383,22 +345,50 @@
                     
                     // Clear validation error styling when user interacts with input
                     input.classList.remove('input-error');
-                    hideValidationError();
+                    if (window.hideValidationError) {
+                        window.hideValidationError();
+                    }
                 });
             });
+            
+            // Function to determine increment amount based on unit
+            function getIncrementAmountForQuantity() {
+                const unit = document.getElementById('ingredient-unit').textContent.toLowerCase();
+                
+                // grams or milliliters increment by 10
+                if (unit.includes('g') || unit.includes('ml') || unit.includes('gram') || unit.includes('milliliter')) {
+                    return 10;
+                } 
+                // kilograms, pounds, or liters increment by 0.1
+                else if (unit.includes('kg') || unit.includes('lb') || unit.includes('liter') || 
+                         unit.includes('pound') || unit.includes('kilogram')) {
+                    return 0.1;
+                } 
+                // pieces or servings increment by 0.25
+                else if (unit.includes('pc') || unit.includes('serving') || unit.includes('piece') ||
+                         unit.includes('pcs') || unit.includes('each') || unit.includes('item')) {
+                    return 0.25;
+                }
+                
+                return 1; // Default increment for other units
+            }
 
             // Add input validation on manual entry
             document.querySelectorAll('#quantity, #portion').forEach(input => {
                 input.addEventListener('input', function() {
                     // Clear validation error styling when user types
                     this.classList.remove('input-error');
-                    hideValidationError();
+                    if (window.hideValidationError) {
+                        window.hideValidationError();
+                    }
                     
                     // Validate positive numbers
                     const value = parseFloat(this.value);
                     if (this.value && (isNaN(value) || value < 0)) {
                         this.classList.add('input-error');
-                        showValidationError('Please enter a positive number.');
+                        if (window.showValidationError) {
+                            window.showValidationError('Please enter a positive number.');
+                        }
                     }
                 });
 
@@ -408,39 +398,14 @@
                     if (this.value && (isNaN(value) || value <= 0)) {
                         this.value = '1';
                         this.classList.remove('input-error');
-                        hideValidationError();
+                        if (window.hideValidationError) {
+                            window.hideValidationError();
+                        }
                     }
                 });
             });
 
-            // Function to determine increment amount based on field type and unit (Requirements 6.1, 6.2, 6.3)
-            function getIncrementAmount(target) {
-                if (target === 'quantity') {
-                    const unit = document.getElementById('ingredient-unit').textContent.toLowerCase();
-                    
-                    // Requirement 6.1: grams or milliliters increment by 10
-                    if (unit.includes('g') || unit.includes('ml') || unit.includes('gram') || unit.includes('milliliter')) {
-                        return 10;
-                    } 
-                    // Requirement 6.2: kilograms, pounds, or liters increment by 0.1
-                    else if (unit.includes('kg') || unit.includes('lb') || unit.includes('liter') || 
-                             unit.includes('pound') || unit.includes('kilogram')) {
-                        return 0.1;
-                    } 
-                    // Requirement 6.3: pieces or servings increment by 0.25
-                    else if (unit.includes('pc') || unit.includes('serving') || unit.includes('piece') ||
-                             unit.includes('pcs') || unit.includes('each') || unit.includes('item')) {
-                        return 0.25;
-                    }
-                    
-                    return 1; // Default increment for other units
-                } else if (target === 'portion') {
-                    // Meal portions increment by 0.25 (similar to servings)
-                    return 0.25;
-                }
-                
-                return 1; // Default
-            }
+
 
             // Form submission handling with comprehensive validation
             document.getElementById('food-logging-form').addEventListener('submit', function(event) {
@@ -451,18 +416,24 @@
                 const selectedName = document.getElementById('selected-name').value;
                 
                 // Clear any previous validation errors
-                hideValidationError();
+                if (window.hideValidationError) {
+                    window.hideValidationError();
+                }
                 
                 // Validate form data
                 const validationResult = validateForm(type);
                 if (!validationResult.isValid) {
-                    showValidationError(validationResult.message);
+                    if (window.showValidationError) {
+                        window.showValidationError(validationResult.message);
+                    }
                     return;
                 }
                 
                 // Check if selected item still exists (edge case handling)
                 if (!selectedId || !selectedName) {
-                    showValidationError('Selected item is no longer available. Please select a food item again.');
+                    if (window.showValidationError) {
+                        window.showValidationError('Selected item is no longer available. Please select a food item again.');
+                    }
                     return;
                 }
                 
@@ -503,18 +474,7 @@
                 });
             }
 
-            // Auto-hide success/error messages after 5 seconds
-            setTimeout(function() {
-                const errorMessage = document.getElementById('error-message');
-                const successMessage = document.getElementById('success-message');
-                
-                if (errorMessage) {
-                    errorMessage.style.display = 'none';
-                }
-                if (successMessage) {
-                    successMessage.style.display = 'none';
-                }
-            }, 5000);
+
         });
 
         // Validation functions
@@ -557,21 +517,7 @@
             return { isValid: true };
         }
 
-        function showValidationError(message) {
-            const errorContainer = document.getElementById('validation-errors');
-            const errorText = errorContainer.querySelector('.message-text');
-            
-            errorText.textContent = message;
-            errorContainer.classList.remove('hidden');
-            
-            // Scroll to error message
-            errorContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-
-        function hideValidationError() {
-            const errorContainer = document.getElementById('validation-errors');
-            errorContainer.classList.add('hidden');
-        }
+        // Validation functions are now provided globally by the message-system component
 
         // Handle page visibility changes to re-enable form if needed
         document.addEventListener('visibilitychange', function() {
