@@ -2,16 +2,22 @@
 
 ## Overview
 
-The simplified mobile entry feature provides a clean, minimal HTML template with CSS styling for mobile item logging. The design focuses on creating a static interface that demonstrates the visual layout and styling without any interactive functionality. The template will showcase both a new item logging form and an already logged item display, optimized for mobile devices.
+The simplified mobile entry feature provides a clean, minimal Laravel Blade template with CSS styling for mobile item logging. The design focuses on creating a static interface that extends the existing app layout and demonstrates the visual layout and styling without any interactive functionality. The template will showcase both a new item logging form and an already logged item display, optimized for mobile devices.
 
 ## Architecture
 
 ### Template Structure
-The design follows a single-page template approach with the following main sections:
+The design follows a Laravel Blade template approach that extends the app layout with the following main sections within the content section:
 - Date navigation header
-- Daily progress summary
+- Daily summary
 - New item logging form
 - Already logged item display
+
+### Controller and Route Structure
+The feature will include:
+- A dedicated controller (MobileEntryController) with an index method
+- A route that maps to the controller method
+- Sample data passed to the view for demonstration
 
 ### CSS Architecture
 The styling will be organized into:
@@ -34,17 +40,16 @@ The styling will be organized into:
 - Clear visual hierarchy
 - Responsive layout
 
-### 2. Daily Summary Component
-**Purpose**: Displays daily totals and progress indicators
+### 2. Summary Component
+**Purpose**: Displays 4 key numeric values
 **Structure**:
-- Numeric totals display
-- Completion counters
-- Visual progress indicators (progress bars)
-- Color-coded sections
+- 4 numeric values in grid layout
+- Color-coded sections for different number types
+- Clean, minimal design without progress bars
 
 **Styling Requirements**:
 - Prominent positioning at top of interface
-- Color coding for different progress types
+- Color coding for different number types
 - Mobile-optimized spacing
 
 ### 3. Item Logging Form Component
@@ -116,9 +121,8 @@ Since this is a static template, the design will include sample data to demonstr
 .nav-button
 
 /* Summary */
-.daily-summary
+.summary
 .summary-item
-.progress-bar
 
 /* Form */
 .item-form
@@ -156,17 +160,15 @@ Static styling for loading indicators:
 
 ## Implementation Details
 
-### HTML Structure
-```html
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mobile Entry</title>
-    <link rel="stylesheet" href="mobile-entry.css">
-</head>
-<body>
+### Blade Template Structure
+```blade
+@extends('app')
+
+@section('styles')
+    <link rel="stylesheet" href="{{ asset('css/mobile-entry.css') }}">
+@endsection
+
+@section('content')
     <div class="mobile-entry-container">
         <!-- Date Navigation -->
         <nav class="date-navigation">
@@ -175,8 +177,8 @@ Static styling for loading indicators:
             <button class="nav-button">Next →</button>
         </nav>
 
-        <!-- Daily Summary -->
-        <section class="daily-summary">
+        <!-- Summary -->
+        <section class="summary">
             <div class="summary-item">
                 <span class="summary-value">1,250</span>
                 <span class="summary-label">Total</span>
@@ -184,6 +186,14 @@ Static styling for loading indicators:
             <div class="summary-item">
                 <span class="summary-value">3</span>
                 <span class="summary-label">Completed</span>
+            </div>
+            <div class="summary-item">
+                <span class="summary-value">85</span>
+                <span class="summary-label">Average</span>
+            </div>
+            <div class="summary-item">
+                <span class="summary-value">12</span>
+                <span class="summary-label">Today</span>
             </div>
         </section>
 
@@ -226,8 +236,7 @@ Static styling for loading indicators:
             </div>
         </section>
     </div>
-</body>
-</html>
+@endsection
 ```
 
 ### CSS Organization
@@ -270,3 +279,42 @@ The CSS will be organized into logical sections:
 - Large touch targets
 - Clear visual feedback for different states
 - Minimal cognitive load with simple interface
+
+## Controller Implementation
+
+### MobileEntryController
+```php
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+
+class MobileEntryController extends Controller
+{
+    /**
+     * Display the mobile entry interface
+     */
+    public function index()
+    {
+        // Sample data for demonstration
+        $sampleData = [
+            'currentDate' => 'Today',
+            'totalValue' => 1250,
+            'completedCount' => 3,
+            'loggedItem' => [
+                'value' => 25,
+                'comment' => 'Morning workout completed'
+            ]
+        ];
+
+        return view('mobile-entry.index', compact('sampleData'));
+    }
+}
+```
+
+### Route Definition
+```php
+// In routes/web.php
+Route::get('/mobile-entry', [MobileEntryController::class, 'index'])->name('mobile-entry.index');
+```

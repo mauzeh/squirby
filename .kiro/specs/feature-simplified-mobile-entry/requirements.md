@@ -2,15 +2,15 @@
 
 ## Introduction
 
-This document outlines the requirements for a simplified mobile entry screen that provides a streamlined, unified interface for displaying item logging forms. The simplified version focuses on creating the DOM structure and CSS styling for a clean, mobile-optimized interface without backend logic or JavaScript functionality.
+This document outlines the requirements for a simplified mobile entry screen that provides a streamlined, unified interface for displaying item logging forms. The simplified version focuses on creating a Laravel Blade template that extends the app layout, with CSS styling for a clean, mobile-optimized interface without backend logic or JavaScript functionality.
 
 ## Glossary
 
-- **Simplified_Mobile_Entry_Screen**: The new unified mobile interface HTML template for item logging
+- **Simplified_Mobile_Entry_Screen**: The new unified mobile interface Blade template for item logging
 - **Static_Interface**: A non-interactive HTML/CSS interface that demonstrates the visual design and layout
-- **Unified_Layout**: A single HTML template that shows item logging interface elements
+- **Unified_Layout**: A single Blade template that shows item logging interface elements
 - **Mobile_Optimized_Design**: CSS styling specifically designed for mobile device viewports
-- **Static_Form_Elements**: HTML form elements styled for mobile without functional behavior
+- **Static_Form_Elements**: Blade template form elements styled for mobile without functional behavior
 - **Visual_Components**: CSS-styled interface elements that demonstrate the intended user experience
 - **Log_Entry**: A single recorded instance of an item being logged
 - **Item**: A generic entity that can be logged (could represent any type of trackable data)
@@ -19,15 +19,15 @@ This document outlines the requirements for a simplified mobile entry screen tha
 
 ### Requirement 1
 
-**User Story:** As a developer, I want a unified HTML template that shows both new item logging and logged item display, so that I can see the complete interface design.
+**User Story:** As a developer, I want a Blade template that extends the app layout and shows both new item logging and logged item display, so that I can see the complete interface design integrated with the existing application.
 
 #### Acceptance Criteria
 
-1. THE Simplified_Mobile_Entry_Screen SHALL contain HTML structure for one new item logging form
-2. THE Simplified_Mobile_Entry_Screen SHALL contain HTML structure for one already logged item display
-3. THE Simplified_Mobile_Entry_Screen SHALL display a date navigation header with previous/today/next buttons
-4. THE Simplified_Mobile_Entry_Screen SHALL include delete buttons for both the form and the logged item
-5. THE Simplified_Mobile_Entry_Screen SHALL use semantic HTML elements for proper structure
+1. THE Simplified_Mobile_Entry_Screen SHALL be a Blade template that extends the app layout using @extends('app')
+2. THE Simplified_Mobile_Entry_Screen SHALL contain structure for one new item logging form within the @section('content')
+3. THE Simplified_Mobile_Entry_Screen SHALL contain structure for one already logged item display
+4. THE Simplified_Mobile_Entry_Screen SHALL display a date navigation header with previous/today/next buttons
+5. THE Simplified_Mobile_Entry_Screen SHALL include delete buttons for both the form and the logged item
 
 ### Requirement 2
 
@@ -43,14 +43,14 @@ This document outlines the requirements for a simplified mobile entry screen tha
 
 ### Requirement 3
 
-**User Story:** As a developer, I want a daily progress summary section at the top, so that I can see how progress indicators would be displayed.
+**User Story:** As a developer, I want a summary section at the top, so that I can see how key numbers would be displayed.
 
 #### Acceptance Criteria
 
-1. THE Simplified_Mobile_Entry_Screen SHALL include a daily summary section with numeric totals
-2. THE Simplified_Mobile_Entry_Screen SHALL show completion counters in the summary
-3. THE Visual_Components SHALL style progress indicators using visual elements like progress bars
-4. THE Visual_Components SHALL use color coding to indicate different types of progress
+1. THE Simplified_Mobile_Entry_Screen SHALL include a summary section with 4 key numeric values
+2. THE Simplified_Mobile_Entry_Screen SHALL display the numbers in a clear grid layout
+3. THE Visual_Components SHALL style the summary section without progress bars
+4. THE Visual_Components SHALL use color coding to indicate different types of numbers
 5. THE Visual_Components SHALL make the summary section visually prominent at the top of the interface
 
 ### Requirement 4
@@ -90,6 +90,18 @@ This document outlines the requirements for a simplified mobile entry screen tha
 5. THE Mobile_Optimized_Design SHALL use appropriate font sizes and line heights for mobile readability
 
 ### Requirement 7
+
+**User Story:** As a developer, I want a controller and route for the mobile entry screen, so that I can access and test the interface through the web application.
+
+#### Acceptance Criteria
+
+1. THE Simplified_Mobile_Entry_Screen SHALL have a dedicated controller with a method to display the view
+2. THE Simplified_Mobile_Entry_Screen SHALL have a route that maps to the controller method
+3. THE controller SHALL return the Blade template view with any necessary sample data
+4. THE route SHALL be accessible via a clean URL path
+5. THE controller SHALL follow Laravel naming conventions and best practices
+
+### Requirement 8
 
 **User Story:** As a developer, I want visual state indicators in the CSS, so that I can see how different interface states would appear.
 
