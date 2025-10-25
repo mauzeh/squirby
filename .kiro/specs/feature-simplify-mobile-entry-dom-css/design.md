@@ -11,26 +11,23 @@ This design consolidates the mobile-entry interfaces for lift-logs and food-logs
 The design implements a hierarchical component structure where shared UI patterns are extracted into reusable components:
 
 ```
-shared/
+components/mobile-entry/
 ├── layouts/
-│   └── mobile-entry.blade.php          # Base layout with common structure
-├── components/
-│   ├── message-system.blade.php        # Error/success/validation messages
-│   ├── date-navigation.blade.php       # Prev/Today/Next navigation
-│   ├── page-title.blade.php           # Conditional date title display
-│   ├── item-card.blade.php            # Unified card component
-│   ├── add-item-button.blade.php      # Add exercise/food button
-│   ├── number-input.blade.php         # Increment/decrement input
-│   └── empty-state.blade.php          # No items message
-└── js/
-    └── mobile-entry-shared.js          # Consolidated JavaScript
+│   └── base.blade.php                  # Base layout with common structure
+├── message-system.blade.php            # Error/success/validation messages
+├── date-navigation.blade.php           # Prev/Today/Next navigation
+├── page-title.blade.php               # Conditional date title display
+├── item-card.blade.php                # Unified card component
+├── add-item-button.blade.php          # Add exercise/food button
+├── number-input.blade.php             # Increment/decrement input
+└── empty-state.blade.php              # No items message
 ```
 
 ### Template Hierarchy
 
 ```
 app.blade.php
-└── layouts/mobile-entry.blade.php
+└── components/mobile-entry/layouts/base.blade.php
     ├── lift-logs/mobile-entry.blade.php    # Lift-specific content only
     └── food-logs/mobile-entry.blade.php    # Food-specific content only
 ```
@@ -39,15 +36,14 @@ app.blade.php
 
 ### 1. Message System Component
 
-**File:** `resources/views/shared/components/message-system.blade.php`
+**File:** `resources/views/components/mobile-entry/message-system.blade.php`
 
 **Interface:**
 ```php
-@include('shared.components.message-system', [
-    'errors' => $errors ?? null,
-    'success' => session('success') ?? null,
-    'showValidation' => true
-])
+<x-mobile-entry.message-system
+    :errors="$errors ?? null"
+    :success="session('success') ?? null"
+    :show-validation="true" />
 ```
 
 **Implementation:**
@@ -57,14 +53,13 @@ app.blade.php
 
 ### 2. Date Navigation Component
 
-**File:** `resources/views/shared/components/date-navigation.blade.php`
+**File:** `resources/views/components/mobile-entry/date-navigation.blade.php`
 
 **Interface:**
 ```php
-@include('shared.components.date-navigation', [
-    'selectedDate' => $selectedDate,
-    'routeName' => 'lift-logs.mobile-entry'  // or 'food-logs.mobile-entry'
-])
+<x-mobile-entry.date-navigation
+    :selected-date="$selectedDate"
+    route-name="lift-logs.mobile-entry" />
 ```
 
 **Implementation:**
@@ -74,13 +69,11 @@ app.blade.php
 
 ### 3. Page Title Component
 
-**File:** `resources/views/shared/components/page-title.blade.php`
+**File:** `resources/views/components/mobile-entry/page-title.blade.php`
 
 **Interface:**
 ```php
-@include('shared.components.page-title', [
-    'selectedDate' => $selectedDate
-])
+<x-mobile-entry.page-title :selected-date="$selectedDate" />
 ```
 
 **Implementation:**
@@ -89,18 +82,18 @@ app.blade.php
 
 ### 4. Item Card Component
 
-**File:** `resources/views/shared/components/item-card.blade.php`
+**File:** `resources/views/components/mobile-entry/item-card.blade.php`
 
 **Interface:**
 ```php
-@include('shared.components.item-card', [
-    'title' => $item->name,
-    'deleteRoute' => route('items.destroy', $item->id),
-    'deleteConfirmText' => 'Are you sure?',
-    'hiddenFields' => ['redirect_to' => 'mobile-entry'],
-    'moveActions' => $moveButtons ?? null,  // Optional slot
-    'content' => $cardContent               // Required slot
-])
+<x-mobile-entry.item-card
+    :title="$item->name"
+    :delete-route="route('items.destroy', $item->id)"
+    delete-confirm-text="Are you sure?"
+    :hidden-fields="['redirect_to' => 'mobile-entry']"
+    :move-actions="$moveButtons ?? null">
+    {{ $cardContent }}
+</x-mobile-entry.item-card>
 ```
 
 **Implementation:**
@@ -111,19 +104,18 @@ app.blade.php
 
 ### 5. Number Input Component
 
-**File:** `resources/views/shared/components/number-input.blade.php`
+**File:** `resources/views/components/mobile-entry/number-input.blade.php`
 
 **Interface:**
 ```php
-@include('shared.components.number-input', [
-    'name' => 'quantity',
-    'id' => 'quantity-input',
-    'value' => 1,
-    'label' => 'Quantity:',
-    'unit' => 'grams',
-    'step' => 0.01,
-    'min' => 0
-])
+<x-mobile-entry.number-input
+    name="quantity"
+    id="quantity-input"
+    :value="1"
+    label="Quantity:"
+    unit="grams"
+    :step="0.01"
+    :min="0" />
 ```
 
 **Implementation:**
@@ -133,15 +125,14 @@ app.blade.php
 
 ### 6. Add Item Button Component
 
-**File:** `resources/views/shared/components/add-item-button.blade.php`
+**File:** `resources/views/components/mobile-entry/add-item-button.blade.php`
 
 **Interface:**
 ```php
-@include('shared.components.add-item-button', [
-    'id' => 'add-exercise-button',
-    'label' => 'Add exercise',
-    'targetContainer' => 'exercise-list-container'
-])
+<x-mobile-entry.add-item-button
+    id="add-exercise-button"
+    label="Add exercise"
+    target-container="exercise-list-container" />
 ```
 
 **Implementation:**
