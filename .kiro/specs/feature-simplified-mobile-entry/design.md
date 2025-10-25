@@ -32,7 +32,7 @@ The styling will be organized into:
 **Purpose**: Provides date navigation controls
 **Structure**:
 - Previous day button
-- Current date display (Today/Yesterday/Tomorrow or formatted date)
+- Today button
 - Next day button
 
 **Styling Requirements**:
@@ -173,7 +173,7 @@ Static styling for loading indicators:
         <!-- Date Navigation -->
         <nav class="date-navigation">
             <button class="nav-button">← Prev</button>
-            <span class="current-date">Today</span>
+            <button class="nav-button">Today</button>
             <button class="nav-button">Next →</button>
         </nav>
 
