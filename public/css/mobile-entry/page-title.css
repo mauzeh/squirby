@@ -14,7 +14,8 @@ h1 {
   line-height: 1.2;
 }
 
-h2 {
+/* Only target page titles, not card titles */
+.page-title-h2 {
   color: var(--entry-text, #f2f2f2);
   font-size: 1.4em;
   margin-bottom: var(--entry-spacing, 15px);
@@ -121,7 +122,8 @@ h3 {
   margin-top: 30px;
 }
 
-.existing-logs-section h2 {
+.existing-logs-section h2,
+.existing-logs-section .section-title {
   color: var(--entry-text, #f2f2f2);
   font-size: 1.4em;
   margin-bottom: var(--entry-spacing, 15px);
@@ -170,40 +172,41 @@ h3 {
    Mobile-First Responsive Design
    ======================================== */
 @media (max-width: 768px) {
+
   h1,
   .page-title {
     font-size: 1.8em;
     margin-bottom: 20px;
   }
-  
-  h2,
+
+  .page-title-h2,
   .section-title {
     font-size: 1.2em;
     margin-bottom: 12px;
   }
-  
+
   h3,
   .subsection-title {
     font-size: 1.1em;
     margin-bottom: 8px;
   }
-  
+
   .selected-food-display,
   .selected-exercise-display {
     padding: 12px;
     margin-bottom: var(--entry-spacing, 15px);
   }
-  
+
   .selected-food-display h3,
   .selected-exercise-display h3 {
     font-size: 1.2em;
   }
-  
+
   .selected-food-display span,
   .selected-exercise-display span {
     font-size: var(--entry-font-size-xs, 0.85rem);
   }
-  
+
   .no-logs-message,
   .no-program-message {
     padding: 20px 15px;
@@ -212,36 +215,37 @@ h3 {
 }
 
 @media (max-width: 480px) {
+
   h1,
   .page-title {
     font-size: 1.6em;
   }
-  
-  h2,
+
+  .page-title-h2,
   .section-title {
     font-size: 1.1em;
   }
-  
+
   h3,
   .subsection-title {
     font-size: var(--entry-font-size-base, 1rem);
   }
-  
+
   .selected-food-display,
   .selected-exercise-display {
     padding: var(--entry-spacing-sm, 10px);
   }
-  
+
   .selected-food-display h3,
   .selected-exercise-display h3 {
     font-size: 1.1em;
   }
-  
+
   .selected-food-display span,
   .selected-exercise-display span {
     font-size: var(--entry-font-size-xs, 0.8rem);
   }
-  
+
   .no-logs-message,
   .no-program-message {
     padding: var(--entry-spacing, 15px) 12px;
@@ -253,29 +257,30 @@ h3 {
    Print Styles
    ======================================== */
 @media print {
+
   h1,
-  h2,
+  .page-title-h2,
   h3,
   .page-title,
   .section-title,
   .subsection-title {
     color: black;
   }
-  
+
   .selected-food-display,
   .selected-exercise-display {
     background-color: #f8f9fa;
     border: 1px solid #ccc;
     color: black;
   }
-  
+
   .no-logs-message,
   .no-program-message {
     background-color: #f8f9fa;
     border: 1px solid #ccc;
     color: black;
   }
-  
+
   .workout-info-box {
     background-color: #f8f9fa;
     border: 1px solid #ddd;
