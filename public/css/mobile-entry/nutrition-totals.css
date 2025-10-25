@@ -1,0 +1,251 @@
+/* Daily Nutrition Totals Component
+ * Styles for the daily nutrition summary display in food logs
+ * Mobile-first responsive design
+ */
+
+/* ========================================
+   Daily Nutrition Totals Container
+   ======================================== */
+.daily-nutrition-totals {
+  background-color: var(--entry-card-bg, #3a3a3a);
+  border-radius: var(--entry-border-radius, 8px);
+  padding: var(--entry-spacing, 15px);
+  margin-bottom: var(--entry-spacing, 15px);
+  box-shadow: var(--entry-shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.2));
+}
+
+/* ========================================
+   Main Nutrition Grid (Calories, Protein, Carbs, Fats)
+   ======================================== */
+.totals-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--entry-spacing-sm, 10px);
+  margin-bottom: var(--entry-spacing-sm, 10px);
+}
+
+.total-item {
+  background-color: var(--entry-input-bg, #4a4a4a);
+  border-radius: var(--entry-border-radius-sm, 5px);
+  padding: var(--entry-spacing-sm, 10px);
+  text-align: center;
+  border: 1px solid var(--entry-border, #555);
+  transition: var(--entry-transition, all 0.2s ease);
+}
+
+.total-item:hover {
+  background-color: var(--entry-card-hover, #4a4a4a);
+  transform: translateY(-1px);
+}
+
+.total-value {
+  font-size: var(--entry-font-size-large, 1.5rem);
+  font-weight: bold;
+  color: var(--entry-text, #f2f2f2);
+  line-height: 1.2;
+  margin-bottom: 2px;
+}
+
+.total-label {
+  font-size: var(--entry-font-size-sm, 0.9rem);
+  color: var(--entry-secondary, #6c757d);
+  margin-top: 2px;
+}
+
+/* ========================================
+   Color Coding for Different Macros
+   ======================================== */
+.total-item.calories .total-value {
+  color: #ff6b6b;
+}
+
+.total-item.protein .total-value {
+  color: #4ecdc4;
+}
+
+.total-item.carbs .total-value {
+  color: #45b7d1;
+}
+
+.total-item.fats .total-value {
+  color: #f9ca24;
+}
+
+/* ========================================
+   Additional Nutrition Details Section
+   ======================================== */
+.additional-totals {
+  border-top: 1px solid var(--entry-border, #555);
+  padding-top: var(--entry-spacing-sm, 10px);
+}
+
+.toggle-button {
+  width: 100%;
+  background-color: var(--entry-secondary, #6c757d);
+  color: var(--entry-text, #f2f2f2);
+  border: none;
+  border-radius: var(--entry-border-radius-sm, 5px);
+  padding: var(--entry-spacing-sm, 10px);
+  font-size: var(--entry-font-size-sm, 0.9rem);
+  cursor: pointer;
+  transition: var(--entry-transition, all 0.2s ease);
+  min-height: var(--entry-touch-target-sm, 36px);
+}
+
+.toggle-button:hover {
+  background-color: #5a6268;
+}
+
+.toggle-button:focus {
+  outline: 2px solid var(--entry-accent, #007bff);
+  outline-offset: 2px;
+}
+
+.additional-content {
+  margin-top: var(--entry-spacing-sm, 10px);
+}
+
+.additional-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--entry-spacing-xs, 5px);
+}
+
+.additional-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--entry-spacing-xs, 5px) var(--entry-spacing-sm, 10px);
+  background-color: var(--entry-input-bg, #4a4a4a);
+  border-radius: var(--entry-border-radius-sm, 5px);
+  border: 1px solid var(--entry-border, #555);
+}
+
+.additional-label {
+  font-size: var(--entry-font-size-sm, 0.9rem);
+  color: var(--entry-text, #f2f2f2);
+}
+
+.additional-value {
+  font-size: var(--entry-font-size-sm, 0.9rem);
+  font-weight: bold;
+  color: var(--entry-accent, #007bff);
+}
+
+/* ========================================
+   Mobile Optimization (480px and below)
+   ======================================== */
+@media (max-width: 480px) {
+  .daily-nutrition-totals {
+    padding: var(--entry-spacing-sm, 10px);
+    margin-bottom: var(--entry-spacing-sm, 10px);
+  }
+  
+  .totals-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--entry-spacing-xs, 5px);
+  }
+  
+  .total-item {
+    padding: var(--entry-spacing-xs, 5px);
+  }
+  
+  .total-value {
+    font-size: var(--entry-font-size-base, 1rem);
+  }
+  
+  .total-label {
+    font-size: var(--entry-font-size-xs, 0.8rem);
+  }
+  
+  .toggle-button {
+    font-size: var(--entry-font-size-xs, 0.8rem);
+    padding: 8px;
+  }
+}
+
+/* ========================================
+   Tablet Optimization (481px to 768px)
+   ======================================== */
+@media (min-width: 481px) and (max-width: 768px) {
+  .totals-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  
+  .additional-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ========================================
+   Desktop Optimization (769px and above)
+   ======================================== */
+@media (min-width: 769px) {
+  .totals-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  
+  .additional-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  
+  .daily-nutrition-totals {
+    padding: var(--entry-spacing, 15px);
+  }
+}
+
+/* ========================================
+   Accessibility Enhancements
+   ======================================== */
+@media (prefers-reduced-motion: reduce) {
+  .total-item,
+  .toggle-button {
+    transition: none;
+  }
+  
+  .total-item:hover {
+    transform: none;
+  }
+}
+
+@media (prefers-contrast: high) {
+  .total-item,
+  .additional-item {
+    border-width: 2px;
+  }
+  
+  .total-value {
+    font-weight: 900;
+  }
+}
+
+/* ========================================
+   Print Styles
+   ======================================== */
+@media print {
+  .daily-nutrition-totals {
+    background-color: white;
+    color: black;
+    box-shadow: none;
+    border: 1px solid #ccc;
+  }
+  
+  .total-item,
+  .additional-item {
+    background-color: #f8f9fa;
+    color: black;
+    border-color: #ccc;
+  }
+  
+  .total-value {
+    color: black;
+  }
+  
+  .toggle-button {
+    display: none;
+  }
+  
+  .additional-content {
+    display: block !important;
+  }
+}
