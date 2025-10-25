@@ -397,34 +397,9 @@ class LiftLogController extends Controller
             return null;
         }
 
-        // Handle banded exercises directly to avoid service overhead
+        // Handle banded exercises using the proper TrainingProgressionService
         if ($lastLog->exercise->band_type !== null) {
-            $firstSet = $lastLog->liftSets->first();
-            if (!$firstSet) {
-                return null;
-            }
-
-            $lastLoggedReps = $firstSet->reps ?? 0;
-            $lastLoggedBandColor = $firstSet->band_color ?? null;
-
-            $maxRepsBeforeBandChange = config('bands.max_reps_before_band_change', 15);
-            $defaultRepsOnBandChange = config('bands.default_reps_on_band_change', 8);
-
-            if ($lastLoggedReps < $maxRepsBeforeBandChange) {
-                $suggestedReps = min($lastLoggedReps + 1, $maxRepsBeforeBandChange);
-                return (object)[
-                    'sets' => $lastLog->liftSets->count(),
-                    'reps' => $suggestedReps,
-                    'band_color' => $lastLoggedBandColor,
-                ];
-            } else {
-                // For now, just suggest same band with max reps to avoid additional service calls
-                return (object)[
-                    'sets' => $lastLog->liftSets->count(),
-                    'reps' => $maxRepsBeforeBandChange,
-                    'band_color' => $lastLoggedBandColor,
-                ];
-            }
+            return $trainingProgressionService->getSuggestionDetailsWithLog($lastLog, $userId, $exerciseId, $selectedDate);
         }
 
         // For weighted exercises, use simple progression logic to avoid additional queries
