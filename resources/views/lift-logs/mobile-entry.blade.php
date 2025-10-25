@@ -294,11 +294,14 @@
             const button = document.getElementById(buttonId);
             if (button) {
                 button.addEventListener('click', function() {
-                    // Hide all other exercise lists and show their buttons
+                    // Hide all other exercise lists and show their buttons to prevent conflicts
                     hideAllExerciseLists();
                     
-                    // Show this exercise list and hide this button
-                    document.getElementById(containerId).classList.remove('hidden');
+                    // Show this specific exercise list and hide this button
+                    const container = document.getElementById(containerId);
+                    if (container) {
+                        container.classList.remove('hidden');
+                    }
                     this.style.display = 'none';
                 });
             }
@@ -324,7 +327,7 @@
                 }
             });
 
-            // Reset all autocomplete interfaces
+            // Reset all autocomplete interfaces to prevent conflicts
             const autocompleteContainers = ['exercise-list-container', 'exercise-list-container-bottom'];
             autocompleteContainers.forEach(containerId => {
                 const searchInput = document.getElementById(`exercise-search-${containerId}`);
@@ -333,6 +336,7 @@
                 
                 if (searchInput) {
                     searchInput.value = '';
+                    searchInput.blur(); // Remove focus to prevent conflicts
                 }
                 if (saveAsNewButton) {
                     saveAsNewButton.classList.add('hidden');
@@ -348,6 +352,14 @@
                     suggestion.classList.remove('keyboard-selected');
                 });
             });
+            
+            // Reset autocomplete instances' state to prevent conflicts
+            if (window.topAutocomplete) {
+                window.topAutocomplete.resetState();
+            }
+            if (window.bottomAutocomplete) {
+                window.bottomAutocomplete.resetState();
+            }
         }
 
         // Exercise Autocomplete Class - Enhanced with debouncing and improved functionality
@@ -511,6 +523,28 @@
                 this.saveAsNewButton.classList.add('hidden');
             }
             
+            // Reset autocomplete state - used to prevent conflicts between instances
+            resetState() {
+                this.currentQuery = '';
+                this.selectedIndex = -1;
+                this.visibleSuggestions = [];
+                
+                if (this.searchInput) {
+                    this.searchInput.value = '';
+                }
+                if (this.saveAsNewButton) {
+                    this.saveAsNewButton.classList.add('hidden');
+                }
+                if (this.noExercisesFound) {
+                    this.noExercisesFound.classList.add('hidden');
+                }
+                
+                this.allSuggestions.forEach(suggestion => {
+                    suggestion.style.display = '';
+                    suggestion.classList.remove('keyboard-selected');
+                });
+            }
+            
             // Setup click handlers for exercise suggestions
             setupSuggestionClickHandlers() {
                 this.allSuggestions.forEach(suggestion => {
@@ -523,7 +557,11 @@
             
             // Handle exercise selection from suggestions
             handleExerciseSelection(suggestion) {
-                // Navigate to the href of the clicked suggestion
+                // Hide the autocomplete interface immediately for better UX
+                hideAllExerciseLists();
+                
+                // Navigate to the href of the clicked suggestion (programs.quick-add route)
+                // This maintains existing Program_Quick_Add functionality and redirect behavior
                 window.location.href = suggestion.href;
             }
             
@@ -577,6 +615,7 @@
             // Enhanced keyboard navigation
             handleKeydown(e) {
                 if (e.key === 'Escape') {
+                    // Hide all exercise lists and reset state
                     hideAllExerciseLists();
                     return;
                 }
@@ -637,8 +676,9 @@
             }
         }
 
-        // Initialize autocomplete for both containers
-        let topAutocomplete, bottomAutocomplete;
+        // Initialize autocomplete for both containers - make globally accessible to prevent conflicts
+        window.topAutocomplete = null;
+        window.bottomAutocomplete = null;
 
         // Setup top exercise controls
         setupAddExerciseButton('add-exercise-button', 'exercise-list-container');
@@ -649,19 +689,29 @@
         // Initialize autocomplete instances when containers are shown
         document.getElementById('add-exercise-button')?.addEventListener('click', function() {
             setTimeout(() => {
-                if (!topAutocomplete) {
-                    topAutocomplete = new ExerciseAutocomplete('exercise-list-container', '{{ $selectedDate->toDateString() }}');
+                // Ensure only one autocomplete instance is active at a time
+                if (!window.topAutocomplete) {
+                    window.topAutocomplete = new ExerciseAutocomplete('exercise-list-container', '{{ $selectedDate->toDateString() }}');
                 }
-                document.getElementById('exercise-search-exercise-list-container')?.focus();
+                // Focus on the search input for immediate interaction
+                const searchInput = document.getElementById('exercise-search-exercise-list-container');
+                if (searchInput) {
+                    searchInput.focus();
+                }
             }, 100);
         });
         
         document.getElementById('add-exercise-button-bottom')?.addEventListener('click', function() {
             setTimeout(() => {
-                if (!bottomAutocomplete) {
-                    bottomAutocomplete = new ExerciseAutocomplete('exercise-list-container-bottom', '{{ $selectedDate->toDateString() }}');
+                // Ensure only one autocomplete instance is active at a time
+                if (!window.bottomAutocomplete) {
+                    window.bottomAutocomplete = new ExerciseAutocomplete('exercise-list-container-bottom', '{{ $selectedDate->toDateString() }}');
                 }
-                document.getElementById('exercise-search-exercise-list-container-bottom')?.focus();
+                // Focus on the search input for immediate interaction
+                const searchInput = document.getElementById('exercise-search-exercise-list-container-bottom');
+                if (searchInput) {
+                    searchInput.focus();
+                }
             }, 100);
         });
     </script>
