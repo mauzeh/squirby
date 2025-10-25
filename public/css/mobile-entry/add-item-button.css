@@ -1,0 +1,338 @@
+/* Add Item Button Component Styles
+ * Button styles for adding items and form actions
+ * Requirements: 4.3, 4.5, 7.1
+ */
+
+/* ========================================
+   Button System Components
+   ======================================== */
+.button-large {
+  color: white;
+  text-align: center;
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  border: none;
+  padding: var(--entry-spacing) 25px;
+  border-radius: var(--entry-border-radius-sm);
+  cursor: pointer;
+  font-size: var(--entry-font-size-large);
+  font-weight: bold;
+  text-decoration: none;
+  transition: var(--entry-transition);
+  min-height: var(--entry-touch-target);
+}
+
+.button-small {
+  background-color: var(--entry-secondary);
+  color: white;
+  padding: 8px 12px;
+  border: none;
+  border-radius: var(--entry-border-radius-sm);
+  cursor: pointer;
+  font-size: var(--entry-font-size-sm);
+  display: inline-block;
+  text-decoration: none;
+  transition: var(--entry-transition);
+  min-height: var(--entry-touch-target-sm);
+}
+
+/* Button color variants */
+.button-green { background-color: var(--entry-success); }
+.button-green:hover { background-color: #218838; }
+
+.button-blue { background-color: var(--entry-accent); }
+.button-blue:hover { background-color: #0056b3; }
+
+.button-gray { background-color: var(--entry-secondary); }
+.button-gray:hover { background-color: #545b62; }
+
+.button-danger { background-color: var(--entry-danger); }
+.button-danger:hover { background-color: #c82333; }
+
+.button-small:hover { background-color: #5a6268; }
+.button-small.button-danger { background-color: var(--entry-danger); }
+.button-small.button-danger:hover { background-color: #c82333; }
+
+/* ========================================
+   Add Item Button Component
+   ======================================== */
+.add-item-button {
+  background-color: var(--entry-success, #28a745);
+  color: white;
+  text-align: center;
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  border: none;
+  padding: var(--entry-spacing, 15px) 25px;
+  border-radius: var(--entry-border-radius-sm, 5px);
+  cursor: pointer;
+  font-size: var(--entry-font-size-large, 1.5rem);
+  font-weight: bold;
+  text-decoration: none;
+  transition: var(--entry-transition, all 0.2s ease);
+  min-height: var(--entry-touch-target, 44px);
+  margin: var(--entry-spacing, 15px) 0;
+}
+
+.add-item-button:hover {
+  background-color: #218838;
+  transform: translateY(-2px);
+  box-shadow: var(--entry-shadow-lg, 0 4px 8px rgba(0, 0, 0, 0.4));
+}
+
+.add-item-button:active {
+  transform: translateY(0);
+  box-shadow: var(--entry-shadow, 0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.add-item-button:focus {
+  outline: 2px solid rgba(40, 167, 69, 0.5);
+  outline-offset: 2px;
+}
+
+.add-item-button:disabled {
+  background-color: var(--entry-secondary, #6c757d);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.add-item-button:disabled:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+/* Add button variants */
+.add-item-button.add-exercise {
+  background-color: #6f42c1;
+}
+
+.add-item-button.add-exercise:hover {
+  background-color: #5a32a3;
+}
+
+.add-item-button.add-food {
+  background-color: var(--entry-info, #17a2b8);
+}
+
+.add-item-button.add-food:hover {
+  background-color: #138496;
+}
+
+/* ========================================
+   Toggle Button Component
+   ======================================== */
+.toggle-button {
+  background-color: var(--entry-secondary, #6c757d);
+  color: white;
+  border: none;
+  padding: var(--entry-spacing-sm, 10px) var(--entry-spacing, 15px);
+  border-radius: var(--entry-border-radius-sm, 5px);
+  cursor: pointer;
+  font-size: var(--entry-font-size-sm, 0.9rem);
+  width: 100%;
+  text-align: center;
+  transition: var(--entry-transition, all 0.2s ease);
+  min-height: var(--entry-touch-target, 44px);
+  font-weight: 500;
+}
+
+.toggle-button:hover {
+  background-color: #5a6268;
+}
+
+.toggle-button:focus {
+  outline: 2px solid var(--entry-accent, #007bff);
+  outline-offset: 2px;
+}
+
+.toggle-button.active {
+  background-color: var(--entry-accent, #007bff);
+}
+
+.toggle-button.active:hover {
+  background-color: #0056b3;
+}
+
+/* ========================================
+   Button Navigation Components
+   ======================================== */
+.button-navigation {
+  display: flex;
+  gap: var(--entry-spacing-sm, 10px);
+  margin: var(--entry-spacing, 15px) 0;
+  flex-wrap: wrap;
+}
+
+.button-navigation .nav-button {
+  flex: 1;
+  min-width: 120px;
+}
+
+.button-change {
+  background-color: var(--entry-secondary, #6c757d);
+  color: white;
+  padding: var(--entry-spacing-sm, 10px) var(--entry-spacing, 15px);
+  border: none;
+  border-radius: var(--entry-border-radius-sm, 5px);
+  cursor: pointer;
+  font-size: var(--entry-font-size-base, 1rem);
+  margin-top: var(--entry-spacing-xs, 5px);
+  display: inline-block;
+  text-decoration: none;
+  transition: var(--entry-transition, all 0.2s ease);
+  min-height: var(--entry-touch-target, 44px);
+}
+
+.button-change:hover {
+  background-color: #5a6268;
+}
+
+/* ========================================
+   Submit Buttons
+   ======================================== */
+.submit-button {
+  background-color: var(--entry-accent, #007bff);
+  color: white;
+  padding: var(--entry-spacing, 15px) 25px;
+  border: none;
+  border-radius: var(--entry-border-radius-sm, 5px);
+  cursor: pointer;
+  font-size: var(--entry-font-size-large, 1.5rem);
+  font-weight: bold;
+  width: 100%;
+  margin-top: 20px;
+  transition: var(--entry-transition, all 0.2s ease);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--entry-spacing-sm, 10px);
+  min-height: var(--entry-touch-target, 44px);
+}
+
+.submit-button:hover {
+  background-color: #0056b3;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+}
+
+.submit-button:active {
+  transform: translateY(0);
+  box-shadow: var(--entry-shadow, 0 2px 4px rgba(0, 123, 255, 0.3));
+}
+
+.submit-button:focus {
+  outline: 2px solid rgba(0, 123, 255, 0.5);
+  outline-offset: 2px;
+}
+
+.submit-button:disabled {
+  background-color: var(--entry-secondary, #6c757d);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.large-button {
+  background-color: var(--entry-success, #28a745);
+  color: white;
+  text-align: center;
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  border: none;
+  padding: var(--entry-spacing, 15px) 25px;
+  border-radius: var(--entry-border-radius-sm, 5px);
+  cursor: pointer;
+  font-size: var(--entry-font-size-large, 1.5rem);
+  font-weight: bold;
+  text-decoration: none;
+  transition: var(--entry-transition, all 0.2s ease);
+  min-height: var(--entry-touch-target, 44px);
+}
+
+.large-button:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--entry-shadow-lg, 0 4px 8px rgba(0, 0, 0, 0.2));
+}
+
+/* ========================================
+   Mobile-First Responsive Design
+   ======================================== */
+@media (max-width: 768px) {
+  .add-item-button {
+    font-size: 1.3em;
+    padding: 12px 20px;
+    min-height: var(--entry-touch-target, 44px);
+  }
+  
+  .toggle-button {
+    min-height: var(--entry-touch-target, 44px);
+    padding: var(--entry-spacing-sm, 10px) var(--entry-spacing, 15px);
+  }
+  
+  .button-navigation {
+    gap: 8px;
+  }
+  
+  .button-navigation .nav-button {
+    min-width: 100px;
+    font-size: var(--entry-font-size-sm, 0.9rem);
+  }
+  
+  .button-large {
+    font-size: 1.3em;
+    padding: 12px 20px;
+    min-height: var(--entry-touch-target, 44px);
+  }
+  
+  .button-change {
+    min-height: var(--entry-touch-target, 44px);
+    padding: var(--entry-spacing-sm, 10px) var(--entry-spacing, 15px);
+  }
+}
+
+@media (max-width: 480px) {
+  .add-item-button {
+    font-size: 1.2em;
+    padding: var(--entry-spacing-sm, 10px) 16px;
+    min-height: 40px;
+  }
+  
+  .toggle-button {
+    min-height: 40px;
+    font-size: var(--entry-font-size-xs, 0.8rem);
+  }
+  
+  .button-navigation {
+    gap: var(--entry-spacing-xs, 5px);
+  }
+  
+  .button-navigation .nav-button {
+    min-width: 80px;
+    padding: 8px 12px;
+  }
+  
+  .button-large {
+    font-size: 1.2em;
+    padding: var(--entry-spacing-sm, 10px) 16px;
+    min-height: 40px;
+  }
+}
+
+/* ========================================
+   Print Styles
+   ======================================== */
+@media print {
+  .button-navigation,
+  .add-item-button,
+  .toggle-button,
+  .submit-button,
+  .large-button,
+  .button-large,
+  .button-small,
+  .button-change {
+    display: none;
+  }
+}

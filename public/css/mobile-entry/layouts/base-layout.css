@@ -1,0 +1,276 @@
+/* Base Layout Styles
+ * Core layout and container styles for mobile entry interfaces
+ * Requirements: 4.3, 4.5, 7.1
+ */
+
+/* ========================================
+   Base Layout Container
+   ======================================== */
+.mobile-entry-layout {
+  max-width: 600px;
+  margin: 20px auto;
+  padding: var(--entry-spacing);
+  background-color: var(--entry-bg);
+  border-radius: var(--entry-border-radius);
+  box-shadow: var(--entry-shadow);
+  color: var(--entry-text);
+  box-sizing: border-box;
+  overflow-x: hidden;
+  min-height: calc(100vh - 40px);
+}
+
+/* ========================================
+   Layout Sections
+   ======================================== */
+.layout-header {
+  margin-bottom: var(--entry-spacing, 15px);
+  padding-bottom: var(--entry-spacing-sm, 10px);
+  border-bottom: 1px solid var(--entry-border, #555);
+}
+
+.layout-content {
+  flex: 1;
+  margin-bottom: var(--entry-spacing, 15px);
+}
+
+.layout-footer {
+  margin-top: var(--entry-spacing, 15px);
+  padding-top: var(--entry-spacing-sm, 10px);
+  border-top: 1px solid var(--entry-border, #555);
+}
+
+/* ========================================
+   Grid Layout System
+   ======================================== */
+.entry-grid {
+  display: grid;
+  gap: var(--entry-spacing, 15px);
+  width: 100%;
+}
+
+.entry-grid.two-column {
+  grid-template-columns: 1fr 1fr;
+}
+
+.entry-grid.three-column {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.entry-grid.auto-fit {
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+/* ========================================
+   Flex Layout System
+   ======================================== */
+.entry-flex {
+  display: flex;
+  gap: var(--entry-spacing-sm, 10px);
+}
+
+.entry-flex.column {
+  flex-direction: column;
+}
+
+.entry-flex.center {
+  align-items: center;
+  justify-content: center;
+}
+
+.entry-flex.space-between {
+  justify-content: space-between;
+}
+
+.entry-flex.wrap {
+  flex-wrap: wrap;
+}
+
+/* ========================================
+   Content Sections
+   ======================================== */
+.content-section {
+  margin-bottom: var(--entry-spacing, 15px);
+  padding: var(--entry-spacing, 15px);
+  background-color: var(--entry-card-bg, #3a3a3a);
+  border-radius: var(--entry-border-radius, 8px);
+  box-shadow: var(--entry-shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.2));
+}
+
+.content-section.no-padding {
+  padding: 0;
+}
+
+.content-section.compact {
+  padding: var(--entry-spacing-sm, 10px);
+}
+
+/* ========================================
+   Sidebar Layout
+   ======================================== */
+.layout-with-sidebar {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: var(--entry-spacing, 15px);
+}
+
+.layout-sidebar {
+  background-color: var(--entry-card-bg, #3a3a3a);
+  border-radius: var(--entry-border-radius, 8px);
+  padding: var(--entry-spacing, 15px);
+  box-shadow: var(--entry-shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.2));
+}
+
+/* ========================================
+   Sticky Elements
+   ======================================== */
+.sticky-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background-color: var(--entry-bg, #2a2a2a);
+  padding: var(--entry-spacing-sm, 10px) 0;
+  border-bottom: 1px solid var(--entry-border, #555);
+}
+
+.sticky-footer {
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+  background-color: var(--entry-bg, #2a2a2a);
+  padding: var(--entry-spacing-sm, 10px) 0;
+  border-top: 1px solid var(--entry-border, #555);
+}
+
+/* ========================================
+   Spacing Utilities
+   ======================================== */
+.spacing-xs { margin: var(--entry-spacing-xs, 5px); }
+.spacing-sm { margin: var(--entry-spacing-sm, 10px); }
+.spacing { margin: var(--entry-spacing, 15px); }
+
+.spacing-top-xs { margin-top: var(--entry-spacing-xs, 5px); }
+.spacing-top-sm { margin-top: var(--entry-spacing-sm, 10px); }
+.spacing-top { margin-top: var(--entry-spacing, 15px); }
+
+.spacing-bottom-xs { margin-bottom: var(--entry-spacing-xs, 5px); }
+.spacing-bottom-sm { margin-bottom: var(--entry-spacing-sm, 10px); }
+.spacing-bottom { margin-bottom: var(--entry-spacing, 15px); }
+
+.padding-xs { padding: var(--entry-spacing-xs, 5px); }
+.padding-sm { padding: var(--entry-spacing-sm, 10px); }
+.padding { padding: var(--entry-spacing, 15px); }
+
+/* ========================================
+   Mobile-First Responsive Layout
+   ======================================== */
+@media (max-width: 768px) {
+  .mobile-entry-layout {
+    margin: 1px;
+    padding: var(--entry-spacing-sm, 10px);
+    max-width: calc(100vw - 2px);
+    min-height: calc(100vh - 2px);
+  }
+  
+  .entry-grid.two-column,
+  .entry-grid.three-column {
+    grid-template-columns: 1fr;
+  }
+  
+  .entry-grid.auto-fit {
+    grid-template-columns: 1fr;
+  }
+  
+  .layout-with-sidebar {
+    grid-template-columns: 1fr;
+  }
+  
+  .layout-sidebar {
+    order: -1; /* Move sidebar above main content on mobile */
+  }
+  
+  .entry-flex:not(.column) {
+    flex-direction: column;
+  }
+  
+  .content-section {
+    padding: var(--entry-spacing-sm, 10px);
+  }
+}
+
+@media (max-width: 480px) {
+  .mobile-entry-layout {
+    padding: 8px;
+  }
+  
+  .entry-grid {
+    gap: var(--entry-spacing-sm, 10px);
+  }
+  
+  .entry-flex {
+    gap: var(--entry-spacing-xs, 5px);
+  }
+  
+  .content-section {
+    padding: 8px;
+  }
+  
+  .content-section.compact {
+    padding: var(--entry-spacing-xs, 5px);
+  }
+}
+
+/* Landscape orientation adjustments */
+@media (max-width: 768px) and (orientation: landscape) {
+  .mobile-entry-layout {
+    margin: 1px auto;
+    max-width: calc(100vw - 2px);
+  }
+  
+  .entry-grid.two-column {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* ========================================
+   Container Queries (Future Enhancement)
+   ======================================== */
+@container (max-width: 400px) {
+  .entry-grid.auto-fit {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ========================================
+   Print Layout
+   ======================================== */
+@media print {
+  .mobile-entry-layout {
+    box-shadow: none;
+    background-color: white;
+    color: black;
+    margin: 0;
+    padding: 20px;
+    max-width: none;
+    min-height: auto;
+  }
+  
+  .layout-header,
+  .layout-footer {
+    border: none;
+  }
+  
+  .content-section {
+    background-color: white;
+    border: 1px solid #ccc;
+    color: black;
+    box-shadow: none;
+    break-inside: avoid;
+  }
+  
+  .sticky-header,
+  .sticky-footer {
+    position: static;
+    background-color: white;
+    border: none;
+  }
+}

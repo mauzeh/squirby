@@ -1,0 +1,333 @@
+/* Empty State Component Styles
+ * Empty state and loading state styles for mobile entry interfaces
+ * Requirements: 4.3, 4.5, 7.1
+ */
+
+/* ========================================
+   Empty State Styles
+   ======================================== */
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: #888;
+  font-style: italic;
+  background-color: var(--entry-card-bg, #3a3a3a);
+  border-radius: var(--entry-border-radius, 8px);
+  border: 1px dashed var(--entry-border, #555);
+  margin: var(--entry-spacing, 15px) 0;
+}
+
+.empty-state::before {
+  content: "📝";
+  display: block;
+  font-size: 2em;
+  margin-bottom: var(--entry-spacing-sm, 10px);
+  opacity: 0.5;
+}
+
+.empty-state.no-exercises::before {
+  content: "💪";
+}
+
+.empty-state.no-foods::before {
+  content: "🍽️";
+}
+
+.empty-state.no-programs::before {
+  content: "📋";
+}
+
+.empty-state.no-logs::before {
+  content: "📊";
+}
+
+.empty-state-title {
+  font-size: 1.2em;
+  font-weight: bold;
+  margin-bottom: var(--entry-spacing-sm, 10px);
+  color: #aaa;
+  font-style: normal;
+}
+
+.empty-state-message {
+  font-size: var(--entry-font-size-base, 1rem);
+  line-height: 1.4;
+  margin-bottom: var(--entry-spacing, 15px);
+}
+
+.empty-state-action {
+  margin-top: var(--entry-spacing, 15px);
+}
+
+/* ========================================
+   Loading State Styles
+   ======================================== */
+.loading-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: #888;
+}
+
+.loading-state::before {
+  content: "⏳";
+  display: block;
+  font-size: 2em;
+  margin-bottom: var(--entry-spacing-sm, 10px);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.loading-spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid var(--entry-accent, #007bff);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-right: var(--entry-spacing-sm, 10px);
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+/* ========================================
+   Error State Styles
+   ======================================== */
+.error-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--entry-danger, #dc3545);
+  background-color: rgba(220, 53, 69, 0.1);
+  border-radius: var(--entry-border-radius, 8px);
+  border: 1px solid var(--entry-danger, #dc3545);
+  margin: var(--entry-spacing, 15px) 0;
+}
+
+.error-state::before {
+  content: "⚠️";
+  display: block;
+  font-size: 2em;
+  margin-bottom: var(--entry-spacing-sm, 10px);
+}
+
+.error-state-title {
+  font-size: 1.2em;
+  font-weight: bold;
+  margin-bottom: var(--entry-spacing-sm, 10px);
+  color: var(--entry-danger, #dc3545);
+}
+
+.error-state-message {
+  font-size: var(--entry-font-size-base, 1rem);
+  line-height: 1.4;
+  margin-bottom: var(--entry-spacing, 15px);
+  color: #ccc;
+}
+
+.error-state-action {
+  margin-top: var(--entry-spacing, 15px);
+}
+
+/* ========================================
+   Success State Styles
+   ======================================== */
+.success-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--entry-success, #28a745);
+  background-color: rgba(40, 167, 69, 0.1);
+  border-radius: var(--entry-border-radius, 8px);
+  border: 1px solid var(--entry-success, #28a745);
+  margin: var(--entry-spacing, 15px) 0;
+}
+
+.success-state::before {
+  content: "✅";
+  display: block;
+  font-size: 2em;
+  margin-bottom: var(--entry-spacing-sm, 10px);
+}
+
+.success-state-title {
+  font-size: 1.2em;
+  font-weight: bold;
+  margin-bottom: var(--entry-spacing-sm, 10px);
+  color: var(--entry-success, #28a745);
+}
+
+.success-state-message {
+  font-size: var(--entry-font-size-base, 1rem);
+  line-height: 1.4;
+  margin-bottom: var(--entry-spacing, 15px);
+  color: #ccc;
+}
+
+/* ========================================
+   Item List Empty States
+   ======================================== */
+.item-list-empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: #888;
+  font-style: italic;
+}
+
+.item-list-empty::before {
+  content: "📝";
+  display: block;
+  font-size: 2em;
+  margin-bottom: var(--entry-spacing-sm, 10px);
+  opacity: 0.5;
+}
+
+.item-list-loading {
+  text-align: center;
+  padding: 40px 20px;
+  color: #888;
+}
+
+.item-list-loading::before {
+  content: "⏳";
+  display: block;
+  font-size: 2em;
+  margin-bottom: var(--entry-spacing-sm, 10px);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* ========================================
+   Specific Empty States
+   ======================================== */
+.no-logs-message,
+.no-program-message {
+  text-align: center;
+  color: #aaa;
+  font-size: 1.1em;
+  padding: 30px 20px;
+  margin-top: 30px;
+  background-color: var(--entry-card-bg, #3a3a3a);
+  border-radius: var(--entry-border-radius, 8px);
+  font-style: italic;
+  border: 1px dashed var(--entry-border, #555);
+}
+
+.no-logs-message::before,
+.no-program-message::before {
+  content: "📝";
+  display: block;
+  font-size: 2em;
+  margin-bottom: var(--entry-spacing-sm, 10px);
+  opacity: 0.5;
+}
+
+/* ========================================
+   Mobile-First Responsive Design
+   ======================================== */
+@media (max-width: 768px) {
+  .empty-state,
+  .loading-state,
+  .error-state,
+  .success-state {
+    padding: 30px var(--entry-spacing, 15px);
+  }
+  
+  .empty-state::before,
+  .loading-state::before,
+  .error-state::before,
+  .success-state::before {
+    font-size: 1.8em;
+  }
+  
+  .empty-state-title,
+  .error-state-title,
+  .success-state-title {
+    font-size: 1.1em;
+  }
+  
+  .empty-state-message,
+  .error-state-message,
+  .success-state-message {
+    font-size: var(--entry-font-size-sm, 0.9rem);
+  }
+  
+  .no-logs-message,
+  .no-program-message {
+    padding: 20px var(--entry-spacing, 15px);
+    font-size: var(--entry-font-size-base, 1rem);
+  }
+}
+
+@media (max-width: 480px) {
+  .empty-state,
+  .loading-state,
+  .error-state,
+  .success-state {
+    padding: 20px 12px;
+  }
+  
+  .empty-state::before,
+  .loading-state::before,
+  .error-state::before,
+  .success-state::before {
+    font-size: 1.5em;
+  }
+  
+  .empty-state-title,
+  .error-state-title,
+  .success-state-title {
+    font-size: var(--entry-font-size-base, 1rem);
+  }
+  
+  .empty-state-message,
+  .error-state-message,
+  .success-state-message {
+    font-size: var(--entry-font-size-xs, 0.85rem);
+  }
+  
+  .no-logs-message,
+  .no-program-message {
+    padding: var(--entry-spacing, 15px) 12px;
+    font-size: var(--entry-font-size-sm, 0.9rem);
+  }
+}
+
+/* ========================================
+   Accessibility Enhancements
+   ======================================== */
+@media (prefers-reduced-motion: reduce) {
+  .loading-state::before,
+  .item-list-loading::before,
+  .loading-spinner {
+    animation: none;
+  }
+}
+
+/* ========================================
+   Print Styles
+   ======================================== */
+@media print {
+  .empty-state,
+  .loading-state,
+  .error-state,
+  .success-state,
+  .no-logs-message,
+  .no-program-message {
+    background-color: #f8f9fa;
+    border: 1px solid #ccc;
+    color: black;
+  }
+  
+  .error-state-title {
+    color: black;
+  }
+  
+  .success-state-title {
+    color: black;
+  }
+}

@@ -1,0 +1,207 @@
+/* Message System Component Styles
+ * Consolidated message display styles for all entry interfaces
+ * Requirements: 4.3, 4.5, 7.1
+ */
+
+/* ========================================
+   Message System Core Styles
+   ======================================== */
+.message-container {
+  margin: var(--entry-spacing, 15px) 0;
+  border-radius: var(--entry-border-radius, 8px);
+  animation: slideIn 0.3s ease-out;
+  overflow: hidden;
+}
+
+.message-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--entry-spacing, 15px) 20px;
+  min-height: var(--entry-touch-target, 44px);
+}
+
+.message-text {
+  color: white;
+  font-weight: bold;
+  font-size: var(--entry-font-size-base, 1rem);
+  flex: 1;
+  line-height: 1.4;
+}
+
+.message-close {
+  background: none;
+  border: none;
+  color: white;
+  font-size: var(--entry-font-size-large, 1.5rem);
+  font-weight: bold;
+  cursor: pointer;
+  padding: 0;
+  margin-left: var(--entry-spacing, 15px);
+  width: 24px;
+  height: 24px;
+  min-width: var(--entry-touch-target-xs, 32px);
+  min-height: var(--entry-touch-target-xs, 32px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: var(--entry-transition, all 0.2s ease);
+  flex-shrink: 0;
+}
+
+.message-close:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.message-close:focus {
+  outline: 2px solid rgba(255, 255, 255, 0.5);
+  outline-offset: 2px;
+}
+
+/* ========================================
+   Message Type Variants
+   ======================================== */
+.message-error {
+  background-color: var(--entry-danger, #dc3545);
+  border-left: 4px solid #a71e2a;
+}
+
+.message-success {
+  background-color: var(--entry-success, #28a745);
+  border-left: 4px solid #1e7e34;
+}
+
+.message-validation {
+  background-color: var(--entry-warning, #ffc107);
+  border-left: 4px solid #d39e00;
+}
+
+.message-info {
+  background-color: var(--entry-info, #17a2b8);
+  border-left: 4px solid #117a8b;
+}
+
+/* Validation messages have dark text */
+.message-validation .message-text,
+.message-validation .message-close {
+  color: #212529;
+}
+
+/* ========================================
+   Message Animations
+   ======================================== */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+
+.message-container.fade-out {
+  animation: fadeOut 0.3s ease-out forwards;
+}
+
+/* ========================================
+   Auto-hide Message Styles
+   ======================================== */
+.message-container.auto-hide {
+  position: relative;
+}
+
+.message-container.auto-hide::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  background-color: rgba(255, 255, 255, 0.3);
+  animation: countdown var(--auto-hide-duration, 5s) linear;
+}
+
+@keyframes countdown {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0%;
+  }
+}
+
+/* ========================================
+   Mobile-First Responsive Design
+   ======================================== */
+@media (max-width: 768px) {
+  .message-container {
+    margin: var(--entry-spacing-sm, 10px) 0;
+  }
+  
+  .message-content {
+    padding: 12px var(--entry-spacing, 15px);
+  }
+  
+  .message-text {
+    font-size: var(--entry-font-size-sm, 0.9rem);
+  }
+  
+  .message-close {
+    width: 28px;
+    height: 28px;
+    font-size: 1.3em;
+  }
+}
+
+@media (max-width: 480px) {
+  .message-content {
+    padding: var(--entry-spacing-sm, 10px) 12px;
+  }
+  
+  .message-text {
+    font-size: var(--entry-font-size-xs, 0.85rem);
+  }
+  
+  .message-close {
+    width: 24px;
+    height: 24px;
+    font-size: 1.2em;
+    margin-left: var(--entry-spacing-sm, 10px);
+  }
+}
+
+/* ========================================
+   Print Styles
+   ======================================== */
+@media print {
+  .message-container {
+    border: 1px solid #ccc;
+    background-color: #f8f9fa !important;
+    color: black !important;
+  }
+  
+  .message-text {
+    color: black !important;
+  }
+  
+  .message-close {
+    display: none;
+  }
+  
+  .message-container::after {
+    display: none;
+  }
+}

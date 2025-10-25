@@ -1,0 +1,143 @@
+/* Date Navigation Component Styles
+ * Date navigation and button navigation styles
+ * Requirements: 4.3, 4.5, 7.1
+ */
+
+/* ========================================
+   Date Navigation Component
+   ======================================== */
+.date-navigation-mobile {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  font-size: 1.2em;
+  gap: var(--entry-spacing-sm, 10px);
+}
+
+.nav-button {
+  background-color: var(--entry-accent, #007bff);
+  color: white;
+  padding: var(--entry-spacing-sm, 10px) var(--entry-spacing, 15px);
+  border-radius: var(--entry-border-radius-sm, 5px);
+  text-decoration: none;
+  font-weight: bold;
+  min-height: var(--entry-touch-target, 44px);
+  min-width: var(--entry-touch-target, 44px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--entry-transition, all 0.2s ease);
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: inherit;
+}
+
+.nav-button:hover {
+  background-color: #0056b3;
+  transform: translateY(-1px);
+  box-shadow: var(--entry-shadow, 0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.nav-button:active {
+  transform: translateY(0);
+  box-shadow: var(--entry-shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.2));
+}
+
+.nav-button:focus {
+  outline: 2px solid rgba(0, 123, 255, 0.5);
+  outline-offset: 2px;
+}
+
+.nav-button:disabled {
+  background-color: var(--entry-secondary, #6c757d);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.nav-button:disabled:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+/* Navigation button variants */
+.nav-button.nav-prev::before {
+  content: "←";
+  margin-right: var(--entry-spacing-xs, 5px);
+}
+
+.nav-button.nav-next::after {
+  content: "→";
+  margin-left: var(--entry-spacing-xs, 5px);
+}
+
+.nav-button.nav-today {
+  background-color: var(--entry-success, #28a745);
+  font-weight: bold;
+}
+
+.nav-button.nav-today:hover {
+  background-color: #218838;
+}
+
+/* Date display in navigation */
+.date-display {
+  flex: 1;
+  text-align: center;
+  font-weight: bold;
+  color: var(--entry-text, #f2f2f2);
+  font-size: 1.1em;
+  padding: 0 var(--entry-spacing-sm, 10px);
+}
+
+/* ========================================
+   Mobile-First Responsive Design
+   ======================================== */
+@media (max-width: 768px) {
+  .date-navigation-mobile {
+    font-size: 1.1em;
+    margin-bottom: var(--entry-spacing, 15px);
+  }
+  
+  .date-navigation-mobile .nav-button {
+    padding: 8px 12px;
+    font-size: var(--entry-font-size-sm, 0.9rem);
+    min-height: var(--entry-touch-target, 44px);
+    min-width: var(--entry-touch-target, 44px);
+  }
+  
+  .date-display {
+    font-size: var(--entry-font-size-base, 1rem);
+  }
+}
+
+@media (max-width: 480px) {
+  .date-navigation-mobile .nav-button {
+    padding: 6px var(--entry-spacing-sm, 10px);
+    font-size: var(--entry-font-size-xs, 0.8rem);
+    min-width: 40px;
+    min-height: 40px;
+  }
+  
+  .date-display {
+    font-size: var(--entry-font-size-sm, 0.9rem);
+    padding: 0 var(--entry-spacing-xs, 5px);
+  }
+}
+
+/* Landscape orientation adjustments */
+@media (max-width: 768px) and (orientation: landscape) {
+  .date-navigation-mobile {
+    margin-bottom: var(--entry-spacing, 15px);
+  }
+}
+
+/* ========================================
+   Print Styles
+   ======================================== */
+@media print {
+  .date-navigation-mobile {
+    display: none;
+  }
+}

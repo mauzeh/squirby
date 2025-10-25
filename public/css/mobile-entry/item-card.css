@@ -1,0 +1,444 @@
+/* Item Card Component Styles
+ * Unified card component styles for program cards, food logs, lift logs
+ * Requirements: 4.3, 4.5, 7.1
+ */
+
+/* ========================================
+   Base Card Styles
+   ======================================== */
+.program-card,
+.item-card {
+  background-color: var(--entry-card-bg, #3a3a3a);
+  border-radius: var(--entry-border-radius, 8px);
+  padding: 20px;
+  margin-top: 20px;
+  box-shadow: var(--entry-shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.2));
+  position: relative;
+  transition: var(--entry-transition, all 0.2s ease);
+  width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+.program-card:hover,
+.item-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--entry-shadow-lg, 0 4px 8px rgba(0, 0, 0, 0.4));
+}
+
+/* ========================================
+   Card Header Styles
+   ======================================== */
+.program-card h2,
+.item-card h2,
+.card-title {
+  color: orange;
+  margin-top: 0;
+  margin-bottom: var(--entry-spacing-sm, 10px);
+  padding-right: 80px; /* Space for action buttons */
+  line-height: 1.2;
+  font-size: 1.3em;
+}
+
+.program-card .details,
+.item-card .details,
+.card-details {
+  font-size: 1.1em;
+  color: #ccc;
+  margin-bottom: var(--entry-spacing-sm, 10px);
+  line-height: 1.4;
+}
+
+/* ========================================
+   Card Actions
+   ======================================== */
+.program-card-actions,
+.item-card-actions,
+.card-actions {
+  position: absolute;
+  top: var(--entry-spacing-sm, 10px);
+  right: var(--entry-spacing-sm, 10px);
+  display: flex;
+  gap: var(--entry-spacing-xs, 5px);
+  align-items: center;
+}
+
+.program-action-button,
+.card-action-button {
+  background-color: var(--entry-secondary, #6c757d);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  min-width: var(--entry-touch-target-xs, 32px);
+  min-height: var(--entry-touch-target-xs, 32px);
+  font-size: 1.2em;
+  line-height: 30px;
+  text-align: center;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--entry-transition, all 0.2s ease);
+}
+
+.program-action-button:hover,
+.card-action-button:hover {
+  background-color: #5a6268;
+  transform: scale(1.1);
+}
+
+.program-action-button:focus,
+.card-action-button:focus {
+  outline: 2px solid var(--entry-accent, #007bff);
+  outline-offset: 2px;
+}
+
+/* Delete button variant */
+.delete-program-button,
+.delete-card-button {
+  background-color: var(--entry-danger, #dc3545);
+}
+
+.delete-program-button:hover,
+.delete-card-button:hover {
+  background-color: #c82333;
+}
+
+.delete-button {
+  background-color: var(--entry-danger, #dc3545);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  min-width: var(--entry-touch-target-xs, 32px);
+  min-height: var(--entry-touch-target-xs, 32px);
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  transition: var(--entry-transition, all 0.2s ease);
+}
+
+.delete-button:hover {
+  background-color: #c82333;
+  transform: scale(1.05);
+}
+
+.delete-button:active {
+  transform: scale(0.95);
+}
+
+/* ========================================
+   Item List Component (Base Styles Only)
+   ======================================== */
+.item-list-container {
+  margin-top: 20px;
+  padding: 20px;
+  background-color: var(--entry-card-bg);
+  border-radius: var(--entry-border-radius);
+  box-shadow: var(--entry-shadow-sm);
+  width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+.item-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* Base item styles - specific variants in component files */
+.item-list-item {
+  color: var(--entry-text);
+  padding: var(--entry-spacing);
+  text-decoration: none;
+  border-bottom: 1px solid var(--entry-border);
+  font-size: 1.2em;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  cursor: pointer;
+  transition: var(--entry-transition);
+  background-color: transparent;
+  min-height: var(--entry-touch-target);
+}
+
+.item-list-item:last-child {
+  border-bottom: none;
+}
+
+.item-list-item:hover {
+  background-color: var(--entry-card-hover);
+  transform: translateX(2px);
+  box-shadow: 2px 0 4px rgba(0, 0, 0, 0.1);
+}
+
+.item-list-item:focus {
+  outline: 2px solid var(--entry-accent);
+  outline-offset: 2px;
+  background-color: var(--entry-card-hover);
+}
+
+.item-name {
+  flex: 1;
+  min-width: 0;
+  padding-right: var(--entry-spacing-sm);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 500;
+}
+
+.item-label {
+  flex-shrink: 0;
+  font-size: var(--entry-font-size-sm);
+  opacity: 0.8;
+  color: #ccc;
+  font-weight: normal;
+}
+
+/* Empty state */
+.item-list-empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: #888;
+  font-style: italic;
+}
+
+.item-list-empty::before {
+  content: "📝";
+  display: block;
+  font-size: 2em;
+  margin-bottom: var(--entry-spacing-sm);
+  opacity: 0.5;
+}
+
+/* ========================================
+   Card Content Areas
+   ======================================== */
+.card-content {
+  margin-bottom: var(--entry-spacing, 15px);
+}
+
+.card-footer {
+  margin-top: var(--entry-spacing, 15px);
+  padding-top: var(--entry-spacing-sm, 10px);
+  border-top: 1px solid var(--entry-border, #555);
+}
+
+/* ========================================
+   Card Variants
+   ======================================== */
+
+/* Completed card state */
+.program-card.completed,
+.item-card.completed {
+  background-color: rgba(40, 167, 69, 0.1);
+  border-left: 5px solid var(--entry-success, #28a745);
+}
+
+.completed-badge {
+  border-left: 5px solid var(--entry-success, #28a745);
+  padding-left: 20px;
+  position: relative;
+  background-color: rgba(40, 167, 69, 0.1);
+  border-radius: var(--entry-border-radius-sm, 5px);
+  padding: var(--entry-spacing, 15px) var(--entry-spacing, 15px) var(--entry-spacing, 15px) 35px;
+}
+
+.badge-icon {
+  position: absolute;
+  left: -15px;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: var(--entry-success, #28a745);
+  color: white;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2em;
+  font-weight: bold;
+  box-shadow: var(--entry-shadow, 0 2px 4px rgba(0, 0, 0, 0.2));
+}
+
+/* ========================================
+   Log-Specific Card Styles
+   ======================================== */
+.log-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--entry-spacing-sm, 10px);
+}
+
+.log-time {
+  color: #aaa;
+  font-size: var(--entry-font-size-sm, 0.9rem);
+  font-weight: bold;
+}
+
+.log-details {
+  margin-bottom: var(--entry-spacing-sm, 10px);
+}
+
+.log-name {
+  color: var(--entry-text, #f2f2f2);
+  font-size: 1.1em;
+  font-weight: bold;
+  margin-bottom: var(--entry-spacing-xs, 5px);
+}
+
+.log-quantity,
+.log-weight-reps {
+  color: #aaa;
+  font-size: var(--entry-font-size-sm, 0.9rem);
+  margin-bottom: var(--entry-spacing-xs, 5px);
+}
+
+.log-notes {
+  color: #ccc;
+  font-size: var(--entry-font-size-xs, 0.85rem);
+  font-style: italic;
+  margin-top: var(--entry-spacing-xs, 5px);
+}
+
+/* ========================================
+   Mobile-First Responsive Design
+   ======================================== */
+@media (max-width: 768px) {
+  .program-card,
+  .item-card {
+    padding: var(--entry-spacing, 15px);
+    margin-bottom: var(--entry-spacing, 15px);
+  }
+  
+  .program-card h2,
+  .item-card h2,
+  .card-title {
+    font-size: 1.2em;
+    padding-right: 70px;
+  }
+  
+  .program-card-actions,
+  .item-card-actions,
+  .card-actions {
+    top: 8px;
+    right: 8px;
+  }
+  
+  .program-action-button,
+  .card-action-button {
+    width: 28px;
+    height: 28px;
+    font-size: 1.1em;
+    line-height: 28px;
+    margin-left: 4px;
+  }
+  
+  .completed-badge {
+    padding-left: 18px;
+  }
+  
+  .badge-icon {
+    width: 28px;
+    height: 28px;
+    left: -14px;
+    font-size: 1.1em;
+  }
+  
+  .item-list-item {
+    min-height: var(--entry-touch-target);
+    padding: 12px var(--entry-spacing);
+    font-size: 1.1em;
+  }
+  
+  .item-list-container {
+    margin-top: var(--entry-spacing);
+    padding: var(--entry-spacing);
+  }
+}
+
+@media (max-width: 480px) {
+  .program-card,
+  .item-card {
+    padding: 12px;
+  }
+  
+  .program-card h2,
+  .item-card h2,
+  .card-title {
+    font-size: 1.2em;
+    padding-right: 60px;
+  }
+  
+  .program-action-button,
+  .card-action-button {
+    width: 26px;
+    height: 26px;
+    font-size: 1em;
+    line-height: 26px;
+  }
+  
+  .item-list-container {
+    margin-top: var(--entry-spacing-sm);
+    padding: var(--entry-spacing-sm);
+  }
+  
+  .item-list-item {
+    padding: var(--entry-spacing-sm) 12px;
+    font-size: var(--entry-font-size-base);
+    min-height: 40px;
+  }
+  
+  .delete-button {
+    min-width: 28px;
+    min-height: 28px;
+    width: 28px;
+    height: 28px;
+    font-size: 16px;
+  }
+}
+
+/* ========================================
+   Print Styles
+   ======================================== */
+@media print {
+  .program-card,
+  .item-card {
+    background-color: #f8f9fa;
+    border: 1px solid #ccc;
+    color: black;
+    box-shadow: none;
+    break-inside: avoid;
+  }
+  
+  .program-card-actions,
+  .item-card-actions,
+  .card-actions {
+    display: none;
+  }
+  
+  .program-card h2,
+  .item-card h2,
+  .card-title {
+    color: black;
+    padding-right: 0;
+  }
+  
+  .badge-icon {
+    background-color: var(--entry-success, #28a745);
+    color: white;
+  }
+}
