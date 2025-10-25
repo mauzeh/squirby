@@ -298,10 +298,14 @@
         // Setup new exercise link
         setupNewExerciseLink('new-exercise-link', 'new-exercise-form-container', 'exercise_name');
         
-        // Listen for add item button clicks to hide other buttons
+        // Listen for add item button clicks to show exercise list
         document.addEventListener('addItemClicked', function(event) {
             if (event.detail.buttonId === 'add-exercise-button' || event.detail.buttonId === 'add-exercise-button-bottom') {
-                hideAllExerciseLists();
+                // Show the exercise list instead of hiding it
+                const container = document.getElementById('exercise-list-container');
+                if (container) {
+                    container.classList.remove('hidden');
+                }
             }
         });
     </script>
