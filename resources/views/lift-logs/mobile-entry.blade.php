@@ -154,11 +154,14 @@
                                             @endforeach
                                         </div>
                                     @else
+                                        @php
+                                            $weightLabel = $program->exercise->is_bodyweight ? 'Extra Weight (lbs):' : 'Weight (lbs):';
+                                        @endphp
                                         <x-mobile-entry.number-input
                                             name="weight"
                                             id="weight_{{ $program->id }}"
                                             :value="$program->suggestedNextWeight ?? ($program->exercise->is_bodyweight ? 0 : '')"
-                                            label="@if($program->exercise->is_bodyweight) Extra Weight (lbs): @else Weight (lbs): @endif"
+                                            :label="$weightLabel"
                                             :step="5"
                                             :min="0"
                                             :required="!$program->exercise->is_bodyweight" />
