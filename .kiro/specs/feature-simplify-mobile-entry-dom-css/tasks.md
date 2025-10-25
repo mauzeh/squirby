@@ -6,32 +6,32 @@
   - Create component documentation template for future development
   - _Requirements: 2.1, 8.2, 8.5_
 
-- [ ] 2. Implement core shared components
-- [ ] 2.1 Create shared message system component
+- [x] 2. Implement core shared components
+- [x] 2.1 Create shared message system component
   - Build message-system.blade.php with error, success, and validation variants
   - Implement auto-hide functionality and close button behavior
   - Test component with various message types and edge cases
   - _Requirements: 1.2, 2.1, 9.3_
 
-- [ ] 2.2 Create shared date navigation component
+- [x] 2.2 Create shared date navigation component
   - Build date-navigation.blade.php accepting route parameters and selected date
   - Implement prev/today/next navigation logic with Carbon date handling
   - Test navigation with different route names and date ranges
   - _Requirements: 1.3, 2.2, 9.2_
 
-- [ ] 2.3 Create shared page title component
+- [x] 2.3 Create shared page title component
   - Build page-title.blade.php with conditional date display logic
   - Implement Today/Yesterday/Tomorrow/formatted date handling
   - Test title display with various date scenarios
   - _Requirements: 1.4, 2.3, 9.1_
 
-- [ ] 2.4 Create shared item card component
+- [x] 2.4 Create shared item card component
   - Build item-card.blade.php with configurable actions and content slots
   - Implement delete button functionality and optional move actions
   - Create flexible content slot system for different card types
   - _Requirements: 2.4, 3.4, 9.1_
 
-- [ ] 2.5 Create shared form input components
+- [x] 2.5 Create shared form input components
   - Build number-input.blade.php with increment/decrement functionality
   - Build add-item-button.blade.php with configurable labels and targets
   - Build empty-state.blade.php for consistent no-items messaging
