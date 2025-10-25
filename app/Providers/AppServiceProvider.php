@@ -24,6 +24,10 @@ class AppServiceProvider extends ServiceProvider
     {
         if (config('app.env') !== 'production') {
             \Illuminate\Support\Facades\DB::enableQueryLog();
+        }
+        
+        // Only show git log in development environment, not in testing
+        if (config('app.env') === 'local') {
             try {
                 $gitLog = shell_exec('git log -n 25 --pretty=format:"%h - %s (%cr)"');
                 View::share('gitLog', $gitLog);
