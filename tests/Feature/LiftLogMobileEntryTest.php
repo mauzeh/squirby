@@ -737,4 +737,15 @@ class LiftLogMobileEntryTest extends TestCase
         $response->assertSee('Exercise 4');
         $response->assertSee('Exercise 5');
     }
+
+    /** @test */
+    public function mobile_entry_page_includes_exercise_search_input()
+    {
+        $response = $this->get(route('lift-logs.mobile-entry'));
+
+        $response->assertStatus(200);
+        
+        // Should see the search input in the exercise list
+        $response->assertSee('<input type="text" class="exercise-search" placeholder="Search exercises..." autocomplete="off">', false);
+    }
 }

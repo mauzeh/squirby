@@ -546,6 +546,54 @@ h1 {
     overflow-x: hidden;
 }
 
+/* Shared Action Container - for buttons and search inputs */
+.action-container {
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+/* Exercise Search Container - matches new-exercise-form styling */
+.exercise-search-container {
+    margin-bottom: 10px;
+    padding: 15px;
+    background-color: #4a4a4a;
+    border-radius: 5px;
+    border-left: 3px solid #007bff;
+}
+
+.exercise-search {
+    color: #f2f2f2;
+    text-align: left;
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    font-size: 1.5em;
+    padding: 15px 25px;
+    margin-bottom: 0;
+    background-color: #2a2a2a;
+    border: 1px solid #555;
+    border-radius: 5px;
+    height: auto;
+    min-height: 54px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.exercise-search:focus {
+    border-color: #007bff;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.exercise-search::placeholder {
+    color: #888;
+    opacity: 1;
+    font-weight: normal;
+}
+
+.exercise-search:focus::placeholder {
+    color: #666;
+}
+
 .item-list {
     display: flex;
     flex-direction: column;
@@ -1536,6 +1584,17 @@ h1 {
         font-size: 0.85em;
     }
     
+    /* Exercise search responsive behavior */
+    .exercise-search {
+        font-size: 1.3em;
+        padding: 12px 20px;
+        min-height: 44px;
+    }
+    
+    .exercise-search-container {
+        padding: 12px;
+    }
+    
     /* New exercise form responsive behavior */
     .new-exercise-form {
         margin-bottom: 8px;
@@ -1585,6 +1644,17 @@ h1 {
     
     .exercise-label {
         font-size: 0.8em;
+    }
+    
+    /* Exercise search adjustments for small screens */
+    .exercise-search {
+        font-size: 1.2em;
+        padding: 10px 16px;
+        min-height: 40px;
+    }
+    
+    .exercise-search-container {
+        padding: 10px;
     }
 }
 

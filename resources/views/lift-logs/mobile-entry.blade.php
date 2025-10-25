@@ -57,7 +57,7 @@
             </div>
         </div>
 
-        <div class="add-exercise-container">
+        <div class="action-container">
             <button type="button" id="add-exercise-button" class="button-large button-green">Add exercise</button>
         </div>
 
@@ -222,7 +222,7 @@
             @endforeach
             
             {{-- Duplicate "Add exercise" button at the bottom when there are programs --}}
-            <div class="add-exercise-container">
+            <div class="action-container">
                 <button type="button" id="add-exercise-button-bottom" class="button-large button-green">Add exercise</button>
             </div>
 
@@ -300,6 +300,15 @@
                     // Show this exercise list and hide this button
                     document.getElementById(containerId).classList.remove('hidden');
                     this.style.display = 'none';
+                    
+                    // Auto-focus the search input for immediate typing
+                    setTimeout(() => {
+                        const container = document.getElementById(containerId);
+                        const searchInput = container.querySelector('.exercise-search');
+                        if (searchInput) {
+                            searchInput.focus();
+                        }
+                    }, 100);
                 });
             }
         }
@@ -312,6 +321,17 @@
                 const container = document.getElementById(containerId);
                 if (container) {
                     container.classList.add('hidden');
+                    
+                    // Reset search container and exercise items visibility
+                    const searchContainer = container.querySelector('.exercise-search-container');
+                    const exerciseItems = container.querySelectorAll('.exercise-list-item:not(.close-exercise-list):not(.new-exercise-item)');
+                    
+                    if (searchContainer) {
+                        searchContainer.style.display = '';
+                    }
+                    exerciseItems.forEach(item => {
+                        item.style.display = '';
+                    });
                 }
             });
 
@@ -344,11 +364,25 @@
         }
 
         // Generic function to handle new-exercise links
-        function setupNewExerciseLink(linkId, formId, inputId) {
+        function setupNewExerciseLink(linkId, formId, inputId, containerId) {
             const link = document.getElementById(linkId);
             if (link) {
                 link.addEventListener('click', function(event) {
                     event.preventDefault();
+                    
+                    // Hide the search field and exercise list
+                    const container = document.getElementById(containerId);
+                    const searchContainer = container.querySelector('.exercise-search-container');
+                    const exerciseItems = container.querySelectorAll('.exercise-list-item:not(.close-exercise-list):not(.new-exercise-item)');
+                    
+                    if (searchContainer) {
+                        searchContainer.style.display = 'none';
+                    }
+                    exerciseItems.forEach(item => {
+                        item.style.display = 'none';
+                    });
+                    
+                    // Show the form and focus the input
                     document.getElementById(formId).classList.remove('hidden');
                     document.getElementById(inputId).focus();
                     this.style.display = 'none';
@@ -366,11 +400,50 @@
 
         // Setup top exercise controls
         setupAddExerciseButton('add-exercise-button', 'exercise-list-container');
-        setupNewExerciseLink('new-exercise-link', 'new-exercise-form-container', 'exercise_name');
+        setupNewExerciseLink('new-exercise-link', 'new-exercise-form-container', 'exercise_name', 'exercise-list-container');
+        setupExerciseSearch('exercise-list-container');
 
         // Setup bottom exercise controls
         setupAddExerciseButton('add-exercise-button-bottom', 'exercise-list-container-bottom');
-        setupNewExerciseLink('new-exercise-link-bottom', 'new-exercise-form-container-bottom', 'exercise_name_bottom');
+        setupNewExerciseLink('new-exercise-link-bottom', 'new-exercise-form-container-bottom', 'exercise_name_bottom', 'exercise-list-container-bottom');
+        setupExerciseSearch('exercise-list-container-bottom');
+
+        // Generic function to setup exercise search functionality
+        function setupExerciseSearch(containerId) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            
+            const searchInput = container.querySelector('.exercise-search');
+            if (!searchInput) return;
+            
+            // Get all exercise items (excluding control items like cancel, create new)
+            const exerciseItems = container.querySelectorAll('.exercise-list-item:not(.close-exercise-list):not(.new-exercise-item)');
+            
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase().trim();
+                
+                exerciseItems.forEach(item => {
+                    const exerciseName = item.querySelector('.exercise-name');
+                    if (exerciseName) {
+                        const name = exerciseName.textContent.toLowerCase();
+                        if (searchTerm === '' || name.includes(searchTerm)) {
+                            item.style.display = '';
+                        } else {
+                            item.style.display = 'none';
+                        }
+                    }
+                });
+            });
+            
+            // Clear search when exercise list is shown
+            searchInput.addEventListener('focus', function() {
+                this.value = '';
+                // Show all exercises when focusing on search
+                exerciseItems.forEach(item => {
+                    item.style.display = '';
+                });
+            });
+        }
     </script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {

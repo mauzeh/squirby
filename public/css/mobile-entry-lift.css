@@ -147,10 +147,7 @@
     color: #f2f2f2;
 }
 
-/* Exercise Selection Interface */
-.add-exercise-container {
-    margin-top: 20px;
-}
+/* Exercise Selection Interface - Uses shared .action-container class */
 
 /* Exercise List Container - Use shared .item-list-container class */
 
@@ -365,7 +362,7 @@
 
 /* Lift-specific print styles */
 @media print {
-    .add-exercise-container,
+    .action-container,
     .item-list-container,
     .lift-log-form,
     .band-color-selector {

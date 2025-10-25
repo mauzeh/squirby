@@ -3,6 +3,11 @@
 <div class="item-list-container hidden" id="{{ $containerId }}">
     <div class="item-list exercise-list">
         <button type="button" class="item-list-item exercise-list-item close-exercise-list" onclick="hideAllExerciseLists()">✕ Cancel</button>
+        
+        <div class="exercise-search-container">
+            <input type="text" class="exercise-search" placeholder="Search exercises..." autocomplete="off">
+        </div>
+        
         <a href="#" id="{{ $linkId }}" class="item-list-item exercise-list-item new-exercise-item">✚ Create new exercise</a>
         <div id="{{ $formId }}" class="hidden">
             <form action="{{ route('programs.quick-create', ['date' => $selectedDate->toDateString()]) }}" method="POST" class="new-exercise-form">
