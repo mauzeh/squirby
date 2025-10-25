@@ -341,15 +341,16 @@
                     noExercisesFound.classList.add('hidden');
                 }
                 
-                // Show all exercise suggestions
+                // Show all exercise suggestions and remove keyboard selection
                 const suggestions = document.querySelectorAll(`#${containerId} .exercise-suggestion`);
                 suggestions.forEach(suggestion => {
                     suggestion.style.display = '';
+                    suggestion.classList.remove('keyboard-selected');
                 });
             });
         }
 
-        // Exercise Autocomplete Class
+        // Exercise Autocomplete Class - Enhanced with debouncing and improved functionality
         class ExerciseAutocomplete {
             constructor(containerId, selectedDate) {
                 this.containerId = containerId;
@@ -360,6 +361,10 @@
                 this.noExercisesFound = document.getElementById(`no-exercises-found-${containerId}`);
                 this.allSuggestions = document.querySelectorAll(`#${containerId} .exercise-suggestion`);
                 this.currentQuery = '';
+                this.debounceTimer = null;
+                this.debounceDelay = 150; // 150ms debounce for optimal performance
+                this.selectedIndex = -1; // For keyboard navigation
+                this.visibleSuggestions = [];
                 
                 this.init();
             }
@@ -367,9 +372,9 @@
             init() {
                 if (!this.searchInput) return;
                 
-                // Add event listeners
+                // Add event listeners with debounced input handling
                 this.searchInput.addEventListener('input', (e) => {
-                    this.handleInput(e.target.value);
+                    this.handleDebouncedInput(e.target.value);
                 });
                 
                 this.searchInput.addEventListener('focus', () => {
@@ -383,48 +388,94 @@
                     });
                 }
                 
-                // Setup keyboard navigation
+                // Enhanced keyboard navigation
                 this.searchInput.addEventListener('keydown', (e) => {
                     this.handleKeydown(e);
                 });
+                
+                // Setup click handlers for exercise suggestions
+                this.setupSuggestionClickHandlers();
+            }
+            
+            // Debounced input handling for performance optimization
+            handleDebouncedInput(query) {
+                // Clear existing timer
+                if (this.debounceTimer) {
+                    clearTimeout(this.debounceTimer);
+                }
+                
+                // Set new timer
+                this.debounceTimer = setTimeout(() => {
+                    this.handleInput(query);
+                }, this.debounceDelay);
             }
             
             handleInput(query) {
-                this.currentQuery = query.trim().toLowerCase();
+                // Handle edge cases: empty strings, whitespace-only queries
+                const trimmedQuery = query.trim();
+                this.currentQuery = trimmedQuery.toLowerCase();
+                this.selectedIndex = -1; // Reset keyboard selection
+                
+                // Limit query length to prevent performance issues
+                if (trimmedQuery.length > 100) {
+                    this.searchInput.value = trimmedQuery.substring(0, 100);
+                    this.currentQuery = trimmedQuery.substring(0, 100).toLowerCase();
+                }
+                
                 this.filterExercises();
                 this.updateSaveAsNewButton();
             }
             
+            // Real-time filtering with case-insensitive substring matching
             filterExercises() {
                 let visibleCount = 0;
+                this.visibleSuggestions = [];
                 
-                this.allSuggestions.forEach(suggestion => {
+                this.allSuggestions.forEach((suggestion, index) => {
                     const exerciseName = suggestion.dataset.exerciseName.toLowerCase();
-                    const matches = exerciseName.includes(this.currentQuery);
+                    const matches = this.currentQuery === '' || exerciseName.includes(this.currentQuery);
                     
-                    if (matches || this.currentQuery === '') {
+                    if (matches) {
                         suggestion.style.display = '';
+                        suggestion.classList.remove('keyboard-selected');
+                        this.visibleSuggestions.push(suggestion);
                         visibleCount++;
                     } else {
                         suggestion.style.display = 'none';
+                        suggestion.classList.remove('keyboard-selected');
                     }
                 });
                 
-                // Show/hide no results message
+                // Handle empty search results
+                this.handleEmptyResults(visibleCount);
+            }
+            
+            // Handle empty search results display
+            handleEmptyResults(visibleCount) {
                 if (visibleCount === 0 && this.currentQuery !== '') {
                     this.noExercisesFound.classList.remove('hidden');
+                    // Update the content to show what was searched for
+                    const searchTerm = this.searchInput.value.trim();
+                    if (searchTerm.length > 20) {
+                        this.noExercisesFound.textContent = `No exercises found for "${searchTerm.substring(0, 20)}..."`;
+                    } else {
+                        this.noExercisesFound.textContent = `No exercises found for "${searchTerm}"`;
+                    }
                 } else {
                     this.noExercisesFound.classList.add('hidden');
                 }
             }
             
             updateSaveAsNewButton() {
-                if (this.currentQuery === '') {
+                const trimmedValue = this.searchInput.value.trim();
+                
+                // Hide button if query is empty or only whitespace
+                if (this.currentQuery === '' || trimmedValue === '') {
                     this.saveAsNewButton.classList.add('hidden');
                     return;
                 }
                 
-                // Check if query exactly matches any existing exercise
+                // Check if query exactly matches any existing exercise (case-insensitive)
                 const exactMatch = Array.from(this.allSuggestions).some(suggestion => {
                     const exerciseName = suggestion.dataset.exerciseName.toLowerCase();
                     return exerciseName === this.currentQuery && suggestion.style.display !== 'none';
@@ -434,21 +485,60 @@
                     this.saveAsNewButton.classList.add('hidden');
                 } else {
                     this.saveAsNewButton.classList.remove('hidden');
-                    this.saveAsNewButton.textContent = `Save as new exercise "${this.searchInput.value}"`;
+                    // Truncate long exercise names in button text
+                    if (trimmedValue.length > 30) {
+                        this.saveAsNewButton.textContent = `Save as new exercise "${trimmedValue.substring(0, 30)}..."`;
+                    } else {
+                        this.saveAsNewButton.textContent = `Save as new exercise "${trimmedValue}"`;
+                    }
                 }
             }
             
+            // Show initial recommendations when search field gains focus
             showInitialRecommendations() {
-                // Show all suggestions when focused
+                // Clear any existing query and show all suggestions
+                this.currentQuery = '';
+                this.selectedIndex = -1;
+                this.visibleSuggestions = [];
+                
                 this.allSuggestions.forEach(suggestion => {
                     suggestion.style.display = '';
+                    suggestion.classList.remove('keyboard-selected');
+                    this.visibleSuggestions.push(suggestion);
                 });
+                
                 this.noExercisesFound.classList.add('hidden');
+                this.saveAsNewButton.classList.add('hidden');
+            }
+            
+            // Setup click handlers for exercise suggestions
+            setupSuggestionClickHandlers() {
+                this.allSuggestions.forEach(suggestion => {
+                    suggestion.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        this.handleExerciseSelection(suggestion);
+                    });
+                });
+            }
+            
+            // Handle exercise selection from suggestions
+            handleExerciseSelection(suggestion) {
+                // Navigate to the href of the clicked suggestion
+                window.location.href = suggestion.href;
             }
             
             handleSaveAsNew() {
                 const exerciseName = this.searchInput.value.trim();
-                if (!exerciseName) return;
+                
+                // Validate input - must not be empty and must be reasonable length
+                if (!exerciseName || exerciseName.length === 0) {
+                    return;
+                }
+                
+                // Prevent extremely long exercise names
+                if (exerciseName.length > 100) {
+                    return;
+                }
                 
                 // Create form and submit to quick-create endpoint
                 const form = document.createElement('form');
@@ -484,14 +574,65 @@
                 form.submit();
             }
             
+            // Enhanced keyboard navigation
             handleKeydown(e) {
                 if (e.key === 'Escape') {
                     hideAllExerciseLists();
-                } else if (e.key === 'Enter') {
+                    return;
+                }
+                
+                if (e.key === 'Enter') {
                     e.preventDefault();
+                    
+                    // If a suggestion is selected via keyboard, navigate to it
+                    if (this.selectedIndex >= 0 && this.visibleSuggestions[this.selectedIndex]) {
+                        this.handleExerciseSelection(this.visibleSuggestions[this.selectedIndex]);
+                        return;
+                    }
+                    
+                    // Otherwise, handle save as new if button is visible
                     if (!this.saveAsNewButton.classList.contains('hidden')) {
                         this.handleSaveAsNew();
                     }
+                    return;
+                }
+                
+                // Arrow key navigation
+                if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    this.handleArrowNavigation(e.key);
+                    return;
+                }
+            }
+            
+            // Handle arrow key navigation through suggestions
+            handleArrowNavigation(key) {
+                if (this.visibleSuggestions.length === 0) return;
+                
+                // Remove current selection
+                if (this.selectedIndex >= 0 && this.visibleSuggestions[this.selectedIndex]) {
+                    this.visibleSuggestions[this.selectedIndex].classList.remove('keyboard-selected');
+                }
+                
+                // Update selected index
+                if (key === 'ArrowDown') {
+                    this.selectedIndex = (this.selectedIndex + 1) % this.visibleSuggestions.length;
+                } else if (key === 'ArrowUp') {
+                    this.selectedIndex = this.selectedIndex <= 0 ? 
+                        this.visibleSuggestions.length - 1 : 
+                        this.selectedIndex - 1;
+                }
+                
+                // Add selection to new item
+                if (this.selectedIndex >= 0 && this.visibleSuggestions[this.selectedIndex]) {
+                    const selectedSuggestion = this.visibleSuggestions[this.selectedIndex];
+                    selectedSuggestion.classList.add('keyboard-selected');
+                    
+                    // Scroll into view if needed
+                    selectedSuggestion.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'nearest'
+                    });
                 }
             }
         }
