@@ -39,11 +39,11 @@ class UserSeederServiceTest extends TestCase
 
         // Verify ingredients were created
         $this->assertCount(5, $user->ingredients);
-        $this->assertTrue($user->ingredients->contains('name', 'Chicken Breast (Raw)'));
-        $this->assertTrue($user->ingredients->contains('name', 'Rice, Brown Jasmine (Dry - Trader Joe\'s)'));
-        $this->assertTrue($user->ingredients->contains('name', 'Broccoli (raw)'));
-        $this->assertTrue($user->ingredients->contains('name', 'Olive oil'));
-        $this->assertTrue($user->ingredients->contains('name', 'Egg (L) whole'));
+        $this->assertTrue($user->ingredients->contains('name', 'Chicken Breast'));
+        $this->assertTrue($user->ingredients->contains('name', 'Brown Rice'));
+        $this->assertTrue($user->ingredients->contains('name', 'Broccoli'));
+        $this->assertTrue($user->ingredients->contains('name', 'Olive Oil'));
+        $this->assertTrue($user->ingredients->contains('name', 'Eggs'));
 
         // Verify sample meal was created
         $this->assertCount(1, $user->meals);
