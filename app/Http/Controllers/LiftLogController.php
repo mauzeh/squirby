@@ -271,7 +271,7 @@ class LiftLogController extends Controller
             if (!$latestLogIds->isEmpty()) {
                 $logIds = $latestLogIds->pluck('id')->toArray();
                 $logsWithSets = \App\Models\LiftLog::with(['liftSets' => function($query) {
-                        $query->select('lift_log_id', 'weight', 'reps', 'band_color')->orderBy('id')->limit(1);
+                        $query->select('lift_log_id', 'weight', 'reps', 'band_color')->orderBy('id');
                     }, 'exercise'])
                     ->whereIn('id', $logIds)
                     ->get()
