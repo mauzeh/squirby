@@ -141,24 +141,7 @@
   border-top: 1px solid var(--entry-border, #555);
 }
 
-/* ========================================
-   Spacing Utilities
-   ======================================== */
-.spacing-xs { margin: var(--entry-spacing-xs, 5px); }
-.spacing-sm { margin: var(--entry-spacing-sm, 10px); }
-.spacing { margin: var(--entry-spacing, 15px); }
 
-.spacing-top-xs { margin-top: var(--entry-spacing-xs, 5px); }
-.spacing-top-sm { margin-top: var(--entry-spacing-sm, 10px); }
-.spacing-top { margin-top: var(--entry-spacing, 15px); }
-
-.spacing-bottom-xs { margin-bottom: var(--entry-spacing-xs, 5px); }
-.spacing-bottom-sm { margin-bottom: var(--entry-spacing-sm, 10px); }
-.spacing-bottom { margin-bottom: var(--entry-spacing, 15px); }
-
-.padding-xs { padding: var(--entry-spacing-xs, 5px); }
-.padding-sm { padding: var(--entry-spacing-sm, 10px); }
-.padding { padding: var(--entry-spacing, 15px); }
 
 /* ========================================
    Mobile-First Responsive Layout

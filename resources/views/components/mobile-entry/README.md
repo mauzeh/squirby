@@ -113,7 +113,7 @@ When migrating existing markup to components:
 ## Related Files
 
 - **CSS:** `public/css/entry-interface.css` - Consolidated mobile-first styles
-- **JavaScript:** `public/js/mobile-entry-shared.js` - Shared utilities
+- **JavaScript:** `public/js/mobile-entry/entry-interface.js` - Consolidated utilities
 - **Tests:** `tests/Unit/View/Components/MobileEntry/` - Component tests
 
 ## Support

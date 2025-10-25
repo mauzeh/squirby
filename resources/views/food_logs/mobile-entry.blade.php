@@ -1,8 +1,7 @@
 @extends('app')
 
 @section('styles')
-    <link rel="stylesheet" href="{{ asset('css/mobile-entry-shared.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/mobile-entry-food.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/mobile-entry/entry-interface.css') }}">
 @endsection
 
 @section('content')

@@ -1,8 +1,7 @@
 @extends('app')
 
 @section('styles')
-    <link rel="stylesheet" href="{{ asset('css/mobile-entry-shared.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/mobile-entry-lift.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/mobile-entry/entry-interface.css') }}">
 @endsection
 
 @section('content')
@@ -306,30 +305,5 @@
             }
         });
     </script>
-    <script>
 
-
-
-
-        // Form validation function for lift logs
-        function validateLiftForm(formData) {
-            const weight = formData.get('weight');
-            const reps = formData.get('reps');
-            const sets = formData.get('sets');
-            
-            if (weight && (isNaN(parseFloat(weight)) || parseFloat(weight) < 0)) {
-                return { isValid: false, message: 'Weight must be a positive number.' };
-            }
-            
-            if (reps && (isNaN(parseInt(reps)) || parseInt(reps) <= 0)) {
-                return { isValid: false, message: 'Reps must be a positive number.' };
-            }
-            
-            if (sets && (isNaN(parseInt(sets)) || parseInt(sets) <= 0)) {
-                return { isValid: false, message: 'Sets must be a positive number.' };
-            }
-            
-            return { isValid: true };
-        }
-    </script>
 @endsection

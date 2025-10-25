@@ -88,7 +88,7 @@ Document the main CSS classes used by this component:
 ### JavaScript Dependencies
 List any JavaScript dependencies or event handlers:
 
-- Requires `mobile-entry-shared.js` for [specific functionality]
+- Requires `entry-interface.js` for [specific functionality]
 - Emits `component:action` event when [condition]
 - Listens for `component:update` event
 

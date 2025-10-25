@@ -94,7 +94,7 @@
   - Update JavaScript to use shared utilities and event handlers
   - _Requirements: 6.1, 6.4, 9.1_
 
-- [ ] 6. Refactor food-logs mobile-entry template
+- [x] 6. Refactor food-logs mobile-entry template
 - [x] 6.1 Replace duplicate components in food-logs template
   - Replace message system markup with shared message-system component
   - Replace date navigation with shared date-navigation component
@@ -120,7 +120,7 @@
   - Test page load performance on mobile devices and validate sub-second loading
   - _Requirements: 7.1, 7.3, 7.4_
 
-- [ ] 7.2 Clean up deprecated files and code
+- [x] 7.2 Clean up deprecated files and code
   - Remove deprecated mobile-entry-shared.css and mobile-entry-lift.css files
   - Remove unused CSS classes and JavaScript functions
   - Update asset references to point to new consolidated files
