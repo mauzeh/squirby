@@ -46,7 +46,9 @@
                 <form class="delete-form" method="POST" action="#">
                     @csrf
                     @method('DELETE')
-                    <button type="submit" class="btn-delete" aria-label="Delete form">×</button>
+                    <button type="submit" class="btn-delete" aria-label="Delete form">
+                        <i class="fas fa-trash"></i>
+                    </button>
                 </form>
             </div>
             <form class="item-form" method="POST" action="#">
@@ -76,7 +78,9 @@
                     <form class="delete-form" method="POST" action="#">
                         @csrf
                         @method('DELETE')
-                        <button type="submit" class="btn-delete" aria-label="Delete logged item">×</button>
+                        <button type="submit" class="btn-delete" aria-label="Delete logged item">
+                            <i class="fas fa-trash"></i>
+                        </button>
                     </form>
                 </div>
                 <div class="item-comment">Morning workout completed</div>

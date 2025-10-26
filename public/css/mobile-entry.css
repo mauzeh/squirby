@@ -695,8 +695,8 @@ ummary Component */
     width: var(--touch-target-small);
     height: var(--touch-target-small);
     cursor: pointer;
-    font-size: 16px;
-    font-weight: bold;
+    font-size: 18px;
+    font-weight: normal;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -779,7 +779,7 @@ ummary Component */
     .btn-delete {
         width: var(--touch-target-small);
         height: var(--touch-target-small);
-        font-size: 18px;
+        font-size: 21px;
     }
 }
 
@@ -800,7 +800,7 @@ ummary Component */
     .btn-delete {
         width: 28px;
         height: 28px;
-        font-size: 16px;
+        font-size: 18px;
     }
 }
 
