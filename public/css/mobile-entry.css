@@ -342,15 +342,18 @@ ummary Component */
 /* Number Input Group with Increment/Decrement Buttons */
 .number-input-group {
     display: flex;
-    align-items: center;
+    align-items: stretch;
     width: 100%;
+    max-width: 100%;
     border-radius: var(--border-radius-sm);
     overflow: hidden;
     box-shadow: var(--shadow-light);
+    box-sizing: border-box;
 }
 
 .number-input {
     flex: 1;
+    min-width: 0;
     text-align: center;
     font-size: 2.2em;
     font-weight: bold;
@@ -361,6 +364,7 @@ ummary Component */
     min-height: var(--touch-target-min);
     transition: all var(--transition-fast);
     outline: none;
+    box-sizing: border-box;
 }
 
 .number-input:focus {
@@ -378,13 +382,16 @@ ummary Component */
     font-size: 1.5em;
     font-weight: bold;
     min-width: var(--touch-target-min);
+    max-width: var(--touch-target-min);
     min-height: var(--touch-target-min);
+    flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: all var(--transition-fast);
     touch-action: manipulation;
     user-select: none;
+    box-sizing: border-box;
 }
 
 .decrement-button:hover,
@@ -527,11 +534,13 @@ ummary Component */
     .number-input {
         font-size: 2em;
         min-height: var(--touch-target-min);
+        padding: 12px 8px;
     }
 
     .decrement-button,
     .increment-button {
         min-width: var(--touch-target-min);
+        max-width: var(--touch-target-min);
         min-height: var(--touch-target-min);
         padding: 12px 16px;
     }
@@ -569,15 +578,16 @@ ummary Component */
 
     .number-input {
         font-size: 1.8em;
-        padding: 12px var(--spacing-sm);
+        padding: 12px 6px;
         min-height: 40px;
     }
 
     .decrement-button,
     .increment-button {
         min-width: 40px;
+        max-width: 40px;
         min-height: 40px;
-        padding: 10px 14px;
+        padding: 10px 12px;
         font-size: 1.3em;
     }
 
