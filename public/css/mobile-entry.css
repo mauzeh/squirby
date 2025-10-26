@@ -854,24 +854,7 @@ gged Item Display */
     border-left: 2px solid var(--tertiary-bg);
 }
 
-/* Visual distinction from form elements */
-.logged-item::before {
-    content: "✓";
-    position: absolute;
-    top: -8px;
-    left: -8px;
-    background-color: var(--color-success);
-    color: white;
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 14px;
-    font-weight: bold;
-    box-shadow: var(--shadow-light);
-}
+/* Visual distinction from form elements - checkmark removed */
 
 /* Completion styling variants */
 .logged-item.completed {
@@ -887,9 +870,7 @@ gged Item Display */
     color: var(--color-primary);
 }
 
-.logged-item.recent::before {
-    background-color: var(--color-primary);
-}
+
 
 /* Empty state for logged items */
 .logged-items-empty {
@@ -966,13 +947,7 @@ gged Item Display */
         font-size: 0.85em;
     }
 
-    .logged-item::before {
-        width: 20px;
-        height: 20px;
-        font-size: 12px;
-        top: -6px;
-        left: -6px;
-    }
+
 
     .logged-items-empty,
     .logged-items-loading {
