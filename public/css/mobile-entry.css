@@ -818,6 +818,10 @@ gged Item Display */
     margin-bottom: var(--spacing-xl);
 }
 
+.logged-items-section .logged-item + .logged-item {
+    margin-top: var(--spacing-md);
+}
+
 .logged-item {
     background-color: var(--secondary-bg);
     border-radius: var(--border-radius-md);

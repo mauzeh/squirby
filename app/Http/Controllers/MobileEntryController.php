@@ -76,9 +76,19 @@ class MobileEntryController extends Controller
             // Logged items
             'loggedItems' => [
                 'title' => 'Item Entry',
-                'sampleItem' => [
-                    'value' => 25,
-                    'comment' => 'Morning workout completed'
+                'items' => [
+                    [
+                        'value' => 25,
+                        'comment' => 'Morning workout completed'
+                    ],
+                    [
+                        'value' => 15,
+                        'comment' => 'Quick afternoon session'
+                    ],
+                    [
+                        'value' => 30,
+                        'comment' => 'Evening cardio and stretching routine'
+                    ]
                 ],
                 'ariaLabels' => [
                     'section' => 'Logged items',

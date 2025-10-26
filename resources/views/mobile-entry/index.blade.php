@@ -73,10 +73,11 @@
         </section> 
        <!-- Logged Item Display -->
         <section class="logged-items-section" aria-label="{{ $data['loggedItems']['ariaLabels']['section'] }}">
+            @foreach($data['loggedItems']['items'] as $index => $item)
             <div class="logged-item">
                 <div class="item-header">
-                    <h2 class="item-title">{{ $data['loggedItems']['title'] }}</h2>
-                    <span class="item-value">{{ $data['loggedItems']['sampleItem']['value'] }}</span>
+                    <h2 class="item-title">{{ $data['loggedItems']['title'] }} {{ $index + 1 }}</h2>
+                    <span class="item-value">{{ $item['value'] }}</span>
                     <form class="delete-form" method="POST" action="#">
                         @csrf
                         @method('DELETE')
@@ -85,8 +86,9 @@
                         </button>
                     </form>
                 </div>
-                <div class="item-comment">{{ $data['loggedItems']['sampleItem']['comment'] }}</div>
+                <div class="item-comment">{{ $item['comment'] }}</div>
             </div>
+            @endforeach
         </section>
     </div>
 @endsection
