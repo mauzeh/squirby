@@ -43,6 +43,7 @@
       <!-- New Item Form -->
         <section class="item-logging-section" aria-label="Log new item">
             <div class="item-header">
+                <h2 class="item-title">Log New Item</h2>
                 <form class="delete-form" method="POST" action="#">
                     @csrf
                     @method('DELETE')
@@ -74,6 +75,7 @@
         <section class="logged-items-section" aria-label="Logged items">
             <div class="logged-item">
                 <div class="item-header">
+                    <h2 class="item-title">Item Entry</h2>
                     <span class="item-value">25</span>
                     <form class="delete-form" method="POST" action="#">
                         @csrf

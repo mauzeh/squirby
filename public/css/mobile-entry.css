@@ -317,8 +317,16 @@ ummary Component */
 
 .item-header {
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: var(--spacing-md);
+}
+
+.item-title {
+    color: var(--text-primary);
+    font-size: 1.2em;
+    font-weight: bold;
+    margin: 0;
 }
 
 .item-form {
@@ -835,6 +843,11 @@ gged Item Display */
     justify-content: space-between;
     align-items: center;
     margin-bottom: var(--spacing-sm);
+    gap: var(--spacing-sm);
+}
+
+.logged-item .item-header .item-value {
+    margin-left: auto;
 }
 
 .logged-item .item-value {
