@@ -898,7 +898,6 @@ gged Item Display */
     border-radius: var(--border-radius-md);
     padding: var(--spacing-md);
     box-shadow: var(--shadow-light);
-    border-left: 4px solid var(--color-success);
     position: relative;
     transition: all var(--transition-fast);
 }
@@ -939,11 +938,10 @@ gged Item Display */
 /* Completion styling variants */
 .logged-item.completed {
     background-color: rgba(40, 167, 69, 0.1);
-    border-left-color: var(--color-success);
 }
 
 .logged-item.recent {
-    border-left-color: var(--color-primary);
+    /* No border styling needed */
 }
 
 .logged-item.recent .item-value {
