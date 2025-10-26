@@ -312,6 +312,110 @@ Date Navigation Component */
     }
 }
 
+/* Item Selection List */
+.item-selection-section {
+    margin-bottom: var(--spacing-xl);
+}
+
+.selection-title {
+    color: var(--text-primary);
+    font-size: 1.2em;
+    font-weight: bold;
+    margin: 0 0 var(--spacing-md) 0;
+    text-align: center;
+}
+
+.item-selection-list {
+    display: grid;
+    gap: var(--spacing-sm);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.item-selection-list li {
+    margin: 0;
+    padding: 0;
+}
+
+.item-selection-card {
+    display: flex;
+    align-items: center;
+    padding: var(--spacing-md);
+    background-color: var(--tertiary-bg);
+    border-radius: var(--border-radius-sm);
+    text-decoration: none;
+    width: 100%;
+    min-height: var(--touch-target-min);
+    transition: all var(--transition-fast);
+    touch-action: manipulation;
+    user-select: none;
+}
+
+.item-selection-card:hover {
+    background-color: var(--input-bg);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-light);
+}
+
+.item-selection-card:active {
+    transform: translateY(0);
+    box-shadow: none;
+}
+
+.item-selection-card:focus {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
+.item-name {
+    color: var(--text-primary);
+    font-weight: bold;
+    font-size: 1em;
+    line-height: 1.2;
+}
+
+/* Responsive adjustments for item selection */
+@media (max-width: 768px) {
+    .item-selection-section {
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .selection-title {
+        font-size: 1.1em;
+        margin-bottom: 12px;
+    }
+
+    .item-selection-list {
+        gap: 6px;
+    }
+
+    .item-selection-card {
+        padding: 12px;
+        min-height: var(--touch-target-min);
+    }
+
+    .item-name {
+        font-size: 0.95em;
+    }
+}
+
+@media (max-width: 480px) {
+    .selection-title {
+        font-size: 1em;
+        margin-bottom: 10px;
+    }
+
+    .item-selection-card {
+        padding: 10px;
+        min-height: 40px;
+    }
+
+    .item-name {
+        font-size: 0.9em;
+    }
+}
+
 /* Form Components */
 .item-logging-section {
     margin-bottom: var(--spacing-xl);

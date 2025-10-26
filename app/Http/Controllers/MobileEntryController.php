@@ -52,6 +52,40 @@ class MobileEntryController extends Controller
                 'ariaLabel' => 'Add new item'
             ],
             
+            // Item selection list (appears when Add Item is clicked)
+            'itemSelectionList' => [
+                'items' => [
+                    [
+                        'id' => 'workout',
+                        'name' => 'Workout Session'
+                    ],
+                    [
+                        'id' => 'meal',
+                        'name' => 'Meal'
+                    ],
+                    [
+                        'id' => 'water',
+                        'name' => 'Water Intake'
+                    ],
+                    [
+                        'id' => 'sleep',
+                        'name' => 'Sleep'
+                    ],
+                    [
+                        'id' => 'medication',
+                        'name' => 'Medication'
+                    ],
+                    [
+                        'id' => 'mood',
+                        'name' => 'Mood Check'
+                    ]
+                ],
+                'ariaLabels' => [
+                    'section' => 'Item selection list',
+                    'selectItem' => 'Select this item to log'
+                ]
+            ],
+            
             // Item logging form
             'itemForm' => [
                 'title' => 'Log New Item',

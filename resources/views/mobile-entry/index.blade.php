@@ -47,6 +47,19 @@
                 {{ $data['addItemButton']['text'] }}
             </button>
         </div>
+
+        <!-- Item Selection List -->
+        <section class="item-selection-section" aria-label="{{ $data['itemSelectionList']['ariaLabels']['section'] }}">
+            <ul class="item-selection-list">
+                @foreach($data['itemSelectionList']['items'] as $item)
+                <li>
+                    <a href="#" class="item-selection-card" aria-label="{{ $data['itemSelectionList']['ariaLabels']['selectItem'] }}: {{ $item['name'] }}">
+                        <span class="item-name">{{ $item['name'] }}</span>
+                    </a>
+                </li>
+                @endforeach
+            </ul>
+        </section>
         
         <!-- New Item Form -->
         <section class="item-logging-section" aria-label="{{ $data['itemForm']['ariaLabels']['section'] }}">
