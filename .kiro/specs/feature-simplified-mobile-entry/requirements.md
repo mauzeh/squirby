@@ -36,10 +36,10 @@ This document outlines the requirements for a simplified mobile entry screen tha
 #### Acceptance Criteria
 
 1. THE Static_Form_Elements SHALL display exactly 2 input fields for item logging
-2. THE Static_Form_Elements SHALL include a number input field with increment/decrement buttons
-3. THE Static_Form_Elements SHALL include a textarea field for user comments
-4. THE Static_Form_Elements SHALL use large, touch-friendly input controls with proper sizing
-5. THE Static_Form_Elements SHALL use consistent spacing and alignment throughout
+2. THE Static_Form_Elements SHALL include a number input field with increment/decrement buttons that spans the full container width
+3. THE Static_Form_Elements SHALL include a textarea field for user comments that spans the full container width
+4. THE Static_Form_Elements SHALL use large, touch-friendly input controls with labels positioned above inputs on separate lines
+5. THE Static_Form_Elements SHALL use consistent spacing and vertical alignment with no side-by-side label/input layouts
 
 ### Requirement 3
 
@@ -59,8 +59,8 @@ This document outlines the requirements for a simplified mobile entry screen tha
 
 #### Acceptance Criteria
 
-1. THE Static_Form_Elements SHALL display one form with a number input field with increment/decrement buttons
-2. THE Static_Form_Elements SHALL display a textarea field for comments in the form
+1. THE Static_Form_Elements SHALL display one form with a number input field with increment/decrement buttons spanning full width
+2. THE Static_Form_Elements SHALL display a textarea field for comments that spans the full width of the form container
 3. THE Static_Form_Elements SHALL include a submit button styled for the logging action
 4. THE Static_Form_Elements SHALL include a delete button for the form
 5. THE Static_Form_Elements SHALL show placeholder text and sample values

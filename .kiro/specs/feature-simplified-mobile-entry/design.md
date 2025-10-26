@@ -61,12 +61,13 @@ The styling will be organized into:
 - Submit button
 
 **Styling Requirements**:
-- Large, touch-friendly inputs
-- Clear form labels on their own line above inputs
-- Cohesive styling for number input group
-- Proper spacing between elements
-- Clear visual hierarchy
-- No additional HTML elements beyond what's specified in the design
+- Large, touch-friendly inputs that span the full width of the container
+- Form labels positioned on their own line above inputs (never side-by-side)
+- Input fields and textareas must use 100% width of their container
+- Cohesive styling for number input group with full-width layout
+- Proper spacing between elements with vertical stacking
+- Clear visual hierarchy with labels above inputs
+- No help text or additional descriptive elements below form fields
 
 ### 4. Logged Item Display Component
 **Purpose**: Shows already logged items
