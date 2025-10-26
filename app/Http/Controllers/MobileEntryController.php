@@ -49,6 +49,18 @@ class MobileEntryController extends Controller
             // Item logging form
             'itemForm' => [
                 'title' => 'Log New Item',
+                'messages' => [
+                    [
+                        'type' => 'info',
+                        'prefix' => 'Last comment:',
+                        'text' => '"Evening cardio and stretching routine"'
+                    ],
+                    [
+                        'type' => 'tip',
+                        'prefix' => 'Tip:',
+                        'text' => 'Previous values were 30 and 15'
+                    ]
+                ],
                 'numericFields' => [
                     [
                         'id' => 'item-value-1',

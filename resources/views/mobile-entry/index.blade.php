@@ -52,6 +52,17 @@
                     </button>
                 </form>
             </div>
+            
+            @if(isset($data['itemForm']['messages']) && count($data['itemForm']['messages']) > 0)
+            <div class="item-messages">
+                @foreach($data['itemForm']['messages'] as $message)
+                <div class="item-message item-message--{{ $message['type'] }}">
+                    <span class="message-prefix">{{ $message['prefix'] }}</span> {{ $message['text'] }}
+                </div>
+                @endforeach
+            </div>
+            @endif
+            
             <form class="item-form" method="POST" action="#">
                 @csrf
                 @foreach($data['itemForm']['numericFields'] as $field)
