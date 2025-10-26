@@ -62,10 +62,11 @@ The styling will be organized into:
 
 **Styling Requirements**:
 - Large, touch-friendly inputs
-- Clear form labels
+- Clear form labels on their own line above inputs
 - Cohesive styling for number input group
 - Proper spacing between elements
 - Clear visual hierarchy
+- No additional HTML elements beyond what's specified in the design
 
 ### 4. Logged Item Display Component
 **Purpose**: Shows already logged items
@@ -119,6 +120,9 @@ Since this is a static template, the design will include sample data to demonstr
 /* Navigation */
 .date-navigation
 .nav-button
+
+/* Date Title */
+.date-title
 
 /* Summary */
 .summary
@@ -176,6 +180,9 @@ Static styling for loading indicators:
             <button class="nav-button">Today</button>
             <button class="nav-button">Next →</button>
         </nav>
+
+        <!-- Date Title -->
+        <h1 class="date-title">Today</h1>
 
         <!-- Summary -->
         <section class="summary">
