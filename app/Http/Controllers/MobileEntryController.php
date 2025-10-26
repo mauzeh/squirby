@@ -49,26 +49,42 @@ class MobileEntryController extends Controller
             // Item logging form
             'itemForm' => [
                 'title' => 'Log New Item',
-                'labels' => [
-                    'value' => 'Value:',
-                    'comment' => 'Comment:'
+                'numericFields' => [
+                    [
+                        'id' => 'item-value-1',
+                        'name' => 'value1',
+                        'label' => 'Value 1:',
+                        'defaultValue' => 10,
+                        'ariaLabels' => [
+                            'decrease' => 'Decrease value 1',
+                            'increase' => 'Increase value 1'
+                        ]
+                    ],
+                    [
+                        'id' => 'item-value-2',
+                        'name' => 'value2',
+                        'label' => 'Value 2:',
+                        'defaultValue' => 5,
+                        'ariaLabels' => [
+                            'decrease' => 'Decrease value 2',
+                            'increase' => 'Increase value 2'
+                        ]
+                    ]
                 ],
-                'placeholders' => [
-                    'comment' => 'Add a comment...'
+                'commentField' => [
+                    'id' => 'item-comment',
+                    'name' => 'comment',
+                    'label' => 'Comment:',
+                    'placeholder' => 'Add a comment...',
+                    'defaultValue' => ''
                 ],
                 'buttons' => [
                     'decrement' => '-',
                     'increment' => '+',
                     'submit' => 'Log Item'
                 ],
-                'defaults' => [
-                    'value' => 10,
-                    'comment' => ''
-                ],
                 'ariaLabels' => [
                     'section' => 'Log new item',
-                    'decreaseValue' => 'Decrease value',
-                    'increaseValue' => 'Increase value',
                     'deleteForm' => 'Delete form'
                 ]
             ],

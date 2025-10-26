@@ -54,17 +54,19 @@
             </div>
             <form class="item-form" method="POST" action="#">
                 @csrf
+                @foreach($data['itemForm']['numericFields'] as $field)
                 <div class="form-mobile-group">
-                    <label for="item-value" class="form-mobile-label">{{ $data['itemForm']['labels']['value'] }}</label>
+                    <label for="{{ $field['id'] }}" class="form-mobile-label">{{ $field['label'] }}</label>
                     <div class="number-input-group">
-                        <button type="button" class="decrement-button" aria-label="{{ $data['itemForm']['ariaLabels']['decreaseValue'] }}">{{ $data['itemForm']['buttons']['decrement'] }}</button>
-                        <input type="number" id="item-value" name="value" class="number-input" value="{{ $data['itemForm']['defaults']['value'] }}" min="0" step="1">
-                        <button type="button" class="increment-button" aria-label="{{ $data['itemForm']['ariaLabels']['increaseValue'] }}">{{ $data['itemForm']['buttons']['increment'] }}</button>
+                        <button type="button" class="decrement-button" aria-label="{{ $field['ariaLabels']['decrease'] }}">{{ $data['itemForm']['buttons']['decrement'] }}</button>
+                        <input type="number" id="{{ $field['id'] }}" name="{{ $field['name'] }}" class="number-input" value="{{ $field['defaultValue'] }}" min="0" step="1">
+                        <button type="button" class="increment-button" aria-label="{{ $field['ariaLabels']['increase'] }}">{{ $data['itemForm']['buttons']['increment'] }}</button>
                     </div>
                 </div>
+                @endforeach
                 <div class="form-mobile-group">
-                    <label for="item-comment" class="form-mobile-label">{{ $data['itemForm']['labels']['comment'] }}</label>
-                    <textarea id="item-comment" name="comment" class="comment-textarea" placeholder="{{ $data['itemForm']['placeholders']['comment'] }}" rows="3">{{ $data['itemForm']['defaults']['comment'] }}</textarea>
+                    <label for="{{ $data['itemForm']['commentField']['id'] }}" class="form-mobile-label">{{ $data['itemForm']['commentField']['label'] }}</label>
+                    <textarea id="{{ $data['itemForm']['commentField']['id'] }}" name="{{ $data['itemForm']['commentField']['name'] }}" class="comment-textarea" placeholder="{{ $data['itemForm']['commentField']['placeholder'] }}" rows="3">{{ $data['itemForm']['commentField']['defaultValue'] }}</textarea>
                 </div>
                 <div class="form-actions">
                     <button type="submit" class="btn-primary">{{ $data['itemForm']['buttons']['submit'] }}</button>
