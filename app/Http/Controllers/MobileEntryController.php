@@ -61,6 +61,21 @@ class MobileEntryController extends Controller
                         'text' => 'Previous values were 30 and 15'
                     ],
                     [
+                        'type' => 'success',
+                        'prefix' => 'Success:',
+                        'text' => 'Previous entry saved successfully'
+                    ],
+                    [
+                        'type' => 'warning',
+                        'prefix' => 'Warning:',
+                        'text' => 'Values seem unusually high today'
+                    ],
+                    [
+                        'type' => 'error',
+                        'prefix' => 'Error:',
+                        'text' => 'Failed to sync with server, data saved locally'
+                    ],
+                    [
                         'type' => 'neutral',
                         'prefix' => 'Note:',
                         'text' => 'Data will be saved automatically'
