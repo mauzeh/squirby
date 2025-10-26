@@ -377,6 +377,12 @@ ummary Component */
     color: var(--text-secondary);
 }
 
+.item-message--neutral {
+    background-color: rgba(108, 117, 125, 0.05);
+    border-left-color: var(--text-muted);
+    color: var(--text-secondary);
+}
+
 .message-prefix {
     font-weight: bold;
 }
@@ -933,15 +939,7 @@ gged Item Display */
     line-height: 1;
 }
 
-.logged-item .item-comment {
-    color: var(--text-secondary);
-    font-size: 1em;
-    line-height: 1.4;
-    font-style: italic;
-    margin-top: var(--spacing-sm);
-    padding-left: var(--spacing-sm);
-    border-left: 2px solid var(--tertiary-bg);
-}
+
 
 /* Visual distinction from form elements - checkmark removed */
 

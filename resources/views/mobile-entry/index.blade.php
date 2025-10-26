@@ -99,7 +99,9 @@
                         </button>
                     </form>
                 </div>
-                <div class="item-comment">{{ $item['comment'] }}</div>
+                <div class="item-message item-message--{{ $item['message']['type'] }}">
+                    <span class="message-prefix">{{ $item['message']['prefix'] }}</span> {{ $item['message']['text'] }}
+                </div>
             </div>
             @endforeach
         </section>

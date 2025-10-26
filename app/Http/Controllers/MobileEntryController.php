@@ -59,6 +59,11 @@ class MobileEntryController extends Controller
                         'type' => 'tip',
                         'prefix' => 'Tip:',
                         'text' => 'Previous values were 30 and 15'
+                    ],
+                    [
+                        'type' => 'neutral',
+                        'prefix' => 'Note:',
+                        'text' => 'Data will be saved automatically'
                     ]
                 ],
                 'numericFields' => [
@@ -107,15 +112,27 @@ class MobileEntryController extends Controller
                 'items' => [
                     [
                         'value' => 25,
-                        'comment' => 'Morning workout completed'
+                        'message' => [
+                            'type' => 'neutral',
+                            'prefix' => 'Comment:',
+                            'text' => 'Morning workout completed'
+                        ]
                     ],
                     [
                         'value' => 15,
-                        'comment' => 'Quick afternoon session'
+                        'message' => [
+                            'type' => 'neutral',
+                            'prefix' => 'Comment:',
+                            'text' => 'Quick afternoon session'
+                        ]
                     ],
                     [
                         'value' => 30,
-                        'comment' => 'Evening cardio and stretching routine'
+                        'message' => [
+                            'type' => 'neutral',
+                            'prefix' => 'Comment:',
+                            'text' => 'Evening cardio and stretching routine'
+                        ]
                     ]
                 ],
                 'ariaLabels' => [
