@@ -385,7 +385,7 @@ Date Navigation Component */
 }
 
 .item-message--neutral {
-    background-color: rgba(108, 117, 125, 0.05);
+    background-color: transparent;
     border-left-color: var(--text-muted);
     color: var(--text-secondary);
 }
