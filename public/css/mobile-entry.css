@@ -181,17 +181,12 @@ Date Navigation Component */
     }
 }
 
-/* S
-ummary Component */
+/* Summary Component */
 .summary {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: var(--spacing-sm);
     margin-bottom: var(--spacing-xl);
-    padding: var(--spacing-md);
-    background-color: var(--secondary-bg);
-    border-radius: var(--border-radius-md);
-    box-shadow: var(--shadow-light);
 }
 
 .summary-item {
@@ -270,7 +265,6 @@ ummary Component */
     .summary {
         gap: 6px;
         margin-bottom: var(--spacing-lg);
-        padding: 12px;
     }
 
     .summary-item {
@@ -289,7 +283,6 @@ ummary Component */
 @media (max-width: 480px) {
     .summary {
         gap: var(--spacing-xs);
-        padding: 10px;
     }
 
     .summary-item {
