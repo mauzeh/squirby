@@ -325,12 +325,12 @@ ummary Component */
     width: 100%;
 }
 
-.form-group {
+.form-mobile-group {
     margin-bottom: var(--spacing-lg);
     width: 100%;
 }
 
-.form-label {
+.form-mobile-label {
     display: block;
     margin-bottom: var(--spacing-sm);
     color: var(--text-primary);
@@ -495,15 +495,15 @@ ummary Component */
     display: block;
 }
 
-.form-group.has-error .form-label {
+.form-mobile-group.has-error .form-mobile-label {
     color: var(--color-danger);
 }
 
-.form-group.has-success .form-label {
+.form-mobile-group.has-success .form-mobile-label {
     color: var(--color-success);
 }
 
-.form-group .form-label.required::after {
+.form-mobile-group .form-mobile-label.required::after {
     content: " *";
     color: var(--color-danger);
 }
@@ -515,11 +515,11 @@ ummary Component */
         margin-bottom: var(--spacing-lg);
     }
 
-    .form-group {
+    .form-mobile-group {
         margin-bottom: var(--spacing-md);
     }
 
-    .form-label {
+    .form-mobile-label {
         font-size: 1em;
         margin-bottom: 6px;
     }
@@ -558,11 +558,11 @@ ummary Component */
         padding: 10px;
     }
 
-    .form-group {
+    .form-mobile-group {
         margin-bottom: 12px;
     }
 
-    .form-label {
+    .form-mobile-label {
         font-size: 0.95em;
         margin-bottom: 6px;
     }

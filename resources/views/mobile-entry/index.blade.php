@@ -51,16 +51,16 @@
             </div>
             <form class="item-form" method="POST" action="#">
                 @csrf
-                <div class="form-group">
-                    <label for="item-value" class="form-label">Value:</label>
+                <div class="form-mobile-group">
+                    <label for="item-value" class="form-mobile-label">Value:</label>
                     <div class="number-input-group">
                         <button type="button" class="decrement-button" aria-label="Decrease value">-</button>
                         <input type="number" id="item-value" name="value" class="number-input" value="10" min="0" step="1">
                         <button type="button" class="increment-button" aria-label="Increase value">+</button>
                     </div>
                 </div>
-                <div class="form-group">
-                    <label for="item-comment" class="form-label">Comment:</label>
+                <div class="form-mobile-group">
+                    <label for="item-comment" class="form-mobile-label">Comment:</label>
                     <textarea id="item-comment" name="comment" class="comment-textarea" placeholder="Add a comment..." rows="3"></textarea>
                 </div>
                 <div class="form-actions">
