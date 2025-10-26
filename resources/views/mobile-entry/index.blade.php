@@ -53,8 +53,9 @@
             <ul class="item-selection-list">
                 @foreach($data['itemSelectionList']['items'] as $item)
                 <li>
-                    <a href="#" class="item-selection-card" aria-label="{{ $data['itemSelectionList']['ariaLabels']['selectItem'] }}: {{ $item['name'] }}">
+                    <a href="#" class="item-selection-card item-selection-card--{{ str_replace(' ', '-', $item['type']) }}" aria-label="{{ $data['itemSelectionList']['ariaLabels']['selectItem'] }}: {{ $item['name'] }}">
                         <span class="item-name">{{ $item['name'] }}</span>
+                        <span class="item-type">{{ ucfirst($item['type']) }}</span>
                     </a>
                 </li>
                 @endforeach

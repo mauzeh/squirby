@@ -56,28 +56,34 @@ class MobileEntryController extends Controller
             'itemSelectionList' => [
                 'items' => [
                     [
-                        'id' => 'workout',
-                        'name' => 'Workout Session'
+                        'id' => 'item-1',
+                        'name' => 'Item 1',
+                        'type' => 'highlighted category'
                     ],
                     [
-                        'id' => 'meal',
-                        'name' => 'Meal'
+                        'id' => 'item-2',
+                        'name' => 'Item 2',
+                        'type' => 'highlighted category'
                     ],
                     [
-                        'id' => 'water',
-                        'name' => 'Water Intake'
+                        'id' => 'item-3',
+                        'name' => 'Item 3',
+                        'type' => 'highlighted category'
                     ],
                     [
-                        'id' => 'sleep',
-                        'name' => 'Sleep'
+                        'id' => 'item-4',
+                        'name' => 'Item 4',
+                        'type' => 'category'
                     ],
                     [
-                        'id' => 'medication',
-                        'name' => 'Medication'
+                        'id' => 'item-5',
+                        'name' => 'Item 5',
+                        'type' => 'category'
                     ],
                     [
-                        'id' => 'mood',
-                        'name' => 'Mood Check'
+                        'id' => 'item-6',
+                        'name' => 'Item 6',
+                        'type' => 'category'
                     ]
                 ],
                 'ariaLabels' => [

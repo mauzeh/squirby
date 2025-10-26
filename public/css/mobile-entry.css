@@ -327,10 +327,14 @@ Date Navigation Component */
 
 .item-selection-list {
     display: grid;
-    gap: var(--spacing-sm);
+    gap: 0;
     list-style: none;
     margin: 0;
     padding: 0;
+    background-color: var(--secondary-bg);
+    border-radius: var(--border-radius-md);
+    overflow: hidden;
+    box-shadow: var(--shadow-light);
 }
 
 .item-selection-list li {
@@ -341,15 +345,20 @@ Date Navigation Component */
 .item-selection-card {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     padding: var(--spacing-md);
     background-color: var(--tertiary-bg);
-    border-radius: var(--border-radius-sm);
     text-decoration: none;
     width: 100%;
     min-height: var(--touch-target-min);
     transition: all var(--transition-fast);
     touch-action: manipulation;
     user-select: none;
+    border-bottom: 1px solid var(--secondary-bg);
+}
+
+.item-selection-card:last-child {
+    border-bottom: none;
 }
 
 .item-selection-card:hover {
@@ -373,6 +382,32 @@ Date Navigation Component */
     font-weight: bold;
     font-size: 1em;
     line-height: 1.2;
+    flex: 1;
+}
+
+.item-type {
+    color: var(--text-muted);
+    font-size: 0.9em;
+    font-style: italic;
+    font-weight: normal;
+    margin-left: var(--spacing-md);
+}
+
+/* Category-specific styling */
+.item-selection-card--highlighted-category {
+    background-color: rgba(0, 123, 255, 0.08);
+}
+
+.item-selection-card--highlighted-category:hover {
+    background-color: rgba(0, 123, 255, 0.12);
+}
+
+.item-selection-card--highlighted-category .item-name {
+    color: #e3f2fd;
+}
+
+.item-selection-card--highlighted-category .item-type {
+    color: rgba(227, 242, 253, 0.7);
 }
 
 /* Responsive adjustments for item selection */
@@ -384,10 +419,6 @@ Date Navigation Component */
     .selection-title {
         font-size: 1.1em;
         margin-bottom: 12px;
-    }
-
-    .item-selection-list {
-        gap: 6px;
     }
 
     .item-selection-card {
