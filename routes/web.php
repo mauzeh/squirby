@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\FoodLogController;
 use App\Http\Controllers\IngredientController;
 use App\Http\Controllers\MealController;
+use App\Http\Controllers\MobileEntryController;
 
 use App\Http\Controllers\ExerciseController;
 use App\Http\Controllers\LiftLogController;
@@ -72,6 +73,9 @@ Route::middleware('auth')->group(function () {
 
     // Exercise Recommendations (Keep these routes)
     Route::get('recommendations', [RecommendationController::class, 'index'])->name('recommendations.index');
+
+    // Mobile Entry
+    Route::get('mobile-entry', [MobileEntryController::class, 'index'])->name('mobile-entry.index');
 
 
 
