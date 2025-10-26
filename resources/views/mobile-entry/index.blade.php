@@ -39,8 +39,16 @@
                 <span class="summary-value">{{ $data['summary']['values']['today'] }}</span>
                 <span class="summary-label">{{ $data['summary']['labels']['today'] }}</span>
             </div>
-        </section>  
-      <!-- New Item Form -->
+        </section>
+
+        <!-- Add Item Button -->
+        <div class="add-item-section">
+            <button type="button" class="btn-primary btn-success" aria-label="{{ $data['addItemButton']['ariaLabel'] }}">
+                {{ $data['addItemButton']['text'] }}
+            </button>
+        </div>
+        
+        <!-- New Item Form -->
         <section class="item-logging-section" aria-label="{{ $data['itemForm']['ariaLabels']['section'] }}">
             <div class="item-header">
                 <h2 class="item-title">{{ $data['itemForm']['title'] }}</h2>

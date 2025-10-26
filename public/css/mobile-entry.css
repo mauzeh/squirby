@@ -298,6 +298,20 @@ Date Navigation Component */
     }
 }
 
+/* Add Item Button */
+.add-item-section {
+    display: flex;
+    margin-bottom: var(--spacing-xl);
+    width: 100%;
+}
+
+/* Responsive adjustments for add item section */
+@media (max-width: 768px) {
+    .add-item-section {
+        margin-bottom: var(--spacing-lg);
+    }
+}
+
 /* Form Components */
 .item-logging-section {
     margin-bottom: var(--spacing-xl);
@@ -883,13 +897,27 @@ Date Navigation Component */
     }
 }
 
+/* Button Success Variant - placed after button system to override colors */
+.btn-success {
+    background-color: var(--color-success);
+}
+
+.btn-success:hover {
+    background-color: var(--color-success-hover);
+}
+
+.btn-success:focus {
+    outline: 2px solid var(--color-success);
+    outline-offset: 2px;
+}
+
 /* Lo
 gged Item Display */
 .logged-items-section {
     margin-bottom: var(--spacing-xl);
 }
 
-.logged-items-section .logged-item + .logged-item {
+.logged-items-section .logged-item+.logged-item {
     margin-top: var(--spacing-md);
 }
 

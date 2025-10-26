@@ -46,6 +46,12 @@ class MobileEntryController extends Controller
                 ]
             ],
             
+            // Add Item button
+            'addItemButton' => [
+                'text' => 'Add Item',
+                'ariaLabel' => 'Add new item'
+            ],
+            
             // Item logging form
             'itemForm' => [
                 'title' => 'Log New Item',
