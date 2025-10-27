@@ -327,16 +327,18 @@ Date Navigation Component */
 
 .item-filter-container {
     padding: var(--spacing-sm);
+    border-bottom: 2px solid var(--color-primary);
+    background-color: rgba(0, 123, 255, 0.15);
 }
 
 .item-filter-input {
     width: 100%;
     padding: var(--spacing-sm) var(--spacing-md);
-    background-color: var(--input-bg);
-    border: 1px solid #555;
+    background-color: rgba(0, 123, 255, 0.1);
+    border: 1px solid var(--color-primary);
     border-radius: var(--border-radius-sm);
-    color: var(--text-primary);
-    font-size: 1em;
+    color: #e3f2fd;
+    font-size: 1.1em;
 }
 
 .item-filter-input:focus {
@@ -347,7 +349,7 @@ Date Navigation Component */
 }
 
 .item-filter-input::placeholder {
-    color: var(--text-placeholder);
+    color: rgba(227, 242, 253, 0.7);
     opacity: 1;
 }
 
