@@ -160,7 +160,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Only update if the new value doesn't go below the minimum
                 if (newValue >= min) {
-                    input.value = newValue;
+                    // Round to avoid floating-point precision issues
+                    // Determine decimal places from increment value
+                    const decimalPlaces = getDecimalPlaces(increment);
+                    input.value = parseFloat(newValue.toFixed(decimalPlaces));
                     
                     // Dispatch input event so other code can listen for changes
                     // This ensures form validation, auto-save, etc. still work
@@ -185,7 +188,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Only update if there's no max limit OR the new value doesn't exceed it
                 if (max === null || newValue <= max) {
-                    input.value = newValue;
+                    // Round to avoid floating-point precision issues
+                    // Determine decimal places from increment value
+                    const decimalPlaces = getDecimalPlaces(increment);
+                    input.value = parseFloat(newValue.toFixed(decimalPlaces));
                     
                     // Dispatch input event for other listeners
                     input.dispatchEvent(new Event('input', { bubbles: true }));
@@ -237,6 +243,27 @@ document.addEventListener('DOMContentLoaded', function() {
             // This handles cases where inputs have default values
             updateButtonStates();
         });
+    };
+    
+    /**
+     * Helper function to determine decimal places from increment value
+     * Used to properly round values and avoid floating-point precision issues
+     * 
+     * Examples:
+     * - getDecimalPlaces(1) returns 0 (whole numbers)
+     * - getDecimalPlaces(0.1) returns 1 (one decimal place)
+     * - getDecimalPlaces(0.25) returns 2 (two decimal places)
+     * - getDecimalPlaces(0.001) returns 3 (three decimal places)
+     */
+    const getDecimalPlaces = (value) => {
+        const str = value.toString();
+        if (str.indexOf('.') !== -1 && str.indexOf('e-') === -1) {
+            return str.split('.')[1].length;
+        } else if (str.indexOf('e-') !== -1) {
+            const parts = str.split('e-');
+            return parseInt(parts[1], 10);
+        }
+        return 0;
     };
     
     /**
