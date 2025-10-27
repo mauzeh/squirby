@@ -53,7 +53,10 @@
             <ul class="item-selection-list">
                 <li>
                     <div class="item-filter-container">
-                        <input type="text" class="item-filter-input" placeholder="{{ $data['itemSelectionList']['filterPlaceholder'] }}">
+                        <div class="item-filter-group">
+                            <input type="text" class="item-filter-input" placeholder="{{ $data['itemSelectionList']['filterPlaceholder'] }}">
+                            <button class="btn-secondary btn-create"><span class="plus-icon">+</span></button>
+                        </div>
                     </div>
                 </li>
                 @foreach($data['itemSelectionList']['items'] as $item)

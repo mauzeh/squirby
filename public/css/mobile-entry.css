@@ -331,7 +331,13 @@ Date Navigation Component */
     background-color: rgba(0, 123, 255, 0.15);
 }
 
+.item-filter-group {
+    display: flex;
+    gap: var(--spacing-sm);
+}
+
 .item-filter-input {
+    flex: 1;
     width: 100%;
     padding: var(--spacing-sm) var(--spacing-md);
     background-color: rgba(0, 123, 255, 0.1);
@@ -352,6 +358,8 @@ Date Navigation Component */
     color: rgba(227, 242, 253, 0.7);
     opacity: 1;
 }
+
+
 
 .item-selection-list {
     display: grid;
@@ -941,6 +949,31 @@ Date Navigation Component */
     box-shadow: none;
     opacity: 0.6;
 }
+
+.item-filter-input::placeholder {
+    color: rgba(227, 242, 253, 0.7);
+    opacity: 1;
+}
+
+.plus-icon {
+    font-weight: bold;
+    font-size: 1.5em;
+}
+
+.btn-create {
+    background-color: var(--color-primary);
+    color: white;
+}
+
+.btn-create:hover {
+    background-color: var(--color-primary-hover);
+}
+
+.btn-create:focus {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
 
 .btn-delete {
     background-color: var(--color-danger);
