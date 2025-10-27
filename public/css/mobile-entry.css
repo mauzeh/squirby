@@ -156,7 +156,6 @@ Date Navigation Component */
 
     .nav-button {
         padding: var(--spacing-sm) 12px;
-        font-size: 0.9em;
         min-height: var(--touch-target-min);
         min-width: var(--touch-target-min);
     }
@@ -170,7 +169,6 @@ Date Navigation Component */
 @media (max-width: 480px) {
     .nav-button {
         padding: 6px 10px;
-        font-size: 0.8em;
         min-width: 40px;
         min-height: 40px;
     }
