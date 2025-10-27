@@ -1182,7 +1182,6 @@ gged Item Display */
     display: block;
     font-size: 2em;
     margin-bottom: 10px;
-    opacity: 0.5;
 }
 
 /* Loading state for logged items */

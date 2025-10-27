@@ -175,6 +175,7 @@ class MobileEntryController extends Controller
             
             // Logged items
             'loggedItems' => [
+                'emptyMessage' => 'No logged items yet!',
                 'title' => 'Item Entry',
                 'items' => [
                     [
