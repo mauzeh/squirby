@@ -58,7 +58,10 @@
                 <li>
                     <div class="item-filter-container">
                         <div class="item-filter-group">
-                            <input type="text" class="item-filter-input" placeholder="{{ $data['itemSelectionList']['filterPlaceholder'] }}">
+                            <div class="item-filter-input-wrapper">
+                                <input type="text" class="item-filter-input" placeholder="{{ $data['itemSelectionList']['filterPlaceholder'] }}">
+                                <button type="button" class="btn-clear-filter" aria-label="Clear filter" style="display: none;">×</button>
+                            </div>
                             <button class="btn-secondary btn-create"><span class="plus-icon">+</span></button>
                         </div>
                     </div>

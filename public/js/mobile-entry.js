@@ -4,11 +4,12 @@
  */
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Get the filter input and item list
+    // Get the filter input, clear button, and item list
     const filterInput = document.querySelector('.item-filter-input');
+    const clearButton = document.querySelector('.btn-clear-filter');
     const itemList = document.querySelector('.item-selection-list');
     
-    if (!filterInput || !itemList) {
+    if (!filterInput || !itemList || !clearButton) {
         return; // Exit if elements don't exist
     }
     
@@ -51,6 +52,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 noResultsItem.style.display = 'none';
             }
         }
+        
+        // Show/hide clear button based on whether there's text in the input
+        if (clearButton) {
+            if (normalizedSearch !== '') {
+                clearButton.style.display = '';
+            } else {
+                clearButton.style.display = 'none';
+            }
+        }
+    };
+    
+    // Clear filter function
+    const clearFilter = () => {
+        filterInput.value = '';
+        filterItems('');
+        filterInput.focus();
     };
     
     // Add event listener for input changes
@@ -69,4 +86,7 @@ document.addEventListener('DOMContentLoaded', function() {
             filterItems('');
         }
     });
+    
+    // Add event listener for clear button
+    clearButton.addEventListener('click', clearFilter);
 });
