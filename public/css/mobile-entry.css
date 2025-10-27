@@ -123,10 +123,12 @@ Date Navigation Component */
     user-select: none;
 }
 
-.nav-button:hover {
-    background-color: var(--color-primary-hover);
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-light);
+@media (hover: hover) {
+    .nav-button:hover {
+        background-color: var(--color-primary-hover);
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-light);
+    }
 }
 
 .nav-button:active {
@@ -197,9 +199,11 @@ Date Navigation Component */
     overflow: hidden;
 }
 
-.summary-item:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-light);
+@media (hover: hover) {
+    .summary-item:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-light);
+    }
 }
 
 .summary-item:focus {
@@ -443,10 +447,12 @@ Date Navigation Component */
     border-top: 1px solid var(--secondary-bg);
 }
 
-.item-selection-card:hover {
-    background-color: var(--input-bg);
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-light);
+@media (hover: hover) {
+    .item-selection-card:hover {
+        background-color: var(--input-bg);
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-light);
+    }
 }
 
 .item-selection-card:active {
@@ -480,8 +486,10 @@ Date Navigation Component */
     background-color: rgba(0, 123, 255, 0.08);
 }
 
-.item-selection-card--highlighted:hover {
-    background-color: rgba(0, 123, 255, 0.12);
+@media (hover: hover) {
+    .item-selection-card--highlighted:hover {
+        background-color: rgba(0, 123, 255, 0.12);
+    }
 }
 
 .item-selection-card--highlighted .item-name {
@@ -499,10 +507,12 @@ Date Navigation Component */
     pointer-events: none;
 }
 
-.item-selection-card--no-results:hover {
-    background-color: rgba(108, 117, 125, 0.1);
-    transform: none;
-    box-shadow: none;
+@media (hover: hover) {
+    .item-selection-card--no-results:hover {
+        background-color: rgba(108, 117, 125, 0.1);
+        transform: none;
+        box-shadow: none;
+    }
 }
 
 .item-selection-card--no-results .item-name {
@@ -707,9 +717,11 @@ Date Navigation Component */
     box-sizing: border-box;
 }
 
-.decrement-button:hover,
-.increment-button:hover {
-    background-color: var(--color-secondary-hover);
+@media (hover: hover) {
+    .decrement-button:hover,
+    .increment-button:hover {
+        background-color: var(--color-secondary-hover);
+    }
 }
 
 .decrement-button:active,
@@ -952,10 +964,12 @@ Date Navigation Component */
     user-select: none;
 }
 
-.btn-primary:hover {
-    background-color: var(--color-primary-hover);
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-light);
+@media (hover: hover) {
+    .btn-primary:hover {
+        background-color: var(--color-primary-hover);
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-light);
+    }
 }
 
 .btn-primary:active {
@@ -1068,9 +1082,11 @@ Date Navigation Component */
     user-select: none;
 }
 
-.btn-delete:hover {
-    background-color: var(--color-danger-hover);
-    transform: scale(1.05);
+@media (hover: hover) {
+    .btn-delete:hover {
+        background-color: var(--color-danger-hover);
+        transform: scale(1.05);
+    }
 }
 
 .btn-delete:active {
@@ -1171,8 +1187,10 @@ Date Navigation Component */
     background-color: var(--color-success);
 }
 
-.btn-success:hover {
-    background-color: var(--color-success-hover);
+@media (hover: hover) {
+    .btn-success:hover {
+        background-color: var(--color-success-hover);
+    }
 }
 
 .btn-success:focus {
@@ -1199,9 +1217,11 @@ gged Item Display */
     transition: all var(--transition-fast);
 }
 
-.logged-item:hover {
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-medium);
+@media (hover: hover) {
+    .logged-item:hover {
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-medium);
+    }
 }
 
 .logged-item:focus {
