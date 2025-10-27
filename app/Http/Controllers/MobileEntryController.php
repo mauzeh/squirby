@@ -84,6 +84,11 @@ class MobileEntryController extends Controller
                         'id' => 'item-6',
                         'name' => 'Item 6',
                         'type' => 'category'
+                    ],
+                    [
+                        'id' => 'item-7',
+                        'name' => 'This is a very long item name to test the overflow behavior of the item selection list',
+                        'type' => 'category'
                     ]
                 ],
                 'ariaLabels' => [

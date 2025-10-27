@@ -354,11 +354,10 @@ Date Navigation Component */
     transition: all var(--transition-fast);
     touch-action: manipulation;
     user-select: none;
-    border-bottom: 1px solid var(--secondary-bg);
 }
 
-.item-selection-card:last-child {
-    border-bottom: none;
+.item-selection-list li:not(:first-child) .item-selection-card {
+    border-top: 1px solid var(--secondary-bg);
 }
 
 .item-selection-card:hover {
