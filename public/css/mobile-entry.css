@@ -428,19 +428,19 @@ Date Navigation Component */
 }
 
 /* Category-specific styling */
-.item-selection-card--highlighted-category {
+.item-selection-card--highlighted {
     background-color: rgba(0, 123, 255, 0.08);
 }
 
-.item-selection-card--highlighted-category:hover {
+.item-selection-card--highlighted:hover {
     background-color: rgba(0, 123, 255, 0.12);
 }
 
-.item-selection-card--highlighted-category .item-name {
+.item-selection-card--highlighted .item-name {
     color: #e3f2fd;
 }
 
-.item-selection-card--highlighted-category .item-type {
+.item-selection-card--highlighted .item-type {
     color: rgba(227, 242, 253, 0.7);
 }
 
