@@ -299,9 +299,9 @@ document.addEventListener('DOMContentLoaded', function() {
         const itemListContainer = document.querySelector('.item-selection-section');
         const addItemButton = document.querySelector('.btn-success');
         const addItemSection = document.querySelector('.add-item-section');
-        const allForms = document.querySelectorAll('.item-logging-section');
+        const allForms = document.querySelectorAll('.item-logging-section:not(.prepopulated-form)');
         
-        // Hide all forms initially
+        // Hide all forms initially (but not prepopulated forms)
         const hideAllForms = () => {
             allForms.forEach(form => {
                 form.classList.remove('active');

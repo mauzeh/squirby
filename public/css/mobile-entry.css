@@ -617,6 +617,11 @@ Date Navigation Component */
     display: block; /* Show when active */
 }
 
+/* Always show prepopulated forms */
+.item-logging-section.prepopulated-form {
+    display: block;
+}
+
 /* Form Type Variants - Visual distinction for different form types */
 .item-logging-section[data-form-type="exercise"] {
     border-left: 4px solid var(--color-primary);

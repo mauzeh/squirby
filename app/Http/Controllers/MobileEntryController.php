@@ -445,6 +445,187 @@ class MobileEntryController extends Controller
                 ]
             ],
             
+            /**
+             * Prepopulated Forms Configuration
+             * 
+             * These forms are rendered immediately visible to the user with predefined data.
+             * They appear as separate sections and do not affect the existing dynamic form functionality.
+             * Each form can have different types, prepopulated values, and configurations.
+             * 
+             * Structure:
+             * - Forms are always visible (not hidden behind item selection)
+             * - Each form can have different field configurations
+             * - Values are prepopulated from the data array
+             * - Forms maintain the same structure as dynamic forms for consistency
+             */
+            'prepopulatedForms' => [
+                // Example: Quick Exercise Entry
+                [
+                    'id' => 'quick-exercise-1',
+                    'type' => 'exercise',
+                    'title' => 'Morning Push-ups',
+                    'itemName' => 'Push-ups',
+                    'messages' => [
+                        [
+                            'type' => 'info',
+                            'prefix' => 'Last time:',
+                            'text' => '3 sets of 20 reps'
+                        ],
+                        [
+                            'type' => 'tip',
+                            'prefix' => 'Goal:',
+                            'text' => 'Try to increase by 2 reps today'
+                        ]
+                    ],
+                    'numericFields' => [
+                        [
+                            'id' => 'quick-exercise-1-sets',
+                            'name' => 'sets',
+                            'label' => 'Sets:',
+                            'defaultValue' => 3,
+                            'increment' => 1,
+                            'min' => 1,
+                            'max' => 10,
+                            'ariaLabels' => [
+                                'decrease' => 'Decrease sets',
+                                'increase' => 'Increase sets'
+                            ]
+                        ],
+                        [
+                            'id' => 'quick-exercise-1-reps',
+                            'name' => 'reps',
+                            'label' => 'Reps:',
+                            'defaultValue' => 22,
+                            'increment' => 1,
+                            'min' => 1,
+                            'max' => 100,
+                            'ariaLabels' => [
+                                'decrease' => 'Decrease reps',
+                                'increase' => 'Increase reps'
+                            ]
+                        ]
+                    ],
+                    'commentField' => [
+                        'id' => 'quick-exercise-1-comment',
+                        'name' => 'comment',
+                        'label' => 'Notes:',
+                        'placeholder' => 'How did it feel?',
+                        'defaultValue' => 'Feeling strong today!'
+                    ],
+                    'buttons' => [
+                        'decrement' => '-',
+                        'increment' => '+',
+                        'submit' => 'Log Push-ups'
+                    ],
+                    'ariaLabels' => [
+                        'section' => 'Quick exercise entry',
+                        'deleteForm' => 'Remove this form'
+                    ]
+                ],
+                
+                // Example: Quick Food Entry
+                [
+                    'id' => 'quick-food-1',
+                    'type' => 'food',
+                    'title' => 'Breakfast Protein Shake',
+                    'itemName' => 'Protein Shake',
+                    'messages' => [
+                        [
+                            'type' => 'info',
+                            'prefix' => 'Calories:',
+                            'text' => '~320 per serving'
+                        ],
+                        [
+                            'type' => 'neutral',
+                            'prefix' => 'Protein:',
+                            'text' => '25g per scoop'
+                        ]
+                    ],
+                    'numericFields' => [
+                        [
+                            'id' => 'quick-food-1-scoops',
+                            'name' => 'scoops',
+                            'label' => 'Scoops:',
+                            'defaultValue' => 1.5,
+                            'increment' => 0.5,
+                            'min' => 0.5,
+                            'max' => 5,
+                            'ariaLabels' => [
+                                'decrease' => 'Decrease scoops',
+                                'increase' => 'Increase scoops'
+                            ]
+                        ]
+                    ],
+                    'commentField' => [
+                        'id' => 'quick-food-1-comment',
+                        'name' => 'comment',
+                        'label' => 'Notes:',
+                        'placeholder' => 'Add any notes...',
+                        'defaultValue' => 'Post-workout shake with banana'
+                    ],
+                    'buttons' => [
+                        'decrement' => '-',
+                        'increment' => '+',
+                        'submit' => 'Log Shake'
+                    ],
+                    'ariaLabels' => [
+                        'section' => 'Quick food entry',
+                        'deleteForm' => 'Remove this form'
+                    ]
+                ],
+                
+                // Example: Quick Measurement Entry
+                [
+                    'id' => 'quick-measurement-1',
+                    'type' => 'measurement',
+                    'title' => 'Daily Weigh-in',
+                    'itemName' => 'Body Weight',
+                    'messages' => [
+                        [
+                            'type' => 'info',
+                            'prefix' => 'Yesterday:',
+                            'text' => '184.2 lbs'
+                        ],
+                        [
+                            'type' => 'tip',
+                            'prefix' => 'Tip:',
+                            'text' => 'Weigh yourself at the same time daily'
+                        ]
+                    ],
+                    'numericFields' => [
+                        [
+                            'id' => 'quick-measurement-1-weight',
+                            'name' => 'weight',
+                            'label' => 'Weight (lbs):',
+                            'defaultValue' => 184.5,
+                            'increment' => 0.1,
+                            'min' => 50,
+                            'max' => 500,
+                            'ariaLabels' => [
+                                'decrease' => 'Decrease weight',
+                                'increase' => 'Increase weight'
+                            ]
+                        ]
+                    ],
+                    'commentField' => [
+                        'id' => 'quick-measurement-1-comment',
+                        'name' => 'comment',
+                        'label' => 'Notes:',
+                        'placeholder' => 'How are you feeling?',
+                        'defaultValue' => ''
+                    ],
+                    'buttons' => [
+                        'decrement' => '-',
+                        'increment' => '+',
+                        'submit' => 'Log Weight'
+                    ],
+                    'ariaLabels' => [
+                        'section' => 'Quick measurement entry',
+                        'deleteForm' => 'Remove this form'
+                    ]
+                ]
+            ],
+            
             // Logged items
             'loggedItems' => [
                 'emptyMessage' => 'No logged items yet!',
