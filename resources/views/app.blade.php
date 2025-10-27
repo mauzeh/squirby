@@ -16,6 +16,7 @@
 
         <link rel="stylesheet" href="{{ asset('css/app.css') }}">
         @yield('styles')
+        @yield('scripts')
     </head>
     <body>
         @if(session()->has('impersonator_id'))

@@ -4,6 +4,10 @@
     <link rel="stylesheet" href="{{ asset('css/mobile-entry.css') }}">
 @endsection
 
+@section('scripts')
+    <script src="{{ asset('js/mobile-entry.js') }}"></script>
+@endsection
+
 @section('content')
     <div class="mobile-entry-container">
         <!-- Date Navigation -->
