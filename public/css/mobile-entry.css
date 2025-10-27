@@ -337,6 +337,10 @@ Date Navigation Component */
     width: 100%;
 }
 
+.add-item-section.hidden {
+    display: none;
+}
+
 /* Responsive adjustments for add item section */
 @media (max-width: 768px) {
     .add-item-section {
@@ -347,6 +351,11 @@ Date Navigation Component */
 /* Item Selection List */
 .item-selection-section {
     margin-bottom: var(--spacing-xl);
+    display: none; /* Hidden by default */
+}
+
+.item-selection-section.active {
+    display: block; /* Show when active */
 }
 
 .selection-title {
@@ -601,6 +610,11 @@ Date Navigation Component */
     border-radius: var(--border-radius-md);
     box-shadow: var(--shadow-light);
     position: relative;
+    display: none; /* Hidden by default */
+}
+
+.item-logging-section.active {
+    display: block; /* Show when active */
 }
 
 /* Form Type Variants - Visual distinction for different form types */
@@ -1179,6 +1193,27 @@ Date Navigation Component */
 .btn-create:focus {
     outline: 2px solid var(--color-primary);
     outline-offset: 2px;
+}
+
+.btn-cancel {
+    background-color: var(--color-danger);
+    color: white;
+}
+
+@media (hover: hover) {
+    .btn-cancel:hover {
+        background-color: var(--color-danger-hover);
+    }
+}
+
+.btn-cancel:focus {
+    outline: 2px solid var(--color-danger);
+    outline-offset: 2px;
+}
+
+.cancel-icon {
+    font-weight: bold;
+    font-size: 1.5em;
 }
 
 

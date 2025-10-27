@@ -114,38 +114,45 @@ class MobileEntryController extends Controller
                 'items' => [
                     [
                         'id' => 'item-1',
-                        'name' => 'Item 1: This is a very long item name to test the overflow behavior of the item selection list',
-                        'type' => 'highlighted'
+                        'name' => 'Bench Press',
+                        'type' => 'highlighted',
+                        'formType' => 'exercise'
                     ],
                     [
                         'id' => 'item-2',
-                        'name' => 'Item 2',
-                        'type' => 'highlighted'
+                        'name' => 'Squats',
+                        'type' => 'highlighted',
+                        'formType' => 'exercise'
                     ],
                     [
                         'id' => 'item-3',
-                        'name' => 'Item 3',
-                        'type' => 'highlighted'
+                        'name' => 'Chicken Breast',
+                        'type' => 'regular',
+                        'formType' => 'food'
                     ],
                     [
                         'id' => 'item-4',
-                        'name' => 'Item 4',
-                        'type' => 'regular'
+                        'name' => 'Brown Rice',
+                        'type' => 'regular',
+                        'formType' => 'food'
                     ],
                     [
                         'id' => 'item-5',
-                        'name' => 'Item 5',
-                        'type' => 'regular'
+                        'name' => 'Body Weight',
+                        'type' => 'regular',
+                        'formType' => 'measurement'
                     ],
                     [
                         'id' => 'item-6',
-                        'name' => 'Item 6',
-                        'type' => 'regular'
+                        'name' => 'Body Fat %',
+                        'type' => 'regular',
+                        'formType' => 'measurement'
                     ],
                     [
                         'id' => 'item-7',
-                        'name' => 'Item 7: This is a very long item name to test the overflow behavior of the item selection list',
-                        'type' => 'regular'
+                        'name' => 'Deadlift: This is a very long exercise name to test the overflow behavior',
+                        'type' => 'highlighted',
+                        'formType' => 'exercise'
                     ]
                 ],
                 'ariaLabels' => [

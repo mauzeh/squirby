@@ -281,4 +281,150 @@ document.addEventListener('DOMContentLoaded', function() {
      * - Extensible: Easy to add new numeric fields or modify behavior
      */
     setupNumericInputs();
+    
+    /**
+     * Item Selection and Form Management System
+     * 
+     * Handles the relationship between item selection and form display.
+     * When a user clicks an item, it shows the corresponding form based on the formType.
+     * 
+     * Features:
+     * - Shows/hides forms based on item selection
+     * - Populates selected item information in the form
+     * - Manages form visibility states
+     * - Handles item list hiding when form is shown
+     */
+    const setupItemSelection = () => {
+        const itemCards = document.querySelectorAll('.item-selection-card[data-form-type]');
+        const itemListContainer = document.querySelector('.item-selection-section');
+        const addItemButton = document.querySelector('.btn-success');
+        const addItemSection = document.querySelector('.add-item-section');
+        const allForms = document.querySelectorAll('.item-logging-section');
+        
+        // Hide all forms initially
+        const hideAllForms = () => {
+            allForms.forEach(form => {
+                form.classList.remove('active');
+            });
+        };
+        
+        // Show specific form by type
+        const showFormByType = (formType, itemData) => {
+            hideAllForms();
+            
+            const targetForm = document.querySelector(`.item-logging-section[data-form-type="${formType}"]`);
+            if (targetForm) {
+                targetForm.classList.add('active');
+                
+                // Update form title with selected item name
+                const formTitle = targetForm.querySelector('.item-title');
+                if (formTitle) {
+                    formTitle.textContent = `Log ${itemData.name}`;
+                }
+                
+                // Hide item list and add button when form is shown
+                if (itemListContainer) {
+                    itemListContainer.classList.remove('active');
+                }
+                
+                if (addItemSection) {
+                    addItemSection.classList.add('hidden');
+                }
+                
+                // Scroll to form
+                setTimeout(() => {
+                    targetForm.scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'start' 
+                    });
+                }, 100);
+            }
+        };
+        
+        // Show item selection list
+        const showItemSelection = () => {
+            hideAllForms();
+            
+            if (itemListContainer) {
+                itemListContainer.classList.add('active');
+            }
+            
+            if (addItemSection) {
+                addItemSection.classList.add('hidden');
+            }
+            
+            // Focus on the filter input field
+            setTimeout(() => {
+                const filterInput = document.querySelector('.item-filter-input');
+                if (filterInput) {
+                    filterInput.focus();
+                }
+            }, 100);
+        };
+        
+        // Reset to initial view (hide item list, show add button)
+        const resetToInitialView = () => {
+            hideAllForms();
+            
+            if (itemListContainer) {
+                itemListContainer.classList.remove('active');
+            }
+            
+            if (addItemSection) {
+                addItemSection.classList.remove('hidden');
+            }
+        };
+        
+        // Add click handlers to item cards
+        itemCards.forEach(card => {
+            card.addEventListener('click', function(event) {
+                event.preventDefault();
+                
+                const formType = this.dataset.formType;
+                const itemId = this.dataset.itemId;
+                const itemName = this.dataset.itemName;
+                
+                const itemData = {
+                    id: itemId,
+                    name: itemName,
+                    formType: formType
+                };
+                
+                showFormByType(formType, itemData);
+            });
+        });
+        
+        // Add click handler to "Add Item" button
+        if (addItemButton) {
+            addItemButton.addEventListener('click', function(event) {
+                event.preventDefault();
+                showItemSelection();
+            });
+        }
+        
+        // Add click handler to cancel button in filter section
+        const cancelButton = document.querySelector('.btn-cancel');
+        if (cancelButton) {
+            cancelButton.addEventListener('click', function(event) {
+                event.preventDefault();
+                resetToInitialView();
+            });
+        }
+        
+        // Add click handlers to form delete buttons (to go back to initial view)
+        const deleteButtons = document.querySelectorAll('.item-logging-section .btn-delete');
+        deleteButtons.forEach(button => {
+            button.addEventListener('click', function(event) {
+                event.preventDefault();
+                resetToInitialView();
+            });
+        });
+        
+        // Initialize with all forms and item list hidden, only "Add Item" button visible
+        hideAllForms();
+        resetToInitialView();
+    };
+    
+    // Initialize item selection system
+    setupItemSelection();
 });

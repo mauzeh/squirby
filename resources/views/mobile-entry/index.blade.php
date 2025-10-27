@@ -74,12 +74,19 @@
                                     <span class="plus-icon">{{ $data['itemSelectionList']['createForm']['submitText'] }}</span>
                                 </button>
                             </form>
+                            <button type="button" class="btn-secondary btn-cancel" aria-label="Cancel and go back">
+                                <span class="cancel-icon">×</span>
+                            </button>
                         </div>
                     </div>
                 </li>
                 @foreach($data['itemSelectionList']['items'] as $item)
                 <li>
-                    <a href="#" class="item-selection-card item-selection-card--{{ str_replace(' ', '-', $item['type']) }}" aria-label="{{ $data['itemSelectionList']['ariaLabels']['selectItem'] }}: {{ $item['name'] }}">
+                    <a href="#" class="item-selection-card item-selection-card--{{ str_replace(' ', '-', $item['type']) }}" 
+                       data-item-id="{{ $item['id'] }}" 
+                       data-form-type="{{ $item['formType'] }}" 
+                       data-item-name="{{ $item['name'] }}"
+                       aria-label="{{ $data['itemSelectionList']['ariaLabels']['selectItem'] }}: {{ $item['name'] }}">
                         <span class="item-name">{{ $item['name'] }}</span>
                         <span class="item-type">{{ ucfirst($item['type']) }}</span>
                     </a>
