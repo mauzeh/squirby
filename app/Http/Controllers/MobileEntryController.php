@@ -56,37 +56,37 @@ class MobileEntryController extends Controller
             'itemSelectionList' => [
                 'items' => [
                     [
-                        'id' => 'item-1',
+                        'id' => 1,
                         'name' => 'Item 1: This is a very long item name to test the overflow behavior of the item selection list',
                         'type' => 'highlighted'
                     ],
                     [
-                        'id' => 'item-2',
+                        'id' => 2,
                         'name' => 'Item 2',
                         'type' => 'highlighted'
                     ],
                     [
-                        'id' => 'item-3',
+                        'id' => 3,
                         'name' => 'Item 3',
                         'type' => 'highlighted'
                     ],
                     [
-                        'id' => 'item-4',
+                        'id' => 4,
                         'name' => 'Item 4',
                         'type' => 'regular'
                     ],
                     [
-                        'id' => 'item-5',
+                        'id' => 5,
                         'name' => 'Item 5',
                         'type' => 'regular'
                     ],
                     [
-                        'id' => 'item-6',
+                        'id' => 6,
                         'name' => 'Item 6',
                         'type' => 'regular'
                     ],
                     [
-                        'id' => 'item-7',
+                        'id' => 7,
                         'name' => 'Item 7: This is a very long item name to test the overflow behavior of the item selection list',
                         'type' => 'regular'
                     ]
