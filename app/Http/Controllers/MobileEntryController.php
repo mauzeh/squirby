@@ -55,6 +55,13 @@ class MobileEntryController extends Controller
             // Item selection list (appears when Add Item is clicked)
             'itemSelectionList' => [
                 'noResultsMessage' => 'No items found. Hit "+" to save as new item.',
+                'createForm' => [
+                    'action' => '#', // route('mobile-entry.create-item'), // Configure this route as needed
+                    'method' => 'POST',
+                    'inputName' => 'item_name',
+                    'submitText' => '+',
+                    'ariaLabel' => 'Create new item'
+                ],
                 'items' => [
                     [
                         'id' => 'item-1',

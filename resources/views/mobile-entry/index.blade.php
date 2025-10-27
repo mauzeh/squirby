@@ -62,7 +62,13 @@
                                 <input type="text" class="item-filter-input" placeholder="{{ $data['itemSelectionList']['filterPlaceholder'] }}">
                                 <button type="button" class="btn-clear-filter" aria-label="Clear filter" style="display: none;">×</button>
                             </div>
-                            <button class="btn-secondary btn-create"><span class="plus-icon">+</span></button>
+                            <form method="{{ $data['itemSelectionList']['createForm']['method'] }}" action="{{ $data['itemSelectionList']['createForm']['action'] }}" class="create-item-form">
+                                @csrf
+                                <input type="hidden" name="{{ $data['itemSelectionList']['createForm']['inputName'] }}" class="create-item-input" value="">
+                                <button type="submit" class="btn-secondary btn-create" aria-label="{{ $data['itemSelectionList']['createForm']['ariaLabel'] }}">
+                                    <span class="plus-icon">{{ $data['itemSelectionList']['createForm']['submitText'] }}</span>
+                                </button>
+                            </form>
                         </div>
                     </div>
                 </li>

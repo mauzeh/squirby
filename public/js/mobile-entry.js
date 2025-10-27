@@ -4,12 +4,13 @@
  */
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Get the filter input, clear button, and item list
+    // Get the filter input, clear button, hidden input, and item list
     const filterInput = document.querySelector('.item-filter-input');
     const clearButton = document.querySelector('.btn-clear-filter');
+    const hiddenInput = document.querySelector('.create-item-input');
     const itemList = document.querySelector('.item-selection-list');
     
-    if (!filterInput || !itemList || !clearButton) {
+    if (!filterInput || !itemList || !clearButton || !hiddenInput) {
         return; // Exit if elements don't exist
     }
     
@@ -60,6 +61,11 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 clearButton.style.display = 'none';
             }
+        }
+        
+        // Sync the filter input value with the hidden form input
+        if (hiddenInput) {
+            hiddenInput.value = searchTerm;
         }
     };
     
