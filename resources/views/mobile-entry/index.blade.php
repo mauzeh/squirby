@@ -117,9 +117,12 @@
                 @foreach($data['itemForm']['numericFields'] as $field)
                 <div class="form-mobile-group">
                     <label for="{{ $field['id'] }}" class="form-mobile-label">{{ $field['label'] }}</label>
-                    <div class="number-input-group">
+                    <div class="number-input-group" 
+                         data-increment="{{ $field['increment'] }}" 
+                         data-min="{{ $field['min'] }}" 
+                         data-max="{{ $field['max'] ?? '' }}">
                         <button type="button" class="decrement-button" aria-label="{{ $field['ariaLabels']['decrease'] }}">{{ $data['itemForm']['buttons']['decrement'] }}</button>
-                        <input type="number" id="{{ $field['id'] }}" name="{{ $field['name'] }}" class="number-input" value="{{ $field['defaultValue'] }}" min="0" step="1">
+                        <input type="number" id="{{ $field['id'] }}" name="{{ $field['name'] }}" class="number-input" value="{{ $field['defaultValue'] }}" min="{{ $field['min'] }}" step="{{ $field['increment'] }}" @if($field['max']) max="{{ $field['max'] }}" @endif>
                         <button type="button" class="increment-button" aria-label="{{ $field['ariaLabels']['increase'] }}">{{ $data['itemForm']['buttons']['increment'] }}</button>
                     </div>
                 </div>
