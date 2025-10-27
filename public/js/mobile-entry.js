@@ -413,14 +413,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
         
-        // Add click handlers to form delete buttons (to go back to initial view)
-        const deleteButtons = document.querySelectorAll('.item-logging-section .btn-delete');
-        deleteButtons.forEach(button => {
-            button.addEventListener('click', function(event) {
-                event.preventDefault();
-                resetToInitialView();
-            });
-        });
+        // No JavaScript handling for delete buttons - they use proper form DELETE requests
         
         // Initialize with all forms and item list hidden, only "Add Item" button visible
         hideAllForms();

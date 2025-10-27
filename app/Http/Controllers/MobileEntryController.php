@@ -465,6 +465,8 @@ class MobileEntryController extends Controller
                     'type' => 'exercise',
                     'title' => 'Morning Push-ups',
                     'itemName' => 'Push-ups',
+                    'formAction' => '#', // route('lift-logs.store') or similar
+                    'deleteAction' => '#', // route('mobile-entry.remove-form', ['id' => 'quick-exercise-1']) or similar
                     'messages' => [
                         [
                             'type' => 'info',
@@ -529,6 +531,8 @@ class MobileEntryController extends Controller
                     'type' => 'food',
                     'title' => 'Breakfast Protein Shake',
                     'itemName' => 'Protein Shake',
+                    'formAction' => '#', // route('food-logs.store') or similar
+                    'deleteAction' => '#', // route('mobile-entry.remove-form', ['id' => 'quick-food-1']) or similar
                     'messages' => [
                         [
                             'type' => 'info',
@@ -580,6 +584,8 @@ class MobileEntryController extends Controller
                     'type' => 'measurement',
                     'title' => 'Daily Weigh-in',
                     'itemName' => 'Body Weight',
+                    'formAction' => '#', // route('body-logs.store') or similar
+                    'deleteAction' => '#', // route('mobile-entry.remove-form', ['id' => 'quick-measurement-1']) or similar
                     'messages' => [
                         [
                             'type' => 'info',

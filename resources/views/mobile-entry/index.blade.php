@@ -29,7 +29,8 @@
             @if($data['navigation']['dateTitle']['subtitle'])
                 <div class="date-subtitle">{{ $data['navigation']['dateTitle']['subtitle'] }}</div>
             @endif
-        </div>       
+        </div>
+
         <!-- Summary -->
         <section class="summary" aria-label="{{ $data['summary']['ariaLabels']['section'] }}">
             <div class="summary-item summary-item--total">
@@ -57,7 +58,7 @@
             </button>
         </div>
 
-                <!-- Item Selection List -->
+        <!-- Item Selection List -->
         <section class="item-selection-section" aria-label="{{ $data['itemSelectionList']['ariaLabels']['section'] }}">
             <ul class="item-selection-list">
                 <li>
@@ -158,7 +159,7 @@
         <section class="item-logging-section prepopulated-form" aria-label="{{ $form['ariaLabels']['section'] }}" data-form-type="{{ $form['type'] }}" data-form-id="{{ $form['id'] }}">
             <div class="item-header">
                 <h2 class="item-title">{{ $form['title'] }}</h2>
-                <form class="delete-form" method="POST" action="#">
+                <form class="delete-form" method="POST" action="{{ $form['deleteAction'] }}">
                     @csrf
                     @method('DELETE')
                     <button type="submit" class="btn-delete" aria-label="{{ $form['ariaLabels']['deleteForm'] }}">
@@ -177,7 +178,7 @@
             </div>
             @endif
             
-            <form class="item-form" method="POST" action="#" data-form-type="{{ $form['type'] }}">
+            <form class="item-form" method="POST" action="{{ $form['formAction'] }}" data-form-type="{{ $form['type'] }}">
                 @csrf
                 <input type="hidden" name="form_type" value="{{ $form['type'] }}">
                 <input type="hidden" name="item_name" value="{{ $form['itemName'] }}">
