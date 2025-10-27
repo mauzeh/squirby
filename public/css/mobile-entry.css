@@ -1274,12 +1274,7 @@ gged Item Display */
     border: 2px dashed #555;
 }
 
-.logged-items-empty::before {
-    content: "📝";
-    display: block;
-    font-size: 2em;
-    margin-bottom: 10px;
-}
+
 
 /* Loading state for logged items */
 .logged-items-loading {
