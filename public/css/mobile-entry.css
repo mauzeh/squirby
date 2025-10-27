@@ -326,7 +326,7 @@ Date Navigation Component */
 }
 
 .item-filter-container {
-    margin-bottom: var(--spacing-md);
+    padding: var(--spacing-sm);
 }
 
 .item-filter-input {

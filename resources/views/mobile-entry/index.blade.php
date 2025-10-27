@@ -50,10 +50,12 @@
 
         <!-- Item Selection List -->
         <section class="item-selection-section" aria-label="{{ $data['itemSelectionList']['ariaLabels']['section'] }}">
-            <div class="item-filter-container">
-                <input type="text" class="item-filter-input" placeholder="{{ $data['itemSelectionList']['filterPlaceholder'] }}">
-            </div>
             <ul class="item-selection-list">
+                <li>
+                    <div class="item-filter-container">
+                        <input type="text" class="item-filter-input" placeholder="{{ $data['itemSelectionList']['filterPlaceholder'] }}">
+                    </div>
+                </li>
                 @foreach($data['itemSelectionList']['items'] as $item)
                 <li>
                     <a href="#" class="item-selection-card item-selection-card--{{ str_replace(' ', '-', $item['type']) }}" aria-label="{{ $data['itemSelectionList']['ariaLabels']['selectItem'] }}: {{ $item['name'] }}">
