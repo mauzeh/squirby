@@ -283,70 +283,19 @@ document.addEventListener('DOMContentLoaded', function() {
     setupNumericInputs();
     
     /**
-     * Item Selection and Form Management System
+     * Item Selection List Show/Hide
      * 
-     * Handles the relationship between item selection and form display.
-     * When a user clicks an item, it shows the corresponding form based on the formType.
-     * 
-     * Features:
-     * - Shows/hides forms based on item selection
-     * - Populates selected item information in the form
-     * - Manages form visibility states
-     * - Handles item list hiding when form is shown
+     * Simple functionality to show/hide the item selection list when "Add Item" is clicked.
+     * No dynamic form management - items link directly to backend URLs.
      */
-    const setupItemSelection = () => {
-        const itemCards = document.querySelectorAll('.item-selection-card[data-form-type]');
-        const itemListContainer = document.querySelector('.item-selection-section');
+    const setupItemListToggle = () => {
         const addItemButton = document.querySelector('.btn-success');
+        const itemListContainer = document.querySelector('.item-selection-section');
         const addItemSection = document.querySelector('.add-item-section');
-        const allForms = document.querySelectorAll('.item-logging-section:not(.prepopulated-form)');
-        
-        // Hide all forms initially (but not prepopulated forms)
-        const hideAllForms = () => {
-            allForms.forEach(form => {
-                form.classList.remove('active');
-            });
-        };
-        
-        // Show specific form by type
-        const showFormByType = (formType, itemData) => {
-            hideAllForms();
-            
-            const targetForm = document.querySelector(`.item-logging-section[data-form-type="${formType}"]`);
-            if (targetForm) {
-                targetForm.classList.add('active');
-                
-                // Update form title using configurable template
-                const formTitle = targetForm.querySelector('.item-title');
-                if (formTitle) {
-                    const titleTemplate = targetForm.dataset.titleTemplate || 'Log {itemName}';
-                    const dynamicTitle = titleTemplate.replace('{itemName}', itemData.name);
-                    formTitle.textContent = dynamicTitle;
-                }
-                
-                // Hide item list and add button when form is shown
-                if (itemListContainer) {
-                    itemListContainer.classList.remove('active');
-                }
-                
-                if (addItemSection) {
-                    addItemSection.classList.add('hidden');
-                }
-                
-                // Scroll to form
-                setTimeout(() => {
-                    targetForm.scrollIntoView({ 
-                        behavior: 'smooth', 
-                        block: 'start' 
-                    });
-                }, 100);
-            }
-        };
+        const cancelButton = document.querySelector('.btn-cancel');
         
         // Show item selection list
         const showItemSelection = () => {
-            hideAllForms();
-            
             if (itemListContainer) {
                 itemListContainer.classList.add('active');
             }
@@ -364,10 +313,8 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 100);
         };
         
-        // Reset to initial view (hide item list, show add button)
-        const resetToInitialView = () => {
-            hideAllForms();
-            
+        // Hide item selection list and show add button
+        const hideItemSelection = () => {
             if (itemListContainer) {
                 itemListContainer.classList.remove('active');
             }
@@ -376,25 +323,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 addItemSection.classList.remove('hidden');
             }
         };
-        
-        // Add click handlers to item cards
-        itemCards.forEach(card => {
-            card.addEventListener('click', function(event) {
-                event.preventDefault();
-                
-                const formType = this.dataset.formType;
-                const itemId = this.dataset.itemId;
-                const itemName = this.dataset.itemName;
-                
-                const itemData = {
-                    id: itemId,
-                    name: itemName,
-                    formType: formType
-                };
-                
-                showFormByType(formType, itemData);
-            });
-        });
         
         // Add click handler to "Add Item" button
         if (addItemButton) {
@@ -405,21 +333,17 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         // Add click handler to cancel button in filter section
-        const cancelButton = document.querySelector('.btn-cancel');
         if (cancelButton) {
             cancelButton.addEventListener('click', function(event) {
                 event.preventDefault();
-                resetToInitialView();
+                hideItemSelection();
             });
         }
         
-        // No JavaScript handling for delete buttons - they use proper form DELETE requests
-        
-        // Initialize with all forms and item list hidden, only "Add Item" button visible
-        hideAllForms();
-        resetToInitialView();
+        // Initialize with item list hidden
+        hideItemSelection();
     };
     
-    // Initialize item selection system
-    setupItemSelection();
+    // Initialize item list toggle
+    setupItemListToggle();
 });
