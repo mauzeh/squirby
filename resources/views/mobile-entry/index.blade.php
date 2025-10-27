@@ -24,7 +24,12 @@
         </nav>
 
         <!-- Date Title -->
-        <h1 class="date-title">{{ $data['navigation']['dateTitle'] }}</h1>       
+        <div class="date-title-container">
+            <h1 class="date-title">{{ $data['navigation']['dateTitle']['main'] }}</h1>
+            @if($data['navigation']['dateTitle']['subtitle'])
+                <div class="date-subtitle">{{ $data['navigation']['dateTitle']['subtitle'] }}</div>
+            @endif
+        </div>       
         <!-- Summary -->
         <section class="summary" aria-label="{{ $data['summary']['ariaLabels']['section'] }}">
             <div class="summary-item summary-item--total">

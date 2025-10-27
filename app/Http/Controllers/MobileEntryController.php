@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Services\DateTitleService;
 
 class MobileEntryController extends Controller
 {
@@ -14,9 +15,10 @@ class MobileEntryController extends Controller
      * - /mobile-entry?date=2024-01-15 (specific date)
      * 
      * @param Request $request
+     * @param DateTitleService $dateTitleService
      * @return \Illuminate\View\View
      */
-    public function index(Request $request)
+    public function index(Request $request, DateTitleService $dateTitleService)
     {
         // Get the selected date from request or default to today
         // Supports formats: Y-m-d, Y/m/d, and other Carbon-parseable formats
@@ -29,8 +31,8 @@ class MobileEntryController extends Controller
         $nextDay = $selectedDate->copy()->addDay();
         $today = \Carbon\Carbon::today();
         
-        // Generate user-friendly date title (Today, Yesterday, Tomorrow, or formatted date)
-        $dateTitle = $this->generateDateTitle($selectedDate, $today);
+        // Generate user-friendly date title with main title and optional subtitle
+        $dateTitleData = $dateTitleService->generateDateTitle($selectedDate, $today);
         // All text content and data for the view
         $data = [
             /**
@@ -65,7 +67,7 @@ class MobileEntryController extends Controller
                     'text' => 'Next →',
                     'href' => route('mobile-entry.index', ['date' => $nextDay->toDateString()])
                 ],
-                'dateTitle' => $dateTitle,
+                'dateTitle' => $dateTitleData,
                 'ariaLabels' => [
                     'navigation' => 'Date navigation',
                     'previousDay' => 'Previous day',
@@ -338,33 +340,5 @@ class MobileEntryController extends Controller
 
         return view('mobile-entry.index', compact('data'));
     }
-    
-    /**
-     * Generate a user-friendly date title
-     * 
-     * Returns contextual date labels for recent dates, or formatted date with day of week for others.
-     * 
-     * Examples:
-     * - Today's date: "Today"
-     * - Yesterday: "Yesterday" 
-     * - Tomorrow: "Tomorrow"
-     * - Other dates: "Mon, Jan 15, 2024" (includes day of week shorthand)
-     * 
-     * @param \Carbon\Carbon $selectedDate
-     * @param \Carbon\Carbon $today
-     * @return string
-     */
-    private function generateDateTitle(\Carbon\Carbon $selectedDate, \Carbon\Carbon $today): string
-    {
-        if ($selectedDate->isToday()) {
-            return 'Today';
-        } elseif ($selectedDate->isYesterday()) {
-            return 'Yesterday';
-        } elseif ($selectedDate->isTomorrow()) {
-            return 'Tomorrow';
-        } else {
-            // Include day of week shorthand for other dates: "Mon, Jan 15, 2024"
-            return $selectedDate->format('D, M d, Y');
-        }
-    }
+
 }

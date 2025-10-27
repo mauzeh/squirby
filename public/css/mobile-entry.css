@@ -141,13 +141,28 @@ Date Navigation Component */
     outline-offset: 2px;
 }
 
-/* Date Title */
-.date-title {
+/* Date Title Container */
+.date-title-container {
     text-align: center;
-    color: var(--color-primary);
     margin-bottom: var(--spacing-xl);
+}
+
+/* Main Date Title */
+.date-title {
+    color: var(--color-primary);
+    margin: 0;
     font-size: 2em;
     font-weight: bold;
+    line-height: 1.2;
+}
+
+/* Date Subtitle */
+.date-subtitle {
+    color: var(--text-muted);
+    font-size: 1em;
+    font-weight: normal;
+    margin-top: var(--spacing-xs);
+    opacity: 0.8;
 }
 
 /* Responsive adjustments for date navigation */
@@ -162,9 +177,17 @@ Date Navigation Component */
         min-width: var(--touch-target-min);
     }
 
+    .date-title-container {
+        margin-bottom: var(--spacing-lg);
+    }
+    
     .date-title {
         font-size: 1.8em;
-        margin-bottom: var(--spacing-lg);
+    }
+    
+    .date-subtitle {
+        font-size: 0.9em;
+        margin-top: 3px;
     }
 }
 
@@ -175,9 +198,17 @@ Date Navigation Component */
         min-height: 40px;
     }
 
+    .date-title-container {
+        margin-bottom: var(--spacing-md);
+    }
+    
     .date-title {
         font-size: 1.6em;
-        margin-bottom: var(--spacing-md);
+    }
+    
+    .date-subtitle {
+        font-size: 0.85em;
+        margin-top: 2px;
     }
 }
 
