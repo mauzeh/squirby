@@ -54,7 +54,7 @@ class MobileEntryController extends Controller
             
             // Item selection list (appears when Add Item is clicked)
             'itemSelectionList' => [
-                'noResultsMessage' => 'No items found matching your search',
+                'noResultsMessage' => 'No items found. Hit "+" to save as new item.',
                 'items' => [
                     [
                         'id' => 'item-1',
