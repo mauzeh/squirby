@@ -155,9 +155,24 @@ class MobileEntryController extends Controller
                 'filterPlaceholder' => 'Filter items...'
             ],
             
-            // Item logging form
-            'itemForm' => [
-                'title' => 'Log New Item',
+            /**
+             * Multiple Item Forms Configuration
+             * 
+             * Supports multiple forms for different types of data entry.
+             * Each form can have its own configuration, fields, and behavior.
+             * 
+             * Structure allows for:
+             * - Different form types (food, exercise, measurement, etc.)
+             * - Independent field configurations per form
+             * - Separate validation and submission handling
+             * - Form-specific messaging and UI elements
+             */
+            'itemForms' => [
+                // Example: Exercise logging form
+                [
+                    'id' => 'exercise-form',
+                    'type' => 'exercise',
+                    'title' => 'Log Exercise',
                 'messages' => [
                     [
                         'type' => 'info',
@@ -283,21 +298,140 @@ class MobileEntryController extends Controller
                      * ]
                      */
                 ],
-                'commentField' => [
-                    'id' => 'item-comment',
-                    'name' => 'comment',
-                    'label' => 'Comment:',
-                    'placeholder' => 'Add a comment...',
-                    'defaultValue' => ''
+                    'commentField' => [
+                        'id' => 'exercise-comment',
+                        'name' => 'comment',
+                        'label' => 'Comment:',
+                        'placeholder' => 'Add a comment...',
+                        'defaultValue' => ''
+                    ],
+                    'buttons' => [
+                        'decrement' => '-',
+                        'increment' => '+',
+                        'submit' => 'Log Exercise'
+                    ],
+                    'ariaLabels' => [
+                        'section' => 'Log new exercise',
+                        'deleteForm' => 'Delete exercise form'
+                    ]
                 ],
-                'buttons' => [
-                    'decrement' => '-',
-                    'increment' => '+',
-                    'submit' => 'Log Item'
+                
+                // Example: Food logging form
+                [
+                    'id' => 'food-form',
+                    'type' => 'food',
+                    'title' => 'Log Food',
+                    'messages' => [
+                        [
+                            'type' => 'info',
+                            'prefix' => 'Last meal:',
+                            'text' => '"Chicken and rice bowl"'
+                        ],
+                        [
+                            'type' => 'tip',
+                            'prefix' => 'Tip:',
+                            'text' => 'Previous portion was 1.5 servings'
+                        ]
+                    ],
+                    'numericFields' => [
+                        [
+                            'id' => 'food-quantity',
+                            'name' => 'quantity',
+                            'label' => 'Quantity:',
+                            'defaultValue' => 1,
+                            'increment' => 0.25,
+                            'min' => 0,
+                            'max' => 50,
+                            'ariaLabels' => [
+                                'decrease' => 'Decrease quantity',
+                                'increase' => 'Increase quantity'
+                            ]
+                        ]
+                    ],
+                    'commentField' => [
+                        'id' => 'food-comment',
+                        'name' => 'comment',
+                        'label' => 'Notes:',
+                        'placeholder' => 'Add notes about this meal...',
+                        'defaultValue' => ''
+                    ],
+                    'buttons' => [
+                        'decrement' => '-',
+                        'increment' => '+',
+                        'submit' => 'Log Food'
+                    ],
+                    'ariaLabels' => [
+                        'section' => 'Log new food',
+                        'deleteForm' => 'Delete food form'
+                    ]
                 ],
-                'ariaLabels' => [
-                    'section' => 'Log new item',
-                    'deleteForm' => 'Delete form'
+                
+                // Example: Measurement logging form
+                [
+                    'id' => 'measurement-form',
+                    'type' => 'measurement',
+                    'title' => 'Log Measurement',
+                    'messages' => [
+                        [
+                            'type' => 'info',
+                            'prefix' => 'Last measurement:',
+                            'text' => '185.2 lbs on Jan 10'
+                        ],
+                        [
+                            'type' => 'tip',
+                            'prefix' => 'Tip:',
+                            'text' => 'Weigh yourself at the same time each day for consistency'
+                        ],
+                        [
+                            'type' => 'neutral',
+                            'prefix' => 'Note:',
+                            'text' => 'Measurements are automatically timestamped'
+                        ]
+                    ],
+                    'numericFields' => [
+                        [
+                            'id' => 'measurement-value',
+                            'name' => 'value',
+                            'label' => 'Weight (lbs):',
+                            'defaultValue' => 185,
+                            'increment' => 0.1,
+                            'min' => 50,
+                            'max' => 500,
+                            'ariaLabels' => [
+                                'decrease' => 'Decrease weight',
+                                'increase' => 'Increase weight'
+                            ]
+                        ],
+                        [
+                            'id' => 'measurement-body-fat',
+                            'name' => 'body_fat',
+                            'label' => 'Body Fat %:',
+                            'defaultValue' => 15,
+                            'increment' => 0.1,
+                            'min' => 0,
+                            'max' => 50,
+                            'ariaLabels' => [
+                                'decrease' => 'Decrease body fat percentage',
+                                'increase' => 'Increase body fat percentage'
+                            ]
+                        ]
+                    ],
+                    'commentField' => [
+                        'id' => 'measurement-comment',
+                        'name' => 'comment',
+                        'label' => 'Notes:',
+                        'placeholder' => 'Add notes about this measurement...',
+                        'defaultValue' => ''
+                    ],
+                    'buttons' => [
+                        'decrement' => '-',
+                        'increment' => '+',
+                        'submit' => 'Log Measurement'
+                    ],
+                    'ariaLabels' => [
+                        'section' => 'Log new measurement',
+                        'deleteForm' => 'Delete measurement form'
+                    ]
                 ]
             ],
             
