@@ -446,7 +446,8 @@ class MobileEntryController extends Controller
                             'type' => 'neutral',
                             'prefix' => 'Comment:',
                             'text' => 'Morning workout completed'
-                        ]
+                        ],
+                        'freeformText' => 'Felt great today! Energy levels were high and form was solid throughout the entire session. Weather was perfect for outdoor training.'
                     ],
                     [
                         'value' => 15,
@@ -455,6 +456,7 @@ class MobileEntryController extends Controller
                             'prefix' => 'Comment:',
                             'text' => 'Quick afternoon session'
                         ]
+                        // No freeformText - demonstrates optional field
                     ],
                     [
                         'value' => 30,
@@ -462,7 +464,8 @@ class MobileEntryController extends Controller
                             'type' => 'neutral',
                             'prefix' => 'Comment:',
                             'text' => 'Evening cardio and stretching routine'
-                        ]
+                        ],
+                        'freeformText' => 'Extended session with 20 minutes of cardio followed by full-body stretching. Really helped with recovery from yesterday\'s intense workout.'
                     ]
                 ],
                 'ariaLabels' => [

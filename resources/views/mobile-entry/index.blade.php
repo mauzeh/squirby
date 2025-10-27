@@ -165,6 +165,11 @@
                 <div class="item-message item-message--{{ $item['message']['type'] }}">
                     <span class="message-prefix">{{ $item['message']['prefix'] }}</span> {{ $item['message']['text'] }}
                 </div>
+                @if(isset($item['freeformText']) && !empty($item['freeformText']))
+                <div class="item-freeform-text">
+                    {{ $item['freeformText'] }}
+                </div>
+                @endif
             </div>
             @endforeach
         </section>
