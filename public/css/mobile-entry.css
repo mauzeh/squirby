@@ -1162,10 +1162,6 @@ gged Item Display */
     background-color: rgba(40, 167, 69, 0.1);
 }
 
-.logged-item.recent {
-    /* No border styling needed */
-}
-
 .logged-item.recent .item-value {
     color: var(--color-primary);
 }
