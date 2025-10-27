@@ -164,13 +164,18 @@
                 <div class="item-header">
                     <h2 class="item-title">{{ $data['loggedItems']['title'] }} {{ $index + 1 }}</h2>
                     <span class="item-value">{{ $item['value'] }}</span>
-                    <form class="delete-form" method="POST" action="#">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="btn-delete" aria-label="{{ $data['loggedItems']['ariaLabels']['deleteItem'] }}">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </form>
+                    <div class="item-actions">
+                        <a href="{{ $item['editAction'] }}" class="btn-edit" aria-label="{{ $data['loggedItems']['ariaLabels']['editItem'] }}">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <form class="delete-form" method="POST" action="{{ $item['deleteAction'] }}">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn-delete" aria-label="{{ $data['loggedItems']['ariaLabels']['deleteItem'] }}">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </form>
+                    </div>
                 </div>
                 <div class="item-message item-message--{{ $item['message']['type'] }}">
                     <span class="message-prefix">{{ $item['message']['prefix'] }}</span> {{ $item['message']['text'] }}

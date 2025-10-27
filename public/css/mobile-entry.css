@@ -34,6 +34,10 @@
     --summary-average: #ffc107;
     --summary-today: #007bff;
 
+    /* Action Colors */
+    --color-edit: #ff6b35;
+    --color-edit-hover: #e55a2b;
+
     /* Spacing Scale */
     --spacing-xs: 5px;
     --spacing-sm: 8px;
@@ -180,11 +184,11 @@ Date Navigation Component */
     .date-title-container {
         margin-bottom: var(--spacing-lg);
     }
-    
+
     .date-title {
         font-size: 1.8em;
     }
-    
+
     .date-subtitle {
         font-size: 0.9em;
         margin-top: 3px;
@@ -201,11 +205,11 @@ Date Navigation Component */
     .date-title-container {
         margin-bottom: var(--spacing-md);
     }
-    
+
     .date-title {
         font-size: 1.6em;
     }
-    
+
     .date-subtitle {
         font-size: 0.85em;
         margin-top: 2px;
@@ -351,11 +355,13 @@ Date Navigation Component */
 /* Item Selection List */
 .item-selection-section {
     margin-bottom: var(--spacing-xl);
-    display: none; /* Hidden by default */
+    display: none;
+    /* Hidden by default */
 }
 
 .item-selection-section.active {
-    display: block; /* Show when active */
+    display: block;
+    /* Show when active */
 }
 
 .selection-title {
@@ -659,8 +665,8 @@ Date Navigation Component */
     .item-logging-section {
         margin-bottom: var(--spacing-lg);
     }
-    
-    .item-logging-section + .item-logging-section {
+
+    .item-logging-section+.item-logging-section {
         margin-top: var(--spacing-lg);
     }
 }
@@ -669,8 +675,8 @@ Date Navigation Component */
     .item-logging-section {
         margin-bottom: var(--spacing-md);
     }
-    
-    .item-logging-section + .item-logging-section {
+
+    .item-logging-section+.item-logging-section {
         margin-top: var(--spacing-md);
     }
 }
@@ -834,6 +840,7 @@ Date Navigation Component */
 }
 
 @media (hover: hover) {
+
     .decrement-button:hover,
     .increment-button:hover {
         background-color: var(--color-secondary-hover);
@@ -1005,7 +1012,7 @@ Date Navigation Component */
         font-size: 0.95em;
         margin-bottom: 4px;
     }
-    
+
     .item-freeform-text {
         margin-top: 8px;
         padding: 8px 12px;
@@ -1063,7 +1070,7 @@ Date Navigation Component */
         font-size: 0.9em;
         margin-bottom: 3px;
     }
-    
+
     .item-freeform-text {
         margin-top: 6px;
         padding: 6px 10px;
@@ -1254,6 +1261,58 @@ Date Navigation Component */
     opacity: 0.6;
 }
 
+/* Action Buttons - Edit and Delete */
+.item-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+    align-items: center;
+}
+
+.btn-edit {
+    background-color: var(--color-edit);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: var(--touch-target-small);
+    height: var(--touch-target-small);
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: normal;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    transition: all var(--transition-fast);
+    touch-action: manipulation;
+    user-select: none;
+    text-decoration: none;
+}
+
+@media (hover: hover) {
+    .btn-edit:hover {
+        background-color: var(--color-edit-hover);
+        transform: scale(1.05);
+        text-decoration: none;
+    }
+}
+
+.btn-edit:active {
+    transform: scale(0.95);
+}
+
+.btn-edit:focus {
+    outline: 2px solid var(--color-edit);
+    outline-offset: 2px;
+}
+
+.btn-edit:disabled {
+    background-color: var(--color-secondary);
+    cursor: not-allowed;
+    transform: none;
+    opacity: 0.6;
+}
+
+/* Ensure delete form doesn't add extra spacing */
 .delete-form {
     margin: 0;
     display: inline-block;
@@ -1308,6 +1367,12 @@ Date Navigation Component */
         height: var(--touch-target-small);
         font-size: 21px;
     }
+
+    .btn-edit {
+        width: var(--touch-target-small);
+        height: var(--touch-target-small);
+        font-size: 21px;
+    }
 }
 
 @media (max-width: 480px) {
@@ -1325,6 +1390,12 @@ Date Navigation Component */
     }
 
     .btn-delete {
+        width: 28px;
+        height: 28px;
+        font-size: 18px;
+    }
+
+    .btn-edit {
         width: 28px;
         height: 28px;
         font-size: 18px;
@@ -1347,8 +1418,7 @@ Date Navigation Component */
     outline-offset: 2px;
 }
 
-/* Lo
-gged Item Display */
+/* Logged Item Display */
 .logged-items-section {
     margin-bottom: var(--spacing-xl);
 }

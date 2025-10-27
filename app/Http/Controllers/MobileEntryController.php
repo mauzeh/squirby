@@ -354,7 +354,10 @@ class MobileEntryController extends Controller
                 'title' => 'Item Entry',
                 'items' => [
                     [
+                        'id' => 1,
                         'value' => 25,
+                        'editAction' => '#', // route('mobile-entry.edit-item', ['id' => 1]) or similar
+                        'deleteAction' => '#', // route('mobile-entry.delete-item', ['id' => 1]) or similar
                         'message' => [
                             'type' => 'neutral',
                             'prefix' => 'Comment:',
@@ -363,7 +366,10 @@ class MobileEntryController extends Controller
                         'freeformText' => 'Felt great today! Energy levels were high and form was solid throughout the entire session. Weather was perfect for outdoor training.'
                     ],
                     [
+                        'id' => 2,
                         'value' => 15,
+                        'editAction' => '#', // route('mobile-entry.edit-item', ['id' => 2]) or similar
+                        'deleteAction' => '#', // route('mobile-entry.delete-item', ['id' => 2]) or similar
                         'message' => [
                             'type' => 'neutral',
                             'prefix' => 'Comment:',
@@ -372,7 +378,10 @@ class MobileEntryController extends Controller
                         // No freeformText - demonstrates optional field
                     ],
                     [
+                        'id' => 3,
                         'value' => 30,
+                        'editAction' => '#', // route('mobile-entry.edit-item', ['id' => 3]) or similar
+                        'deleteAction' => '#', // route('mobile-entry.delete-item', ['id' => 3]) or similar
                         'message' => [
                             'type' => 'neutral',
                             'prefix' => 'Comment:',
@@ -383,6 +392,7 @@ class MobileEntryController extends Controller
                 ],
                 'ariaLabels' => [
                     'section' => 'Logged items',
+                    'editItem' => 'Edit logged item',
                     'deleteItem' => 'Delete logged item'
                 ]
             ]
