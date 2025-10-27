@@ -50,6 +50,9 @@
 
         <!-- Item Selection List -->
         <section class="item-selection-section" aria-label="{{ $data['itemSelectionList']['ariaLabels']['section'] }}">
+            <div class="item-filter-container">
+                <input type="text" class="item-filter-input" placeholder="{{ $data['itemSelectionList']['filterPlaceholder'] }}">
+            </div>
             <ul class="item-selection-list">
                 @foreach($data['itemSelectionList']['items'] as $item)
                 <li>

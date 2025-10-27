@@ -325,6 +325,32 @@ Date Navigation Component */
     text-align: center;
 }
 
+.item-filter-container {
+    margin-bottom: var(--spacing-md);
+}
+
+.item-filter-input {
+    width: 100%;
+    padding: var(--spacing-sm) var(--spacing-md);
+    background-color: var(--input-bg);
+    border: 1px solid #555;
+    border-radius: var(--border-radius-sm);
+    color: var(--text-primary);
+    font-size: 1em;
+}
+
+.item-filter-input:focus {
+    background-color: var(--input-focus-bg);
+    border-color: var(--color-primary);
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.item-filter-input::placeholder {
+    color: var(--text-placeholder);
+    opacity: 1;
+}
+
 .item-selection-list {
     display: grid;
     gap: 0;

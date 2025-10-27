@@ -94,7 +94,8 @@ class MobileEntryController extends Controller
                 'ariaLabels' => [
                     'section' => 'Item selection list',
                     'selectItem' => 'Select this item to log'
-                ]
+                ],
+                'filterPlaceholder' => 'Filter items...'
             ],
             
             // Item logging form
