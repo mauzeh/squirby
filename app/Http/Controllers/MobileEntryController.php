@@ -162,8 +162,6 @@ class MobileEntryController extends Controller
                 'filterPlaceholder' => 'Filter items...'
             ],
             
-
-            
             /**
              * Forms Configuration
              * 
