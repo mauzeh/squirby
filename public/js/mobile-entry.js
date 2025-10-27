@@ -316,10 +316,12 @@ document.addEventListener('DOMContentLoaded', function() {
             if (targetForm) {
                 targetForm.classList.add('active');
                 
-                // Update form title with selected item name
+                // Update form title using configurable template
                 const formTitle = targetForm.querySelector('.item-title');
                 if (formTitle) {
-                    formTitle.textContent = `Log ${itemData.name}`;
+                    const titleTemplate = targetForm.dataset.titleTemplate || 'Log {itemName}';
+                    const dynamicTitle = titleTemplate.replace('{itemName}', itemData.name);
+                    formTitle.textContent = dynamicTitle;
                 }
                 
                 // Hide item list and add button when form is shown

@@ -180,6 +180,7 @@ class MobileEntryController extends Controller
                     'id' => 'exercise-form',
                     'type' => 'exercise',
                     'title' => 'Log Exercise',
+                    'titleTemplate' => 'Log {itemName}',
                 'messages' => [
                     [
                         'type' => 'info',
@@ -328,6 +329,7 @@ class MobileEntryController extends Controller
                     'id' => 'food-form',
                     'type' => 'food',
                     'title' => 'Log Food',
+                    'titleTemplate' => 'Add {itemName} to Meal',
                     'messages' => [
                         [
                             'type' => 'info',
@@ -378,6 +380,7 @@ class MobileEntryController extends Controller
                     'id' => 'measurement-form',
                     'type' => 'measurement',
                     'title' => 'Log Measurement',
+                    'titleTemplate' => 'Record {itemName}',
                     'messages' => [
                         [
                             'type' => 'info',

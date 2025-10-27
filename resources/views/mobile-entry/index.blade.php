@@ -103,7 +103,7 @@
         
         <!-- Multiple Item Forms -->
         @foreach($data['itemForms'] as $form)
-        <section class="item-logging-section" aria-label="{{ $form['ariaLabels']['section'] }}" data-form-type="{{ $form['type'] }}" data-form-id="{{ $form['id'] }}">
+        <section class="item-logging-section" aria-label="{{ $form['ariaLabels']['section'] }}" data-form-type="{{ $form['type'] }}" data-form-id="{{ $form['id'] }}" data-title-template="{{ $form['titleTemplate'] }}">
             <div class="item-header">
                 <h2 class="item-title">{{ $form['title'] }}</h2>
                 <form class="delete-form" method="POST" action="#">
