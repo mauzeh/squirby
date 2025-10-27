@@ -610,16 +610,6 @@ Date Navigation Component */
     border-radius: var(--border-radius-md);
     box-shadow: var(--shadow-light);
     position: relative;
-    display: none; /* Hidden by default */
-}
-
-.item-logging-section.active {
-    display: block; /* Show when active */
-}
-
-/* Always show prepopulated forms */
-.item-logging-section.prepopulated-form {
-    display: block;
 }
 
 /* Form Type Variants - Visual distinction for different form types */

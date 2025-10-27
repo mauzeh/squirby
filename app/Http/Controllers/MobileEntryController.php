@@ -165,18 +165,18 @@ class MobileEntryController extends Controller
 
             
             /**
-             * Prepopulated Forms Configuration
+             * Forms Configuration
              * 
              * These forms are rendered immediately visible to the user with predefined data.
-             * Each form can have different types, prepopulated values, and configurations.
+             * Each form can have different types, values, and configurations.
              * 
              * Structure:
              * - Forms are always visible (not hidden behind item selection)
              * - Each form can have different field configurations
-             * - Values are prepopulated from the data array
-             * - Forms maintain the same structure as dynamic forms for consistency
+             * - Values are set from the data array
+             * - Forms maintain consistent structure
              */
-            'prepopulatedForms' => [
+            'forms' => [
                 // Example: Quick Exercise Entry
                 [
                     'id' => 'quick-exercise-1',

@@ -100,10 +100,10 @@
         </section>
         
 
-        <!-- Prepopulated Forms -->
-        @if(isset($data['prepopulatedForms']) && count($data['prepopulatedForms']) > 0)
-        @foreach($data['prepopulatedForms'] as $form)
-        <section class="item-logging-section prepopulated-form" aria-label="{{ $form['ariaLabels']['section'] }}" data-form-type="{{ $form['type'] }}" data-form-id="{{ $form['id'] }}">
+        <!-- Forms -->
+        @if(isset($data['forms']) && count($data['forms']) > 0)
+        @foreach($data['forms'] as $form)
+        <section class="item-logging-section form" aria-label="{{ $form['ariaLabels']['section'] }}" data-form-type="{{ $form['type'] }}" data-form-id="{{ $form['id'] }}">
             <div class="item-header">
                 <h2 class="item-title">{{ $form['title'] }}</h2>
                 <form class="delete-form" method="POST" action="{{ $form['deleteAction'] }}">
