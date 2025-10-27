@@ -8,17 +8,64 @@ class MobileEntryController extends Controller
 {
     /**
      * Display the mobile entry interface
+     * 
+     * Supports date-based navigation through URL parameters:
+     * - /mobile-entry (defaults to today)
+     * - /mobile-entry?date=2024-01-15 (specific date)
+     * 
+     * @param Request $request
+     * @return \Illuminate\View\View
      */
-    public function index()
+    public function index(Request $request)
     {
+        // Get the selected date from request or default to today
+        // Supports formats: Y-m-d, Y/m/d, and other Carbon-parseable formats
+        $selectedDate = $request->input('date') 
+            ? \Carbon\Carbon::parse($request->input('date')) 
+            : \Carbon\Carbon::today();
+        
+        // Calculate navigation dates for prev/next functionality
+        $prevDay = $selectedDate->copy()->subDay();
+        $nextDay = $selectedDate->copy()->addDay();
+        $today = \Carbon\Carbon::today();
+        
+        // Generate user-friendly date title (Today, Yesterday, Tomorrow, or formatted date)
+        $dateTitle = $this->generateDateTitle($selectedDate, $today);
         // All text content and data for the view
         $data = [
-            // Navigation and titles
+            /**
+             * Date Navigation Configuration
+             * 
+             * Provides configurable navigation buttons with dynamic URLs based on selected date.
+             * Each button contains both display text and href for proper link functionality.
+             * 
+             * Structure:
+             * - prevButton: Links to previous day (selectedDate - 1 day)
+             * - todayButton: Links to current date (always today, regardless of selected date)
+             * - nextButton: Links to next day (selectedDate + 1 day)
+             * 
+             * URLs are generated using Laravel's route() helper with date parameters.
+             * This allows the mobile entry interface to work with any date-based route pattern.
+             * 
+             * Usage Examples:
+             * - For food logs: route('food-logs.mobile-entry', ['date' => $date])
+             * - For lift logs: route('lift-logs.mobile-entry', ['date' => $date])
+             * - For generic mobile entry: route('mobile-entry.index', ['date' => $date])
+             */
             'navigation' => [
-                'prevButton' => '← Prev',
-                'todayButton' => 'Today',
-                'nextButton' => 'Next →',
-                'dateTitle' => 'Today',
+                'prevButton' => [
+                    'text' => '← Prev',
+                    'href' => route('mobile-entry.index', ['date' => $prevDay->toDateString()])
+                ],
+                'todayButton' => [
+                    'text' => 'Today',
+                    'href' => route('mobile-entry.index', ['date' => $today->toDateString()])
+                ],
+                'nextButton' => [
+                    'text' => 'Next →',
+                    'href' => route('mobile-entry.index', ['date' => $nextDay->toDateString()])
+                ],
+                'dateTitle' => $dateTitle,
                 'ariaLabels' => [
                     'navigation' => 'Date navigation',
                     'previousDay' => 'Previous day',
@@ -290,5 +337,34 @@ class MobileEntryController extends Controller
         ];
 
         return view('mobile-entry.index', compact('data'));
+    }
+    
+    /**
+     * Generate a user-friendly date title
+     * 
+     * Returns contextual date labels for recent dates, or formatted date with day of week for others.
+     * 
+     * Examples:
+     * - Today's date: "Today"
+     * - Yesterday: "Yesterday" 
+     * - Tomorrow: "Tomorrow"
+     * - Other dates: "Mon, Jan 15, 2024" (includes day of week shorthand)
+     * 
+     * @param \Carbon\Carbon $selectedDate
+     * @param \Carbon\Carbon $today
+     * @return string
+     */
+    private function generateDateTitle(\Carbon\Carbon $selectedDate, \Carbon\Carbon $today): string
+    {
+        if ($selectedDate->isToday()) {
+            return 'Today';
+        } elseif ($selectedDate->isYesterday()) {
+            return 'Yesterday';
+        } elseif ($selectedDate->isTomorrow()) {
+            return 'Tomorrow';
+        } else {
+            // Include day of week shorthand for other dates: "Mon, Jan 15, 2024"
+            return $selectedDate->format('D, M d, Y');
+        }
     }
 }

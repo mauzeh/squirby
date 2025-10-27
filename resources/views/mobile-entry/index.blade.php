@@ -12,15 +12,15 @@
     <div class="mobile-entry-container">
         <!-- Date Navigation -->
         <nav class="date-navigation" aria-label="{{ $data['navigation']['ariaLabels']['navigation'] }}">
-            <button type="button" class="nav-button nav-button--prev" aria-label="{{ $data['navigation']['ariaLabels']['previousDay'] }}">
-                {{ $data['navigation']['prevButton'] }}
-            </button>
-            <button type="button" class="nav-button nav-button--today" aria-label="{{ $data['navigation']['ariaLabels']['goToToday'] }}">
-                {{ $data['navigation']['todayButton'] }}
-            </button>
-            <button type="button" class="nav-button nav-button--next" aria-label="{{ $data['navigation']['ariaLabels']['nextDay'] }}">
-                {{ $data['navigation']['nextButton'] }}
-            </button>
+            <a href="{{ $data['navigation']['prevButton']['href'] }}" class="nav-button nav-button--prev" aria-label="{{ $data['navigation']['ariaLabels']['previousDay'] }}">
+                {{ $data['navigation']['prevButton']['text'] }}
+            </a>
+            <a href="{{ $data['navigation']['todayButton']['href'] }}" class="nav-button nav-button--today" aria-label="{{ $data['navigation']['ariaLabels']['goToToday'] }}">
+                {{ $data['navigation']['todayButton']['text'] }}
+            </a>
+            <a href="{{ $data['navigation']['nextButton']['href'] }}" class="nav-button nav-button--next" aria-label="{{ $data['navigation']['ariaLabels']['nextDay'] }}">
+                {{ $data['navigation']['nextButton']['text'] }}
+            </a>
         </nav>
 
         <!-- Date Title -->
