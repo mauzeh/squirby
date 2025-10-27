@@ -71,6 +71,12 @@
                     </a>
                 </li>
                 @endforeach
+                <li class="no-results-item" style="display: none;">
+                    <div class="item-selection-card item-selection-card--no-results">
+                        <span class="item-name">{{ $data['itemSelectionList']['noResultsMessage'] }}</span>
+                        <span class="item-type">No matches</span>
+                    </div>
+                </li>
             </ul>
         </section>
         

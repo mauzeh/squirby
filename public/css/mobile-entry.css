@@ -442,6 +442,29 @@ Date Navigation Component */
     color: rgba(227, 242, 253, 0.7);
 }
 
+/* No results styling */
+.item-selection-card--no-results {
+    background-color: rgba(108, 117, 125, 0.1);
+    cursor: default;
+    pointer-events: none;
+}
+
+.item-selection-card--no-results:hover {
+    background-color: rgba(108, 117, 125, 0.1);
+    transform: none;
+    box-shadow: none;
+}
+
+.item-selection-card--no-results .item-name {
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+.item-selection-card--no-results .item-type {
+    color: var(--text-muted);
+    font-style: italic;
+}
+
 /* Responsive adjustments for item selection */
 @media (max-width: 768px) {
     .item-selection-section {
