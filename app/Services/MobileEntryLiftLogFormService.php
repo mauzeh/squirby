@@ -324,7 +324,11 @@ class MobileEntryLiftLogFormService
                 'id' => $log->id,
                 'value' => $displayValue,
                 'editAction' => route('lift-logs.edit', ['lift_log' => $log->id]),
-                'deleteAction' => route('lift-logs.destroy', ['lift_log' => $log->id]),
+                'deleteAction' => route('lift-logs.destroy', [
+                    'lift_log' => $log->id,
+                    'redirect_to' => 'mobile-entry-lifts',
+                    'date' => $selectedDate->toDateString()
+                ]),
                 'message' => [
                     'type' => 'neutral',
                     'prefix' => $log->exercise->title . ':',
