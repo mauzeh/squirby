@@ -1,6 +1,6 @@
 # Implementation Plan
 
-- [ ] 1. Create ExerciseMergeService for business logic
+- [x] 1. Create ExerciseMergeService for business logic
   - Create service class with merge compatibility validation methods
   - Implement method to find potential global target exercises
   - Implement core merge logic with database transaction handling
