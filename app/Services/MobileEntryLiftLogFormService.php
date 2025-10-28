@@ -308,49 +308,11 @@ class MobileEntryLiftLogFormService
      * 
      * @param int $userId
      * @param Carbon $selectedDate
-     * @return array
+     * @return null
      */
     public function generateSummary($userId, Carbon $selectedDate)
     {
-        // Get today's lift logs
-        $todaysLogs = LiftLog::where('user_id', $userId)
-            ->whereDate('logged_at', $selectedDate->toDateString())
-            ->with(['liftSets'])
-            ->get();
-
-        // Calculate total weight lifted today
-        $totalWeight = 0;
-        $totalSets = 0;
-        foreach ($todaysLogs as $log) {
-            foreach ($log->liftSets as $set) {
-                $totalWeight += $set->weight * $set->reps;
-                $totalSets++;
-            }
-        }
-
-        // Get unique exercises completed today
-        $exercisesCompleted = $todaysLogs->unique('exercise_id')->count();
-
-        // Calculate average intensity (placeholder - could be based on 1RM percentages)
-        $averageIntensity = $totalSets > 0 ? min(100, ($totalWeight / $totalSets) / 10) : 0;
-
-        return [
-            'values' => [
-                'total' => (int) $totalWeight,
-                'completed' => $exercisesCompleted,
-                'average' => (int) $averageIntensity,
-                'today' => $totalSets
-            ],
-            'labels' => [
-                'total' => 'Total Weight (lbs)',
-                'completed' => 'Exercises',
-                'average' => 'Avg Intensity %',
-                'today' => 'Sets Today'
-            ],
-            'ariaLabels' => [
-                'section' => 'Session summary'
-            ]
-        ];
+        return null;
     }
 
     /**

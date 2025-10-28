@@ -250,128 +250,20 @@ class MobileEntryLiftLogFormServiceTest extends TestCase
     }
 
     #[Test]
-    public function it_calculates_summary_with_no_logs()
+    public function it_returns_null_for_summary()
     {
         $user = \App\Models\User::factory()->create();
         
         $summary = $this->service->generateSummary($user->id, $this->testDate);
         
-        $this->assertEquals([
-            'values' => [
-                'total' => 0,
-                'completed' => 0,
-                'average' => 0,
-                'today' => 0
-            ],
-            'labels' => [
-                'total' => 'Total Weight (lbs)',
-                'completed' => 'Exercises',
-                'average' => 'Avg Intensity %',
-                'today' => 'Sets Today'
-            ],
-            'ariaLabels' => [
-                'section' => 'Session summary'
-            ]
-        ], $summary);
+        $this->assertNull($summary);
     }
 
-    #[Test]
-    public function it_calculates_summary_with_logs()
-    {
-        $user = \App\Models\User::factory()->create();
-        $exercise1 = Exercise::factory()->create();
-        $exercise2 = Exercise::factory()->create();
-        
-        // First exercise: 2 sets
-        $liftLog1 = LiftLog::factory()->create([
-            'user_id' => $user->id,
-            'exercise_id' => $exercise1->id,
-            'logged_at' => $this->testDate
-        ]);
-        
-        LiftSet::factory()->create([
-            'lift_log_id' => $liftLog1->id,
-            'weight' => 225,
-            'reps' => 5
-        ]);
-        
-        LiftSet::factory()->create([
-            'lift_log_id' => $liftLog1->id,
-            'weight' => 225,
-            'reps' => 5
-        ]);
-        
-        // Second exercise: 1 set
-        $liftLog2 = LiftLog::factory()->create([
-            'user_id' => $user->id,
-            'exercise_id' => $exercise2->id,
-            'logged_at' => $this->testDate
-        ]);
-        
-        LiftSet::factory()->create([
-            'lift_log_id' => $liftLog2->id,
-            'weight' => 135,
-            'reps' => 10
-        ]);
 
-        $summary = $this->service->generateSummary($user->id, $this->testDate);
-        
-        // Total weight: (225*5 + 225*5 + 135*10) = 3600
-        // Exercises: 2 unique
-        // Sets: 3 total
-        // Average intensity: min(100, 3600/3/10) = 100
-        
-        $this->assertEquals(3600, $summary['values']['total']);
-        $this->assertEquals(2, $summary['values']['completed']);
-        $this->assertEquals(100, $summary['values']['average']);
-        $this->assertEquals(3, $summary['values']['today']);
-    }
 
-    #[Test]
-    public function it_handles_empty_lift_sets_in_summary()
-    {
-        $user = \App\Models\User::factory()->create();
-        $exercise = Exercise::factory()->create();
-        
-        // Create lift log without sets
-        LiftLog::factory()->create([
-            'user_id' => $user->id,
-            'exercise_id' => $exercise->id,
-            'logged_at' => $this->testDate
-        ]);
 
-        $summary = $this->service->generateSummary($user->id, $this->testDate);
-        
-        $this->assertEquals(0, $summary['values']['total']);
-        $this->assertEquals(1, $summary['values']['completed']); // Still counts as completed exercise
-        $this->assertEquals(0, $summary['values']['average']);
-        $this->assertEquals(0, $summary['values']['today']);
-    }
 
-    #[Test]
-    public function it_calculates_average_intensity_correctly()
-    {
-        $user = \App\Models\User::factory()->create();
-        $exercise = Exercise::factory()->create();
-        
-        $liftLog = LiftLog::factory()->create([
-            'user_id' => $user->id,
-            'exercise_id' => $exercise->id,
-            'logged_at' => $this->testDate
-        ]);
-        
-        // Create a set that would result in average intensity > 100
-        LiftSet::factory()->create([
-            'lift_log_id' => $liftLog->id,
-            'weight' => 500,
-            'reps' => 10
-        ]);
 
-        $summary = $this->service->generateSummary($user->id, $this->testDate);
-        
-        // Should cap at 100
-        $this->assertEquals(100, $summary['values']['average']);
-    }
 
     #[Test]
     public function it_identifies_completed_programs()

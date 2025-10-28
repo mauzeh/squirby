@@ -529,7 +529,7 @@ class MobileEntryController extends Controller
                 ]
             ],
             
-            'summary' => null,
+            'summary' => $formService->generateSummary(Auth::id(), $selectedDate),
             
             'addItemButton' => [
                 'text' => 'Add Exercise',
