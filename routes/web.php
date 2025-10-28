@@ -86,7 +86,7 @@ Route::middleware('auth')->group(function () {
 
 
     Route::post('lift-logs/destroy-selected', [LiftLogController::class, 'destroySelected'])->name('lift-logs.destroy-selected');
-    Route::get('lift-logs/mobile-entry', [LiftLogController::class, 'mobileEntry'])->name('lift-logs.mobile-entry');
+    Route::get('lift-logs/mobile-entry', [MobileEntryController::class, 'lifts'])->name('lift-logs.mobile-entry');
 });
 
 // Google OAuth routes
