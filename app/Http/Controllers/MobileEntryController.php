@@ -59,6 +59,27 @@ class MobileEntryController extends Controller
         // All text content and data for the view
         $data = [
             /**
+             * Selected Date Configuration
+             * 
+             * The currently selected date for this mobile entry session.
+             * This date is used throughout the interface for:
+             * - Navigation button URLs (prev/next day links)
+             * - Form submissions (ensuring data is logged to correct date)
+             * - Data filtering (showing only relevant data for this date)
+             * 
+             * Format: Y-m-d string (e.g., "2024-01-15")
+             * 
+             * Usage Examples:
+             * - Form hidden fields: <input type="hidden" name="date" value="{{ $selectedDate }}">
+             * - URL parameters: route('some.route', ['date' => $selectedDate])
+             * - Database queries: whereDate('logged_at', $selectedDate)
+             * 
+             * This ensures all operations (create, edit, delete) happen on the correct date,
+             * especially important when users navigate to different dates.
+             */
+            'selectedDate' => $selectedDate->toDateString(),
+            
+            /**
              * Date Navigation Configuration
              * 
              * Provides configurable navigation buttons with dynamic URLs based on selected date.
@@ -132,20 +153,24 @@ class MobileEntryController extends Controller
                     'method' => 'POST',
                     'inputName' => 'item_name',
                     'submitText' => '+',
-                    'ariaLabel' => 'Create new item'
+                    'ariaLabel' => 'Create new item',
+                    // Hidden fields to include in form submission (e.g., date parameter)
+                    'hiddenFields' => [
+                        'date' => $selectedDate->toDateString() // Ensures item is created for correct date
+                    ]
                 ],
                 'items' => [
                     [
                         'id' => 'item-1',
                         'name' => 'Bench Press',
                         'type' => 'highlighted',
-                        'href' => '#' // route('mobile-entry.exercise', ['id' => 1]) or similar
+                        'href' => '#' // route('mobile-entry.add-item', ['id' => 1, 'date' => $selectedDate]) or similar
                     ],
                     [
                         'id' => 'item-2',
                         'name' => 'Squats',
                         'type' => 'highlighted',
-                        'href' => '#' // route('mobile-entry.exercise', ['id' => 2]) or similar
+                        'href' => '#' // route('mobile-entry.add-item', ['id' => 2, 'date' => $selectedDate]) or similar
                     ],
                     [
                         'id' => 'item-3',

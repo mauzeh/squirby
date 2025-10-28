@@ -79,6 +79,9 @@ class MobileEntryLiftLogFormService
                 'itemName' => $exercise->title,
                 'formAction' => route('lift-logs.store'),
                 'deleteAction' => route('mobile-entry.remove-form', ['id' => $formId]),
+                'deleteParams' => [
+                    'date' => $selectedDate->toDateString()
+                ],
                 'messages' => $messages,
                 'numericFields' => [
                     [
@@ -368,11 +371,11 @@ class MobileEntryLiftLogFormService
                 'id' => $log->id,
                 'title' => $log->exercise->title,
                 'editAction' => route('lift-logs.edit', ['lift_log' => $log->id]),
-                'deleteAction' => route('lift-logs.destroy', [
-                    'lift_log' => $log->id,
+                'deleteAction' => route('lift-logs.destroy', ['lift_log' => $log->id]),
+                'deleteParams' => [
                     'redirect_to' => 'mobile-entry-lifts',
                     'date' => $selectedDate->toDateString()
-                ]),
+                ],
                 'message' => [
                     'type' => 'success',
                     'prefix' => 'Completed!',
@@ -451,7 +454,10 @@ class MobileEntryLiftLogFormService
                 'id' => 'exercise-' . $exercise->id,
                 'name' => $exercise->title,
                 'type' => $type,
-                'href' => route('mobile-entry.add-lift-form', ['exercise' => $exercise->canonical_name ?? $exercise->id])
+                'href' => route('mobile-entry.add-lift-form', [
+                    'exercise' => $exercise->canonical_name ?? $exercise->id,
+                    'date' => $selectedDate->toDateString()
+                ])
             ];
         }
 
@@ -473,7 +479,10 @@ class MobileEntryLiftLogFormService
                 'method' => 'POST',
                 'inputName' => 'exercise_name',
                 'submitText' => '+',
-                'ariaLabel' => 'Create new exercise'
+                'ariaLabel' => 'Create new exercise',
+                'hiddenFields' => [
+                    'date' => $selectedDate->toDateString()
+                ]
             ],
             'items' => $items,
             'ariaLabels' => [

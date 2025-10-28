@@ -1167,17 +1167,15 @@ class MobileEntryLiftLogFormServiceTest extends TestCase
         $this->assertCount(1, $loggedItems['items']);
         
         $item = $loggedItems['items'][0];
-        $deleteAction = $item['deleteAction'];
         
-        // Parse the URL to check parameters
-        $parsedUrl = parse_url($deleteAction);
-        parse_str($parsedUrl['query'] ?? '', $queryParams);
+        // Verify the route includes the lift log ID but no query parameters
+        $this->assertStringContainsString('lift-logs/' . $liftLog->id, $item['deleteAction']);
+        $this->assertStringNotContainsString('redirect_to', $item['deleteAction']);
         
-        $this->assertEquals('mobile-entry-lifts', $queryParams['redirect_to']);
-        $this->assertEquals($this->testDate->toDateString(), $queryParams['date']);
-        
-        // Also verify the route includes the lift log ID
-        $this->assertStringContainsString('lift-logs/' . $liftLog->id, $deleteAction);
+        // Verify redirect parameters are in separate deleteParams array
+        $this->assertArrayHasKey('deleteParams', $item);
+        $this->assertEquals('mobile-entry-lifts', $item['deleteParams']['redirect_to']);
+        $this->assertEquals($this->testDate->toDateString(), $item['deleteParams']['date']);
     }
 
     #[Test]
@@ -1632,13 +1630,244 @@ class MobileEntryLiftLogFormServiceTest extends TestCase
         $loggedItems = $this->service->generateLoggedItems($user->id, $this->testDate);
         
         $item = $loggedItems['items'][0];
-        $deleteAction = $item['deleteAction'];
         
-        // Parse the URL to check parameters
-        $parsedUrl = parse_url($deleteAction);
-        parse_str($parsedUrl['query'] ?? '', $queryParams);
+        // Check that deleteAction is the base route without query parameters
+        $this->assertStringContainsString('lift-logs/' . $liftLog->id, $item['deleteAction']);
+        $this->assertStringNotContainsString('redirect_to', $item['deleteAction']);
         
-        $this->assertEquals('mobile-entry-lifts', $queryParams['redirect_to']);
-        $this->assertEquals($this->testDate->toDateString(), $queryParams['date']);
+        // Check that redirect parameters are in separate deleteParams array
+        $this->assertArrayHasKey('deleteParams', $item);
+        $this->assertEquals('mobile-entry-lifts', $item['deleteParams']['redirect_to']);
+        $this->assertEquals($this->testDate->toDateString(), $item['deleteParams']['date']);
+    }
+
+    #[Test]
+    public function it_generates_item_selection_list_with_date_parameters()
+    {
+        $user = User::factory()->create();
+        $exercise1 = Exercise::factory()->create([
+            'title' => 'Bench Press',
+            'canonical_name' => 'bench_press'
+        ]);
+        $exercise2 = Exercise::factory()->create([
+            'title' => 'Squats',
+            'canonical_name' => 'squats'
+        ]);
+
+        $itemSelectionList = $this->service->generateItemSelectionList($user->id, $this->testDate);
+        
+        $this->assertArrayHasKey('items', $itemSelectionList);
+        $this->assertArrayHasKey('createForm', $itemSelectionList);
+        
+        // Check that exercise hrefs include date parameter
+        $benchPressItem = collect($itemSelectionList['items'])->firstWhere('name', 'Bench Press');
+        $this->assertNotNull($benchPressItem);
+        $this->assertStringContainsString('date=' . $this->testDate->toDateString(), $benchPressItem['href']);
+        $this->assertStringContainsString('mobile-entry/add-lift-form/bench_press', $benchPressItem['href']);
+        
+        // Check that createForm includes date in hiddenFields
+        $createForm = $itemSelectionList['createForm'];
+        $this->assertArrayHasKey('hiddenFields', $createForm);
+        $this->assertEquals($this->testDate->toDateString(), $createForm['hiddenFields']['date']);
+    }
+
+    #[Test]
+    public function it_generates_item_selection_list_with_exercise_by_id_when_no_canonical_name()
+    {
+        $user = User::factory()->create();
+        $exercise = Exercise::factory()->create([
+            'title' => 'Custom Exercise'
+        ]);
+        
+        // Manually set canonical_name to null to bypass the model's automatic generation
+        $exercise->update(['canonical_name' => null]);
+        $exercise->refresh();
+
+        $itemSelectionList = $this->service->generateItemSelectionList($user->id, $this->testDate);
+        
+        // Should use exercise ID when canonical_name is null
+        $customExerciseItem = collect($itemSelectionList['items'])->firstWhere('name', 'Custom Exercise');
+        $this->assertNotNull($customExerciseItem);
+        $this->assertStringContainsString('mobile-entry/add-lift-form/' . $exercise->id, $customExerciseItem['href']);
+        $this->assertStringContainsString('date=' . $this->testDate->toDateString(), $customExerciseItem['href']);
+    }
+
+    #[Test]
+    public function it_highlights_exercises_in_todays_program()
+    {
+        $user = User::factory()->create();
+        $exercise1 = Exercise::factory()->create(['title' => 'In Program']);
+        $exercise2 = Exercise::factory()->create(['title' => 'Not In Program']);
+        
+        // Add exercise1 to today's program
+        Program::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise1->id,
+            'date' => $this->testDate
+        ]);
+
+        $itemSelectionList = $this->service->generateItemSelectionList($user->id, $this->testDate);
+        
+        $inProgramItem = collect($itemSelectionList['items'])->firstWhere('name', 'In Program');
+        $notInProgramItem = collect($itemSelectionList['items'])->firstWhere('name', 'Not In Program');
+        
+        $this->assertEquals('highlighted', $inProgramItem['type']);
+        $this->assertEquals('regular', $notInProgramItem['type']);
+    }
+
+    #[Test]
+    public function it_highlights_recently_used_exercises()
+    {
+        $user = User::factory()->create();
+        $exercise1 = Exercise::factory()->create(['title' => 'Recently Used']);
+        $exercise2 = Exercise::factory()->create(['title' => 'Not Recently Used']);
+        
+        // Create a recent lift log for exercise1 (within 7 days)
+        LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise1->id,
+            'logged_at' => $this->testDate->copy()->subDays(3)
+        ]);
+
+        $itemSelectionList = $this->service->generateItemSelectionList($user->id, $this->testDate);
+        
+        $recentItem = collect($itemSelectionList['items'])->firstWhere('name', 'Recently Used');
+        $notRecentItem = collect($itemSelectionList['items'])->firstWhere('name', 'Not Recently Used');
+        
+        $this->assertEquals('highlighted', $recentItem['type']);
+        $this->assertEquals('regular', $notRecentItem['type']);
+    }
+
+    #[Test]
+    public function it_sorts_highlighted_exercises_first()
+    {
+        $user = User::factory()->create();
+        
+        // Create exercises in alphabetical order
+        $exerciseA = Exercise::factory()->create(['title' => 'A Regular Exercise']);
+        $exerciseB = Exercise::factory()->create(['title' => 'B Highlighted Exercise']);
+        $exerciseC = Exercise::factory()->create(['title' => 'C Regular Exercise']);
+        
+        // Make exerciseB highlighted by adding to program
+        Program::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exerciseB->id,
+            'date' => $this->testDate
+        ]);
+
+        $itemSelectionList = $this->service->generateItemSelectionList($user->id, $this->testDate);
+        
+        // Highlighted exercise should come first despite alphabetical order
+        $this->assertEquals('B Highlighted Exercise', $itemSelectionList['items'][0]['name']);
+        $this->assertEquals('highlighted', $itemSelectionList['items'][0]['type']);
+        
+        // Regular exercises should follow in alphabetical order
+        $this->assertEquals('A Regular Exercise', $itemSelectionList['items'][1]['name']);
+        $this->assertEquals('C Regular Exercise', $itemSelectionList['items'][2]['name']);
+    }
+
+    #[Test]
+    public function it_limits_item_selection_list_to_20_items()
+    {
+        $user = User::factory()->create();
+        
+        // Create 25 exercises
+        for ($i = 1; $i <= 25; $i++) {
+            Exercise::factory()->create([
+                'title' => 'Exercise ' . str_pad($i, 2, '0', STR_PAD_LEFT),
+                'user_id' => $user->id
+            ]);
+        }
+
+        $itemSelectionList = $this->service->generateItemSelectionList($user->id, $this->testDate);
+        
+        // Should be limited to 20 items
+        $this->assertCount(20, $itemSelectionList['items']);
+    }
+
+    #[Test]
+    public function it_respects_user_exercise_visibility_in_item_selection()
+    {
+        $user1 = User::factory()->create();
+        $user2 = User::factory()->create();
+        
+        // Create exercises for different users
+        $user1Exercise = Exercise::factory()->create([
+            'title' => 'User 1 Exercise',
+            'user_id' => $user1->id
+        ]);
+        
+        $user2Exercise = Exercise::factory()->create([
+            'title' => 'User 2 Exercise',
+            'user_id' => $user2->id
+        ]);
+        
+        $globalExercise = Exercise::factory()->create([
+            'title' => 'Global Exercise',
+            'user_id' => null
+        ]);
+
+        $itemSelectionList = $this->service->generateItemSelectionList($user1->id, $this->testDate);
+        
+        $exerciseNames = collect($itemSelectionList['items'])->pluck('name')->toArray();
+        
+        // User1 should see their own exercise and global exercises
+        $this->assertContains('User 1 Exercise', $exerciseNames);
+        $this->assertContains('Global Exercise', $exerciseNames);
+        
+        // User1 should NOT see User2's private exercise
+        $this->assertNotContains('User 2 Exercise', $exerciseNames);
+    }
+
+    #[Test]
+    public function it_includes_date_parameter_in_form_delete_action()
+    {
+        $user = User::factory()->create();
+        $exercise = Exercise::factory()->create(['title' => 'Test Exercise']);
+        
+        // Create a program for tomorrow
+        $tomorrowDate = $this->testDate->copy()->addDay();
+        Program::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'date' => $tomorrowDate
+        ]);
+
+        $forms = $this->service->generateProgramForms($user->id, $tomorrowDate);
+        
+        $this->assertCount(1, $forms);
+        $form = $forms[0];
+        
+        // Verify the form has deleteParams with the correct date
+        $this->assertArrayHasKey('deleteParams', $form);
+        $this->assertArrayHasKey('date', $form['deleteParams']);
+        $this->assertEquals($tomorrowDate->toDateString(), $form['deleteParams']['date']);
+    }
+
+    #[Test]
+    public function it_preserves_selected_date_when_removing_program_form()
+    {
+        $user = User::factory()->create();
+        $exercise = Exercise::factory()->create(['title' => 'Test Exercise']);
+        
+        // Create a program for tomorrow
+        $tomorrowDate = $this->testDate->copy()->addDay();
+        $program = Program::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'date' => $tomorrowDate
+        ]);
+
+        // Simulate the controller receiving the date parameter
+        $formId = 'program-' . $program->id;
+        
+        // The removeForm method should work regardless of date
+        $result = $this->service->removeForm($user->id, $formId);
+        
+        $this->assertTrue($result['success']);
+        $this->assertEquals('Removed Test Exercise from today\'s program.', $result['message']);
+        
+        // Verify program was deleted
+        $this->assertDatabaseMissing('programs', ['id' => $program->id]);
     }
 }

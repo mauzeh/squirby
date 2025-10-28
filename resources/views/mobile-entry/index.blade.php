@@ -84,6 +84,11 @@
                             <form method="{{ $data['itemSelectionList']['createForm']['method'] }}" action="{{ $data['itemSelectionList']['createForm']['action'] }}" class="create-item-form">
                                 @csrf
                                 <input type="hidden" name="{{ $data['itemSelectionList']['createForm']['inputName'] }}" class="create-item-input" value="">
+                                @if(isset($data['itemSelectionList']['createForm']['hiddenFields']))
+                                    @foreach($data['itemSelectionList']['createForm']['hiddenFields'] as $name => $value)
+                                        <input type="hidden" name="{{ $name }}" value="{{ $value }}">
+                                    @endforeach
+                                @endif
                                 <button type="submit" class="btn-secondary btn-create" aria-label="{{ $data['itemSelectionList']['createForm']['ariaLabel'] }}">
                                     <span class="plus-icon">{{ $data['itemSelectionList']['createForm']['submitText'] }}</span>
                                 </button>
@@ -122,6 +127,11 @@
                 <form class="delete-form" method="POST" action="{{ $form['deleteAction'] }}">
                     @csrf
                     @method('DELETE')
+                    @if(isset($form['deleteParams']))
+                        @foreach($form['deleteParams'] as $name => $value)
+                            <input type="hidden" name="{{ $name }}" value="{{ $value }}">
+                        @endforeach
+                    @endif
                     <button type="submit" class="btn-delete" aria-label="{{ $form['ariaLabels']['deleteForm'] }}">
                         <i class="fas fa-trash"></i>
                     </button>
@@ -193,6 +203,11 @@
                         <form class="delete-form" method="POST" action="{{ $item['deleteAction'] }}">
                             @csrf
                             @method('DELETE')
+                            @if(isset($item['deleteParams']))
+                                @foreach($item['deleteParams'] as $name => $value)
+                                    <input type="hidden" name="{{ $name }}" value="{{ $value }}">
+                                @endforeach
+                            @endif
                             <button type="submit" class="btn-delete" aria-label="{{ $data['loggedItems']['ariaLabels']['deleteItem'] }}">
                                 <i class="fas fa-trash"></i>
                             </button>
