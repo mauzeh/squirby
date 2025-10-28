@@ -915,8 +915,8 @@ class MobileEntryLiftLogFormServiceTest extends TestCase
         $this->assertEquals(4, $roundsField['defaultValue']); // From program
         
         // Check comment field
-        $this->assertEquals('comment', $form['commentField']['name']);
-        $this->assertEquals('Test program', $form['commentField']['defaultValue']);
+        $this->assertEquals('comments', $form['commentField']['name']);
+        $this->assertEquals('', $form['commentField']['defaultValue']);
     }
 
     #[Test]
@@ -1325,5 +1325,109 @@ class MobileEntryLiftLogFormServiceTest extends TestCase
             'exercise_id' => $anotherExercise->id,
             'priority' => 48
         ]);
+    }
+
+    #[Test]
+    public function it_generates_comment_field_for_lift_log_entry()
+    {
+        $user = User::factory()->create();
+        $exercise = Exercise::factory()->create(['title' => 'Bench Press']);
+        
+        $program = Program::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'date' => $this->testDate,
+            'comments' => 'Program notes: focus on form'
+        ]);
+
+        $forms = $this->service->generateProgramForms($user->id, $this->testDate);
+        
+        $this->assertCount(1, $forms);
+        
+        $form = $forms[0];
+        $commentField = $form['commentField'];
+        
+        // Comment field should be for lift-log entry, not program
+        $this->assertEquals('comments', $commentField['name']);
+        $this->assertEquals('', $commentField['defaultValue']); // Empty for new lift-log entry
+        $this->assertEquals('Notes:', $commentField['label']);
+        $this->assertEquals('RPE, form notes, how did it feel?', $commentField['placeholder']);
+        $this->assertEquals('program-' . $program->id . '-comment', $commentField['id']);
+    }
+
+    #[Test]
+    public function it_does_not_populate_comment_field_with_program_comments()
+    {
+        $user = User::factory()->create();
+        $exercise = Exercise::factory()->create(['title' => 'Squat']);
+        
+        Program::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'date' => $this->testDate,
+            'comments' => 'This is a program comment that should not appear in the form'
+        ]);
+
+        $forms = $this->service->generateProgramForms($user->id, $this->testDate);
+        
+        $form = $forms[0];
+        $commentField = $form['commentField'];
+        
+        // Comment field should start empty, not pre-populated with program comments
+        $this->assertEquals('', $commentField['defaultValue']);
+        $this->assertEquals('comments', $commentField['name']);
+    }
+
+    #[Test]
+    public function it_generates_comment_field_with_correct_attributes_for_lift_log()
+    {
+        $user = User::factory()->create();
+        $exercise = Exercise::factory()->create(['title' => 'Deadlift']);
+        
+        $program = Program::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'date' => $this->testDate
+        ]);
+
+        $forms = $this->service->generateProgramForms($user->id, $this->testDate);
+        
+        $form = $forms[0];
+        $commentField = $form['commentField'];
+        
+        // Verify all comment field attributes are correct for lift-log submission
+        $this->assertEquals('comments', $commentField['name']); // Matches LiftLog fillable field
+        $this->assertEquals('Notes:', $commentField['label']);
+        $this->assertEquals('RPE, form notes, how did it feel?', $commentField['placeholder']);
+        $this->assertEquals('', $commentField['defaultValue']); // Empty for new entry
+        $this->assertEquals('program-' . $program->id . '-comment', $commentField['id']);
+    }
+
+    #[Test]
+    public function it_maintains_program_comments_in_messages_but_not_in_comment_field()
+    {
+        $user = User::factory()->create();
+        $exercise = Exercise::factory()->create(['title' => 'Overhead Press']);
+        
+        $program = Program::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'date' => $this->testDate,
+            'comments' => 'Focus on strict form today'
+        ]);
+
+        $forms = $this->service->generateProgramForms($user->id, $this->testDate);
+        
+        $form = $forms[0];
+        
+        // Program comments should appear in messages section
+        $programMessage = collect($form['messages'])->firstWhere('prefix', 'Program notes:');
+        $this->assertNotNull($programMessage);
+        $this->assertEquals('Focus on strict form today', $programMessage['text']);
+        
+        // But comment field should be empty for lift-log entry
+        $commentField = $form['commentField'];
+        $this->assertEquals('', $commentField['defaultValue']);
+        $this->assertEquals('comments', $commentField['name']);
     }
 }

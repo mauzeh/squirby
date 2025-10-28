@@ -123,10 +123,10 @@ class MobileEntryLiftLogFormService
                 ],
                 'commentField' => [
                     'id' => $formId . '-comment',
-                    'name' => 'comment',
+                    'name' => 'comments',
                     'label' => 'Notes:',
                     'placeholder' => 'RPE, form notes, how did it feel?',
-                    'defaultValue' => $program->comments ?? ''
+                    'defaultValue' => ''
                 ],
                 'buttons' => [
                     'decrement' => '-',
