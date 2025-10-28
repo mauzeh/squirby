@@ -153,14 +153,14 @@
                          data-min="{{ $field['min'] }}" 
                          data-max="{{ $field['max'] ?? '' }}">
                         <button type="button" class="decrement-button" aria-label="{{ $field['ariaLabels']['decrease'] }}">{{ $form['buttons']['decrement'] }}</button>
-                        <input type="number" id="{{ $field['id'] }}" name="{{ $field['name'] }}" class="number-input" value="{{ $field['defaultValue'] }}" min="{{ $field['min'] }}" step="{{ $field['increment'] }}" @if($field['max']) max="{{ $field['max'] }}" @endif>
+                        <input type="number" id="{{ $field['id'] }}" name="{{ $field['name'] }}" class="number-input" value="{{ old($field['name'], $field['defaultValue']) }}" min="{{ $field['min'] }}" step="{{ $field['increment'] }}" @if($field['max']) max="{{ $field['max'] }}" @endif>
                         <button type="button" class="increment-button" aria-label="{{ $field['ariaLabels']['increase'] }}">{{ $form['buttons']['increment'] }}</button>
                     </div>
                 </div>
                 @endforeach
                 <div class="form-mobile-group">
                     <label for="{{ $form['commentField']['id'] }}" class="form-mobile-label">{{ $form['commentField']['label'] }}</label>
-                    <textarea id="{{ $form['commentField']['id'] }}" name="{{ $form['commentField']['name'] }}" class="comment-textarea" placeholder="{{ $form['commentField']['placeholder'] }}" rows="3">{{ $form['commentField']['defaultValue'] }}</textarea>
+                    <textarea id="{{ $form['commentField']['id'] }}" name="{{ $form['commentField']['name'] }}" class="comment-textarea" placeholder="{{ $form['commentField']['placeholder'] }}" rows="3">{{ old($form['commentField']['name'], $form['commentField']['defaultValue']) }}</textarea>
                 </div>
                 <div class="form-actions">
                     <button type="submit" class="btn-primary">{{ $form['buttons']['submit'] }}</button>

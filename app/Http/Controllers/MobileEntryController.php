@@ -36,6 +36,26 @@ class MobileEntryController extends Controller
         // Generate user-friendly date title with main title and optional subtitle
         $dateTitleData = $dateTitleService->generateDateTitle($selectedDate, $today);
         
+        // Get session messages for display (including validation errors)
+        $sessionMessages = [
+            'success' => session('success'),
+            'error' => session('error'),
+            'warning' => session('warning'),
+            'info' => session('info')
+        ];
+        
+        // Add validation errors if they exist
+        if ($errors = session('errors')) {
+            $errorMessages = $errors->all();
+            if (!empty($errorMessages)) {
+                $sessionMessages['error'] = implode(' ', $errorMessages);
+            }
+        }
+        
+        // Generate interface messages using the service
+        $formService = app(\App\Services\MobileEntryLiftLogFormService::class);
+        $interfaceMessages = $formService->generateInterfaceMessages($sessionMessages);
+        
         // All text content and data for the view
         $data = [
             /**
@@ -400,8 +420,8 @@ class MobileEntryController extends Controller
                 ]
             ],
             
-            // Hardcoded example interface messages for demonstration
-            'interfaceMessages' => [
+            // Interface messages (dynamic if session messages exist, otherwise hardcoded examples)
+            'interfaceMessages' => $interfaceMessages['hasMessages'] ? $interfaceMessages : [
                 'messages' => [
                     [
                         'type' => 'success',
@@ -459,6 +479,14 @@ class MobileEntryController extends Controller
             'warning' => session('warning'),
             'info' => session('info') ?: $request->input('completion_info')
         ];
+        
+        // Add validation errors if they exist
+        if ($errors = session('errors')) {
+            $errorMessages = $errors->all();
+            if (!empty($errorMessages)) {
+                $sessionMessages['error'] = implode(' ', $errorMessages);
+            }
+        }
         
         // Generate forms based on programs using the service
         $forms = $formService->generateProgramForms(Auth::id(), $selectedDate, false, $sessionMessages);
