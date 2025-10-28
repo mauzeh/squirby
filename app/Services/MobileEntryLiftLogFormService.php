@@ -272,26 +272,30 @@ class MobileEntryLiftLogFormService
         // Add last session info if available
         if ($lastSession) {
             // Format the resistance/weight info based on exercise type
-            $resistanceText = '';
             if ($program->exercise->band_type) {
                 // For banded exercises, show band color
                 $bandColor = $lastSession['band_color'] ?? 'Unknown';
                 $resistanceText = ucfirst($bandColor) . ' band';
+                $messageText = $resistanceText . ' × ' . $lastSession['reps'] . ' reps × ' . $lastSession['sets'] . ' sets';
             } elseif ($program->exercise->is_bodyweight) {
-                // For bodyweight exercises
-                $resistanceText = 'BW';
+                // For bodyweight exercises, only show additional weight if present
                 if ($lastSession['weight'] > 0) {
-                    $resistanceText .= ' +' . $lastSession['weight'] . ' lbs';
+                    $resistanceText = '+' . $lastSession['weight'] . ' lbs';
+                    $messageText = $resistanceText . ' × ' . $lastSession['reps'] . ' reps × ' . $lastSession['sets'] . ' sets';
+                } else {
+                    // No weight mentioned, just reps and sets
+                    $messageText = $lastSession['reps'] . ' reps × ' . $lastSession['sets'] . ' sets';
                 }
             } else {
                 // For regular weighted exercises
                 $resistanceText = $lastSession['weight'] . ' lbs';
+                $messageText = $resistanceText . ' × ' . $lastSession['reps'] . ' reps × ' . $lastSession['sets'] . ' sets';
             }
             
             $messages[] = [
                 'type' => 'info',
                 'prefix' => 'Last session (' . $lastSession['date'] .'):',
-                'text' => $resistanceText . ' × ' . $lastSession['reps'] . ' reps × ' . $lastSession['sets'] . ' sets'
+                'text' => $messageText
             ];
         }
         
@@ -399,9 +403,11 @@ class MobileEntryLiftLogFormService
             if ($log->exercise->band_type) {
                 $weightText = 'Band: ' . $log->display_weight;
             } elseif ($log->exercise->is_bodyweight) {
-                $weightText = 'BW';
+                // For bodyweight exercises, only show additional weight if present
                 if ($log->display_weight > 0) {
-                    $weightText .= ' +' . $log->display_weight . ' lbs';
+                    $weightText = '+' . $log->display_weight . ' lbs';
+                } else {
+                    $weightText = '';
                 }
             } else {
                 $weightText = $log->display_weight . ' lbs';
@@ -411,7 +417,13 @@ class MobileEntryLiftLogFormService
             $repsSetsText = $log->display_rounds . ' x ' . $log->display_reps;
             
             // Combine weight and reps/sets for the message
-            $formattedMessage = $weightText . ' × ' . $repsSetsText;
+            if ($log->exercise->is_bodyweight && $log->display_weight == 0) {
+                // For bodyweight with no additional weight, just show reps/sets
+                $formattedMessage = $repsSetsText;
+            } else {
+                // For all other cases, show weight × reps/sets
+                $formattedMessage = $weightText . ' × ' . $repsSetsText;
+            }
 
             $items[] = [
                 'id' => $log->id,

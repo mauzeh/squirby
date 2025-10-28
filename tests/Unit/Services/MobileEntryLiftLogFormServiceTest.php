@@ -1480,7 +1480,7 @@ class MobileEntryLiftLogFormServiceTest extends TestCase
         
         $item = $loggedItems['items'][0];
         $this->assertEquals('Pull-ups', $item['title']);
-        $this->assertEquals('BW × 2 x 8', $item['message']['text']); // BW × sets x reps (uses first set reps)
+        $this->assertEquals('2 x 8', $item['message']['text']); // Just sets x reps for bodyweight with no added weight
         $this->assertEquals('Good form throughout', $item['freeformText']);
     }
 
@@ -1522,7 +1522,7 @@ class MobileEntryLiftLogFormServiceTest extends TestCase
         
         $item = $loggedItems['items'][0];
         $this->assertEquals('Weighted Pull-ups', $item['title']);
-        $this->assertEquals('BW +25 lbs × 3 x 6', $item['message']['text']); // BW +weight × sets x reps
+        $this->assertEquals('+25 lbs × 3 x 6', $item['message']['text']); // +weight × sets x reps for bodyweight with added weight
     }
 
     #[Test]
