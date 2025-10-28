@@ -16,10 +16,9 @@ class MobileEntryLiftLogFormService
      * @param int $userId
      * @param Carbon $selectedDate
      * @param bool $includeCompleted Whether to include already completed programs (default: false)
-     * @param array $sessionMessages Flash messages from session (success, error, etc.)
      * @return array
      */
-    public function generateProgramForms($userId, Carbon $selectedDate, $includeCompleted = false, $sessionMessages = [])
+    public function generateProgramForms($userId, Carbon $selectedDate, $includeCompleted = false)
     {
         // Get user's programs for the selected date
         $query = Program::where('user_id', $userId)
@@ -93,8 +92,8 @@ class MobileEntryLiftLogFormService
                         ]
                     ],
                     [
-                        'id' => $formId . '-sets',
-                        'name' => 'sets',
+                        'id' => $formId . '-rounds',
+                        'name' => 'rounds',
                         'label' => 'Sets:',
                         'defaultValue' => $program->sets ?? ($lastSession['sets'] ?? 3),
                         'increment' => 1,
@@ -135,15 +134,6 @@ class MobileEntryLiftLogFormService
             ];
         }
         
-        // Add system messages to the first form if any exist
-        if (!empty($forms) && !empty($sessionMessages)) {
-            $systemMessages = $this->generateSystemMessages($sessionMessages);
-            if (!empty($systemMessages)) {
-                // Prepend system messages to the first form's messages
-                $forms[0]['messages'] = array_merge($systemMessages, $forms[0]['messages']);
-            }
-        }
-
         return $forms;
     }
 

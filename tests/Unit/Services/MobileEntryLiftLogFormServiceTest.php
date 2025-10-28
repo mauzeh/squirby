@@ -902,9 +902,9 @@ class MobileEntryLiftLogFormServiceTest extends TestCase
         $this->assertEquals('reps', $repsField['name']);
         $this->assertEquals(8, $repsField['defaultValue']); // From program
         
-        $setsField = $form['numericFields'][2];
-        $this->assertEquals('sets', $setsField['name']);
-        $this->assertEquals(4, $setsField['defaultValue']); // From program
+        $roundsField = $form['numericFields'][2];
+        $this->assertEquals('rounds', $roundsField['name']);
+        $this->assertEquals(4, $roundsField['defaultValue']); // From program
         
         // Check comment field
         $this->assertEquals('comment', $form['commentField']['name']);
@@ -1041,8 +1041,8 @@ class MobileEntryLiftLogFormServiceTest extends TestCase
         $repsField = $form['numericFields'][1];
         $this->assertEquals($formId . '-reps', $repsField['id']);
         
-        $setsField = $form['numericFields'][2];
-        $this->assertEquals($formId . '-sets', $setsField['id']);
+        $roundsField = $form['numericFields'][2];
+        $this->assertEquals($formId . '-rounds', $roundsField['id']);
         
         $commentField = $form['commentField'];
         $this->assertEquals($formId . '-comment', $commentField['id']);
@@ -1183,57 +1183,5 @@ class MobileEntryLiftLogFormServiceTest extends TestCase
 
 
 
-    #[Test]
-    public function it_adds_session_messages_to_forms()
-    {
-        $user = \App\Models\User::factory()->create();
-        $exercise = Exercise::factory()->create();
-        
-        Program::factory()->create([
-            'user_id' => $user->id,
-            'exercise_id' => $exercise->id,
-            'date' => $this->testDate
-        ]);
-        
-        $sessionMessages = [
-            'success' => 'Exercise completed successfully!'
-        ];
-        
-        $forms = $this->service->generateProgramForms($user->id, $this->testDate, false, $sessionMessages);
-        
-        $this->assertCount(1, $forms);
-        
-        $form = $forms[0];
-        $messages = $form['messages'];
-        
-        // Should have session message at the beginning
-        $this->assertGreaterThan(0, count($messages));
-        $firstMessage = $messages[0];
-        $this->assertEquals('success', $firstMessage['type']);
-        $this->assertEquals('Success:', $firstMessage['prefix']);
-        $this->assertEquals('Exercise completed successfully!', $firstMessage['text']);
-    }
 
-    #[Test]
-    public function it_handles_empty_session_messages()
-    {
-        $user = \App\Models\User::factory()->create();
-        $exercise = Exercise::factory()->create();
-        
-        Program::factory()->create([
-            'user_id' => $user->id,
-            'exercise_id' => $exercise->id,
-            'date' => $this->testDate
-        ]);
-        
-        $sessionMessages = [];
-        
-        $forms = $this->service->generateProgramForms($user->id, $this->testDate, false, $sessionMessages);
-        
-        $this->assertCount(1, $forms);
-        
-        // Should work normally without session messages
-        $form = $forms[0];
-        $this->assertArrayHasKey('messages', $form);
-    }
 }

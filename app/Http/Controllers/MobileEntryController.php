@@ -489,7 +489,7 @@ class MobileEntryController extends Controller
         }
         
         // Generate forms based on programs using the service
-        $forms = $formService->generateProgramForms(Auth::id(), $selectedDate, false, $sessionMessages);
+        $forms = $formService->generateProgramForms(Auth::id(), $selectedDate);
         
         // Generate summary data using the service
         $summary = $formService->generateSummary(Auth::id(), $selectedDate);
