@@ -10,6 +10,12 @@ use Carbon\Carbon;
 
 class MobileEntryLiftLogFormService
 {
+    protected TrainingProgressionService $trainingProgressionService;
+
+    public function __construct(TrainingProgressionService $trainingProgressionService)
+    {
+        $this->trainingProgressionService = $trainingProgressionService;
+    }
     /**
      * Generate forms based on user's programs for the selected date
      * 
@@ -47,11 +53,21 @@ class MobileEntryLiftLogFormService
             // Generate form ID
             $formId = 'program-' . $program->id;
             
+            // Get progression suggestions
+            $progressionSuggestion = $lastSession ? $this->trainingProgressionService->getSuggestionDetails(
+                $userId, 
+                $exercise->id
+            ) : null;
+            
             // Determine default weight based on last session or exercise type
-            $defaultWeight = $this->getDefaultWeight($exercise, $lastSession);
+            $defaultWeight = $this->getDefaultWeight($exercise, $lastSession, $userId);
+            
+            // Determine default reps and sets from progression service or fallback
+            $defaultReps = $progressionSuggestion->reps ?? $program->reps ?? ($lastSession['reps'] ?? 5);
+            $defaultSets = $progressionSuggestion->sets ?? $program->sets ?? ($lastSession['sets'] ?? 3);
             
             // Generate messages based on last session and program
-            $messages = $this->generateFormMessages($program, $lastSession);
+            $messages = $this->generateFormMessages($program, $lastSession, $userId);
             
             // Check if program is completed
             $isCompleted = $program->isCompleted();
@@ -82,7 +98,7 @@ class MobileEntryLiftLogFormService
                         'id' => $formId . '-reps',
                         'name' => 'reps',
                         'label' => 'Reps:',
-                        'defaultValue' => $program->reps ?? ($lastSession['reps'] ?? 5),
+                        'defaultValue' => $defaultReps,
                         'increment' => 1,
                         'min' => 1,
                         'max' => 50,
@@ -95,7 +111,7 @@ class MobileEntryLiftLogFormService
                         'id' => $formId . '-rounds',
                         'name' => 'rounds',
                         'label' => 'Sets:',
-                        'defaultValue' => $program->sets ?? ($lastSession['sets'] ?? 3),
+                        'defaultValue' => $defaultSets,
                         'increment' => 1,
                         'min' => 1,
                         'max' => 10,
@@ -176,14 +192,24 @@ class MobileEntryLiftLogFormService
      * @param array|null $lastSession
      * @return float
      */
-    public function getDefaultWeight($exercise, $lastSession)
+    public function getDefaultWeight($exercise, $lastSession, $userId = null)
     {
         if ($exercise->is_bodyweight) {
             return $lastSession['weight'] ?? 0; // Added weight for bodyweight exercises
         }
         
-        if ($lastSession) {
-            // Suggest a small progression from last session
+        if ($lastSession && $userId) {
+            // Use TrainingProgressionService for intelligent progression
+            $suggestion = $this->trainingProgressionService->getSuggestionDetails(
+                $userId, 
+                $exercise->id
+            );
+            
+            if ($suggestion && isset($suggestion->suggestedWeight)) {
+                return $suggestion->suggestedWeight;
+            }
+            
+            // Fallback to simple progression if service fails
             return $lastSession['weight'] + 5;
         }
         
@@ -207,7 +233,7 @@ class MobileEntryLiftLogFormService
      * @param array|null $lastSession
      * @return array
      */
-    public function generateFormMessages($program, $lastSession)
+    public function generateFormMessages($program, $lastSession, $userId = null)
     {
         $messages = [];
         
@@ -230,12 +256,48 @@ class MobileEntryLiftLogFormService
         }
         
         // Add progression suggestion
-        if ($lastSession && !$program->exercise->is_bodyweight) {
-            $messages[] = [
-                'type' => 'tip',
-                'prefix' => 'Suggestion:',
-                'text' => 'Try ' . ($lastSession['weight'] + 5) . ' lbs today'
-            ];
+        if ($lastSession && $userId) {
+            $suggestion = $this->trainingProgressionService->getSuggestionDetails(
+                $userId, 
+                $program->exercise_id
+            );
+            
+            if ($suggestion) {
+                if (isset($suggestion->band_color)) {
+                    // Banded exercise suggestion
+                    $sets = $suggestion->sets ?? $lastSession['sets'] ?? 3;
+                    $messages[] = [
+                        'type' => 'tip',
+                        'prefix' => 'Suggestion:',
+                        'text' => 'Try ' . $suggestion->band_color . ' band × ' . $suggestion->reps . ' reps × ' . $sets . ' sets today'
+                    ];
+                } elseif (isset($suggestion->suggestedWeight) && !$program->exercise->is_bodyweight) {
+                    // Weighted exercise suggestion
+                    $sets = $suggestion->sets ?? $lastSession['sets'] ?? 3;
+                    $messages[] = [
+                        'type' => 'tip',
+                        'prefix' => 'Suggestion:',
+                        'text' => 'Try ' . $suggestion->suggestedWeight . ' lbs × ' . $suggestion->reps . ' reps × ' . $sets . ' sets today'
+                    ];
+                } elseif ($program->exercise->is_bodyweight && isset($suggestion->reps)) {
+                    // Bodyweight exercise suggestion
+                    $sets = $suggestion->sets ?? $lastSession['sets'] ?? 3;
+                    $messages[] = [
+                        'type' => 'tip',
+                        'prefix' => 'Suggestion:',
+                        'text' => 'Try ' . $suggestion->reps . ' reps × ' . $sets . ' sets today'
+                    ];
+                }
+            } elseif (!$program->exercise->is_bodyweight) {
+                // Fallback to simple progression if service fails
+                $sets = $lastSession['sets'] ?? 3;
+                $reps = $lastSession['reps'] ?? 5;
+                $messages[] = [
+                    'type' => 'tip',
+                    'prefix' => 'Suggestion:',
+                    'text' => 'Try ' . ($lastSession['weight'] + 5) . ' lbs × ' . $reps . ' reps × ' . $sets . ' sets today'
+                ];
+            }
         }
         
         return $messages;

@@ -8,6 +8,7 @@ use App\Models\LiftSet;
 use App\Models\Program;
 use App\Models\User;
 use App\Services\MobileEntryLiftLogFormService;
+use App\Services\TrainingProgressionService;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
@@ -29,7 +30,11 @@ class MobileEntryLiftLogFormServiceTest extends TestCase
     {
         parent::setUp();
         
-        $this->service = new MobileEntryLiftLogFormService();
+        // Mock the TrainingProgressionService
+        $mockProgressionService = $this->createMock(TrainingProgressionService::class);
+        $mockProgressionService->method('getSuggestionDetails')->willReturn(null);
+        
+        $this->service = new MobileEntryLiftLogFormService($mockProgressionService);
         $this->testDate = Carbon::parse('2024-01-15');
     }
 
@@ -134,9 +139,10 @@ class MobileEntryLiftLogFormServiceTest extends TestCase
     public function it_calculates_default_weight_with_progression()
     {
         $exercise = Exercise::factory()->create(['is_bodyweight' => false]);
+        $user = \App\Models\User::factory()->create();
         
         $lastSession = ['weight' => 225];
-        $weight = $this->service->getDefaultWeight($exercise, $lastSession);
+        $weight = $this->service->getDefaultWeight($exercise, $lastSession, $user->id);
         
         $this->assertEquals(230, $weight); // 225 + 5 progression
     }
@@ -190,7 +196,8 @@ class MobileEntryLiftLogFormServiceTest extends TestCase
             'date' => 'Jan 13'
         ];
         
-        $messages = $this->service->generateFormMessages($program, $lastSession);
+        $user = \App\Models\User::factory()->create();
+        $messages = $this->service->generateFormMessages($program, $lastSession, $user->id);
         
         $this->assertCount(2, $messages); // Last session + suggestion
         
@@ -202,7 +209,7 @@ class MobileEntryLiftLogFormServiceTest extends TestCase
         $suggestionMessage = $messages[1];
         $this->assertEquals('tip', $suggestionMessage['type']);
         $this->assertEquals('Suggestion:', $suggestionMessage['prefix']);
-        $this->assertEquals('Try 230 lbs today', $suggestionMessage['text']);
+        $this->assertEquals('Try 230 lbs × 5 reps × 3 sets today', $suggestionMessage['text']);
     }
 
     #[Test]
@@ -1010,7 +1017,7 @@ class MobileEntryLiftLogFormServiceTest extends TestCase
         
         // Find the suggestion message
         $suggestionMessage = collect($messages)->firstWhere(function ($message) {
-            return str_contains($message['text'] ?? '', 'Try 205 lbs today');
+            return str_contains($message['text'] ?? '', 'Try 205 lbs × 6 reps × 3 sets today');
         });
         $this->assertNotNull($suggestionMessage);
         $this->assertEquals('tip', $suggestionMessage['type']);
