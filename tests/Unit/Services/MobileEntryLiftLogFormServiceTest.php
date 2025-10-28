@@ -859,4 +859,282 @@ class MobileEntryLiftLogFormServiceTest extends TestCase
         $this->assertTrue($result['success']);
         $this->assertEquals('Removed Exercise Without Canonical from today\'s program.', $result['message']);
     }
+
+    #[Test]
+    public function it_generates_forms_with_correct_submission_data()
+    {
+        $user = \App\Models\User::factory()->create();
+        $exercise = Exercise::factory()->create([
+            'title' => 'Test Exercise',
+            'is_bodyweight' => false
+        ]);
+        
+        $program = Program::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'date' => $this->testDate,
+            'sets' => 4,
+            'reps' => 8,
+            'comments' => 'Test program'
+        ]);
+
+        $forms = $this->service->generateProgramForms($user->id, $this->testDate);
+        
+        $this->assertCount(1, $forms);
+        
+        $form = $forms[0];
+        
+        // Check form action points to lift-logs.store
+        $this->assertStringContainsString('lift-logs', $form['formAction']);
+        
+        // Check hidden fields contain all necessary data for submission
+        $hiddenFields = $form['hiddenFields'];
+        $this->assertEquals($exercise->id, $hiddenFields['exercise_id']);
+        $this->assertEquals($program->id, $hiddenFields['program_id']);
+        $this->assertEquals($this->testDate->toDateString(), $hiddenFields['date']);
+        $this->assertEquals('mobile-entry-lifts', $hiddenFields['redirect_to']);
+        
+        // Check numeric fields have proper names for form submission
+        $weightField = $form['numericFields'][0];
+        $this->assertEquals('weight', $weightField['name']);
+        
+        $repsField = $form['numericFields'][1];
+        $this->assertEquals('reps', $repsField['name']);
+        $this->assertEquals(8, $repsField['defaultValue']); // From program
+        
+        $setsField = $form['numericFields'][2];
+        $this->assertEquals('sets', $setsField['name']);
+        $this->assertEquals(4, $setsField['defaultValue']); // From program
+        
+        // Check comment field
+        $this->assertEquals('comment', $form['commentField']['name']);
+        $this->assertEquals('Test program', $form['commentField']['defaultValue']);
+    }
+
+    #[Test]
+    public function it_generates_bodyweight_exercise_forms_correctly()
+    {
+        $user = \App\Models\User::factory()->create();
+        $exercise = Exercise::factory()->create([
+            'title' => 'Pull-ups',
+            'is_bodyweight' => true
+        ]);
+        
+        Program::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'date' => $this->testDate,
+            'sets' => 3,
+            'reps' => 10
+        ]);
+
+        $forms = $this->service->generateProgramForms($user->id, $this->testDate);
+        
+        $form = $forms[0];
+        $weightField = $form['numericFields'][0];
+        
+        // Bodyweight exercises should have different weight field configuration
+        $this->assertEquals('Added Weight (lbs):', $weightField['label']);
+        $this->assertEquals(0, $weightField['defaultValue']);
+        $this->assertEquals(2.5, $weightField['increment']);
+        $this->assertEquals(0, $weightField['min']);
+    }
+
+    #[Test]
+    public function it_includes_last_session_data_in_form_defaults()
+    {
+        $user = \App\Models\User::factory()->create();
+        $exercise = Exercise::factory()->create(['is_bodyweight' => false]);
+        
+        // Create a previous lift log
+        $previousLog = LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => $this->testDate->copy()->subDays(3)
+        ]);
+        
+        LiftSet::factory()->create([
+            'lift_log_id' => $previousLog->id,
+            'weight' => 200,
+            'reps' => 6
+        ]);
+        
+        LiftSet::factory()->create([
+            'lift_log_id' => $previousLog->id,
+            'weight' => 200,
+            'reps' => 6
+        ]);
+        
+        LiftSet::factory()->create([
+            'lift_log_id' => $previousLog->id,
+            'weight' => 200,
+            'reps' => 6
+        ]);
+        
+        // Create program with specific sets/reps
+        Program::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'date' => $this->testDate,
+            'sets' => 4,
+            'reps' => 8
+        ]);
+
+        $forms = $this->service->generateProgramForms($user->id, $this->testDate);
+        
+        $form = $forms[0];
+        
+        // Should suggest progression from last session for weight
+        $weightField = $form['numericFields'][0];
+        $this->assertEquals(205, $weightField['defaultValue']); // 200 + 5 progression
+        
+        // Should use program values for sets/reps
+        $repsField = $form['numericFields'][1];
+        $this->assertEquals(8, $repsField['defaultValue']); // From program
+        
+        $setsField = $form['numericFields'][2];
+        $this->assertEquals(4, $setsField['defaultValue']); // From program
+        
+        // Should include last session message and progression suggestion
+        $messages = $form['messages'];
+        $this->assertCount(2, $messages); // Last session + suggestion
+        
+        $lastSessionMessage = $messages[0];
+        $this->assertEquals('info', $lastSessionMessage['type']);
+        $this->assertStringContainsString('Last session', $lastSessionMessage['prefix']);
+        $this->assertStringContainsString('200 lbs × 6 reps × 3 sets', $lastSessionMessage['text']);
+        
+        $suggestionMessage = $messages[1];
+        $this->assertEquals('tip', $suggestionMessage['type']);
+        $this->assertStringContainsString('Try 205 lbs today', $suggestionMessage['text']);
+    }
+
+    #[Test]
+    public function it_generates_forms_with_proper_field_ids()
+    {
+        $user = \App\Models\User::factory()->create();
+        $exercise = Exercise::factory()->create();
+        
+        $program = Program::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'date' => $this->testDate
+        ]);
+
+        $forms = $this->service->generateProgramForms($user->id, $this->testDate);
+        
+        $form = $forms[0];
+        $formId = 'program-' . $program->id;
+        
+        // Check that all field IDs are properly prefixed with form ID
+        $this->assertEquals($formId, $form['id']);
+        
+        $weightField = $form['numericFields'][0];
+        $this->assertEquals($formId . '-weight', $weightField['id']);
+        
+        $repsField = $form['numericFields'][1];
+        $this->assertEquals($formId . '-reps', $repsField['id']);
+        
+        $setsField = $form['numericFields'][2];
+        $this->assertEquals($formId . '-sets', $setsField['id']);
+        
+        $commentField = $form['commentField'];
+        $this->assertEquals($formId . '-comment', $commentField['id']);
+    }
+
+    #[Test]
+    public function it_generates_forms_with_completion_status()
+    {
+        $user = \App\Models\User::factory()->create();
+        $exercise1 = Exercise::factory()->create();
+        $exercise2 = Exercise::factory()->create();
+        
+        // Create two programs
+        $program1 = Program::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise1->id,
+            'date' => $this->testDate
+        ]);
+        
+        $program2 = Program::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise2->id,
+            'date' => $this->testDate
+        ]);
+        
+        // Complete the first program
+        LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise1->id,
+            'logged_at' => $this->testDate
+        ]);
+        
+        // Generate forms including completed ones
+        $forms = $this->service->generateProgramForms($user->id, $this->testDate, true);
+        
+        $this->assertCount(2, $forms);
+        
+        // First form should be marked as completed
+        $completedForm = collect($forms)->firstWhere('hiddenFields.program_id', $program1->id);
+        $this->assertTrue($completedForm['isCompleted']);
+        $this->assertEquals('completed', $completedForm['completionStatus']);
+        
+        // Second form should be marked as pending
+        $pendingForm = collect($forms)->firstWhere('hiddenFields.program_id', $program2->id);
+        $this->assertFalse($pendingForm['isCompleted']);
+        $this->assertEquals('pending', $pendingForm['completionStatus']);
+    }
+
+    #[Test]
+    public function it_handles_forms_with_different_exercise_types()
+    {
+        $user = \App\Models\User::factory()->create();
+        
+        // Create different types of exercises
+        $weightedExercise = Exercise::factory()->create([
+            'title' => 'Bench Press',
+            'is_bodyweight' => false,
+            'canonical_name' => 'bench_press'
+        ]);
+        
+        $bodyweightExercise = Exercise::factory()->create([
+            'title' => 'Push-ups',
+            'is_bodyweight' => true
+        ]);
+        
+        // Create programs for both
+        Program::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $weightedExercise->id,
+            'date' => $this->testDate
+        ]);
+        
+        Program::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $bodyweightExercise->id,
+            'date' => $this->testDate
+        ]);
+
+        $forms = $this->service->generateProgramForms($user->id, $this->testDate);
+        
+        $this->assertCount(2, $forms);
+        
+        // Find weighted exercise form
+        $weightedForm = collect($forms)->firstWhere('title', 'Bench Press');
+        $weightedWeightField = $weightedForm['numericFields'][0];
+        
+        $this->assertEquals('Weight (lbs):', $weightedWeightField['label']);
+        $this->assertEquals(135, $weightedWeightField['defaultValue']); // Default for bench_press
+        $this->assertEquals(5, $weightedWeightField['increment']);
+        $this->assertEquals(45, $weightedWeightField['min']);
+        
+        // Find bodyweight exercise form
+        $bodyweightForm = collect($forms)->firstWhere('title', 'Push-ups');
+        $bodyweightWeightField = $bodyweightForm['numericFields'][0];
+        
+        $this->assertEquals('Added Weight (lbs):', $bodyweightWeightField['label']);
+        $this->assertEquals(0, $bodyweightWeightField['defaultValue']);
+        $this->assertEquals(2.5, $bodyweightWeightField['increment']);
+        $this->assertEquals(0, $bodyweightWeightField['min']);
+    }
 }

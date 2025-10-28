@@ -121,6 +121,13 @@ class LiftLogController extends Controller
                 'submitted_program_id' => $request->input('program_id'), // Assuming program_id is passed from the form
             ];
             return redirect()->route('lift-logs.mobile-entry', $redirectParams)->with('success', 'Lift log created successfully.');
+        } elseif ($request->input('redirect_to') === 'mobile-entry-lifts') {
+            $redirectParams = [
+                'date' => $request->input('date'),
+                'submitted_lift_log_id' => $liftLog->id,
+                'submitted_program_id' => $request->input('program_id'),
+            ];
+            return redirect()->route('mobile-entry.lifts', $redirectParams)->with('success', 'Lift log created successfully.');
         } else {
             return redirect()->route('exercises.show-logs', ['exercise' => $liftLog->exercise_id])->with('success', 'Lift log created successfully.');
         }
@@ -205,6 +212,13 @@ class LiftLogController extends Controller
                 'submitted_program_id' => $request->input('program_id'), // Assuming program_id is passed from the form
             ];
             return redirect()->route('lift-logs.mobile-entry', $redirectParams)->with('success', 'Lift log updated successfully.');
+        } elseif ($request->input('redirect_to') === 'mobile-entry-lifts') {
+            $redirectParams = [
+                'date' => $request->input('date'),
+                'submitted_lift_log_id' => $liftLog->id,
+                'submitted_program_id' => $request->input('program_id'),
+            ];
+            return redirect()->route('mobile-entry.lifts', $redirectParams)->with('success', 'Lift log updated successfully.');
         } else {
             return redirect()->route('exercises.show-logs', ['exercise' => $liftLog->exercise_id])->with('success', 'Lift log updated successfully.');
         }
@@ -222,6 +236,8 @@ class LiftLogController extends Controller
 
         if (request()->input('redirect_to') === 'mobile-entry') {
             return redirect()->route('lift-logs.mobile-entry', ['date' => request()->input('date')])->with('success', 'Lift log deleted successfully.');
+        } elseif (request()->input('redirect_to') === 'mobile-entry-lifts') {
+            return redirect()->route('mobile-entry.lifts', ['date' => request()->input('date')])->with('success', 'Lift log deleted successfully.');
         }
 
         return redirect()->route('lift-logs.index')->with('success', 'Lift log deleted successfully.');

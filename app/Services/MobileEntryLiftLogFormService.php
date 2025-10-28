@@ -125,7 +125,8 @@ class MobileEntryLiftLogFormService
                 'hiddenFields' => [
                     'exercise_id' => $exercise->id,
                     'program_id' => $program->id,
-                    'logged_at' => $selectedDate->toDateString()
+                    'date' => $selectedDate->toDateString(),
+                    'redirect_to' => 'mobile-entry-lifts'
                 ],
                 // Completion status
                 'isCompleted' => $isCompleted,
