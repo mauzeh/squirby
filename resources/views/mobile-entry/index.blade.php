@@ -5,7 +5,7 @@
 @endsection
 
 @section('scripts')
-    <script src="{{ asset('js/mobile-entry.js') }}"></script>
+    <script data-confirm-messages="{{ json_encode($data['loggedItems']['confirmMessages']) }}" src="{{ asset('js/mobile-entry.js') }}"></script>
 @endsection
 
 @section('content')

@@ -348,17 +348,38 @@ document.addEventListener('DOMContentLoaded', function() {
     setupItemListToggle();
     
     /**
-     * Delete Confirmation Dialog for Log Entries
+     * Delete Confirmation Dialog for All Delete Actions
      * 
-     * Adds confirmation dialogs specifically for deleting logged items (not form removal).
-     * Only targets delete buttons within the logged-items-section.
+     * Adds confirmation dialogs for both:
+     * 1. Deleting logged items (permanent deletion)
+     * 2. Removing forms from program (removing from today's program)
+     * 
+     * Uses configurable messages from the data array passed from the controller.
      */
     const setupDeleteConfirmation = () => {
-        // Only target delete buttons within logged items section
-        const loggedItemsSection = document.querySelector('.logged-items-section');
-        if (!loggedItemsSection) return;
+        // Get confirmation messages from the page data
+        const getConfirmMessages = () => {
+            // Try to get messages from a script tag or data attribute
+            const dataScript = document.querySelector('script[data-confirm-messages]');
+            if (dataScript) {
+                try {
+                    return JSON.parse(dataScript.dataset.confirmMessages);
+                } catch (e) {
+                    console.warn('Failed to parse confirmation messages:', e);
+                }
+            }
+            
+            // Fallback messages
+            return {
+                deleteItem: 'Are you sure you want to delete this item? This action cannot be undone.',
+                removeForm: 'Are you sure you want to remove this item from today\'s program?'
+            };
+        };
         
-        const deleteButtons = loggedItemsSection.querySelectorAll('.btn-delete');
+        const confirmMessages = getConfirmMessages();
+        
+        // Target all delete buttons on the page
+        const deleteButtons = document.querySelectorAll('.btn-delete');
         
         deleteButtons.forEach(button => {
             button.addEventListener('click', function(event) {
@@ -368,12 +389,25 @@ document.addEventListener('DOMContentLoaded', function() {
                 const form = this.closest('form');
                 if (!form) return;
                 
-                // Get the item title for the confirmation message
-                const itemHeader = this.closest('.logged-item')?.querySelector('.item-title');
-                const itemTitle = itemHeader ? itemHeader.textContent.trim() : 'this entry';
+                // Determine the type of delete action and get appropriate message
+                const loggedItemsSection = this.closest('.logged-items-section');
+                const formSection = this.closest('.item-logging-section');
+                
+                let confirmMessage;
+                
+                if (loggedItemsSection) {
+                    // This is a logged item deletion (permanent)
+                    confirmMessage = confirmMessages.deleteItem;
+                } else if (formSection) {
+                    // This is a form removal (removing from program)
+                    confirmMessage = confirmMessages.removeForm;
+                } else {
+                    // Fallback for any other delete buttons
+                    confirmMessage = confirmMessages.deleteItem;
+                }
                 
                 // Show confirmation dialog
-                const confirmed = confirm(`Are you sure you want to delete ${itemTitle}? This action cannot be undone.`);
+                const confirmed = confirm(confirmMessage);
                 
                 if (confirmed) {
                     // Submit the form if user confirms

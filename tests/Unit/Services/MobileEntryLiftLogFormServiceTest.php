@@ -1252,4 +1252,26 @@ class MobileEntryLiftLogFormServiceTest extends TestCase
         $this->assertNotEmpty($loggedItemsWithData['items']);
         $this->assertCount(1, $loggedItemsWithData['items']);
     }
+
+    #[Test]
+    public function it_includes_confirmation_messages_in_logged_items()
+    {
+        $user = User::factory()->create();
+        
+        $loggedItems = $this->service->generateLoggedItems($user->id, $this->testDate);
+        
+        $this->assertArrayHasKey('confirmMessages', $loggedItems);
+        $this->assertArrayHasKey('deleteItem', $loggedItems['confirmMessages']);
+        $this->assertArrayHasKey('removeForm', $loggedItems['confirmMessages']);
+        
+        $this->assertEquals(
+            'Are you sure you want to delete this lift log entry? This action cannot be undone.',
+            $loggedItems['confirmMessages']['deleteItem']
+        );
+        
+        $this->assertEquals(
+            'Are you sure you want to remove this exercise from today\'s program?',
+            $loggedItems['confirmMessages']['removeForm']
+        );
+    }
 }

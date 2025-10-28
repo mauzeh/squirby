@@ -375,6 +375,10 @@ class MobileEntryController extends Controller
             'loggedItems' => [
                 'emptyMessage' => 'No logged items yet!',
                 'title' => 'Item Entry',
+                'confirmMessages' => [
+                    'deleteItem' => 'Are you sure you want to delete this item? This action cannot be undone.',
+                    'removeForm' => 'Are you sure you want to remove this item from today\'s program?'
+                ],
                 'items' => [
                     [
                         'id' => 1,

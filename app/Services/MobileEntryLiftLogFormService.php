@@ -341,6 +341,10 @@ class MobileEntryLiftLogFormService
         $result = [
             'title' => 'Today\'s Entries',
             'items' => $items,
+            'confirmMessages' => [
+                'deleteItem' => 'Are you sure you want to delete this lift log entry? This action cannot be undone.',
+                'removeForm' => 'Are you sure you want to remove this exercise from today\'s program?'
+            ],
             'ariaLabels' => [
                 'section' => 'Logged entries',
                 'editItem' => 'Edit logged entry',
