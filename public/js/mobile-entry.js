@@ -346,4 +346,43 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize item list toggle
     setupItemListToggle();
+    
+    /**
+     * Delete Confirmation Dialog for Log Entries
+     * 
+     * Adds confirmation dialogs specifically for deleting logged items (not form removal).
+     * Only targets delete buttons within the logged-items-section.
+     */
+    const setupDeleteConfirmation = () => {
+        // Only target delete buttons within logged items section
+        const loggedItemsSection = document.querySelector('.logged-items-section');
+        if (!loggedItemsSection) return;
+        
+        const deleteButtons = loggedItemsSection.querySelectorAll('.btn-delete');
+        
+        deleteButtons.forEach(button => {
+            button.addEventListener('click', function(event) {
+                event.preventDefault();
+                
+                // Get the form that contains this button
+                const form = this.closest('form');
+                if (!form) return;
+                
+                // Get the item title for the confirmation message
+                const itemHeader = this.closest('.logged-item')?.querySelector('.item-title');
+                const itemTitle = itemHeader ? itemHeader.textContent.trim() : 'this entry';
+                
+                // Show confirmation dialog
+                const confirmed = confirm(`Are you sure you want to delete ${itemTitle}? This action cannot be undone.`);
+                
+                if (confirmed) {
+                    // Submit the form if user confirms
+                    form.submit();
+                }
+            });
+        });
+    };
+    
+    // Initialize delete confirmation
+    setupDeleteConfirmation();
 });
