@@ -218,4 +218,86 @@ class Exercise extends Model
 
         return $query->exists();
     }
+
+    /**
+     * Check if this exercise can be merged by an admin
+     * Requirements: 2.1, 5.1, 5.5
+     */
+    public function canBeMergedByAdmin(): bool
+    {
+        // Only user exercises can be merged (not global exercises)
+        if ($this->isGlobal()) {
+            return false;
+        }
+
+        // Check if there are any compatible global target exercises
+        $potentialTargets = static::onlyGlobal()
+            ->where('id', '!=', $this->id)
+            ->get()
+            ->filter(function ($exercise) {
+                return $this->isCompatibleForMerge($exercise);
+            });
+
+        return $potentialTargets->isNotEmpty();
+    }
+
+    /**
+     * Check if this exercise is compatible for merging with another exercise
+     * Requirements: 5.1, 5.2, 5.3
+     */
+    public function isCompatibleForMerge(Exercise $target): bool
+    {
+        // Cannot merge with itself
+        if ($this->id === $target->id) {
+            return false;
+        }
+
+        // For merge compatibility, we need to determine which is source and which is target
+        // Only user exercises can be merged into global exercises
+        $source = $this->isGlobal() ? $target : $this;
+        $globalTarget = $this->isGlobal() ? $this : $target;
+
+        // Source must be user exercise and target must be global
+        if ($source->isGlobal() || !$globalTarget->isGlobal()) {
+            return false;
+        }
+
+        // Both exercises must have the same is_bodyweight value
+        if ($source->is_bodyweight !== $globalTarget->is_bodyweight) {
+            return false;
+        }
+
+        // Band type compatibility: both null, both same value, or one null and one with value
+        if ($source->band_type !== null && $globalTarget->band_type !== null) {
+            // Both have band types - they must match
+            if ($source->band_type !== $globalTarget->band_type) {
+                return false;
+            }
+        }
+        // If one is null and the other has a value, they are compatible
+        // If both are null, they are compatible
+
+        return true;
+    }
+
+    /**
+     * Check if the owner of this exercise has global visibility disabled
+     * Only applicable for user exercises (not global exercises)
+     * Requirements: 5.4
+     */
+    public function hasOwnerWithGlobalVisibilityDisabled(): bool
+    {
+        // Global exercises don't have owners
+        if ($this->isGlobal()) {
+            return false;
+        }
+
+        // Load the user relationship if not already loaded
+        if (!$this->relationLoaded('user')) {
+            $this->load('user');
+        }
+
+        // Check if the user has global exercise visibility disabled
+        return $this->user && !$this->user->shouldShowGlobalExercises();
+    }
 }

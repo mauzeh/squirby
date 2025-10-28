@@ -612,4 +612,190 @@ class ExerciseTest extends TestCase
         $this->assertEquals($userExercise1->id, $availableToUser->last()->id);  // 'Z Exercise' comes last
         $this->assertFalse($availableToUser->contains($globalExercise));
     }
+
+    /** @test */
+    public function can_be_merged_by_admin_returns_false_for_global_exercises()
+    {
+        $globalExercise = Exercise::factory()->create(['user_id' => null]);
+        
+        $this->assertFalse($globalExercise->canBeMergedByAdmin());
+    }
+
+    /** @test */
+    public function can_be_merged_by_admin_returns_false_when_no_compatible_targets_exist()
+    {
+        $user = \App\Models\User::factory()->create();
+        $userExercise = Exercise::factory()->create([
+            'user_id' => $user->id,
+            'is_bodyweight' => true,
+            'band_type' => 'resistance'
+        ]);
+
+        // No global exercises exist, so no compatible targets
+        $this->assertFalse($userExercise->canBeMergedByAdmin());
+    }
+
+    /** @test */
+    public function can_be_merged_by_admin_returns_true_when_compatible_targets_exist()
+    {
+        $user = \App\Models\User::factory()->create();
+        $userExercise = Exercise::factory()->create([
+            'user_id' => $user->id,
+            'is_bodyweight' => false,
+            'band_type' => null
+        ]);
+
+        // Create compatible global exercise
+        $globalExercise = Exercise::factory()->create([
+            'user_id' => null,
+            'is_bodyweight' => false,
+            'band_type' => null
+        ]);
+
+        $this->assertTrue($userExercise->canBeMergedByAdmin());
+    }
+
+    /** @test */
+    public function is_compatible_for_merge_returns_false_when_merging_with_itself()
+    {
+        $exercise = Exercise::factory()->create(['user_id' => null]);
+        
+        $this->assertFalse($exercise->isCompatibleForMerge($exercise));
+    }
+
+    /** @test */
+    public function is_compatible_for_merge_returns_false_when_target_is_not_global()
+    {
+        $user = \App\Models\User::factory()->create();
+        $userExercise1 = Exercise::factory()->create(['user_id' => $user->id]);
+        $userExercise2 = Exercise::factory()->create(['user_id' => $user->id]);
+        
+        $this->assertFalse($userExercise1->isCompatibleForMerge($userExercise2));
+    }
+
+    /** @test */
+    public function is_compatible_for_merge_returns_false_when_bodyweight_values_differ()
+    {
+        $user = \App\Models\User::factory()->create();
+        $userExercise = Exercise::factory()->create([
+            'user_id' => $user->id,
+            'is_bodyweight' => true
+        ]);
+        $globalExercise = Exercise::factory()->create([
+            'user_id' => null,
+            'is_bodyweight' => false
+        ]);
+        
+        $this->assertFalse($userExercise->isCompatibleForMerge($globalExercise));
+    }
+
+    /** @test */
+    public function is_compatible_for_merge_returns_false_when_band_types_differ()
+    {
+        $user = \App\Models\User::factory()->create();
+        $userExercise = Exercise::factory()->create([
+            'user_id' => $user->id,
+            'is_bodyweight' => false,
+            'band_type' => 'resistance'
+        ]);
+        $globalExercise = Exercise::factory()->create([
+            'user_id' => null,
+            'is_bodyweight' => false,
+            'band_type' => 'assistance'
+        ]);
+        
+        $this->assertFalse($userExercise->isCompatibleForMerge($globalExercise));
+    }
+
+    /** @test */
+    public function is_compatible_for_merge_returns_true_when_both_band_types_are_null()
+    {
+        $user = \App\Models\User::factory()->create();
+        $userExercise = Exercise::factory()->create([
+            'user_id' => $user->id,
+            'is_bodyweight' => false,
+            'band_type' => null
+        ]);
+        $globalExercise = Exercise::factory()->create([
+            'user_id' => null,
+            'is_bodyweight' => false,
+            'band_type' => null
+        ]);
+        
+        $this->assertTrue($userExercise->isCompatibleForMerge($globalExercise));
+    }
+
+    /** @test */
+    public function is_compatible_for_merge_returns_true_when_one_band_type_is_null()
+    {
+        $user = \App\Models\User::factory()->create();
+        $userExercise = Exercise::factory()->create([
+            'user_id' => $user->id,
+            'is_bodyweight' => false,
+            'band_type' => null
+        ]);
+        $globalExercise = Exercise::factory()->create([
+            'user_id' => null,
+            'is_bodyweight' => false,
+            'band_type' => 'resistance'
+        ]);
+        
+        $this->assertTrue($userExercise->isCompatibleForMerge($globalExercise));
+        $this->assertTrue($globalExercise->isCompatibleForMerge($userExercise));
+    }
+
+    /** @test */
+    public function is_compatible_for_merge_returns_true_when_band_types_match()
+    {
+        $user = \App\Models\User::factory()->create();
+        $userExercise = Exercise::factory()->create([
+            'user_id' => $user->id,
+            'is_bodyweight' => false,
+            'band_type' => 'resistance'
+        ]);
+        $globalExercise = Exercise::factory()->create([
+            'user_id' => null,
+            'is_bodyweight' => false,
+            'band_type' => 'resistance'
+        ]);
+        
+        $this->assertTrue($userExercise->isCompatibleForMerge($globalExercise));
+    }
+
+    /** @test */
+    public function has_owner_with_global_visibility_disabled_returns_false_for_global_exercises()
+    {
+        $globalExercise = Exercise::factory()->create(['user_id' => null]);
+        
+        $this->assertFalse($globalExercise->hasOwnerWithGlobalVisibilityDisabled());
+    }
+
+    /** @test */
+    public function has_owner_with_global_visibility_disabled_returns_false_when_user_has_global_visibility_enabled()
+    {
+        $user = \App\Models\User::factory()->create(['show_global_exercises' => true]);
+        $userExercise = Exercise::factory()->create(['user_id' => $user->id]);
+        
+        $this->assertFalse($userExercise->hasOwnerWithGlobalVisibilityDisabled());
+    }
+
+    /** @test */
+    public function has_owner_with_global_visibility_disabled_returns_true_when_user_has_global_visibility_disabled()
+    {
+        $user = \App\Models\User::factory()->create(['show_global_exercises' => false]);
+        $userExercise = Exercise::factory()->create(['user_id' => $user->id]);
+        
+        $this->assertTrue($userExercise->hasOwnerWithGlobalVisibilityDisabled());
+    }
+
+    /** @test */
+    public function has_owner_with_global_visibility_disabled_returns_false_when_user_has_default_global_visibility()
+    {
+        // User without explicitly setting show_global_exercises (defaults to true via shouldShowGlobalExercises method)
+        $user = \App\Models\User::factory()->create();
+        // Don't set show_global_exercises, let it use the default
+        $userExercise = Exercise::factory()->create(['user_id' => $user->id]);
+        
+        $this->assertFalse($userExercise->hasOwnerWithGlobalVisibilityDisabled());
+    }
 }
