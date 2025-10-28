@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Services\DateTitleService;
-use App\Services\MobileEntryFormService;
+use App\Services\MobileEntryLiftLogFormService;
 use Illuminate\Support\Facades\Auth;
 
 class MobileEntryController extends Controller
@@ -413,7 +413,7 @@ class MobileEntryController extends Controller
      * @param DateTitleService $dateTitleService
      * @return \Illuminate\View\View
      */
-    public function lifts(Request $request, DateTitleService $dateTitleService, MobileEntryFormService $formService)
+    public function lifts(Request $request, DateTitleService $dateTitleService, MobileEntryLiftLogFormService $formService)
     {
         // Get the selected date from request or default to today
         $selectedDate = $request->input('date') 

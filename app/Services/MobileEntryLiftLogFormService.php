@@ -8,7 +8,7 @@ use App\Models\Exercise;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 
-class MobileEntryFormService
+class MobileEntryLiftLogFormService
 {
     /**
      * Generate forms based on user's programs for the selected date
