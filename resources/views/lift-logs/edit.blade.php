@@ -51,31 +51,5 @@
             <button type="submit" class="button">Update Lift Log</button>
         </form>
     </div>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const exerciseSelect = document.getElementById('exercise_id');
-            const weightGroup = document.getElementById('weight-group');
-            const weightInput = document.getElementById('weight');
 
-            function toggleWeightInput() {
-                const selectedOption = exerciseSelect.options[exerciseSelect.selectedIndex];
-                const isBodyweight = selectedOption.dataset.isBodyweight === 'true';
-
-                if (isBodyweight) {
-                    weightGroup.style.display = 'none';
-                    weightInput.removeAttribute('required');
-                    weightInput.value = 0; // Set weight to 0 for bodyweight exercises
-                } else {
-                    weightGroup.style.display = 'flex';
-                    weightInput.setAttribute('required', 'required');
-                }
-            }
-
-            // Initial call to set state based on default selected option
-            toggleWeightInput();
-
-            // Listen for changes on the exercise select dropdown
-            exerciseSelect.addEventListener('change', toggleWeightInput);
-        });
-    </script>
 @endsection
