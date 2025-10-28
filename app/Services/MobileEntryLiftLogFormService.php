@@ -484,16 +484,19 @@ class MobileEntryLiftLogFormService
             ->orderBy('title', 'asc')
             ->get();
 
+        // Get the top 5 most recently used exercises for this user
+        $recentExerciseIds = $this->getTopRecentExerciseIds($userId, $selectedDate, 5);
+
         $items = [];
         
         foreach ($exercises as $exercise) {
             // Determine item type based on program and recent usage
-            $type = $exercise->user_id ? 'highlighted' : 'regular';
+            $itemType = $this->determineItemType($exercise, $userId, $selectedDate, $recentExerciseIds);
 
             $items[] = [
                 'id' => 'exercise-' . $exercise->id,
                 'name' => $exercise->title,
-                'type' => $type,
+                'type' => $itemType,
                 'href' => route('mobile-entry.add-lift-form', [
                     'exercise' => $exercise->canonical_name ?? $exercise->id,
                     'date' => $selectedDate->toDateString()
@@ -501,8 +504,15 @@ class MobileEntryLiftLogFormService
             ];
         }
 
-        // Sort items: highlighted first, then alphabetical
+        // Sort items: by priority first, then alphabetical by name
         usort($items, function ($a, $b) {
+            // First sort by priority (lower number = higher priority)
+            $priorityComparison = $a['type']['priority'] <=> $b['type']['priority'];
+            if ($priorityComparison !== 0) {
+                return $priorityComparison;
+            }
+            
+            // If same priority, sort alphabetically by name
             return strcmp($a['name'], $b['name']);
         });
 
@@ -525,6 +535,96 @@ class MobileEntryLiftLogFormService
             ],
             'filterPlaceholder' => 'Filter exercises...'
         ];
+    }
+
+    /**
+     * Get the top N most recently used exercise IDs for a user
+     * 
+     * @param int $userId
+     * @param Carbon $selectedDate
+     * @param int $limit
+     * @return array
+     */
+    protected function getTopRecentExerciseIds($userId, Carbon $selectedDate, $limit = 5)
+    {
+        return LiftLog::where('user_id', $userId)
+            ->where('logged_at', '<', $selectedDate->toDateString())
+            ->where('logged_at', '>=', $selectedDate->copy()->subDays(30))
+            ->select('exercise_id')
+            ->groupBy('exercise_id')
+            ->orderByRaw('MAX(logged_at) DESC')
+            ->limit($limit)
+            ->pluck('exercise_id')
+            ->toArray();
+    }
+
+    /**
+     * Determine the item type configuration for an exercise
+     * 
+     * @param \App\Models\Exercise $exercise
+     * @param int $userId
+     * @param Carbon $selectedDate
+     * @param array $recentExerciseIds
+     * @return array Item type configuration with label and cssClass
+     */
+    protected function determineItemType($exercise, $userId, Carbon $selectedDate, $recentExerciseIds = [])
+    {
+        // Check if exercise is in today's program
+        $inProgram = Program::where('user_id', $userId)
+            ->where('exercise_id', $exercise->id)
+            ->whereDate('date', $selectedDate->toDateString())
+            ->exists();
+
+        // Check if exercise is in the top 5 most recently used
+        $isTopRecent = in_array($exercise->id, $recentExerciseIds);
+
+        // Check if it's a user's custom exercise
+        $isCustom = $exercise->user_id === $userId;
+
+        // Determine type based on priority: recent > custom > regular > in-program
+        if ($isTopRecent) {
+            return $this->getItemTypeConfig('recent');
+        } elseif ($isCustom) {
+            return $this->getItemTypeConfig('custom');
+        } elseif ($inProgram) {
+            return $this->getItemTypeConfig('in-program');
+        } else {
+            return $this->getItemTypeConfig('regular');
+        }
+    }
+
+    /**
+     * Get item type configuration
+     * 
+     * @param string $typeKey
+     * @return array Configuration with label and cssClass
+     */
+    protected function getItemTypeConfig($typeKey)
+    {
+        $itemTypes = [
+            'recent' => [
+                'label' => 'Recent',
+                'cssClass' => 'recent',
+                'priority' => 1
+            ],
+            'custom' => [
+                'label' => 'My Exercise',
+                'cssClass' => 'custom',
+                'priority' => 2
+            ],
+            'regular' => [
+                'label' => 'Available',
+                'cssClass' => 'regular',
+                'priority' => 3
+            ],
+            'in-program' => [
+                'label' => 'In Program',
+                'cssClass' => 'in-program',
+                'priority' => 4
+            ]
+        ];
+
+        return $itemTypes[$typeKey] ?? $itemTypes['regular'];
     }
 
     /**

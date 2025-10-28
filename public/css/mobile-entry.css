@@ -609,8 +609,92 @@ Date Navigation Component */
 }
 
 /* Category-specific styling */
+
+/* In Program - Highest priority, most prominent styling */
+.item-selection-card--in-program {
+    background-color: rgba(40, 167, 69, 0.12);
+    border-left: 3px solid #28a745;
+}
+
+@media (hover: hover) {
+    .item-selection-card--in-program:hover {
+        background-color: rgba(40, 167, 69, 0.18);
+    }
+}
+
+.item-selection-card--in-program .item-name {
+    color: #d4edda;
+    font-weight: 600;
+}
+
+.item-selection-card--in-program .item-type {
+    color: rgba(212, 237, 218, 0.8);
+    font-weight: 500;
+}
+
+/* Recent - Second priority, blue accent */
+.item-selection-card--recent {
+    background-color: rgba(0, 123, 255, 0.08);
+    border-left: 2px solid #007bff;
+}
+
+@media (hover: hover) {
+    .item-selection-card--recent:hover {
+        background-color: rgba(0, 123, 255, 0.12);
+    }
+}
+
+.item-selection-card--recent .item-name {
+    color: #e3f2fd;
+}
+
+.item-selection-card--recent .item-type {
+    color: rgba(227, 242, 253, 0.7);
+}
+
+/* Custom - Third priority, purple accent */
+.item-selection-card--custom {
+    background-color: rgba(102, 16, 242, 0.08);
+    border-left: 2px solid #6610f2;
+}
+
+@media (hover: hover) {
+    .item-selection-card--custom:hover {
+        background-color: rgba(102, 16, 242, 0.12);
+    }
+}
+
+.item-selection-card--custom .item-name {
+    color: #e2d9f3;
+}
+
+.item-selection-card--custom .item-type {
+    color: rgba(226, 217, 243, 0.7);
+}
+
+/* Regular - Default styling, lowest priority */
+.item-selection-card--regular {
+    background-color: rgba(108, 117, 125, 0.05);
+}
+
+@media (hover: hover) {
+    .item-selection-card--regular:hover {
+        background-color: rgba(108, 117, 125, 0.08);
+    }
+}
+
+.item-selection-card--regular .item-name {
+    color: var(--text-primary);
+}
+
+.item-selection-card--regular .item-type {
+    color: var(--text-muted);
+}
+
+/* Legacy support - map old 'highlighted' class to 'recent' */
 .item-selection-card--highlighted {
     background-color: rgba(0, 123, 255, 0.08);
+    border-left: 2px solid #007bff;
 }
 
 @media (hover: hover) {

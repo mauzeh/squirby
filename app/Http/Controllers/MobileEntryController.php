@@ -163,43 +163,71 @@ class MobileEntryController extends Controller
                     [
                         'id' => 'item-1',
                         'name' => 'Bench Press',
-                        'type' => 'highlighted',
+                        'type' => [
+                            'label' => 'In Program',
+                            'cssClass' => 'in-program',
+                            'priority' => 4
+                        ],
                         'href' => '#' // route('mobile-entry.add-item', ['id' => 1, 'date' => $selectedDate]) or similar
                     ],
                     [
                         'id' => 'item-2',
                         'name' => 'Squats',
-                        'type' => 'highlighted',
+                        'type' => [
+                            'label' => 'Recent',
+                            'cssClass' => 'recent',
+                            'priority' => 1
+                        ],
                         'href' => '#' // route('mobile-entry.add-item', ['id' => 2, 'date' => $selectedDate]) or similar
                     ],
                     [
                         'id' => 'item-3',
                         'name' => 'Chicken Breast',
-                        'type' => 'regular',
+                        'type' => [
+                            'label' => 'Available',
+                            'cssClass' => 'regular',
+                            'priority' => 3
+                        ],
                         'href' => '#' // route('mobile-entry.food', ['id' => 3]) or similar
                     ],
                     [
                         'id' => 'item-4',
                         'name' => 'Brown Rice',
-                        'type' => 'regular',
+                        'type' => [
+                            'label' => 'Available',
+                            'cssClass' => 'regular',
+                            'priority' => 3
+                        ],
                         'href' => '#' // route('mobile-entry.food', ['id' => 4]) or similar
                     ],
                     [
                         'id' => 'item-5',
                         'name' => 'Body Weight',
-                        'type' => 'regular',
+                        'type' => [
+                            'label' => 'Available',
+                            'cssClass' => 'regular',
+                            'priority' => 3
+                        ],
                         'href' => '#' // route('mobile-entry.measurement', ['id' => 5]) or similar
                     ],
                     [
                         'id' => 'item-6',
                         'name' => 'Body Fat %',
-                        'type' => 'regular',
+                        'type' => [
+                            'label' => 'My Exercise',
+                            'cssClass' => 'custom',
+                            'priority' => 2
+                        ],
                         'href' => '#' // route('mobile-entry.measurement', ['id' => 6]) or similar
                     ],
                     [
                         'id' => 'item-7',
                         'name' => 'Deadlift: This is a very long exercise name to test the overflow behavior',
-                        'type' => 'highlighted',
+                        'type' => [
+                            'label' => 'In Program',
+                            'cssClass' => 'in-program',
+                            'priority' => 4
+                        ],
                         'href' => '#' // route('mobile-entry.exercise', ['id' => 7]) or similar
                     ]
                 ],

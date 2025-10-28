@@ -1711,8 +1711,13 @@ class MobileEntryLiftLogFormServiceTest extends TestCase
         $inProgramItem = collect($itemSelectionList['items'])->firstWhere('name', 'In Program');
         $notInProgramItem = collect($itemSelectionList['items'])->firstWhere('name', 'Not In Program');
         
-        $this->assertEquals('highlighted', $inProgramItem['type']);
-        $this->assertEquals('regular', $notInProgramItem['type']);
+        $this->assertEquals('in-program', $inProgramItem['type']['cssClass']);
+        $this->assertEquals('In Program', $inProgramItem['type']['label']);
+        $this->assertEquals(4, $inProgramItem['type']['priority']);
+        
+        $this->assertEquals('regular', $notInProgramItem['type']['cssClass']);
+        $this->assertEquals('Available', $notInProgramItem['type']['label']);
+        $this->assertEquals(3, $notInProgramItem['type']['priority']);
     }
 
     #[Test]
@@ -1734,21 +1739,26 @@ class MobileEntryLiftLogFormServiceTest extends TestCase
         $recentItem = collect($itemSelectionList['items'])->firstWhere('name', 'Recently Used');
         $notRecentItem = collect($itemSelectionList['items'])->firstWhere('name', 'Not Recently Used');
         
-        $this->assertEquals('highlighted', $recentItem['type']);
-        $this->assertEquals('regular', $notRecentItem['type']);
+        $this->assertEquals('recent', $recentItem['type']['cssClass']);
+        $this->assertEquals('Recent', $recentItem['type']['label']);
+        $this->assertEquals(1, $recentItem['type']['priority']);
+        
+        $this->assertEquals('regular', $notRecentItem['type']['cssClass']);
+        $this->assertEquals('Available', $notRecentItem['type']['label']);
+        $this->assertEquals(3, $notRecentItem['type']['priority']);
     }
 
     #[Test]
-    public function it_sorts_highlighted_exercises_first()
+    public function it_sorts_in_program_exercises_last()
     {
         $user = User::factory()->create();
         
         // Create exercises in alphabetical order
         $exerciseA = Exercise::factory()->create(['title' => 'A Regular Exercise']);
-        $exerciseB = Exercise::factory()->create(['title' => 'B Highlighted Exercise']);
+        $exerciseB = Exercise::factory()->create(['title' => 'B In Program Exercise']);
         $exerciseC = Exercise::factory()->create(['title' => 'C Regular Exercise']);
         
-        // Make exerciseB highlighted by adding to program
+        // Make exerciseB in-program by adding to program
         Program::factory()->create([
             'user_id' => $user->id,
             'exercise_id' => $exerciseB->id,
@@ -1757,17 +1767,17 @@ class MobileEntryLiftLogFormServiceTest extends TestCase
 
         $itemSelectionList = $this->service->generateItemSelectionList($user->id, $this->testDate);
         
-        // Highlighted exercise should come first despite alphabetical order
-        $this->assertEquals('B Highlighted Exercise', $itemSelectionList['items'][0]['name']);
-        $this->assertEquals('highlighted', $itemSelectionList['items'][0]['type']);
-        
-        // Regular exercises should follow in alphabetical order
-        $this->assertEquals('A Regular Exercise', $itemSelectionList['items'][1]['name']);
-        $this->assertEquals('C Regular Exercise', $itemSelectionList['items'][2]['name']);
+        // In-program exercise should come last despite alphabetical order
+        $this->assertEquals('A Regular Exercise', $itemSelectionList['items'][0]['name']);
+        $this->assertEquals('C Regular Exercise', $itemSelectionList['items'][1]['name']);
+        $this->assertEquals('B In Program Exercise', $itemSelectionList['items'][2]['name']);
+        $this->assertEquals('in-program', $itemSelectionList['items'][2]['type']['cssClass']);
+        $this->assertEquals('In Program', $itemSelectionList['items'][2]['type']['label']);
+        $this->assertEquals(4, $itemSelectionList['items'][2]['type']['priority']);
     }
 
     #[Test]
-    public function it_limits_item_selection_list_to_20_items()
+    public function it_includes_all_accessible_exercises_in_item_selection_list()
     {
         $user = User::factory()->create();
         
@@ -1781,8 +1791,8 @@ class MobileEntryLiftLogFormServiceTest extends TestCase
 
         $itemSelectionList = $this->service->generateItemSelectionList($user->id, $this->testDate);
         
-        // Should be limited to 20 items
-        $this->assertCount(20, $itemSelectionList['items']);
+        // Should include all 25 exercises
+        $this->assertCount(25, $itemSelectionList['items']);
     }
 
     #[Test]

@@ -101,10 +101,10 @@
                 </li>
                 @foreach($data['itemSelectionList']['items'] as $item)
                 <li>
-                    <a href="{{ $item['href'] }}" class="item-selection-card item-selection-card--{{ str_replace(' ', '-', $item['type']) }}" 
+                    <a href="{{ $item['href'] }}" class="item-selection-card item-selection-card--{{ $item['type']['cssClass'] }}" 
                        aria-label="{{ $data['itemSelectionList']['ariaLabels']['selectItem'] }}: {{ $item['name'] }}">
                         <span class="item-name">{{ $item['name'] }}</span>
-                        <span class="item-type">{{ ucfirst($item['type']) }}</span>
+                        <span class="item-type">{{ $item['type']['label'] }}</span>
                     </a>
                 </li>
                 @endforeach
