@@ -6,6 +6,7 @@ use App\Models\Exercise;
 use App\Models\LiftLog;
 use App\Models\LiftSet;
 use App\Models\Program;
+use App\Models\User;
 use App\Services\MobileEntryLiftLogFormService;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -1181,7 +1182,41 @@ class MobileEntryLiftLogFormServiceTest extends TestCase
         $this->assertEquals('Something went wrong', $errorMessage['text']);
     }
 
+    #[Test]
+    public function it_includes_redirect_parameters_in_delete_action()
+    {
+        $user = User::factory()->create();
+        $exercise = Exercise::factory()->create(['title' => 'Bench Press']);
+        
+        // Create a lift log for the test date
+        $liftLog = LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => $this->testDate->copy()->setTime(10, 0),
+            'comments' => 'Test log'
+        ]);
+        
+        LiftSet::factory()->create([
+            'lift_log_id' => $liftLog->id,
+            'weight' => 135,
+            'reps' => 8
+        ]);
 
-
-
+        $loggedItems = $this->service->generateLoggedItems($user->id, $this->testDate);
+        
+        $this->assertCount(1, $loggedItems['items']);
+        
+        $item = $loggedItems['items'][0];
+        $deleteAction = $item['deleteAction'];
+        
+        // Parse the URL to check parameters
+        $parsedUrl = parse_url($deleteAction);
+        parse_str($parsedUrl['query'] ?? '', $queryParams);
+        
+        $this->assertEquals('mobile-entry-lifts', $queryParams['redirect_to']);
+        $this->assertEquals($this->testDate->toDateString(), $queryParams['date']);
+        
+        // Also verify the route includes the lift log ID
+        $this->assertStringContainsString('lift-logs/' . $liftLog->id, $deleteAction);
+    }
 }
