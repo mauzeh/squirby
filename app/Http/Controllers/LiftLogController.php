@@ -81,18 +81,33 @@ class LiftLogController extends Controller
 
         $loggedAtDate = Carbon::parse($request->input('date'));
         
-        // If no time provided (mobile entry), use current time
+        // If no time provided (mobile entry), use current time but ensure it stays within the selected date
         if ($request->has('logged_at') && $request->input('logged_at')) {
             $loggedAt = $loggedAtDate->setTimeFromTimeString($request->input('logged_at'));
         } else {
-            $loggedAt = $loggedAtDate->setTime(now()->hour, now()->minute);
+            // Use current time, but if we're logging for a different date, use a safe default time
+            $currentTime = now();
+            if ($loggedAtDate->toDateString() === $currentTime->toDateString()) {
+                // Same date - use current time
+                $loggedAt = $loggedAtDate->setTime($currentTime->hour, $currentTime->minute);
+            } else {
+                // Different date - use a safe default time (12:00 PM) to avoid date boundary issues
+                $loggedAt = $loggedAtDate->setTime(12, 0);
+            }
         }
         
-        // Round time to nearest 15-minute interval
+        // Round time to nearest 15-minute interval, but ensure we don't cross date boundaries
         $minutes = $loggedAt->minute;
         $remainder = $minutes % 15;
         if ($remainder !== 0) {
-            $loggedAt->addMinutes(15 - $remainder);
+            $newLoggedAt = $loggedAt->copy()->addMinutes(15 - $remainder);
+            // Only apply rounding if it doesn't change the date
+            if ($newLoggedAt->toDateString() === $loggedAtDate->toDateString()) {
+                $loggedAt = $newLoggedAt;
+            } else {
+                // If rounding would cross date boundary, round down instead
+                $loggedAt = $loggedAt->subMinutes($remainder);
+            }
         }
 
         $liftLog = LiftLog::create([
@@ -177,11 +192,18 @@ class LiftLogController extends Controller
         $loggedAtDate = Carbon::parse($request->input('date'));
         $loggedAt = $loggedAtDate->setTimeFromTimeString($request->input('logged_at'));
         
-        // Round time to nearest 15-minute interval
+        // Round time to nearest 15-minute interval, but ensure we don't cross date boundaries
         $minutes = $loggedAt->minute;
         $remainder = $minutes % 15;
         if ($remainder !== 0) {
-            $loggedAt->addMinutes(15 - $remainder);
+            $newLoggedAt = $loggedAt->copy()->addMinutes(15 - $remainder);
+            // Only apply rounding if it doesn't change the date
+            if ($newLoggedAt->toDateString() === $loggedAtDate->toDateString()) {
+                $loggedAt = $newLoggedAt;
+            } else {
+                // If rounding would cross date boundary, round down instead
+                $loggedAt = $loggedAt->subMinutes($remainder);
+            }
         }
 
         $liftLog->update([
