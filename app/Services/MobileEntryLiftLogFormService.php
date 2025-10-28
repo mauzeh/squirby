@@ -16,9 +16,10 @@ class MobileEntryLiftLogFormService
      * @param int $userId
      * @param Carbon $selectedDate
      * @param bool $includeCompleted Whether to include already completed programs (default: false)
+     * @param array $sessionMessages Flash messages from session (success, error, etc.)
      * @return array
      */
-    public function generateProgramForms($userId, Carbon $selectedDate, $includeCompleted = false)
+    public function generateProgramForms($userId, Carbon $selectedDate, $includeCompleted = false, $sessionMessages = [])
     {
         // Get user's programs for the selected date
         $query = Program::where('user_id', $userId)
@@ -134,6 +135,15 @@ class MobileEntryLiftLogFormService
             ];
         }
         
+        // Add system messages to the first form if any exist
+        if (!empty($forms) && !empty($sessionMessages)) {
+            $systemMessages = $this->generateSystemMessages($sessionMessages);
+            if (!empty($systemMessages)) {
+                // Prepend system messages to the first form's messages
+                $forms[0]['messages'] = array_merge($systemMessages, $forms[0]['messages']);
+            }
+        }
+
         return $forms;
     }
 
@@ -668,4 +678,68 @@ class MobileEntryLiftLogFormService
             ->availableToUser($userId)
             ->exists();
     }
+
+    /**
+     * Generate system messages from session flash data
+     * 
+     * @param array $sessionMessages
+     * @return array
+     */
+    private function generateSystemMessages($sessionMessages)
+    {
+        $messages = [];
+        
+        if (isset($sessionMessages['success'])) {
+            $messages[] = [
+                'type' => 'success',
+                'prefix' => 'Success:',
+                'text' => $sessionMessages['success']
+            ];
+        }
+        
+        if (isset($sessionMessages['error'])) {
+            $messages[] = [
+                'type' => 'error',
+                'prefix' => 'Error:',
+                'text' => $sessionMessages['error']
+            ];
+        }
+        
+        if (isset($sessionMessages['warning'])) {
+            $messages[] = [
+                'type' => 'warning',
+                'prefix' => 'Warning:',
+                'text' => $sessionMessages['warning']
+            ];
+        }
+        
+        if (isset($sessionMessages['info'])) {
+            $messages[] = [
+                'type' => 'info',
+                'prefix' => 'Info:',
+                'text' => $sessionMessages['info']
+            ];
+        }
+        
+        return $messages;
+    }
+
+    /**
+     * Generate interface messages from session data only
+     * 
+     * @param array $sessionMessages
+     * @return array
+     */
+    public function generateInterfaceMessages($sessionMessages = [])
+    {
+        $systemMessages = $this->generateSystemMessages($sessionMessages);
+        
+        return [
+            'messages' => $systemMessages,
+            'hasMessages' => !empty($systemMessages),
+            'messageCount' => count($systemMessages)
+        ];
+    }
+
+
 }

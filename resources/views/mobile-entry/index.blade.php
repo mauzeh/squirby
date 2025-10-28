@@ -31,6 +31,17 @@
             @endif
         </div>
 
+        <!-- Interface Messages -->
+        @if(isset($data['interfaceMessages']) && $data['interfaceMessages']['hasMessages'])
+        <section class="interface-messages" aria-label="Status messages">
+            @foreach($data['interfaceMessages']['messages'] as $message)
+            <div class="interface-message interface-message--{{ $message['type'] }}">
+                <span class="message-prefix">{{ $message['prefix'] }}</span> {{ $message['text'] }}
+            </div>
+            @endforeach
+        </section>
+        @endif
+
         <!-- Summary -->
         <section class="summary" aria-label="{{ $data['summary']['ariaLabels']['section'] }}">
             <div class="summary-item summary-item--total">
@@ -129,6 +140,11 @@
                 @csrf
                 <input type="hidden" name="form_type" value="{{ $form['type'] }}">
                 <input type="hidden" name="item_name" value="{{ $form['itemName'] }}">
+                @if(isset($form['hiddenFields']))
+                    @foreach($form['hiddenFields'] as $name => $value)
+                        <input type="hidden" name="{{ $name }}" value="{{ $value }}">
+                    @endforeach
+                @endif
                 @foreach($form['numericFields'] as $field)
                 <div class="form-mobile-group">
                     <label for="{{ $field['id'] }}" class="form-mobile-label">{{ $field['label'] }}</label>

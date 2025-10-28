@@ -35,6 +35,7 @@ class MobileEntryController extends Controller
         
         // Generate user-friendly date title with main title and optional subtitle
         $dateTitleData = $dateTitleService->generateDateTitle($selectedDate, $today);
+        
         // All text content and data for the view
         $data = [
             /**
@@ -397,6 +398,29 @@ class MobileEntryController extends Controller
                     'editItem' => 'Edit logged item',
                     'deleteItem' => 'Delete logged item'
                 ]
+            ],
+            
+            // Hardcoded example interface messages for demonstration
+            'interfaceMessages' => [
+                'messages' => [
+                    [
+                        'type' => 'success',
+                        'prefix' => 'Complete:',
+                        'text' => 'All 3 programmed exercises completed for today!'
+                    ],
+                    [
+                        'type' => 'info',
+                        'prefix' => 'Progress:',
+                        'text' => '2 of 5 exercises completed. 3 remaining.'
+                    ],
+                    [
+                        'type' => 'tip',
+                        'prefix' => 'Streak:',
+                        'text' => 'Great consistency! You\'ve logged workouts on 5 of the last 7 days.'
+                    ]
+                ],
+                'hasMessages' => true,
+                'messageCount' => 3
             ]
         ];
 
@@ -428,8 +452,16 @@ class MobileEntryController extends Controller
         // Generate date title
         $dateTitleData = $dateTitleService->generateDateTitle($selectedDate, $today);
         
+        // Get session messages for display
+        $sessionMessages = [
+            'success' => session('success'),
+            'error' => session('error'),
+            'warning' => session('warning'),
+            'info' => session('info') ?: $request->input('completion_info')
+        ];
+        
         // Generate forms based on programs using the service
-        $forms = $formService->generateProgramForms(Auth::id(), $selectedDate);
+        $forms = $formService->generateProgramForms(Auth::id(), $selectedDate, false, $sessionMessages);
         
         // Generate summary data using the service
         $summary = $formService->generateSummary(Auth::id(), $selectedDate);
@@ -439,6 +471,9 @@ class MobileEntryController extends Controller
         
         // Generate item selection list using the service
         $itemSelectionList = $formService->generateItemSelectionList(Auth::id(), $selectedDate);
+        
+        // Generate interface messages
+        $interfaceMessages = $formService->generateInterfaceMessages($sessionMessages);
         
         $data = [
             'navigation' => [
@@ -474,7 +509,9 @@ class MobileEntryController extends Controller
             
             'forms' => $forms,
             
-            'loggedItems' => $loggedItems
+            'loggedItems' => $loggedItems,
+            
+            'interfaceMessages' => $interfaceMessages
         ];
 
         return view('mobile-entry.index', compact('data'));

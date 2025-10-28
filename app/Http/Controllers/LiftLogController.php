@@ -127,6 +127,7 @@ class LiftLogController extends Controller
                 'submitted_lift_log_id' => $liftLog->id,
                 'submitted_program_id' => $request->input('program_id'),
             ];
+            
             return redirect()->route('mobile-entry.lifts', $redirectParams)->with('success', 'Lift log created successfully.');
         } else {
             return redirect()->route('exercises.show-logs', ['exercise' => $liftLog->exercise_id])->with('success', 'Lift log created successfully.');

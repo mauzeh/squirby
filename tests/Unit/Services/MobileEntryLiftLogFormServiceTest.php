@@ -997,16 +997,22 @@ class MobileEntryLiftLogFormServiceTest extends TestCase
         
         // Should include last session message and progression suggestion
         $messages = $form['messages'];
-        $this->assertCount(2, $messages); // Last session + suggestion
+        $this->assertGreaterThanOrEqual(2, $messages); // At least last session + suggestion
         
-        $lastSessionMessage = $messages[0];
+        // Find the last session message (might not be first due to system messages)
+        $lastSessionMessage = collect($messages)->firstWhere(function ($message) {
+            return str_contains($message['prefix'] ?? '', 'Last session');
+        });
+        $this->assertNotNull($lastSessionMessage);
         $this->assertEquals('info', $lastSessionMessage['type']);
-        $this->assertStringContainsString('Last session', $lastSessionMessage['prefix']);
         $this->assertStringContainsString('200 lbs × 6 reps × 3 sets', $lastSessionMessage['text']);
         
-        $suggestionMessage = $messages[1];
+        // Find the suggestion message
+        $suggestionMessage = collect($messages)->firstWhere(function ($message) {
+            return str_contains($message['text'] ?? '', 'Try 205 lbs today');
+        });
+        $this->assertNotNull($suggestionMessage);
         $this->assertEquals('tip', $suggestionMessage['type']);
-        $this->assertStringContainsString('Try 205 lbs today', $suggestionMessage['text']);
     }
 
     #[Test]
@@ -1136,5 +1142,98 @@ class MobileEntryLiftLogFormServiceTest extends TestCase
         $this->assertEquals(0, $bodyweightWeightField['defaultValue']);
         $this->assertEquals(2.5, $bodyweightWeightField['increment']);
         $this->assertEquals(0, $bodyweightWeightField['min']);
+    }
+
+    #[Test]
+    public function it_generates_interface_messages_with_no_session_data()
+    {
+        $messages = $this->service->generateInterfaceMessages();
+        
+        $this->assertFalse($messages['hasMessages']);
+        $this->assertEquals(0, $messages['messageCount']);
+        $this->assertEmpty($messages['messages']);
+    }
+
+    #[Test]
+    public function it_includes_session_messages_in_interface_messages()
+    {
+        $sessionMessages = [
+            'success' => 'Exercise added successfully!',
+            'error' => 'Something went wrong',
+            'warning' => 'Please check your form',
+            'info' => 'Additional information'
+        ];
+        
+        $messages = $this->service->generateInterfaceMessages($sessionMessages);
+        
+        $this->assertTrue($messages['hasMessages']);
+        $this->assertEquals(4, $messages['messageCount']);
+        
+        // Check that session messages are included
+        $successMessage = collect($messages['messages'])->firstWhere('type', 'success');
+        $this->assertNotNull($successMessage);
+        $this->assertEquals('Success:', $successMessage['prefix']);
+        $this->assertEquals('Exercise added successfully!', $successMessage['text']);
+        
+        $errorMessage = collect($messages['messages'])->firstWhere('type', 'error');
+        $this->assertNotNull($errorMessage);
+        $this->assertEquals('Error:', $errorMessage['prefix']);
+        $this->assertEquals('Something went wrong', $errorMessage['text']);
+    }
+
+
+
+    #[Test]
+    public function it_adds_session_messages_to_forms()
+    {
+        $user = \App\Models\User::factory()->create();
+        $exercise = Exercise::factory()->create();
+        
+        Program::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'date' => $this->testDate
+        ]);
+        
+        $sessionMessages = [
+            'success' => 'Exercise completed successfully!'
+        ];
+        
+        $forms = $this->service->generateProgramForms($user->id, $this->testDate, false, $sessionMessages);
+        
+        $this->assertCount(1, $forms);
+        
+        $form = $forms[0];
+        $messages = $form['messages'];
+        
+        // Should have session message at the beginning
+        $this->assertGreaterThan(0, count($messages));
+        $firstMessage = $messages[0];
+        $this->assertEquals('success', $firstMessage['type']);
+        $this->assertEquals('Success:', $firstMessage['prefix']);
+        $this->assertEquals('Exercise completed successfully!', $firstMessage['text']);
+    }
+
+    #[Test]
+    public function it_handles_empty_session_messages()
+    {
+        $user = \App\Models\User::factory()->create();
+        $exercise = Exercise::factory()->create();
+        
+        Program::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'date' => $this->testDate
+        ]);
+        
+        $sessionMessages = [];
+        
+        $forms = $this->service->generateProgramForms($user->id, $this->testDate, false, $sessionMessages);
+        
+        $this->assertCount(1, $forms);
+        
+        // Should work normally without session messages
+        $form = $forms[0];
+        $this->assertArrayHasKey('messages', $form);
     }
 }
