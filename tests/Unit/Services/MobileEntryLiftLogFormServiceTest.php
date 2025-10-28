@@ -364,4 +364,173 @@ class MobileEntryLiftLogFormServiceTest extends TestCase
         // Should cap at 100
         $this->assertEquals(100, $summary['values']['average']);
     }
+
+    #[Test]
+    public function it_identifies_completed_programs()
+    {
+        $user = \App\Models\User::factory()->create();
+        $exercise = Exercise::factory()->create();
+        
+        $program = Program::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'date' => $this->testDate
+        ]);
+        
+        // Program should not be completed initially
+        $this->assertFalse($program->isCompleted());
+        
+        // Create a lift log for the same exercise and date
+        $liftLog = LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => $this->testDate
+        ]);
+        
+        // Refresh the program to get updated completion status
+        $program->refresh();
+        
+        // Program should now be completed
+        $this->assertTrue($program->isCompleted());
+    }
+
+    #[Test]
+    public function it_calculates_program_completion_stats()
+    {
+        $user = \App\Models\User::factory()->create();
+        $exercise1 = Exercise::factory()->create();
+        $exercise2 = Exercise::factory()->create();
+        
+        // Create two programs
+        $program1 = Program::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise1->id,
+            'date' => $this->testDate
+        ]);
+        
+        $program2 = Program::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise2->id,
+            'date' => $this->testDate
+        ]);
+        
+        // Complete only the first program
+        LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise1->id,
+            'logged_at' => $this->testDate
+        ]);
+        
+        $stats = $this->service->getProgramCompletionStats($user->id, $this->testDate);
+        
+        $this->assertEquals(2, $stats['total']);
+        $this->assertEquals(1, $stats['completed']);
+        $this->assertEquals(1, $stats['incomplete']);
+        $this->assertEquals(50, $stats['completionPercentage']);
+    }
+
+    #[Test]
+    public function it_filters_incomplete_programs()
+    {
+        $user = \App\Models\User::factory()->create();
+        $exercise1 = Exercise::factory()->create();
+        $exercise2 = Exercise::factory()->create();
+        
+        // Create two programs
+        Program::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise1->id,
+            'date' => $this->testDate
+        ]);
+        
+        Program::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise2->id,
+            'date' => $this->testDate
+        ]);
+        
+        // Complete only the first program
+        LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise1->id,
+            'logged_at' => $this->testDate
+        ]);
+        
+        // Get incomplete programs
+        $incompletePrograms = $this->service->getIncompletePrograms($user->id, $this->testDate);
+        
+        $this->assertCount(1, $incompletePrograms);
+        $this->assertEquals($exercise2->id, $incompletePrograms->first()->exercise_id);
+    }
+
+    #[Test]
+    public function it_includes_completion_status_in_forms()
+    {
+        $user = \App\Models\User::factory()->create();
+        $exercise = Exercise::factory()->create();
+        
+        $program = Program::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'date' => $this->testDate
+        ]);
+        
+        // Generate forms - should show as incomplete
+        $forms = $this->service->generateProgramForms($user->id, $this->testDate);
+        
+        $this->assertCount(1, $forms);
+        $this->assertFalse($forms[0]['isCompleted']);
+        $this->assertEquals('pending', $forms[0]['completionStatus']);
+        
+        // Complete the program
+        LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => $this->testDate
+        ]);
+        
+        // Generate forms again - should show as completed
+        $forms = $this->service->generateProgramForms($user->id, $this->testDate);
+        
+        $this->assertCount(1, $forms);
+        $this->assertTrue($forms[0]['isCompleted']);
+        $this->assertEquals('completed', $forms[0]['completionStatus']);
+    }
+
+    #[Test]
+    public function it_can_exclude_completed_programs_from_forms()
+    {
+        $user = \App\Models\User::factory()->create();
+        $exercise1 = Exercise::factory()->create();
+        $exercise2 = Exercise::factory()->create();
+        
+        // Create two programs
+        Program::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise1->id,
+            'date' => $this->testDate
+        ]);
+        
+        Program::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise2->id,
+            'date' => $this->testDate
+        ]);
+        
+        // Complete the first program
+        LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise1->id,
+            'logged_at' => $this->testDate
+        ]);
+        
+        // Include completed programs (default)
+        $allForms = $this->service->generateProgramForms($user->id, $this->testDate, true);
+        $this->assertCount(2, $allForms);
+        
+        // Exclude completed programs
+        $incompleteForms = $this->service->generateProgramForms($user->id, $this->testDate, false);
+        $this->assertCount(1, $incompleteForms);
+        $this->assertEquals($exercise2->id, $incompleteForms[0]['hiddenFields']['exercise_id']);
+    }
 }

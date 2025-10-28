@@ -15,16 +15,22 @@ class MobileEntryLiftLogFormService
      * 
      * @param int $userId
      * @param Carbon $selectedDate
+     * @param bool $includeCompleted Whether to include already completed programs
      * @return array
      */
-    public function generateProgramForms($userId, Carbon $selectedDate)
+    public function generateProgramForms($userId, Carbon $selectedDate, $includeCompleted = true)
     {
         // Get user's programs for the selected date
-        $programs = Program::where('user_id', $userId)
+        $query = Program::where('user_id', $userId)
             ->whereDate('date', $selectedDate->toDateString())
-            ->with(['exercise'])
-            ->orderBy('priority', 'asc')
-            ->get();
+            ->with(['exercise']);
+            
+        // Optionally filter out completed programs
+        if (!$includeCompleted) {
+            $query->incomplete();
+        }
+        
+        $programs = $query->orderBy('priority', 'asc')->get();
         
         $forms = [];
         
@@ -46,6 +52,9 @@ class MobileEntryLiftLogFormService
             
             // Generate messages based on last session and program
             $messages = $this->generateFormMessages($program, $lastSession);
+            
+            // Check if program is completed
+            $isCompleted = $program->isCompleted();
             
             $forms[] = [
                 'id' => $formId,
@@ -117,7 +126,10 @@ class MobileEntryLiftLogFormService
                     'exercise_id' => $exercise->id,
                     'program_id' => $program->id,
                     'logged_at' => $selectedDate->toDateString()
-                ]
+                ],
+                // Completion status
+                'isCompleted' => $isCompleted,
+                'completionStatus' => $isCompleted ? 'completed' : 'pending'
             ];
         }
         
@@ -412,5 +424,68 @@ class MobileEntryLiftLogFormService
             ],
             'filterPlaceholder' => 'Filter exercises...'
         ];
+    }
+
+    /**
+     * Get program completion statistics for a given date
+     * 
+     * @param int $userId
+     * @param Carbon $selectedDate
+     * @return array
+     */
+    public function getProgramCompletionStats($userId, Carbon $selectedDate)
+    {
+        $totalPrograms = Program::where('user_id', $userId)
+            ->whereDate('date', $selectedDate->toDateString())
+            ->count();
+            
+        $completedPrograms = Program::where('user_id', $userId)
+            ->whereDate('date', $selectedDate->toDateString())
+            ->completed()
+            ->count();
+            
+        $incompletePrograms = $totalPrograms - $completedPrograms;
+        $completionPercentage = $totalPrograms > 0 ? round(($completedPrograms / $totalPrograms) * 100) : 0;
+        
+        return [
+            'total' => $totalPrograms,
+            'completed' => $completedPrograms,
+            'incomplete' => $incompletePrograms,
+            'completionPercentage' => $completionPercentage
+        ];
+    }
+
+    /**
+     * Get incomplete programs for a given date
+     * 
+     * @param int $userId
+     * @param Carbon $selectedDate
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function getIncompletePrograms($userId, Carbon $selectedDate)
+    {
+        return Program::where('user_id', $userId)
+            ->whereDate('date', $selectedDate->toDateString())
+            ->incomplete()
+            ->with(['exercise'])
+            ->orderBy('priority', 'asc')
+            ->get();
+    }
+
+    /**
+     * Get completed programs for a given date
+     * 
+     * @param int $userId
+     * @param Carbon $selectedDate
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function getCompletedPrograms($userId, Carbon $selectedDate)
+    {
+        return Program::where('user_id', $userId)
+            ->whereDate('date', $selectedDate->toDateString())
+            ->completed()
+            ->with(['exercise'])
+            ->orderBy('priority', 'asc')
+            ->get();
     }
 }
