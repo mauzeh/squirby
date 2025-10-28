@@ -374,7 +374,6 @@ class MobileEntryController extends Controller
             // Logged items
             'loggedItems' => [
                 'emptyMessage' => 'No logged items yet!',
-                'title' => 'Item Entry',
                 'confirmMessages' => [
                     'deleteItem' => 'Are you sure you want to delete this item? This action cannot be undone.',
                     'removeForm' => 'Are you sure you want to remove this item from today\'s program?'
@@ -382,6 +381,7 @@ class MobileEntryController extends Controller
                 'items' => [
                     [
                         'id' => 1,
+                        'title' => 'Morning Workout',
                         'value' => 25,
                         'editAction' => '#', // route('mobile-entry.edit-item', ['id' => 1]) or similar
                         'deleteAction' => '#', // route('mobile-entry.delete-item', ['id' => 1]) or similar
@@ -394,6 +394,7 @@ class MobileEntryController extends Controller
                     ],
                     [
                         'id' => 2,
+                        'title' => 'Afternoon Session',
                         'value' => 15,
                         'editAction' => '#', // route('mobile-entry.edit-item', ['id' => 2]) or similar
                         'deleteAction' => '#', // route('mobile-entry.delete-item', ['id' => 2]) or similar
@@ -406,6 +407,7 @@ class MobileEntryController extends Controller
                     ],
                     [
                         'id' => 3,
+                        'title' => 'Evening Cardio',
                         'value' => 30,
                         'editAction' => '#', // route('mobile-entry.edit-item', ['id' => 3]) or similar
                         'deleteAction' => '#', // route('mobile-entry.delete-item', ['id' => 3]) or similar

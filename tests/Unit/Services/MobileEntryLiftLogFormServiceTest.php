@@ -1251,6 +1251,10 @@ class MobileEntryLiftLogFormServiceTest extends TestCase
         $this->assertArrayNotHasKey('emptyMessage', $loggedItemsWithData);
         $this->assertNotEmpty($loggedItemsWithData['items']);
         $this->assertCount(1, $loggedItemsWithData['items']);
+        
+        // Verify the item includes the exercise title
+        $item = $loggedItemsWithData['items'][0];
+        $this->assertEquals('Bench Press', $item['title']);
     }
 
     #[Test]

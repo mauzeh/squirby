@@ -182,7 +182,7 @@
             @foreach($data['loggedItems']['items'] as $index => $item)
             <div class="logged-item">
                 <div class="item-header">
-                    <h2 class="item-title">{{ $data['loggedItems']['title'] }} {{ $index + 1 }}</h2>
+                    <h2 class="item-title">{{ $item['title'] }}</h2>
                     <span class="item-value">{{ $item['value'] }}</span>
                     <div class="item-actions">
                         <a href="{{ $item['editAction'] }}" class="btn-edit" aria-label="{{ $data['loggedItems']['ariaLabels']['editItem'] }}">

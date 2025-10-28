@@ -322,6 +322,7 @@ class MobileEntryLiftLogFormService
 
             $items[] = [
                 'id' => $log->id,
+                'title' => $log->exercise->title,
                 'value' => $displayValue,
                 'editAction' => route('lift-logs.edit', ['lift_log' => $log->id]),
                 'deleteAction' => route('lift-logs.destroy', [
@@ -339,7 +340,6 @@ class MobileEntryLiftLogFormService
         }
 
         $result = [
-            'title' => 'Today\'s Entries',
             'items' => $items,
             'confirmMessages' => [
                 'deleteItem' => 'Are you sure you want to delete this lift log entry? This action cannot be undone.',
