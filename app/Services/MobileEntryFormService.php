@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Program;
 use App\Models\LiftLog;
+use App\Models\Exercise;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 
@@ -329,6 +330,87 @@ class MobileEntryFormService
                 'editItem' => 'Edit logged lift',
                 'deleteItem' => 'Delete logged lift'
             ]
+        ];
+    }
+
+    /**
+     * Generate item selection list based on user's accessible exercises
+     * 
+     * @param int $userId
+     * @param Carbon $selectedDate
+     * @return array
+     */
+    public function generateItemSelectionList($userId, Carbon $selectedDate)
+    {
+        // Get user's accessible exercises with recent usage data
+        $exercises = Exercise::availableToUser($userId)
+            ->with(['liftLogs' => function ($query) use ($userId, $selectedDate) {
+                $query->where('user_id', $userId)
+                    ->where('logged_at', '>=', $selectedDate->copy()->subDays(30))
+                    ->orderBy('logged_at', 'desc')
+                    ->limit(1);
+            }])
+            ->orderBy('title', 'asc')
+            ->get();
+
+        // Get exercises that are in today's program to highlight them
+        $programExerciseIds = Program::where('user_id', $userId)
+            ->whereDate('date', $selectedDate->toDateString())
+            ->pluck('exercise_id')
+            ->toArray();
+
+        // Get recently used exercises (last 7 days) for prioritization
+        $recentExerciseIds = LiftLog::where('user_id', $userId)
+            ->where('logged_at', '>=', $selectedDate->copy()->subDays(7))
+            ->pluck('exercise_id')
+            ->unique()
+            ->toArray();
+
+        $items = [];
+        
+        foreach ($exercises as $exercise) {
+            // Determine item type based on program and recent usage
+            $type = 'regular';
+            if (in_array($exercise->id, $programExerciseIds)) {
+                $type = 'highlighted'; // In today's program
+            } elseif (in_array($exercise->id, $recentExerciseIds)) {
+                $type = 'highlighted'; // Used recently
+            }
+
+            $items[] = [
+                'id' => 'exercise-' . $exercise->id,
+                'name' => $exercise->title,
+                'type' => $type,
+                'href' => route('mobile-entry.add-lift-form', ['exercise' => $exercise->canonical_name ?? $exercise->id])
+            ];
+        }
+
+        // Sort items: highlighted first, then alphabetical
+        usort($items, function ($a, $b) {
+            if ($a['type'] === $b['type']) {
+                return strcmp($a['name'], $b['name']);
+            }
+            return $a['type'] === 'highlighted' ? -1 : 1;
+        });
+
+        // Limit to reasonable number for mobile interface
+        $items = array_slice($items, 0, 20);
+
+        return [
+            'noResultsMessage' => 'No exercises found. Hit "+" to save as new exercise.',
+            'createForm' => [
+                'action' => route('mobile-entry.create-exercise'),
+                'method' => 'POST',
+                'inputName' => 'exercise_name',
+                'submitText' => '+',
+                'ariaLabel' => 'Create new exercise'
+            ],
+            'items' => $items,
+            'ariaLabels' => [
+                'section' => 'Exercise selection list',
+                'selectItem' => 'Select this exercise to log'
+            ],
+            'filterPlaceholder' => 'Filter exercises...'
         ];
     }
 }

@@ -437,6 +437,9 @@ class MobileEntryController extends Controller
         // Generate logged items using the service
         $loggedItems = $formService->generateLoggedItems(Auth::id(), $selectedDate);
         
+        // Generate item selection list using the service
+        $itemSelectionList = $formService->generateItemSelectionList(Auth::id(), $selectedDate);
+        
         $data = [
             'navigation' => [
                 'prevButton' => [
@@ -467,65 +470,7 @@ class MobileEntryController extends Controller
                 'ariaLabel' => 'Add new exercise'
             ],
             
-            'itemSelectionList' => [
-                'noResultsMessage' => 'No exercises found. Hit "+" to save as new exercise.',
-                'createForm' => [
-                    'action' => route('mobile-entry.create-exercise'),
-                    'method' => 'POST',
-                    'inputName' => 'exercise_name',
-                    'submitText' => '+',
-                    'ariaLabel' => 'Create new exercise'
-                ],
-                'items' => [
-                    [
-                        'id' => 'exercise-1',
-                        'name' => 'Bench Press',
-                        'type' => 'highlighted',
-                        'href' => route('mobile-entry.add-lift-form', ['exercise' => 'bench-press'])
-                    ],
-                    [
-                        'id' => 'exercise-2',
-                        'name' => 'Squat',
-                        'type' => 'highlighted',
-                        'href' => route('mobile-entry.add-lift-form', ['exercise' => 'squat'])
-                    ],
-                    [
-                        'id' => 'exercise-3',
-                        'name' => 'Deadlift',
-                        'type' => 'highlighted',
-                        'href' => route('mobile-entry.add-lift-form', ['exercise' => 'deadlift'])
-                    ],
-                    [
-                        'id' => 'exercise-4',
-                        'name' => 'Overhead Press',
-                        'type' => 'regular',
-                        'href' => route('mobile-entry.add-lift-form', ['exercise' => 'overhead-press'])
-                    ],
-                    [
-                        'id' => 'exercise-5',
-                        'name' => 'Barbell Row',
-                        'type' => 'regular',
-                        'href' => route('mobile-entry.add-lift-form', ['exercise' => 'barbell-row'])
-                    ],
-                    [
-                        'id' => 'exercise-6',
-                        'name' => 'Pull-ups',
-                        'type' => 'regular',
-                        'href' => route('mobile-entry.add-lift-form', ['exercise' => 'pull-ups'])
-                    ],
-                    [
-                        'id' => 'exercise-7',
-                        'name' => 'Incline Dumbbell Press',
-                        'type' => 'regular',
-                        'href' => route('mobile-entry.add-lift-form', ['exercise' => 'incline-dumbbell-press'])
-                    ]
-                ],
-                'ariaLabels' => [
-                    'section' => 'Exercise selection list',
-                    'selectItem' => 'Select this exercise to log'
-                ],
-                'filterPlaceholder' => 'Filter exercises...'
-            ],
+            'itemSelectionList' => $itemSelectionList,
             
             'forms' => $forms,
             
@@ -534,7 +479,6 @@ class MobileEntryController extends Controller
 
         return view('mobile-entry.index', compact('data'));
     }
-
 
 
 }
