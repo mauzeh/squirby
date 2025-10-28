@@ -246,6 +246,15 @@ class MobileEntryLiftLogFormService
             ];
         }
         
+        // Add last session comments if available
+        if ($lastSession && !empty($lastSession['comments'])) {
+            $messages[] = [
+                'type' => 'neutral',
+                'prefix' => 'Last notes:',
+                'text' => $lastSession['comments']
+            ];
+        }
+        
         // Add program comments if available
         if ($program->comments) {
             $messages[] = [

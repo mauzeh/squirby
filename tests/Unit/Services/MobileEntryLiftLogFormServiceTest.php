@@ -213,6 +213,67 @@ class MobileEntryLiftLogFormServiceTest extends TestCase
     }
 
     #[Test]
+    public function it_generates_last_session_message_with_comments()
+    {
+        $program = Program::factory()->create(['comments' => null]);
+        $exercise = Exercise::factory()->create(['is_bodyweight' => false]);
+        $program->exercise = $exercise;
+        
+        $lastSession = [
+            'weight' => 185,
+            'reps' => 8,
+            'sets' => 4,
+            'date' => 'Jan 10',
+            'comments' => 'Felt really strong today, good form throughout'
+        ];
+        
+        $user = \App\Models\User::factory()->create();
+        $messages = $this->service->generateFormMessages($program, $lastSession, $user->id);
+        
+        $this->assertCount(3, $messages); // Last session + last notes + suggestion
+        
+        $lastSessionMessage = $messages[0];
+        $this->assertEquals('info', $lastSessionMessage['type']);
+        $this->assertEquals('Last session (Jan 10):', $lastSessionMessage['prefix']);
+        $this->assertEquals('185 lbs × 8 reps × 4 sets', $lastSessionMessage['text']);
+        
+        $lastNotesMessage = $messages[1];
+        $this->assertEquals('neutral', $lastNotesMessage['type']);
+        $this->assertEquals('Last notes:', $lastNotesMessage['prefix']);
+        $this->assertEquals('Felt really strong today, good form throughout', $lastNotesMessage['text']);
+        
+        $suggestionMessage = $messages[2];
+        $this->assertEquals('tip', $suggestionMessage['type']);
+        $this->assertEquals('Suggestion:', $suggestionMessage['prefix']);
+        $this->assertEquals('Try 190 lbs × 8 reps × 4 sets today', $suggestionMessage['text']);
+    }
+
+    #[Test]
+    public function it_does_not_show_last_notes_when_comments_are_empty()
+    {
+        $program = Program::factory()->create(['comments' => null]);
+        $exercise = Exercise::factory()->create(['is_bodyweight' => false]);
+        $program->exercise = $exercise;
+        
+        $lastSession = [
+            'weight' => 135,
+            'reps' => 10,
+            'sets' => 3,
+            'date' => 'Jan 8',
+            'comments' => '' // Empty comments
+        ];
+        
+        $user = \App\Models\User::factory()->create();
+        $messages = $this->service->generateFormMessages($program, $lastSession, $user->id);
+        
+        $this->assertCount(2, $messages); // Last session + suggestion (no notes message)
+        
+        // Verify no "Last notes:" message is present
+        $notesMessage = collect($messages)->firstWhere('prefix', 'Last notes:');
+        $this->assertNull($notesMessage);
+    }
+
+    #[Test]
     public function it_generates_program_comments_message()
     {
         $program = Program::factory()->create(['comments' => 'Focus on form today']);
