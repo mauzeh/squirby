@@ -1542,7 +1542,7 @@ Date Navigation Component */
 }
 
 .logged-item .item-value {
-    font-size: 2em;
+    font-size: 1.2em;
     font-weight: bold;
     color: var(--color-success);
     line-height: 1;
@@ -1600,7 +1600,7 @@ Date Navigation Component */
     }
 
     .logged-item .item-value {
-        font-size: 1.8em;
+        font-size: 1.2em;
     }
 
     .logged-item .item-comment {
@@ -1625,7 +1625,7 @@ Date Navigation Component */
     }
 
     .logged-item .item-value {
-        font-size: 1.6em;
+        font-size: 1.2em;
     }
 
     .logged-item .item-comment {

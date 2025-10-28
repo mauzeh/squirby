@@ -336,24 +336,39 @@ class MobileEntryLiftLogFormService
                 continue;
             }
 
-            $firstSet = $log->liftSets->first();
-            $setCount = $log->liftSets->count();
+            // Use the same logic as the Blade components but generate plain text
+            // This mirrors the logic from lift-weight-display.blade.php
+            if ($log->exercise->band_type) {
+                $weightText = 'Band: ' . $log->display_weight;
+            } elseif ($log->exercise->is_bodyweight) {
+                $weightText = 'BW';
+                if ($log->display_weight > 0) {
+                    $weightText .= ' +' . $log->display_weight . ' lbs';
+                }
+            } else {
+                $weightText = $log->display_weight . ' lbs';
+            }
             
-            // Format display value
-            $displayValue = $log->exercise->is_bodyweight && $firstSet->weight == 0
-                ? 'BW×' . $firstSet->reps . '×' . $setCount
-                : $firstSet->weight . '×' . $firstSet->reps . '×' . $setCount;
+            // This mirrors the logic from lift-reps-sets-display.blade.php
+            $repsSetsText = $log->display_rounds . ' x ' . $log->display_reps;
+            
+            // Combine weight and reps/sets for the message
+            $formattedMessage = $weightText . ' × ' . $repsSetsText;
 
             $items[] = [
                 'id' => $log->id,
                 'title' => $log->exercise->title,
-                'value' => $displayValue,
                 'editAction' => route('lift-logs.edit', ['lift_log' => $log->id]),
                 'deleteAction' => route('lift-logs.destroy', [
                     'lift_log' => $log->id,
                     'redirect_to' => 'mobile-entry-lifts',
                     'date' => $selectedDate->toDateString()
                 ]),
+                'message' => [
+                    'type' => 'success',
+                    'prefix' => 'Completed!',
+                    'text' => $formattedMessage
+                ],
                 'freeformText' => $log->comments
             ];
         }

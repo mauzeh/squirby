@@ -183,7 +183,9 @@
             <div class="logged-item">
                 <div class="item-header">
                     <h2 class="item-title">{{ $item['title'] }}</h2>
+                    @if(isset($item['value']) && !empty($item['value']))
                     <span class="item-value">{{ $item['value'] }}</span>
+                    @endif
                     <div class="item-actions">
                         <a href="{{ $item['editAction'] }}" class="btn-edit" aria-label="{{ $data['loggedItems']['ariaLabels']['editItem'] }}">
                             <i class="fas fa-edit"></i>

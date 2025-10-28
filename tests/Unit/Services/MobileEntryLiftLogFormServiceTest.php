@@ -1322,4 +1322,262 @@ class MobileEntryLiftLogFormServiceTest extends TestCase
         $this->assertEquals('', $commentField['defaultValue']);
         $this->assertEquals('comments', $commentField['name']);
     }
+
+    #[Test]
+    public function it_generates_logged_items_with_no_logs()
+    {
+        $user = User::factory()->create();
+        
+        $loggedItems = $this->service->generateLoggedItems($user->id, $this->testDate);
+        
+        $this->assertArrayHasKey('items', $loggedItems);
+        $this->assertArrayHasKey('emptyMessage', $loggedItems);
+        $this->assertEmpty($loggedItems['items']);
+        $this->assertEquals('No entries logged yet today!', $loggedItems['emptyMessage']);
+    }
+
+    #[Test]
+    public function it_generates_logged_items_for_regular_exercise()
+    {
+        $user = User::factory()->create();
+        $exercise = Exercise::factory()->create([
+            'title' => 'Bench Press',
+            'is_bodyweight' => false,
+            'band_type' => null
+        ]);
+        
+        $liftLog = LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => $this->testDate->copy()->setTime(10, 0),
+            'comments' => 'Felt strong today'
+        ]);
+        
+        LiftSet::factory()->create([
+            'lift_log_id' => $liftLog->id,
+            'weight' => 185,
+            'reps' => 5
+        ]);
+        
+        LiftSet::factory()->create([
+            'lift_log_id' => $liftLog->id,
+            'weight' => 185,
+            'reps' => 5
+        ]);
+        
+        LiftSet::factory()->create([
+            'lift_log_id' => $liftLog->id,
+            'weight' => 185,
+            'reps' => 5
+        ]);
+
+        $loggedItems = $this->service->generateLoggedItems($user->id, $this->testDate);
+        
+        $this->assertCount(1, $loggedItems['items']);
+        $this->assertArrayNotHasKey('emptyMessage', $loggedItems);
+        
+        $item = $loggedItems['items'][0];
+        $this->assertEquals($liftLog->id, $item['id']);
+        $this->assertEquals('Bench Press', $item['title']);
+        $this->assertArrayNotHasKey('value', $item); // No value field
+        $this->assertEquals('185 lbs × 3 x 5', $item['message']['text']); // weight × sets x reps in message
+        $this->assertEquals('success', $item['message']['type']);
+        $this->assertEquals('Completed!', $item['message']['prefix']);
+        $this->assertEquals('Felt strong today', $item['freeformText']);
+        $this->assertStringContainsString('lift-logs/' . $liftLog->id . '/edit', $item['editAction']);
+        $this->assertStringContainsString('lift-logs/' . $liftLog->id, $item['deleteAction']);
+    }
+
+    #[Test]
+    public function it_generates_logged_items_for_bodyweight_exercise_with_no_added_weight()
+    {
+        $user = User::factory()->create();
+        $exercise = Exercise::factory()->create([
+            'title' => 'Pull-ups',
+            'is_bodyweight' => true,
+            'band_type' => null
+        ]);
+        
+        $liftLog = LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => $this->testDate->copy()->setTime(14, 30),
+            'comments' => 'Good form throughout'
+        ]);
+        
+        LiftSet::factory()->create([
+            'lift_log_id' => $liftLog->id,
+            'weight' => 0, // No added weight
+            'reps' => 8
+        ]);
+        
+        LiftSet::factory()->create([
+            'lift_log_id' => $liftLog->id,
+            'weight' => 0,
+            'reps' => 7
+        ]);
+
+        $loggedItems = $this->service->generateLoggedItems($user->id, $this->testDate);
+        
+        $item = $loggedItems['items'][0];
+        $this->assertEquals('Pull-ups', $item['title']);
+        $this->assertEquals('BW × 2 x 8', $item['message']['text']); // BW × sets x reps (uses first set reps)
+        $this->assertEquals('Good form throughout', $item['freeformText']);
+    }
+
+    #[Test]
+    public function it_generates_logged_items_for_bodyweight_exercise_with_added_weight()
+    {
+        $user = User::factory()->create();
+        $exercise = Exercise::factory()->create([
+            'title' => 'Weighted Pull-ups',
+            'is_bodyweight' => true,
+            'band_type' => null
+        ]);
+        
+        $liftLog = LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => $this->testDate->copy()->setTime(16, 0)
+        ]);
+        
+        LiftSet::factory()->create([
+            'lift_log_id' => $liftLog->id,
+            'weight' => 25, // Added weight
+            'reps' => 6
+        ]);
+        
+        LiftSet::factory()->create([
+            'lift_log_id' => $liftLog->id,
+            'weight' => 25,
+            'reps' => 5
+        ]);
+        
+        LiftSet::factory()->create([
+            'lift_log_id' => $liftLog->id,
+            'weight' => 25,
+            'reps' => 4
+        ]);
+
+        $loggedItems = $this->service->generateLoggedItems($user->id, $this->testDate);
+        
+        $item = $loggedItems['items'][0];
+        $this->assertEquals('Weighted Pull-ups', $item['title']);
+        $this->assertEquals('BW +25 lbs × 3 x 6', $item['message']['text']); // BW +weight × sets x reps
+    }
+
+    #[Test]
+    public function it_generates_logged_items_for_band_exercise()
+    {
+        $user = User::factory()->create();
+        $exercise = Exercise::factory()->create([
+            'title' => 'Band Pull-aparts',
+            'is_bodyweight' => false,
+            'band_type' => 'resistance'
+        ]);
+        
+        $liftLog = LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => $this->testDate->copy()->setTime(12, 15)
+        ]);
+        
+        LiftSet::factory()->create([
+            'lift_log_id' => $liftLog->id,
+            'weight' => 0,
+            'reps' => 15,
+            'band_color' => 'Red'
+        ]);
+        
+        LiftSet::factory()->create([
+            'lift_log_id' => $liftLog->id,
+            'weight' => 0,
+            'reps' => 12,
+            'band_color' => 'Red'
+        ]);
+
+        $loggedItems = $this->service->generateLoggedItems($user->id, $this->testDate);
+        
+        $item = $loggedItems['items'][0];
+        $this->assertEquals('Band Pull-aparts', $item['title']);
+        $this->assertEquals('Band: Red × 2 x 15', $item['message']['text']); // Band: color × sets x reps
+    }
+
+    #[Test]
+    public function it_skips_logged_items_with_no_lift_sets()
+    {
+        $user = User::factory()->create();
+        $exercise = Exercise::factory()->create(['title' => 'Empty Log']);
+        
+        // Create lift log without any sets
+        LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => $this->testDate
+        ]);
+
+        $loggedItems = $this->service->generateLoggedItems($user->id, $this->testDate);
+        
+        $this->assertEmpty($loggedItems['items']);
+        $this->assertArrayHasKey('emptyMessage', $loggedItems);
+    }
+
+    #[Test]
+    public function it_orders_logged_items_by_logged_at_desc()
+    {
+        $user = User::factory()->create();
+        $exercise1 = Exercise::factory()->create(['title' => 'First Exercise']);
+        $exercise2 = Exercise::factory()->create(['title' => 'Second Exercise']);
+        
+        // Create logs in different order
+        $liftLog1 = LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise1->id,
+            'logged_at' => $this->testDate->copy()->setTime(10, 0) // Earlier
+        ]);
+        
+        $liftLog2 = LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise2->id,
+            'logged_at' => $this->testDate->copy()->setTime(14, 0) // Later
+        ]);
+        
+        // Add sets to both
+        LiftSet::factory()->create(['lift_log_id' => $liftLog1->id, 'weight' => 100, 'reps' => 5]);
+        LiftSet::factory()->create(['lift_log_id' => $liftLog2->id, 'weight' => 200, 'reps' => 3]);
+
+        $loggedItems = $this->service->generateLoggedItems($user->id, $this->testDate);
+        
+        $this->assertCount(2, $loggedItems['items']);
+        // Should be ordered by logged_at desc (most recent first)
+        $this->assertEquals('Second Exercise', $loggedItems['items'][0]['title']); // 14:00
+        $this->assertEquals('First Exercise', $loggedItems['items'][1]['title']);  // 10:00
+    }
+
+    #[Test]
+    public function it_includes_correct_redirect_parameters_in_delete_action()
+    {
+        $user = User::factory()->create();
+        $exercise = Exercise::factory()->create(['title' => 'Test Exercise']);
+        
+        $liftLog = LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => $this->testDate
+        ]);
+        
+        LiftSet::factory()->create(['lift_log_id' => $liftLog->id, 'weight' => 150, 'reps' => 8]);
+
+        $loggedItems = $this->service->generateLoggedItems($user->id, $this->testDate);
+        
+        $item = $loggedItems['items'][0];
+        $deleteAction = $item['deleteAction'];
+        
+        // Parse the URL to check parameters
+        $parsedUrl = parse_url($deleteAction);
+        parse_str($parsedUrl['query'] ?? '', $queryParams);
+        
+        $this->assertEquals('mobile-entry-lifts', $queryParams['redirect_to']);
+        $this->assertEquals($this->testDate->toDateString(), $queryParams['date']);
+    }
 }
