@@ -58,4 +58,13 @@ class ExercisePolicy
         // Can only unpromote global exercises
         return $exercise->isGlobal();
     }
+
+    /**
+     * Determine whether the user can merge the exercise.
+     */
+    public function merge(User $user, Exercise $exercise): bool
+    {
+        // Only admins can merge exercises
+        return $user->hasRole('Admin');
+    }
 }

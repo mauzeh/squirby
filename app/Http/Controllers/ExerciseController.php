@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Exercise;
 use App\Models\User;
 use App\Services\ExerciseService;
+use App\Services\ExerciseMergeService;
 use App\Services\ChartService;
 use App\Presenters\LiftLogTablePresenter;
 use Illuminate\Http\Request;
@@ -16,13 +17,14 @@ class ExerciseController extends Controller
     use AuthorizesRequests;
     
     protected $exerciseService;
+    protected $exerciseMergeService;
     protected $chartService;
-
     protected $liftLogTablePresenter;
 
-    public function __construct(ExerciseService $exerciseService, \App\Services\ChartService $chartService, LiftLogTablePresenter $liftLogTablePresenter)
+    public function __construct(ExerciseService $exerciseService, ExerciseMergeService $exerciseMergeService, \App\Services\ChartService $chartService, LiftLogTablePresenter $liftLogTablePresenter)
     {
         $this->exerciseService = $exerciseService;
+        $this->exerciseMergeService = $exerciseMergeService;
         $this->chartService = $chartService;
         $this->liftLogTablePresenter = $liftLogTablePresenter;
     }
@@ -277,7 +279,69 @@ class ExerciseController extends Controller
         return view('exercises.logs', compact('exercise', 'chartData', 'displayExercises', 'exercises') + $tableData);
     }
 
+    /**
+     * Show the merge target selection page.
+     */
+    public function showMerge(Exercise $exercise)
+    {
+        $this->authorize('merge', $exercise);
 
+        // Check if exercise can be merged
+        if (!$this->exerciseMergeService->canBeMerged($exercise)) {
+            return back()->withErrors(['error' => "Exercise '{$exercise->title}' cannot be merged. It must be a user exercise with compatible global targets available."]);
+        }
+
+        // Get potential target exercises
+        $potentialTargets = $this->exerciseMergeService->getPotentialTargets($exercise);
+        
+        // Get merge statistics for the source exercise
+        $sourceStats = $this->exerciseMergeService->getMergeStatistics($exercise);
+        
+        // Get statistics and compatibility info for each target
+        $targetsWithInfo = $potentialTargets->map(function ($target) use ($exercise) {
+            $stats = $this->exerciseMergeService->getMergeStatistics($target);
+            $compatibility = $this->exerciseMergeService->validateMergeCompatibility($exercise, $target);
+            
+            return [
+                'exercise' => $target,
+                'stats' => $stats,
+                'compatibility' => $compatibility
+            ];
+        });
+
+        return view('exercises.merge', compact('exercise', 'sourceStats', 'targetsWithInfo'));
+    }
+
+    /**
+     * Execute the merge operation.
+     */
+    public function merge(Request $request, Exercise $exercise)
+    {
+        $this->authorize('merge', $exercise);
+
+        $validated = $request->validate([
+            'target_exercise_id' => 'required|exists:exercises,id',
+        ]);
+
+        $targetExercise = Exercise::findOrFail($validated['target_exercise_id']);
+
+        // Validate compatibility
+        $compatibility = $this->exerciseMergeService->validateMergeCompatibility($exercise, $targetExercise);
+        
+        if (!$compatibility['can_merge']) {
+            return back()->withErrors(['error' => 'Merge failed: ' . implode(', ', $compatibility['errors'])]);
+        }
+
+        try {
+            $this->exerciseMergeService->mergeExercises($exercise, $targetExercise, auth()->user());
+            
+            return redirect()->route('exercises.index')
+                ->with('success', "Exercise '{$exercise->title}' successfully merged into '{$targetExercise->title}'. All workout data has been preserved.");
+                
+        } catch (\Exception $e) {
+            return back()->withErrors(['error' => 'Merge failed: ' . $e->getMessage()]);
+        }
+    }
 
     /**
      * Validate exercise name for conflicts when creating new exercise.

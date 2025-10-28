@@ -65,6 +65,8 @@ Route::middleware('auth')->group(function () {
     Route::post('exercises/{exercise}/promote', [ExerciseController::class, 'promote'])->name('exercises.promote');
     Route::post('exercises/{exercise}/unpromote', [ExerciseController::class, 'unpromote'])->name('exercises.unpromote');
     Route::get('exercises/{exercise}/logs', [ExerciseController::class, 'showLogs'])->name('exercises.show-logs');
+    Route::get('exercises/{exercise}/merge', [ExerciseController::class, 'showMerge'])->name('exercises.show-merge');
+    Route::post('exercises/{exercise}/merge', [ExerciseController::class, 'merge'])->name('exercises.merge');
 
     Route::resource('lift-logs', LiftLogController::class)->except(['show']);
 
