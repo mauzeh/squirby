@@ -43,6 +43,7 @@
         @endif
 
         <!-- Summary -->
+        @if($data['summary'])
         <section class="summary" aria-label="{{ $data['summary']['ariaLabels']['section'] }}">
             <div class="summary-item summary-item--total">
                 <span class="summary-value">{{ number_format($data['summary']['values']['total']) }}</span>
@@ -61,6 +62,7 @@
                 <span class="summary-label">{{ $data['summary']['labels']['today'] }}</span>
             </div>
         </section>
+        @endif
 
         <!-- Add Item Button -->
         <div class="add-item-section">

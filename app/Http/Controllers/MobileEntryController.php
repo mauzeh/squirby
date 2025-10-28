@@ -495,9 +495,6 @@ class MobileEntryController extends Controller
         // Generate forms based on programs using the service
         $forms = $formService->generateProgramForms(Auth::id(), $selectedDate);
         
-        // Generate summary data using the service
-        $summary = $formService->generateSummary(Auth::id(), $selectedDate);
-        
         // Generate logged items using the service
         $loggedItems = $formService->generateLoggedItems(Auth::id(), $selectedDate);
         
@@ -530,7 +527,7 @@ class MobileEntryController extends Controller
                 ]
             ],
             
-            'summary' => $summary,
+            'summary' => null,
             
             'addItemButton' => [
                 'text' => 'Add Exercise',
