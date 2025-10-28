@@ -540,6 +540,14 @@ class MobileEntryLiftLogFormService
             ];
         }
         
+        // Get the minimum priority for existing programs on this date
+        $minPriority = Program::where('user_id', $userId)
+            ->whereDate('date', $selectedDate->toDateString())
+            ->min('priority') ?? 100;
+        
+        // Assign a lower priority (smaller number) to put it at the top
+        $newPriority = max(1, $minPriority - 1);
+        
         // Create a program entry for this exercise
         Program::create([
             'user_id' => $userId,
@@ -547,7 +555,7 @@ class MobileEntryLiftLogFormService
             'date' => $selectedDate,
             'sets' => 3, // Default values
             'reps' => 5,
-            'priority' => 999, // Low priority for manually added exercises
+            'priority' => $newPriority,
             'comments' => 'Added manually'
         ]);
         
@@ -590,6 +598,14 @@ class MobileEntryLiftLogFormService
             'canonical_name' => $canonicalName
         ]);
         
+        // Get the minimum priority for existing programs on this date
+        $minPriority = Program::where('user_id', $userId)
+            ->whereDate('date', $selectedDate->toDateString())
+            ->min('priority') ?? 100;
+        
+        // Assign a lower priority (smaller number) to put it at the top
+        $newPriority = max(1, $minPriority - 1);
+        
         // Create a program entry for this exercise
         Program::create([
             'user_id' => $userId,
@@ -597,7 +613,7 @@ class MobileEntryLiftLogFormService
             'date' => $selectedDate,
             'sets' => 3,
             'reps' => 5,
-            'priority' => 999,
+            'priority' => $newPriority,
             'comments' => 'New exercise created'
         ]);
         

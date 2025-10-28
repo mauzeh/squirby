@@ -580,13 +580,13 @@ class MobileEntryLiftLogFormServiceTest extends TestCase
         $this->assertTrue($result['success']);
         $this->assertEquals('Added Bench Press to today\'s program.', $result['message']);
         
-        // Verify program was created
+        // Verify program was created with priority 99 (100 - 1, no existing programs)
         $this->assertDatabaseHas('programs', [
             'user_id' => $user->id,
             'exercise_id' => $exercise->id,
             'sets' => 3,
             'reps' => 5,
-            'priority' => 999,
+            'priority' => 99,
             'comments' => 'Added manually'
         ]);
         
@@ -683,14 +683,14 @@ class MobileEntryLiftLogFormServiceTest extends TestCase
             'canonical_name' => 'custom_exercise'
         ]);
         
-        // Verify program was created
+        // Verify program was created with priority 99 (100 - 1, no existing programs)
         $exercise = Exercise::where('title', 'Custom Exercise')->first();
         $this->assertDatabaseHas('programs', [
             'user_id' => $user->id,
             'exercise_id' => $exercise->id,
             'sets' => 3,
             'reps' => 5,
-            'priority' => 999,
+            'priority' => 99,
             'comments' => 'New exercise created'
         ]);
         
@@ -1273,5 +1273,46 @@ class MobileEntryLiftLogFormServiceTest extends TestCase
             'Are you sure you want to remove this exercise from today\'s program?',
             $loggedItems['confirmMessages']['removeForm']
         );
+    }
+
+    #[Test]
+    public function it_assigns_lower_priority_to_new_exercises()
+    {
+        $user = User::factory()->create();
+        
+        // Create an existing program with priority 50
+        $existingExercise = Exercise::factory()->create(['title' => 'Existing Exercise']);
+        Program::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $existingExercise->id,
+            'date' => $this->testDate,
+            'priority' => 50
+        ]);
+        
+        // Add a new exercise
+        $newExercise = Exercise::factory()->create(['title' => 'New Exercise']);
+        $result = $this->service->addExerciseForm($user->id, $newExercise->canonical_name, $this->testDate);
+        
+        $this->assertTrue($result['success']);
+        
+        // Verify new exercise gets priority 49 (lower than existing priority 50)
+        $this->assertDatabaseHas('programs', [
+            'user_id' => $user->id,
+            'exercise_id' => $newExercise->id,
+            'priority' => 49
+        ]);
+        
+        // Add another exercise to verify it gets even lower priority
+        $anotherExercise = Exercise::factory()->create(['title' => 'Another Exercise']);
+        $result2 = $this->service->addExerciseForm($user->id, $anotherExercise->canonical_name, $this->testDate);
+        
+        $this->assertTrue($result2['success']);
+        
+        // Verify it gets priority 48 (lower than the previous minimum of 49)
+        $this->assertDatabaseHas('programs', [
+            'user_id' => $user->id,
+            'exercise_id' => $anotherExercise->id,
+            'priority' => 48
+        ]);
     }
 }
