@@ -426,29 +426,11 @@ class MobileEntryLiftLogFormService
             ->orderBy('title', 'asc')
             ->get();
 
-        // Get exercises that are in today's program to highlight them
-        $programExerciseIds = Program::where('user_id', $userId)
-            ->whereDate('date', $selectedDate->toDateString())
-            ->pluck('exercise_id')
-            ->toArray();
-
-        // Get recently used exercises (last 7 days) for prioritization
-        $recentExerciseIds = LiftLog::where('user_id', $userId)
-            ->where('logged_at', '>=', $selectedDate->copy()->subDays(7))
-            ->pluck('exercise_id')
-            ->unique()
-            ->toArray();
-
         $items = [];
         
         foreach ($exercises as $exercise) {
             // Determine item type based on program and recent usage
-            $type = 'regular';
-            if (in_array($exercise->id, $programExerciseIds)) {
-                $type = 'highlighted'; // In today's program
-            } elseif (in_array($exercise->id, $recentExerciseIds)) {
-                $type = 'highlighted'; // Used recently
-            }
+            $type = $exercise->user_id ? 'highlighted' : 'regular';
 
             $items[] = [
                 'id' => 'exercise-' . $exercise->id,
@@ -463,14 +445,8 @@ class MobileEntryLiftLogFormService
 
         // Sort items: highlighted first, then alphabetical
         usort($items, function ($a, $b) {
-            if ($a['type'] === $b['type']) {
-                return strcmp($a['name'], $b['name']);
-            }
-            return $a['type'] === 'highlighted' ? -1 : 1;
+            return strcmp($a['name'], $b['name']);
         });
-
-        // Limit to reasonable number for mobile interface
-        $items = array_slice($items, 0, 20);
 
         return [
             'noResultsMessage' => 'No exercises found. Hit "+" to save as new exercise.',
