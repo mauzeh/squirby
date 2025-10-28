@@ -338,8 +338,7 @@ class MobileEntryLiftLogFormService
             ];
         }
 
-        return [
-            'emptyMessage' => 'No entries logged yet today!',
+        $result = [
             'title' => 'Today\'s Entries',
             'items' => $items,
             'ariaLabels' => [
@@ -348,6 +347,13 @@ class MobileEntryLiftLogFormService
                 'deleteItem' => 'Delete logged entry'
             ]
         ];
+
+        // Only include empty message when there are no items
+        if (empty($items)) {
+            $result['emptyMessage'] = 'No entries logged yet today!';
+        }
+
+        return $result;
     }
 
     /**

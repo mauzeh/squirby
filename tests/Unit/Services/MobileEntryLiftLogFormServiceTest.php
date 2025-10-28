@@ -1219,4 +1219,37 @@ class MobileEntryLiftLogFormServiceTest extends TestCase
         // Also verify the route includes the lift log ID
         $this->assertStringContainsString('lift-logs/' . $liftLog->id, $deleteAction);
     }
+
+    #[Test]
+    public function it_includes_empty_message_only_when_no_items_exist()
+    {
+        $user = User::factory()->create();
+        
+        // Test with no logged items
+        $loggedItemsEmpty = $this->service->generateLoggedItems($user->id, $this->testDate);
+        
+        $this->assertArrayHasKey('emptyMessage', $loggedItemsEmpty);
+        $this->assertEquals('No entries logged yet today!', $loggedItemsEmpty['emptyMessage']);
+        $this->assertEmpty($loggedItemsEmpty['items']);
+        
+        // Test with logged items
+        $exercise = Exercise::factory()->create(['title' => 'Bench Press']);
+        $liftLog = LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => $this->testDate->copy()->setTime(10, 0),
+        ]);
+        
+        LiftSet::factory()->create([
+            'lift_log_id' => $liftLog->id,
+            'weight' => 135,
+            'reps' => 8
+        ]);
+        
+        $loggedItemsWithData = $this->service->generateLoggedItems($user->id, $this->testDate);
+        
+        $this->assertArrayNotHasKey('emptyMessage', $loggedItemsWithData);
+        $this->assertNotEmpty($loggedItemsWithData['items']);
+        $this->assertCount(1, $loggedItemsWithData['items']);
+    }
 }

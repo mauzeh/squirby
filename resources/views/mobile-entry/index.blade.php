@@ -172,9 +172,11 @@
 
        <!-- Logged Item Display -->
         <section class="logged-items-section" aria-label="{{ $data['loggedItems']['ariaLabels']['section'] }}">
+            @if(isset($data['loggedItems']['emptyMessage']))
             <div class="logged-item logged-items-empty">
                 {{ $data['loggedItems']['emptyMessage'] }}
             </div>
+            @endif
             @foreach($data['loggedItems']['items'] as $index => $item)
             <div class="logged-item">
                 <div class="item-header">
