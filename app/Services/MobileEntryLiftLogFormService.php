@@ -354,11 +354,6 @@ class MobileEntryLiftLogFormService
                     'redirect_to' => 'mobile-entry-lifts',
                     'date' => $selectedDate->toDateString()
                 ]),
-                'message' => [
-                    'type' => 'neutral',
-                    'prefix' => $log->exercise->title . ':',
-                    'text' => $firstSet->weight . ' lbs × ' . $firstSet->reps . ' reps × ' . $setCount . ' sets'
-                ],
                 'freeformText' => $log->comments
             ];
         }
