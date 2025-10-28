@@ -587,7 +587,7 @@ class MobileEntryLiftLogFormServiceTest extends TestCase
             'sets' => 3,
             'reps' => 5,
             'priority' => 99,
-            'comments' => 'Added manually'
+            'comments' => null
         ]);
         
         // Verify the date matches (using whereDate for proper comparison)
@@ -1133,7 +1133,7 @@ class MobileEntryLiftLogFormServiceTest extends TestCase
         $this->assertEquals('Weight (lbs):', $weightedWeightField['label']);
         $this->assertEquals(135, $weightedWeightField['defaultValue']); // Default for bench_press
         $this->assertEquals(5, $weightedWeightField['increment']);
-        $this->assertEquals(45, $weightedWeightField['min']);
+        $this->assertEquals(0, $weightedWeightField['min']);
         
         // Find bodyweight exercise form
         $bodyweightForm = collect($forms)->firstWhere('title', 'Push-ups');

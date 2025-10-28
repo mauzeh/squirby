@@ -71,7 +71,7 @@ class MobileEntryLiftLogFormService
                         'label' => $exercise->is_bodyweight ? 'Added Weight (lbs):' : 'Weight (lbs):',
                         'defaultValue' => $defaultWeight,
                         'increment' => $exercise->is_bodyweight ? 2.5 : 5,
-                        'min' => $exercise->is_bodyweight ? 0 : 45,
+                        'min' => 0,
                         'max' => 600,
                         'ariaLabels' => [
                             'decrease' => 'Decrease weight',
@@ -556,7 +556,7 @@ class MobileEntryLiftLogFormService
             'sets' => 3, // Default values
             'reps' => 5,
             'priority' => $newPriority,
-            'comments' => 'Added manually'
+            'comments' => null
         ]);
         
         return [
