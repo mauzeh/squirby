@@ -1870,4 +1870,326 @@ class MobileEntryLiftLogFormServiceTest extends TestCase
         // Verify program was deleted
         $this->assertDatabaseMissing('programs', ['id' => $program->id]);
     }
+
+    #[Test]
+    public function it_generates_band_color_field_for_banded_exercises()
+    {
+        $user = User::factory()->create();
+        $bandedExercise = Exercise::factory()->create([
+            'title' => 'Lat Pull-Down (Banded)',
+            'band_type' => 'resistance'
+        ]);
+        
+        Program::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $bandedExercise->id,
+            'date' => $this->testDate
+        ]);
+
+        $forms = $this->service->generateProgramForms($user->id, $this->testDate);
+        
+        $this->assertCount(1, $forms);
+        $form = $forms[0];
+        
+        // Should have band_color field instead of weight field
+        $fieldNames = collect($form['numericFields'])->pluck('name')->toArray();
+        $this->assertContains('band_color', $fieldNames);
+        $this->assertNotContains('weight', $fieldNames);
+        
+        // Check band_color field properties
+        $bandColorField = collect($form['numericFields'])->firstWhere('name', 'band_color');
+        $this->assertEquals('select', $bandColorField['type']);
+        $this->assertEquals('Band Color:', $bandColorField['label']);
+        $this->assertEquals('red', $bandColorField['defaultValue']); // Default to red
+        
+        // Should have options for all configured band colors
+        $this->assertCount(3, $bandColorField['options']); // red, blue, green
+        $this->assertEquals('red', $bandColorField['options'][0]['value']);
+        $this->assertEquals('Red', $bandColorField['options'][0]['label']);
+        $this->assertEquals('blue', $bandColorField['options'][1]['value']);
+        $this->assertEquals('Blue', $bandColorField['options'][1]['label']);
+        $this->assertEquals('green', $bandColorField['options'][2]['value']);
+        $this->assertEquals('Green', $bandColorField['options'][2]['label']);
+    }
+
+    #[Test]
+    public function it_generates_weight_field_for_non_banded_exercises()
+    {
+        $user = User::factory()->create();
+        $regularExercise = Exercise::factory()->create([
+            'title' => 'Bench Press',
+            'band_type' => null
+        ]);
+        
+        Program::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $regularExercise->id,
+            'date' => $this->testDate
+        ]);
+
+        $forms = $this->service->generateProgramForms($user->id, $this->testDate);
+        
+        $this->assertCount(1, $forms);
+        $form = $forms[0];
+        
+        // Should have weight field, not band_color field
+        $fieldNames = collect($form['numericFields'])->pluck('name')->toArray();
+        $this->assertContains('weight', $fieldNames);
+        $this->assertNotContains('band_color', $fieldNames);
+        
+        // Check weight field properties
+        $weightField = collect($form['numericFields'])->firstWhere('name', 'weight');
+        $this->assertArrayNotHasKey('type', $weightField); // Regular numeric field
+        $this->assertEquals('Weight (lbs):', $weightField['label']);
+    }
+
+    #[Test]
+    public function it_uses_last_session_band_color_as_default()
+    {
+        $user = User::factory()->create();
+        $bandedExercise = Exercise::factory()->create([
+            'title' => 'Band Pull-aparts',
+            'band_type' => 'resistance'
+        ]);
+        
+        // Create last session with blue band
+        $liftLog = LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $bandedExercise->id,
+            'logged_at' => $this->testDate->copy()->subDays(2)
+        ]);
+        
+        LiftSet::factory()->create([
+            'lift_log_id' => $liftLog->id,
+            'weight' => 0,
+            'reps' => 12,
+            'band_color' => 'blue'
+        ]);
+        
+        Program::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $bandedExercise->id,
+            'date' => $this->testDate
+        ]);
+
+        $forms = $this->service->generateProgramForms($user->id, $this->testDate);
+        
+        $form = $forms[0];
+        $bandColorField = collect($form['numericFields'])->firstWhere('name', 'band_color');
+        
+        // Should default to blue from last session
+        $this->assertEquals('blue', $bandColorField['defaultValue']);
+    }
+
+    #[Test]
+    public function it_defaults_to_red_band_when_no_last_session()
+    {
+        $user = User::factory()->create();
+        $bandedExercise = Exercise::factory()->create([
+            'title' => 'New Band Exercise',
+            'band_type' => 'resistance'
+        ]);
+        
+        Program::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $bandedExercise->id,
+            'date' => $this->testDate
+        ]);
+
+        $forms = $this->service->generateProgramForms($user->id, $this->testDate);
+        
+        $form = $forms[0];
+        $bandColorField = collect($form['numericFields'])->firstWhere('name', 'band_color');
+        
+        // Should default to red when no last session
+        $this->assertEquals('red', $bandColorField['defaultValue']);
+    }
+
+    #[Test]
+    public function it_includes_band_color_in_last_session_data()
+    {
+        $user = User::factory()->create();
+        $exercise = Exercise::factory()->create();
+        
+        $liftLog = LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => $this->testDate->copy()->subDays(1),
+            'comments' => 'Good session'
+        ]);
+        
+        LiftSet::factory()->create([
+            'lift_log_id' => $liftLog->id,
+            'weight' => 135,
+            'reps' => 8,
+            'band_color' => 'green'
+        ]);
+
+        $lastSession = $this->service->getLastSessionData(
+            $exercise->id, 
+            $this->testDate, 
+            $user->id
+        );
+        
+        $this->assertArrayHasKey('band_color', $lastSession);
+        $this->assertEquals('green', $lastSession['band_color']);
+        $this->assertEquals(135, $lastSession['weight']);
+        $this->assertEquals(8, $lastSession['reps']);
+    }
+
+    #[Test]
+    public function it_handles_null_band_color_in_last_session_data()
+    {
+        $user = User::factory()->create();
+        $exercise = Exercise::factory()->create();
+        
+        $liftLog = LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => $this->testDate->copy()->subDays(1)
+        ]);
+        
+        LiftSet::factory()->create([
+            'lift_log_id' => $liftLog->id,
+            'weight' => 225,
+            'reps' => 5,
+            'band_color' => null
+        ]);
+
+        $lastSession = $this->service->getLastSessionData(
+            $exercise->id, 
+            $this->testDate, 
+            $user->id
+        );
+        
+        $this->assertArrayHasKey('band_color', $lastSession);
+        $this->assertNull($lastSession['band_color']);
+    }
+
+    #[Test]
+    public function it_generates_both_reps_and_sets_fields_for_banded_exercises()
+    {
+        $user = User::factory()->create();
+        $bandedExercise = Exercise::factory()->create([
+            'title' => 'Resistance Band Rows',
+            'band_type' => 'resistance'
+        ]);
+        
+        Program::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $bandedExercise->id,
+            'date' => $this->testDate,
+            'reps' => 12,
+            'sets' => 4
+        ]);
+
+        $forms = $this->service->generateProgramForms($user->id, $this->testDate);
+        
+        $form = $forms[0];
+        $fieldNames = collect($form['numericFields'])->pluck('name')->toArray();
+        
+        // Should have all three fields: band_color, reps, rounds (sets)
+        $this->assertContains('band_color', $fieldNames);
+        $this->assertContains('reps', $fieldNames);
+        $this->assertContains('rounds', $fieldNames);
+        
+        // Check that reps and sets use program defaults
+        $repsField = collect($form['numericFields'])->firstWhere('name', 'reps');
+        $setsField = collect($form['numericFields'])->firstWhere('name', 'rounds');
+        
+        $this->assertEquals(12, $repsField['defaultValue']);
+        $this->assertEquals(4, $setsField['defaultValue']);
+    }
+
+    #[Test]
+    public function it_handles_assistance_band_type()
+    {
+        $user = User::factory()->create();
+        $assistanceBandExercise = Exercise::factory()->create([
+            'title' => 'Assisted Pull-ups',
+            'band_type' => 'assistance'
+        ]);
+        
+        Program::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $assistanceBandExercise->id,
+            'date' => $this->testDate
+        ]);
+
+        $forms = $this->service->generateProgramForms($user->id, $this->testDate);
+        
+        $form = $forms[0];
+        $fieldNames = collect($form['numericFields'])->pluck('name')->toArray();
+        
+        // Should generate band_color field for assistance bands too
+        $this->assertContains('band_color', $fieldNames);
+        $this->assertNotContains('weight', $fieldNames);
+        
+        $bandColorField = collect($form['numericFields'])->firstWhere('name', 'band_color');
+        $this->assertEquals('select', $bandColorField['type']);
+        $this->assertEquals('Band Color:', $bandColorField['label']);
+    }
+
+    #[Test]
+    public function it_preserves_field_order_with_band_color_first()
+    {
+        $user = User::factory()->create();
+        $bandedExercise = Exercise::factory()->create([
+            'title' => 'Band Exercise',
+            'band_type' => 'resistance'
+        ]);
+        
+        Program::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $bandedExercise->id,
+            'date' => $this->testDate
+        ]);
+
+        $forms = $this->service->generateProgramForms($user->id, $this->testDate);
+        
+        $form = $forms[0];
+        $fieldNames = collect($form['numericFields'])->pluck('name')->toArray();
+        
+        // Band color should be first, followed by reps, then sets
+        $this->assertEquals(['band_color', 'reps', 'rounds'], $fieldNames);
+    }
+
+    #[Test]
+    public function it_generates_select_field_with_correct_structure()
+    {
+        $user = User::factory()->create();
+        $bandedExercise = Exercise::factory()->create([
+            'title' => 'Test Band Exercise',
+            'band_type' => 'resistance'
+        ]);
+        
+        Program::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $bandedExercise->id,
+            'date' => $this->testDate
+        ]);
+
+        $forms = $this->service->generateProgramForms($user->id, $this->testDate);
+        
+        $form = $forms[0];
+        $bandColorField = collect($form['numericFields'])->firstWhere('name', 'band_color');
+        
+        // Verify select field structure matches what the view expects
+        $this->assertEquals('select', $bandColorField['type']);
+        $this->assertArrayHasKey('options', $bandColorField);
+        $this->assertArrayHasKey('ariaLabels', $bandColorField);
+        $this->assertArrayHasKey('field', $bandColorField['ariaLabels']);
+        
+        // Verify options structure
+        foreach ($bandColorField['options'] as $option) {
+            $this->assertArrayHasKey('value', $option);
+            $this->assertArrayHasKey('label', $option);
+        }
+        
+        // Verify all configured band colors are present
+        $optionValues = collect($bandColorField['options'])->pluck('value')->toArray();
+        $this->assertContains('red', $optionValues);
+        $this->assertContains('blue', $optionValues);
+        $this->assertContains('green', $optionValues);
+    }
 }

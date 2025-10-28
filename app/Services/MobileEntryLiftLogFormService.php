@@ -72,6 +72,74 @@ class MobileEntryLiftLogFormService
             // Check if program is completed
             $isCompleted = $program->isCompleted();
             
+            // Build numeric fields based on exercise type
+            $numericFields = [];
+            
+            // Add weight or band color field based on exercise type
+            if ($exercise->band_type) {
+                // For banded exercises, add band color selector instead of weight
+                $bandColors = config('bands.colors', []);
+                $defaultBandColor = $lastSession['band_color'] ?? 'red'; // Default to red band
+                
+                $numericFields[] = [
+                    'id' => $formId . '-band-color',
+                    'name' => 'band_color',
+                    'label' => 'Band Color:',
+                    'type' => 'select',
+                    'defaultValue' => $defaultBandColor,
+                    'options' => array_map(function($color) {
+                        return ['value' => $color, 'label' => ucfirst($color)];
+                    }, array_keys($bandColors)),
+                    'ariaLabels' => [
+                        'field' => 'Select band color'
+                    ]
+                ];
+            } else {
+                // For weighted exercises, add weight field
+                $numericFields[] = [
+                    'id' => $formId . '-weight',
+                    'name' => 'weight',
+                    'label' => $exercise->is_bodyweight ? 'Added Weight (lbs):' : 'Weight (lbs):',
+                    'defaultValue' => $defaultWeight,
+                    'increment' => $exercise->is_bodyweight ? 2.5 : 5,
+                    'min' => 0,
+                    'max' => 600,
+                    'ariaLabels' => [
+                        'decrease' => 'Decrease weight',
+                        'increase' => 'Increase weight'
+                    ]
+                ];
+            }
+            
+            // Add reps and sets fields
+            $numericFields[] = [
+                'id' => $formId . '-reps',
+                'name' => 'reps',
+                'label' => 'Reps:',
+                'defaultValue' => $defaultReps,
+                'increment' => 1,
+                'min' => 1,
+                'max' => 50,
+                'ariaLabels' => [
+                    'decrease' => 'Decrease reps',
+                    'increase' => 'Increase reps'
+                ]
+            ];
+            
+            $numericFields[] = [
+                'id' => $formId . '-rounds',
+                'name' => 'rounds',
+                'label' => 'Sets:',
+                'defaultValue' => $defaultSets,
+                'increment' => 1,
+                'min' => 1,
+                'max' => 10,
+                'ariaLabels' => [
+                    'decrease' => 'Decrease sets',
+                    'increase' => 'Increase sets'
+                ]
+            ];
+            
             $forms[] = [
                 'id' => $formId,
                 'type' => 'exercise',
@@ -83,47 +151,7 @@ class MobileEntryLiftLogFormService
                     'date' => $selectedDate->toDateString()
                 ],
                 'messages' => $messages,
-                'numericFields' => [
-                    [
-                        'id' => $formId . '-weight',
-                        'name' => 'weight',
-                        'label' => $exercise->is_bodyweight ? 'Added Weight (lbs):' : 'Weight (lbs):',
-                        'defaultValue' => $defaultWeight,
-                        'increment' => $exercise->is_bodyweight ? 2.5 : 5,
-                        'min' => 0,
-                        'max' => 600,
-                        'ariaLabels' => [
-                            'decrease' => 'Decrease weight',
-                            'increase' => 'Increase weight'
-                        ]
-                    ],
-                    [
-                        'id' => $formId . '-reps',
-                        'name' => 'reps',
-                        'label' => 'Reps:',
-                        'defaultValue' => $defaultReps,
-                        'increment' => 1,
-                        'min' => 1,
-                        'max' => 50,
-                        'ariaLabels' => [
-                            'decrease' => 'Decrease reps',
-                            'increase' => 'Increase reps'
-                        ]
-                    ],
-                    [
-                        'id' => $formId . '-rounds',
-                        'name' => 'rounds',
-                        'label' => 'Sets:',
-                        'defaultValue' => $defaultSets,
-                        'increment' => 1,
-                        'min' => 1,
-                        'max' => 10,
-                        'ariaLabels' => [
-                            'decrease' => 'Decrease sets',
-                            'increase' => 'Increase sets'
-                        ]
-                    ]
-                ],
+                'numericFields' => $numericFields,
                 'commentField' => [
                     'id' => $formId . '-comment',
                     'name' => 'comments',
@@ -184,7 +212,8 @@ class MobileEntryLiftLogFormService
             'reps' => $firstSet->reps,
             'sets' => $lastLog->liftSets->count(),
             'date' => $lastLog->logged_at->format('M j'),
-            'comments' => $lastLog->comments
+            'comments' => $lastLog->comments,
+            'band_color' => $firstSet->band_color
         ];
     }
 
@@ -242,10 +271,27 @@ class MobileEntryLiftLogFormService
         
         // Add last session info if available
         if ($lastSession) {
+            // Format the resistance/weight info based on exercise type
+            $resistanceText = '';
+            if ($program->exercise->band_type) {
+                // For banded exercises, show band color
+                $bandColor = $lastSession['band_color'] ?? 'Unknown';
+                $resistanceText = ucfirst($bandColor) . ' band';
+            } elseif ($program->exercise->is_bodyweight) {
+                // For bodyweight exercises
+                $resistanceText = 'BW';
+                if ($lastSession['weight'] > 0) {
+                    $resistanceText .= ' +' . $lastSession['weight'] . ' lbs';
+                }
+            } else {
+                // For regular weighted exercises
+                $resistanceText = $lastSession['weight'] . ' lbs';
+            }
+            
             $messages[] = [
                 'type' => 'info',
                 'prefix' => 'Last session (' . $lastSession['date'] .'):',
-                'text' => $lastSession['weight'] . ' lbs × ' . $lastSession['reps'] . ' reps × ' . $lastSession['sets'] . ' sets'
+                'text' => $resistanceText . ' × ' . $lastSession['reps'] . ' reps × ' . $lastSession['sets'] . ' sets'
             ];
         }
         

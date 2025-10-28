@@ -393,6 +393,87 @@ class MobileEntryController extends Controller
                         'section' => 'Quick measurement entry',
                         'deleteForm' => 'Remove this form'
                     ]
+                ],
+                
+                // Example: Banded Exercise Entry (showcases select field)
+                [
+                    'id' => 'quick-band-exercise-1',
+                    'type' => 'exercise',
+                    'title' => 'Resistance Band Pull-aparts',
+                    'itemName' => 'Band Pull-aparts',
+                    'formAction' => '#', // route('lift-logs.store') or similar
+                    'deleteAction' => '#', // route('mobile-entry.remove-form', ['id' => 'quick-band-exercise-1']) or similar
+                    'messages' => [
+                        [
+                            'type' => 'info',
+                            'prefix' => 'Last session (Oct 26):',
+                            'text' => 'Blue band × 15 reps × 3 sets'
+                        ],
+                        [
+                            'type' => 'tip',
+                            'prefix' => 'Suggestion:',
+                            'text' => 'Try Green band × 12 reps × 3 sets today'
+                        ]
+                    ],
+                    'numericFields' => [
+                        [
+                            'id' => 'quick-band-exercise-1-band-color',
+                            'name' => 'band_color',
+                            'label' => 'Band Color:',
+                            'type' => 'select',
+                            'defaultValue' => 'green',
+                            'options' => [
+                                ['value' => 'red', 'label' => 'Red'],
+                                ['value' => 'blue', 'label' => 'Blue'],
+                                ['value' => 'green', 'label' => 'Green']
+                            ],
+                            'ariaLabels' => [
+                                'field' => 'Select band color'
+                            ]
+                        ],
+                        [
+                            'id' => 'quick-band-exercise-1-reps',
+                            'name' => 'reps',
+                            'label' => 'Reps:',
+                            'defaultValue' => 12,
+                            'increment' => 1,
+                            'min' => 1,
+                            'max' => 50,
+                            'ariaLabels' => [
+                                'decrease' => 'Decrease reps',
+                                'increase' => 'Increase reps'
+                            ]
+                        ],
+                        [
+                            'id' => 'quick-band-exercise-1-sets',
+                            'name' => 'rounds',
+                            'label' => 'Sets:',
+                            'defaultValue' => 3,
+                            'increment' => 1,
+                            'min' => 1,
+                            'max' => 10,
+                            'ariaLabels' => [
+                                'decrease' => 'Decrease sets',
+                                'increase' => 'Increase sets'
+                            ]
+                        ]
+                    ],
+                    'commentField' => [
+                        'id' => 'quick-band-exercise-1-comment',
+                        'name' => 'comment',
+                        'label' => 'Notes:',
+                        'placeholder' => 'How did the resistance feel?',
+                        'defaultValue' => 'Progressing to stronger band'
+                    ],
+                    'buttons' => [
+                        'decrement' => '-',
+                        'increment' => '+',
+                        'submit' => 'Log Band Exercise'
+                    ],
+                    'ariaLabels' => [
+                        'section' => 'Banded exercise entry',
+                        'deleteForm' => 'Remove this form'
+                    ]
                 ]
             ],
             
