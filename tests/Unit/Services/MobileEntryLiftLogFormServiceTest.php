@@ -242,11 +242,11 @@ class MobileEntryLiftLogFormServiceTest extends TestCase
     }
 
     #[Test]
-    public function it_calculates_lift_summary_with_no_logs()
+    public function it_calculates_summary_with_no_logs()
     {
         $user = \App\Models\User::factory()->create();
         
-        $summary = $this->service->generateLiftSummary($user->id, $this->testDate);
+        $summary = $this->service->generateSummary($user->id, $this->testDate);
         
         $this->assertEquals([
             'values' => [
@@ -262,13 +262,13 @@ class MobileEntryLiftLogFormServiceTest extends TestCase
                 'today' => 'Sets Today'
             ],
             'ariaLabels' => [
-                'section' => 'Lift session summary'
+                'section' => 'Session summary'
             ]
         ], $summary);
     }
 
     #[Test]
-    public function it_calculates_lift_summary_with_logs()
+    public function it_calculates_summary_with_logs()
     {
         $user = \App\Models\User::factory()->create();
         $exercise1 = Exercise::factory()->create();
@@ -306,7 +306,7 @@ class MobileEntryLiftLogFormServiceTest extends TestCase
             'reps' => 10
         ]);
 
-        $summary = $this->service->generateLiftSummary($user->id, $this->testDate);
+        $summary = $this->service->generateSummary($user->id, $this->testDate);
         
         // Total weight: (225*5 + 225*5 + 135*10) = 3600
         // Exercises: 2 unique
@@ -332,7 +332,7 @@ class MobileEntryLiftLogFormServiceTest extends TestCase
             'logged_at' => $this->testDate
         ]);
 
-        $summary = $this->service->generateLiftSummary($user->id, $this->testDate);
+        $summary = $this->service->generateSummary($user->id, $this->testDate);
         
         $this->assertEquals(0, $summary['values']['total']);
         $this->assertEquals(1, $summary['values']['completed']); // Still counts as completed exercise
@@ -359,7 +359,7 @@ class MobileEntryLiftLogFormServiceTest extends TestCase
             'reps' => 10
         ]);
 
-        $summary = $this->service->generateLiftSummary($user->id, $this->testDate);
+        $summary = $this->service->generateSummary($user->id, $this->testDate);
         
         // Should cap at 100
         $this->assertEquals(100, $summary['values']['average']);
@@ -563,5 +563,300 @@ class MobileEntryLiftLogFormServiceTest extends TestCase
         // Now should generate no forms (program is completed and excluded by default)
         $forms = $this->service->generateProgramForms($user->id, $this->testDate);
         $this->assertCount(0, $forms);
+    }
+
+    #[Test]
+    public function it_adds_exercise_form_successfully()
+    {
+        $user = \App\Models\User::factory()->create();
+        $exercise = Exercise::factory()->create([
+            'title' => 'Bench Press',
+            'canonical_name' => 'bench_press'
+        ]);
+        
+        $result = $this->service->addExerciseForm($user->id, 'bench_press', $this->testDate);
+        
+        $this->assertTrue($result['success']);
+        $this->assertEquals('Added Bench Press to today\'s program.', $result['message']);
+        
+        // Verify program was created
+        $this->assertDatabaseHas('programs', [
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'sets' => 3,
+            'reps' => 5,
+            'priority' => 999,
+            'comments' => 'Added manually'
+        ]);
+        
+        // Verify the date matches (using whereDate for proper comparison)
+        $program = Program::where('user_id', $user->id)
+            ->where('exercise_id', $exercise->id)
+            ->whereDate('date', $this->testDate->toDateString())
+            ->first();
+        $this->assertNotNull($program);
+    }
+
+    #[Test]
+    public function it_adds_exercise_form_by_id()
+    {
+        $user = \App\Models\User::factory()->create();
+        $exercise = Exercise::factory()->create([
+            'title' => 'Squat',
+            'canonical_name' => null
+        ]);
+        
+        $result = $this->service->addExerciseForm($user->id, (string)$exercise->id, $this->testDate);
+        
+        $this->assertTrue($result['success']);
+        $this->assertEquals('Added Squat to today\'s program.', $result['message']);
+        
+        // Verify program was created
+        $this->assertDatabaseHas('programs', [
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id
+        ]);
+        
+        // Verify the date matches
+        $program = Program::where('user_id', $user->id)
+            ->where('exercise_id', $exercise->id)
+            ->whereDate('date', $this->testDate->toDateString())
+            ->first();
+        $this->assertNotNull($program);
+    }
+
+    #[Test]
+    public function it_fails_to_add_nonexistent_exercise()
+    {
+        $user = \App\Models\User::factory()->create();
+        
+        $result = $this->service->addExerciseForm($user->id, 'nonexistent_exercise', $this->testDate);
+        
+        $this->assertFalse($result['success']);
+        $this->assertEquals('Exercise not found or not accessible.', $result['message']);
+        
+        // Verify no program was created
+        $programCount = Program::where('user_id', $user->id)
+            ->whereDate('date', $this->testDate->toDateString())
+            ->count();
+        $this->assertEquals(0, $programCount);
+    }
+
+    #[Test]
+    public function it_fails_to_add_exercise_when_program_already_exists()
+    {
+        $user = \App\Models\User::factory()->create();
+        $exercise = Exercise::factory()->create([
+            'title' => 'Deadlift',
+            'canonical_name' => 'deadlift'
+        ]);
+        
+        // Create existing program
+        Program::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'date' => $this->testDate
+        ]);
+        
+        $result = $this->service->addExerciseForm($user->id, 'deadlift', $this->testDate);
+        
+        $this->assertFalse($result['success']);
+        $this->assertEquals('Deadlift is already in today\'s program.', $result['message']);
+    }
+
+    #[Test]
+    public function it_creates_new_exercise_successfully()
+    {
+        $user = \App\Models\User::factory()->create();
+        
+        $result = $this->service->createExercise($user->id, 'Custom Exercise', $this->testDate);
+        
+        $this->assertTrue($result['success']);
+        $this->assertEquals('Created new exercise: Custom Exercise', $result['message']);
+        
+        // Verify exercise was created
+        $this->assertDatabaseHas('exercises', [
+            'title' => 'Custom Exercise',
+            'user_id' => $user->id,
+            'is_bodyweight' => false,
+            'canonical_name' => 'custom_exercise'
+        ]);
+        
+        // Verify program was created
+        $exercise = Exercise::where('title', 'Custom Exercise')->first();
+        $this->assertDatabaseHas('programs', [
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'sets' => 3,
+            'reps' => 5,
+            'priority' => 999,
+            'comments' => 'New exercise created'
+        ]);
+        
+        // Verify the date matches
+        $program = Program::where('user_id', $user->id)
+            ->where('exercise_id', $exercise->id)
+            ->whereDate('date', $this->testDate->toDateString())
+            ->first();
+        $this->assertNotNull($program);
+    }
+
+    #[Test]
+    public function it_fails_to_create_exercise_with_existing_name()
+    {
+        $user = \App\Models\User::factory()->create();
+        
+        // Create existing exercise
+        Exercise::factory()->create([
+            'title' => 'Existing Exercise',
+            'user_id' => $user->id
+        ]);
+        
+        $result = $this->service->createExercise($user->id, 'Existing Exercise', $this->testDate);
+        
+        $this->assertFalse($result['success']);
+        $this->assertEquals('Exercise \'Existing Exercise\' already exists.', $result['message']);
+        
+        // Verify no duplicate exercise was created
+        $exerciseCount = Exercise::where('title', 'Existing Exercise')->count();
+        $this->assertEquals(1, $exerciseCount);
+    }
+
+    #[Test]
+    public function it_generates_unique_canonical_names()
+    {
+        $user = \App\Models\User::factory()->create();
+        
+        // Create first exercise
+        $result1 = $this->service->createExercise($user->id, 'Push Up', $this->testDate);
+        $this->assertTrue($result1['success']);
+        
+        // Create second exercise with same name (should fail due to existing check)
+        $result2 = $this->service->createExercise($user->id, 'Push Up', $this->testDate);
+        $this->assertFalse($result2['success']);
+        
+        // But if we create with slightly different name, it should work
+        $result3 = $this->service->createExercise($user->id, 'Push Up Variation', $this->testDate);
+        $this->assertTrue($result3['success']);
+        
+        // Verify canonical names are different
+        $exercise1 = Exercise::where('title', 'Push Up')->first();
+        $exercise3 = Exercise::where('title', 'Push Up Variation')->first();
+        
+        $this->assertEquals('push_up', $exercise1->canonical_name);
+        $this->assertEquals('push_up_variation', $exercise3->canonical_name);
+    }
+
+    #[Test]
+    public function it_removes_form_successfully()
+    {
+        $user = \App\Models\User::factory()->create();
+        $exercise = Exercise::factory()->create(['title' => 'Test Exercise']);
+        
+        $program = Program::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'date' => $this->testDate
+        ]);
+        
+        $formId = 'program-' . $program->id;
+        $result = $this->service->removeForm($user->id, $formId);
+        
+        $this->assertTrue($result['success']);
+        $this->assertEquals('Removed Test Exercise from today\'s program.', $result['message']);
+        
+        // Verify program was deleted
+        $this->assertDatabaseMissing('programs', [
+            'id' => $program->id
+        ]);
+    }
+
+    #[Test]
+    public function it_fails_to_remove_form_with_invalid_format()
+    {
+        $user = \App\Models\User::factory()->create();
+        
+        $result = $this->service->removeForm($user->id, 'invalid-format');
+        
+        $this->assertFalse($result['success']);
+        $this->assertEquals('Invalid form ID format.', $result['message']);
+    }
+
+    #[Test]
+    public function it_fails_to_remove_nonexistent_program()
+    {
+        $user = \App\Models\User::factory()->create();
+        
+        $result = $this->service->removeForm($user->id, 'program-999');
+        
+        $this->assertFalse($result['success']);
+        $this->assertEquals('Program entry not found or not accessible.', $result['message']);
+    }
+
+    #[Test]
+    public function it_fails_to_remove_other_users_program()
+    {
+        $user1 = \App\Models\User::factory()->create();
+        $user2 = \App\Models\User::factory()->create();
+        $exercise = Exercise::factory()->create();
+        
+        $program = Program::factory()->create([
+            'user_id' => $user2->id,
+            'exercise_id' => $exercise->id,
+            'date' => $this->testDate
+        ]);
+        
+        $formId = 'program-' . $program->id;
+        $result = $this->service->removeForm($user1->id, $formId);
+        
+        $this->assertFalse($result['success']);
+        $this->assertEquals('Program entry not found or not accessible.', $result['message']);
+        
+        // Verify program still exists
+        $this->assertDatabaseHas('programs', [
+            'id' => $program->id
+        ]);
+    }
+
+    #[Test]
+    public function it_respects_user_exercise_visibility_when_adding_form()
+    {
+        $user1 = \App\Models\User::factory()->create();
+        $user2 = \App\Models\User::factory()->create();
+        
+        // Create exercise owned by user2
+        $exercise = Exercise::factory()->create([
+            'title' => 'Private Exercise',
+            'user_id' => $user2->id,
+            'canonical_name' => 'private_exercise'
+        ]);
+        
+        // User1 should not be able to add user2's private exercise
+        $result = $this->service->addExerciseForm($user1->id, 'private_exercise', $this->testDate);
+        
+        $this->assertFalse($result['success']);
+        $this->assertEquals('Exercise not found or not accessible.', $result['message']);
+    }
+
+    #[Test]
+    public function it_handles_exercise_without_canonical_name_in_removal()
+    {
+        $user = \App\Models\User::factory()->create();
+        $exercise = Exercise::factory()->create([
+            'title' => 'Exercise Without Canonical',
+            'canonical_name' => null
+        ]);
+        
+        $program = Program::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'date' => $this->testDate
+        ]);
+        
+        $formId = 'program-' . $program->id;
+        $result = $this->service->removeForm($user->id, $formId);
+        
+        $this->assertTrue($result['success']);
+        $this->assertEquals('Removed Exercise Without Canonical from today\'s program.', $result['message']);
     }
 }

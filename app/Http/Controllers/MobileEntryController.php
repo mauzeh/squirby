@@ -432,7 +432,7 @@ class MobileEntryController extends Controller
         $forms = $formService->generateProgramForms(Auth::id(), $selectedDate);
         
         // Generate summary data using the service
-        $summary = $formService->generateLiftSummary(Auth::id(), $selectedDate);
+        $summary = $formService->generateSummary(Auth::id(), $selectedDate);
         
         // Generate logged items using the service
         $loggedItems = $formService->generateLoggedItems(Auth::id(), $selectedDate);
@@ -480,5 +480,74 @@ class MobileEntryController extends Controller
         return view('mobile-entry.index', compact('data'));
     }
 
+    /**
+     * Add a form for a specific exercise to the mobile interface
+     * 
+     * @param Request $request
+     * @param MobileEntryLiftLogFormService $formService
+     * @param string $exercise Exercise canonical name or ID
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function addLiftForm(Request $request, MobileEntryLiftLogFormService $formService, $exercise)
+    {
+        $selectedDate = $request->input('date') 
+            ? \Carbon\Carbon::parse($request->input('date')) 
+            : \Carbon\Carbon::today();
+        
+        $result = $formService->addExerciseForm(Auth::id(), $exercise, $selectedDate);
+        
+        $messageType = $result['success'] ? 'success' : 'error';
+        
+        return redirect()->route('mobile-entry.lifts', ['date' => $selectedDate->toDateString()])
+            ->with($messageType, $result['message']);
+    }
+
+    /**
+     * Create a new exercise from the mobile interface
+     * 
+     * @param Request $request
+     * @param MobileEntryLiftLogFormService $formService
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function createExercise(Request $request, MobileEntryLiftLogFormService $formService)
+    {
+        $request->validate([
+            'exercise_name' => 'required|string|max:255',
+            'date' => 'nullable|date'
+        ]);
+        
+        $selectedDate = $request->input('date') 
+            ? \Carbon\Carbon::parse($request->input('date')) 
+            : \Carbon\Carbon::today();
+        
+        $result = $formService->createExercise(Auth::id(), $request->input('exercise_name'), $selectedDate);
+        
+        $messageType = $result['success'] ? 'success' : 'error';
+        
+        return redirect()->route('mobile-entry.lifts', ['date' => $selectedDate->toDateString()])
+            ->with($messageType, $result['message']);
+    }
+
+    /**
+     * Remove a form from the mobile interface
+     * 
+     * @param Request $request
+     * @param MobileEntryLiftLogFormService $formService
+     * @param string $id Form ID
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function removeForm(Request $request, MobileEntryLiftLogFormService $formService, $id)
+    {
+        $selectedDate = $request->input('date') 
+            ? \Carbon\Carbon::parse($request->input('date')) 
+            : \Carbon\Carbon::today();
+        
+        $result = $formService->removeForm(Auth::id(), $id);
+        
+        $messageType = $result['success'] ? 'success' : 'error';
+        
+        return redirect()->route('mobile-entry.lifts', ['date' => $selectedDate->toDateString()])
+            ->with($messageType, $result['message']);
+    }
 
 }

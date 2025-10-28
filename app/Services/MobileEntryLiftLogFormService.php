@@ -241,13 +241,13 @@ class MobileEntryLiftLogFormService
     }
 
     /**
-     * Generate summary data based on user's lift logs for the selected date
+     * Generate summary data based on user's logs for the selected date
      * 
      * @param int $userId
      * @param Carbon $selectedDate
      * @return array
      */
-    public function generateLiftSummary($userId, Carbon $selectedDate)
+    public function generateSummary($userId, Carbon $selectedDate)
     {
         // Get today's lift logs
         $todaysLogs = LiftLog::where('user_id', $userId)
@@ -285,7 +285,7 @@ class MobileEntryLiftLogFormService
                 'today' => 'Sets Today'
             ],
             'ariaLabels' => [
-                'section' => 'Lift session summary'
+                'section' => 'Session summary'
             ]
         ];
     }
@@ -334,13 +334,13 @@ class MobileEntryLiftLogFormService
         }
 
         return [
-            'emptyMessage' => 'No lifts logged yet today!',
-            'title' => 'Today\'s Lifts',
+            'emptyMessage' => 'No entries logged yet today!',
+            'title' => 'Today\'s Entries',
             'items' => $items,
             'ariaLabels' => [
-                'section' => 'Logged lifts',
-                'editItem' => 'Edit logged lift',
-                'deleteItem' => 'Delete logged lift'
+                'section' => 'Logged entries',
+                'editItem' => 'Edit logged entry',
+                'deleteItem' => 'Delete logged entry'
             ]
         ];
     }
@@ -487,5 +487,184 @@ class MobileEntryLiftLogFormService
             ->with(['exercise'])
             ->orderBy('priority', 'asc')
             ->get();
+    }
+
+    /**
+     * Add an exercise form by finding the exercise and creating a program entry
+     * 
+     * @param int $userId
+     * @param string $exerciseIdentifier Exercise canonical name or ID
+     * @param Carbon $selectedDate
+     * @return array Result with success/error status and message
+     */
+    public function addExerciseForm($userId, $exerciseIdentifier, Carbon $selectedDate)
+    {
+        // Find the exercise by canonical name or ID
+        $exercise = Exercise::where('canonical_name', $exerciseIdentifier)
+            ->orWhere('id', $exerciseIdentifier)
+            ->availableToUser($userId)
+            ->first();
+        
+        if (!$exercise) {
+            return [
+                'success' => false,
+                'message' => 'Exercise not found or not accessible.'
+            ];
+        }
+        
+        // Check if program entry already exists
+        $existingProgram = Program::where('user_id', $userId)
+            ->where('exercise_id', $exercise->id)
+            ->whereDate('date', $selectedDate->toDateString())
+            ->first();
+        
+        if ($existingProgram) {
+            return [
+                'success' => false,
+                'message' => "{$exercise->title} is already in today's program."
+            ];
+        }
+        
+        // Create a program entry for this exercise
+        Program::create([
+            'user_id' => $userId,
+            'exercise_id' => $exercise->id,
+            'date' => $selectedDate,
+            'sets' => 3, // Default values
+            'reps' => 5,
+            'priority' => 999, // Low priority for manually added exercises
+            'comments' => 'Added manually'
+        ]);
+        
+        return [
+            'success' => true,
+            'message' => "Added {$exercise->title} to today's program."
+        ];
+    }
+
+    /**
+     * Create a new exercise and add it to the program
+     * 
+     * @param int $userId
+     * @param string $exerciseName
+     * @param Carbon $selectedDate
+     * @return array Result with success/error status and message
+     */
+    public function createExercise($userId, $exerciseName, Carbon $selectedDate)
+    {
+        // Check if exercise with similar name already exists
+        $existingExercise = Exercise::where('title', $exerciseName)
+            ->availableToUser($userId)
+            ->first();
+        
+        if ($existingExercise) {
+            return [
+                'success' => false,
+                'message' => "Exercise '{$exerciseName}' already exists."
+            ];
+        }
+        
+        // Generate unique canonical name
+        $canonicalName = $this->generateUniqueCanonicalName($exerciseName, $userId);
+        
+        // Create the new exercise
+        $exercise = Exercise::create([
+            'title' => $exerciseName,
+            'user_id' => $userId,
+            'is_bodyweight' => false, // Default to weighted exercise
+            'canonical_name' => $canonicalName
+        ]);
+        
+        // Create a program entry for this exercise
+        Program::create([
+            'user_id' => $userId,
+            'exercise_id' => $exercise->id,
+            'date' => $selectedDate,
+            'sets' => 3,
+            'reps' => 5,
+            'priority' => 999,
+            'comments' => 'New exercise created'
+        ]);
+        
+        return [
+            'success' => true,
+            'message' => "Created new exercise: {$exercise->title}"
+        ];
+    }
+
+    /**
+     * Remove a program entry (form) from the interface
+     * 
+     * @param int $userId
+     * @param string $formId Form ID (format: program-{id})
+     * @return array Result with success/error status and message
+     */
+    public function removeForm($userId, $formId)
+    {
+        // Extract program ID from form ID (format: program-{id})
+        if (!str_starts_with($formId, 'program-')) {
+            return [
+                'success' => false,
+                'message' => 'Invalid form ID format.'
+            ];
+        }
+        
+        $programId = str_replace('program-', '', $formId);
+        
+        $program = Program::where('id', $programId)
+            ->where('user_id', $userId)
+            ->with('exercise')
+            ->first();
+        
+        if (!$program) {
+            return [
+                'success' => false,
+                'message' => 'Program entry not found or not accessible.'
+            ];
+        }
+        
+        $exerciseTitle = $program->exercise->title ?? 'Exercise';
+        $program->delete();
+        
+        return [
+            'success' => true,
+            'message' => "Removed {$exerciseTitle} from today's program."
+        ];
+    }
+
+    /**
+     * Generate a unique canonical name for an exercise
+     * 
+     * @param string $title
+     * @param int $userId
+     * @return string
+     */
+    private function generateUniqueCanonicalName($title, $userId)
+    {
+        $baseCanonicalName = \Illuminate\Support\Str::slug($title, '_');
+        $canonicalName = $baseCanonicalName;
+        $counter = 1;
+
+        // Keep checking until we find a unique canonical name for this user
+        while ($this->canonicalNameExists($canonicalName, $userId)) {
+            $canonicalName = $baseCanonicalName . '_' . $counter;
+            $counter++;
+        }
+
+        return $canonicalName;
+    }
+
+    /**
+     * Check if a canonical name already exists for the user
+     * 
+     * @param string $canonicalName
+     * @param int $userId
+     * @return bool
+     */
+    private function canonicalNameExists($canonicalName, $userId)
+    {
+        return Exercise::where('canonical_name', $canonicalName)
+            ->availableToUser($userId)
+            ->exists();
     }
 }
