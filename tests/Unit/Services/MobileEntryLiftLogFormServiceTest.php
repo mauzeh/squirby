@@ -489,12 +489,15 @@ class MobileEntryLiftLogFormServiceTest extends TestCase
             'logged_at' => $this->testDate
         ]);
         
-        // Generate forms again - should show as completed
+        // Generate forms again - should be empty since completed programs are excluded by default
         $forms = $this->service->generateProgramForms($user->id, $this->testDate);
+        $this->assertCount(0, $forms);
         
-        $this->assertCount(1, $forms);
-        $this->assertTrue($forms[0]['isCompleted']);
-        $this->assertEquals('completed', $forms[0]['completionStatus']);
+        // But if we explicitly include completed programs, we should see it
+        $formsWithCompleted = $this->service->generateProgramForms($user->id, $this->testDate, true);
+        $this->assertCount(1, $formsWithCompleted);
+        $this->assertTrue($formsWithCompleted[0]['isCompleted']);
+        $this->assertEquals('completed', $formsWithCompleted[0]['completionStatus']);
     }
 
     #[Test]
@@ -524,13 +527,41 @@ class MobileEntryLiftLogFormServiceTest extends TestCase
             'logged_at' => $this->testDate
         ]);
         
-        // Include completed programs (default)
+        // Exclude completed programs (default behavior)
+        $incompleteForms = $this->service->generateProgramForms($user->id, $this->testDate);
+
+        
+        // Include completed programs (explicit)
         $allForms = $this->service->generateProgramForms($user->id, $this->testDate, true);
         $this->assertCount(2, $allForms);
+    }
+
+    #[Test]
+    public function it_excludes_completed_programs_by_default()
+    {
+        $user = \App\Models\User::factory()->create();
+        $exercise = Exercise::factory()->create();
         
-        // Exclude completed programs
-        $incompleteForms = $this->service->generateProgramForms($user->id, $this->testDate, false);
-        $this->assertCount(1, $incompleteForms);
-        $this->assertEquals($exercise2->id, $incompleteForms[0]['hiddenFields']['exercise_id']);
+        // Create a program
+        Program::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'date' => $this->testDate
+        ]);
+        
+        // Initially should generate a form (program is incomplete)
+        $forms = $this->service->generateProgramForms($user->id, $this->testDate);
+        $this->assertCount(1, $forms);
+        
+        // Complete the program by logging it
+        LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => $this->testDate
+        ]);
+        
+        // Now should generate no forms (program is completed and excluded by default)
+        $forms = $this->service->generateProgramForms($user->id, $this->testDate);
+        $this->assertCount(0, $forms);
     }
 }

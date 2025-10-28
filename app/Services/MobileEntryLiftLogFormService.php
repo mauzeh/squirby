@@ -15,10 +15,10 @@ class MobileEntryLiftLogFormService
      * 
      * @param int $userId
      * @param Carbon $selectedDate
-     * @param bool $includeCompleted Whether to include already completed programs
+     * @param bool $includeCompleted Whether to include already completed programs (default: false)
      * @return array
      */
-    public function generateProgramForms($userId, Carbon $selectedDate, $includeCompleted = true)
+    public function generateProgramForms($userId, Carbon $selectedDate, $includeCompleted = false)
     {
         // Get user's programs for the selected date
         $query = Program::where('user_id', $userId)
