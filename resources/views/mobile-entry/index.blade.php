@@ -174,7 +174,7 @@
                              data-min="{{ $field['min'] }}" 
                              data-max="{{ $field['max'] ?? '' }}">
                             <button type="button" class="decrement-button" aria-label="{{ $field['ariaLabels']['decrease'] }}">{{ $form['buttons']['decrement'] }}</button>
-                            <input type="number" id="{{ $field['id'] }}" name="{{ $field['name'] }}" class="number-input" value="{{ old($field['name'], $field['defaultValue']) }}" min="{{ $field['min'] }}" step="{{ $field['step'] ?? $field['increment'] }}" @if($field['max']) max="{{ $field['max'] }}" @endif>
+                            <input type="number" id="{{ $field['id'] }}" name="{{ $field['name'] }}" class="number-input" value="{{ old($field['name'], $field['defaultValue']) }}" min="{{ $field['min'] }}" step="{{ $field['step'] ?? $field['increment'] }}" @if(isset($field['max'])) max="{{ $field['max'] }}" @endif>
                             <button type="button" class="increment-button" aria-label="{{ $field['ariaLabels']['increase'] }}">{{ $form['buttons']['increment'] }}</button>
                         </div>
                     @endif
