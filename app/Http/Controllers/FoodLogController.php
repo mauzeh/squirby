@@ -72,7 +72,7 @@ class FoodLogController extends Controller
     public function store(Request $request)
     {
         // Handle mobile entry submissions
-        if ($request->has('redirect_to') && $request->input('redirect_to') === 'mobile-entry') {
+        if ($request->has('redirect_to') && in_array($request->input('redirect_to'), ['mobile-entry', 'mobile-entry-foods'])) {
             return $this->storeMobileEntry($request);
         }
 
@@ -148,18 +148,21 @@ class FoodLogController extends Controller
                     ->first();
 
                 if (!$ingredient) {
-                    return redirect()->route('food-logs.mobile-entry', ['date' => $validated['date']])
+                    $redirectRoute = $request->input('redirect_to') === 'mobile-entry-foods' ? 'mobile-entry.foods' : 'food-logs.mobile-entry';
+                    return redirect()->route($redirectRoute, ['date' => $validated['date']])
                         ->with('error', 'The selected ingredient no longer exists or you do not have permission to access it.');
                 }
 
                 if (!isset($validated['quantity'])) {
-                    return redirect()->route('food-logs.mobile-entry', ['date' => $validated['date']])
+                    $redirectRoute = $request->input('redirect_to') === 'mobile-entry-foods' ? 'mobile-entry.foods' : 'food-logs.mobile-entry';
+                    return redirect()->route($redirectRoute, ['date' => $validated['date']])
                         ->with('error', 'Quantity is required for ingredients.');
                 }
 
                 // Check if ingredient has a valid base unit
                 if (!$ingredient->base_unit_id || !$ingredient->baseUnit) {
-                    return redirect()->route('food-logs.mobile-entry', ['date' => $validated['date']])
+                    $redirectRoute = $request->input('redirect_to') === 'mobile-entry-foods' ? 'mobile-entry.foods' : 'food-logs.mobile-entry';
+                    return redirect()->route($redirectRoute, ['date' => $validated['date']])
                         ->with('error', 'The selected ingredient does not have a valid unit configured.');
                 }
 
@@ -182,17 +185,20 @@ class FoodLogController extends Controller
                     ->first();
 
                 if (!$meal) {
-                    return redirect()->route('food-logs.mobile-entry', ['date' => $validated['date']])
+                    $redirectRoute = $request->input('redirect_to') === 'mobile-entry-foods' ? 'mobile-entry.foods' : 'food-logs.mobile-entry';
+                    return redirect()->route($redirectRoute, ['date' => $validated['date']])
                         ->with('error', 'The selected meal no longer exists or you do not have permission to access it.');
                 }
 
                 if (!isset($validated['portion'])) {
-                    return redirect()->route('food-logs.mobile-entry', ['date' => $validated['date']])
+                    $redirectRoute = $request->input('redirect_to') === 'mobile-entry-foods' ? 'mobile-entry.foods' : 'food-logs.mobile-entry';
+                    return redirect()->route($redirectRoute, ['date' => $validated['date']])
                         ->with('error', 'Portion is required for meals.');
                 }
 
                 if ($meal->ingredients->isEmpty()) {
-                    return redirect()->route('food-logs.mobile-entry', ['date' => $validated['date']])
+                    $redirectRoute = $request->input('redirect_to') === 'mobile-entry-foods' ? 'mobile-entry.foods' : 'food-logs.mobile-entry';
+                    return redirect()->route($redirectRoute, ['date' => $validated['date']])
                         ->with('error', 'The selected meal has no ingredients configured.');
                 }
 
@@ -227,7 +233,8 @@ class FoodLogController extends Controller
                 }
 
                 if ($loggedCount === 0) {
-                    return redirect()->route('food-logs.mobile-entry', ['date' => $validated['date']])
+                    $redirectRoute = $request->input('redirect_to') === 'mobile-entry-foods' ? 'mobile-entry.foods' : 'food-logs.mobile-entry';
+                    return redirect()->route($redirectRoute, ['date' => $validated['date']])
                         ->with('error', 'No ingredients from the meal could be logged due to configuration issues.');
                 }
 
@@ -237,13 +244,22 @@ class FoodLogController extends Controller
                 }
             }
 
-            return redirect()->route('food-logs.mobile-entry', ['date' => $validated['date']])
+            // Check for custom redirect route
+            $redirectRoute = 'food-logs.mobile-entry';
+            if ($request->input('redirect_to') === 'mobile-entry-foods') {
+                $redirectRoute = 'mobile-entry.foods';
+                // Clear the selected forms from session after successful submission
+                $this->clearMobileFoodForms($validated['selected_type'], $validated['selected_id']);
+            }
+            
+            return redirect()->route($redirectRoute, ['date' => $validated['date']])
                 ->with('success', $message);
 
         } catch (\Illuminate\Validation\ValidationException $e) {
             // Handle validation errors
             $errors = $e->validator->errors()->all();
-            return redirect()->route('food-logs.mobile-entry', ['date' => $request->input('date', Carbon::today()->toDateString())])
+            $redirectRoute = $request->input('redirect_to') === 'mobile-entry-foods' ? 'mobile-entry.foods' : 'food-logs.mobile-entry';
+            return redirect()->route($redirectRoute, ['date' => $request->input('date', Carbon::today()->toDateString())])
                 ->with('error', 'Validation failed: ' . implode(' ', $errors));
 
         } catch (\Exception $e) {
@@ -254,9 +270,24 @@ class FoodLogController extends Controller
                 'trace' => $e->getTraceAsString()
             ]);
 
-            return redirect()->route('food-logs.mobile-entry', ['date' => $request->input('date', Carbon::today()->toDateString())])
+            $redirectRoute = $request->input('redirect_to') === 'mobile-entry-foods' ? 'mobile-entry.foods' : 'food-logs.mobile-entry';
+            return redirect()->route($redirectRoute, ['date' => $request->input('date', Carbon::today()->toDateString())])
                 ->with('error', 'An unexpected error occurred while logging your food. Please try again.');
         }
+    }
+
+    /**
+     * Clear a specific item from mobile food forms database
+     * 
+     * @param string $type
+     * @param int $id
+     */
+    private function clearMobileFoodForms($type, $id)
+    {
+        \App\Models\MobileFoodForm::where('user_id', auth()->id())
+            ->where('type', $type)
+            ->where('item_id', $id)
+            ->delete();
     }
 
     public function edit(FoodLog $foodLog)

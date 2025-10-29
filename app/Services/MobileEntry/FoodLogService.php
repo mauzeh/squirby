@@ -6,6 +6,7 @@ use App\Models\FoodLog;
 use App\Models\Ingredient;
 use App\Models\Meal;
 use App\Models\Unit;
+use App\Models\MobileFoodForm;
 use App\Services\NutritionService;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
@@ -331,6 +332,232 @@ class FoodLogService
     }
 
     /**
+     * Generate forms based on request parameters and database data
+     * 
+     * @param int $userId
+     * @param Carbon $selectedDate
+     * @param \Illuminate\Http\Request $request
+     * @return array
+     */
+    public function generateForms($userId, Carbon $selectedDate, $request)
+    {
+        $forms = [];
+        
+        // Get selected items from database
+        $selectedItems = MobileFoodForm::forUserAndDate($userId, $selectedDate)->get();
+        
+        foreach ($selectedItems as $item) {
+            if ($item->type === 'ingredient') {
+                $form = $this->generateIngredientForm($userId, $item->item_id, $selectedDate);
+                if ($form) {
+                    $forms[] = $form;
+                }
+            } elseif ($item->type === 'meal') {
+                $form = $this->generateMealForm($userId, $item->item_id, $selectedDate);
+                if ($form) {
+                    $forms[] = $form;
+                }
+            }
+        }
+        
+        // If no forms from database, generate quick entry forms for frequently used items
+        if (empty($forms)) {
+            $forms = $this->generateQuickEntryForms($userId, $selectedDate);
+        }
+        
+        return $forms;
+    }
+
+    /**
+     * Generate a form for a specific ingredient
+     * 
+     * @param int $userId
+     * @param int $ingredientId
+     * @param Carbon $selectedDate
+     * @return array|null
+     */
+    public function generateIngredientForm($userId, $ingredientId, Carbon $selectedDate)
+    {
+        $ingredient = Ingredient::where('id', $ingredientId)
+            ->where('user_id', $userId)
+            ->with('baseUnit')
+            ->first();
+            
+        if (!$ingredient || !$ingredient->baseUnit) {
+            return null;
+        }
+        
+        // Get last session data for this ingredient
+        $lastSession = $this->getLastIngredientSession($ingredient->id, $selectedDate, $userId);
+        
+        // Generate form ID
+        $formId = 'ingredient-' . $ingredient->id;
+        
+        // Determine default quantity
+        $defaultQuantity = $lastSession['quantity'] ?? 1;
+        
+        // Generate messages based on last session
+        $messages = $this->generateIngredientFormMessages($ingredient, $lastSession);
+        
+        return [
+            'id' => $formId,
+            'type' => 'food',
+            'title' => $ingredient->name,
+            'itemName' => $ingredient->name,
+            'formAction' => route('food-logs.store'),
+            'deleteAction' => route('mobile-entry.remove-food-form', ['id' => $formId]),
+            'deleteParams' => [
+                'date' => $selectedDate->toDateString()
+            ],
+            'messages' => $messages,
+            'numericFields' => [
+                [
+                    'id' => $formId . '-quantity',
+                    'name' => 'quantity',
+                    'label' => 'Quantity (' . $ingredient->baseUnit->name . '):',
+                    'defaultValue' => round($defaultQuantity, 2),
+                    'increment' => $this->getQuantityIncrement($ingredient->baseUnit->name, $defaultQuantity),
+                    'step' => 'any',
+                    'min' => 0.01,
+                    'max' => 1000,
+                    'ariaLabels' => [
+                        'decrease' => 'Decrease quantity',
+                        'increase' => 'Increase quantity'
+                    ]
+                ]
+            ],
+            'commentField' => [
+                'id' => $formId . '-notes',
+                'name' => 'notes',
+                'label' => 'Notes:',
+                'placeholder' => 'Any additional notes...',
+                'defaultValue' => ''
+            ],
+            'buttons' => [
+                'decrement' => '-',
+                'increment' => '+',
+                'submit' => 'Log ' . $ingredient->name
+            ],
+            'ariaLabels' => [
+                'section' => $ingredient->name . ' entry',
+                'deleteForm' => 'Remove this food form'
+            ],
+            // Hidden fields for form submission
+            'hiddenFields' => [
+                'selected_type' => 'ingredient',
+                'selected_id' => $ingredient->id,
+                'date' => $selectedDate->toDateString(),
+                'redirect_to' => 'mobile-entry-foods'
+            ]
+        ];
+    }
+
+    /**
+     * Generate a form for a specific meal
+     * 
+     * @param int $userId
+     * @param int $mealId
+     * @param Carbon $selectedDate
+     * @return array|null
+     */
+    public function generateMealForm($userId, $mealId, Carbon $selectedDate)
+    {
+        $meal = Meal::where('id', $mealId)
+            ->where('user_id', $userId)
+            ->with('ingredients.baseUnit')
+            ->first();
+            
+        if (!$meal || $meal->ingredients->isEmpty()) {
+            return null;
+        }
+        
+        // Generate form ID
+        $formId = 'meal-' . $meal->id;
+        
+        // Get nutrition info for the meal
+        $totalCalories = 0;
+        $totalProtein = 0;
+        
+        foreach ($meal->ingredients as $ingredient) {
+            $quantity = $ingredient->pivot->quantity;
+            $totalCalories += $this->nutritionService->calculateTotalMacro($ingredient, 'calories', $quantity);
+            $totalProtein += $this->nutritionService->calculateTotalMacro($ingredient, 'protein', $quantity);
+        }
+        
+        $messages = [
+            [
+                'type' => 'info',
+                'prefix' => 'Meal contains:',
+                'text' => $meal->ingredients->count() . ' ingredients'
+            ],
+            [
+                'type' => 'tip',
+                'prefix' => 'Per serving:',
+                'text' => round($totalCalories) . ' cal, ' . round($totalProtein, 1) . 'g protein'
+            ]
+        ];
+        
+        if ($meal->comments) {
+            $messages[] = [
+                'type' => 'neutral',
+                'prefix' => 'Notes:',
+                'text' => $meal->comments
+            ];
+        }
+        
+        return [
+            'id' => $formId,
+            'type' => 'food',
+            'title' => $meal->name . ' (Meal)',
+            'itemName' => $meal->name,
+            'formAction' => route('food-logs.store'),
+            'deleteAction' => route('mobile-entry.remove-food-form', ['id' => $formId]),
+            'deleteParams' => [
+                'date' => $selectedDate->toDateString()
+            ],
+            'messages' => $messages,
+            'numericFields' => [
+                [
+                    'id' => $formId . '-portion',
+                    'name' => 'portion',
+                    'label' => 'Portion:',
+                    'defaultValue' => 1.0,
+                    'increment' => 0.25,
+                    'min' => 0.1,
+                    'max' => 10,
+                    'ariaLabels' => [
+                        'decrease' => 'Decrease portion',
+                        'increase' => 'Increase portion'
+                    ]
+                ]
+            ],
+            'commentField' => [
+                'id' => $formId . '-notes',
+                'name' => 'notes',
+                'label' => 'Notes:',
+                'placeholder' => 'Any additional notes...',
+                'defaultValue' => ''
+            ],
+            'buttons' => [
+                'decrement' => '-',
+                'increment' => '+',
+                'submit' => 'Log ' . $meal->name
+            ],
+            'ariaLabels' => [
+                'section' => $meal->name . ' entry',
+                'deleteForm' => 'Remove this meal form'
+            ],
+            // Hidden fields for form submission
+            'hiddenFields' => [
+                'selected_type' => 'meal',
+                'selected_id' => $meal->id,
+                'date' => $selectedDate->toDateString(),
+                'redirect_to' => 'mobile-entry-foods'
+            ]
+        ];
+    }
+
+    /**
      * Generate quick entry forms for frequently used ingredients
      * 
      * @param int $userId
@@ -389,7 +616,8 @@ class FoodLogService
                         'name' => 'quantity',
                         'label' => 'Quantity (' . $ingredient->baseUnit->name . '):',
                         'defaultValue' => round($defaultQuantity, 2),
-                        'increment' => $this->getQuantityIncrement($ingredient->baseUnit->name),
+                        'increment' => $this->getQuantityIncrement($ingredient->baseUnit->name, $defaultQuantity),
+                        'step' => 'any',
                         'min' => 0.01,
                         'max' => 1000,
                         'ariaLabels' => [
@@ -416,9 +644,9 @@ class FoodLogService
                 ],
                 // Hidden fields for form submission
                 'hiddenFields' => [
-                    'ingredient_id' => $ingredient->id,
+                    'selected_type' => 'ingredient',
+                    'selected_id' => $ingredient->id,
                     'date' => $selectedDate->toDateString(),
-                    'logged_at' => Carbon::now()->format('H:i'),
                     'redirect_to' => 'mobile-entry-foods'
                 ]
             ];
@@ -501,18 +729,25 @@ class FoodLogService
     }
 
     /**
-     * Get appropriate quantity increment based on unit type
+     * Get appropriate quantity increment based on unit type and default value
      * 
      * @param string $unitName
+     * @param float $defaultValue
      * @return float
      */
-    protected function getQuantityIncrement($unitName)
+    protected function getQuantityIncrement($unitName, $defaultValue = 1)
     {
         $unitName = strtolower($unitName);
         
+        // For very small default values, use smaller increments
+        if ($defaultValue < 0.5) {
+            return 0.1;
+        }
+        
         // Small increments for precise measurements
         if (in_array($unitName, ['tsp', 'teaspoon', 'tbsp', 'tablespoon', 'oz', 'ounce'])) {
-            return 0.25;
+            // Use 0.5 for tablespoons to avoid step validation issues
+            return 0.5;
         }
         
         // Medium increments for common measurements
@@ -521,8 +756,17 @@ class FoodLogService
         }
         
         // Larger increments for bulk measurements
-        if (in_array($unitName, ['lb', 'pound', 'kg', 'kilogram', 'g', 'gram'])) {
+        if (in_array($unitName, ['lb', 'pound', 'kg', 'kilogram'])) {
             return 1;
+        }
+        
+        // For grams, use different increments based on typical quantities
+        if (in_array($unitName, ['g', 'gram'])) {
+            if ($defaultValue >= 100) {
+                return 10; // 10g increments for larger quantities
+            } else {
+                return 5; // 5g increments for smaller quantities
+            }
         }
         
         // Default increment
@@ -530,7 +774,7 @@ class FoodLogService
     }
 
     /**
-     * Add a food form by finding the ingredient/meal and creating a quick entry
+     * Add a food form by finding the ingredient/meal and storing it in database
      * 
      * @param int $userId
      * @param string $type 'ingredient' or 'meal'
@@ -560,9 +804,32 @@ class FoodLogService
                 ];
             }
             
+            // Check if already added
+            $existingForm = MobileFoodForm::where('user_id', $userId)
+                ->where('date', $selectedDate->toDateString())
+                ->where('type', $type)
+                ->where('item_id', $id)
+                ->first();
+            
+            if ($existingForm) {
+                return [
+                    'success' => false,
+                    'message' => "{$ingredient->name} is already added to your forms."
+                ];
+            }
+            
+            // Add to database
+            MobileFoodForm::create([
+                'user_id' => $userId,
+                'date' => $selectedDate->toDateString(),
+                'type' => $type,
+                'item_id' => $id,
+                'item_name' => $ingredient->name
+            ]);
+            
             return [
                 'success' => true,
-                'message' => "Added {$ingredient->name} to quick entry forms."
+                'message' => "Added {$ingredient->name} form. You can now log it below."
             ];
             
         } elseif ($type === 'meal') {
@@ -585,9 +852,32 @@ class FoodLogService
                 ];
             }
             
+            // Check if already added
+            $existingForm = MobileFoodForm::where('user_id', $userId)
+                ->where('date', $selectedDate->toDateString())
+                ->where('type', $type)
+                ->where('item_id', $id)
+                ->first();
+            
+            if ($existingForm) {
+                return [
+                    'success' => false,
+                    'message' => "{$meal->name} is already added to your forms."
+                ];
+            }
+            
+            // Add to database
+            MobileFoodForm::create([
+                'user_id' => $userId,
+                'date' => $selectedDate->toDateString(),
+                'type' => $type,
+                'item_id' => $id,
+                'item_name' => $meal->name
+            ]);
+            
             return [
                 'success' => true,
-                'message' => "Added {$meal->name} to quick entry forms."
+                'message' => "Added {$meal->name} form. You can now log it below."
             ];
         }
         
@@ -651,18 +941,49 @@ class FoodLogService
      * Remove a food form from the interface
      * 
      * @param int $userId
-     * @param string $formId Form ID (format: quick-ingredient-{id})
+     * @param string $formId Form ID (format: ingredient-{id} or meal-{id})
      * @return array Result with success/error status and message
      */
     public function removeFoodForm($userId, $formId)
     {
-        // For now, just return success since we don't persist quick forms
-        // In a full implementation, you might store user preferences for quick forms
+        // Extract type and id from formId (e.g., "ingredient-123" or "meal-456")
+        if (preg_match('/^(ingredient|meal)-(\d+)$/', $formId, $matches)) {
+            $type = $matches[1];
+            $id = $matches[2];
+            
+            $form = MobileFoodForm::where('user_id', $userId)
+                ->where('type', $type)
+                ->where('item_id', $id)
+                ->first();
+            
+            if ($form) {
+                $itemName = $form->item_name;
+                $form->delete();
+                
+                return [
+                    'success' => true,
+                    'message' => "Removed {$itemName} from your forms."
+                ];
+            }
+        }
         
         return [
-            'success' => true,
-            'message' => 'Removed food item from quick entry.'
+            'success' => false,
+            'message' => 'Food form not found.'
         ];
+    }
+
+    /**
+     * Clean up old mobile food forms for a user (keep only last 3 days)
+     * 
+     * @param int $userId
+     * @param Carbon $currentDate
+     */
+    public function cleanupOldForms($userId, Carbon $currentDate)
+    {
+        MobileFoodForm::where('user_id', $userId)
+            ->where('date', '<', $currentDate->copy()->subDays(3))
+            ->delete();
     }
 
     /**

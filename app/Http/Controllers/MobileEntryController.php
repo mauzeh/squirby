@@ -795,6 +795,12 @@ class MobileEntryController extends Controller
             }
         }
         
+        // Clean up old forms to prevent database bloat
+        $formService->cleanupOldForms(Auth::id(), $selectedDate);
+        
+        // Generate forms based on selected items or quick entries
+        $forms = $formService->generateForms(Auth::id(), $selectedDate, $request);
+        
         // Generate logged items using the service
         $loggedItems = $formService->generateLoggedItems(Auth::id(), $selectedDate);
         
@@ -838,7 +844,7 @@ class MobileEntryController extends Controller
             
             'itemSelectionList' => $itemSelectionList,
             
-            'forms' => [], // No pre-configured forms for food logging
+            'forms' => $forms,
             
             'loggedItems' => $loggedItems,
             
