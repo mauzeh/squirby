@@ -33,28 +33,26 @@ class GlobalExerciseVisibilityToggleTest extends TestCase
     {
         $this->actingAs($this->user);
 
-        // Test updating preference to false
-        $response = $this->patch('/profile', [
-            'name' => $this->user->name,
-            'email' => $this->user->email,
+        // Test updating preference to false using the new preferences endpoint
+        $response = $this->patch('/profile/preferences', [
             'show_global_exercises' => false,
         ]);
 
         $response->assertSessionHasNoErrors();
         $response->assertRedirect('/profile');
+        $response->assertSessionHas('status', 'preferences-updated');
         
         $this->user->refresh();
         $this->assertFalse($this->user->show_global_exercises);
 
         // Test updating preference to true
-        $response = $this->patch('/profile', [
-            'name' => $this->user->name,
-            'email' => $this->user->email,
+        $response = $this->patch('/profile/preferences', [
             'show_global_exercises' => true,
         ]);
 
         $response->assertSessionHasNoErrors();
         $response->assertRedirect('/profile');
+        $response->assertSessionHas('status', 'preferences-updated');
         
         $this->user->refresh();
         $this->assertTrue($this->user->show_global_exercises);

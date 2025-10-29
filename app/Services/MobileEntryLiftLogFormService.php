@@ -26,6 +26,9 @@ class MobileEntryLiftLogFormService
      */
     public function generateProgramForms($userId, Carbon $selectedDate, $includeCompleted = false)
     {
+        // Get user to check preferences
+        $user = \App\Models\User::find($userId);
+        
         // Get user's programs for the selected date
         $query = Program::where('user_id', $userId)
             ->whereDate('date', $selectedDate->toDateString())
@@ -96,19 +99,24 @@ class MobileEntryLiftLogFormService
                 ];
             } else {
                 // For weighted exercises, add weight field
-                $numericFields[] = [
-                    'id' => $formId . '-weight',
-                    'name' => 'weight',
-                    'label' => $exercise->is_bodyweight ? 'Added Weight (lbs):' : 'Weight (lbs):',
-                    'defaultValue' => $defaultWeight,
-                    'increment' => $exercise->is_bodyweight ? 2.5 : 5,
-                    'min' => 0,
-                    'max' => 600,
-                    'ariaLabels' => [
-                        'decrease' => 'Decrease weight',
-                        'increase' => 'Increase weight'
-                    ]
-                ];
+                // For bodyweight exercises, only show weight field if user has show_extra_weight enabled
+                $shouldShowWeightField = !$exercise->is_bodyweight || ($user && $user->shouldShowExtraWeight());
+                
+                if ($shouldShowWeightField) {
+                    $numericFields[] = [
+                        'id' => $formId . '-weight',
+                        'name' => 'weight',
+                        'label' => $exercise->is_bodyweight ? 'Added Weight (lbs):' : 'Weight (lbs):',
+                        'defaultValue' => $defaultWeight,
+                        'increment' => $exercise->is_bodyweight ? 2.5 : 5,
+                        'min' => 0,
+                        'max' => 600,
+                        'ariaLabels' => [
+                            'decrease' => 'Decrease weight',
+                            'increase' => 'Increase weight'
+                        ]
+                    ];
+                }
             }
             
             // Add reps and sets fields

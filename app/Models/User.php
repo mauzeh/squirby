@@ -24,6 +24,7 @@ class User extends Authenticatable
         'password',
         'google_id',
         'show_global_exercises',
+        'show_extra_weight',
     ];
 
     /**
@@ -47,6 +48,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'show_global_exercises' => 'boolean',
+            'show_extra_weight' => 'boolean',
         ];
     }
 
@@ -63,6 +65,11 @@ class User extends Authenticatable
     public function shouldShowGlobalExercises(): bool
     {
         return $this->show_global_exercises ?? true;
+    }
+
+    public function shouldShowExtraWeight(): bool
+    {
+        return $this->show_extra_weight ?? false;
     }
 
     public function exercises()

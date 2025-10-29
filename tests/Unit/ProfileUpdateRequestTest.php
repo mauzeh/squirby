@@ -13,7 +13,7 @@ class ProfileUpdateRequestTest extends TestCase
     use RefreshDatabase;
 
     /** @test */
-    public function test_show_global_exercises_validation_accepts_boolean_values(): void
+    public function test_profile_update_validation_works_without_preferences(): void
     {
         $user = User::factory()->create();
         $request = new ProfileUpdateRequest();
@@ -23,34 +23,18 @@ class ProfileUpdateRequestTest extends TestCase
 
         $rules = $request->rules();
 
-        // Test valid boolean values
+        // Test valid profile data (without preferences)
         $validData = [
             'name' => 'Test User',
             'email' => 'test@example.com',
-            'show_global_exercises' => true,
         ];
 
-        $validator = Validator::make($validData, $rules);
-        $this->assertFalse($validator->fails());
-
-        // Test false value
-        $validData['show_global_exercises'] = false;
-        $validator = Validator::make($validData, $rules);
-        $this->assertFalse($validator->fails());
-
-        // Test null value (should be allowed)
-        $validData['show_global_exercises'] = null;
-        $validator = Validator::make($validData, $rules);
-        $this->assertFalse($validator->fails());
-
-        // Test without the field (backward compatibility)
-        unset($validData['show_global_exercises']);
         $validator = Validator::make($validData, $rules);
         $this->assertFalse($validator->fails());
     }
 
     /** @test */
-    public function test_show_global_exercises_validation_rejects_invalid_values(): void
+    public function test_profile_update_validation_rejects_invalid_values(): void
     {
         $user = User::factory()->create();
         $request = new ProfileUpdateRequest();
@@ -60,22 +44,15 @@ class ProfileUpdateRequestTest extends TestCase
 
         $rules = $request->rules();
 
-        // Test invalid string value
+        // Test invalid email
         $invalidData = [
             'name' => 'Test User',
-            'email' => 'test@example.com',
-            'show_global_exercises' => 'invalid',
+            'email' => 'invalid-email',
         ];
 
         $validator = Validator::make($invalidData, $rules);
         $this->assertTrue($validator->fails());
-        $this->assertTrue($validator->errors()->has('show_global_exercises'));
-
-        // Test invalid numeric value
-        $invalidData['show_global_exercises'] = 123;
-        $validator = Validator::make($invalidData, $rules);
-        $this->assertTrue($validator->fails());
-        $this->assertTrue($validator->errors()->has('show_global_exercises'));
+        $this->assertTrue($validator->errors()->has('email'));
     }
 
     /** @test */

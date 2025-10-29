@@ -37,6 +37,30 @@
             </p>
         </div>
 
+        <div class="form-group-checkbox">
+            <!-- Hidden input to ensure a value is always sent -->
+            <input type="hidden" name="show_extra_weight" value="0" />
+            <input 
+                id="show_extra_weight" 
+                name="show_extra_weight" 
+                type="checkbox" 
+                class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded"
+                value="1"
+                {{ old('show_extra_weight', $user->show_extra_weight ?? false) ? 'checked' : '' }}
+            />
+            <label for="show_extra_weight" class="font-medium text-gray-700">
+                Show extra weight field for bodyweight exercises
+            </label>
+            @error('show_extra_weight')
+                <div class="error-message">{{ $message }}</div>
+            @enderror
+        </div>
+        <div style="margin-left: 140px; margin-top: -10px; margin-bottom: 20px;">
+            <p class="text-gray-500 text-sm">
+                When enabled, bodyweight exercises will show the "Add additional weight" button and extra weight field in the mobile lift entry interface. When disabled, only reps and sets will be shown.
+            </p>
+        </div>
+
         <div class="flex items-center gap-4">
             <button type="submit" class="button">Save Preferences</button>
 
