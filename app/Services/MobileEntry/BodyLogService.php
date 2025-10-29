@@ -404,16 +404,16 @@ class BodyLogService
             return 0.1;
         }
         
-        // Circumference measurements (waist, chest, arms, etc.) - use 0.25
+        // Circumference measurements - use 0.1 for precision
         if (str_contains($lowerName, 'waist') || str_contains($lowerName, 'chest') || 
             str_contains($lowerName, 'arm') || str_contains($lowerName, 'thigh') ||
             str_contains($lowerName, 'neck') || str_contains($lowerName, 'hip')) {
-            return 0.25;
+            return 0.1;
         }
         
-        // Height measurements - use 0.25
+        // Height measurements - use 0.1 for precision
         if (str_contains($lowerName, 'height')) {
-            return 0.25;
+            return 0.1;
         }
         
         // Default increment
