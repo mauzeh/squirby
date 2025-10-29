@@ -207,4 +207,22 @@ class ExercisePolicyTest extends TestCase
         
         $this->assertFalse($result);
     }
+
+    public function test_admin_can_merge_exercises(): void
+    {
+        $userExercise = Exercise::factory()->create(['user_id' => $this->regularUser->id]);
+        
+        $result = $this->policy->merge($this->adminUser, $userExercise);
+        
+        $this->assertTrue($result);
+    }
+
+    public function test_regular_user_cannot_merge_exercises(): void
+    {
+        $userExercise = Exercise::factory()->create(['user_id' => $this->regularUser->id]);
+        
+        $result = $this->policy->merge($this->regularUser, $userExercise);
+        
+        $this->assertFalse($result);
+    }
 }
