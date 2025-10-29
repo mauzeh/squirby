@@ -83,7 +83,7 @@ class GoogleOAuthTest extends TestCase
         $this->assertAuthenticated();
 
         // Assert welcome message for new user
-        $response->assertRedirect('/lift-logs/mobile-entry');
+        $response->assertRedirect('/mobile-entry/lifts');
         $response->assertSessionHas('success', 'Welcome to our app! Thanks for trying us out. We\'re excited to help you track your fitness journey!');
     }
 
@@ -119,7 +119,7 @@ class GoogleOAuthTest extends TestCase
         $this->assertAuthenticatedAs($existingUser);
 
         // Assert no welcome message for existing user
-        $response->assertRedirect('/lift-logs/mobile-entry');
+        $response->assertRedirect('/mobile-entry/lifts');
         $response->assertSessionMissing('success');
     }
 
@@ -159,7 +159,7 @@ class GoogleOAuthTest extends TestCase
         $this->assertAuthenticatedAs($existingUser);
 
         // Assert no welcome message (not a new user)
-        $response->assertRedirect('/lift-logs/mobile-entry');
+        $response->assertRedirect('/mobile-entry/lifts');
         $response->assertSessionMissing('success');
     }
 
@@ -285,7 +285,7 @@ class GoogleOAuthTest extends TestCase
         $this->assertTrue($user->hasRole('athlete'));
         $this->assertFalse($user->hasRole('admin'));
 
-        $response->assertRedirect('/lift-logs/mobile-entry');
+        $response->assertRedirect('/mobile-entry/lifts');
     }
 
     /** @test */

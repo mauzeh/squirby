@@ -65,7 +65,7 @@ class GoogleOAuthIntegrationTest extends TestCase
             'google_id' => 'new_user_123',
         ]);
 
-        $callbackResponse->assertRedirect('/lift-logs/mobile-entry');
+        $callbackResponse->assertRedirect('/mobile-entry/lifts');
         $callbackResponse->assertSessionHas('success');
 
         // Step 5: Verify user is authenticated

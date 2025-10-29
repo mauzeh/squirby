@@ -55,10 +55,10 @@ class SocialiteController extends Controller
 
             // Show welcome message for new users
             if ($isNewUser) {
-                return redirect('/lift-logs/mobile-entry')->with('success', 'Welcome to our app! Thanks for trying us out. We\'re excited to help you track your fitness journey!');
+                return redirect('/mobile-entry/lifts')->with('success', 'Welcome to our app! Thanks for trying us out. We\'re excited to help you track your fitness journey!');
             }
 
-            return redirect('/lift-logs/mobile-entry');
+            return redirect('/mobile-entry/lifts');
         } catch (\Exception $e) {
             // Log the actual exception for debugging
             \Log::error('Google OAuth failed: ' . $e->getMessage(), [

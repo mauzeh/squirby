@@ -95,8 +95,8 @@ class MobileEntryController extends Controller
              * This allows the mobile entry interface to work with any date-based route pattern.
              * 
              * Usage Examples:
-             * - For food logs: route('food-logs.mobile-entry', ['date' => $date])
-             * - For lift logs: route('lift-logs.mobile-entry', ['date' => $date])
+             * - For food logs: route('mobile-entry.foods', ['date' => $date])
+             * - For lift logs: route('mobile-entry.lifts', ['date' => $date])
              * - For generic mobile entry: route('mobile-entry.index', ['date' => $date])
              */
             'navigation' => [

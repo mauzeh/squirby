@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use App\Services\TrainingProgressionService;
-use App\Services\RecommendationEngine;
+
 
 class LiftLogController extends Controller
 {
@@ -141,7 +141,7 @@ class LiftLogController extends Controller
                 'submitted_lift_log_id' => $liftLog->id,
                 'submitted_program_id' => $request->input('program_id'), // Assuming program_id is passed from the form
             ];
-            return redirect()->route('lift-logs.mobile-entry', $redirectParams)->with('success', 'Lift log created successfully.');
+            return redirect()->route('mobile-entry.lifts', $redirectParams)->with('success', 'Lift log created successfully.');
         } elseif ($request->input('redirect_to') === 'mobile-entry-lifts') {
             $redirectParams = [
                 'date' => $request->input('date'),
@@ -246,7 +246,7 @@ class LiftLogController extends Controller
                 'submitted_lift_log_id' => $liftLog->id,
                 'submitted_program_id' => $request->input('program_id'), // Assuming program_id is passed from the form
             ];
-            return redirect()->route('lift-logs.mobile-entry', $redirectParams)->with('success', 'Lift log updated successfully.');
+            return redirect()->route('mobile-entry.lifts', $redirectParams)->with('success', 'Lift log updated successfully.');
         } elseif ($request->input('redirect_to') === 'mobile-entry-lifts') {
             $redirectParams = [
                 'date' => $request->input('date'),
@@ -270,7 +270,7 @@ class LiftLogController extends Controller
         $liftLog->delete();
 
         if (request()->input('redirect_to') === 'mobile-entry') {
-            return redirect()->route('lift-logs.mobile-entry', ['date' => request()->input('date')])->with('success', 'Lift log deleted successfully.');
+            return redirect()->route('mobile-entry.lifts', ['date' => request()->input('date')])->with('success', 'Lift log deleted successfully.');
         } elseif (request()->input('redirect_to') === 'mobile-entry-lifts') {
             return redirect()->route('mobile-entry.lifts', ['date' => request()->input('date')])->with('success', 'Lift log deleted successfully.');
         }
@@ -300,219 +300,7 @@ class LiftLogController extends Controller
 
 
 
-    public function mobileEntry(Request $request, \App\Services\TrainingProgressionService $trainingProgressionService, RecommendationEngine $recommendationEngine)
-    {
-        $selectedDate = $request->input('date') ? \Carbon\Carbon::parse($request->input('date')) : \Carbon\Carbon::today();
-        $userId = auth()->id();
 
-        // Load programs with exercise relationship in one query
-        $programs = \App\Models\Program::with('exercise')
-            ->where('user_id', $userId)
-            ->whereDate('date', $selectedDate->toDateString())
-            ->orderBy('priority')
-            ->get();
-
-        // Get all exercise IDs from programs for batch queries
-        $programExerciseIds = $programs->pluck('exercise_id')->toArray();
-
-        // Batch fetch last logs for all program exercises using a more efficient approach
-        $lastLogs = [];
-        if (!empty($programExerciseIds)) {
-            // Use a subquery to get the latest log ID for each exercise, then fetch those logs with sets
-            $latestLogIds = \DB::table('lift_logs')
-                ->select('id', 'exercise_id', 'logged_at')
-                ->where('user_id', $userId)
-                ->whereIn('exercise_id', $programExerciseIds)
-                ->whereIn('id', function($query) use ($userId, $programExerciseIds) {
-                    $query->select(\DB::raw('MAX(id)'))
-                        ->from('lift_logs')
-                        ->where('user_id', $userId)
-                        ->whereIn('exercise_id', $programExerciseIds)
-                        ->groupBy('exercise_id');
-                })
-                ->get()
-                ->keyBy('exercise_id');
-
-            if (!$latestLogIds->isEmpty()) {
-                $logIds = $latestLogIds->pluck('id')->toArray();
-                $logsWithSets = \App\Models\LiftLog::with(['liftSets' => function($query) {
-                        $query->select('lift_log_id', 'weight', 'reps', 'band_color')->orderBy('id');
-                    }, 'exercise'])
-                    ->whereIn('id', $logIds)
-                    ->get()
-                    ->keyBy('exercise_id');
-
-                $lastLogs = $logsWithSets;
-            }
-        }
-
-        // Process suggestions and last workout data efficiently
-        $shouldGetSuggestions = $selectedDate->isToday() || $selectedDate->isTomorrow() || $selectedDate->copy()->addDay()->isTomorrow();
-        
-        foreach ($programs as $program) {
-            // Get suggestion details if needed
-            if ($shouldGetSuggestions) {
-                $lastLog = $lastLogs[$program->exercise_id] ?? null;
-                if ($lastLog) {
-                    $suggestionDetails = $this->getSuggestionDetailsOptimized($lastLog, $trainingProgressionService, $userId, $program->exercise_id, $selectedDate);
-                    
-                    if ($suggestionDetails) {
-                        if (isset($suggestionDetails->band_color)) {
-                            // Banded exercise
-                            $program->suggestedBandColor = $suggestionDetails->band_color;
-                            $program->reps = $suggestionDetails->reps;
-                            $program->sets = $suggestionDetails->sets;
-                            $program->suggestedNextWeight = null;
-                            $program->lastWeight = null;
-                        } else {
-                            // Regular weighted exercise
-                            $program->suggestedNextWeight = $suggestionDetails->suggestedWeight ?? null;
-                            $program->lastWeight = $suggestionDetails->lastWeight ?? null;
-                            $program->lastReps = $suggestionDetails->lastReps ?? null;
-                            $program->lastSets = $suggestionDetails->lastSets ?? null;
-                            $program->reps = $suggestionDetails->reps;
-                            $program->sets = $suggestionDetails->sets;
-                            $program->suggestedBandColor = null;
-                        }
-                    } else {
-                        $this->setNullSuggestions($program);
-                    }
-                } else {
-                    $this->setNullSuggestions($program);
-                }
-            } else {
-                $this->setNullSuggestions($program);
-            }
-
-            // Set last workout data from cached results
-            $lastLog = $lastLogs[$program->exercise_id] ?? null;
-            if ($lastLog) {
-                $firstSet = $lastLog->liftSets->first();
-                if ($firstSet) {
-                    if ($program->exercise->band_type) {
-                        $program->lastWorkoutWeight = $firstSet->band_color ?? 'N/A';
-                        $program->lastWorkoutIsBanded = true;
-                    } else {
-                        $program->lastWorkoutWeight = $firstSet->weight ?? 0;
-                        $program->lastWorkoutIsBanded = false;
-                    }
-                    $program->lastWorkoutReps = $firstSet->reps;
-                    $program->lastWorkoutSets = $lastLog->liftSets->count();
-                    $program->lastWorkoutDate = $lastLog->logged_at;
-                    $program->lastWorkoutTimeAgo = $lastLog->logged_at->diffForHumans();
-                }
-            }
-        }
-
-        $submittedLiftLog = null;
-        if ($request->has('submitted_lift_log_id')) {
-            $submittedLiftLog = \App\Models\LiftLog::with(['liftSets', 'exercise'])->find($request->input('submitted_lift_log_id'));
-        }
-
-        // Fetch all lift logs for the selected date and user in one query
-        $dailyLiftLogs = \App\Models\LiftLog::with(['liftSets', 'exercise'])
-            ->where('user_id', $userId)
-            ->whereDate('logged_at', $selectedDate->toDateString())
-            ->get()
-            ->keyBy('exercise_id');
-
-        // Load exercises in one query
-        $exercises = \App\Models\Exercise::availableToUser()
-            ->orderBy('title')
-            ->get()
-            ->map(function ($exercise) {
-                $exercise->is_user_created = !$exercise->isGlobal();
-                return $exercise;
-            });
-
-        // Get recommendations efficiently with caching
-        $recommendations = [];
-        try {
-            $targetRecommendations = 3;
-            $maxAttempts = 20;
-            
-            // Use lightweight mode for faster mobile entry loading
-            $allRecommendations = $recommendationEngine->getRecommendations($userId, $maxAttempts, null, true);
-            
-            // Filter out exercises that are already in today's program
-            $filteredRecommendations = [];
-            foreach ($allRecommendations as $recommendation) {
-                if (count($filteredRecommendations) >= $targetRecommendations) {
-                    break;
-                }
-                
-                $exercise = $recommendation['exercise'];
-                if (!in_array($exercise->id, $programExerciseIds)) {
-                    $filteredRecommendations[] = $recommendation;
-                }
-            }
-            
-            $recommendations = $filteredRecommendations;
-        } catch (\Exception $e) {
-            \Log::warning('Failed to get recommendations for mobile entry: ' . $e->getMessage());
-        }
-
-        return view('lift-logs.mobile-entry', compact('programs', 'selectedDate', 'submittedLiftLog', 'dailyLiftLogs', 'exercises', 'recommendations'));
-    }
-
-    private function getSuggestionDetailsOptimized($lastLog, $trainingProgressionService, $userId, $exerciseId, $selectedDate)
-    {
-        // Use the already loaded lastLog instead of querying again
-        if (!$lastLog || !$lastLog->exercise) {
-            return null;
-        }
-
-        // Handle banded exercises using the proper TrainingProgressionService
-        if ($lastLog->exercise->band_type !== null) {
-            return $trainingProgressionService->getSuggestionDetailsWithLog($lastLog, $userId, $exerciseId, $selectedDate);
-        }
-
-        // For weighted exercises, use simple progression logic to avoid additional queries
-        $firstSet = $lastLog->liftSets->first();
-        if (!$firstSet) {
-            return null;
-        }
-
-        $lastWeight = $firstSet->weight ?? 0;
-        $lastReps = $firstSet->reps ?? 0;
-
-        // Simple double progression logic
-        if ($lastReps >= 8 && $lastReps <= 12) {
-            $suggestedWeight = $lastWeight;
-            $suggestedReps = $lastReps + 1;
-
-            if ($lastReps >= 12) {
-                $suggestedWeight = $lastWeight + 5.0;
-                $suggestedReps = 8;
-            }
-
-            return (object)[
-                'suggestedWeight' => $suggestedWeight,
-                'reps' => $suggestedReps,
-                'sets' => $lastLog->liftSets->count(),
-                'lastWeight' => $lastWeight,
-                'lastReps' => $lastReps,
-                'lastSets' => $lastLog->liftSets->count(),
-            ];
-        }
-
-        // For other rep ranges, suggest linear progression
-        return (object)[
-            'suggestedWeight' => $lastWeight + 5.0,
-            'reps' => $lastReps,
-            'sets' => $lastLog->liftSets->count(),
-            'lastWeight' => $lastWeight,
-            'lastReps' => $lastReps,
-            'lastSets' => $lastLog->liftSets->count(),
-        ];
-    }
-
-    private function setNullSuggestions($program)
-    {
-        $program->suggestedNextWeight = null;
-        $program->lastWeight = null;
-        $program->suggestedBandColor = null;
-    }
 
     /**
      * Preload bodyweight measurements to avoid N+1 queries in OneRepMaxCalculatorService

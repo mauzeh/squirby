@@ -268,7 +268,7 @@ class ProgramController extends Controller
         }
 
         if ($request->input('redirect_to') === 'mobile-entry') {
-            return redirect()->route('lift-logs.mobile-entry', ['date' => $date]);
+            return redirect()->route('mobile-entry.lifts', ['date' => $date]);
         }
 
         return redirect()->route('programs.index', ['date' => $date])->with('success', 'Program entry deleted.');
@@ -323,7 +323,7 @@ class ProgramController extends Controller
         }
 
         if ($request->input('redirect_to') === 'mobile-entry') {
-            return redirect()->route('lift-logs.mobile-entry', ['date' => $date]);
+            return redirect()->route('mobile-entry.lifts', ['date' => $date]);
         }
 
         return redirect()->route('programs.index', ['date' => $date])->with('success', 'Exercise added to program successfully.');
@@ -357,7 +357,7 @@ class ProgramController extends Controller
         ]);
 
         if ($request->input('redirect_to') === 'mobile-entry') {
-            return redirect()->route('lift-logs.mobile-entry', ['date' => $date]);
+            return redirect()->route('mobile-entry.lifts', ['date' => $date]);
         }
 
         return redirect()->route('programs.index', ['date' => $date])->with('success', 'New exercise created and added to program successfully.');
@@ -366,13 +366,13 @@ class ProgramController extends Controller
     public function moveUp(Request $request, Program $program)
     {
         $this->swapPriority($program, 'up');
-        return redirect()->route('lift-logs.mobile-entry', ['date' => $program->date->toDateString()]);
+        return redirect()->route('mobile-entry.lifts', ['date' => $program->date->toDateString()]);
     }
 
     public function moveDown(Request $request, Program $program)
     {
         $this->swapPriority($program, 'down');
-        return redirect()->route('lift-logs.mobile-entry', ['date' => $program->date->toDateString()]);
+        return redirect()->route('mobile-entry.lifts', ['date' => $program->date->toDateString()]);
     }
 
     private function swapPriority(Program $program, $direction)

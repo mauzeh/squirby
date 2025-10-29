@@ -40,7 +40,7 @@ class AuthenticatedSessionController extends Controller
         }
 
         if ($isMobile) {
-            return redirect()->intended(route('lift-logs.mobile-entry', absolute: false));
+            return redirect()->intended(route('mobile-entry.lifts', absolute: false));
         }
 
         return redirect()->intended(route('food-logs.index', absolute: false));

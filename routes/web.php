@@ -37,7 +37,7 @@ Route::middleware('auth')->group(function () {
 
     // Custom Application Routes (Protected by 'auth' middleware)
     Route::resource('food-logs', FoodLogController::class)->except(['show']);
-    Route::get('food-logs/mobile-entry', [MobileEntryController::class, 'foods'])->name('food-logs.mobile-entry');
+
     Route::post('food-logs/add-meal', [FoodLogController::class, 'addMealToLog'])->name('food-logs.add-meal');
     Route::post('food-logs/destroy-selected', [FoodLogController::class, 'destroySelected'])->name('food-logs.destroy-selected');
     Route::post('food-logs/export', [FoodLogController::class, 'export'])->name('food-logs.export');
@@ -95,7 +95,7 @@ Route::middleware('auth')->group(function () {
 
 
     Route::post('lift-logs/destroy-selected', [LiftLogController::class, 'destroySelected'])->name('lift-logs.destroy-selected');
-    Route::get('lift-logs/mobile-entry', [MobileEntryController::class, 'lifts'])->name('lift-logs.mobile-entry');
+
 });
 
 // Google OAuth routes
