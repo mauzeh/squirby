@@ -289,6 +289,49 @@ class GoogleOAuthTest extends TestCase
     }
 
     /** @test */
+    public function it_creates_default_measurement_types_for_new_users()
+    {
+        // Create the athlete role for testing
+        \App\Models\Role::create(['name' => 'Athlete']);
+
+        // Mock Google user data
+        $googleUser = Mockery::mock(SocialiteUser::class);
+        $googleUser->shouldReceive('getId')->andReturn('google_measurement_test');
+        $googleUser->shouldReceive('getName')->andReturn('Measurement Test User');
+        $googleUser->shouldReceive('getEmail')->andReturn('measurementtest@example.com');
+
+        // Mock Socialite
+        Socialite::shouldReceive('driver')
+            ->with('google')
+            ->once()
+            ->andReturnSelf();
+        
+        Socialite::shouldReceive('user')
+            ->once()
+            ->andReturn($googleUser);
+
+        $response = $this->get(route('auth.google.callback'));
+
+        // Assert user was created
+        $user = User::where('email', 'measurementtest@example.com')->first();
+        $this->assertNotNull($user);
+
+        // Assert default measurement types were created
+        $measurementTypes = $user->measurementTypes;
+        $this->assertCount(2, $measurementTypes);
+        
+        $bodyweight = $measurementTypes->where('name', 'Bodyweight')->first();
+        $this->assertNotNull($bodyweight);
+        $this->assertEquals('lbs', $bodyweight->default_unit);
+        
+        $waistSize = $measurementTypes->where('name', 'Waist Size')->first();
+        $this->assertNotNull($waistSize);
+        $this->assertEquals('in', $waistSize->default_unit);
+
+        $response->assertRedirect('/mobile-entry/lifts');
+    }
+
+    /** @test */
     public function it_logs_oauth_errors_for_debugging()
     {
         // Mock logger

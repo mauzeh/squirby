@@ -47,6 +47,19 @@ class SocialiteController extends Controller
                         $user->roles()->attach($athleteRole);
                     }
                     
+                    // Create default measurement types for new users
+                    \App\Models\MeasurementType::create([
+                        'name' => 'Bodyweight',
+                        'default_unit' => 'lbs',
+                        'user_id' => $user->id,
+                    ]);
+                    
+                    \App\Models\MeasurementType::create([
+                        'name' => 'Waist Size',
+                        'default_unit' => 'in',
+                        'user_id' => $user->id,
+                    ]);
+                    
                     $isNewUser = true;
                 }
             }
