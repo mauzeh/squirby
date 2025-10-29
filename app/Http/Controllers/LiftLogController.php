@@ -311,8 +311,8 @@ class LiftLogController extends Controller
         LiftLog::destroy($validated['lift_log_ids']);
 
         $message = $count === 1 
-            ? '1 workout entry removed.' 
-            : "{$count} workout entries removed.";
+            ? config('mobile_entry_messages.success.bulk_deleted_single')
+            : str_replace(':count', $count, config('mobile_entry_messages.success.bulk_deleted_multiple'));
 
         return redirect()->route('lift-logs.index')->with('success', $message);
     }
@@ -347,17 +347,12 @@ class LiftLogController extends Controller
             $workoutDescription = $weight . ' lbs × ' . $reps . ' reps × ' . $rounds . ' sets';
         }
         
-        // Generate celebratory messages with variety
-        $celebrations = [
-            "Nice work! {$exerciseTitle}: {$workoutDescription} logged!",
-            "Crushed it! {$exerciseTitle}: {$workoutDescription} complete!",
-            "Great job! {$exerciseTitle}: {$workoutDescription} in the books!",
-            "Awesome! {$exerciseTitle}: {$workoutDescription} logged successfully!",
-            "Well done! {$exerciseTitle}: {$workoutDescription} completed!"
-        ];
+        // Get celebratory messages from config and replace placeholders
+        $celebrationTemplates = config('mobile_entry_messages.success.lift_logged');
+        $randomTemplate = $celebrationTemplates[array_rand($celebrationTemplates)];
         
-        // Return a random celebration message
-        return $celebrations[array_rand($celebrations)];
+        // Replace placeholders in the template
+        return str_replace([':exercise', ':details'], [$exerciseTitle, $workoutDescription], $randomTemplate);
     }
 
     /**
@@ -372,14 +367,12 @@ class LiftLogController extends Controller
         $exercise = $liftLog->exercise;
         $exerciseTitle = $exercise->title;
         
-        $baseMessage = "Removed {$exerciseTitle}";
-        
         // Add helpful reminder for mobile-entry context
         if ($isMobileEntry) {
-            return $baseMessage . ". Need to adjust and re-log? Add the exercise back below and enter your correct values.";
+            return str_replace(':exercise', $exerciseTitle, config('mobile_entry_messages.success.lift_deleted_mobile'));
         }
         
-        return $baseMessage . ".";
+        return str_replace(':exercise', $exerciseTitle, config('mobile_entry_messages.success.lift_deleted'));
     }
 
 }

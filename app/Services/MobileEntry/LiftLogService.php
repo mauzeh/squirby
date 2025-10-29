@@ -179,7 +179,7 @@ class LiftLogService
                     'id' => $formId . '-comment',
                     'name' => 'comments',
                     'label' => 'Notes:',
-                    'placeholder' => 'RPE, form notes, how did it feel?',
+                    'placeholder' => config('mobile_entry_messages.placeholders.workout_notes'),
                     'defaultValue' => ''
                 ],
                 'buttons' => [
@@ -299,7 +299,7 @@ class LiftLogService
             $messages[] = [
                 'type' => 'tip',
                 'prefix' => 'How to log:',
-                'text' => 'Adjust the values below, then tap "Log ' . $program->exercise->title . '" to record your workout.'
+                'text' => str_replace(':exercise', $program->exercise->title, config('mobile_entry_messages.form_guidance.how_to_log'))
             ];
         }
         
@@ -328,7 +328,7 @@ class LiftLogService
             
             $messages[] = [
                 'type' => 'info',
-                'prefix' => 'Last workout (' . $lastSession['date'] .'):',
+                'prefix' => str_replace(':date', $lastSession['date'], config('mobile_entry_messages.form_guidance.last_workout')),
                 'text' => $messageText
             ];
         }
@@ -337,7 +337,7 @@ class LiftLogService
         if ($lastSession && !empty($lastSession['comments'])) {
             $messages[] = [
                 'type' => 'neutral',
-                'prefix' => 'Your last notes:',
+                'prefix' => config('mobile_entry_messages.form_guidance.your_last_notes'),
                 'text' => $lastSession['comments']
             ];
         }
@@ -346,7 +346,7 @@ class LiftLogService
         if ($program->comments) {
             $messages[] = [
                 'type' => 'tip',
-                'prefix' => 'Today\'s focus:',
+                'prefix' => config('mobile_entry_messages.form_guidance.todays_focus'),
                 'text' => $program->comments
             ];
         }
@@ -364,24 +364,24 @@ class LiftLogService
                     $sets = $suggestion->sets ?? $lastSession['sets'] ?? 3;
                     $messages[] = [
                         'type' => 'tip',
-                        'prefix' => 'Try this:',
-                        'text' => $suggestion->band_color . ' band × ' . $suggestion->reps . ' reps × ' . $sets . ' sets (values set below)'
+                        'prefix' => config('mobile_entry_messages.form_guidance.try_this'),
+                        'text' => $suggestion->band_color . ' band × ' . $suggestion->reps . ' reps × ' . $sets . ' sets' . config('mobile_entry_messages.form_guidance.suggestion_suffix')
                     ];
                 } elseif (isset($suggestion->suggestedWeight) && !$program->exercise->is_bodyweight) {
                     // Weighted exercise suggestion
                     $sets = $suggestion->sets ?? $lastSession['sets'] ?? 3;
                     $messages[] = [
                         'type' => 'tip',
-                        'prefix' => 'Try this:',
-                        'text' => $suggestion->suggestedWeight . ' lbs × ' . $suggestion->reps . ' reps × ' . $sets . ' sets (values set below)'
+                        'prefix' => config('mobile_entry_messages.form_guidance.try_this'),
+                        'text' => $suggestion->suggestedWeight . ' lbs × ' . $suggestion->reps . ' reps × ' . $sets . ' sets' . config('mobile_entry_messages.form_guidance.suggestion_suffix')
                     ];
                 } elseif ($program->exercise->is_bodyweight && isset($suggestion->reps)) {
                     // Bodyweight exercise suggestion
                     $sets = $suggestion->sets ?? $lastSession['sets'] ?? 3;
                     $messages[] = [
                         'type' => 'tip',
-                        'prefix' => 'Try this:',
-                        'text' => $suggestion->reps . ' reps × ' . $sets . ' sets (values set below)'
+                        'prefix' => config('mobile_entry_messages.form_guidance.try_this'),
+                        'text' => $suggestion->reps . ' reps × ' . $sets . ' sets' . config('mobile_entry_messages.form_guidance.suggestion_suffix')
                     ];
                 }
             } elseif (!$program->exercise->is_bodyweight) {
@@ -390,8 +390,8 @@ class LiftLogService
                 $reps = $lastSession['reps'] ?? 5;
                 $messages[] = [
                     'type' => 'tip',
-                    'prefix' => 'Try this:',
-                    'text' => ($lastSession['weight'] + 5) . ' lbs × ' . $reps . ' reps × ' . $sets . ' sets (values set below)'
+                    'prefix' => config('mobile_entry_messages.form_guidance.try_this'),
+                    'text' => ($lastSession['weight'] + 5) . ' lbs × ' . $reps . ' reps × ' . $sets . ' sets' . config('mobile_entry_messages.form_guidance.suggestion_suffix')
                 ];
             }
         }
@@ -495,7 +495,7 @@ class LiftLogService
 
         // Only include empty message when there are no items
         if (empty($items)) {
-            $result['emptyMessage'] = 'No workouts logged yet! Add exercises above to get started.';
+            $result['emptyMessage'] = config('mobile_entry_messages.empty_states.no_workouts_logged');
         }
 
         return $result;
@@ -549,7 +549,7 @@ class LiftLogService
         });
 
         return [
-            'noResultsMessage' => 'No exercises found. Type a name and hit "+" to create a new exercise.',
+            'noResultsMessage' => config('mobile_entry_messages.empty_states.no_exercises_found'),
             'createForm' => [
                 'action' => route('mobile-entry.create-exercise'),
                 'method' => 'POST',
@@ -565,7 +565,7 @@ class LiftLogService
                 'section' => 'Exercise selection list',
                 'selectItem' => 'Add this exercise to today\'s workout'
             ],
-            'filterPlaceholder' => 'Search exercises (e.g. "bench press")...'
+            'filterPlaceholder' => config('mobile_entry_messages.placeholders.search_exercises')
         ];
     }
 
@@ -657,7 +657,7 @@ class LiftLogService
         if (!$exercise) {
             return [
                 'success' => false,
-                'message' => 'Exercise not found. Try searching for a different name or create a new exercise using the "+" button.'
+                'message' => config('mobile_entry_messages.error.exercise_not_found')
             ];
         }
         
@@ -670,7 +670,7 @@ class LiftLogService
         if ($existingProgram) {
             return [
                 'success' => false,
-                'message' => "{$exercise->title} is already ready to log below. Scroll down to find the form and enter your workout details."
+                'message' => str_replace(':exercise', $exercise->title, config('mobile_entry_messages.error.exercise_already_in_program'))
             ];
         }
         
@@ -698,7 +698,7 @@ class LiftLogService
         
         return [
             'success' => true,
-            'message' => "{$exercise->title} added! Now scroll down to log your workout - adjust the weight/reps and tap 'Log {$exercise->title}' when ready."
+            'message' => str_replace(':exercise', $exercise->title, config('mobile_entry_messages.success.exercise_added'))
         ];
     }
 
@@ -720,7 +720,7 @@ class LiftLogService
         if ($existingExercise) {
             return [
                 'success' => false,
-                'message' => "'{$exerciseName}' already exists in your exercise library. Use the search above to find and add it instead."
+                'message' => str_replace(':exercise', $exerciseName, config('mobile_entry_messages.error.exercise_already_exists'))
             ];
         }
         
@@ -751,12 +751,12 @@ class LiftLogService
             'sets' => 3,
             'reps' => 5,
             'priority' => $newPriority,
-            'comments' => 'New exercise - adjust weight/reps as needed'
+            'comments' => config('mobile_entry_messages.program_comments.new_exercise')
         ]);
         
         return [
             'success' => true,
-            'message' => "Created '{$exercise->title}'! Now scroll down to log your first set - the form is ready with default values you can adjust."
+            'message' => str_replace(':exercise', $exercise->title, config('mobile_entry_messages.success.exercise_created'))
         ];
     }
 
@@ -773,7 +773,7 @@ class LiftLogService
         if (!str_starts_with($formId, 'program-')) {
             return [
                 'success' => false,
-                'message' => 'Unable to remove form - invalid format.'
+                'message' => config('mobile_entry_messages.error.form_invalid_format')
             ];
         }
         
@@ -787,7 +787,7 @@ class LiftLogService
         if (!$program) {
             return [
                 'success' => false,
-                'message' => 'Exercise form not found. It may have already been removed.'
+                'message' => config('mobile_entry_messages.error.form_not_found')
             ];
         }
         
@@ -800,7 +800,7 @@ class LiftLogService
         
         return [
             'success' => true,
-            'message' => "Removed {$exerciseTitle} form. You can add it back anytime using 'Add Exercise' below."
+            'message' => str_replace(':exercise', $exerciseTitle, config('mobile_entry_messages.success.form_removed'))
         ];
     }
 
@@ -934,28 +934,32 @@ class LiftLogService
             $messages[] = [
                 'type' => 'tip',
                 'prefix' => 'Getting started:',
-                'text' => 'Tap "Add Exercise" below to choose what you want to work out today.'
+                'text' => config('mobile_entry_messages.contextual_help.getting_started')
             ];
         } elseif ($incompleteCount > 0 && $loggedCount === 0) {
             // Has exercises ready but hasn't logged anything
+            $plural = $incompleteCount > 1 ? 's' : '';
+            $text = str_replace([':count', ':plural'], [$incompleteCount, $plural], config('mobile_entry_messages.contextual_help.ready_to_log'));
             $messages[] = [
                 'type' => 'tip',
                 'prefix' => 'Ready to log:',
-                'text' => "You have {$incompleteCount} exercise" . ($incompleteCount > 1 ? 's' : '') . " ready to log below."
+                'text' => $text
             ];
         } elseif ($incompleteCount > 0 && $loggedCount > 0) {
             // Has logged some but has more to do
+            $plural = $incompleteCount > 1 ? 's' : '';
+            $text = str_replace([':count', ':plural'], [$incompleteCount, $plural], config('mobile_entry_messages.contextual_help.keep_going'));
             $messages[] = [
                 'type' => 'info',
                 'prefix' => 'Keep going:',
-                'text' => "Great progress! You have {$incompleteCount} more exercise" . ($incompleteCount > 1 ? 's' : '') . " to log."
+                'text' => $text
             ];
         } elseif ($incompleteCount === 0 && $loggedCount > 0) {
             // All done for today
             $messages[] = [
                 'type' => 'success',
                 'prefix' => 'Workout complete:',
-                'text' => "All exercises completed! Tap \"Add Exercise\" below if you want to keep going."
+                'text' => config('mobile_entry_messages.contextual_help.workout_complete')
             ];
         }
         
