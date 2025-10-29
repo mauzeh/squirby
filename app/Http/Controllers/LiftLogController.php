@@ -7,6 +7,7 @@ use App\Models\LiftLog;
 use App\Models\LiftSet;
 
 use App\Services\ExerciseService;
+use App\Services\LiftLogService;
 use App\Presenters\LiftLogTablePresenter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -18,11 +19,13 @@ use App\Services\TrainingProgressionService;
 class LiftLogController extends Controller
 {
     protected $exerciseService;
+    protected $liftLogService;
     protected $liftLogTablePresenter;
 
-    public function __construct(ExerciseService $exerciseService, LiftLogTablePresenter $liftLogTablePresenter)
+    public function __construct(ExerciseService $exerciseService, LiftLogService $liftLogService, LiftLogTablePresenter $liftLogTablePresenter)
     {
         $this->exerciseService = $exerciseService;
+        $this->liftLogService = $liftLogService;
         $this->liftLogTablePresenter = $liftLogTablePresenter;
     }
     /**
@@ -44,7 +47,7 @@ class LiftLogController extends Controller
         ->get();
 
         // Pre-fetch bodyweight measurements for all dates to avoid N+1 queries in OneRepMaxCalculatorService
-        $this->preloadBodyweightMeasurements($liftLogs, $userId);
+        $this->liftLogService->preloadBodyweightMeasurements($liftLogs, $userId);
 
         $exercises = Exercise::availableToUser()->orderBy('title', 'asc')->get();
         $displayExercises = $this->exerciseService->getDisplayExercises(5);
@@ -298,52 +301,4 @@ class LiftLogController extends Controller
         return redirect()->route('lift-logs.index')->with('success', 'Selected lift logs deleted successfully!');
     }
 
-
-
-
-
-    /**
-     * Preload bodyweight measurements to avoid N+1 queries in OneRepMaxCalculatorService
-     */
-    private function preloadBodyweightMeasurements($liftLogs, $userId)
-    {
-        // Get all unique dates from lift logs
-        $dates = $liftLogs->pluck('logged_at')->map(function($date) {
-            return $date->toDateString();
-        })->unique()->values();
-
-        if ($dates->isEmpty()) {
-            return;
-        }
-
-        // Get all bodyweight measurements up to the latest date
-        $latestDate = $dates->max();
-        $bodyweightMeasurements = \App\Models\BodyLog::where('user_id', $userId)
-            ->whereHas('measurementType', function ($query) {
-                $query->where('name', 'Bodyweight');
-            })
-            ->whereDate('logged_at', '<=', $latestDate)
-            ->orderBy('logged_at', 'desc')
-            ->get()
-            ->keyBy(function($measurement) {
-                return $measurement->logged_at->toDateString();
-            });
-
-        // Cache bodyweight measurements on each lift log to avoid repeated queries
-        foreach ($liftLogs as $liftLog) {
-            $logDate = $liftLog->logged_at->toDateString();
-            
-            // Find the most recent bodyweight measurement on or before this date
-            $bodyweightMeasurement = null;
-            foreach ($bodyweightMeasurements as $measurementDate => $measurement) {
-                if ($measurementDate <= $logDate) {
-                    $bodyweightMeasurement = $measurement;
-                    break;
-                }
-            }
-            
-            // Cache the bodyweight value on the lift log
-            $liftLog->cached_bodyweight = $bodyweightMeasurement ? $bodyweightMeasurement->value : 0;
-        }
-    }
 }
