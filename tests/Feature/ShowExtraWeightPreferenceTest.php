@@ -134,4 +134,68 @@ class ShowExtraWeightPreferenceTest extends TestCase
         $this->user->refresh();
         $this->assertTrue($this->user->show_extra_weight);
     }
+
+    public function test_bodyweight_exercise_can_be_logged_without_weight_when_preference_disabled()
+    {
+        $this->actingAs($this->user);
+        
+        $response = $this->post(route('lift-logs.store'), [
+            'exercise_id' => $this->bodyweightExercise->id,
+            'date' => now()->toDateString(),
+            'reps' => 10,
+            'rounds' => 3,
+            'comments' => 'Test workout',
+            'redirect_to' => 'mobile-entry-lifts'
+        ]);
+        
+        $response->assertRedirect();
+        $response->assertSessionHas('success');
+        
+        $this->assertDatabaseHas('lift_logs', [
+            'exercise_id' => $this->bodyweightExercise->id,
+            'user_id' => $this->user->id,
+        ]);
+        
+        $this->assertDatabaseHas('lift_sets', [
+            'weight' => 0,
+            'reps' => 10,
+        ]);
+    }
+
+    public function test_bodyweight_exercise_requires_weight_when_preference_enabled()
+    {
+        $this->user->update(['show_extra_weight' => true]);
+        $this->actingAs($this->user);
+        
+        // Test without weight - should fail validation
+        $response = $this->post(route('lift-logs.store'), [
+            'exercise_id' => $this->bodyweightExercise->id,
+            'date' => now()->toDateString(),
+            'reps' => 10,
+            'rounds' => 3,
+            'comments' => 'Test workout',
+            'redirect_to' => 'mobile-entry-lifts'
+        ]);
+        
+        $response->assertSessionHasErrors(['weight']);
+        
+        // Test with weight - should succeed
+        $response = $this->post(route('lift-logs.store'), [
+            'exercise_id' => $this->bodyweightExercise->id,
+            'date' => now()->toDateString(),
+            'reps' => 10,
+            'rounds' => 3,
+            'weight' => 25,
+            'comments' => 'Test workout',
+            'redirect_to' => 'mobile-entry-lifts'
+        ]);
+        
+        $response->assertRedirect();
+        $response->assertSessionHas('success');
+        
+        $this->assertDatabaseHas('lift_sets', [
+            'weight' => 25,
+            'reps' => 10,
+        ]);
+    }
 }

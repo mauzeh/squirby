@@ -61,6 +61,7 @@ class LiftLogController extends Controller
     public function store(Request $request)
     {
         $exercise = Exercise::find($request->input('exercise_id'));
+        $user = auth()->user();
 
         $rules = [
             'exercise_id' => 'required|exists:exercises,id',
@@ -74,7 +75,12 @@ class LiftLogController extends Controller
         if ($exercise && $exercise->band_type) {
             $rules['band_color'] = 'required|string';
         } else {
-            $rules['weight'] = 'required|numeric';
+            // For bodyweight exercises, only require weight if user has show_extra_weight enabled
+            if ($exercise && $exercise->is_bodyweight && !$user->shouldShowExtraWeight()) {
+                $rules['weight'] = 'nullable|numeric';
+            } else {
+                $rules['weight'] = 'required|numeric';
+            }
         }
 
         $request->validate($rules);
@@ -122,7 +128,7 @@ class LiftLogController extends Controller
 
         for ($i = 0; $i < $rounds; $i++) {
             $liftLog->liftSets()->create([
-                'weight' => $exercise->band_type ? 0 : $request->input('weight'),
+                'weight' => $exercise->band_type ? 0 : ($request->input('weight') ?? 0),
                 'reps' => $reps,
                 'notes' => $request->input('comments'),
                 'band_color' => $exercise->band_type ? $request->input('band_color') : null,
@@ -171,6 +177,7 @@ class LiftLogController extends Controller
         }
 
         $exercise = Exercise::find($request->input('exercise_id'));
+        $user = auth()->user();
 
         $rules = [
             'exercise_id' => 'required|exists:exercises,id',
@@ -184,7 +191,12 @@ class LiftLogController extends Controller
         if ($exercise && $exercise->band_type) {
             $rules['band_color'] = 'required|string';
         } else {
-            $rules['weight'] = 'required|numeric';
+            // For bodyweight exercises, only require weight if user has show_extra_weight enabled
+            if ($exercise && $exercise->is_bodyweight && !$user->shouldShowExtraWeight()) {
+                $rules['weight'] = 'nullable|numeric';
+            } else {
+                $rules['weight'] = 'required|numeric';
+            }
         }
 
         $request->validate($rules);
@@ -221,7 +233,7 @@ class LiftLogController extends Controller
 
         for ($i = 0; $i < $rounds; $i++) {
             $liftLog->liftSets()->create([
-                'weight' => $exercise->band_type ? 0 : $request->input('weight'),
+                'weight' => $exercise->band_type ? 0 : ($request->input('weight') ?? 0),
                 'reps' => $reps,
                 'notes' => $request->input('comments'),
                 'band_color' => $exercise->band_type ? $request->input('band_color') : null,
