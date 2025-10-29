@@ -360,11 +360,6 @@ class FoodLogService
             }
         }
         
-        // If no forms from database, generate quick entry forms for frequently used items
-        if (empty($forms)) {
-            $forms = $this->generateQuickEntryForms($userId, $selectedDate);
-        }
-        
         return $forms;
     }
 
@@ -557,103 +552,7 @@ class FoodLogService
         ];
     }
 
-    /**
-     * Generate quick entry forms for frequently used ingredients
-     * 
-     * @param int $userId
-     * @param Carbon $selectedDate
-     * @return array
-     */
-    public function generateQuickEntryForms($userId, Carbon $selectedDate)
-    {
-        // Get the top 3 most frequently used ingredients in the last 30 days
-        $recentIngredients = FoodLog::where('user_id', $userId)
-            ->where('logged_at', '>=', $selectedDate->copy()->subDays(30))
-            ->with(['ingredient.baseUnit'])
-            ->select('ingredient_id')
-            ->selectRaw('COUNT(*) as usage_count')
-            ->selectRaw('AVG(quantity) as avg_quantity')
-            ->groupBy('ingredient_id')
-            ->orderBy('usage_count', 'desc')
-            ->limit(3)
-            ->get();
 
-        $forms = [];
-        
-        foreach ($recentIngredients as $logData) {
-            $ingredient = $logData->ingredient;
-            
-            if (!$ingredient || !$ingredient->baseUnit) {
-                continue;
-            }
-
-            // Get last session data for this ingredient
-            $lastSession = $this->getLastIngredientSession($ingredient->id, $selectedDate, $userId);
-            
-            // Generate form ID
-            $formId = 'quick-ingredient-' . $ingredient->id;
-            
-            // Determine default quantity
-            $defaultQuantity = $lastSession['quantity'] ?? $logData->avg_quantity ?? 1;
-            
-            // Generate messages based on last session
-            $messages = $this->generateIngredientFormMessages($ingredient, $lastSession);
-            
-            $forms[] = [
-                'id' => $formId,
-                'type' => 'food',
-                'title' => $ingredient->name,
-                'itemName' => $ingredient->name,
-                'formAction' => route('food-logs.store'),
-                'deleteAction' => route('mobile-entry.remove-food-form', ['id' => $formId]),
-                'deleteParams' => [
-                    'date' => $selectedDate->toDateString()
-                ],
-                'messages' => $messages,
-                'numericFields' => [
-                    [
-                        'id' => $formId . '-quantity',
-                        'name' => 'quantity',
-                        'label' => 'Quantity (' . $ingredient->baseUnit->name . '):',
-                        'defaultValue' => round($defaultQuantity, 2),
-                        'increment' => $this->getQuantityIncrement($ingredient->baseUnit->name, $defaultQuantity),
-                        'step' => 'any',
-                        'min' => 0.01,
-                        'max' => 1000,
-                        'ariaLabels' => [
-                            'decrease' => 'Decrease quantity',
-                            'increase' => 'Increase quantity'
-                        ]
-                    ]
-                ],
-                'commentField' => [
-                    'id' => $formId . '-notes',
-                    'name' => 'notes',
-                    'label' => 'Notes:',
-                    'placeholder' => 'Any additional notes...',
-                    'defaultValue' => ''
-                ],
-                'buttons' => [
-                    'decrement' => '-',
-                    'increment' => '+',
-                    'submit' => 'Log ' . $ingredient->name
-                ],
-                'ariaLabels' => [
-                    'section' => $ingredient->name . ' entry',
-                    'deleteForm' => 'Remove this food form'
-                ],
-                // Hidden fields for form submission
-                'hiddenFields' => [
-                    'selected_type' => 'ingredient',
-                    'selected_id' => $ingredient->id,
-                    'date' => $selectedDate->toDateString(),
-                    'redirect_to' => 'mobile-entry-foods'
-                ]
-            ];
-        }
-        
-        return $forms;
-    }
 
     /**
      * Get last session data for an ingredient

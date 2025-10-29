@@ -551,37 +551,15 @@ class FoodLogServiceTest extends TestCase
     }
 
     #[Test]
-    public function it_falls_back_to_quick_entry_forms_when_no_database_forms()
+    public function it_returns_empty_forms_when_no_database_forms()
     {
         $user = User::factory()->create();
-        $unit = Unit::factory()->create();
-        
-        // Create frequently used ingredient
-        $ingredient = Ingredient::factory()->create([
-            'name' => 'Frequent Food',
-            'user_id' => $user->id,
-            'base_unit_id' => $unit->id
-        ]);
-        
-        // Create multiple food logs to make it frequent
-        for ($i = 0; $i < 5; $i++) {
-            FoodLog::factory()->create([
-                'user_id' => $user->id,
-                'ingredient_id' => $ingredient->id,
-                'unit_id' => $unit->id,
-                'logged_at' => $this->testDate->copy()->subDays($i + 1),
-                'quantity' => 100
-            ]);
-        }
-        
         $request = new \Illuminate\Http\Request();
+        
         $forms = $this->service->generateForms($user->id, $this->testDate, $request);
         
-        // Should generate quick entry forms since no database forms exist
-        $this->assertCount(1, $forms);
-        $form = $forms[0];
-        $this->assertEquals('quick-ingredient-' . $ingredient->id, $form['id']);
-        $this->assertEquals('Frequent Food', $form['title']);
+        // Should return empty array when no database forms exist
+        $this->assertCount(0, $forms);
     }
 
     #[Test]
