@@ -79,6 +79,7 @@
                                 <input type="text" class="item-filter-input" placeholder="{{ $data['itemSelectionList']['filterPlaceholder'] }}">
                                 <button type="button" class="btn-clear-filter" aria-label="Clear filter" style="display: none;">×</button>
                             </div>
+                            @if(isset($data['itemSelectionList']['createForm']))
                             <form method="{{ $data['itemSelectionList']['createForm']['method'] }}" action="{{ $data['itemSelectionList']['createForm']['action'] }}" class="create-item-form">
                                 @csrf
                                 <input type="hidden" name="{{ $data['itemSelectionList']['createForm']['inputName'] }}" class="create-item-input" value="">
@@ -91,6 +92,7 @@
                                     <span class="plus-icon">{{ $data['itemSelectionList']['createForm']['submitText'] }}</span>
                                 </button>
                             </form>
+                            @endif
                             <button type="button" class="btn-secondary btn-cancel" aria-label="Cancel and go back">
                                 <span class="cancel-icon">×</span>
                             </button>

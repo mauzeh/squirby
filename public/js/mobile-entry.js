@@ -10,8 +10,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const hiddenInput = document.querySelector('.create-item-input');
     const itemList = document.querySelector('.item-selection-list');
     
-    if (!filterInput || !itemList || !clearButton || !hiddenInput) {
-        return; // Exit if elements don't exist
+    // Only require filterInput and itemList - other elements are optional
+    if (!filterInput || !itemList) {
+        return; // Exit if essential elements don't exist
     }
     
     // Get all item cards (excluding the filter container and no-results item)
@@ -63,7 +64,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         
-        // Sync the filter input value with the hidden form input
+        // Sync the filter input value with the hidden form input (if it exists)
         if (hiddenInput) {
             hiddenInput.value = searchTerm;
         }
@@ -93,8 +94,10 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Add event listener for clear button
-    clearButton.addEventListener('click', clearFilter);
+    // Add event listener for clear button (if it exists)
+    if (clearButton) {
+        clearButton.addEventListener('click', clearFilter);
+    }
     
     /**
      * Numeric Input Increment/Decrement System

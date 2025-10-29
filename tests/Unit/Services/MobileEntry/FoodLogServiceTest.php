@@ -244,7 +244,7 @@ class FoodLogServiceTest extends TestCase
         $itemSelectionList = $this->service->generateItemSelectionList($user->id, $this->testDate);
         
         $this->assertArrayHasKey('items', $itemSelectionList);
-        $this->assertArrayHasKey('createForm', $itemSelectionList);
+        $this->assertArrayNotHasKey('createForm', $itemSelectionList);
         $this->assertCount(3, $itemSelectionList['items']); // 2 ingredients + 1 meal
         
         // Check ingredient items
@@ -266,13 +266,28 @@ class FoodLogServiceTest extends TestCase
         $this->assertEquals(1, $mealItem['type']['priority']);
         $this->assertStringContainsString('mobile-entry/add-food-form/meal/' . $meal->id, $mealItem['href']);
         
-        // Check create form
-        $createForm = $itemSelectionList['createForm'];
-        $this->assertStringContainsString('mobile-entry/create-ingredient', $createForm['action']);
-        $this->assertEquals('POST', $createForm['method']);
-        $this->assertEquals('ingredient_name', $createForm['inputName']);
-        $this->assertEquals('+', $createForm['submitText']);
-        $this->assertEquals($this->testDate->toDateString(), $createForm['hiddenFields']['date']);
+        // No create form should be present
+        $this->assertArrayNotHasKey('createForm', $itemSelectionList);
+    }
+
+    #[Test]
+    public function it_does_not_include_create_form_in_item_selection_list()
+    {
+        $user = User::factory()->create();
+        
+        $itemSelectionList = $this->service->generateItemSelectionList($user->id, $this->testDate);
+        
+        // Verify createForm is not included
+        $this->assertArrayNotHasKey('createForm', $itemSelectionList);
+        
+        // Verify other expected keys are still present
+        $this->assertArrayHasKey('items', $itemSelectionList);
+        $this->assertArrayHasKey('noResultsMessage', $itemSelectionList);
+        $this->assertArrayHasKey('ariaLabels', $itemSelectionList);
+        $this->assertArrayHasKey('filterPlaceholder', $itemSelectionList);
+        
+        // Verify no results message doesn't mention creating items
+        $this->assertEquals('No food items found.', $itemSelectionList['noResultsMessage']);
     }
 
     #[Test]

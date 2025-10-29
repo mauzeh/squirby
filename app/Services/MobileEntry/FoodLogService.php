@@ -223,17 +223,7 @@ class FoodLogService
         });
 
         return [
-            'noResultsMessage' => 'No food items found. Hit "+" to save as new ingredient.',
-            'createForm' => [
-                'action' => route('mobile-entry.create-ingredient'),
-                'method' => 'POST',
-                'inputName' => 'ingredient_name',
-                'submitText' => '+',
-                'ariaLabel' => 'Create new ingredient',
-                'hiddenFields' => [
-                    'date' => $selectedDate->toDateString()
-                ]
-            ],
+            'noResultsMessage' => 'No food items found.',
             'items' => $items,
             'ariaLabels' => [
                 'section' => 'Food item selection list',
