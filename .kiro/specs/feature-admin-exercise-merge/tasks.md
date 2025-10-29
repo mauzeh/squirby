@@ -7,20 +7,20 @@
   - Add method to append merge notes to lift log comments
   - _Requirements: 2.1, 2.2, 3.1, 3.2, 3.3, 5.1, 5.2, 5.3, 5.6, 6.1, 6.4_
 
-- [ ] 2. Extend Exercise model with merge-related methods
+- [x] 2. Extend Exercise model with merge-related methods
   - Add canBeMergedByAdmin() method to check merge eligibility
   - Add isCompatibleForMerge() method for compatibility validation
   - Add hasOwnerWithGlobalVisibilityDisabled() method for visibility warnings
   - _Requirements: 2.1, 5.1, 5.2, 5.3, 5.4_
 
-- [ ] 3. Add merge routes and controller methods
+- [x] 3. Add merge routes and controller methods
   - Add GET route for merge target selection page
   - Add POST route for executing merge operation
   - Implement showMerge() controller method with authorization
   - Implement merge() controller method with validation and service integration
   - _Requirements: 1.1, 1.4, 2.1, 2.2, 2.3, 2.4_
 
-- [ ] 4. Create merge target selection view
+- [x] 4. Create merge target selection view
   - Create merge selection blade template
   - Display source exercise details and compatible targets
   - Add radio button selection for target exercises
@@ -28,14 +28,14 @@
   - Add merge confirmation form with CSRF protection
   - _Requirements: 2.1, 2.2, 2.3, 5.4_
 
-- [ ] 5. Update exercises index view with merge buttons
+- [x] 5. Update exercises index view with merge buttons
   - Add merge button to actions column for eligible exercises
   - Implement display logic for admin users only
   - Style merge button with appropriate icon and color
   - Position button correctly in actions column layout
   - _Requirements: 1.1, 1.2, 1.3, 1.4_
 
-- [ ] 6. Add merge authorization to ExercisePolicy
+- [x] 6. Add merge authorization to ExercisePolicy
   - Create merge policy method for admin-only access
   - Ensure proper authorization checks in controller methods
   - _Requirements: 1.4, 2.4_
