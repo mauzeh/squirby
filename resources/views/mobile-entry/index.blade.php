@@ -45,22 +45,20 @@
         <!-- Summary -->
         @if($data['summary'])
         <section class="summary" aria-label="{{ $data['summary']['ariaLabels']['section'] }}">
-            <div class="summary-item summary-item--total">
-                <span class="summary-value">{{ number_format($data['summary']['values']['total']) }}</span>
-                <span class="summary-label">{{ $data['summary']['labels']['total'] }}</span>
+            @foreach($data['summary']['values'] as $key => $value)
+            <div class="summary-item summary-item--{{ $key }}">
+                <span class="summary-value">
+                    @if(is_numeric($value) && $value == (int)$value)
+                        {{ number_format($value) }}
+                    @elseif(is_numeric($value))
+                        {{ number_format($value, 1) }}
+                    @else
+                        {{ $value }}
+                    @endif
+                </span>
+                <span class="summary-label">{{ $data['summary']['labels'][$key] ?? ucfirst(str_replace('_', ' ', $key)) }}</span>
             </div>
-            <div class="summary-item summary-item--completed">
-                <span class="summary-value">{{ $data['summary']['values']['completed'] }}</span>
-                <span class="summary-label">{{ $data['summary']['labels']['completed'] }}</span>
-            </div>
-            <div class="summary-item summary-item--average">
-                <span class="summary-value">{{ $data['summary']['values']['average'] }}</span>
-                <span class="summary-label">{{ $data['summary']['labels']['average'] }}</span>
-            </div>
-            <div class="summary-item summary-item--today">
-                <span class="summary-value">{{ $data['summary']['values']['today'] }}</span>
-                <span class="summary-label">{{ $data['summary']['labels']['today'] }}</span>
-            </div>
+            @endforeach
         </section>
         @endif
 

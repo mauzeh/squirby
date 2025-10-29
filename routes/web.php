@@ -80,11 +80,17 @@ Route::middleware('auth')->group(function () {
     // Mobile Entry - Supports date parameter: /mobile-entry?date=2024-01-15
     Route::get('mobile-entry', [MobileEntryController::class, 'index'])->name('mobile-entry.index');
     Route::get('mobile-entry/lifts', [MobileEntryController::class, 'lifts'])->name('mobile-entry.lifts');
+    Route::get('mobile-entry/foods', [MobileEntryController::class, 'foods'])->name('mobile-entry.foods');
     
     // Mobile Entry Helper Routes
     Route::post('mobile-entry/create-exercise', [MobileEntryController::class, 'createExercise'])->name('mobile-entry.create-exercise');
     Route::get('mobile-entry/add-lift-form/{exercise}', [MobileEntryController::class, 'addLiftForm'])->name('mobile-entry.add-lift-form');
     Route::delete('mobile-entry/remove-form/{id}', [MobileEntryController::class, 'removeForm'])->name('mobile-entry.remove-form');
+    
+    // Food Entry Helper Routes
+    Route::post('mobile-entry/create-ingredient', [MobileEntryController::class, 'createIngredient'])->name('mobile-entry.create-ingredient');
+    Route::get('mobile-entry/add-food-form/{type}/{id}', [MobileEntryController::class, 'addFoodForm'])->name('mobile-entry.add-food-form');
+    Route::delete('mobile-entry/remove-food-form/{id}', [MobileEntryController::class, 'removeFoodForm'])->name('mobile-entry.remove-food-form');
 
 
 

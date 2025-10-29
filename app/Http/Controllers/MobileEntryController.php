@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Services\DateTitleService;
 use App\Services\MobileEntry\LiftLogService;
+use App\Services\MobileEntry\FoodLogService;
 use Illuminate\Support\Facades\Auth;
 
 class MobileEntryController extends Controller
@@ -749,6 +750,172 @@ class MobileEntryController extends Controller
         $messageType = $result['success'] ? 'success' : 'error';
         
         return redirect()->route('mobile-entry.lifts', ['date' => $selectedDate->toDateString()])
+            ->with($messageType, $result['message']);
+    }
+
+    /**
+     * Display the food logging interface
+     * 
+     * Specialized mobile interface for logging food intake.
+     * Supports date-based navigation and quick food entry forms.
+     * 
+     * @param Request $request
+     * @param DateTitleService $dateTitleService
+     * @param FoodLogService $formService
+     * @return \Illuminate\View\View
+     */
+    public function foods(Request $request, DateTitleService $dateTitleService, FoodLogService $formService)
+    {
+        // Get the selected date from request or default to today
+        $selectedDate = $request->input('date') 
+            ? \Carbon\Carbon::parse($request->input('date')) 
+            : \Carbon\Carbon::today();
+        
+        // Calculate navigation dates
+        $prevDay = $selectedDate->copy()->subDay();
+        $nextDay = $selectedDate->copy()->addDay();
+        $today = \Carbon\Carbon::today();
+        
+        // Generate date title
+        $dateTitleData = $dateTitleService->generateDateTitle($selectedDate, $today);
+        
+        // Get session messages for display
+        $sessionMessages = [
+            'success' => session('success'),
+            'error' => session('error'),
+            'warning' => session('warning'),
+            'info' => session('info')
+        ];
+        
+        // Add validation errors if they exist
+        if ($errors = session('errors')) {
+            $errorMessages = $errors->all();
+            if (!empty($errorMessages)) {
+                $sessionMessages['error'] = implode(' ', $errorMessages);
+            }
+        }
+        
+        // Generate logged items using the service
+        $loggedItems = $formService->generateLoggedItems(Auth::id(), $selectedDate);
+        
+        // Generate item selection list using the service
+        $itemSelectionList = $formService->generateItemSelectionList(Auth::id(), $selectedDate);
+        
+        // Generate interface messages
+        $interfaceMessages = $formService->generateInterfaceMessages($sessionMessages);
+        
+        $data = [
+            'selectedDate' => $selectedDate->toDateString(),
+            
+            'navigation' => [
+                'prevButton' => [
+                    'text' => '← Prev',
+                    'href' => route('mobile-entry.foods', ['date' => $prevDay->toDateString()])
+                ],
+                'todayButton' => [
+                    'text' => 'Today',
+                    'href' => route('mobile-entry.foods', ['date' => $today->toDateString()])
+                ],
+                'nextButton' => [
+                    'text' => 'Next →',
+                    'href' => route('mobile-entry.foods', ['date' => $nextDay->toDateString()])
+                ],
+                'dateTitle' => $dateTitleData,
+                'ariaLabels' => [
+                    'navigation' => 'Date navigation',
+                    'previousDay' => 'Previous day',
+                    'goToToday' => 'Go to today',
+                    'nextDay' => 'Next day'
+                ]
+            ],
+            
+            'summary' => $formService->generateSummary(Auth::id(), $selectedDate),
+            
+            'addItemButton' => [
+                'text' => 'Add Food',
+                'ariaLabel' => 'Add new food item'
+            ],
+            
+            'itemSelectionList' => $itemSelectionList,
+            
+            'forms' => [], // No pre-configured forms for food logging
+            
+            'loggedItems' => $loggedItems,
+            
+            'interfaceMessages' => $interfaceMessages
+        ];
+
+        return view('mobile-entry.index', compact('data'));
+    }
+
+    /**
+     * Add a form for a specific food item to the mobile interface
+     * 
+     * @param Request $request
+     * @param FoodLogService $formService
+     * @param string $type 'ingredient' or 'meal'
+     * @param int $id Food item ID
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function addFoodForm(Request $request, FoodLogService $formService, $type, $id)
+    {
+        $selectedDate = $request->input('date') 
+            ? \Carbon\Carbon::parse($request->input('date')) 
+            : \Carbon\Carbon::today();
+        
+        $result = $formService->addFoodForm(Auth::id(), $type, $id, $selectedDate);
+        
+        $messageType = $result['success'] ? 'success' : 'error';
+        
+        return redirect()->route('mobile-entry.foods', ['date' => $selectedDate->toDateString()])
+            ->with($messageType, $result['message']);
+    }
+
+    /**
+     * Create a new ingredient from the mobile interface
+     * 
+     * @param Request $request
+     * @param FoodLogService $formService
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function createIngredient(Request $request, FoodLogService $formService)
+    {
+        $request->validate([
+            'ingredient_name' => 'required|string|max:255',
+            'date' => 'nullable|date'
+        ]);
+        
+        $selectedDate = $request->input('date') 
+            ? \Carbon\Carbon::parse($request->input('date')) 
+            : \Carbon\Carbon::today();
+        
+        $result = $formService->createIngredient(Auth::id(), $request->input('ingredient_name'), $selectedDate);
+        
+        $messageType = $result['success'] ? 'success' : 'error';
+        
+        return redirect()->route('mobile-entry.foods', ['date' => $selectedDate->toDateString()])
+            ->with($messageType, $result['message']);
+    }
+
+    /**
+     * Remove a food form from the mobile interface
+     * 
+     * @param Request $request
+     * @param FoodLogService $formService
+     * @param string $id Form ID
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function removeFoodForm(Request $request, FoodLogService $formService, $id)
+    {
+        $selectedDate = $request->input('date') 
+            ? \Carbon\Carbon::parse($request->input('date')) 
+            : \Carbon\Carbon::today();
+        
+        $result = $formService->removeFoodForm(Auth::id(), $id);
+        
+        $messageType = $result['success'] ? 'success' : 'error';
+        
+        return redirect()->route('mobile-entry.foods', ['date' => $selectedDate->toDateString()])
             ->with($messageType, $result['message']);
     }
 
