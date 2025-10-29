@@ -294,6 +294,15 @@ class LiftLogService
     {
         $messages = [];
         
+        // Add instructional message for new users or first-time exercises
+        if (!$lastSession) {
+            $messages[] = [
+                'type' => 'tip',
+                'prefix' => 'How to log:',
+                'text' => 'Adjust the values below, then tap "Log ' . $program->exercise->title . '" to record your workout.'
+            ];
+        }
+        
         // Add last session info if available
         if ($lastSession) {
             // Format the resistance/weight info based on exercise type
@@ -319,7 +328,7 @@ class LiftLogService
             
             $messages[] = [
                 'type' => 'info',
-                'prefix' => 'Last session (' . $lastSession['date'] .'):',
+                'prefix' => 'Last workout (' . $lastSession['date'] .'):',
                 'text' => $messageText
             ];
         }
@@ -328,7 +337,7 @@ class LiftLogService
         if ($lastSession && !empty($lastSession['comments'])) {
             $messages[] = [
                 'type' => 'neutral',
-                'prefix' => 'Last notes:',
+                'prefix' => 'Your last notes:',
                 'text' => $lastSession['comments']
             ];
         }
@@ -337,7 +346,7 @@ class LiftLogService
         if ($program->comments) {
             $messages[] = [
                 'type' => 'tip',
-                'prefix' => 'Program notes:',
+                'prefix' => 'Today\'s focus:',
                 'text' => $program->comments
             ];
         }
@@ -355,24 +364,24 @@ class LiftLogService
                     $sets = $suggestion->sets ?? $lastSession['sets'] ?? 3;
                     $messages[] = [
                         'type' => 'tip',
-                        'prefix' => 'Suggestion:',
-                        'text' => 'Try ' . $suggestion->band_color . ' band × ' . $suggestion->reps . ' reps × ' . $sets . ' sets today'
+                        'prefix' => 'Try this:',
+                        'text' => $suggestion->band_color . ' band × ' . $suggestion->reps . ' reps × ' . $sets . ' sets (values set below)'
                     ];
                 } elseif (isset($suggestion->suggestedWeight) && !$program->exercise->is_bodyweight) {
                     // Weighted exercise suggestion
                     $sets = $suggestion->sets ?? $lastSession['sets'] ?? 3;
                     $messages[] = [
                         'type' => 'tip',
-                        'prefix' => 'Suggestion:',
-                        'text' => 'Try ' . $suggestion->suggestedWeight . ' lbs × ' . $suggestion->reps . ' reps × ' . $sets . ' sets today'
+                        'prefix' => 'Try this:',
+                        'text' => $suggestion->suggestedWeight . ' lbs × ' . $suggestion->reps . ' reps × ' . $sets . ' sets (values set below)'
                     ];
                 } elseif ($program->exercise->is_bodyweight && isset($suggestion->reps)) {
                     // Bodyweight exercise suggestion
                     $sets = $suggestion->sets ?? $lastSession['sets'] ?? 3;
                     $messages[] = [
                         'type' => 'tip',
-                        'prefix' => 'Suggestion:',
-                        'text' => 'Try ' . $suggestion->reps . ' reps × ' . $sets . ' sets today'
+                        'prefix' => 'Try this:',
+                        'text' => $suggestion->reps . ' reps × ' . $sets . ' sets (values set below)'
                     ];
                 }
             } elseif (!$program->exercise->is_bodyweight) {
@@ -381,8 +390,8 @@ class LiftLogService
                 $reps = $lastSession['reps'] ?? 5;
                 $messages[] = [
                     'type' => 'tip',
-                    'prefix' => 'Suggestion:',
-                    'text' => 'Try ' . ($lastSession['weight'] + 5) . ' lbs × ' . $reps . ' reps × ' . $sets . ' sets today'
+                    'prefix' => 'Try this:',
+                    'text' => ($lastSession['weight'] + 5) . ' lbs × ' . $reps . ' reps × ' . $sets . ' sets (values set below)'
                 ];
             }
         }
@@ -486,7 +495,7 @@ class LiftLogService
 
         // Only include empty message when there are no items
         if (empty($items)) {
-            $result['emptyMessage'] = 'No entries logged yet today!';
+            $result['emptyMessage'] = 'No workouts logged yet! Add exercises above to get started.';
         }
 
         return $result;
@@ -540,7 +549,7 @@ class LiftLogService
         });
 
         return [
-            'noResultsMessage' => 'No exercises found. Hit "+" to save as new exercise.',
+            'noResultsMessage' => 'No exercises found. Type a name and hit "+" to create a new exercise.',
             'createForm' => [
                 'action' => route('mobile-entry.create-exercise'),
                 'method' => 'POST',
@@ -554,9 +563,9 @@ class LiftLogService
             'items' => $items,
             'ariaLabels' => [
                 'section' => 'Exercise selection list',
-                'selectItem' => 'Select this exercise to log'
+                'selectItem' => 'Add this exercise to today\'s workout'
             ],
-            'filterPlaceholder' => 'Filter exercises...'
+            'filterPlaceholder' => 'Search exercises (e.g. "bench press")...'
         ];
     }
 
@@ -648,7 +657,7 @@ class LiftLogService
         if (!$exercise) {
             return [
                 'success' => false,
-                'message' => 'Exercise not found or not accessible.'
+                'message' => 'Exercise not found. Try searching for a different name or create a new exercise using the "+" button.'
             ];
         }
         
@@ -661,7 +670,7 @@ class LiftLogService
         if ($existingProgram) {
             return [
                 'success' => false,
-                'message' => "{$exercise->title} is already in today's program."
+                'message' => "{$exercise->title} is already ready to log below. Scroll down to find the form and enter your workout details."
             ];
         }
         
@@ -689,7 +698,7 @@ class LiftLogService
         
         return [
             'success' => true,
-            'message' => "Added {$exercise->title} to today's program."
+            'message' => "{$exercise->title} added! Now scroll down to log your workout - adjust the weight/reps and tap 'Log {$exercise->title}' when ready."
         ];
     }
 
@@ -711,7 +720,7 @@ class LiftLogService
         if ($existingExercise) {
             return [
                 'success' => false,
-                'message' => "Exercise '{$exerciseName}' already exists."
+                'message' => "'{$exerciseName}' already exists in your exercise library. Use the search above to find and add it instead."
             ];
         }
         
@@ -742,12 +751,12 @@ class LiftLogService
             'sets' => 3,
             'reps' => 5,
             'priority' => $newPriority,
-            'comments' => 'New exercise created'
+            'comments' => 'New exercise - adjust weight/reps as needed'
         ]);
         
         return [
             'success' => true,
-            'message' => "Created new exercise: {$exercise->title}"
+            'message' => "Created '{$exercise->title}'! Now scroll down to log your first set - the form is ready with default values you can adjust."
         ];
     }
 
@@ -764,7 +773,7 @@ class LiftLogService
         if (!str_starts_with($formId, 'program-')) {
             return [
                 'success' => false,
-                'message' => 'Invalid form ID format.'
+                'message' => 'Unable to remove form - invalid format.'
             ];
         }
         
@@ -778,7 +787,7 @@ class LiftLogService
         if (!$program) {
             return [
                 'success' => false,
-                'message' => 'Program entry not found or not accessible.'
+                'message' => 'Exercise form not found. It may have already been removed.'
             ];
         }
         
@@ -791,7 +800,7 @@ class LiftLogService
         
         return [
             'success' => true,
-            'message' => "Removed {$exerciseTitle} from today's program."
+            'message' => "Removed {$exerciseTitle} form. You can add it back anytime using 'Add Exercise' above."
         ];
     }
 
@@ -891,5 +900,65 @@ class LiftLogService
             'hasMessages' => !empty($systemMessages),
             'messageCount' => count($systemMessages)
         ];
+    }
+
+    /**
+     * Generate contextual help messages based on user's current state
+     * 
+     * @param int $userId
+     * @param Carbon $selectedDate
+     * @return array
+     */
+    public function generateContextualHelpMessages($userId, Carbon $selectedDate)
+    {
+        $messages = [];
+        
+        // Check if user has any programs for today
+        $programCount = Program::where('user_id', $userId)
+            ->whereDate('date', $selectedDate->toDateString())
+            ->count();
+            
+        // Check if user has logged anything today
+        $loggedCount = LiftLog::where('user_id', $userId)
+            ->whereDate('logged_at', $selectedDate->toDateString())
+            ->count();
+            
+        // Check if user has any incomplete programs
+        $incompleteCount = Program::where('user_id', $userId)
+            ->whereDate('date', $selectedDate->toDateString())
+            ->incomplete()
+            ->count();
+        
+        if ($programCount === 0 && $loggedCount === 0) {
+            // First time user or no exercises added yet
+            $messages[] = [
+                'type' => 'tip',
+                'prefix' => 'Getting started:',
+                'text' => 'Tap "Add Exercise" below to choose what you want to work out today.'
+            ];
+        } elseif ($incompleteCount > 0 && $loggedCount === 0) {
+            // Has exercises ready but hasn't logged anything
+            $messages[] = [
+                'type' => 'tip',
+                'prefix' => 'Ready to log:',
+                'text' => "You have {$incompleteCount} exercise" . ($incompleteCount > 1 ? 's' : '') . " ready to log below."
+            ];
+        } elseif ($incompleteCount > 0 && $loggedCount > 0) {
+            // Has logged some but has more to do
+            $messages[] = [
+                'type' => 'info',
+                'prefix' => 'Keep going:',
+                'text' => "Great progress! You have {$incompleteCount} more exercise" . ($incompleteCount > 1 ? 's' : '') . " to log."
+            ];
+        } elseif ($incompleteCount === 0 && $loggedCount > 0) {
+            // All done for today
+            $messages[] = [
+                'type' => 'success',
+                'prefix' => 'Workout complete:',
+                'text' => "All exercises completed! Tap \"Add Exercise\" below if you want to keep going."
+            ];
+        }
+        
+        return $messages;
     }
 }

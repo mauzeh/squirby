@@ -63,7 +63,13 @@ class LiftLogLoggingTest extends TestCase {
             'notes' => 'Test lift log comments',
         ]);
 
-        $response->assertRedirect(route('exercises.show-logs', ['exercise' => $exercise->id]))->assertSessionHas('success', 'Lift log created successfully.');
+        $response->assertRedirect(route('exercises.show-logs', ['exercise' => $exercise->id]));
+        
+        // Check that we have a celebratory success message containing the exercise name and workout details
+        $successMessage = session('success');
+        $this->assertStringContainsString($exercise->title, $successMessage);
+        $this->assertStringContainsString('100 lbs', $successMessage);
+        $this->assertStringContainsString('5 reps', $successMessage);
     }
 
     /** @test */
@@ -268,7 +274,12 @@ class LiftLogLoggingTest extends TestCase {
             'notes' => 'Bodyweight lift log comments',
         ]);
 
-        $response->assertRedirect(route('exercises.show-logs', ['exercise' => $exercise->id]))->assertSessionHas('success', 'Lift log created successfully.');
+        $response->assertRedirect(route('exercises.show-logs', ['exercise' => $exercise->id]));
+        
+        // Check that we have a celebratory success message containing the exercise name and workout details
+        $successMessage = session('success');
+        $this->assertStringContainsString($exercise->title, $successMessage);
+        $this->assertStringContainsString('8 reps', $successMessage);
     }
 
     /** @test */

@@ -265,7 +265,10 @@ class LiftLogServiceTest extends TestCase
         
         $messages = $this->service->generateFormMessages($program, null);
         
-        $this->assertEmpty($messages);
+        // Should have instructional message for new users
+        $this->assertCount(1, $messages);
+        $this->assertEquals('tip', $messages[0]['type']);
+        $this->assertEquals('How to log:', $messages[0]['prefix']);
     }
 
     #[Test]
@@ -289,13 +292,13 @@ class LiftLogServiceTest extends TestCase
         
         $lastSessionMessage = $messages[0];
         $this->assertEquals('info', $lastSessionMessage['type']);
-        $this->assertEquals('Last session (Jan 13):', $lastSessionMessage['prefix']);
+        $this->assertEquals('Last workout (Jan 13):', $lastSessionMessage['prefix']);
         $this->assertEquals('225 lbs × 5 reps × 3 sets', $lastSessionMessage['text']);
         
         $suggestionMessage = $messages[1];
         $this->assertEquals('tip', $suggestionMessage['type']);
-        $this->assertEquals('Suggestion:', $suggestionMessage['prefix']);
-        $this->assertEquals('Try 230 lbs × 5 reps × 3 sets today', $suggestionMessage['text']);
+        $this->assertEquals('Try this:', $suggestionMessage['prefix']);
+        $this->assertEquals('230 lbs × 5 reps × 3 sets (values set below)', $suggestionMessage['text']);
     }
 
     #[Test]
@@ -320,18 +323,18 @@ class LiftLogServiceTest extends TestCase
         
         $lastSessionMessage = $messages[0];
         $this->assertEquals('info', $lastSessionMessage['type']);
-        $this->assertEquals('Last session (Jan 10):', $lastSessionMessage['prefix']);
+        $this->assertEquals('Last workout (Jan 10):', $lastSessionMessage['prefix']);
         $this->assertEquals('185 lbs × 8 reps × 4 sets', $lastSessionMessage['text']);
         
         $lastNotesMessage = $messages[1];
         $this->assertEquals('neutral', $lastNotesMessage['type']);
-        $this->assertEquals('Last notes:', $lastNotesMessage['prefix']);
+        $this->assertEquals('Your last notes:', $lastNotesMessage['prefix']);
         $this->assertEquals('Felt really strong today, good form throughout', $lastNotesMessage['text']);
         
         $suggestionMessage = $messages[2];
         $this->assertEquals('tip', $suggestionMessage['type']);
-        $this->assertEquals('Suggestion:', $suggestionMessage['prefix']);
-        $this->assertEquals('Try 190 lbs × 8 reps × 4 sets today', $suggestionMessage['text']);
+        $this->assertEquals('Try this:', $suggestionMessage['prefix']);
+        $this->assertEquals('190 lbs × 8 reps × 4 sets (values set below)', $suggestionMessage['text']);
     }
 
     #[Test]
@@ -368,11 +371,16 @@ class LiftLogServiceTest extends TestCase
         
         $messages = $this->service->generateFormMessages($program, null);
         
-        $this->assertCount(1, $messages);
+        $this->assertCount(2, $messages); // Instructional + program notes
         
-        $message = $messages[0];
+        // First message should be instructional
+        $this->assertEquals('tip', $messages[0]['type']);
+        $this->assertEquals('How to log:', $messages[0]['prefix']);
+        
+        // Second message should be program notes
+        $message = $messages[1];
         $this->assertEquals('tip', $message['type']);
-        $this->assertEquals('Program notes:', $message['prefix']);
+        $this->assertEquals('Today\'s focus:', $message['prefix']);
         $this->assertEquals('Focus on form today', $message['text']);
     }
 
@@ -624,7 +632,7 @@ class LiftLogServiceTest extends TestCase
         $result = $this->service->addExerciseForm($user->id, 'bench_press', $this->testDate);
         
         $this->assertTrue($result['success']);
-        $this->assertEquals('Added Bench Press to today\'s program.', $result['message']);
+        $this->assertEquals('Bench Press added! Now scroll down to log your workout - adjust the weight/reps and tap \'Log Bench Press\' when ready.', $result['message']);
         
         // Verify program was created with priority 99 (100 - 1, no existing programs)
         $this->assertDatabaseHas('programs', [
@@ -656,7 +664,7 @@ class LiftLogServiceTest extends TestCase
         $result = $this->service->addExerciseForm($user->id, (string)$exercise->id, $this->testDate);
         
         $this->assertTrue($result['success']);
-        $this->assertEquals('Added Squat to today\'s program.', $result['message']);
+        $this->assertEquals('Squat added! Now scroll down to log your workout - adjust the weight/reps and tap \'Log Squat\' when ready.', $result['message']);
         
         // Verify program was created
         $this->assertDatabaseHas('programs', [
@@ -680,7 +688,7 @@ class LiftLogServiceTest extends TestCase
         $result = $this->service->addExerciseForm($user->id, 'nonexistent_exercise', $this->testDate);
         
         $this->assertFalse($result['success']);
-        $this->assertEquals('Exercise not found or not accessible.', $result['message']);
+        $this->assertEquals('Exercise not found. Try searching for a different name or create a new exercise using the "+" button.', $result['message']);
         
         // Verify no program was created
         $programCount = Program::where('user_id', $user->id)
@@ -708,7 +716,7 @@ class LiftLogServiceTest extends TestCase
         $result = $this->service->addExerciseForm($user->id, 'deadlift', $this->testDate);
         
         $this->assertFalse($result['success']);
-        $this->assertEquals('Deadlift is already in today\'s program.', $result['message']);
+        $this->assertEquals('Deadlift is already ready to log below. Scroll down to find the form and enter your workout details.', $result['message']);
     }
 
     #[Test]
@@ -719,7 +727,7 @@ class LiftLogServiceTest extends TestCase
         $result = $this->service->createExercise($user->id, 'Custom Exercise', $this->testDate);
         
         $this->assertTrue($result['success']);
-        $this->assertEquals('Created new exercise: Custom Exercise', $result['message']);
+        $this->assertEquals('Created \'Custom Exercise\'! Now scroll down to log your first set - the form is ready with default values you can adjust.', $result['message']);
         
         // Verify exercise was created
         $this->assertDatabaseHas('exercises', [
@@ -737,7 +745,7 @@ class LiftLogServiceTest extends TestCase
             'sets' => 3,
             'reps' => 5,
             'priority' => 99,
-            'comments' => 'New exercise created'
+            'comments' => 'New exercise - adjust weight/reps as needed'
         ]);
         
         // Verify the date matches
@@ -762,7 +770,7 @@ class LiftLogServiceTest extends TestCase
         $result = $this->service->createExercise($user->id, 'Existing Exercise', $this->testDate);
         
         $this->assertFalse($result['success']);
-        $this->assertEquals('Exercise \'Existing Exercise\' already exists.', $result['message']);
+        $this->assertEquals('\'Existing Exercise\' already exists in your exercise library. Use the search above to find and add it instead.', $result['message']);
         
         // Verify no duplicate exercise was created
         $exerciseCount = Exercise::where('title', 'Existing Exercise')->count();
@@ -810,7 +818,7 @@ class LiftLogServiceTest extends TestCase
         $result = $this->service->removeForm($user->id, $formId);
         
         $this->assertTrue($result['success']);
-        $this->assertEquals('Removed Test Exercise from today\'s program.', $result['message']);
+        $this->assertEquals('Removed Test Exercise form. You can add it back anytime using \'Add Exercise\' above.', $result['message']);
         
         // Verify program was deleted
         $this->assertDatabaseMissing('programs', [
@@ -826,7 +834,7 @@ class LiftLogServiceTest extends TestCase
         $result = $this->service->removeForm($user->id, 'invalid-format');
         
         $this->assertFalse($result['success']);
-        $this->assertEquals('Invalid form ID format.', $result['message']);
+        $this->assertEquals('Unable to remove form - invalid format.', $result['message']);
     }
 
     #[Test]
@@ -837,7 +845,7 @@ class LiftLogServiceTest extends TestCase
         $result = $this->service->removeForm($user->id, 'program-999');
         
         $this->assertFalse($result['success']);
-        $this->assertEquals('Program entry not found or not accessible.', $result['message']);
+        $this->assertEquals('Exercise form not found. It may have already been removed.', $result['message']);
     }
 
     #[Test]
@@ -857,7 +865,7 @@ class LiftLogServiceTest extends TestCase
         $result = $this->service->removeForm($user1->id, $formId);
         
         $this->assertFalse($result['success']);
-        $this->assertEquals('Program entry not found or not accessible.', $result['message']);
+        $this->assertEquals('Exercise form not found. It may have already been removed.', $result['message']);
         
         // Verify program still exists
         $this->assertDatabaseHas('programs', [
@@ -882,7 +890,7 @@ class LiftLogServiceTest extends TestCase
         $result = $this->service->addExerciseForm($user1->id, 'private_exercise', $this->testDate);
         
         $this->assertFalse($result['success']);
-        $this->assertEquals('Exercise not found or not accessible.', $result['message']);
+        $this->assertEquals('Exercise not found. Try searching for a different name or create a new exercise using the "+" button.', $result['message']);
     }
 
     #[Test]
@@ -904,7 +912,7 @@ class LiftLogServiceTest extends TestCase
         $result = $this->service->removeForm($user->id, $formId);
         
         $this->assertTrue($result['success']);
-        $this->assertEquals('Removed Exercise Without Canonical from today\'s program.', $result['message']);
+        $this->assertEquals('Removed Exercise Without Canonical form. You can add it back anytime using \'Add Exercise\' above.', $result['message']);
     }
 
     #[Test]
@@ -1050,7 +1058,7 @@ class LiftLogServiceTest extends TestCase
         
         // Find the last session message (might not be first due to system messages)
         $lastSessionMessage = collect($messages)->firstWhere(function ($message) {
-            return str_contains($message['prefix'] ?? '', 'Last session');
+            return str_contains($message['prefix'] ?? '', 'Last workout');
         });
         $this->assertNotNull($lastSessionMessage);
         $this->assertEquals('info', $lastSessionMessage['type']);
@@ -1058,7 +1066,7 @@ class LiftLogServiceTest extends TestCase
         
         // Find the suggestion message
         $suggestionMessage = collect($messages)->firstWhere(function ($message) {
-            return str_contains($message['text'] ?? '', 'Try 205 lbs × 6 reps × 3 sets today');
+            return str_contains($message['text'] ?? '', '205 lbs × 6 reps × 3 sets (values set below)');
         });
         $this->assertNotNull($suggestionMessage);
         $this->assertEquals('tip', $suggestionMessage['type']);
@@ -1277,7 +1285,7 @@ class LiftLogServiceTest extends TestCase
         $loggedItemsEmpty = $this->service->generateLoggedItems($user->id, $this->testDate);
         
         $this->assertArrayHasKey('emptyMessage', $loggedItemsEmpty);
-        $this->assertEquals('No entries logged yet today!', $loggedItemsEmpty['emptyMessage']);
+        $this->assertEquals('No workouts logged yet! Add exercises above to get started.', $loggedItemsEmpty['emptyMessage']);
         $this->assertEmpty($loggedItemsEmpty['items']);
         
         // Test with logged items
@@ -1462,7 +1470,7 @@ class LiftLogServiceTest extends TestCase
         $form = $forms[0];
         
         // Program comments should appear in messages section
-        $programMessage = collect($form['messages'])->firstWhere('prefix', 'Program notes:');
+        $programMessage = collect($form['messages'])->firstWhere('prefix', 'Today\'s focus:');
         $this->assertNotNull($programMessage);
         $this->assertEquals('Focus on strict form today', $programMessage['text']);
         
@@ -1482,7 +1490,7 @@ class LiftLogServiceTest extends TestCase
         $this->assertArrayHasKey('items', $loggedItems);
         $this->assertArrayHasKey('emptyMessage', $loggedItems);
         $this->assertEmpty($loggedItems['items']);
-        $this->assertEquals('No entries logged yet today!', $loggedItems['emptyMessage']);
+        $this->assertEquals('No workouts logged yet! Add exercises above to get started.', $loggedItems['emptyMessage']);
     }
 
     #[Test]
@@ -1965,7 +1973,7 @@ class LiftLogServiceTest extends TestCase
         $result = $this->service->removeForm($user->id, $formId);
         
         $this->assertTrue($result['success']);
-        $this->assertEquals('Removed Test Exercise from today\'s program.', $result['message']);
+        $this->assertEquals('Removed Test Exercise form. You can add it back anytime using \'Add Exercise\' above.', $result['message']);
         
         // Verify program was deleted
         $this->assertDatabaseMissing('programs', ['id' => $program->id]);

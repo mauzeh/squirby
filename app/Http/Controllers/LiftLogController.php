@@ -138,13 +138,16 @@ class LiftLogController extends Controller
             ]);
         }
 
+        // Generate a celebratory success message with workout details
+        $successMessage = $this->generateSuccessMessage($exercise, $request->input('weight'), $reps, $rounds, $request->input('band_color'));
+
         if ($request->input('redirect_to') === 'mobile-entry') {
             $redirectParams = [
                 'date' => $request->input('date'),
                 'submitted_lift_log_id' => $liftLog->id,
                 'submitted_program_id' => $request->input('program_id'), // Assuming program_id is passed from the form
             ];
-            return redirect()->route('mobile-entry.lifts', $redirectParams)->with('success', 'Lift log created successfully.');
+            return redirect()->route('mobile-entry.lifts', $redirectParams)->with('success', $successMessage);
         } elseif ($request->input('redirect_to') === 'mobile-entry-lifts') {
             $redirectParams = [
                 'date' => $request->input('date'),
@@ -152,9 +155,9 @@ class LiftLogController extends Controller
                 'submitted_program_id' => $request->input('program_id'),
             ];
             
-            return redirect()->route('mobile-entry.lifts', $redirectParams)->with('success', 'Lift log created successfully.');
+            return redirect()->route('mobile-entry.lifts', $redirectParams)->with('success', $successMessage);
         } else {
-            return redirect()->route('exercises.show-logs', ['exercise' => $liftLog->exercise_id])->with('success', 'Lift log created successfully.');
+            return redirect()->route('exercises.show-logs', ['exercise' => $liftLog->exercise_id])->with('success', $successMessage);
         }
     }
 
@@ -270,15 +273,22 @@ class LiftLogController extends Controller
         if ($liftLog->user_id !== auth()->id()) {
             abort(403, 'Unauthorized action.');
         }
+        
+        // Check if we're in mobile-entry context
+        $isMobileEntry = in_array(request()->input('redirect_to'), ['mobile-entry', 'mobile-entry-lifts']);
+        
+        // Generate a specific deletion message before deleting
+        $deletionMessage = $this->generateDeletionMessage($liftLog, $isMobileEntry);
+        
         $liftLog->delete();
 
         if (request()->input('redirect_to') === 'mobile-entry') {
-            return redirect()->route('mobile-entry.lifts', ['date' => request()->input('date')])->with('success', 'Lift log deleted successfully.');
+            return redirect()->route('mobile-entry.lifts', ['date' => request()->input('date')])->with('success', $deletionMessage);
         } elseif (request()->input('redirect_to') === 'mobile-entry-lifts') {
-            return redirect()->route('mobile-entry.lifts', ['date' => request()->input('date')])->with('success', 'Lift log deleted successfully.');
+            return redirect()->route('mobile-entry.lifts', ['date' => request()->input('date')])->with('success', $deletionMessage);
         }
 
-        return redirect()->route('lift-logs.index')->with('success', 'Lift log deleted successfully.');
+        return redirect()->route('lift-logs.index')->with('success', $deletionMessage);
     }
 
     public function destroySelected(Request $request)
@@ -296,9 +306,80 @@ class LiftLogController extends Controller
             }
         }
 
+        $count = count($validated['lift_log_ids']);
+        
         LiftLog::destroy($validated['lift_log_ids']);
 
-        return redirect()->route('lift-logs.index')->with('success', 'Selected lift logs deleted successfully!');
+        $message = $count === 1 
+            ? '1 workout entry removed.' 
+            : "{$count} workout entries removed.";
+
+        return redirect()->route('lift-logs.index')->with('success', $message);
+    }
+
+    /**
+     * Generate a celebratory success message with workout details
+     * 
+     * @param \App\Models\Exercise $exercise
+     * @param float|null $weight
+     * @param int $reps
+     * @param int $rounds
+     * @param string|null $bandColor
+     * @return string
+     */
+    private function generateSuccessMessage($exercise, $weight, $reps, $rounds, $bandColor = null)
+    {
+        $exerciseTitle = $exercise->title;
+        
+        // Build the workout description
+        if ($exercise->band_type && $bandColor) {
+            // Band exercise
+            $workoutDescription = ucfirst($bandColor) . ' band × ' . $reps . ' reps × ' . $rounds . ' sets';
+        } elseif ($exercise->is_bodyweight) {
+            // Bodyweight exercise
+            if ($weight > 0) {
+                $workoutDescription = '+' . $weight . ' lbs × ' . $reps . ' reps × ' . $rounds . ' sets';
+            } else {
+                $workoutDescription = $reps . ' reps × ' . $rounds . ' sets';
+            }
+        } else {
+            // Regular weighted exercise
+            $workoutDescription = $weight . ' lbs × ' . $reps . ' reps × ' . $rounds . ' sets';
+        }
+        
+        // Generate celebratory messages with variety
+        $celebrations = [
+            "Nice work! {$exerciseTitle}: {$workoutDescription} logged!",
+            "Crushed it! {$exerciseTitle}: {$workoutDescription} complete!",
+            "Great job! {$exerciseTitle}: {$workoutDescription} in the books!",
+            "Awesome! {$exerciseTitle}: {$workoutDescription} logged successfully!",
+            "Well done! {$exerciseTitle}: {$workoutDescription} completed!"
+        ];
+        
+        // Return a random celebration message
+        return $celebrations[array_rand($celebrations)];
+    }
+
+    /**
+     * Generate a simple deletion message with exercise name
+     * 
+     * @param \App\Models\LiftLog $liftLog
+     * @param bool $isMobileEntry Whether this deletion is happening in mobile-entry context
+     * @return string
+     */
+    private function generateDeletionMessage($liftLog, $isMobileEntry = false)
+    {
+        $exercise = $liftLog->exercise;
+        $exerciseTitle = $exercise->title;
+        
+        $baseMessage = "Removed {$exerciseTitle}";
+        
+        // Add helpful reminder for mobile-entry context
+        if ($isMobileEntry) {
+            return $baseMessage . ". Need to adjust and re-log? Add the exercise back below and enter your correct values.";
+        }
+        
+        return $baseMessage . ".";
     }
 
 }

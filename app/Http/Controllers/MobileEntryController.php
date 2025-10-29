@@ -641,6 +641,18 @@ class MobileEntryController extends Controller
         // Generate interface messages
         $interfaceMessages = $formService->generateInterfaceMessages($sessionMessages);
         
+        // Add contextual help messages if no session messages exist
+        if (!$interfaceMessages['hasMessages']) {
+            $contextualMessages = $formService->generateContextualHelpMessages(Auth::id(), $selectedDate);
+            if (!empty($contextualMessages)) {
+                $interfaceMessages = [
+                    'messages' => $contextualMessages,
+                    'hasMessages' => true,
+                    'messageCount' => count($contextualMessages)
+                ];
+            }
+        }
+        
         $data = [
             'navigation' => [
                 'prevButton' => [
