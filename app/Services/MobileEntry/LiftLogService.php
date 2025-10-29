@@ -30,10 +30,11 @@ class LiftLogService
         // Get user to check preferences
         $user = \App\Models\User::find($userId);
         
-        // Get user's programs for the selected date
+        // Get user's programs for the selected date with completion status preloaded
         $query = Program::where('user_id', $userId)
             ->whereDate('date', $selectedDate->toDateString())
-            ->with(['exercise']);
+            ->with(['exercise'])
+            ->withCompletionStatus();
             
         // Optionally filter out completed programs
         if (!$includeCompleted) {
@@ -41,6 +42,27 @@ class LiftLogService
         }
         
         $programs = $query->orderBy('priority', 'asc')->get();
+        
+        if ($programs->isEmpty()) {
+            return [];
+        }
+        
+        // Get all exercise IDs for batch queries
+        $exerciseIds = $programs->pluck('exercise.id')->filter()->unique();
+        
+        // Batch fetch last session data for all exercises
+        $lastSessionsData = $this->getBatchLastSessionData($exerciseIds->toArray(), $selectedDate, $userId);
+        
+        // Batch fetch progression suggestions for all exercises
+        $progressionSuggestions = [];
+        foreach ($exerciseIds as $exerciseId) {
+            if (isset($lastSessionsData[$exerciseId])) {
+                $progressionSuggestions[$exerciseId] = $this->trainingProgressionService->getSuggestionDetails(
+                    $userId, 
+                    $exerciseId
+                );
+            }
+        }
         
         $forms = [];
         
@@ -51,17 +73,14 @@ class LiftLogService
             
             $exercise = $program->exercise;
             
-            // Get last session data for this exercise
-            $lastSession = $this->getLastSessionData($exercise->id, $selectedDate, $userId);
+            // Get last session data from batch results
+            $lastSession = $lastSessionsData[$exercise->id] ?? null;
             
             // Generate form ID
             $formId = 'program-' . $program->id;
             
-            // Get progression suggestions
-            $progressionSuggestion = $lastSession ? $this->trainingProgressionService->getSuggestionDetails(
-                $userId, 
-                $exercise->id
-            ) : null;
+            // Get progression suggestions from batch results
+            $progressionSuggestion = $progressionSuggestions[$exercise->id] ?? null;
             
             // Determine default weight based on last session or exercise type
             $defaultWeight = $this->getDefaultWeight($exercise, $lastSession, $userId);
@@ -73,7 +92,7 @@ class LiftLogService
             // Generate messages based on last session and program
             $messages = $this->generateFormMessages($program, $lastSession, $userId);
             
-            // Check if program is completed
+            // Check if program is completed (this is already optimized in the scope)
             $isCompleted = $program->isCompleted();
             
             // Build numeric fields based on exercise type
@@ -224,6 +243,58 @@ class LiftLogService
             'comments' => $lastLog->comments,
             'band_color' => $firstSet->band_color
         ];
+    }
+
+    /**
+     * Get last session data for multiple exercises in a single batch query
+     * 
+     * @param array $exerciseIds
+     * @param Carbon $beforeDate
+     * @param int $userId
+     * @return array Keyed by exercise_id
+     */
+    protected function getBatchLastSessionData(array $exerciseIds, Carbon $beforeDate, $userId)
+    {
+        if (empty($exerciseIds)) {
+            return [];
+        }
+
+        // Get the most recent log for each exercise using a subquery approach
+        // This is more compatible across different database systems
+        $lastLogs = LiftLog::where('user_id', $userId)
+            ->whereIn('exercise_id', $exerciseIds)
+            ->where('logged_at', '<', $beforeDate->toDateString())
+            ->whereIn('id', function ($query) use ($userId, $exerciseIds, $beforeDate) {
+                $query->select(\DB::raw('MAX(id)'))
+                    ->from('lift_logs')
+                    ->where('user_id', $userId)
+                    ->whereIn('exercise_id', $exerciseIds)
+                    ->where('logged_at', '<', $beforeDate->toDateString())
+                    ->groupBy('exercise_id');
+            })
+            ->with(['liftSets'])
+            ->get();
+
+        $results = [];
+        
+        foreach ($lastLogs as $lastLog) {
+            if ($lastLog->liftSets->isEmpty()) {
+                continue;
+            }
+            
+            $firstSet = $lastLog->liftSets->first();
+            
+            $results[$lastLog->exercise_id] = [
+                'weight' => $firstSet->weight,
+                'reps' => $firstSet->reps,
+                'sets' => $lastLog->liftSets->count(),
+                'date' => $lastLog->logged_at->format('M j'),
+                'comments' => $lastLog->comments,
+                'band_color' => $firstSet->band_color
+            ];
+        }
+        
+        return $results;
     }
 
     /**
@@ -407,26 +478,29 @@ class LiftLogService
                 continue;
             }
 
-            // Use the same logic as the Blade components but generate plain text
-            // This mirrors the logic from lift-weight-display.blade.php
+            // Get first set data directly from loaded relationship to avoid additional queries
+            $firstSet = $log->liftSets->first();
+            $setCount = $log->liftSets->count();
+            
+            // Generate display text without using accessors that might trigger queries
             if ($log->exercise->band_type) {
-                $weightText = 'Band: ' . $log->display_weight;
+                $weightText = 'Band: ' . ($firstSet->band_color ?? 'N/A');
             } elseif ($log->exercise->is_bodyweight) {
                 // For bodyweight exercises, only show additional weight if present
-                if ($log->display_weight > 0) {
-                    $weightText = '+' . $log->display_weight . ' lbs';
+                if ($firstSet->weight > 0) {
+                    $weightText = '+' . $firstSet->weight . ' lbs';
                 } else {
                     $weightText = '';
                 }
             } else {
-                $weightText = $log->display_weight . ' lbs';
+                $weightText = $firstSet->weight . ' lbs';
             }
             
-            // This mirrors the logic from lift-reps-sets-display.blade.php
-            $repsSetsText = $log->display_rounds . ' x ' . $log->display_reps;
+            // Generate reps/sets text directly
+            $repsSetsText = $setCount . ' x ' . $firstSet->reps;
             
             // Combine weight and reps/sets for the message
-            if ($log->exercise->is_bodyweight && $log->display_weight == 0) {
+            if ($log->exercise->is_bodyweight && $firstSet->weight == 0) {
                 // For bodyweight with no additional weight, just show reps/sets
                 $formattedMessage = $repsSetsText;
             } else {
@@ -481,25 +555,25 @@ class LiftLogService
      */
     public function generateItemSelectionList($userId, Carbon $selectedDate)
     {
-        // Get user's accessible exercises with recent usage data
+        // Get user's accessible exercises
         $exercises = Exercise::availableToUser($userId)
-            ->with(['liftLogs' => function ($query) use ($userId, $selectedDate) {
-                $query->where('user_id', $userId)
-                    ->where('logged_at', '>=', $selectedDate->copy()->subDays(30))
-                    ->orderBy('logged_at', 'desc')
-                    ->limit(1);
-            }])
             ->orderBy('title', 'asc')
             ->get();
 
-        // Get the top 5 most recently used exercises for this user
+        // Get the top 5 most recently used exercises for this user in a single query
         $recentExerciseIds = $this->getTopRecentExerciseIds($userId, $selectedDate, 5);
+
+        // Get all exercises that are in today's program in a single query
+        $programExerciseIds = Program::where('user_id', $userId)
+            ->whereDate('date', $selectedDate->toDateString())
+            ->pluck('exercise_id')
+            ->toArray();
 
         $items = [];
         
         foreach ($exercises as $exercise) {
-            // Determine item type based on program and recent usage
-            $itemType = $this->determineItemType($exercise, $userId, $selectedDate, $recentExerciseIds);
+            // Determine item type based on program and recent usage (optimized)
+            $itemType = $this->determineItemTypeOptimized($exercise, $userId, $recentExerciseIds, $programExerciseIds);
 
             $items[] = [
                 'id' => 'exercise-' . $exercise->id,
@@ -582,6 +656,38 @@ class LiftLogService
             ->where('exercise_id', $exercise->id)
             ->whereDate('date', $selectedDate->toDateString())
             ->exists();
+
+        // Check if exercise is in the top 5 most recently used
+        $isTopRecent = in_array($exercise->id, $recentExerciseIds);
+
+        // Check if it's a user's custom exercise
+        $isCustom = $exercise->user_id === $userId;
+
+        // Determine type based on priority: recent > custom > regular > in-program
+        if ($isTopRecent) {
+            return $this->getItemTypeConfig('recent');
+        } elseif ($isCustom) {
+            return $this->getItemTypeConfig('custom');
+        } elseif ($inProgram) {
+            return $this->getItemTypeConfig('in-program');
+        } else {
+            return $this->getItemTypeConfig('regular');
+        }
+    }
+
+    /**
+     * Optimized version of determineItemType that uses pre-fetched data
+     * 
+     * @param \App\Models\Exercise $exercise
+     * @param int $userId
+     * @param array $recentExerciseIds
+     * @param array $programExerciseIds
+     * @return array Item type configuration with label and cssClass
+     */
+    protected function determineItemTypeOptimized($exercise, $userId, $recentExerciseIds = [], $programExerciseIds = [])
+    {
+        // Check if exercise is in today's program (using pre-fetched data)
+        $inProgram = in_array($exercise->id, $programExerciseIds);
 
         // Check if exercise is in the top 5 most recently used
         $isTopRecent = in_array($exercise->id, $recentExerciseIds);

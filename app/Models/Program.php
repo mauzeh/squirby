@@ -40,6 +40,11 @@ class Program extends Model
      */
     public function isCompleted()
     {
+        // If completion status is already loaded via withCompletionStatus scope, use it
+        if (isset($this->attributes['is_completed'])) {
+            return (bool) $this->attributes['is_completed'];
+        }
+        
         return LiftLog::where('user_id', $this->user_id)
             ->where('exercise_id', $this->exercise_id)
             ->whereDate('logged_at', $this->date)
@@ -96,5 +101,24 @@ class Program extends Model
                     ->whereRaw('DATE(lift_logs.logged_at) = DATE(programs.date)');
             });
         });
+    }
+
+    /**
+     * Scope to add completion status as a computed column
+     * This helps avoid N+1 queries when checking isCompleted() on multiple programs
+     * 
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeWithCompletionStatus($query)
+    {
+        return $query->addSelect([
+            '*',
+            'is_completed' => \DB::table('lift_logs')
+                ->select(\DB::raw('CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END'))
+                ->whereColumn('lift_logs.user_id', 'programs.user_id')
+                ->whereColumn('lift_logs.exercise_id', 'programs.exercise_id')
+                ->whereRaw('DATE(lift_logs.logged_at) = DATE(programs.date)')
+        ]);
     }
 }
