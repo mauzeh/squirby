@@ -40,7 +40,7 @@
   - Ensure proper authorization checks in controller methods
   - _Requirements: 1.4, 2.4_
 
-- [ ] 7. Write comprehensive tests for merge functionality
+- [x] 7. Write comprehensive tests for merge functionality
   - Create ExerciseMergeServiceTest with compatibility and merge scenarios
   - Create controller tests for merge endpoints and authorization
   - Create integration tests for complete merge workflow
