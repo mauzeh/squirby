@@ -181,14 +181,25 @@ class FoodLogService
             ->orderBy('name', 'asc')
             ->get();
 
-        // Get the top 5 most recently used ingredients
-        $recentIngredientIds = $this->getTopRecentIngredientIds($userId, $selectedDate, 5);
-
         $items = [];
         
-        // Add ingredients
+        // Add meals first (they will have priority 1)
+        foreach ($meals as $meal) {
+            $items[] = [
+                'id' => 'meal-' . $meal->id,
+                'name' => $meal->name . ' (Meal)',
+                'type' => $this->getItemTypeConfig('meal'),
+                'href' => route('mobile-entry.add-food-form', [
+                    'type' => 'meal',
+                    'id' => $meal->id,
+                    'date' => $selectedDate->toDateString()
+                ])
+            ];
+        }
+        
+        // Add ingredients (no recent prioritization)
         foreach ($ingredients as $ingredient) {
-            $itemType = $this->determineIngredientType($ingredient, $userId, $recentIngredientIds);
+            $itemType = $this->determineIngredientType($ingredient, $userId);
 
             $items[] = [
                 'id' => 'ingredient-' . $ingredient->id,
@@ -197,24 +208,6 @@ class FoodLogService
                 'href' => route('mobile-entry.add-food-form', [
                     'type' => 'ingredient',
                     'id' => $ingredient->id,
-                    'date' => $selectedDate->toDateString()
-                ])
-            ];
-        }
-
-        // Add meals
-        foreach ($meals as $meal) {
-            $items[] = [
-                'id' => 'meal-' . $meal->id,
-                'name' => $meal->name . ' (Meal)',
-                'type' => [
-                    'label' => 'Meal',
-                    'cssClass' => 'meal',
-                    'priority' => 2
-                ],
-                'href' => route('mobile-entry.add-food-form', [
-                    'type' => 'meal',
-                    'id' => $meal->id,
                     'date' => $selectedDate->toDateString()
                 ])
             ];
@@ -250,26 +243,7 @@ class FoodLogService
         ];
     }
 
-    /**
-     * Get the top N most recently used ingredient IDs for a user
-     * 
-     * @param int $userId
-     * @param Carbon $selectedDate
-     * @param int $limit
-     * @return array
-     */
-    protected function getTopRecentIngredientIds($userId, Carbon $selectedDate, $limit = 5)
-    {
-        return FoodLog::where('user_id', $userId)
-            ->where('logged_at', '<', $selectedDate->toDateString())
-            ->where('logged_at', '>=', $selectedDate->copy()->subDays(30))
-            ->select('ingredient_id')
-            ->groupBy('ingredient_id')
-            ->orderByRaw('MAX(logged_at) DESC')
-            ->limit($limit)
-            ->pluck('ingredient_id')
-            ->toArray();
-    }
+
 
     /**
      * Determine the item type configuration for an ingredient
@@ -279,18 +253,13 @@ class FoodLogService
      * @param array $recentIngredientIds
      * @return array Item type configuration with label and cssClass
      */
-    protected function determineIngredientType($ingredient, $userId, $recentIngredientIds = [])
+    protected function determineIngredientType($ingredient, $userId)
     {
-        // Check if ingredient is in the top 5 most recently used
-        $isTopRecent = in_array($ingredient->id, $recentIngredientIds);
-
         // Check if it's a user's custom ingredient
         $isCustom = $ingredient->user_id === $userId;
 
-        // Determine type based on priority: recent > custom > regular
-        if ($isTopRecent) {
-            return $this->getItemTypeConfig('recent');
-        } elseif ($isCustom) {
+        // All ingredients are just "Ingredient" type now
+        if ($isCustom) {
             return $this->getItemTypeConfig('custom');
         } else {
             return $this->getItemTypeConfig('regular');
@@ -306,25 +275,20 @@ class FoodLogService
     protected function getItemTypeConfig($typeKey)
     {
         $itemTypes = [
-            'recent' => [
-                'label' => 'Recent',
-                'cssClass' => 'recent',
-                'priority' => 1
-            ],
             'custom' => [
-                'label' => 'My Food',
+                'label' => 'Ingredient',
                 'cssClass' => 'custom',
                 'priority' => 2
             ],
             'regular' => [
-                'label' => 'Available',
+                'label' => 'Ingredient',
                 'cssClass' => 'regular',
-                'priority' => 3
+                'priority' => 2
             ],
             'meal' => [
                 'label' => 'Meal',
-                'cssClass' => 'meal',
-                'priority' => 2
+                'cssClass' => 'highlighted',
+                'priority' => 1
             ]
         ];
 

@@ -128,7 +128,7 @@ class FoodLogServiceTest extends TestCase
         
         // Check delete parameters
         $this->assertArrayHasKey('deleteParams', $item);
-        $this->assertEquals('mobile-entry-foods', $item['deleteParams']['redirect_to']);
+        $this->assertEquals('mobile-entry.foods', $item['deleteParams']['redirect_to']);
         $this->assertEquals($this->testDate->toDateString(), $item['deleteParams']['date']);
     }
 
@@ -252,7 +252,7 @@ class FoodLogServiceTest extends TestCase
         $this->assertNotNull($chickenItem);
         $this->assertEquals('ingredient-' . $ingredient1->id, $chickenItem['id']);
         $this->assertEquals('custom', $chickenItem['type']['cssClass']);
-        $this->assertEquals('My Food', $chickenItem['type']['label']);
+        $this->assertEquals('Ingredient', $chickenItem['type']['label']);
         $this->assertEquals(2, $chickenItem['type']['priority']);
         $this->assertStringContainsString('mobile-entry/add-food-form/ingredient/' . $ingredient1->id, $chickenItem['href']);
         $this->assertStringContainsString('date=' . $this->testDate->toDateString(), $chickenItem['href']);
@@ -261,9 +261,9 @@ class FoodLogServiceTest extends TestCase
         $mealItem = collect($itemSelectionList['items'])->firstWhere('name', 'Chicken and Rice Bowl (Meal)');
         $this->assertNotNull($mealItem);
         $this->assertEquals('meal-' . $meal->id, $mealItem['id']);
-        $this->assertEquals('meal', $mealItem['type']['cssClass']);
+        $this->assertEquals('highlighted', $mealItem['type']['cssClass']);
         $this->assertEquals('Meal', $mealItem['type']['label']);
-        $this->assertEquals(2, $mealItem['type']['priority']);
+        $this->assertEquals(1, $mealItem['type']['priority']);
         $this->assertStringContainsString('mobile-entry/add-food-form/meal/' . $meal->id, $mealItem['href']);
         
         // Check create form
@@ -330,57 +330,44 @@ class FoodLogServiceTest extends TestCase
     }
 
     #[Test]
-    public function it_prioritizes_recent_ingredients()
+    public function it_shows_all_ingredients_as_ingredient_type()
+    {
+        $user = User::factory()->create();
+        $unit = Unit::factory()->create();
+        
+        $ingredient1 = Ingredient::factory()->create([
+            'name' => 'User Ingredient',
+            'user_id' => $user->id,
+            'base_unit_id' => $unit->id
+        ]);
+        
+        $ingredient2 = Ingredient::factory()->create([
+            'name' => 'Another Ingredient',
+            'user_id' => $user->id,
+            'base_unit_id' => $unit->id
+        ]);
+        
+        $itemSelectionList = $this->service->generateItemSelectionList($user->id, $this->testDate);
+        
+        $item1 = collect($itemSelectionList['items'])->firstWhere('name', 'User Ingredient');
+        $item2 = collect($itemSelectionList['items'])->firstWhere('name', 'Another Ingredient');
+        
+        $this->assertEquals('custom', $item1['type']['cssClass']);
+        $this->assertEquals('Ingredient', $item1['type']['label']);
+        $this->assertEquals(2, $item1['type']['priority']);
+        
+        $this->assertEquals('custom', $item2['type']['cssClass']);
+        $this->assertEquals('Ingredient', $item2['type']['label']);
+        $this->assertEquals(2, $item2['type']['priority']);
+    }
+
+    #[Test]
+    public function it_sorts_meals_first_then_ingredients_alphabetically()
     {
         $user = User::factory()->create();
         $unit = Unit::factory()->create();
         
         // Create ingredients
-        $recentIngredient = Ingredient::factory()->create([
-            'name' => 'Recent Ingredient',
-            'user_id' => $user->id,
-            'base_unit_id' => $unit->id
-        ]);
-        
-        $regularIngredient = Ingredient::factory()->create([
-            'name' => 'Regular Ingredient',
-            'user_id' => $user->id,
-            'base_unit_id' => $unit->id
-        ]);
-        
-        // Create recent food log for first ingredient
-        FoodLog::factory()->create([
-            'user_id' => $user->id,
-            'ingredient_id' => $recentIngredient->id,
-            'unit_id' => $unit->id,
-            'logged_at' => $this->testDate->copy()->subDays(3)
-        ]);
-        
-        $itemSelectionList = $this->service->generateItemSelectionList($user->id, $this->testDate);
-        
-        $recentItem = collect($itemSelectionList['items'])->firstWhere('name', 'Recent Ingredient');
-        $regularItem = collect($itemSelectionList['items'])->firstWhere('name', 'Regular Ingredient');
-        
-        $this->assertEquals('recent', $recentItem['type']['cssClass']);
-        $this->assertEquals('Recent', $recentItem['type']['label']);
-        $this->assertEquals(1, $recentItem['type']['priority']);
-        
-        $this->assertEquals('custom', $regularItem['type']['cssClass']);
-        $this->assertEquals('My Food', $regularItem['type']['label']);
-        $this->assertEquals(2, $regularItem['type']['priority']);
-        
-        // Recent item should come first due to lower priority number
-        $this->assertEquals('Recent Ingredient', $itemSelectionList['items'][0]['name']);
-        $this->assertEquals('Regular Ingredient', $itemSelectionList['items'][1]['name']);
-    }
-
-    #[Test]
-    public function it_sorts_items_by_priority_then_alphabetically()
-    {
-        $user = User::factory()->create();
-        $unit = Unit::factory()->create();
-        
-        // Create ingredients with names that would sort differently alphabetically
         $zIngredient = Ingredient::factory()->create([
             'name' => 'Z Ingredient',
             'user_id' => $user->id,
@@ -393,22 +380,25 @@ class FoodLogServiceTest extends TestCase
             'base_unit_id' => $unit->id
         ]);
         
-        // Make Z ingredient recent (priority 1)
-        FoodLog::factory()->create([
-            'user_id' => $user->id,
-            'ingredient_id' => $zIngredient->id,
-            'unit_id' => $unit->id,
-            'logged_at' => $this->testDate->copy()->subDays(1)
+        // Create a meal
+        $meal = Meal::factory()->create([
+            'name' => 'Test Meal',
+            'user_id' => $user->id
         ]);
+        $meal->ingredients()->attach($aIngredient->id, ['quantity' => 100]);
         
         $itemSelectionList = $this->service->generateItemSelectionList($user->id, $this->testDate);
         
-        // Z ingredient should come first due to priority, despite alphabetical order
-        $this->assertEquals('Z Ingredient', $itemSelectionList['items'][0]['name']);
+        // Meal should come first due to priority 1
+        $this->assertEquals('Test Meal (Meal)', $itemSelectionList['items'][0]['name']);
         $this->assertEquals(1, $itemSelectionList['items'][0]['type']['priority']);
         
+        // Then ingredients alphabetically
         $this->assertEquals('A Ingredient', $itemSelectionList['items'][1]['name']);
         $this->assertEquals(2, $itemSelectionList['items'][1]['type']['priority']);
+        
+        $this->assertEquals('Z Ingredient', $itemSelectionList['items'][2]['name']);
+        $this->assertEquals(2, $itemSelectionList['items'][2]['type']['priority']);
     }
 
     #[Test]
