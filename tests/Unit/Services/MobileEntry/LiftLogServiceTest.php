@@ -716,7 +716,7 @@ class LiftLogServiceTest extends TestCase
         $result = $this->service->addExerciseForm($user->id, 'deadlift', $this->testDate);
         
         $this->assertFalse($result['success']);
-        $this->assertEquals('Deadlift is already ready to log below. Scroll down to find the form and enter your workout details.', $result['message']);
+        $this->assertEquals('Deadlift is already ready to log below. Scroll down to find the entry and enter or modify your workout details.', $result['message']);
     }
 
     #[Test]
@@ -1400,7 +1400,7 @@ class LiftLogServiceTest extends TestCase
         $this->assertEquals('comments', $commentField['name']);
         $this->assertEquals('', $commentField['defaultValue']); // Empty for new lift-log entry
         $this->assertEquals('Notes:', $commentField['label']);
-        $this->assertEquals('RPE, form notes, how did it feel?', $commentField['placeholder']);
+        $this->assertEquals('How did it feel? Any form notes?', $commentField['placeholder']);
         $this->assertEquals('program-' . $program->id . '-comment', $commentField['id']);
     }
 
@@ -1447,7 +1447,7 @@ class LiftLogServiceTest extends TestCase
         // Verify all comment field attributes are correct for lift-log submission
         $this->assertEquals('comments', $commentField['name']); // Matches LiftLog fillable field
         $this->assertEquals('Notes:', $commentField['label']);
-        $this->assertEquals('RPE, form notes, how did it feel?', $commentField['placeholder']);
+        $this->assertEquals('How did it feel? Any form notes?', $commentField['placeholder']);
         $this->assertEquals('', $commentField['defaultValue']); // Empty for new entry
         $this->assertEquals('program-' . $program->id . '-comment', $commentField['id']);
     }

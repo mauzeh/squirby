@@ -26,7 +26,7 @@ return [
         ],
         
         'lift_deleted' => 'Removed :exercise.',
-        'lift_deleted_mobile' => 'Removed :exercise. Need to adjust and re-log? Add the exercise back below and enter your correct values.',
+        'lift_deleted_mobile' => 'Removed :exercise. Need to adjust and re-log? Just update the values in the form below. Or, hit the delete button again to remove it completely from today\'s workout',
         
         'bulk_deleted_single' => '1 workout entry removed.',
         'bulk_deleted_multiple' => ':count workout entries removed.',
@@ -63,7 +63,7 @@ return [
 
     'placeholders' => [
         'search_exercises' => 'Search exercises (e.g. "bench press")...',
-        'workout_notes' => 'RPE, form notes, how did it feel?',
+        'workout_notes' => 'How did it feel? Any form notes?',
     ],
 
     'program_comments' => [
