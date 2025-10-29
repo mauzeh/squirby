@@ -735,7 +735,7 @@ class FoodLogService
      * @param float $defaultValue
      * @return float
      */
-    protected function getQuantityIncrement($unitName, $defaultValue = 1)
+    public function getQuantityIncrement($unitName, $defaultValue = 1)
     {
         $unitName = strtolower($unitName);
         
@@ -819,13 +819,24 @@ class FoodLogService
             }
             
             // Add to database
-            MobileFoodForm::create([
-                'user_id' => $userId,
-                'date' => $selectedDate->toDateString(),
-                'type' => $type,
-                'item_id' => $id,
-                'item_name' => $ingredient->name
-            ]);
+            try {
+                MobileFoodForm::create([
+                    'user_id' => $userId,
+                    'date' => $selectedDate->toDateString(),
+                    'type' => $type,
+                    'item_id' => $id,
+                    'item_name' => $ingredient->name
+                ]);
+            } catch (\Illuminate\Database\QueryException $e) {
+                // Handle unique constraint violation
+                if ($e->getCode() === '23000') {
+                    return [
+                        'success' => false,
+                        'message' => "{$ingredient->name} is already added to your forms."
+                    ];
+                }
+                throw $e;
+            }
             
             return [
                 'success' => true,
@@ -867,13 +878,24 @@ class FoodLogService
             }
             
             // Add to database
-            MobileFoodForm::create([
-                'user_id' => $userId,
-                'date' => $selectedDate->toDateString(),
-                'type' => $type,
-                'item_id' => $id,
-                'item_name' => $meal->name
-            ]);
+            try {
+                MobileFoodForm::create([
+                    'user_id' => $userId,
+                    'date' => $selectedDate->toDateString(),
+                    'type' => $type,
+                    'item_id' => $id,
+                    'item_name' => $meal->name
+                ]);
+            } catch (\Illuminate\Database\QueryException $e) {
+                // Handle unique constraint violation
+                if ($e->getCode() === '23000') {
+                    return [
+                        'success' => false,
+                        'message' => "{$meal->name} is already added to your forms."
+                    ];
+                }
+                throw $e;
+            }
             
             return [
                 'success' => true,
@@ -984,6 +1006,46 @@ class FoodLogService
         MobileFoodForm::where('user_id', $userId)
             ->where('date', '<', $currentDate->copy()->subDays(3))
             ->delete();
+    }
+
+    /**
+     * Remove a specific form after successful logging
+     * 
+     * @param int $userId
+     * @param string $type
+     * @param int $itemId
+     * @param Carbon $date
+     * @return bool
+     */
+    public function removeFormAfterLogging($userId, $type, $itemId, Carbon $date)
+    {
+        $form = MobileFoodForm::where('user_id', $userId)
+            ->where('type', $type)
+            ->where('item_id', $itemId)
+            ->whereDate('date', $date->toDateString())
+            ->first();
+            
+        if ($form) {
+            \Log::info("Removing mobile food form after successful logging", [
+                'user_id' => $userId,
+                'type' => $type,
+                'item_id' => $itemId,
+                'item_name' => $form->item_name,
+                'date' => $date->toDateString()
+            ]);
+            
+            $form->delete();
+            return true;
+        }
+        
+        \Log::warning("Mobile food form not found for removal", [
+            'user_id' => $userId,
+            'type' => $type,
+            'item_id' => $itemId,
+            'date' => $date->toDateString()
+        ]);
+        
+        return false;
     }
 
     /**

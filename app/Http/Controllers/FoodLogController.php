@@ -248,8 +248,14 @@ class FoodLogController extends Controller
             $redirectRoute = 'food-logs.mobile-entry';
             if ($request->input('redirect_to') === 'mobile-entry-foods') {
                 $redirectRoute = 'mobile-entry.foods';
-                // Clear the selected forms from session after successful submission
-                $this->clearMobileFoodForms($validated['selected_type'], $validated['selected_id']);
+                // Clear the selected forms from database after successful submission
+                $formService = app(\App\Services\MobileEntry\FoodLogService::class);
+                $formService->removeFormAfterLogging(
+                    auth()->id(), 
+                    $validated['selected_type'], 
+                    $validated['selected_id'], 
+                    \Carbon\Carbon::parse($validated['date'])
+                );
             }
             
             return redirect()->route($redirectRoute, ['date' => $validated['date']])
@@ -274,20 +280,6 @@ class FoodLogController extends Controller
             return redirect()->route($redirectRoute, ['date' => $request->input('date', Carbon::today()->toDateString())])
                 ->with('error', 'An unexpected error occurred while logging your food. Please try again.');
         }
-    }
-
-    /**
-     * Clear a specific item from mobile food forms database
-     * 
-     * @param string $type
-     * @param int $id
-     */
-    private function clearMobileFoodForms($type, $id)
-    {
-        \App\Models\MobileFoodForm::where('user_id', auth()->id())
-            ->where('type', $type)
-            ->where('item_id', $id)
-            ->delete();
     }
 
     public function edit(FoodLog $foodLog)
