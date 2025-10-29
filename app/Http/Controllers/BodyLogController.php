@@ -43,15 +43,38 @@ class BodyLogController extends Controller
 
         $loggedAt = \Carbon\Carbon::parse($request->date)->setTimeFromTimeString($request->logged_at);
 
-        BodyLog::create([
-            'measurement_type_id' => $request->measurement_type_id,
-            'value' => $request->value,
-            'logged_at' => $loggedAt,
-            'comments' => $request->comments,
-            'user_id' => auth()->id(),
-        ]);
+        // Check if entry already exists for this measurement type and date
+        $existingLog = BodyLog::where('user_id', auth()->id())
+            ->where('measurement_type_id', $request->measurement_type_id)
+            ->whereDate('logged_at', $request->date)
+            ->first();
 
-        return redirect()->route('body-logs.index')->with('success', 'Body log created successfully.');
+        if ($existingLog) {
+            // Update existing entry
+            $existingLog->update([
+                'value' => $request->value,
+                'logged_at' => $loggedAt,
+                'comments' => $request->comments,
+            ]);
+            $successMessage = 'Measurement updated successfully.';
+        } else {
+            // Create new entry
+            BodyLog::create([
+                'measurement_type_id' => $request->measurement_type_id,
+                'value' => $request->value,
+                'logged_at' => $loggedAt,
+                'comments' => $request->comments,
+                'user_id' => auth()->id(),
+            ]);
+            $successMessage = 'Measurement logged successfully.';
+        }
+
+        if ($request->input('redirect_to') === 'mobile-entry-measurements') {
+            return redirect()->route('mobile-entry.measurements', ['date' => $request->input('date')])
+                ->with('success', $successMessage);
+        }
+
+        return redirect()->route('body-logs.index')->with('success', $successMessage);
     }
 
     public function edit(BodyLog $bodyLog)
@@ -85,6 +108,11 @@ class BodyLogController extends Controller
             'comments' => $request->comments,
         ]);
 
+        if ($request->input('redirect_to') === 'mobile-entry-measurements') {
+            return redirect()->route('mobile-entry.measurements', ['date' => $request->input('date')])
+                ->with('success', 'Measurement updated successfully.');
+        }
+
         return redirect()->route('body-logs.index')->with('success', 'Body log updated successfully.');
     }
 
@@ -93,7 +121,13 @@ class BodyLogController extends Controller
         if ($bodyLog->user_id !== auth()->id()) {
             abort(403, 'Unauthorized action.');
         }
+        
         $bodyLog->delete();
+
+        if (request()->input('redirect_to') === 'mobile-entry-measurements') {
+            return redirect()->route('mobile-entry.measurements', ['date' => request()->input('date')])
+                ->with('success', 'Measurement deleted successfully.');
+        }
 
         return redirect()->route('body-logs.index')->with('success', 'Body log deleted successfully.');
     }

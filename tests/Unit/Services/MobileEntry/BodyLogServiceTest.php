@@ -1,0 +1,192 @@
+<?php
+
+namespace Tests\Unit\Services\MobileEntry;
+
+use Tests\TestCase;
+use App\Services\MobileEntry\BodyLogService;
+use App\Models\User;
+use App\Models\MeasurementType;
+use App\Models\BodyLog;
+use Carbon\Carbon;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+
+class BodyLogServiceTest extends TestCase
+{
+    use RefreshDatabase;
+
+    protected $service;
+    protected $user;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->service = new BodyLogService();
+        $this->user = User::factory()->create();
+    }
+
+    /** @test */
+    public function it_can_generate_forms_for_all_measurement_types()
+    {
+        // Create measurement types
+        $weightType = MeasurementType::factory()->create([
+            'user_id' => $this->user->id,
+            'name' => 'Weight',
+            'default_unit' => 'lbs'
+        ]);
+        
+        $bodyFatType = MeasurementType::factory()->create([
+            'user_id' => $this->user->id,
+            'name' => 'Body Fat',
+            'default_unit' => '%'
+        ]);
+
+        $selectedDate = Carbon::today();
+        $forms = $this->service->generateForms($this->user->id, $selectedDate);
+
+        $this->assertCount(2, $forms);
+        
+        // Forms are sorted alphabetically, so Body Fat comes before Weight
+        $this->assertEquals('Body Fat', $forms[0]['title']);
+        $this->assertEquals('Weight', $forms[1]['title']);
+        $this->assertEquals('measurement', $forms[0]['type']);
+        $this->assertEquals('measurement', $forms[1]['type']);
+    }
+
+    /** @test */
+    public function it_hides_forms_when_already_logged_today()
+    {
+        $measurementType = MeasurementType::factory()->create([
+            'user_id' => $this->user->id,
+            'name' => 'Weight',
+            'default_unit' => 'lbs'
+        ]);
+
+        $selectedDate = Carbon::today();
+        
+        // Create existing log for today
+        BodyLog::factory()->create([
+            'user_id' => $this->user->id,
+            'measurement_type_id' => $measurementType->id,
+            'value' => 185.5,
+            'logged_at' => $selectedDate,
+            'comments' => 'Morning weigh-in'
+        ]);
+
+        $forms = $this->service->generateForms($this->user->id, $selectedDate);
+
+        // Should not show any forms since the measurement is already logged
+        $this->assertCount(0, $forms);
+        
+        // But should show the logged item
+        $loggedItems = $this->service->generateLoggedItems($this->user->id, $selectedDate);
+        $this->assertCount(1, $loggedItems['items']);
+        $this->assertEquals('Weight', $loggedItems['items'][0]['title']);
+        $this->assertEquals('185.5 lbs', $loggedItems['items'][0]['message']['text']);
+    }
+
+    /** @test */
+    public function it_can_create_new_measurement_types()
+    {
+        $selectedDate = Carbon::today();
+        
+        $result = $this->service->createMeasurementType($this->user->id, 'Muscle Mass', $selectedDate);
+
+        $this->assertTrue($result['success']);
+        $this->assertStringContainsString('Created new measurement type: Muscle Mass', $result['message']);
+        
+        $this->assertDatabaseHas('measurement_types', [
+            'user_id' => $this->user->id,
+            'name' => 'Muscle Mass',
+            'default_unit' => 'lbs' // Should default to lbs for mass-related measurements
+        ]);
+    }
+
+    /** @test */
+    public function it_prevents_duplicate_measurement_types()
+    {
+        MeasurementType::factory()->create([
+            'user_id' => $this->user->id,
+            'name' => 'Weight',
+            'default_unit' => 'lbs'
+        ]);
+
+        $selectedDate = Carbon::today();
+        
+        $result = $this->service->createMeasurementType($this->user->id, 'Weight', $selectedDate);
+
+        $this->assertFalse($result['success']);
+        $this->assertStringContainsString('already exists', $result['message']);
+    }
+
+    /** @test */
+    public function it_generates_logged_items_correctly()
+    {
+        $measurementType = MeasurementType::factory()->create([
+            'user_id' => $this->user->id,
+            'name' => 'Weight',
+            'default_unit' => 'lbs'
+        ]);
+
+        $selectedDate = Carbon::today();
+        
+        BodyLog::factory()->create([
+            'user_id' => $this->user->id,
+            'measurement_type_id' => $measurementType->id,
+            'value' => 185.5,
+            'logged_at' => $selectedDate,
+            'comments' => 'Morning weigh-in'
+        ]);
+
+        $loggedItems = $this->service->generateLoggedItems($this->user->id, $selectedDate);
+
+        $this->assertCount(1, $loggedItems['items']);
+        $item = $loggedItems['items'][0];
+        
+        $this->assertEquals('Weight', $item['title']);
+        $this->assertEquals('185.5 lbs', $item['message']['text']);
+        $this->assertEquals('Morning weigh-in', $item['freeformText']);
+    }
+
+    /** @test */
+    public function it_determines_correct_default_units()
+    {
+        $testCases = [
+            'Weight' => 'lbs',
+            'Body Fat' => '%',
+            'Muscle Mass' => 'lbs',
+            'Waist' => 'in',
+            'Height' => 'in',
+            'Random Measurement' => 'units'
+        ];
+
+        foreach ($testCases as $name => $expectedUnit) {
+            $result = $this->service->createMeasurementType($this->user->id, $name, Carbon::today());
+            
+            $this->assertTrue($result['success']);
+            $this->assertDatabaseHas('measurement_types', [
+                'user_id' => $this->user->id,
+                'name' => $name,
+                'default_unit' => $expectedUnit
+            ]);
+        }
+    }
+
+    /** @test */
+    public function it_generates_contextual_help_messages()
+    {
+        $selectedDate = Carbon::today();
+        
+        // Test with no measurement types
+        $messages = $this->service->generateContextualHelpMessages($this->user->id, $selectedDate);
+        $this->assertCount(1, $messages);
+        $this->assertStringContainsString('Create measurement types', $messages[0]['text']);
+        
+        // Create measurement types but no logs
+        MeasurementType::factory()->create(['user_id' => $this->user->id]);
+        MeasurementType::factory()->create(['user_id' => $this->user->id]);
+        
+        $messages = $this->service->generateContextualHelpMessages($this->user->id, $selectedDate);
+        $this->assertCount(1, $messages);
+        $this->assertStringContainsString('2 measurement types ready', $messages[0]['text']);
+    }
+}

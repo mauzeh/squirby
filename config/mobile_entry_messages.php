@@ -43,6 +43,8 @@ return [
     'empty_states' => [
         'no_workouts_logged' => 'No workouts logged yet! Add exercises above to get started.',
         'no_exercises_found' => 'No exercises found. Type a name and hit "+" to create a new exercise.',
+        'no_measurements_logged' => 'No measurements logged yet today!',
+        'no_measurement_types_found' => 'No measurement types found. Create measurement types first.',
     ],
 
     'form_guidance' => [
@@ -64,6 +66,8 @@ return [
     'placeholders' => [
         'search_exercises' => 'Search exercises (e.g. "bench press")...',
         'workout_notes' => 'How did it feel? Any form notes?',
+        'search_measurements' => 'Search measurements (e.g. "weight")...',
+        'measurement_notes' => 'Any additional notes...',
     ],
 
     'program_comments' => [
