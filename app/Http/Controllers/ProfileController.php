@@ -38,6 +38,22 @@ class ProfileController extends Controller
     }
 
     /**
+     * Update the user's preferences.
+     */
+    public function updatePreferences(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'show_global_exercises' => ['nullable', 'boolean'],
+        ]);
+
+        $request->user()->update([
+            'show_global_exercises' => $request->boolean('show_global_exercises'),
+        ]);
+
+        return Redirect::route('profile.edit')->with('status', 'preferences-updated');
+    }
+
+    /**
      * Delete the user's account.
      */
     public function destroy(Request $request): RedirectResponse
