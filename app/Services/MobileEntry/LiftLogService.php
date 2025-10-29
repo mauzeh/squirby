@@ -800,7 +800,7 @@ class LiftLogService
         
         return [
             'success' => true,
-            'message' => "Removed {$exerciseTitle} form. You can add it back anytime using 'Add Exercise' above."
+            'message' => "Removed {$exerciseTitle} form. You can add it back anytime using 'Add Exercise' below."
         ];
     }
 

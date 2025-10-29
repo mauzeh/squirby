@@ -818,7 +818,7 @@ class LiftLogServiceTest extends TestCase
         $result = $this->service->removeForm($user->id, $formId);
         
         $this->assertTrue($result['success']);
-        $this->assertEquals('Removed Test Exercise form. You can add it back anytime using \'Add Exercise\' above.', $result['message']);
+        $this->assertEquals('Removed Test Exercise form. You can add it back anytime using \'Add Exercise\' below.', $result['message']);
         
         // Verify program was deleted
         $this->assertDatabaseMissing('programs', [
@@ -912,7 +912,7 @@ class LiftLogServiceTest extends TestCase
         $result = $this->service->removeForm($user->id, $formId);
         
         $this->assertTrue($result['success']);
-        $this->assertEquals('Removed Exercise Without Canonical form. You can add it back anytime using \'Add Exercise\' above.', $result['message']);
+        $this->assertEquals('Removed Exercise Without Canonical form. You can add it back anytime using \'Add Exercise\' below.', $result['message']);
     }
 
     #[Test]
@@ -1973,7 +1973,7 @@ class LiftLogServiceTest extends TestCase
         $result = $this->service->removeForm($user->id, $formId);
         
         $this->assertTrue($result['success']);
-        $this->assertEquals('Removed Test Exercise form. You can add it back anytime using \'Add Exercise\' above.', $result['message']);
+        $this->assertEquals('Removed Test Exercise form. You can add it back anytime using \'Add Exercise\' below.', $result['message']);
         
         // Verify program was deleted
         $this->assertDatabaseMissing('programs', ['id' => $program->id]);
