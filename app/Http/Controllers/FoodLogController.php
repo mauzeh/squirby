@@ -323,12 +323,10 @@ class FoodLogController extends Controller
         $date = $foodLog->logged_at->format('Y-m-d');
         $foodLog->delete();
 
-        // Check for redirect parameter
+        // Check for redirect parameter and use it directly
         $redirectTo = $request->input('redirect_to');
-        if ($redirectTo === 'mobile-entry-foods') {
-            return redirect()->route('mobile-entry.foods', ['date' => $date])->with('success', 'Log entry deleted successfully!');
-        } elseif ($redirectTo === 'mobile-entry') {
-            return redirect()->route('food-logs.mobile-entry', ['date' => $date])->with('success', 'Log entry deleted successfully!');
+        if ($redirectTo) {
+            return redirect()->route($redirectTo, ['date' => $date])->with('success', 'Log entry deleted successfully!');
         }
 
         return redirect()->route('food-logs.index', ['date' => $date])->with('success', 'Log entry deleted successfully!');

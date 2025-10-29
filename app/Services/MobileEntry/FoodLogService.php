@@ -121,7 +121,7 @@ class FoodLogService
                 'editAction' => route('food-logs.edit', ['food_log' => $log->id]),
                 'deleteAction' => route('food-logs.destroy', ['food_log' => $log->id]),
                 'deleteParams' => [
-                    'redirect_to' => 'mobile-entry-foods',
+                    'redirect_to' => 'mobile-entry.foods',
                     'date' => $selectedDate->toDateString()
                 ],
                 'message' => [
@@ -518,6 +518,7 @@ class FoodLogService
                     'label' => 'Portion:',
                     'defaultValue' => 1.0,
                     'increment' => 0.25,
+                    'step' => 'any',
                     'min' => 0.1,
                     'max' => 10,
                     'ariaLabels' => [
