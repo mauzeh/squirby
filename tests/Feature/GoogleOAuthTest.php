@@ -48,7 +48,7 @@ class GoogleOAuthTest extends TestCase
     public function it_creates_new_user_on_first_google_signin()
     {
         // Create the athlete role for testing
-        \App\Models\Role::create(['name' => 'athlete']);
+        \App\Models\Role::create(['name' => 'Athlete']);
 
         // Mock Google user data
         $googleUser = Mockery::mock(SocialiteUser::class);
@@ -77,7 +77,7 @@ class GoogleOAuthTest extends TestCase
 
         // Assert user has athlete role
         $user = User::where('email', 'john@example.com')->first();
-        $this->assertTrue($user->hasRole('athlete'));
+        $this->assertTrue($user->hasRole('Athlete'));
 
         // Assert user is logged in
         $this->assertAuthenticated();
@@ -259,7 +259,7 @@ class GoogleOAuthTest extends TestCase
     public function it_assigns_athlete_role_to_new_users()
     {
         // Create the athlete role for testing
-        \App\Models\Role::create(['name' => 'athlete']);
+        \App\Models\Role::create(['name' => 'Athlete']);
 
         // Mock Google user data
         $googleUser = Mockery::mock(SocialiteUser::class);
@@ -282,7 +282,7 @@ class GoogleOAuthTest extends TestCase
         // Assert user was created with athlete role
         $user = User::where('email', 'roletest@example.com')->first();
         $this->assertNotNull($user);
-        $this->assertTrue($user->hasRole('athlete'));
+        $this->assertTrue($user->hasRole('Athlete'));
         $this->assertFalse($user->hasRole('admin'));
 
         $response->assertRedirect('/mobile-entry/lifts');

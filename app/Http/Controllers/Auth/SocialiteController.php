@@ -42,7 +42,7 @@ class SocialiteController extends Controller
                     ]);
                     
                     // Assign athlete role to new users
-                    $athleteRole = \App\Models\Role::where('name', 'athlete')->first();
+                    $athleteRole = \App\Models\Role::where('name', 'Athlete')->first();
                     if ($athleteRole) {
                         $user->roles()->attach($athleteRole);
                     }
