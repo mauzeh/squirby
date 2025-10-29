@@ -37,7 +37,7 @@
         <div class="navbar">
             <a id="lifts-nav-link" href="{{ route('lift-logs.index') }}" class="top-level-nav-item {{ Request::routeIs(['exercises.*', 'lift-logs.*', 'programs.*', 'recommendations.*', 'mobile-entry.lifts']) ? 'active' : '' }}"><i class="fas fa-dumbbell"></i> Lifts</a>
             <a id="food-nav-link" href="{{ route('food-logs.index') }}" class="top-level-nav-item {{ Request::routeIs(['food-logs.*', 'meals.*', 'ingredients.*', 'mobile-entry.foods']) ? 'active' : '' }}"><i class="fas fa-utensils"></i> Food</a>
-            <a href="{{ route('body-logs.index') }}" class="top-level-nav-item {{ Request::routeIs(['body-logs.*', 'measurement-types.*']) ? 'active' : '' }}"><i class="fas fa-heartbeat"></i> Body</a>
+            <a href="{{ route('body-logs.index') }}" class="top-level-nav-item {{ Request::routeIs(['body-logs.*', 'measurement-types.*', 'mobile-entry.measurements']) ? 'active' : '' }}"><i class="fas fa-heartbeat"></i> Body</a>
 
             <div style="margin-left: auto;">
                 @if (Auth::user()->hasRole('Admin'))
@@ -53,13 +53,19 @@
             </div>
         </div>
 
-        @if (Request::routeIs(['food-logs.*', 'meals.*', 'ingredients.*', 'exercises.*', 'lift-logs.*', 'programs.*', 'recommendations.*', 'body-logs.*', 'measurement-types.*', 'mobile-entry.lifts', 'mobile-entry.foods']))
+        @if (Request::routeIs(['food-logs.*', 'meals.*', 'ingredients.*', 'exercises.*', 'lift-logs.*', 'programs.*', 'recommendations.*', 'body-logs.*', 'measurement-types.*', 'mobile-entry.lifts', 'mobile-entry.foods', 'mobile-entry.measurements']))
         <div class="navbar sub-navbar">
             @if (Request::routeIs(['food-logs.*', 'meals.*', 'ingredients.*', 'mobile-entry.foods']))
                 <a href="{{ route('mobile-entry.foods') }}" class="{{ Request::routeIs(['mobile-entry.foods']) ? 'active' : '' }}"><i class="fas fa-mobile-alt"></i></a>
                 <a href="{{ route('food-logs.index') }}" class="{{ Request::routeIs(['food-logs.index', 'food-logs.edit', 'food-logs.destroy-selected', 'food-logs.export', 'food-logs.export-all']) ? 'active' : '' }}">Log</a>
                 <a href="{{ route('meals.index') }}" class="{{ Request::routeIs('meals.*') ? 'active' : '' }}">Meals</a>
                 <a href="{{ route('ingredients.index') }}" class="{{ Request::routeIs('ingredients.*') ? 'active' : '' }}">Ingredients</a>
+            @endif
+
+            @if (Request::routeIs(['body-logs.*', 'measurement-types.*', 'mobile-entry.measurements']))
+                <a href="{{ route('mobile-entry.measurements') }}" class="{{ Request::routeIs(['mobile-entry.measurements']) ? 'active' : '' }}"><i class="fas fa-mobile-alt"></i></a>
+                <a href="{{ route('body-logs.index') }}" class="{{ Request::routeIs(['body-logs.index', 'body-logs.edit', 'body-logs.destroy-selected', 'body-logs.show-by-type']) ? 'active' : '' }}">Log</a>
+                <a href="{{ route('measurement-types.index') }}" class="{{ Request::routeIs('measurement-types.*') ? 'active' : '' }}">Types</a>
             @endif
 
             @if (Request::routeIs(['exercises.*', 'lift-logs.*', 'programs.*', 'recommendations.*', 'mobile-entry.lifts']))
