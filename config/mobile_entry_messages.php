@@ -15,7 +15,7 @@ return [
     'success' => [
         'exercise_added' => ':exercise added! Now scroll down to log your workout - adjust the weight/reps and tap \'Log :exercise\' when ready.',
         'exercise_created' => 'Created \':exercise\'! Now scroll down to log your first set - the form is ready with default values you can adjust.',
-        'form_removed' => 'Removed :exercise. You can add it back anytime using \'Add Exercise\' below.',
+        'form_removed' => 'Removed :exercise form. You can add it back anytime using \'Add Exercise\' below.',
         
         'lift_logged' => [
             'Nice work! :exercise: :details logged!',

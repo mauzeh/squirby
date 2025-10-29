@@ -142,7 +142,6 @@ class LiftLogService
                 'defaultValue' => $defaultReps,
                 'increment' => 1,
                 'min' => 1,
-                'max' => 50,
                 'ariaLabels' => [
                     'decrease' => 'Decrease reps',
                     'increase' => 'Increase reps'
