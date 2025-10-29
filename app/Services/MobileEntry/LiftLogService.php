@@ -1,14 +1,15 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\MobileEntry;
 
 use App\Models\Program;
 use App\Models\LiftLog;
 use App\Models\Exercise;
+use App\Services\TrainingProgressionService;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 
-class MobileEntryLiftLogFormService
+class LiftLogService
 {
     protected TrainingProgressionService $trainingProgressionService;
 
@@ -470,9 +471,8 @@ class MobileEntryLiftLogFormService
         }
 
         return $result;
-    }
-
-    /**
+    }  
+  /**
      * Generate item selection list based on user's accessible exercises
      * 
      * @param int $userId
@@ -954,6 +954,4 @@ class MobileEntryLiftLogFormService
             'messageCount' => count($systemMessages)
         ];
     }
-
-
 }

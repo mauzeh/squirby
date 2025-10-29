@@ -5,7 +5,7 @@ namespace Tests\Feature;
 use App\Models\User;
 use App\Models\Exercise;
 use App\Models\Program;
-use App\Services\MobileEntryLiftLogFormService;
+use App\Services\MobileEntry\LiftLogService;
 use App\Services\TrainingProgressionService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -18,7 +18,7 @@ class ShowExtraWeightPreferenceTest extends TestCase
     private User $user;
     private Exercise $bodyweightExercise;
     private Exercise $weightedExercise;
-    private MobileEntryLiftLogFormService $service;
+    private LiftLogService $service;
 
     protected function setUp(): void
     {
@@ -43,7 +43,7 @@ class ShowExtraWeightPreferenceTest extends TestCase
         $mockProgressionService = $this->createMock(TrainingProgressionService::class);
         $mockProgressionService->method('getSuggestionDetails')->willReturn(null);
         
-        $this->service = new MobileEntryLiftLogFormService($mockProgressionService);
+        $this->service = new LiftLogService($mockProgressionService);
     }
 
     public function test_bodyweight_exercise_hides_weight_field_when_preference_disabled()

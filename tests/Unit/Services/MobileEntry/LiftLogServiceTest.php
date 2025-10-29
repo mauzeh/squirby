@@ -7,7 +7,7 @@ use App\Models\LiftLog;
 use App\Models\LiftSet;
 use App\Models\Program;
 use App\Models\User;
-use App\Services\MobileEntryLiftLogFormService;
+use App\Services\MobileEntry\LiftLogService;
 use App\Services\TrainingProgressionService;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -15,15 +15,15 @@ use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 /**
- * Unit tests for MobileEntryLiftLogFormService core logic
+ * Unit tests for LiftLogService core logic
  * 
  * Tests the business logic without route dependencies
  */
-class MobileEntryLiftLogFormServiceTest extends TestCase
+class LiftLogServiceTest extends TestCase
 {
     use RefreshDatabase;
 
-    private MobileEntryLiftLogFormService $service;
+    private LiftLogService $service;
     private Carbon $testDate;
 
     protected function setUp(): void
@@ -34,7 +34,7 @@ class MobileEntryLiftLogFormServiceTest extends TestCase
         $mockProgressionService = $this->createMock(TrainingProgressionService::class);
         $mockProgressionService->method('getSuggestionDetails')->willReturn(null);
         
-        $this->service = new MobileEntryLiftLogFormService($mockProgressionService);
+        $this->service = new LiftLogService($mockProgressionService);
         $this->testDate = Carbon::parse('2024-01-15');
     }
 
@@ -875,7 +875,9 @@ class MobileEntryLiftLogFormServiceTest extends TestCase
     #[Test]
     public function it_generates_bodyweight_exercise_forms_correctly()
     {
-        $user = \App\Models\User::factory()->create();
+        $user = \App\Models\User::factory()->create([
+            'show_extra_weight' => true
+        ]);
         $exercise = Exercise::factory()->create([
             'title' => 'Pull-ups',
             'is_bodyweight' => true
@@ -1055,7 +1057,9 @@ class MobileEntryLiftLogFormServiceTest extends TestCase
     #[Test]
     public function it_handles_forms_with_different_exercise_types()
     {
-        $user = \App\Models\User::factory()->create();
+        $user = \App\Models\User::factory()->create([
+            'show_extra_weight' => true
+        ]);
         
         // Create different types of exercises
         $weightedExercise = Exercise::factory()->create([

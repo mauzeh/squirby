@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Services\DateTitleService;
-use App\Services\MobileEntryLiftLogFormService;
+use App\Services\MobileEntry\LiftLogService;
 use Illuminate\Support\Facades\Auth;
 
 class MobileEntryController extends Controller
@@ -53,7 +53,7 @@ class MobileEntryController extends Controller
         }
         
         // Generate interface messages using the service
-        $formService = app(\App\Services\MobileEntryLiftLogFormService::class);
+        $formService = app(\App\Services\MobileEntry\LiftLogService::class);
         $interfaceMessages = $formService->generateInterfaceMessages($sessionMessages);
         
         // All text content and data for the view
@@ -597,7 +597,7 @@ class MobileEntryController extends Controller
      * @param DateTitleService $dateTitleService
      * @return \Illuminate\View\View
      */
-    public function lifts(Request $request, DateTitleService $dateTitleService, MobileEntryLiftLogFormService $formService)
+    public function lifts(Request $request, DateTitleService $dateTitleService, LiftLogService $formService)
     {
         // Get the selected date from request or default to today
         $selectedDate = $request->input('date') 
@@ -686,11 +686,11 @@ class MobileEntryController extends Controller
      * Add a form for a specific exercise to the mobile interface
      * 
      * @param Request $request
-     * @param MobileEntryLiftLogFormService $formService
+     * @param LiftLogService $formService
      * @param string $exercise Exercise canonical name or ID
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function addLiftForm(Request $request, MobileEntryLiftLogFormService $formService, $exercise)
+    public function addLiftForm(Request $request, LiftLogService $formService, $exercise)
     {
         $selectedDate = $request->input('date') 
             ? \Carbon\Carbon::parse($request->input('date')) 
@@ -708,10 +708,10 @@ class MobileEntryController extends Controller
      * Create a new exercise from the mobile interface
      * 
      * @param Request $request
-     * @param MobileEntryLiftLogFormService $formService
+     * @param LiftLogService $formService
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function createExercise(Request $request, MobileEntryLiftLogFormService $formService)
+    public function createExercise(Request $request, LiftLogService $formService)
     {
         $request->validate([
             'exercise_name' => 'required|string|max:255',
@@ -734,11 +734,11 @@ class MobileEntryController extends Controller
      * Remove a form from the mobile interface
      * 
      * @param Request $request
-     * @param MobileEntryLiftLogFormService $formService
+     * @param LiftLogService $formService
      * @param string $id Form ID
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function removeForm(Request $request, MobileEntryLiftLogFormService $formService, $id)
+    public function removeForm(Request $request, LiftLogService $formService, $id)
     {
         $selectedDate = $request->input('date') 
             ? \Carbon\Carbon::parse($request->input('date')) 
