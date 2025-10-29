@@ -635,6 +635,11 @@ class MobileEntryController extends Controller
         // Generate logged items using the service
         $loggedItems = $formService->generateLoggedItems(Auth::id(), $selectedDate);
         
+        // If there are forms available to log, don't show the empty message for logged items
+        if (!empty($forms) && isset($loggedItems['emptyMessage'])) {
+            unset($loggedItems['emptyMessage']);
+        }
+        
         // Generate item selection list using the service
         $itemSelectionList = $formService->generateItemSelectionList(Auth::id(), $selectedDate);
         
