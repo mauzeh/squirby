@@ -39,7 +39,7 @@ class ExerciseController extends Controller
             ->orderBy('user_id') // Global exercises (null) first, then user exercises
             ->orderBy('title', 'asc')
             ->get();
-        return view('exercises.index', compact('exercises'));
+        return view('exercises.index', compact('exercises'))->with('exerciseMergeService', $this->exerciseMergeService);
     }
 
     /**

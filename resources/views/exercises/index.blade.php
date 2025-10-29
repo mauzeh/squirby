@@ -69,6 +69,9 @@
                                             <button type="submit" class="button" style="background-color: #FF9800;" onclick="return confirm('Are you sure you want to unpromote this exercise back to personal status? This will only work if no other users have workout logs with this exercise.');" title="Unpromote to personal exercise"><i class="fa-solid fa-user"></i></button>
                                         </form>
                                     @endif
+                                    @if(auth()->user()->hasRole('Admin') && $exerciseMergeService->canBeMerged($exercise))
+                                        <a href="{{ route('exercises.show-merge', $exercise->id) }}" class="button" style="background-color: #6f42c1; color: white;" title="Merge exercise into global exercise"><i class="fa-solid fa-code-branch"></i></a>
+                                    @endif
                                     @if($exercise->canBeDeletedBy(auth()->user()))
                                         <form action="{{ route('exercises.destroy', $exercise->id) }}" method="POST" style="display:inline;">
                                             @csrf
