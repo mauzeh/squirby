@@ -35,7 +35,7 @@ return [
     'error' => [
         'exercise_not_found' => 'Exercise not found. Try searching for a different name or create a new exercise using the "+" button.',
         'exercise_already_exists' => '\':exercise\' already exists in your exercise library. Use the search above to find and add it instead.',
-        'exercise_already_in_program' => ':exercise is already ready to log below. Scroll down to find the form and enter your workout details.',
+        'exercise_already_in_program' => ':exercise is already ready to log below. Scroll down to find the entry and enter or modify your workout details.',
         'form_invalid_format' => 'Unable to remove form - invalid format.',
         'form_not_found' => 'Exercise form not found. It may have already been removed.',
     ],
