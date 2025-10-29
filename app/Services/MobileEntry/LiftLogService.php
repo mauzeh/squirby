@@ -12,10 +12,14 @@ use Carbon\Carbon;
 class LiftLogService
 {
     protected TrainingProgressionService $trainingProgressionService;
+    protected LiftDataCacheService $cacheService;
 
-    public function __construct(TrainingProgressionService $trainingProgressionService)
-    {
+    public function __construct(
+        TrainingProgressionService $trainingProgressionService,
+        LiftDataCacheService $cacheService
+    ) {
         $this->trainingProgressionService = $trainingProgressionService;
+        $this->cacheService = $cacheService;
     }
     /**
      * Generate forms based on user's programs for the selected date
@@ -30,28 +34,19 @@ class LiftLogService
         // Get user to check preferences
         $user = \App\Models\User::find($userId);
         
-        // Get user's programs for the selected date with completion status preloaded
-        $query = Program::where('user_id', $userId)
-            ->whereDate('date', $selectedDate->toDateString())
-            ->with(['exercise'])
-            ->withCompletionStatus();
-            
-        // Optionally filter out completed programs
-        if (!$includeCompleted) {
-            $query->incomplete();
-        }
-        
-        $programs = $query->orderBy('priority', 'asc')->get();
+        // Get programs with optimized completion status
+        $programs = $this->cacheService->getProgramsWithCompletionStatus($userId, $selectedDate, $includeCompleted);
         
         if ($programs->isEmpty()) {
             return [];
         }
         
         // Get all exercise IDs for batch queries
-        $exerciseIds = $programs->pluck('exercise.id')->filter()->unique();
+        $exerciseIds = $programs->pluck('exercise.id')->filter()->unique()->toArray();
         
-        // Batch fetch last session data for all exercises
-        $lastSessionsData = $this->getBatchLastSessionData($exerciseIds->toArray(), $selectedDate, $userId);
+        // Get all cached data needed for form generation
+        $cachedData = $this->cacheService->getAllCachedData($userId, $selectedDate, $exerciseIds);
+        $lastSessionsData = $cachedData['lastSessionData'];
         
         // Batch fetch progression suggestions for all exercises
         $progressionSuggestions = [];
@@ -73,7 +68,7 @@ class LiftLogService
             
             $exercise = $program->exercise;
             
-            // Get last session data from batch results
+            // Get last session data from cached results
             $lastSession = $lastSessionsData[$exercise->id] ?? null;
             
             // Generate form ID
@@ -92,7 +87,7 @@ class LiftLogService
             // Generate messages based on last session and program
             $messages = $this->generateFormMessages($program, $lastSession, $userId);
             
-            // Check if program is completed (this is already optimized in the scope)
+            // Check if program is completed (uses preloaded data)
             $isCompleted = $program->isCompleted();
             
             // Build numeric fields based on exercise type
@@ -245,57 +240,7 @@ class LiftLogService
         ];
     }
 
-    /**
-     * Get last session data for multiple exercises in a single batch query
-     * 
-     * @param array $exerciseIds
-     * @param Carbon $beforeDate
-     * @param int $userId
-     * @return array Keyed by exercise_id
-     */
-    protected function getBatchLastSessionData(array $exerciseIds, Carbon $beforeDate, $userId)
-    {
-        if (empty($exerciseIds)) {
-            return [];
-        }
 
-        // Get the most recent log for each exercise using a subquery approach
-        // This is more compatible across different database systems
-        $lastLogs = LiftLog::where('user_id', $userId)
-            ->whereIn('exercise_id', $exerciseIds)
-            ->where('logged_at', '<', $beforeDate->toDateString())
-            ->whereIn('id', function ($query) use ($userId, $exerciseIds, $beforeDate) {
-                $query->select(\DB::raw('MAX(id)'))
-                    ->from('lift_logs')
-                    ->where('user_id', $userId)
-                    ->whereIn('exercise_id', $exerciseIds)
-                    ->where('logged_at', '<', $beforeDate->toDateString())
-                    ->groupBy('exercise_id');
-            })
-            ->with(['liftSets'])
-            ->get();
-
-        $results = [];
-        
-        foreach ($lastLogs as $lastLog) {
-            if ($lastLog->liftSets->isEmpty()) {
-                continue;
-            }
-            
-            $firstSet = $lastLog->liftSets->first();
-            
-            $results[$lastLog->exercise_id] = [
-                'weight' => $firstSet->weight,
-                'reps' => $firstSet->reps,
-                'sets' => $lastLog->liftSets->count(),
-                'date' => $lastLog->logged_at->format('M j'),
-                'comments' => $lastLog->comments,
-                'band_color' => $firstSet->band_color
-            ];
-        }
-        
-        return $results;
-    }
 
     /**
      * Determine default weight for an exercise
@@ -560,20 +505,16 @@ class LiftLogService
             ->orderBy('title', 'asc')
             ->get();
 
-        // Get the top 5 most recently used exercises for this user in a single query
-        $recentExerciseIds = $this->getTopRecentExerciseIds($userId, $selectedDate, 5);
-
-        // Get all exercises that are in today's program in a single query
-        $programExerciseIds = Program::where('user_id', $userId)
-            ->whereDate('date', $selectedDate->toDateString())
-            ->pluck('exercise_id')
-            ->toArray();
+        // Get cached data for item type determination
+        $cachedData = $this->cacheService->getAllCachedData($userId, $selectedDate);
+        $recentExerciseIds = $cachedData['recentExerciseIds'];
+        $programExerciseIds = $cachedData['programExerciseIds'];
 
         $items = [];
         
         foreach ($exercises as $exercise) {
-            // Determine item type based on program and recent usage (optimized)
-            $itemType = $this->determineItemTypeOptimized($exercise, $userId, $recentExerciseIds, $programExerciseIds);
+            // Determine item type using cached data
+            $itemType = $this->cacheService->determineItemType($exercise, $userId, $recentExerciseIds, $programExerciseIds);
 
             $items[] = [
                 'id' => 'exercise-' . $exercise->id,
@@ -619,127 +560,11 @@ class LiftLogService
         ];
     }
 
-    /**
-     * Get the top N most recently used exercise IDs for a user
-     * 
-     * @param int $userId
-     * @param Carbon $selectedDate
-     * @param int $limit
-     * @return array
-     */
-    protected function getTopRecentExerciseIds($userId, Carbon $selectedDate, $limit = 5)
-    {
-        return LiftLog::where('user_id', $userId)
-            ->where('logged_at', '<', $selectedDate->toDateString())
-            ->where('logged_at', '>=', $selectedDate->copy()->subDays(30))
-            ->select('exercise_id')
-            ->groupBy('exercise_id')
-            ->orderByRaw('MAX(logged_at) DESC')
-            ->limit($limit)
-            ->pluck('exercise_id')
-            ->toArray();
-    }
 
-    /**
-     * Determine the item type configuration for an exercise
-     * 
-     * @param \App\Models\Exercise $exercise
-     * @param int $userId
-     * @param Carbon $selectedDate
-     * @param array $recentExerciseIds
-     * @return array Item type configuration with label and cssClass
-     */
-    protected function determineItemType($exercise, $userId, Carbon $selectedDate, $recentExerciseIds = [])
-    {
-        // Check if exercise is in today's program
-        $inProgram = Program::where('user_id', $userId)
-            ->where('exercise_id', $exercise->id)
-            ->whereDate('date', $selectedDate->toDateString())
-            ->exists();
 
-        // Check if exercise is in the top 5 most recently used
-        $isTopRecent = in_array($exercise->id, $recentExerciseIds);
 
-        // Check if it's a user's custom exercise
-        $isCustom = $exercise->user_id === $userId;
 
-        // Determine type based on priority: recent > custom > regular > in-program
-        if ($isTopRecent) {
-            return $this->getItemTypeConfig('recent');
-        } elseif ($isCustom) {
-            return $this->getItemTypeConfig('custom');
-        } elseif ($inProgram) {
-            return $this->getItemTypeConfig('in-program');
-        } else {
-            return $this->getItemTypeConfig('regular');
-        }
-    }
 
-    /**
-     * Optimized version of determineItemType that uses pre-fetched data
-     * 
-     * @param \App\Models\Exercise $exercise
-     * @param int $userId
-     * @param array $recentExerciseIds
-     * @param array $programExerciseIds
-     * @return array Item type configuration with label and cssClass
-     */
-    protected function determineItemTypeOptimized($exercise, $userId, $recentExerciseIds = [], $programExerciseIds = [])
-    {
-        // Check if exercise is in today's program (using pre-fetched data)
-        $inProgram = in_array($exercise->id, $programExerciseIds);
-
-        // Check if exercise is in the top 5 most recently used
-        $isTopRecent = in_array($exercise->id, $recentExerciseIds);
-
-        // Check if it's a user's custom exercise
-        $isCustom = $exercise->user_id === $userId;
-
-        // Determine type based on priority: recent > custom > regular > in-program
-        if ($isTopRecent) {
-            return $this->getItemTypeConfig('recent');
-        } elseif ($isCustom) {
-            return $this->getItemTypeConfig('custom');
-        } elseif ($inProgram) {
-            return $this->getItemTypeConfig('in-program');
-        } else {
-            return $this->getItemTypeConfig('regular');
-        }
-    }
-
-    /**
-     * Get item type configuration
-     * 
-     * @param string $typeKey
-     * @return array Configuration with label and cssClass
-     */
-    protected function getItemTypeConfig($typeKey)
-    {
-        $itemTypes = [
-            'recent' => [
-                'label' => 'Recent',
-                'cssClass' => 'recent',
-                'priority' => 1
-            ],
-            'custom' => [
-                'label' => 'My Exercise',
-                'cssClass' => 'custom',
-                'priority' => 2
-            ],
-            'regular' => [
-                'label' => 'Available',
-                'cssClass' => 'regular',
-                'priority' => 3
-            ],
-            'in-program' => [
-                'label' => 'In Program',
-                'cssClass' => 'in-program',
-                'priority' => 4
-            ]
-        ];
-
-        return $itemTypes[$typeKey] ?? $itemTypes['regular'];
-    }
 
     /**
      * Get program completion statistics for a given date
@@ -859,6 +684,9 @@ class LiftLogService
             'comments' => null
         ]);
         
+        // Clear cache for this user and date since program data changed
+        $this->cacheService->clearCacheForUser($userId, $selectedDate);
+        
         return [
             'success' => true,
             'message' => "Added {$exercise->title} to today's program."
@@ -955,7 +783,11 @@ class LiftLogService
         }
         
         $exerciseTitle = $program->exercise->title ?? 'Exercise';
+        $programDate = $program->date;
         $program->delete();
+        
+        // Clear cache for this user and date since program data changed
+        $this->cacheService->clearCacheForUser($userId, $programDate);
         
         return [
             'success' => true,

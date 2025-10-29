@@ -43,7 +43,32 @@ class ShowExtraWeightPreferenceTest extends TestCase
         $mockProgressionService = $this->createMock(TrainingProgressionService::class);
         $mockProgressionService->method('getSuggestionDetails')->willReturn(null);
         
-        $this->service = new LiftLogService($mockProgressionService);
+        // Mock the LiftDataCacheService
+        $mockCacheService = $this->createMock(\App\Services\MobileEntry\LiftDataCacheService::class);
+        
+        // Set up default mock returns for cache service
+        $mockCacheService->method('getProgramsWithCompletionStatus')->willReturnCallback(function($userId, $selectedDate, $includeCompleted = false) {
+            $query = Program::where('user_id', $userId)
+                ->whereDate('date', $selectedDate->toDateString())
+                ->with(['exercise'])
+                ->withCompletionStatus();
+                
+            if (!$includeCompleted) {
+                $query->incomplete();
+            }
+            
+            return $query->orderBy('priority', 'asc')->get();
+        });
+        
+        $mockCacheService->method('getAllCachedData')->willReturnCallback(function($userId, $selectedDate, $exerciseIds = []) {
+            return [
+                'lastSessionData' => [],
+                'recentExerciseIds' => [],
+                'programExerciseIds' => [],
+            ];
+        });
+        
+        $this->service = new LiftLogService($mockProgressionService, $mockCacheService);
     }
 
     public function test_bodyweight_exercise_hides_weight_field_when_preference_disabled()

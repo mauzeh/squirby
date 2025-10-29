@@ -34,7 +34,93 @@ class LiftLogServiceTest extends TestCase
         $mockProgressionService = $this->createMock(TrainingProgressionService::class);
         $mockProgressionService->method('getSuggestionDetails')->willReturn(null);
         
-        $this->service = new LiftLogService($mockProgressionService);
+        // Mock the LiftDataCacheService
+        $mockCacheService = $this->createMock(\App\Services\MobileEntry\LiftDataCacheService::class);
+        
+        // Set up default mock returns for cache service
+        $mockCacheService->method('getProgramsWithCompletionStatus')->willReturnCallback(function($userId, $selectedDate, $includeCompleted = false) {
+            $query = Program::where('user_id', $userId)
+                ->whereDate('date', $selectedDate->toDateString())
+                ->with(['exercise'])
+                ->withCompletionStatus();
+                
+            if (!$includeCompleted) {
+                $query->incomplete();
+            }
+            
+            return $query->orderBy('priority', 'asc')->get();
+        });
+        
+        $mockCacheService->method('getAllCachedData')->willReturnCallback(function($userId, $selectedDate, $exerciseIds = []) {
+            // Get actual last session data for the exercises
+            $lastSessionData = [];
+            foreach ($exerciseIds as $exerciseId) {
+                $lastLog = LiftLog::where('user_id', $userId)
+                    ->where('exercise_id', $exerciseId)
+                    ->where('logged_at', '<', $selectedDate->toDateString())
+                    ->with(['liftSets'])
+                    ->orderBy('logged_at', 'desc')
+                    ->first();
+                
+                if ($lastLog && !$lastLog->liftSets->isEmpty()) {
+                    $firstSet = $lastLog->liftSets->first();
+                    $lastSessionData[$exerciseId] = [
+                        'weight' => $firstSet->weight,
+                        'reps' => $firstSet->reps,
+                        'sets' => $lastLog->liftSets->count(),
+                        'date' => $lastLog->logged_at->format('M j'),
+                        'comments' => $lastLog->comments,
+                        'band_color' => $firstSet->band_color
+                    ];
+                }
+            }
+            
+            // Get recent exercise IDs (exercises logged within last 30 days)
+            $recentExerciseIds = LiftLog::where('user_id', $userId)
+                ->where('logged_at', '<', $selectedDate->toDateString())
+                ->where('logged_at', '>=', $selectedDate->copy()->subDays(30))
+                ->select('exercise_id')
+                ->groupBy('exercise_id')
+                ->orderByRaw('MAX(logged_at) DESC')
+                ->limit(5)
+                ->pluck('exercise_id')
+                ->toArray();
+            
+            return [
+                'lastSessionData' => $lastSessionData,
+                'recentExerciseIds' => $recentExerciseIds,
+                'programExerciseIds' => Program::where('user_id', $userId)
+                    ->whereDate('date', $selectedDate->toDateString())
+                    ->pluck('exercise_id')
+                    ->toArray(),
+            ];
+        });
+        
+        $mockCacheService->method('determineItemType')->willReturnCallback(function($exercise, $userId, $recentExerciseIds, $programExerciseIds) {
+            // Check if exercise is in today's program (using pre-fetched data)
+            $inProgram = in_array($exercise->id, $programExerciseIds);
+
+            // Check if exercise is in the top recent exercises
+            $isTopRecent = in_array($exercise->id, $recentExerciseIds);
+
+            // Check if it's a user's custom exercise
+            $isCustom = $exercise->user_id === $userId;
+
+            // Determine type based on priority: recent > custom > regular > in-program
+            if ($isTopRecent) {
+                return ['label' => 'Recent', 'cssClass' => 'recent', 'priority' => 1];
+            } elseif ($isCustom) {
+                return ['label' => 'My Exercise', 'cssClass' => 'custom', 'priority' => 2];
+            } elseif ($inProgram) {
+                return ['label' => 'In Program', 'cssClass' => 'in-program', 'priority' => 4];
+            } else {
+                return ['label' => 'Available', 'cssClass' => 'regular', 'priority' => 3];
+            }
+        });
+        
+        $mockCacheService->method('clearCacheForUser')->willReturnCallback(function() {});
+        
+        $this->service = new LiftLogService($mockProgressionService, $mockCacheService);
         $this->testDate = Carbon::parse('2024-01-15');
     }
 
