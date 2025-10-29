@@ -472,8 +472,8 @@ class FoodLogServiceTest extends TestCase
         
         // Check hidden fields
         $hiddenFields = $form['hiddenFields'];
-        $this->assertEquals('ingredient', $hiddenFields['selected_type']);
-        $this->assertEquals($ingredient->id, $hiddenFields['selected_id']);
+        $this->assertEquals($ingredient->id, $hiddenFields['ingredient_id']);
+        $this->assertArrayHasKey('logged_at', $hiddenFields);
         $this->assertEquals($this->testDate->toDateString(), $hiddenFields['date']);
         $this->assertEquals('mobile-entry-foods', $hiddenFields['redirect_to']);
         
@@ -537,8 +537,9 @@ class FoodLogServiceTest extends TestCase
         
         // Check hidden fields for meal
         $hiddenFields = $form['hiddenFields'];
-        $this->assertEquals('meal', $hiddenFields['selected_type']);
-        $this->assertEquals($meal->id, $hiddenFields['selected_id']);
+        $this->assertEquals($meal->id, $hiddenFields['meal_id']);
+        $this->assertArrayHasKey('logged_at_meal', $hiddenFields);
+        $this->assertEquals($this->testDate->toDateString(), $hiddenFields['meal_date']);
         
         // Check messages include meal info
         $mealInfoMessage = collect($form['messages'])->firstWhere(function ($message) {

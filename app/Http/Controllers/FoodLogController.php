@@ -10,20 +10,21 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use App\Services\NutritionService;
-
+use App\Services\MobileEntry\FoodLogService;
 use App\Services\DateNavigationService;
 use Carbon\Carbon;
 
 class FoodLogController extends Controller
 {
     protected $nutritionService;
-
     protected $dateNavigationService;
+    protected $foodLogService;
 
-    public function __construct(NutritionService $nutritionService, DateNavigationService $dateNavigationService)
+    public function __construct(NutritionService $nutritionService, DateNavigationService $dateNavigationService, FoodLogService $foodLogService)
     {
         $this->nutritionService = $nutritionService;
         $this->dateNavigationService = $dateNavigationService;
+        $this->foodLogService = $foodLogService;
     }
 
     /**
@@ -71,12 +72,6 @@ class FoodLogController extends Controller
      */
     public function store(Request $request)
     {
-        // Handle mobile entry submissions - redirect to new mobile entry system
-        if ($request->has('redirect_to') && in_array($request->input('redirect_to'), ['mobile-entry', 'mobile-entry-foods'])) {
-            // All mobile entry submissions should now go through the new MobileEntryController
-            return redirect()->route('mobile-entry.foods', ['date' => $request->input('date', Carbon::today()->toDateString())])
-                ->with('error', 'Please use the new mobile entry interface for food logging.');
-        }
 
         // Original desktop store logic
         $request->merge([
@@ -98,6 +93,20 @@ class FoodLogController extends Controller
         $validated['logged_at'] = $loggedAtDate->setTimeFromTimeString($validated['logged_at']);
 
         $logEntry = FoodLog::create(array_merge($validated, ['user_id' => auth()->id()]));
+
+        // Handle mobile entry redirects
+        if ($request->has('redirect_to') && in_array($request->input('redirect_to'), ['mobile-entry', 'mobile-entry-foods'])) {
+            // Remove the mobile food form after successful logging
+            $this->foodLogService->removeFormAfterLogging(
+                auth()->id(),
+                'ingredient',
+                $validated['ingredient_id'],
+                Carbon::parse($validated['date'])
+            );
+            
+            return redirect()->route('mobile-entry.foods', ['date' => $validated['date']])
+                ->with('success', 'Food logged successfully.');
+        }
 
         return redirect()->route('food-logs.index', ['date' => $validated['date']])->with('success', 'Log entry added successfully!');
     }
@@ -212,6 +221,20 @@ class FoodLogController extends Controller
                 'notes' => $notes,
                 'user_id' => auth()->id(),
             ]);
+        }
+
+        // Handle mobile entry redirects
+        if ($request->has('redirect_to') && in_array($request->input('redirect_to'), ['mobile-entry', 'mobile-entry-foods'])) {
+            // Remove the mobile food form after successful logging
+            $this->foodLogService->removeFormAfterLogging(
+                auth()->id(),
+                'meal',
+                $validated['meal_id'],
+                Carbon::parse($validated['meal_date'])
+            );
+            
+            return redirect()->route('mobile-entry.foods', ['date' => $validated['meal_date']])
+                ->with('success', 'Meal logged successfully.');
         }
 
         return redirect()->route('food-logs.index', ['date' => $validated['meal_date']])->with('success', 'Meal added to log successfully!');

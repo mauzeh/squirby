@@ -393,8 +393,8 @@ class FoodLogService
             ],
             // Hidden fields for form submission
             'hiddenFields' => [
-                'selected_type' => 'ingredient',
-                'selected_id' => $ingredient->id,
+                'ingredient_id' => $ingredient->id,
+                'logged_at' => now()->format('H:i'),
                 'date' => $selectedDate->toDateString(),
                 'redirect_to' => 'mobile-entry-foods'
             ]
@@ -459,7 +459,7 @@ class FoodLogService
             'type' => 'food',
             'title' => $meal->name . ' (Meal)',
             'itemName' => $meal->name,
-            'formAction' => route('food-logs.store'),
+            'formAction' => route('food-logs.add-meal'),
             'deleteAction' => route('mobile-entry.remove-food-form', ['id' => $formId]),
             'deleteParams' => [
                 'date' => $selectedDate->toDateString()
@@ -499,9 +499,9 @@ class FoodLogService
             ],
             // Hidden fields for form submission
             'hiddenFields' => [
-                'selected_type' => 'meal',
-                'selected_id' => $meal->id,
-                'date' => $selectedDate->toDateString(),
+                'meal_id' => $meal->id,
+                'logged_at_meal' => now()->format('H:i'),
+                'meal_date' => $selectedDate->toDateString(),
                 'redirect_to' => 'mobile-entry-foods'
             ]
         ];
