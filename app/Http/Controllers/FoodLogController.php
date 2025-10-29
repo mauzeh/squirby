@@ -217,8 +217,6 @@ class FoodLogController extends Controller
         return redirect()->route('food-logs.index', ['date' => $validated['meal_date']])->with('success', 'Meal added to log successfully!');
     }
 
-
-
     public function export(Request $request)
     {
         $validated = $request->validate([
@@ -329,6 +327,5 @@ class FoodLogController extends Controller
 
         return response()->stream($callback, 200, $headers);
     }
-
 
 }

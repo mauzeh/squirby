@@ -118,8 +118,6 @@ class BodyLogController extends Controller
         return redirect()->route('body-logs.index')->with('success', 'Selected body logs deleted successfully!');
     }
 
-
-
     public function showByType(MeasurementType $measurementType)
     {
         $bodyLogs = BodyLog::where('measurement_type_id', $measurementType->id)->where('user_id', auth()->id())->orderBy('logged_at', 'desc')->get();

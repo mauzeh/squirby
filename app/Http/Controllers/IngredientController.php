@@ -9,8 +9,6 @@ use Illuminate\Support\Facades\Auth;
 
 class IngredientController extends Controller
 {
-
-
     /**
      * Display a listing of the resource.
      */
@@ -57,8 +55,6 @@ class IngredientController extends Controller
         return redirect()->route('ingredients.index')
                          ->with('success', 'Ingredient created successfully.');
     }
-
-    
 
     /**
      * Show the form for editing the specified resource.
@@ -117,6 +113,5 @@ class IngredientController extends Controller
         return redirect()->route('ingredients.index')
                          ->with('success', 'Ingredient deleted successfully.');
     }
-
 
 }
