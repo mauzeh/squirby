@@ -632,24 +632,24 @@ Date Navigation Component */
     font-weight: 500;
 }
 
-/* Recent - Second priority, blue accent */
+/* Recent - Second priority, green accent */
 .item-selection-card--recent {
-    background-color: rgba(0, 123, 255, 0.08);
-    border-left: 2px solid #007bff;
+    background-color: rgba(40, 167, 69, 0.08);
+    border-left: 2px solid #28a745;
 }
 
 @media (hover: hover) {
     .item-selection-card--recent:hover {
-        background-color: rgba(0, 123, 255, 0.12);
+        background-color: rgba(40, 167, 69, 0.12);
     }
 }
 
 .item-selection-card--recent .item-name {
-    color: #e3f2fd;
+    color: #d4edda;
 }
 
 .item-selection-card--recent .item-type {
-    color: rgba(227, 242, 253, 0.7);
+    color: rgba(212, 237, 218, 0.7);
 }
 
 /* Custom - Third priority, purple accent */
@@ -693,22 +693,22 @@ Date Navigation Component */
 
 /* Legacy support - map old 'highlighted' class to 'recent' */
 .item-selection-card--highlighted {
-    background-color: rgba(0, 123, 255, 0.08);
-    border-left: 2px solid #007bff;
+    background-color: rgba(40, 167, 69, 0.08);
+    border-left: 2px solid #28a745;
 }
 
 @media (hover: hover) {
     .item-selection-card--highlighted:hover {
-        background-color: rgba(0, 123, 255, 0.12);
+        background-color: rgba(40, 167, 69, 0.12);
     }
 }
 
 .item-selection-card--highlighted .item-name {
-    color: #e3f2fd;
+    color: #d4edda;
 }
 
 .item-selection-card--highlighted .item-type {
-    color: rgba(227, 242, 253, 0.7);
+    color: rgba(212, 237, 218, 0.7);
 }
 
 /* No results styling */
