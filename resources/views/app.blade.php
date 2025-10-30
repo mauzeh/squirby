@@ -57,14 +57,14 @@
         <div class="navbar sub-navbar">
             @if (Request::routeIs(['food-logs.*', 'meals.*', 'ingredients.*', 'mobile-entry.foods']))
                 <a href="{{ route('mobile-entry.foods') }}" class="{{ Request::routeIs(['mobile-entry.foods']) ? 'active' : '' }}"><i class="fas fa-mobile-alt"></i></a>
-                <a href="{{ route('food-logs.index') }}" class="{{ Request::routeIs(['food-logs.index', 'food-logs.edit', 'food-logs.destroy-selected', 'food-logs.export', 'food-logs.export-all']) ? 'active' : '' }}">Log</a>
+                <a href="{{ route('food-logs.index') }}" class="{{ Request::routeIs(['food-logs.index', 'food-logs.edit', 'food-logs.destroy-selected', 'food-logs.export', 'food-logs.export-all']) ? 'active' : '' }}">History</a>
                 <a href="{{ route('meals.index') }}" class="{{ Request::routeIs('meals.*') ? 'active' : '' }}">Meals</a>
                 <a href="{{ route('ingredients.index') }}" class="{{ Request::routeIs('ingredients.*') ? 'active' : '' }}">Ingredients</a>
             @endif
 
             @if (Request::routeIs(['body-logs.*', 'measurement-types.*', 'mobile-entry.measurements']))
                 <a href="{{ route('mobile-entry.measurements') }}" class="{{ Request::routeIs(['mobile-entry.measurements']) ? 'active' : '' }}"><i class="fas fa-mobile-alt"></i></a>
-                <a href="{{ route('body-logs.index') }}" class="{{ Request::routeIs(['body-logs.index', 'body-logs.edit', 'body-logs.destroy-selected', 'body-logs.show-by-type']) ? 'active' : '' }}">Log</a>
+                <a href="{{ route('body-logs.index') }}" class="{{ Request::routeIs(['body-logs.index', 'body-logs.edit', 'body-logs.destroy-selected', 'body-logs.show-by-type']) ? 'active' : '' }}">History</a>
                 @php
                     $measurementTypes = \App\Models\MeasurementType::where('user_id', auth()->id())->orderBy('name')->get();
                 @endphp
@@ -78,7 +78,7 @@
                 @if(auth()->user() && auth()->user()->hasRole('Admin'))
                     <a href="{{ route('recommendations.index') }}" class="{{ Request::routeIs('recommendations.*') ? 'active' : '' }}" title="Recommendations"><i class="fas fa-star"></i></a>
                 @endif
-                <a href="{{ route('lift-logs.index') }}" class="{{ Request::routeIs(['lift-logs.index', 'lift-logs.edit', 'lift-logs.destroy-selected', 'exercises.show-logs']) ? 'active' : '' }}">Log</a>
+                <a href="{{ route('lift-logs.index') }}" class="{{ Request::routeIs(['lift-logs.index', 'lift-logs.edit', 'lift-logs.destroy-selected', 'exercises.show-logs']) ? 'active' : '' }}">History</a>
                 @if(auth()->user() && auth()->user()->hasRole('Admin'))
                     <a href="{{ route('programs.index') }}" class="{{ Request::routeIs('programs.*') ? 'active' : '' }}">Program</a>
                 @endif
