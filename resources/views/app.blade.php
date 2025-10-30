@@ -12,7 +12,7 @@
         <link rel="shortcut icon" href="{{ asset('favicon/favicon.ico') }}">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 
-        <title>Nutrition Tracker</title>
+        <title>Quantified Athletics</title>
 
         <link rel="stylesheet" href="{{ asset('css/app.css') }}">
         @yield('styles')
