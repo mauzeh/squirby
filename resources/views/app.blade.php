@@ -35,9 +35,9 @@
         @endif
         @auth
         <div class="navbar">
-            <a id="lifts-nav-link" href="{{ route('lift-logs.index') }}" class="top-level-nav-item {{ Request::routeIs(['exercises.*', 'lift-logs.*', 'programs.*', 'recommendations.*', 'mobile-entry.lifts']) ? 'active' : '' }}"><i class="fas fa-dumbbell"></i> Lifts</a>
-            <a id="food-nav-link" href="{{ route('food-logs.index') }}" class="top-level-nav-item {{ Request::routeIs(['food-logs.*', 'meals.*', 'ingredients.*', 'mobile-entry.foods']) ? 'active' : '' }}"><i class="fas fa-utensils"></i> Food</a>
-            <a href="{{ route('body-logs.index') }}" class="top-level-nav-item {{ Request::routeIs(['body-logs.*', 'measurement-types.*', 'mobile-entry.measurements']) ? 'active' : '' }}"><i class="fas fa-heartbeat"></i> Body</a>
+            <a id="lifts-nav-link" href="{{ route('mobile-entry.lifts') }}" class="top-level-nav-item {{ Request::routeIs(['exercises.*', 'lift-logs.*', 'programs.*', 'recommendations.*', 'mobile-entry.lifts']) ? 'active' : '' }}"><i class="fas fa-dumbbell"></i> Lifts</a>
+            <a id="food-nav-link" href="{{ route('mobile-entry.foods') }}" class="top-level-nav-item {{ Request::routeIs(['food-logs.*', 'meals.*', 'ingredients.*', 'mobile-entry.foods']) ? 'active' : '' }}"><i class="fas fa-utensils"></i> Food</a>
+            <a href="{{ route('mobile-entry.measurements') }}" class="top-level-nav-item {{ Request::routeIs(['body-logs.*', 'measurement-types.*', 'mobile-entry.measurements']) ? 'active' : '' }}"><i class="fas fa-heartbeat"></i> Body</a>
 
             <div style="margin-left: auto;">
                 @if (Auth::user()->hasRole('Admin'))
@@ -106,23 +106,7 @@
         @endauth
 
         <script>
-            // This script enhances the user experience on mobile devices by redirecting navigation links.
             document.addEventListener('DOMContentLoaded', function() {
-                // Select the navigation links using their unique IDs.
-                const foodNavLink = document.getElementById('food-nav-link');
-                const liftsNavLink = document.getElementById('lifts-nav-link');
-
-                // Check if the screen width is indicative of a mobile device (768px or less).
-                if (window.innerWidth <= 768) {
-                    // If on a mobile device, change the links' destinations to the mobile-specific entry pages.
-                    if (foodNavLink) {
-                        foodNavLink.href = "{{ route('mobile-entry.foods') }}";
-                    }
-                    if (liftsNavLink) {
-                        liftsNavLink.href = "{{ route('mobile-entry.lifts') }}";
-                    }
-                }
-
                 // Initialize password visibility toggles
                 initializePasswordToggles();
             });
