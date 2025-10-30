@@ -1858,6 +1858,13 @@ Date Navigation Component */
     }
 }
 
+/* Mobile Font Size Enhancement - 30% larger fonts on mobile screens */
+@media (max-width: 768px) {
+    .mobile-entry-container {
+        font-size: 1.3em; /* 30% larger base font size */
+    }
+}
+
 /* Landscape Orientation Adjustments */
 @media (max-width: 768px) and (orientation: landscape) {
     .mobile-entry-container {
