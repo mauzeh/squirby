@@ -64,7 +64,7 @@ return [
     ],
 
     'placeholders' => [
-        'search_exercises' => 'Search exercises (e.g. "bench press")...',
+        'search_exercises' => 'Search...',
         'workout_notes' => 'How did it feel? Any form notes?',
         'search_measurements' => 'Search measurements (e.g. "weight")...',
         'measurement_notes' => 'Any additional notes...',

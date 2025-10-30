@@ -229,7 +229,7 @@ class FoodLogService
                 'section' => 'Food item selection list',
                 'selectItem' => 'Select this food item to log'
             ],
-            'filterPlaceholder' => 'Filter food items...'
+            'filterPlaceholder' => 'Search...'
         ];
     }
 
