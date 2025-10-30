@@ -63,11 +63,13 @@
         @endif
 
         <!-- Add Item Button -->
+        @if(isset($data['addItemButton']))
         <div class="add-item-section">
             <button type="button" class="btn-primary btn-success" aria-label="{{ $data['addItemButton']['ariaLabel'] }}">
                 {{ $data['addItemButton']['text'] }}
             </button>
         </div>
+        @endif
 
         <!-- Item Selection List -->
         <section class="item-selection-section" aria-label="{{ $data['itemSelectionList']['ariaLabels']['section'] }}">

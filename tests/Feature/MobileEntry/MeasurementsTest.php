@@ -31,23 +31,7 @@ class MeasurementsTest extends TestCase
         $response->assertViewIs('mobile-entry.index');
     }
 
-    /** @test */
-    public function user_can_create_measurement_type_from_mobile_entry()
-    {
-        $response = $this->post(route('mobile-entry.create-measurement-type'), [
-            'measurement_type_name' => 'Weight',
-            'date' => Carbon::today()->toDateString()
-        ]);
 
-        $response->assertRedirect(route('mobile-entry.measurements', ['date' => Carbon::today()->toDateString()]));
-        $response->assertSessionHas('success');
-
-        $this->assertDatabaseHas('measurement_types', [
-            'user_id' => $this->user->id,
-            'name' => 'Weight',
-            'default_unit' => 'lbs'
-        ]);
-    }
 
     /** @test */
     public function user_can_log_measurement_from_mobile_entry()

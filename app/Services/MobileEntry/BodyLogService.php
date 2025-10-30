@@ -448,75 +448,7 @@ class BodyLogService
         return null;
     }
 
-    /**
-     * Create a new measurement type
-     * 
-     * @param int $userId
-     * @param string $measurementTypeName
-     * @param Carbon $selectedDate
-     * @return array Result with success/error status and message
-     */
-    public function createMeasurementType($userId, $measurementTypeName, Carbon $selectedDate)
-    {
-        // Check if measurement type with similar name already exists
-        $existingMeasurementType = MeasurementType::where('name', $measurementTypeName)
-            ->where('user_id', $userId)
-            ->first();
-        
-        if ($existingMeasurementType) {
-            return [
-                'success' => false,
-                'message' => "Measurement type '{$measurementTypeName}' already exists."
-            ];
-        }
-        
-        // Determine default unit based on name
-        $defaultUnit = $this->getDefaultUnit($measurementTypeName);
-        
-        // Create the new measurement type
-        $measurementType = MeasurementType::create([
-            'name' => $measurementTypeName,
-            'user_id' => $userId,
-            'default_unit' => $defaultUnit
-        ]);
-        
-        return [
-            'success' => true,
-            'message' => "Created new measurement type: {$measurementType->name}. You can now log it below."
-        ];
-    }
 
-    /**
-     * Get default unit for a measurement type based on its name
-     * 
-     * @param string $measurementTypeName
-     * @return string
-     */
-    protected function getDefaultUnit($measurementTypeName)
-    {
-        $lowerName = strtolower($measurementTypeName);
-        
-        // Weight-related measurements
-        if (str_contains($lowerName, 'weight') || str_contains($lowerName, 'mass')) {
-            return 'lbs';
-        }
-        
-        // Percentage measurements
-        if (str_contains($lowerName, 'fat') || str_contains($lowerName, '%') || str_contains($lowerName, 'percent')) {
-            return '%';
-        }
-        
-        // Length/circumference measurements
-        if (str_contains($lowerName, 'waist') || str_contains($lowerName, 'chest') || 
-            str_contains($lowerName, 'arm') || str_contains($lowerName, 'thigh') ||
-            str_contains($lowerName, 'neck') || str_contains($lowerName, 'hip') ||
-            str_contains($lowerName, 'height')) {
-            return 'in';
-        }
-        
-        // Default to generic unit
-        return 'units';
-    }
 
     /**
      * Generate interface messages from session data
@@ -607,7 +539,7 @@ class BodyLogService
             $messages[] = [
                 'type' => 'tip',
                 'prefix' => 'Getting started:',
-                'text' => 'Create measurement types like "Weight" or "Body Fat %" to start tracking your progress.'
+                'text' => 'Create measurement types in the "Types" section to start tracking your progress.'
             ];
         } elseif ($loggedCount === 0) {
             // Has measurement types but hasn't logged anything today

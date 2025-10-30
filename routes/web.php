@@ -99,9 +99,6 @@ Route::middleware('auth')->group(function () {
     Route::post('mobile-entry/create-ingredient', [MobileEntryController::class, 'createIngredient'])->name('mobile-entry.create-ingredient');
     Route::get('mobile-entry/add-food-form/{type}/{id}', [MobileEntryController::class, 'addFoodForm'])->name('mobile-entry.add-food-form');
     Route::delete('mobile-entry/remove-food-form/{id}', [MobileEntryController::class, 'removeFoodForm'])->name('mobile-entry.remove-food-form');
-    
-    // Measurement Entry Helper Routes
-    Route::post('mobile-entry/create-measurement-type', [MobileEntryController::class, 'createMeasurementType'])->name('mobile-entry.create-measurement-type');
 
 
 

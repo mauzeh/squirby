@@ -84,39 +84,7 @@ class BodyLogServiceTest extends TestCase
         $this->assertEquals('185.5 lbs', $loggedItems['items'][0]['message']['text']);
     }
 
-    /** @test */
-    public function it_can_create_new_measurement_types()
-    {
-        $selectedDate = Carbon::today();
-        
-        $result = $this->service->createMeasurementType($this->user->id, 'Muscle Mass', $selectedDate);
 
-        $this->assertTrue($result['success']);
-        $this->assertStringContainsString('Created new measurement type: Muscle Mass', $result['message']);
-        
-        $this->assertDatabaseHas('measurement_types', [
-            'user_id' => $this->user->id,
-            'name' => 'Muscle Mass',
-            'default_unit' => 'lbs' // Should default to lbs for mass-related measurements
-        ]);
-    }
-
-    /** @test */
-    public function it_prevents_duplicate_measurement_types()
-    {
-        MeasurementType::factory()->create([
-            'user_id' => $this->user->id,
-            'name' => 'Weight',
-            'default_unit' => 'lbs'
-        ]);
-
-        $selectedDate = Carbon::today();
-        
-        $result = $this->service->createMeasurementType($this->user->id, 'Weight', $selectedDate);
-
-        $this->assertFalse($result['success']);
-        $this->assertStringContainsString('already exists', $result['message']);
-    }
 
     /** @test */
     public function it_generates_logged_items_correctly()
@@ -147,29 +115,7 @@ class BodyLogServiceTest extends TestCase
         $this->assertEquals('Morning weigh-in', $item['freeformText']);
     }
 
-    /** @test */
-    public function it_determines_correct_default_units()
-    {
-        $testCases = [
-            'Weight' => 'lbs',
-            'Body Fat' => '%',
-            'Muscle Mass' => 'lbs',
-            'Waist' => 'in',
-            'Height' => 'in',
-            'Random Measurement' => 'units'
-        ];
 
-        foreach ($testCases as $name => $expectedUnit) {
-            $result = $this->service->createMeasurementType($this->user->id, $name, Carbon::today());
-            
-            $this->assertTrue($result['success']);
-            $this->assertDatabaseHas('measurement_types', [
-                'user_id' => $this->user->id,
-                'name' => $name,
-                'default_unit' => $expectedUnit
-            ]);
-        }
-    }
 
     /** @test */
     public function it_generates_contextual_help_messages()

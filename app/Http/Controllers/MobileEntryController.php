@@ -988,25 +988,14 @@ class MobileEntryController extends Controller
         // Generate logged items using the service
         $loggedItems = $formService->generateLoggedItems(Auth::id(), $selectedDate);
         
-        // Generate item selection list for creating new measurement types (simplified)
+        // No item selection list needed - all measurement types show as forms automatically
         $itemSelectionList = [
-            'noResultsMessage' => config('mobile_entry_messages.empty_states.no_measurement_types_found', 'No measurement types found. Create measurement types first.'),
-            'createForm' => [
-                'action' => route('mobile-entry.create-measurement-type'),
-                'method' => 'POST',
-                'inputName' => 'measurement_type_name',
-                'submitText' => '+',
-                'ariaLabel' => 'Create new measurement type',
-                'hiddenFields' => [
-                    'date' => $selectedDate->toDateString()
-                ]
-            ],
-            'items' => [], // No items needed since we always show all forms
+            'items' => [],
             'ariaLabels' => [
-                'section' => 'Measurement type creation',
-                'selectItem' => 'Create new measurement type'
+                'section' => 'Item selection list'
             ],
-            'filterPlaceholder' => config('mobile_entry_messages.placeholders.search_measurements', 'Search measurements (e.g. "weight")...')
+            'filterPlaceholder' => 'Filter items...',
+            'noResultsMessage' => 'No items found.'
         ];
         
         // Generate interface messages
@@ -1051,10 +1040,7 @@ class MobileEntryController extends Controller
             
             'summary' => $formService->generateSummary(Auth::id(), $selectedDate),
             
-            'addItemButton' => [
-                'text' => 'Add Measurement Type',
-                'ariaLabel' => 'Add new measurement type'
-            ],
+            // No add button needed - all measurement types show as forms automatically
             
             'itemSelectionList' => $itemSelectionList,
             
@@ -1068,30 +1054,6 @@ class MobileEntryController extends Controller
         return view('mobile-entry.index', compact('data'));
     }
 
-    /**
-     * Create a new measurement type from the mobile interface
-     * 
-     * @param Request $request
-     * @param \App\Services\MobileEntry\BodyLogService $formService
-     * @return \Illuminate\Http\RedirectResponse
-     */
-    public function createMeasurementType(Request $request, \App\Services\MobileEntry\BodyLogService $formService)
-    {
-        $request->validate([
-            'measurement_type_name' => 'required|string|max:255',
-            'date' => 'nullable|date'
-        ]);
-        
-        $selectedDate = $request->input('date') 
-            ? \Carbon\Carbon::parse($request->input('date')) 
-            : \Carbon\Carbon::today();
-        
-        $result = $formService->createMeasurementType(Auth::id(), $request->input('measurement_type_name'), $selectedDate);
-        
-        $messageType = $result['success'] ? 'success' : 'error';
-        
-        return redirect()->route('mobile-entry.measurements', ['date' => $selectedDate->toDateString()])
-            ->with($messageType, $result['message']);
-    }
+
 
 }
