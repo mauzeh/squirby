@@ -94,6 +94,33 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
+    // Scroll to optimal position when filter input gets focus
+    filterInput.addEventListener('focus', function(e) {
+        // Small delay to ensure any keyboard animations are complete
+        setTimeout(() => {
+            const filterContainer = e.target.closest('.item-filter-container');
+            if (filterContainer) {
+                const containerRect = filterContainer.getBoundingClientRect();
+                const viewportHeight = window.innerHeight;
+                
+                // Position the filter container about 5% from the top of viewport
+                // This maximizes the visible space for the item list below
+                const targetPosition = window.scrollY + containerRect.top - (viewportHeight * 0.05);
+                
+                // Only scroll if we need to move significantly (avoid tiny adjustments)
+                const currentTop = containerRect.top;
+                const optimalTop = viewportHeight * 0.05;
+                
+                if (Math.abs(currentTop - optimalTop) > 50) {
+                    window.scrollTo({
+                        top: Math.max(0, targetPosition),
+                        behavior: 'smooth'
+                    });
+                }
+            }
+        }, 150);
+    });
+    
     // Add event listener for clear button (if it exists)
     if (clearButton) {
         clearButton.addEventListener('click', clearFilter);
@@ -307,11 +334,30 @@ document.addEventListener('DOMContentLoaded', function() {
                 addItemSection.classList.add('hidden');
             }
             
-            // Focus on the filter input field
+            // Focus on the filter input field and scroll to optimal position
             setTimeout(() => {
                 const filterInput = document.querySelector('.item-filter-input');
                 if (filterInput) {
                     filterInput.focus();
+                    
+                    // Scroll to position the filter input optimally for mobile
+                    // This ensures maximum list visibility below the input
+                    const filterContainer = filterInput.closest('.item-filter-container');
+                    if (filterContainer) {
+                        // Calculate optimal scroll position
+                        const containerRect = filterContainer.getBoundingClientRect();
+                        const viewportHeight = window.innerHeight;
+                        
+                        // Position the filter container about 5% from the top of viewport
+                        // This leaves 95% of screen space for the list below
+                        const targetPosition = window.scrollY + containerRect.top - (viewportHeight * 0.05);
+                        
+                        // Smooth scroll to the calculated position
+                        window.scrollTo({
+                            top: Math.max(0, targetPosition),
+                            behavior: 'smooth'
+                        });
+                    }
                 }
             }, 100);
         };
