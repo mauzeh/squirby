@@ -65,7 +65,12 @@
             @if (Request::routeIs(['body-logs.*', 'measurement-types.*', 'mobile-entry.measurements']))
                 <a href="{{ route('mobile-entry.measurements') }}" class="{{ Request::routeIs(['mobile-entry.measurements']) ? 'active' : '' }}"><i class="fas fa-mobile-alt"></i></a>
                 <a href="{{ route('body-logs.index') }}" class="{{ Request::routeIs(['body-logs.index', 'body-logs.edit', 'body-logs.destroy-selected', 'body-logs.show-by-type']) ? 'active' : '' }}">Log</a>
-                <a href="{{ route('measurement-types.index') }}" class="{{ Request::routeIs('measurement-types.*') ? 'active' : '' }}">Types</a>
+                @php
+                    $measurementTypes = \App\Models\MeasurementType::where('user_id', auth()->id())->orderBy('name')->get();
+                @endphp
+                @foreach ($measurementTypes as $measurementType)
+                    <a href="{{ route('body-logs.show-by-type', $measurementType) }}" class="{{ Request::is('body-logs/type/' . $measurementType->id) ? 'active' : '' }}">{{ $measurementType->name }}</a>
+                @endforeach
             @endif
 
             @if (Request::routeIs(['exercises.*', 'lift-logs.*', 'programs.*', 'recommendations.*', 'mobile-entry.lifts']))
@@ -78,12 +83,7 @@
                 <a href="{{ route('exercises.index') }}" class="{{ Request::routeIs(['exercises.index', 'exercises.create', 'exercises.edit', 'exercises.store', 'exercises.update', 'exercises.destroy']) ? 'active' : '' }}">Exercises</a>
             @endif
 
-            @if (Request::routeIs(['body-logs.*', 'measurement-types.*']))
-             <a href="{{ route('body-logs.index') }}" class="{{ Request::routeIs('body-logs.index') ? 'active' : '' }}">All</a>
-                @foreach ($measurementTypes as $measurementType)
-                    <a href="{{ route('body-logs.show-by-type', $measurementType) }}" class="{{ Request::is('body-logs/type/' . $measurementType->id) ? 'active' : '' }}">{{ $measurementType->name }}</a>
-                @endforeach
-            @endif
+
         </div>
         @endif
         @endauth
