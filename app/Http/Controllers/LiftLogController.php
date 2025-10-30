@@ -49,7 +49,7 @@ class LiftLogController extends Controller
         // Pre-fetch bodyweight measurements for all dates to avoid N+1 queries in OneRepMaxCalculatorService
         $this->liftLogService->preloadBodyweightMeasurements($liftLogs, $userId);
 
-        $exercises = Exercise::availableToUser()->orderBy('title', 'asc')->get();
+        $exercises = $this->exerciseService->getExercisesWithLogs();
         $displayExercises = $this->exerciseService->getDisplayExercises(5);
 
         // Format data using presenter

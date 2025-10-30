@@ -274,7 +274,7 @@ class ExerciseController extends Controller
         // Format data using presenter - hide exercise column since we're showing logs for a specific exercise
         $tableData = $this->liftLogTablePresenter->formatForTable($liftLogsReversed, true);
 
-        $exercises = Exercise::availableToUser()->orderBy('title', 'asc')->get();
+        $exercises = $this->exerciseService->getExercisesWithLogs();
 
         return view('exercises.logs', compact('exercise', 'chartData', 'displayExercises', 'exercises') + $tableData);
     }

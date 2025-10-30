@@ -33,19 +33,38 @@ class ExerciseService
             return $topExercises;
         }
 
-        // If not enough top exercises, fill up with recently created ones
+        // If not enough top exercises, fill up with other exercises that have logs
         $needed = $limit - $topExercises->count();
         if ($needed > 0) {
             $topExerciseIds = $topExercises->pluck('id')->toArray();
-            $recentExercises = Exercise::availableToUser()->whereNotIn('id', $topExerciseIds) // Exclude already selected top exercises
-                                        ->orderBy('created_at', 'desc')
-                                        ->limit($needed)
-                                        ->get();
-            // Combine top exercises with recent ones, ensuring uniqueness (though `whereNotIn` should handle this)
-            // and maintaining the order of top exercises first.
-            return $topExercises->merge($recentExercises)->take($limit);
+            
+            // Get exercises that have logs but weren't in the top exercises
+            $otherExercisesWithLogs = Exercise::availableToUser()
+                ->whereNotIn('id', $topExerciseIds)
+                ->whereHas('liftLogs', function ($query) {
+                    $query->where('user_id', Auth::id());
+                })
+                ->withCount('liftLogs')
+                ->orderBy('lift_logs_count', 'desc')
+                ->limit($needed)
+                ->get();
+                
+            return $topExercises->merge($otherExercisesWithLogs)->take($limit);
         }
 
-        return $topExercises; // Should not be reached if $needed > 0
+        return $topExercises;
+    }
+
+    /**
+     * Get all exercises that have logs for the current user
+     */
+    public function getExercisesWithLogs()
+    {
+        return Exercise::availableToUser()
+            ->whereHas('liftLogs', function ($query) {
+                $query->where('user_id', Auth::id());
+            })
+            ->orderBy('title', 'asc')
+            ->get();
     }
 }
