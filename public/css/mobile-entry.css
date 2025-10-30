@@ -547,8 +547,15 @@ Date Navigation Component */
     padding: 0;
     background-color: var(--secondary-bg);
     border-radius: var(--border-radius-md);
-    overflow: hidden;
+    overflow-y: auto;
+    overflow-x: hidden;
     box-shadow: var(--shadow-light);
+    /* Fixed height to prevent reflow when filtering - doubled from original */
+    height: 120vh;
+    min-height: 600px;
+    max-height: 1000px;
+    /* Align content to top instead of center */
+    align-content: start;
 }
 
 .item-selection-list li {
@@ -755,6 +762,12 @@ Date Navigation Component */
     .item-name {
         font-size: 0.95em;
     }
+
+    .item-selection-list {
+        height: 100vh;
+        min-height: 500px;
+        max-height: 800px;
+    }
 }
 
 @media (max-width: 480px) {
@@ -770,6 +783,12 @@ Date Navigation Component */
 
     .item-name {
         font-size: 0.9em;
+    }
+
+    .item-selection-list {
+        height: 90vh;
+        min-height: 400px;
+        max-height: 600px;
     }
 }
 
