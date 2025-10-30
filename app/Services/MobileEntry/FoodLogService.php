@@ -126,7 +126,7 @@ class FoodLogService
                 ],
                 'message' => [
                     'type' => 'success',
-                    'prefix' => 'Logged:',
+                    'prefix' => 'Completed!',
                     'text' => $quantityText . ' • ' . $nutritionText
                 ],
                 'freeformText' => $log->notes
@@ -148,7 +148,7 @@ class FoodLogService
 
         // Only include empty message when there are no items
         if (empty($items)) {
-            $result['emptyMessage'] = 'No food entries logged yet today!';
+            $result['emptyMessage'] = config('mobile_entry_messages.empty_states.no_food_logged');
         }
 
         return $result;
@@ -223,13 +223,23 @@ class FoodLogService
         });
 
         return [
-            'noResultsMessage' => 'No food items found.',
+            'noResultsMessage' => config('mobile_entry_messages.empty_states.no_food_items_found'),
+            'createForm' => [
+                'action' => route('mobile-entry.create-ingredient'),
+                'method' => 'POST',
+                'inputName' => 'ingredient_name',
+                'submitText' => '+',
+                'ariaLabel' => 'Create new ingredient',
+                'hiddenFields' => [
+                    'date' => $selectedDate->toDateString()
+                ]
+            ],
             'items' => $items,
             'ariaLabels' => [
                 'section' => 'Food item selection list',
                 'selectItem' => 'Select this food item to log'
             ],
-            'filterPlaceholder' => 'Search...'
+            'filterPlaceholder' => config('mobile_entry_messages.placeholders.search_food')
         ];
     }
 
@@ -379,7 +389,7 @@ class FoodLogService
                 'id' => $formId . '-notes',
                 'name' => 'notes',
                 'label' => 'Notes:',
-                'placeholder' => 'Any additional notes...',
+                'placeholder' => config('mobile_entry_messages.placeholders.food_notes'),
                 'defaultValue' => ''
             ],
             'buttons' => [
@@ -436,20 +446,20 @@ class FoodLogService
         $messages = [
             [
                 'type' => 'info',
-                'prefix' => 'Meal contains:',
+                'prefix' => config('mobile_entry_messages.form_guidance.meal_contains'),
                 'text' => $meal->ingredients->count() . ' ingredients'
             ],
             [
                 'type' => 'tip',
-                'prefix' => 'Per serving:',
-                'text' => round($totalCalories) . ' cal, ' . round($totalProtein, 1) . 'g protein'
+                'prefix' => config('mobile_entry_messages.form_guidance.nutrition_info'),
+                'text' => round($totalCalories) . ' cal, ' . round($totalProtein, 1) . 'g protein per serving'
             ]
         ];
         
         if ($meal->comments) {
             $messages[] = [
                 'type' => 'neutral',
-                'prefix' => 'Notes:',
+                'prefix' => 'Meal notes:',
                 'text' => $meal->comments
             ];
         }
@@ -485,7 +495,7 @@ class FoodLogService
                 'id' => $formId . '-notes',
                 'name' => 'notes',
                 'label' => 'Notes:',
-                'placeholder' => 'Any additional notes...',
+                'placeholder' => config('mobile_entry_messages.placeholders.food_notes'),
                 'defaultValue' => ''
             ],
             'buttons' => [
@@ -549,13 +559,22 @@ class FoodLogService
     {
         $messages = [];
         
+        // Add instructional message for new users or first-time ingredients
+        if (!$lastSession) {
+            $messages[] = [
+                'type' => 'tip',
+                'prefix' => 'How to log:',
+                'text' => str_replace(':food', $ingredient->name, config('mobile_entry_messages.form_guidance.how_to_log_food'))
+            ];
+        }
+        
         // Add last session info if available
         if ($lastSession) {
             $messageText = $lastSession['quantity'] . ' ' . $lastSession['unit'];
             
             $messages[] = [
                 'type' => 'info',
-                'prefix' => 'Last logged (' . $lastSession['date'] . '):',
+                'prefix' => str_replace(':date', $lastSession['date'], config('mobile_entry_messages.form_guidance.last_logged')),
                 'text' => $messageText
             ];
         }
@@ -564,7 +583,7 @@ class FoodLogService
         if ($lastSession && !empty($lastSession['notes'])) {
             $messages[] = [
                 'type' => 'neutral',
-                'prefix' => 'Last notes:',
+                'prefix' => config('mobile_entry_messages.form_guidance.your_last_notes'),
                 'text' => $lastSession['notes']
             ];
         }
@@ -572,12 +591,23 @@ class FoodLogService
         // Add nutrition info
         $calories = round($ingredient->calories);
         $protein = round($ingredient->protein, 1);
+        $carbs = round($ingredient->carbs, 1);
+        $fats = round($ingredient->fats, 1);
         
-        $messages[] = [
-            'type' => 'tip',
-            'prefix' => 'Per ' . $ingredient->base_quantity . ' ' . $ingredient->baseUnit->name . ':',
-            'text' => $calories . ' cal, ' . $protein . 'g protein'
-        ];
+        // Build nutrition text with available macros
+        $nutritionParts = [];
+        if ($calories > 0) $nutritionParts[] = $calories . ' cal';
+        if ($protein > 0) $nutritionParts[] = $protein . 'g protein';
+        if ($carbs > 0) $nutritionParts[] = $carbs . 'g carbs';
+        if ($fats > 0) $nutritionParts[] = $fats . 'g fat';
+        
+        if (!empty($nutritionParts)) {
+            $messages[] = [
+                'type' => 'tip',
+                'prefix' => config('mobile_entry_messages.form_guidance.nutrition_info'),
+                'text' => 'Per ' . $ingredient->base_quantity . ' ' . $ingredient->baseUnit->name . ': ' . implode(', ', $nutritionParts)
+            ];
+        }
         
         return $messages;
     }
@@ -647,14 +677,14 @@ class FoodLogService
             if (!$ingredient) {
                 return [
                     'success' => false,
-                    'message' => 'Ingredient not found or not accessible.'
+                    'message' => config('mobile_entry_messages.error.food_not_found')
                 ];
             }
             
             if (!$ingredient->baseUnit) {
                 return [
                     'success' => false,
-                    'message' => 'Ingredient does not have a valid unit configured.'
+                    'message' => config('mobile_entry_messages.error.ingredient_no_unit')
                 ];
             }
             
@@ -668,7 +698,7 @@ class FoodLogService
             if ($existingForm) {
                 return [
                     'success' => false,
-                    'message' => "{$ingredient->name} is already added to your forms."
+                    'message' => str_replace(':food', $ingredient->name, config('mobile_entry_messages.error.food_already_in_forms'))
                 ];
             }
             
@@ -694,7 +724,7 @@ class FoodLogService
             
             return [
                 'success' => true,
-                'message' => "Added {$ingredient->name} form. You can now log it below."
+                'message' => str_replace(':food', $ingredient->name, config('mobile_entry_messages.success.food_added'))
             ];
             
         } elseif ($type === 'meal') {
@@ -706,14 +736,14 @@ class FoodLogService
             if (!$meal) {
                 return [
                     'success' => false,
-                    'message' => 'Meal not found or not accessible.'
+                    'message' => config('mobile_entry_messages.error.food_not_found')
                 ];
             }
             
             if ($meal->ingredients->isEmpty()) {
                 return [
                     'success' => false,
-                    'message' => 'Meal has no ingredients configured.'
+                    'message' => config('mobile_entry_messages.error.meal_no_ingredients')
                 ];
             }
             
@@ -727,7 +757,7 @@ class FoodLogService
             if ($existingForm) {
                 return [
                     'success' => false,
-                    'message' => "{$meal->name} is already added to your forms."
+                    'message' => str_replace(':food', $meal->name, config('mobile_entry_messages.error.food_already_in_forms'))
                 ];
             }
             
@@ -753,13 +783,13 @@ class FoodLogService
             
             return [
                 'success' => true,
-                'message' => "Added {$meal->name} form. You can now log it below."
+                'message' => str_replace(':food', $meal->name, config('mobile_entry_messages.success.food_added'))
             ];
         }
         
         return [
             'success' => false,
-            'message' => 'Invalid food type specified.'
+            'message' => config('mobile_entry_messages.error.food_not_found')
         ];
     }
 
@@ -781,7 +811,7 @@ class FoodLogService
         if ($existingIngredient) {
             return [
                 'success' => false,
-                'message' => "Ingredient '{$ingredientName}' already exists."
+                'message' => str_replace(':ingredient', $ingredientName, config('mobile_entry_messages.error.ingredient_already_exists'))
             ];
         }
         
@@ -809,7 +839,7 @@ class FoodLogService
         
         return [
             'success' => true,
-            'message' => "Created new ingredient: {$ingredient->name}. Please update its nutrition information."
+            'message' => str_replace(':ingredient', $ingredient->name, config('mobile_entry_messages.success.ingredient_created'))
         ];
     }
 
@@ -838,14 +868,14 @@ class FoodLogService
                 
                 return [
                     'success' => true,
-                    'message' => "Removed {$itemName} from your forms."
+                    'message' => str_replace(':food', $itemName, config('mobile_entry_messages.success.food_form_removed'))
                 ];
             }
         }
         
         return [
             'success' => false,
-            'message' => 'Food form not found.'
+            'message' => config('mobile_entry_messages.error.food_form_not_found')
         ];
     }
 
@@ -917,6 +947,62 @@ class FoodLogService
             'hasMessages' => !empty($systemMessages),
             'messageCount' => count($systemMessages)
         ];
+    }
+
+    /**
+     * Generate contextual help messages based on user's current state
+     * 
+     * @param int $userId
+     * @param Carbon $selectedDate
+     * @return array
+     */
+    public function generateContextualHelpMessages($userId, Carbon $selectedDate)
+    {
+        $messages = [];
+        
+        // Check if user has any food forms for today
+        $formCount = MobileFoodForm::forUserAndDate($userId, $selectedDate)->count();
+            
+        // Check if user has logged any food today
+        $loggedCount = FoodLog::where('user_id', $userId)
+            ->whereDate('logged_at', $selectedDate->toDateString())
+            ->count();
+        
+        if ($formCount === 0 && $loggedCount === 0) {
+            // First time user or no food items added yet
+            $messages[] = [
+                'type' => 'tip',
+                'prefix' => 'Getting started:',
+                'text' => config('mobile_entry_messages.contextual_help.getting_started_food')
+            ];
+        } elseif ($formCount > 0 && $loggedCount === 0) {
+            // Has food items ready but hasn't logged anything
+            $plural = $formCount > 1 ? 's' : '';
+            $text = str_replace([':count', ':plural'], [$formCount, $plural], config('mobile_entry_messages.contextual_help.ready_to_log_food'));
+            $messages[] = [
+                'type' => 'tip',
+                'prefix' => 'Ready to log:',
+                'text' => $text
+            ];
+        } elseif ($formCount > 0 && $loggedCount > 0) {
+            // Has logged some but has more forms to complete
+            $plural = $formCount > 1 ? 's' : '';
+            $text = str_replace([':count', ':plural'], [$formCount, $plural], config('mobile_entry_messages.contextual_help.keep_logging_food'));
+            $messages[] = [
+                'type' => 'info',
+                'prefix' => 'Keep going:',
+                'text' => $text
+            ];
+        } elseif ($loggedCount > 0) {
+            // Has logged food but no pending forms
+            $messages[] = [
+                'type' => 'success',
+                'prefix' => 'Great tracking:',
+                'text' => config('mobile_entry_messages.contextual_help.daily_logging_complete')
+            ];
+        }
+        
+        return $messages;
     }
 
     /**

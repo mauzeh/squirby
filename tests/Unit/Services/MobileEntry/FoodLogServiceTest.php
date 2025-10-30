@@ -120,7 +120,7 @@ class FoodLogServiceTest extends TestCase
         
         // Check message format
         $this->assertEquals('success', $item['message']['type']);
-        $this->assertEquals('Logged:', $item['message']['prefix']);
+        $this->assertEquals('Completed!', $item['message']['prefix']);
         $this->assertStringContainsString('150 g • 100 cal, 100g protein', $item['message']['text']);
         
         // Check notes
@@ -174,7 +174,7 @@ class FoodLogServiceTest extends TestCase
         
         $this->assertEmpty($loggedItems['items']);
         $this->assertArrayHasKey('emptyMessage', $loggedItems);
-        $this->assertEquals('No food entries logged yet today!', $loggedItems['emptyMessage']);
+        $this->assertEquals('No food logged yet today! Add ingredients or meals above to get started.', $loggedItems['emptyMessage']);
         
         // Check confirmation messages and aria labels are still present
         $this->assertArrayHasKey('confirmMessages', $loggedItems);
@@ -244,7 +244,7 @@ class FoodLogServiceTest extends TestCase
         $itemSelectionList = $this->service->generateItemSelectionList($user->id, $this->testDate);
         
         $this->assertArrayHasKey('items', $itemSelectionList);
-        $this->assertArrayNotHasKey('createForm', $itemSelectionList);
+        $this->assertArrayHasKey('createForm', $itemSelectionList);
         $this->assertCount(3, $itemSelectionList['items']); // 2 ingredients + 1 meal
         
         // Check ingredient items
@@ -266,19 +266,19 @@ class FoodLogServiceTest extends TestCase
         $this->assertEquals(1, $mealItem['type']['priority']);
         $this->assertStringContainsString('mobile-entry/add-food-form/meal/' . $meal->id, $mealItem['href']);
         
-        // No create form should be present
-        $this->assertArrayNotHasKey('createForm', $itemSelectionList);
+        // Create form should be present
+        $this->assertArrayHasKey('createForm', $itemSelectionList);
     }
 
     #[Test]
-    public function it_does_not_include_create_form_in_item_selection_list()
+    public function it_includes_create_form_in_item_selection_list()
     {
         $user = User::factory()->create();
         
         $itemSelectionList = $this->service->generateItemSelectionList($user->id, $this->testDate);
         
-        // Verify createForm is not included
-        $this->assertArrayNotHasKey('createForm', $itemSelectionList);
+        // Verify createForm is included
+        $this->assertArrayHasKey('createForm', $itemSelectionList);
         
         // Verify other expected keys are still present
         $this->assertArrayHasKey('items', $itemSelectionList);
@@ -286,8 +286,8 @@ class FoodLogServiceTest extends TestCase
         $this->assertArrayHasKey('ariaLabels', $itemSelectionList);
         $this->assertArrayHasKey('filterPlaceholder', $itemSelectionList);
         
-        // Verify no results message doesn't mention creating items
-        $this->assertEquals('No food items found.', $itemSelectionList['noResultsMessage']);
+        // Verify no results message mentions creating items
+        $this->assertEquals('No food items found. Type a name and hit "+" to create a new ingredient.', $itemSelectionList['noResultsMessage']);
     }
 
     #[Test]
@@ -467,7 +467,7 @@ class FoodLogServiceTest extends TestCase
         $commentField = $form['commentField'];
         $this->assertEquals('notes', $commentField['name']);
         $this->assertEquals('Notes:', $commentField['label']);
-        $this->assertEquals('Any additional notes...', $commentField['placeholder']);
+        $this->assertEquals('Any notes about this food?', $commentField['placeholder']);
         $this->assertEquals('', $commentField['defaultValue']);
         
         // Check hidden fields
@@ -483,7 +483,7 @@ class FoodLogServiceTest extends TestCase
         });
         $this->assertNotNull($nutritionMessage);
         $this->assertEquals('tip', $nutritionMessage['type']);
-        $this->assertStringContainsString('Per 100 g:', $nutritionMessage['prefix']);
+        $this->assertStringContainsString('Nutrition per serving:', $nutritionMessage['prefix']);
     }
 
     #[Test]
@@ -547,11 +547,11 @@ class FoodLogServiceTest extends TestCase
         });
         $this->assertNotNull($mealInfoMessage);
         $this->assertEquals('info', $mealInfoMessage['type']);
-        $this->assertEquals('Meal contains:', $mealInfoMessage['prefix']);
+        $this->assertEquals('This meal contains:', $mealInfoMessage['prefix']);
         $this->assertEquals('1 ingredients', $mealInfoMessage['text']);
         
         // Check meal comments appear in messages
-        $commentsMessage = collect($form['messages'])->firstWhere('prefix', 'Notes:');
+        $commentsMessage = collect($form['messages'])->firstWhere('prefix', 'Meal notes:');
         $this->assertNotNull($commentsMessage);
         $this->assertEquals('High protein meal', $commentsMessage['text']);
     }
@@ -582,7 +582,7 @@ class FoodLogServiceTest extends TestCase
         $result = $this->service->addFoodForm($user->id, 'ingredient', $ingredient->id, $this->testDate);
         
         $this->assertTrue($result['success']);
-        $this->assertEquals('Added Test Ingredient form. You can now log it below.', $result['message']);
+        $this->assertEquals('Test Ingredient added! Now scroll down to log your intake - adjust the quantity and tap \'Log Test Ingredient\' when ready.', $result['message']);
         
         // Verify database entry was created
         $this->assertDatabaseHas('mobile_food_forms', [
@@ -608,7 +608,7 @@ class FoodLogServiceTest extends TestCase
         $result = $this->service->addFoodForm($user->id, 'meal', $meal->id, $this->testDate);
         
         $this->assertTrue($result['success']);
-        $this->assertEquals('Added Test Meal form. You can now log it below.', $result['message']);
+        $this->assertEquals('Test Meal added! Now scroll down to log your intake - adjust the quantity and tap \'Log Test Meal\' when ready.', $result['message']);
         
         // Verify database entry was created
         $this->assertDatabaseHas('mobile_food_forms', [
@@ -655,7 +655,7 @@ class FoodLogServiceTest extends TestCase
         $result = $this->service->addFoodForm($user->id, 'ingredient', 99999, $this->testDate);
         
         $this->assertFalse($result['success']);
-        $this->assertEquals('Ingredient not found or not accessible.', $result['message']);
+        $this->assertEquals('Food item not found. Try searching for a different name or create a new ingredient using the "+" button.', $result['message']);
         
         // Verify no database entry was created
         $this->assertDatabaseMissing('mobile_food_forms', [
@@ -678,7 +678,7 @@ class FoodLogServiceTest extends TestCase
         $result = $this->service->addFoodForm($user->id, 'ingredient', $ingredient->id, $this->testDate);
         
         $this->assertFalse($result['success']);
-        $this->assertEquals('Ingredient does not have a valid unit configured.', $result['message']);
+        $this->assertEquals('Ingredient does not have a valid unit configured. Please update the ingredient settings.', $result['message']);
     }
 
     #[Test]
@@ -693,7 +693,7 @@ class FoodLogServiceTest extends TestCase
         $result = $this->service->addFoodForm($user->id, 'meal', $meal->id, $this->testDate);
         
         $this->assertFalse($result['success']);
-        $this->assertEquals('Meal has no ingredients configured.', $result['message']);
+        $this->assertEquals('Meal has no ingredients configured. Please add ingredients to the meal first.', $result['message']);
     }
 
     #[Test]
@@ -720,7 +720,7 @@ class FoodLogServiceTest extends TestCase
         $result = $this->service->removeFoodForm($user->id, $formId);
         
         $this->assertTrue($result['success']);
-        $this->assertEquals('Removed Remove Test from your forms.', $result['message']);
+        $this->assertEquals('Removed Remove Test form. You can add it back anytime using \'Add Food\' below.', $result['message']);
         
         // Verify database entry was deleted
         $this->assertDatabaseMissing('mobile_food_forms', [
@@ -738,7 +738,7 @@ class FoodLogServiceTest extends TestCase
         $result = $this->service->removeFoodForm($user->id, 'ingredient-99999');
         
         $this->assertFalse($result['success']);
-        $this->assertEquals('Food form not found.', $result['message']);
+        $this->assertEquals('Food form not found. It may have already been removed.', $result['message']);
     }
 
     #[Test]
@@ -749,7 +749,7 @@ class FoodLogServiceTest extends TestCase
         $result = $this->service->removeFoodForm($user->id, 'invalid-format');
         
         $this->assertFalse($result['success']);
-        $this->assertEquals('Food form not found.', $result['message']);
+        $this->assertEquals('Food form not found. It may have already been removed.', $result['message']);
     }
 
     #[Test]
@@ -804,7 +804,7 @@ class FoodLogServiceTest extends TestCase
         $result = $this->service->createIngredient($user->id, 'New Custom Food', $this->testDate);
         
         $this->assertTrue($result['success']);
-        $this->assertEquals('Created new ingredient: New Custom Food. Please update its nutrition information.', $result['message']);
+        $this->assertEquals('Created \'New Custom Food\'! Now scroll down to log your first entry - update the nutrition info and quantity as needed.', $result['message']);
         
         // Verify ingredient was created
         $this->assertDatabaseHas('ingredients', [
@@ -833,7 +833,7 @@ class FoodLogServiceTest extends TestCase
         $result = $this->service->createIngredient($user->id, 'Existing Food', $this->testDate);
         
         $this->assertFalse($result['success']);
-        $this->assertEquals('Ingredient \'Existing Food\' already exists.', $result['message']);
+        $this->assertEquals('\'Existing Food\' already exists in your ingredient library. Use the search above to find and add it instead.', $result['message']);
         
         // Verify no duplicate was created
         $count = Ingredient::where('name', 'Existing Food')->count();
@@ -976,7 +976,7 @@ class FoodLogServiceTest extends TestCase
         $result = $this->service->addFoodForm($user1->id, 'ingredient', $ingredient->id, $this->testDate);
         
         $this->assertFalse($result['success']);
-        $this->assertEquals('Ingredient not found or not accessible.', $result['message']);
+        $this->assertEquals('Food item not found. Try searching for a different name or create a new ingredient using the "+" button.', $result['message']);
     }
 
     #[Test]
@@ -1021,12 +1021,12 @@ class FoodLogServiceTest extends TestCase
         $this->assertNotNull($lastSessionMessage);
         $this->assertEquals('1.5 tbsp', $lastSessionMessage['text']);
         
-        $notesMessage = collect($messages)->firstWhere('prefix', 'Last notes:');
+        $notesMessage = collect($messages)->firstWhere('prefix', 'Your last notes:');
         $this->assertNotNull($notesMessage);
         $this->assertEquals('For cooking pasta', $notesMessage['text']);
         
         $nutritionMessage = collect($messages)->firstWhere(function ($message) {
-            return str_contains($message['prefix'] ?? '', 'Per 100');
+            return str_contains($message['prefix'] ?? '', 'Nutrition per serving');
         });
         $this->assertNotNull($nutritionMessage);
     }

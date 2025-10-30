@@ -104,8 +104,11 @@ class FoodLogController extends Controller
                 Carbon::parse($validated['date'])
             );
             
+            // Generate celebratory message
+            $celebratoryMessage = $this->generateCelebratoryMessage($foodLog);
+            
             return redirect()->route('mobile-entry.foods', ['date' => $validated['date']])
-                ->with('success', 'Food logged successfully.');
+                ->with('success', $celebratoryMessage);
         }
 
         return redirect()->route('food-logs.index', ['date' => $validated['date']])->with('success', 'Log entry added successfully!');
@@ -233,8 +236,11 @@ class FoodLogController extends Controller
                 Carbon::parse($validated['meal_date'])
             );
             
+            // Generate celebratory message for meal
+            $celebratoryMessage = $this->generateMealCelebratoryMessage($meal, $validated['portion']);
+            
             return redirect()->route('mobile-entry.foods', ['date' => $validated['meal_date']])
-                ->with('success', 'Meal logged successfully.');
+                ->with('success', $celebratoryMessage);
         }
 
         return redirect()->route('food-logs.index', ['date' => $validated['meal_date']])->with('success', 'Meal added to log successfully!');
@@ -349,6 +355,69 @@ class FoodLogController extends Controller
         };
 
         return response()->stream($callback, 200, $headers);
+    }
+
+    /**
+     * Generate a celebratory message for food logging
+     * 
+     * @param \App\Models\FoodLog $foodLog
+     * @return string
+     */
+    private function generateCelebratoryMessage($foodLog)
+    {
+        $ingredient = $foodLog->ingredient;
+        $foodName = $ingredient->name;
+        
+        // Calculate nutrition info for the logged quantity
+        $calories = round(app(\App\Services\NutritionService::class)->calculateTotalMacro($ingredient, 'calories', (float)$foodLog->quantity));
+        $protein = round(app(\App\Services\NutritionService::class)->calculateTotalMacro($ingredient, 'protein', (float)$foodLog->quantity), 1);
+        
+        // Generate food description
+        $quantityText = $foodLog->quantity . ' ' . $foodLog->unit->name;
+        $nutritionText = $calories . ' cal, ' . $protein . 'g protein';
+        $foodDescription = $quantityText . ' • ' . $nutritionText;
+        
+        // Get celebratory messages from config and replace placeholders
+        $celebrationTemplates = config('mobile_entry_messages.success.food_logged');
+        $randomTemplate = $celebrationTemplates[array_rand($celebrationTemplates)];
+        
+        // Replace placeholders in the template
+        return str_replace([':food', ':details'], [$foodName, $foodDescription], $randomTemplate);
+    }
+
+    /**
+     * Generate a celebratory message for meal logging
+     * 
+     * @param \App\Models\Meal $meal
+     * @param float $portion
+     * @return string
+     */
+    private function generateMealCelebratoryMessage($meal, $portion)
+    {
+        $mealName = $meal->name;
+        
+        // Calculate total nutrition for the meal portion
+        $totalCalories = 0;
+        $totalProtein = 0;
+        $nutritionService = app(\App\Services\NutritionService::class);
+        
+        foreach ($meal->ingredients as $ingredient) {
+            $quantity = $ingredient->pivot->quantity * $portion;
+            $totalCalories += $nutritionService->calculateTotalMacro($ingredient, 'calories', $quantity);
+            $totalProtein += $nutritionService->calculateTotalMacro($ingredient, 'protein', $quantity);
+        }
+        
+        // Generate meal description
+        $portionText = $portion == 1 ? '1 serving' : $portion . ' servings';
+        $nutritionText = round($totalCalories) . ' cal, ' . round($totalProtein, 1) . 'g protein';
+        $mealDescription = $portionText . ' • ' . $nutritionText;
+        
+        // Get celebratory messages from config and replace placeholders
+        $celebrationTemplates = config('mobile_entry_messages.success.meal_logged');
+        $randomTemplate = $celebrationTemplates[array_rand($celebrationTemplates)];
+        
+        // Replace placeholders in the template
+        return str_replace([':meal', ':details'], [$mealName, $mealDescription], $randomTemplate);
     }
 
 }
