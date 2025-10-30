@@ -114,11 +114,11 @@ return [
     'placeholders' => [
         'search_exercises' => 'Search...',
         'workout_notes' => 'How did it feel? Any form notes?',
-        'search_measurements' => 'Search measurements (e.g. "weight")...',
+        'search_measurements' => 'Search...',
         'measurement_notes' => 'Any additional notes...',
         
         // Food-specific placeholders
-        'search_food' => 'Search ingredients and meals...',
+        'search_food' => 'Search...',
         'food_notes' => 'Any notes about this food?',
     ],
 
