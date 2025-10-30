@@ -62,7 +62,6 @@ class LiftDataCacheService
             ->select('exercise_id')
             ->groupBy('exercise_id')
             ->orderByRaw('MAX(logged_at) DESC')
-            ->limit($limit)
             ->pluck('exercise_id')
             ->toArray();
 
