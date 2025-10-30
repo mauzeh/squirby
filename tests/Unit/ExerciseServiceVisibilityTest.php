@@ -135,6 +135,9 @@ class ExerciseServiceVisibilityTest extends TestCase
             'title' => 'Recent User Exercise',
             'created_at' => now()->subMinutes(30)
         ]);
+
+        LiftLog::factory()->create(['user_id' => $this->user->id, 'exercise_id' => $recentGlobalExercise->id]);
+        LiftLog::factory()->create(['user_id' => $this->user->id, 'exercise_id' => $recentUserExercise->id]);
         
         $this->actingAs($this->user);
         
@@ -253,6 +256,9 @@ class ExerciseServiceVisibilityTest extends TestCase
             'title' => 'Recent Exercise 2',
             'created_at' => now()->subMinutes(30)
         ]);
+
+        LiftLog::factory()->create(['user_id' => $this->user->id, 'exercise_id' => $recentExercise1->id]);
+        LiftLog::factory()->create(['user_id' => $this->user->id, 'exercise_id' => $recentExercise2->id]);
         
         $this->actingAs($this->user);
         

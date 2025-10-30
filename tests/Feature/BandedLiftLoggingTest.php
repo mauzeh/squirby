@@ -241,8 +241,9 @@ class BandedLiftLoggingTest extends TestCase
 
         $response->assertSee('Band: red');
         $response->assertDontSee('0 lbs');
-        $response->assertSee('1RM chart not available for banded exercises.');
-        $response->assertDontSee('oneRepMaxChart'); // Ensure the canvas element is not present
+        $response->assertSee('Volume Progress');
+        $response->assertSee('progressChart');
+        $response->assertDontSee('1RM Progress');
     }
 
     /** @test */
@@ -270,6 +271,7 @@ class BandedLiftLoggingTest extends TestCase
         $response->assertSee('100 lbs');
         $response->assertDontSee('Band:');
         $response->assertDontSee('1RM chart not available for banded exercises.');
-        $response->assertSee('oneRepMaxChart'); // Ensure the canvas element is present
+        $response->assertSee('progressChart'); // Ensure the canvas element is present
+        $response->assertSee('1RM Progress');
     }
 }

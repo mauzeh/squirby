@@ -21,6 +21,8 @@ class LiftLogExerciseFilteringTest extends TestCase
         $exercise1 = Exercise::factory()->create(['user_id' => $user1->id, 'title' => 'User1 Exercise']);
         $exercise2 = Exercise::factory()->create(['user_id' => $user2->id, 'title' => 'User2 Exercise']);
 
+        \App\Models\LiftLog::factory()->create(['user_id' => $user1->id, 'exercise_id' => $exercise1->id]);
+
         $this->actingAs($user1);
 
         $response = $this->get(route('lift-logs.index'));

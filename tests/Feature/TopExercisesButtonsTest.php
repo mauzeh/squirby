@@ -45,7 +45,10 @@ class TopExercisesButtonsTest extends TestCase
     public function more_button_appears_when_user_has_more_exercises_than_display_limit()
     {
         // Create 7 personal exercises (more than the 5 display limit)
-        Exercise::factory()->count(7)->create(['user_id' => $this->user->id]);
+        $exercises = Exercise::factory()->count(7)->create(['user_id' => $this->user->id]);
+        $exercises->each(function ($exercise) {
+            \App\Models\LiftLog::factory()->create(['user_id' => $this->user->id, 'exercise_id' => $exercise->id]);
+        });
         
         $response = $this->get(route('lift-logs.index'));
         
@@ -60,7 +63,10 @@ class TopExercisesButtonsTest extends TestCase
         $this->user->update(['show_global_exercises' => true]);
         
         // Create some global exercises (user_id = null)
-        Exercise::factory()->count(7)->create(['user_id' => null]);
+        $exercises = Exercise::factory()->count(7)->create(['user_id' => null]);
+        $exercises->each(function ($exercise) {
+            \App\Models\LiftLog::factory()->create(['user_id' => $this->user->id, 'exercise_id' => $exercise->id]);
+        });
         
         $response = $this->get(route('lift-logs.index'));
         
