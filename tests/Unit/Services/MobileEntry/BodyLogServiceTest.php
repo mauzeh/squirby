@@ -127,12 +127,11 @@ class BodyLogServiceTest extends TestCase
         $this->assertCount(1, $messages);
         $this->assertStringContainsString('Create measurement types', $messages[0]['text']);
         
-        // Create measurement types but no logs
+        // Create measurement types but no logs - no message should be generated
         MeasurementType::factory()->create(['user_id' => $this->user->id]);
         MeasurementType::factory()->create(['user_id' => $this->user->id]);
         
         $messages = $this->service->generateContextualHelpMessages($this->user->id, $selectedDate);
-        $this->assertCount(1, $messages);
-        $this->assertStringContainsString('2 measurement types ready', $messages[0]['text']);
+        $this->assertCount(0, $messages);
     }
 }

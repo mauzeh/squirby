@@ -1038,7 +1038,7 @@ class MobileEntryController extends Controller
                 ]
             ],
             
-            'summary' => $formService->generateSummary(Auth::id(), $selectedDate),
+            'summary' => null,
             
             // No add button needed - all measurement types show as forms automatically
             

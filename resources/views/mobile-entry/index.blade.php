@@ -126,6 +126,7 @@
         <section class="item-logging-section form" aria-label="{{ $form['ariaLabels']['section'] }}" data-form-type="{{ $form['type'] }}" data-form-id="{{ $form['id'] }}">
             <div class="item-header">
                 <h2 class="item-title">{{ $form['title'] }}</h2>
+                @if($form['deleteAction'])
                 <form class="delete-form" method="POST" action="{{ $form['deleteAction'] }}">
                     @csrf
                     @method('DELETE')
@@ -134,10 +135,11 @@
                             <input type="hidden" name="{{ $name }}" value="{{ $value }}">
                         @endforeach
                     @endif
-                    <button type="submit" class="btn-delete" aria-label="{{ $form['ariaLabels']['deleteForm'] }}">
+                    <button type="submit" class="btn-delete" aria-label="{{ $form['ariaLabels']['deleteForm'] ?? 'Delete form' }}">
                         <i class="fas fa-trash"></i>
                     </button>
                 </form>
+                @endif
             </div>
             
             @if(isset($form['messages']) && count($form['messages']) > 0)

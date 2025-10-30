@@ -183,4 +183,31 @@ class MeasurementsTest extends TestCase
         $this->assertEquals('185.5 lbs', $loggedItem['message']['text']);
         $this->assertEquals('Morning weigh-in', $loggedItem['freeformText']);
     }
+
+    /** @test */
+    public function measurement_forms_do_not_have_delete_buttons()
+    {
+        $measurementType = MeasurementType::factory()->create([
+            'user_id' => $this->user->id,
+            'name' => 'Weight',
+            'default_unit' => 'lbs'
+        ]);
+
+        $response = $this->get(route('mobile-entry.measurements'));
+
+        $response->assertStatus(200);
+        
+        // Check that forms don't have delete actions
+        $data = $response->viewData('data');
+        $this->assertCount(1, $data['forms']);
+        
+        $form = $data['forms'][0];
+        $this->assertNull($form['deleteAction']);
+        $this->assertArrayNotHasKey('deleteForm', $form['ariaLabels']);
+        
+        // Verify the HTML doesn't contain delete buttons for forms
+        $response->assertDontSee('btn-delete');
+        $response->assertDontSee('fa-trash');
+        $response->assertDontSee('delete-form');
+    }
 }

@@ -9,79 +9,7 @@ use Carbon\Carbon;
 
 class BodyLogService
 {
-    /**
-     * Generate summary data based on user's body logs for the selected date
-     * 
-     * @param int $userId
-     * @param Carbon $selectedDate
-     * @return array
-     */
-    public function generateSummary($userId, Carbon $selectedDate)
-    {
-        $bodyLogs = BodyLog::with(['measurementType'])
-            ->where('user_id', $userId)
-            ->whereDate('logged_at', $selectedDate->toDateString())
-            ->get();
 
-        // Count of measurements today
-        $entriesCount = $bodyLogs->count();
-        
-        // Get total measurement types for this user
-        $totalMeasurementTypes = MeasurementType::where('user_id', $userId)->count();
-        
-        // Calculate completion percentage
-        $completionPercentage = $totalMeasurementTypes > 0 ? round(($entriesCount / $totalMeasurementTypes) * 100) : 0;
-        
-        // Get streak (consecutive days with at least one measurement)
-        $streak = $this->getConsecutiveDaysStreak($userId, $selectedDate);
-
-        return [
-            'values' => [
-                'total' => $entriesCount,
-                'completed' => $totalMeasurementTypes,
-                'average' => $completionPercentage,
-                'today' => $streak
-            ],
-            'labels' => [
-                'total' => 'Logged',
-                'completed' => 'Total Types',
-                'average' => 'Complete %',
-                'today' => 'Day Streak'
-            ],
-            'ariaLabels' => [
-                'section' => 'Daily measurements summary'
-            ]
-        ];
-    }
-
-    /**
-     * Get consecutive days streak with at least one measurement
-     * 
-     * @param int $userId
-     * @param Carbon $selectedDate
-     * @return int
-     */
-    protected function getConsecutiveDaysStreak($userId, Carbon $selectedDate)
-    {
-        $streak = 0;
-        $currentDate = $selectedDate->copy();
-        
-        // Check backwards from selected date
-        while ($streak < 30) { // Limit to prevent infinite loops
-            $hasEntry = BodyLog::where('user_id', $userId)
-                ->whereDate('logged_at', $currentDate->toDateString())
-                ->exists();
-                
-            if (!$hasEntry) {
-                break;
-            }
-            
-            $streak++;
-            $currentDate->subDay();
-        }
-        
-        return $streak;
-    }
 
     /**
      * Generate logged items data for the selected date
@@ -254,8 +182,7 @@ class BodyLogService
                 'submit' => 'Log ' . $measurementType->name
             ],
             'ariaLabels' => [
-                'section' => $measurementType->name . ' entry',
-                'deleteForm' => 'Remove this measurement form'
+                'section' => $measurementType->name . ' entry'
             ],
             // Hidden fields for form submission
             'hiddenFields' => [
@@ -542,12 +469,7 @@ class BodyLogService
                 'text' => 'Create measurement types in the "Types" section to start tracking your progress.'
             ];
         } elseif ($loggedCount === 0) {
-            // Has measurement types but hasn't logged anything today
-            $messages[] = [
-                'type' => 'tip',
-                'prefix' => 'Ready to log:',
-                'text' => "You have {$measurementTypeCount} measurement type" . ($measurementTypeCount > 1 ? 's' : '') . " ready to log below."
-            ];
+            // Has measurement types but hasn't logged anything today - no message needed
         } elseif ($remainingCount > 0) {
             // Has logged some but not all
             $messages[] = [

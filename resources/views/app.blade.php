@@ -64,7 +64,9 @@
 
             @if (Request::routeIs(['body-logs.*', 'measurement-types.*', 'mobile-entry.measurements']))
                 <a href="{{ route('mobile-entry.measurements') }}" class="{{ Request::routeIs(['mobile-entry.measurements']) ? 'active' : '' }}"><i class="fas fa-mobile-alt"></i></a>
-                <a href="{{ route('body-logs.index') }}" class="{{ Request::routeIs(['body-logs.index', 'body-logs.edit', 'body-logs.destroy-selected']) ? 'active' : '' }}">History</a>
+                @if(auth()->user() && auth()->user()->hasRole('Admin'))
+                    <a href="{{ route('body-logs.index') }}" class="{{ Request::routeIs(['body-logs.index', 'body-logs.edit', 'body-logs.destroy-selected']) ? 'active' : '' }}">History</a>
+                @endif
                 @php
                     $measurementTypes = \App\Models\MeasurementType::where('user_id', auth()->id())->orderBy('name')->get();
                 @endphp
