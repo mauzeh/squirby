@@ -403,7 +403,7 @@ class ImportJsonLiftLog extends Command
                 'exercise_id' => $exercise->id,
                 'user_id' => $user->id,
                 'logged_at' => $loggedAt,
-                'comments' => 'Imported from JSON file'
+                'comments' => $liftLogData['notes'] ?? null
             ]);
 
             // Create lift sets based on the sets count
@@ -413,8 +413,7 @@ class ImportJsonLiftLog extends Command
                 $liftSetData = [
                     'lift_log_id' => $liftLog->id,
                     'weight' => $liftLogData['weight'],
-                    'reps' => $liftLogData['reps'],
-                    'notes' => $liftLogData['notes'] ?? null
+                    'reps' => $liftLogData['reps']
                 ];
 
                 // Add band_color if provided

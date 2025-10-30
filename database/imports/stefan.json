@@ -20,10 +20,10 @@
         "is_bodyweight": false,
         "lift_logs": [
             {
-                "weight": 90,
-                "reps": 10,
+                "weight": 95,
+                "reps": 8,
                 "sets": 3,
-                "notes": null
+                "notes": "stay form is iffy esp left side"
             }
         ]
     },
@@ -34,10 +34,10 @@
         "is_bodyweight": false,
         "lift_logs": [
             {
-                "weight": 175,
+                "weight": 165,
                 "reps": 5,
                 "sets": 3,
-                "notes": null
+                "notes": "work up to this weight"
             }
         ]
     },
@@ -62,7 +62,7 @@
         "is_bodyweight": false,
         "lift_logs": [
             {
-                "weight": 52.5,
+                "weight": 47.5,
                 "reps": 8,
                 "sets": 3,
                 "notes": null
@@ -76,8 +76,8 @@
         "is_bodyweight": false,
         "lift_logs": [
             {
-                "weight": 110,
-                "reps": 4,
+                "weight": 105,
+                "reps": 3,
                 "sets": 3,
                 "notes": null
             }
@@ -118,8 +118,8 @@
         "is_bodyweight": false,
         "lift_logs": [
             {
-                "weight": 110,
-                "reps": 7,
+                "weight": 105,
+                "reps": 0,
                 "sets": 3,
                 "notes": null
             }
@@ -160,8 +160,8 @@
         "is_bodyweight": false,
         "lift_logs": [
             {
-                "weight": 290,
-                "reps": 1,
+                "weight": 370,
+                "reps": 12,
                 "sets": 3,
                 "notes": null
             }
@@ -174,7 +174,7 @@
         "is_bodyweight": false,
         "lift_logs": [
             {
-                "weight": 315,
+                "weight": 335,
                 "reps": 8,
                 "sets": 3,
                 "notes": null
@@ -194,10 +194,10 @@
         "is_bodyweight": false,
         "lift_logs": [
             {
-                "weight": 140,
-                "reps": 12,
+                "weight": 145,
+                "reps": 8,
                 "sets": 3,
-                "notes": null
+                "notes": "stay"
             }
         ]
     },
@@ -222,8 +222,8 @@
         "is_bodyweight": false,
         "lift_logs": [
             {
-                "weight": 235,
-                "reps": 12,
+                "weight": 250,
+                "reps": 8,
                 "sets": 3,
                 "notes": null
             }
@@ -282,6 +282,12 @@
                 "reps": 8,
                 "sets": 3,
                 "notes": null
+            },
+            {
+                "weight": 120,
+                "reps": 8,
+                "sets": 3,
+                "notes": null
             }
         ]
     },
@@ -294,48 +300,6 @@
             {
                 "weight": 275,
                 "reps": 1,
-                "sets": 3,
-                "notes": null
-            }
-        ]
-    },
-    {
-        "exercise": "Overhead Lunge",
-        "canonical_name": "overhead_lunge",
-        "description": "Lunge variation with overhead weight for stability and leg strength",
-        "is_bodyweight": false,
-        "lift_logs": [
-            {
-                "weight": 40,
-                "reps": 10,
-                "sets": 3,
-                "notes": null
-            }
-        ]
-    },
-    {
-        "exercise": "Dumbbell Pull Through",
-        "canonical_name": "dumbbell_pull_through",
-        "description": "Hip hinge movement with dumbbell for posterior chain",
-        "is_bodyweight": false,
-        "lift_logs": [
-            {
-                "weight": 40,
-                "reps": 8,
-                "sets": 3,
-                "notes": null
-            }
-        ]
-    },
-    {
-        "exercise": "Kettlebell Swing",
-        "canonical_name": "kettlebell_swing",
-        "description": "Dynamic hip hinge movement for power and conditioning",
-        "is_bodyweight": false,
-        "lift_logs": [
-            {
-                "weight": 50,
-                "reps": 25,
                 "sets": 3,
                 "notes": null
             }
@@ -394,6 +358,34 @@
                 "reps": 40,
                 "sets": 3,
                 "notes": "time in seconds"
+            }
+        ]
+    },
+    {
+        "exercise": "Dips",
+        "canonical_name": "dips",
+        "description": "Bodyweight dips for chest, triceps, and shoulders",
+        "is_bodyweight": true,
+        "lift_logs": [
+            {
+                "weight": 0,
+                "reps": 12,
+                "sets": 3,
+                "notes": "gonna need to start adding weight to these"
+            }
+        ]
+    },
+    {
+        "exercise": "Bicep Curl Machine",
+        "canonical_name": "bicep_curl_machine",
+        "description": "Machine bicep curl for arm isolation",
+        "is_bodyweight": false,
+        "lift_logs": [
+            {
+                "weight": 95,
+                "reps": 6,
+                "sets": 3,
+                "notes": null
             }
         ]
     }
