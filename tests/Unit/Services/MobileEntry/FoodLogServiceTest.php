@@ -85,10 +85,21 @@ class FoodLogServiceTest extends TestCase
         // Check labels
         $this->assertEquals('Calories', $summary['labels']['total']);
         $this->assertEquals('Entries', $summary['labels']['completed']);
+        $this->assertEquals('7-Day Avg', $summary['labels']['average']);
         $this->assertEquals('Protein (g)', $summary['labels']['today']);
         
         // Check aria labels
         $this->assertEquals('Daily nutrition summary', $summary['ariaLabels']['section']);
+    }
+
+    #[Test]
+    public function it_returns_null_summary_when_no_entries_exist()
+    {
+        $user = User::factory()->create();
+        
+        $summary = $this->service->generateSummary($user->id, $this->testDate);
+        
+        $this->assertNull($summary);
     }
 
     #[Test]

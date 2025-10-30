@@ -34,10 +34,15 @@ class FoodLogService
             ->whereDate('logged_at', $selectedDate->toDateString())
             ->get();
 
-        $dailyTotals = $this->nutritionService->calculateFoodLogTotals($foodLogs);
-        
         // Count of food entries today
         $entriesCount = $foodLogs->count();
+        
+        // Return null if no entries for this date
+        if ($entriesCount === 0) {
+            return null;
+        }
+
+        $dailyTotals = $this->nutritionService->calculateFoodLogTotals($foodLogs);
         
         // Get average daily calories over last 7 days for comparison
         $avgCalories = $this->getAverageDailyCalories($userId, $selectedDate);
@@ -52,7 +57,7 @@ class FoodLogService
             'labels' => [
                 'total' => 'Calories',
                 'completed' => 'Entries',
-                'average' => 'Avg Cal',
+                'average' => '7-Day Avg',
                 'today' => 'Protein (g)'
             ],
             'ariaLabels' => [

@@ -105,7 +105,7 @@ class FoodLogController extends Controller
             );
             
             // Generate celebratory message
-            $celebratoryMessage = $this->generateCelebratoryMessage($foodLog);
+            $celebratoryMessage = $this->generateCelebratoryMessage($logEntry);
             
             return redirect()->route('mobile-entry.foods', ['date' => $validated['date']])
                 ->with('success', $celebratoryMessage);
