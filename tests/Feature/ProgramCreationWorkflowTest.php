@@ -25,28 +25,11 @@ class ProgramCreationWorkflowTest extends TestCase
         config(['training.defaults.sets' => 3]);
         config(['training.defaults.reps' => 10]);
     }
-    
-    /**
-     * Create an admin user for testing program functionality
-     */
-    protected function createAdminUser()
-    {
-        $user = User::factory()->create();
-        
-        // Make user an admin since ProgramController requires admin access
-        $adminRole = \App\Models\Role::where('name', 'Admin')->first();
-        if (!$adminRole) {
-            $adminRole = \App\Models\Role::factory()->create(['name' => 'Admin']);
-        }
-        $user->roles()->attach($adminRole);
-        
-        return $user;
-    }
 
     /** @test */
     public function program_creation_form_renders_without_sets_reps_input_fields()
     {
-        $user = $this->createAdminUser();
+        $user = User::factory()->create();
         $exercise = Exercise::factory()->create(['user_id' => $user->id]);
 
         $response = $this->actingAs($user)
@@ -74,7 +57,7 @@ class ProgramCreationWorkflowTest extends TestCase
     /** @test */
     public function program_creation_saves_with_auto_calculated_values_when_progression_data_exists()
     {
-        $user = $this->createAdminUser();
+        $user = User::factory()->create();
         $exercise = Exercise::factory()->create(['user_id' => $user->id]);
         
         // Create lift log history to provide progression data
@@ -122,7 +105,7 @@ class ProgramCreationWorkflowTest extends TestCase
     /** @test */
     public function program_creation_saves_with_default_values_when_no_progression_data_exists()
     {
-        $user = $this->createAdminUser();
+        $user = User::factory()->create();
         $exercise = Exercise::factory()->create(['user_id' => $user->id]);
 
         $response = $this->actingAs($user)
@@ -149,7 +132,7 @@ class ProgramCreationWorkflowTest extends TestCase
     /** @test */
     public function program_editing_form_continues_to_show_manual_sets_reps_input_fields()
     {
-        $user = $this->createAdminUser();
+        $user = User::factory()->create();
         $exercise = Exercise::factory()->create(['user_id' => $user->id]);
         $program = Program::factory()->create([
             'user_id' => $user->id,
@@ -186,7 +169,7 @@ class ProgramCreationWorkflowTest extends TestCase
     /** @test */
     public function program_editing_continues_to_work_with_manual_input_validation()
     {
-        $user = $this->createAdminUser();
+        $user = User::factory()->create();
         $exercise = Exercise::factory()->create(['user_id' => $user->id]);
         $program = Program::factory()->create([
             'user_id' => $user->id,
@@ -220,7 +203,7 @@ class ProgramCreationWorkflowTest extends TestCase
     /** @test */
     public function program_editing_validates_manual_sets_reps_input()
     {
-        $user = $this->createAdminUser();
+        $user = User::factory()->create();
         $exercise = Exercise::factory()->create(['user_id' => $user->id]);
         $program = Program::factory()->create([
             'user_id' => $user->id,
@@ -252,7 +235,7 @@ class ProgramCreationWorkflowTest extends TestCase
     /** @test */
     public function program_creation_handles_training_progression_service_failure_gracefully()
     {
-        $user = $this->createAdminUser();
+        $user = User::factory()->create();
         $exercise = Exercise::factory()->create(['user_id' => $user->id]);
 
         // Mock the TrainingProgressionService to throw an exception
@@ -285,7 +268,7 @@ class ProgramCreationWorkflowTest extends TestCase
     /** @test */
     public function program_creation_handles_null_progression_service_response()
     {
-        $user = $this->createAdminUser();
+        $user = User::factory()->create();
         $exercise = Exercise::factory()->create(['user_id' => $user->id]);
 
         // Mock the TrainingProgressionService to return null
@@ -318,7 +301,7 @@ class ProgramCreationWorkflowTest extends TestCase
     /** @test */
     public function program_creation_with_new_exercise_uses_auto_calculated_values()
     {
-        $user = $this->createAdminUser();
+        $user = User::factory()->create();
 
         $response = $this->actingAs($user)
             ->post(route('programs.store'), [
@@ -351,7 +334,7 @@ class ProgramCreationWorkflowTest extends TestCase
     /** @test */
     public function program_creation_validation_does_not_require_sets_and_reps()
     {
-        $user = $this->createAdminUser();
+        $user = User::factory()->create();
         $exercise = Exercise::factory()->create(['user_id' => $user->id]);
 
         // Test that sets and reps are not required in creation
@@ -375,7 +358,7 @@ class ProgramCreationWorkflowTest extends TestCase
     /** @test */
     public function program_creation_still_validates_required_fields()
     {
-        $user = $this->createAdminUser();
+        $user = User::factory()->create();
 
         // Test that other required fields are still validated
         $response = $this->actingAs($user)
@@ -389,7 +372,7 @@ class ProgramCreationWorkflowTest extends TestCase
     /** @test */
     public function existing_programs_display_correctly_without_modification()
     {
-        $user = $this->createAdminUser();
+        $user = User::factory()->create();
         $exercise = Exercise::factory()->create(['user_id' => $user->id]);
         
         // Create an existing program with specific sets/reps

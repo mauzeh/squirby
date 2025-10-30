@@ -15,14 +15,6 @@ class ProgramToLiftLogTest extends TestCase
     public function test_exercise_log_view_loads_successfully()
     {
         $user = User::factory()->create();
-        
-        // Make user an admin since ProgramController requires admin access
-        $adminRole = \App\Models\Role::where('name', 'Admin')->first();
-        if (!$adminRole) {
-            $adminRole = \App\Models\Role::factory()->create(['name' => 'Admin']);
-        }
-        $user->roles()->attach($adminRole);
-        
         $exercise = Exercise::factory()->create(['user_id' => $user->id]);
         $program = Program::factory()->create([
             'user_id' => $user->id,

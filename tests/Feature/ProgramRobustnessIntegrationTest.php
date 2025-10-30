@@ -19,14 +19,6 @@ class ProgramRobustnessIntegrationTest extends TestCase
     public function system_remains_robust_under_multiple_failure_conditions()
     {
         $user = User::factory()->create();
-        
-        // Make user an admin since ProgramController requires admin access
-        $adminRole = \App\Models\Role::where('name', 'Admin')->first();
-        if (!$adminRole) {
-            $adminRole = \App\Models\Role::factory()->create(['name' => 'Admin']);
-        }
-        $user->roles()->attach($adminRole);
-        
         $regularExercise = Exercise::factory()->create(['user_id' => $user->id, 'is_bodyweight' => false]);
         $bodyweightExercise = Exercise::factory()->create(['user_id' => $user->id, 'is_bodyweight' => true]);
 

@@ -75,13 +75,9 @@
 
             @if (Request::routeIs(['exercises.*', 'lift-logs.*', 'programs.*', 'recommendations.*', 'mobile-entry.lifts']))
                 <a href="{{ route('mobile-entry.lifts') }}" class="{{ Request::routeIs(['mobile-entry.lifts']) ? 'active' : '' }}"><i class="fas fa-mobile-alt"></i></a>
-                @if(auth()->user() && auth()->user()->hasRole('Admin'))
-                    <a href="{{ route('recommendations.index') }}" class="{{ Request::routeIs('recommendations.*') ? 'active' : '' }}" title="Recommendations"><i class="fas fa-star"></i></a>
-                @endif
+                <a href="{{ route('recommendations.index') }}" class="{{ Request::routeIs('recommendations.*') ? 'active' : '' }}" title="Recommendations"><i class="fas fa-star"></i></a>
                 <a href="{{ route('lift-logs.index') }}" class="{{ Request::routeIs(['lift-logs.index', 'lift-logs.edit', 'lift-logs.destroy-selected', 'exercises.show-logs']) ? 'active' : '' }}">History</a>
-                @if(auth()->user() && auth()->user()->hasRole('Admin'))
-                    <a href="{{ route('programs.index') }}" class="{{ Request::routeIs('programs.*') ? 'active' : '' }}">Program</a>
-                @endif
+                <a href="{{ route('programs.index') }}" class="{{ Request::routeIs('programs.*') ? 'active' : '' }}">Program</a>
                 <a href="{{ route('exercises.index') }}" class="{{ Request::routeIs(['exercises.index', 'exercises.create', 'exercises.edit', 'exercises.store', 'exercises.update', 'exercises.destroy']) ? 'active' : '' }}">Exercises</a>
             @endif
 

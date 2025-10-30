@@ -23,14 +23,6 @@ class ProgramBackwardCompatibilityTest extends TestCase
         parent::setUp();
         
         $this->user = User::factory()->create();
-        
-        // Make user an admin since ProgramController requires admin access
-        $adminRole = \App\Models\Role::where('name', 'Admin')->first();
-        if (!$adminRole) {
-            $adminRole = \App\Models\Role::factory()->create(['name' => 'Admin']);
-        }
-        $this->user->roles()->attach($adminRole);
-        
         $this->exercise = Exercise::factory()->create(['user_id' => $this->user->id]);
     }
 
