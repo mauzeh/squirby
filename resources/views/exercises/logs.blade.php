@@ -23,23 +23,27 @@
             <p>No lift logs found for this exercise.</p>
         @else
         <div class="form-container">
-            <h3>1RM Progress</h3>
-            @if (!empty($exercise->band_type))
-                <p>1RM chart not available for banded exercises.</p>
+            @if ($exercise->is_bodyweight)
+                <h3>Volume Progress</h3>
+                <canvas id="progressChart"></canvas>
+            @elseif ($exercise->band_type)
+                <h3>Volume Progress</h3>
+                <canvas id="progressChart"></canvas>
             @else
-                <canvas id="oneRepMaxChart"></canvas>
+                <h3>1RM Progress</h3>
+                <canvas id="progressChart"></canvas>
             @endif
         </div>
 
         <x-lift-logs.table :liftLogs="$liftLogs" :config="$config" />
 
-        @if (empty($exercise->band_type))
+        @if (!empty($chartData['datasets']))
             <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
             <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
             <script>
                 document.addEventListener('DOMContentLoaded', function() {
-                    var ctx = document.getElementById('oneRepMaxChart').getContext('2d');
-                    var oneRepMaxChart = new Chart(ctx, {
+                    var ctx = document.getElementById('progressChart').getContext('2d');
+                    var progressChart = new Chart(ctx, {
                         type: 'line',
                         data: {
                             datasets: @json($chartData['datasets'])
@@ -53,6 +57,12 @@
                                     }
                                 },
                                 y: {
+                                    beginAtZero: true
+                                }
+                            },
+                            plugins: {
+                                legend: {
+                                    display: true
                                 }
                             }
                         }
