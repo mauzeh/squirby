@@ -78,7 +78,7 @@
                     <div class="item-filter-container">
                         <div class="item-filter-group">
                             <div class="item-filter-input-wrapper">
-                                <input type="text" class="item-filter-input" placeholder="{{ $data['itemSelectionList']['filterPlaceholder'] }}">
+                                <input type="text" class="item-filter-input" placeholder="{{ $data['itemSelectionList']['filterPlaceholder'] }}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
                                 <button type="button" class="btn-clear-filter" aria-label="Clear filter" style="display: none;">×</button>
                             </div>
                             @if(isset($data['itemSelectionList']['createForm']))

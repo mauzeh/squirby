@@ -335,31 +335,47 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             // Focus on the filter input field and scroll to optimal position
-            setTimeout(() => {
+            // Use requestAnimationFrame for better mobile compatibility
+            requestAnimationFrame(() => {
                 const filterInput = document.querySelector('.item-filter-input');
                 if (filterInput) {
+                    // Force focus and click to ensure mobile keyboard opens
                     filterInput.focus();
+                    
+                    // Additional mobile keyboard trigger methods
+                    if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+                        // For mobile devices, try multiple approaches
+                        filterInput.click();
+                        
+                        // Set cursor position to ensure input is active
+                        setTimeout(() => {
+                            filterInput.setSelectionRange(0, 0);
+                        }, 50);
+                    }
                     
                     // Scroll to position the filter input optimally for mobile
                     // This ensures maximum list visibility below the input
                     const filterContainer = filterInput.closest('.item-filter-container');
                     if (filterContainer) {
-                        // Calculate optimal scroll position
-                        const containerRect = filterContainer.getBoundingClientRect();
-                        const viewportHeight = window.innerHeight;
-                        
-                        // Position the filter container about 5% from the top of viewport
-                        // This leaves 95% of screen space for the list below
-                        const targetPosition = window.scrollY + containerRect.top - (viewportHeight * 0.05);
-                        
-                        // Smooth scroll to the calculated position
-                        window.scrollTo({
-                            top: Math.max(0, targetPosition),
-                            behavior: 'smooth'
-                        });
+                        // Small delay to allow keyboard animation to start
+                        setTimeout(() => {
+                            // Calculate optimal scroll position
+                            const containerRect = filterContainer.getBoundingClientRect();
+                            const viewportHeight = window.innerHeight;
+                            
+                            // Position the filter container about 5% from the top of viewport
+                            // This leaves 95% of screen space for the list below
+                            const targetPosition = window.scrollY + containerRect.top - (viewportHeight * 0.05);
+                            
+                            // Smooth scroll to the calculated position
+                            window.scrollTo({
+                                top: Math.max(0, targetPosition),
+                                behavior: 'smooth'
+                            });
+                        }, 300); // Delay to account for keyboard animation
                     }
                 }
-            }, 100);
+            });
         };
         
         // Hide item selection list and show add button
