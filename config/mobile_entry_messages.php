@@ -89,7 +89,7 @@ return [
         'your_last_notes' => 'Your last notes:',
         'todays_focus' => 'Today\'s focus:',
         'try_this' => 'Try this:',
-        'suggestion_suffix' => ' (values set below)',
+        'suggestion_suffix' => '',
         
         // Food-specific form guidance
         'how_to_log_food' => 'Adjust the quantity below, then tap "Log :food" to record your intake.',

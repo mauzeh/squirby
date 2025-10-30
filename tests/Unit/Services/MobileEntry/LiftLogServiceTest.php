@@ -298,7 +298,7 @@ class LiftLogServiceTest extends TestCase
         $suggestionMessage = $messages[1];
         $this->assertEquals('tip', $suggestionMessage['type']);
         $this->assertEquals('Try this:', $suggestionMessage['prefix']);
-        $this->assertEquals('230 lbs × 5 reps × 3 sets (values set below)', $suggestionMessage['text']);
+        $this->assertEquals('230 lbs × 5 reps × 3 sets', $suggestionMessage['text']);
     }
 
     #[Test]
@@ -334,7 +334,7 @@ class LiftLogServiceTest extends TestCase
         $suggestionMessage = $messages[2];
         $this->assertEquals('tip', $suggestionMessage['type']);
         $this->assertEquals('Try this:', $suggestionMessage['prefix']);
-        $this->assertEquals('190 lbs × 8 reps × 4 sets (values set below)', $suggestionMessage['text']);
+        $this->assertEquals('190 lbs × 8 reps × 4 sets', $suggestionMessage['text']);
     }
 
     #[Test]
@@ -1066,7 +1066,7 @@ class LiftLogServiceTest extends TestCase
         
         // Find the suggestion message
         $suggestionMessage = collect($messages)->firstWhere(function ($message) {
-            return str_contains($message['text'] ?? '', '205 lbs × 6 reps × 3 sets (values set below)');
+            return str_contains($message['text'] ?? '', '205 lbs × 6 reps × 3 sets');
         });
         $this->assertNotNull($suggestionMessage);
         $this->assertEquals('tip', $suggestionMessage['type']);
