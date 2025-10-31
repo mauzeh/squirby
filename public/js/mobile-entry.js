@@ -484,4 +484,36 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize delete confirmation
     setupDeleteConfirmation();
+    
+    /**
+     * Auto-scroll to First Form
+     * 
+     * Automatically scrolls the viewport to the first form on page load
+     * if there are any forms present. This improves mobile UX by immediately
+     * showing the user where they can start entering data and hides the "Add Item" button.
+     */
+    const autoScrollToFirstForm = () => {
+        // Find the first form section
+        const firstForm = document.querySelector('.item-logging-section.form');
+        
+        if (firstForm) {
+            // Small delay to ensure page is fully rendered
+            setTimeout(() => {
+                const formRect = firstForm.getBoundingClientRect();
+                
+                // Position the form at the very top of the viewport to hide the "Add Item" button
+                // This scrolls past the button and focuses entirely on the form content
+                const targetPosition = window.scrollY + formRect.top;
+                
+                // Smooth scroll to the first form
+                window.scrollTo({
+                    top: Math.max(0, targetPosition),
+                    behavior: 'smooth'
+                });
+            }, 300); // Delay to allow any initial page animations to complete
+        }
+    };
+    
+    // Initialize auto-scroll to first form
+    autoScrollToFirstForm();
 });
