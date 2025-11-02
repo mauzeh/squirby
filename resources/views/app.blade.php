@@ -95,6 +95,7 @@
             @yield('content')
         </div>
         @auth
+        @if(app()->environment('local'))
         <footer>
             <div class="container">
                 @if(isset($queryCount))
@@ -105,6 +106,7 @@
                 @endif
             </div>
         </footer>
+        @endif
         @endauth
 
         <script>
