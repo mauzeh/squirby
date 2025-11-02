@@ -3,7 +3,7 @@ body {
     background-color: #1a1a1a; /* Dark background */
     color: #f2f2f2; /* Light text */
     margin: 0;
-    padding: 0;
+    padding: 100px 0 0 0; /* Add padding-top to account for fixed navbar */
 }
 a {
     color: #b3d7ffff; /* Light Blue links */

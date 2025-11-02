@@ -15,6 +15,7 @@
         <title>Quantified Athletics</title>
 
         <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+        <link rel="stylesheet" href="{{ asset('css/nav.css') }}">
         @yield('styles')
         @yield('scripts')
     </head>
@@ -34,52 +35,54 @@
             </div>
         @endif
         @auth
-        <div class="navbar">
-            @foreach($mainNavigationLeft as $item)
-                @if(isset($item['label']))
-                    <a id="{{ $item['id'] }}" href="{{ route($item['route']) }}" class="top-level-nav-item {{ $item['isActive'] ? 'active' : '' }}" @if(isset($item['style'])) style="{{ $item['style'] }}" @endif>
-                        @if(isset($item['icon']))<i class="{{ $item['icon'] }}"></i> @endif{{ $item['label'] }}
-                    </a>
-                @else
-                    <a id="{{ $item['id'] }}" href="{{ route($item['route']) }}" class="{{ $item['isActive'] ? 'active' : '' }}" @if(isset($item['style'])) style="{{ $item['style'] }}" @endif @if(isset($item['title'])) title="{{ $item['title'] }}" @endif>
-                        @if(isset($item['icon']))<i class="{{ $item['icon'] }}"></i> @endif
-                    </a>
-                @endif
-            @endforeach
-
-            <div style="margin-left: auto;">
-                @foreach($mainNavigationRight as $item)
-                    @if(isset($item['type']) && $item['type'] === 'form')
-                        <form method="POST" action="{{ route($item['route']) }}" style="display: inline-block;">
-                            @csrf
-                            <button type="submit" style="background: none; border: none; color: #f2f2f2; text-align: center; padding: 14px 8px; text-decoration: none; font-size: 17px; cursor: pointer;">
-                                @if(isset($item['icon']))<i class="{{ $item['icon'] }}"></i> @endif
-                            </button>
-                        </form>
+        <div class="auto-hiding-navbar">
+            <div class="navbar">
+                @foreach($mainNavigationLeft as $item)
+                    @if(isset($item['label']))
+                        <a id="{{ $item['id'] }}" href="{{ route($item['route']) }}" class="top-level-nav-item {{ $item['isActive'] ? 'active' : '' }}" @if(isset($item['style'])) style="{{ $item['style'] }}" @endif>
+                            @if(isset($item['icon']))<i class="{{ $item['icon'] }}"></i> @endif{{ $item['label'] }}
+                        </a>
                     @else
                         <a id="{{ $item['id'] }}" href="{{ route($item['route']) }}" class="{{ $item['isActive'] ? 'active' : '' }}" @if(isset($item['style'])) style="{{ $item['style'] }}" @endif @if(isset($item['title'])) title="{{ $item['title'] }}" @endif>
+                            @if(isset($item['icon']))<i class="{{ $item['icon'] }}"></i> @endif
+                        </a>
+                    @endif
+                @endforeach
+
+                <div style="margin-left: auto;">
+                    @foreach($mainNavigationRight as $item)
+                        @if(isset($item['type']) && $item['type'] === 'form')
+                            <form method="POST" action="{{ route($item['route']) }}" style="display: inline-block;">
+                                @csrf
+                                <button type="submit" style="background: none; border: none; color: #f2f2f2; text-align: center; padding: 14px 8px; text-decoration: none; font-size: 17px; cursor: pointer;">
+                                    @if(isset($item['icon']))<i class="{{ $item['icon'] }}"></i> @endif
+                                </button>
+                            </form>
+                        @else
+                            <a id="{{ $item['id'] }}" href="{{ route($item['route']) }}" class="{{ $item['isActive'] ? 'active' : '' }}" @if(isset($item['style'])) style="{{ $item['style'] }}" @endif @if(isset($item['title'])) title="{{ $item['title'] }}" @endif>
+                                @if(isset($item['icon']))<i class="{{ $item['icon'] }}"></i> @endif{{ $item['label'] }}
+                            </a>
+                        @endif
+                    @endforeach
+                </div>
+            </div>
+
+            @if ($shouldShowSubmenu)
+            <div class="navbar sub-navbar">
+                @foreach($subNavigation as $item)
+                    @if(isset($item['label']))
+                        <a href="{{ isset($item['routeParams']) ? route($item['route'], $item['routeParams']) : route($item['route']) }}" class="{{ $item['isActive'] ? 'active' : '' }}" @if(isset($item['title'])) title="{{ $item['title'] }}" @endif>
                             @if(isset($item['icon']))<i class="{{ $item['icon'] }}"></i> @endif{{ $item['label'] }}
+                        </a>
+                    @else
+                        <a href="{{ isset($item['routeParams']) ? route($item['route'], $item['routeParams']) : route($item['route']) }}" class="{{ $item['isActive'] ? 'active' : '' }}" @if(isset($item['title'])) title="{{ $item['title'] }}" @endif>
+                            @if(isset($item['icon']))<i class="{{ $item['icon'] }}"></i> @endif
                         </a>
                     @endif
                 @endforeach
             </div>
+            @endif
         </div>
-
-        @if ($shouldShowSubmenu)
-        <div class="navbar sub-navbar">
-            @foreach($subNavigation as $item)
-                @if(isset($item['label']))
-                    <a href="{{ isset($item['routeParams']) ? route($item['route'], $item['routeParams']) : route($item['route']) }}" class="{{ $item['isActive'] ? 'active' : '' }}" @if(isset($item['title'])) title="{{ $item['title'] }}" @endif>
-                        @if(isset($item['icon']))<i class="{{ $item['icon'] }}"></i> @endif{{ $item['label'] }}
-                    </a>
-                @else
-                    <a href="{{ isset($item['routeParams']) ? route($item['route'], $item['routeParams']) : route($item['route']) }}" class="{{ $item['isActive'] ? 'active' : '' }}" @if(isset($item['title'])) title="{{ $item['title'] }}" @endif>
-                        @if(isset($item['icon']))<i class="{{ $item['icon'] }}"></i> @endif
-                    </a>
-                @endif
-            @endforeach
-        </div>
-        @endif
         @endauth
         <div class="content">
             @yield('content')
@@ -97,6 +100,7 @@
         </footer>
         @endauth
 
+        <script src="{{ asset('js/nav.js') }}"></script>
         <script>
             document.addEventListener('DOMContentLoaded', function() {
                 // Initialize password visibility toggles
@@ -179,4 +183,3 @@
             }
         </script>
     </body>
-</html>
