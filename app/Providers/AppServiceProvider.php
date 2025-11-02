@@ -4,7 +4,6 @@ namespace App\Providers;
 
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
-use App\Models\MeasurementType;
 use Illuminate\Support\Facades\Auth;
 
 class AppServiceProvider extends ServiceProvider
@@ -38,8 +37,12 @@ class AppServiceProvider extends ServiceProvider
 
         View::composer('app', function ($view) {
             if (Auth::check()) {
-                $measurementTypes = MeasurementType::where('user_id', auth()->id())->orderBy('name')->get();
-                $view->with('measurementTypes', $measurementTypes);
+                $navigationService = app(\App\Services\NavigationService::class);
+                $mainNavigation = $navigationService->getMainNavigation();
+                $view->with('mainNavigationLeft', $mainNavigation['left']);
+                $view->with('mainNavigationRight', $mainNavigation['right']);
+                $view->with('subNavigation', $navigationService->getSubNavigation());
+                $view->with('shouldShowSubmenu', $navigationService->shouldShowSubmenu());
             }
             if (config('app.env') !== 'production') {
                 $view->with('queryCount', count(\Illuminate\Support\Facades\DB::getQueryLog()));
