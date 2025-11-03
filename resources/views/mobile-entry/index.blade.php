@@ -124,24 +124,27 @@
         @if(isset($data['forms']) && count($data['forms']) > 0)
         @foreach($data['forms'] as $form)
         <section class="item-logging-section form" aria-label="{{ $form['ariaLabels']['section'] }}" data-form-type="{{ $form['type'] }}" data-form-id="{{ $form['id'] }}">
-            <div class="item-header">
+            <div class="item-header collapsible-trigger">
                 <h2 class="item-title">{{ $form['title'] }}</h2>
-                @if($form['deleteAction'])
-                <form class="delete-form" method="POST" action="{{ $form['deleteAction'] }}">
-                    @csrf
-                    @method('DELETE')
-                    @if(isset($form['deleteParams']))
-                        @foreach($form['deleteParams'] as $name => $value)
-                            <input type="hidden" name="{{ $name }}" value="{{ $value }}">
-                        @endforeach
+                <div class="item-header-actions">
+                    <div class="collapsible-icon"></div>
+                    @if($form['deleteAction'])
+                    <form class="delete-form" method="POST" action="{{ $form['deleteAction'] }}">
+                        @csrf
+                        @method('DELETE')
+                        @if(isset($form['deleteParams']))
+                            @foreach($form['deleteParams'] as $name => $value)
+                                <input type="hidden" name="{{ $name }}" value="{{ $value }}">
+                            @endforeach
+                        @endif
+                        <button type="submit" class="btn-delete" aria-label="{{ $form['ariaLabels']['deleteForm'] ?? 'Delete form' }}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </form>
                     @endif
-                    <button type="submit" class="btn-delete" aria-label="{{ $form['ariaLabels']['deleteForm'] ?? 'Delete form' }}">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </form>
-                @endif
+                </div>
             </div>
-            
+            <div class="collapsible-content collapsed">
             @if(isset($form['messages']) && count($form['messages']) > 0)
             <div class="item-messages">
                 @foreach($form['messages'] as $message)
@@ -192,6 +195,7 @@
                     <button type="submit" class="btn-primary">{{ $form['buttons']['submit'] }}</button>
                 </div>
             </form>
+            </div>
         </section>
         @endforeach
         @endif

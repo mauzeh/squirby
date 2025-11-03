@@ -516,4 +516,33 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize auto-scroll to first form
     autoScrollToFirstForm();
+
+    /**
+     * Collapsible Form Sections
+     *
+     * Toggles the visibility of form content when the header is clicked.
+     */
+    const setupCollapsibleForms = () => {
+        const triggers = document.querySelectorAll('.collapsible-trigger');
+
+        triggers.forEach(trigger => {
+            trigger.addEventListener('click', function() {
+                const content = this.nextElementSibling;
+
+                if (content && content.classList.contains('collapsible-content')) {
+                    this.classList.toggle('active');
+                    content.classList.toggle('collapsed');
+
+                    if (content.classList.contains('collapsed')) {
+                        content.style.display = 'none';
+                    } else {
+                        content.style.display = 'block';
+                    }
+                }
+            });
+        });
+    };
+
+    // Initialize collapsible forms
+    setupCollapsibleForms();
 });
