@@ -473,7 +473,7 @@ class ImportJsonLiftLogDuplicateTest extends TestCase
             $this->assertDatabaseCount('lift_sets', 1);
             
             $newLiftLog = LiftLog::first();
-            $this->assertEquals('Imported from JSON file', $newLiftLog->comments);
+            $this->assertNull($newLiftLog->comments);
             
         } finally {
             unlink($tempFile);

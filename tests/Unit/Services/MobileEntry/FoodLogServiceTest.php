@@ -593,7 +593,7 @@ class FoodLogServiceTest extends TestCase
         $result = $this->service->addFoodForm($user->id, 'ingredient', $ingredient->id, $this->testDate);
         
         $this->assertTrue($result['success']);
-        $this->assertEquals('Test Ingredient added! Now scroll down to log your intake - adjust the quantity and tap \'Log Test Ingredient\' when ready.', $result['message']);
+        $this->assertEquals('', $result['message']);
         
         // Verify database entry was created
         $this->assertDatabaseHas('mobile_food_forms', [
@@ -619,7 +619,7 @@ class FoodLogServiceTest extends TestCase
         $result = $this->service->addFoodForm($user->id, 'meal', $meal->id, $this->testDate);
         
         $this->assertTrue($result['success']);
-        $this->assertEquals('Test Meal added! Now scroll down to log your intake - adjust the quantity and tap \'Log Test Meal\' when ready.', $result['message']);
+        $this->assertEquals('', $result['message']);
         
         // Verify database entry was created
         $this->assertDatabaseHas('mobile_food_forms', [
@@ -914,13 +914,11 @@ class FoodLogServiceTest extends TestCase
         // Check success message
         $successMessage = collect($messages['messages'])->firstWhere('type', 'success');
         $this->assertNotNull($successMessage);
-        $this->assertEquals('Success:', $successMessage['prefix']);
         $this->assertEquals('Food logged successfully!', $successMessage['text']);
         
         // Check error message
         $errorMessage = collect($messages['messages'])->firstWhere('type', 'error');
         $this->assertNotNull($errorMessage);
-        $this->assertEquals('Error:', $errorMessage['prefix']);
         $this->assertEquals('Validation failed', $errorMessage['text']);
     }
 

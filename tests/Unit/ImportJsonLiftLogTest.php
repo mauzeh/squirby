@@ -178,7 +178,7 @@ class ImportJsonLiftLogTest extends TestCase
         $this->assertDatabaseHas('lift_logs', [
             'exercise_id' => $exercise->id,
             'user_id' => $user->id,
-            'comments' => 'Imported from JSON file'
+            'comments' => null
         ]);
         
         // Verify lift set was created
@@ -252,14 +252,16 @@ class ImportJsonLiftLogTest extends TestCase
         
         $this->callPrivateMethod($command, 'importExercise', [$exerciseData, $user, $loggedAt]);
         
-        // Verify lift set was created with notes
+        // Verify lift set was created (notes are stored in lift_log comments, not lift_sets)
         $liftLog = LiftLog::where('exercise_id', $exercise->id)->first();
         $this->assertDatabaseHas('lift_sets', [
             'lift_log_id' => $liftLog->id,
             'weight' => 0,
-            'reps' => 90,
-            'notes' => 'time in seconds'
+            'reps' => 90
         ]);
+        
+        // Verify notes are stored in lift_log comments
+        $this->assertEquals('time in seconds', $liftLog->comments);
     }
 
     public function test_find_or_create_exercise_finds_existing_global_exercise()
@@ -584,9 +586,9 @@ class ImportJsonLiftLogTest extends TestCase
             $this->assertDatabaseCount('lift_logs', 1);
             $this->assertDatabaseCount('lift_sets', 1);
             
-            // Verify the lift log has the import comment
+            // Verify the lift log has no comments (no notes provided in JSON)
             $liftLog = LiftLog::first();
-            $this->assertEquals('Imported from JSON file', $liftLog->comments);
+            $this->assertNull($liftLog->comments);
             
         } finally {
             unlink($tempFile);
@@ -741,9 +743,9 @@ class ImportJsonLiftLogTest extends TestCase
             $this->assertDatabaseCount('lift_logs', 1);
             $this->assertDatabaseCount('lift_sets', 1);
             
-            // Verify the new lift log has the import comment
+            // Verify the new lift log has no comments (no notes provided in JSON)
             $newLiftLog = LiftLog::first();
-            $this->assertEquals('Imported from JSON file', $newLiftLog->comments);
+            $this->assertNull($newLiftLog->comments);
             
         } finally {
             unlink($tempFile);
@@ -811,7 +813,7 @@ class ImportJsonLiftLogTest extends TestCase
             // Verify squat was imported
             $squatLog = LiftLog::where('exercise_id', $squat->id)->first();
             $this->assertNotNull($squatLog);
-            $this->assertEquals('Imported from JSON file', $squatLog->comments);
+            $this->assertNull($squatLog->comments);
             
         } finally {
             unlink($tempFile);

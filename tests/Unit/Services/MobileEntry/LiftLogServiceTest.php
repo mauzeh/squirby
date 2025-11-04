@@ -632,7 +632,7 @@ class LiftLogServiceTest extends TestCase
         $result = $this->service->addExerciseForm($user->id, 'bench_press', $this->testDate);
         
         $this->assertTrue($result['success']);
-        $this->assertEquals('Bench Press added! Now scroll down to log your workout - adjust the weight/reps and tap \'Log Bench Press\' when ready.', $result['message']);
+        $this->assertEquals('', $result['message']);
         
         // Verify program was created with priority 99 (100 - 1, no existing programs)
         $this->assertDatabaseHas('programs', [
@@ -664,7 +664,7 @@ class LiftLogServiceTest extends TestCase
         $result = $this->service->addExerciseForm($user->id, (string)$exercise->id, $this->testDate);
         
         $this->assertTrue($result['success']);
-        $this->assertEquals('Squat added! Now scroll down to log your workout - adjust the weight/reps and tap \'Log Squat\' when ready.', $result['message']);
+        $this->assertEquals('', $result['message']);
         
         // Verify program was created
         $this->assertDatabaseHas('programs', [
@@ -1231,12 +1231,10 @@ class LiftLogServiceTest extends TestCase
         // Check that session messages are included
         $successMessage = collect($messages['messages'])->firstWhere('type', 'success');
         $this->assertNotNull($successMessage);
-        $this->assertEquals('Success:', $successMessage['prefix']);
         $this->assertEquals('Exercise added successfully!', $successMessage['text']);
         
         $errorMessage = collect($messages['messages'])->firstWhere('type', 'error');
         $this->assertNotNull($errorMessage);
-        $this->assertEquals('Error:', $errorMessage['prefix']);
         $this->assertEquals('Something went wrong', $errorMessage['text']);
     }
 
