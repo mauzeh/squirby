@@ -36,7 +36,10 @@
         <section class="interface-messages" aria-label="Status messages">
             @foreach($data['interfaceMessages']['messages'] as $message)
             <div class="interface-message interface-message--{{ $message['type'] }}">
-                <span class="message-prefix">{{ $message['prefix'] }}</span> {{ $message['text'] }}
+                @if(isset($message['prefix']))
+                <span class="message-prefix">{{ $message['prefix'] }}</span>
+                @endif
+                {{ $message['text'] }}
             </div>
             @endforeach
         </section>
@@ -146,7 +149,10 @@
             <div class="item-messages">
                 @foreach($form['messages'] as $message)
                 <div class="item-message item-message--{{ $message['type'] }}">
-                    <span class="message-prefix">{{ $message['prefix'] }}</span> {{ $message['text'] }}
+                    @if(isset($message['prefix']))
+                    <span class="message-prefix">{{ $message['prefix'] }}</span>
+                    @endif
+                    {{ $message['text'] }}
                 </div>
                 @endforeach
             </div>
@@ -230,7 +236,10 @@
                 </div>
                 @if(isset($item['message']))
                 <div class="item-message item-message--{{ $item['message']['type'] }}">
-                    <span class="message-prefix">{{ $item['message']['prefix'] }}</span> {{ $item['message']['text'] }}
+                    @if(isset($item['message']['prefix']))
+                    <span class="message-prefix">{{ $item['message']['prefix'] }}</span>
+                    @endif
+                    {{ $item['message']['text'] }}
                 </div>
                 @endif
                 @if(isset($item['freeformText']) && !empty($item['freeformText']))

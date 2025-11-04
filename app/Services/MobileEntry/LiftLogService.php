@@ -8,8 +8,9 @@ use App\Models\Exercise;
 use App\Services\TrainingProgressionService;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
+use App\Services\MobileEntry\MobileEntryBaseService;
 
-class LiftLogService
+class LiftLogService extends MobileEntryBaseService
 {
     protected TrainingProgressionService $trainingProgressionService;
     protected LiftDataCacheService $cacheService;
@@ -696,7 +697,7 @@ class LiftLogService
         
         return [
             'success' => true,
-            'message' => str_replace(':exercise', $exercise->title, config('mobile_entry_messages.success.exercise_added'))
+            'message' => ''
         ];
     }
 
@@ -838,67 +839,7 @@ class LiftLogService
             ->exists();
     }
 
-    /**
-     * Generate system messages from session flash data
-     * 
-     * @param array $sessionMessages
-     * @return array
-     */
-    private function generateSystemMessages($sessionMessages)
-    {
-        $messages = [];
-        
-        if (isset($sessionMessages['success'])) {
-            $messages[] = [
-                'type' => 'success',
-                'prefix' => 'Success:',
-                'text' => $sessionMessages['success']
-            ];
-        }
-        
-        if (isset($sessionMessages['error'])) {
-            $messages[] = [
-                'type' => 'error',
-                'prefix' => 'Error:',
-                'text' => $sessionMessages['error']
-            ];
-        }
-        
-        if (isset($sessionMessages['warning'])) {
-            $messages[] = [
-                'type' => 'warning',
-                'prefix' => 'Warning:',
-                'text' => $sessionMessages['warning']
-            ];
-        }
-        
-        if (isset($sessionMessages['info'])) {
-            $messages[] = [
-                'type' => 'info',
-                'prefix' => 'Info:',
-                'text' => $sessionMessages['info']
-            ];
-        }
-        
-        return $messages;
-    }
 
-    /**
-     * Generate interface messages from session data only
-     * 
-     * @param array $sessionMessages
-     * @return array
-     */
-    public function generateInterfaceMessages($sessionMessages = [])
-    {
-        $systemMessages = $this->generateSystemMessages($sessionMessages);
-        
-        return [
-            'messages' => $systemMessages,
-            'hasMessages' => !empty($systemMessages),
-            'messageCount' => count($systemMessages)
-        ];
-    }
 
     /**
      * Generate contextual help messages based on user's current state

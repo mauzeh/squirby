@@ -11,7 +11,7 @@ use App\Services\NutritionService;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 
-class FoodLogService
+class FoodLogService extends MobileEntryBaseService
 {
     protected NutritionService $nutritionService;
 
@@ -729,7 +729,7 @@ class FoodLogService
             
             return [
                 'success' => true,
-                'message' => str_replace(':food', $ingredient->name, config('mobile_entry_messages.success.food_added'))
+                'message' => ''
             ];
             
         } elseif ($type === 'meal') {
@@ -788,7 +788,7 @@ class FoodLogService
             
             return [
                 'success' => true,
-                'message' => str_replace(':food', $meal->name, config('mobile_entry_messages.success.food_added'))
+                'message' => ''
             ];
         }
         
@@ -938,23 +938,6 @@ class FoodLogService
     }
 
     /**
-     * Generate interface messages from session data
-     * 
-     * @param array $sessionMessages
-     * @return array
-     */
-    public function generateInterfaceMessages($sessionMessages = [])
-    {
-        $systemMessages = $this->generateSystemMessages($sessionMessages);
-        
-        return [
-            'messages' => $systemMessages,
-            'hasMessages' => !empty($systemMessages),
-            'messageCount' => count($systemMessages)
-        ];
-    }
-
-    /**
      * Generate contextual help messages based on user's current state
      * 
      * @param int $userId
@@ -1010,48 +993,6 @@ class FoodLogService
         return $messages;
     }
 
-    /**
-     * Generate system messages from session flash data
-     * 
-     * @param array $sessionMessages
-     * @return array
-     */
-    private function generateSystemMessages($sessionMessages)
-    {
-        $messages = [];
-        
-        if (isset($sessionMessages['success'])) {
-            $messages[] = [
-                'type' => 'success',
-                'prefix' => 'Success:',
-                'text' => $sessionMessages['success']
-            ];
-        }
-        
-        if (isset($sessionMessages['error'])) {
-            $messages[] = [
-                'type' => 'error',
-                'prefix' => 'Error:',
-                'text' => $sessionMessages['error']
-            ];
-        }
-        
-        if (isset($sessionMessages['warning'])) {
-            $messages[] = [
-                'type' => 'warning',
-                'prefix' => 'Warning:',
-                'text' => $sessionMessages['warning']
-            ];
-        }
-        
-        if (isset($sessionMessages['info'])) {
-            $messages[] = [
-                'type' => 'info',
-                'prefix' => 'Info:',
-                'text' => $sessionMessages['info']
-            ];
-        }
-        
-        return $messages;
-    }
+
+
 }
