@@ -193,7 +193,11 @@ class BodyLogService
             ],
             // Completion status (always pending since we only show unlogged measurements)
             'isCompleted' => false,
-            'completionStatus' => 'pending'
+            'completionStatus' => 'pending',
+            'collapsible' => [
+                'is_collapsible' => true,
+                'is_collapsed' => true,
+            ],
         ];
     }
 

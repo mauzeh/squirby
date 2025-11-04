@@ -124,10 +124,20 @@
         @if(isset($data['forms']) && count($data['forms']) > 0)
         @foreach($data['forms'] as $form)
         <section class="item-logging-section form" aria-label="{{ $form['ariaLabels']['section'] }}" data-form-type="{{ $form['type'] }}" data-form-id="{{ $form['id'] }}">
-            <div class="item-header collapsible-trigger">
+            @php
+                $isCollapsible = $form['collapsible']['is_collapsible'] ?? false;
+                $isCollapsed = $form['collapsible']['is_collapsed'] ?? true;
+            @endphp
+            <div @class([
+                'item-header',
+                'collapsible-trigger' => $isCollapsible,
+                'active' => !$isCollapsed,
+            ])>
                 <h2 class="item-title">{{ $form['title'] }}</h2>
                 <div class="item-header-actions">
-                    <div class="collapsible-icon"></div>
+                    @if($isCollapsible)
+                        <div class="collapsible-icon"></div>
+                    @endif
                     @if($form['deleteAction'])
                     <form class="delete-form" method="POST" action="{{ $form['deleteAction'] }}">
                         @csrf
@@ -144,7 +154,10 @@
                     @endif
                 </div>
             </div>
-            <div class="collapsible-content collapsed">
+            <div @class([
+                'collapsible-content' => $isCollapsible,
+                'collapsed' => $isCollapsed,
+            ])>
             @if(isset($form['messages']) && count($form['messages']) > 0)
             <div class="item-messages">
                 @foreach($form['messages'] as $message)

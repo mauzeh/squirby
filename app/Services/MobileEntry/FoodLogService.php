@@ -412,7 +412,11 @@ class FoodLogService
                 'logged_at' => now()->format('H:i'),
                 'date' => $selectedDate->toDateString(),
                 'redirect_to' => 'mobile-entry-foods'
-            ]
+            ],
+            'collapsible' => [
+                'is_collapsible' => true,
+                'is_collapsed' => true,
+            ],
         ];
     }
 
@@ -518,7 +522,11 @@ class FoodLogService
                 'logged_at_meal' => now()->format('H:i'),
                 'meal_date' => $selectedDate->toDateString(),
                 'redirect_to' => 'mobile-entry-foods'
-            ]
+            ],
+            'collapsible' => [
+                'is_collapsible' => true,
+                'is_collapsed' => true,
+            ],
         ];
     }
 

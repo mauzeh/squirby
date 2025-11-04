@@ -198,7 +198,11 @@ class LiftLogService
                 ],
                 // Completion status
                 'isCompleted' => $isCompleted,
-                'completionStatus' => $isCompleted ? 'completed' : 'pending'
+                'completionStatus' => $isCompleted ? 'completed' : 'pending',
+                'collapsible' => [
+                    'is_collapsible' => true,
+                    'is_collapsed' => true,
+                ],
             ];
         }
         
