@@ -26,14 +26,14 @@
   - Implement bodyweight display formatting with 1RM calculation support
   - _Requirements: 1.1, 1.2, 1.3, 1.4_
 
-- [ ] 3. Create exercise type factory
-- [ ] 3.1 Implement ExerciseTypeFactory class
+- [x] 3. Create exercise type factory
+- [x] 3.1 Implement ExerciseTypeFactory class
   - Create factory method that returns appropriate strategy based on exercise properties
   - Implement strategy caching to avoid repeated instantiation
   - Add support for configuration-driven strategy creation
   - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5_
 
-- [ ] 3.2 Add factory integration to Exercise model
+- [x] 3.2 Add factory integration to Exercise model
   - Add getTypeStrategy() method to Exercise model that uses factory
   - Maintain backward compatibility with existing methods like isBandedResistance()
   - _Requirements: 2.1, 7.1, 7.2, 7.3_

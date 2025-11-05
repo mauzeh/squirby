@@ -152,6 +152,43 @@ class Exercise extends Model
         return $this->band_type === 'assistance';
     }
 
+    /**
+     * Check if this is a banded exercise (either resistance or assistance)
+     * @deprecated Use getTypeStrategy() instead
+     */
+    public function isBanded(): bool
+    {
+        return $this->band_type !== null;
+    }
+
+    /**
+     * Check if this exercise supports 1RM calculation
+     * Uses the strategy pattern to determine capability
+     */
+    public function supports1RM(): bool
+    {
+        return $this->getTypeStrategy()->canCalculate1RM();
+    }
+
+    /**
+     * Get the chart type for this exercise
+     * Uses the strategy pattern to determine chart type
+     */
+    public function getChartType(): string
+    {
+        return $this->getTypeStrategy()->getChartType();
+    }
+
+    /**
+     * Get the display format for this exercise type
+     * Uses the strategy pattern for consistent formatting
+     */
+    public function getDisplayFormat(): string
+    {
+        $config = $this->getTypeStrategy()->getTypeConfig();
+        return $config['display_format'] ?? 'weight_lbs';
+    }
+
     public function canBeEditedBy(User $user): bool
     {
         // Admin users can edit all exercises
