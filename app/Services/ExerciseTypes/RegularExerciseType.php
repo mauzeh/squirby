@@ -60,9 +60,11 @@ class RegularExerciseType extends BaseExerciseType
             return '0 lbs';
         }
         
-        $precision = config('exercise_types.display.precision', 1);
         $unit = config('exercise_types.display.weight_unit', 'lbs');
         
-        return number_format($weight, $precision) . ' ' . $unit;
+        // Format as whole number if it's a whole number, otherwise show decimal
+        $formattedWeight = $weight == floor($weight) ? number_format($weight, 0) : number_format($weight, 1);
+        
+        return $formattedWeight . ' ' . $unit;
     }
 }
