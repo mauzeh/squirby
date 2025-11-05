@@ -34,7 +34,12 @@ class TrainingProgressionService
 
     public function getSuggestionDetailsWithLog(LiftLog $lastLog, int $userId, int $exerciseId, Carbon $forDate = null): ?object
     {
-        if ($lastLog->exercise->band_type !== null) {
+        // Use exercise type strategy to get progression suggestions
+        $strategy = $lastLog->exercise->getTypeStrategy();
+        $supportedProgressionTypes = $strategy->getSupportedProgressionTypes();
+        
+        // Handle banded exercises with specific logic
+        if (in_array('band_progression', $supportedProgressionTypes)) {
             $lastLoggedReps = $lastLog->liftSets->first()->reps ?? 0;
             $lastLoggedBandColor = $lastLog->liftSets->first()->band_color ?? null;
 
@@ -74,16 +79,39 @@ class TrainingProgressionService
 
     private function getProgressionModel(LiftLog $liftLog): \App\Services\ProgressionModels\ProgressionModel
     {
+        // Use exercise type strategy to determine appropriate progression model
+        $strategy = $liftLog->exercise->getTypeStrategy();
+        $supportedProgressionTypes = $strategy->getSupportedProgressionTypes();
+        
         // For bodyweight exercises, always use DoubleProgression since LinearProgression
         // filters out bodyweight exercises and won't provide suggestions
         if ($liftLog->exercise->is_bodyweight) {
             return new DoubleProgression($this->oneRepMaxCalculatorService);
         }
-
-        // Try to infer progression model from recent workout history
+        
+        // Try to infer progression model from recent workout history first
         $inferredModel = $this->inferProgressionModelFromHistory($liftLog->user_id, $liftLog->exercise_id);
         if ($inferredModel) {
             return $inferredModel;
+        }
+        
+        // For exercises that support both linear and double progression, use rep-range logic
+        if (in_array('linear', $supportedProgressionTypes) && in_array('double_progression', $supportedProgressionTypes)) {
+            // Use rep-range logic to decide between linear and double progression
+            if ($liftLog->display_reps >= 8 && $liftLog->display_reps <= 12) {
+                return new DoubleProgression($this->oneRepMaxCalculatorService);
+            }
+            return new LinearProgression($this->oneRepMaxCalculatorService);
+        }
+        
+        // For exercises that only support linear progression, use LinearProgression
+        if (in_array('linear', $supportedProgressionTypes)) {
+            return new LinearProgression($this->oneRepMaxCalculatorService);
+        }
+        
+        // For exercises that only support double progression, use DoubleProgression
+        if (in_array('double_progression', $supportedProgressionTypes)) {
+            return new DoubleProgression($this->oneRepMaxCalculatorService);
         }
 
         // Fallback to rep-range based selection
@@ -130,4 +158,6 @@ class TrainingProgressionService
 
         return null; // Pattern unclear, use fallback logic
     }
+
+
 }
