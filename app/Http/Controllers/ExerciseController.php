@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Services\ExerciseService;
 use App\Services\ExerciseMergeService;
 use App\Services\ChartService;
+use App\Services\ExerciseTypes\ExerciseTypeFactory;
 use App\Presenters\LiftLogTablePresenter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -72,19 +73,21 @@ class ExerciseController extends Controller
         // Check for name conflicts
         $this->validateExerciseName($validated['title'], $validated['is_global'] ?? false);
 
-        $isBodyweight = $request->boolean('is_bodyweight');
-        $bandType = $validated['band_type'] ?? null;
+        // Create a temporary exercise to determine the strategy
+        $tempExercise = new Exercise([
+            'is_bodyweight' => $request->boolean('is_bodyweight'),
+            'band_type' => $validated['band_type'] ?? null,
+        ]);
 
-        // If a band type is selected, it cannot be a bodyweight exercise
-        if ($bandType !== null) {
-            $isBodyweight = false;
-        }
+        // Use exercise type strategy to process exercise data
+        $exerciseTypeStrategy = ExerciseTypeFactory::create($tempExercise);
+        $processedData = $exerciseTypeStrategy->processExerciseData($validated);
 
         $exercise = new Exercise([
-            'title' => $validated['title'],
-            'description' => $validated['description'],
-            'is_bodyweight' => $isBodyweight,
-            'band_type' => $bandType,
+            'title' => $processedData['title'],
+            'description' => $processedData['description'],
+            'is_bodyweight' => $processedData['is_bodyweight'] ?? $tempExercise->is_bodyweight,
+            'band_type' => $processedData['band_type'] ?? $tempExercise->band_type,
         ]);
         
         if ($validated['is_global'] ?? false) {
@@ -139,19 +142,21 @@ class ExerciseController extends Controller
         // Check for name conflicts (excluding current exercise)
         $this->validateExerciseNameForUpdate($exercise, $validated['title'], $validated['is_global'] ?? false);
 
-        $isBodyweight = $request->boolean('is_bodyweight');
-        $bandType = $validated['band_type'] ?? null;
+        // Create a temporary exercise with new values to determine the strategy
+        $tempExercise = new Exercise([
+            'is_bodyweight' => $request->boolean('is_bodyweight'),
+            'band_type' => $validated['band_type'] ?? null,
+        ]);
 
-        // If a band type is selected, it cannot be a bodyweight exercise
-        if ($bandType !== null) {
-            $isBodyweight = false;
-        }
+        // Use exercise type strategy to process exercise data
+        $exerciseTypeStrategy = ExerciseTypeFactory::create($tempExercise);
+        $processedData = $exerciseTypeStrategy->processExerciseData($validated);
 
         $exercise->update([
-            'title' => $validated['title'],
-            'description' => $validated['description'],
-            'is_bodyweight' => $isBodyweight,
-            'band_type' => $bandType,
+            'title' => $processedData['title'],
+            'description' => $processedData['description'],
+            'is_bodyweight' => $processedData['is_bodyweight'] ?? $tempExercise->is_bodyweight,
+            'band_type' => $processedData['band_type'] ?? $tempExercise->band_type,
             'user_id' => ($validated['is_global'] ?? false) ? null : auth()->id()
         ]);
 

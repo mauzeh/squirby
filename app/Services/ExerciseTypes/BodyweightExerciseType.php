@@ -3,6 +3,7 @@
 namespace App\Services\ExerciseTypes;
 
 use App\Models\LiftLog;
+use App\Models\User;
 
 class BodyweightExerciseType extends BaseExerciseType
 {
@@ -12,6 +13,21 @@ class BodyweightExerciseType extends BaseExerciseType
     public function getTypeName(): string
     {
         return 'bodyweight';
+    }
+    
+    /**
+     * Get validation rules for bodyweight exercises with user-specific logic
+     */
+    public function getValidationRules(?User $user = null): array
+    {
+        $rules = parent::getValidationRules($user);
+        
+        // For bodyweight exercises, only require weight if user has show_extra_weight enabled
+        if ($user && !$user->shouldShowExtraWeight()) {
+            $rules['weight'] = 'nullable|numeric|min:0';
+        }
+        
+        return $rules;
     }
     
     /**
@@ -29,6 +45,21 @@ class BodyweightExerciseType extends BaseExerciseType
         
         // Nullify band_color for bodyweight exercises
         $processedData['band_color'] = null;
+        
+        return $processedData;
+    }
+    
+    /**
+     * Process exercise data according to bodyweight exercise rules
+     */
+    public function processExerciseData(array $data): array
+    {
+        $processedData = $data;
+        
+        // If bodyweight is selected, ensure band_type is null
+        if (isset($processedData['is_bodyweight']) && $processedData['is_bodyweight']) {
+            $processedData['band_type'] = null;
+        }
         
         return $processedData;
     }

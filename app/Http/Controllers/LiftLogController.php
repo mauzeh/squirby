@@ -8,6 +8,7 @@ use App\Models\LiftSet;
 
 use App\Services\ExerciseService;
 use App\Services\LiftLogService;
+use App\Services\ExerciseTypes\ExerciseTypeFactory;
 use App\Presenters\LiftLogTablePresenter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -66,6 +67,7 @@ class LiftLogController extends Controller
         $exercise = Exercise::find($request->input('exercise_id'));
         $user = auth()->user();
 
+        // Base validation rules
         $rules = [
             'exercise_id' => 'required|exists:exercises,id',
             'comments' => 'nullable|string',
@@ -75,15 +77,11 @@ class LiftLogController extends Controller
             'rounds' => 'required|integer|min:1',
         ];
 
-        if ($exercise && $exercise->band_type) {
-            $rules['band_color'] = 'required|string';
-        } else {
-            // For bodyweight exercises, only require weight if user has show_extra_weight enabled
-            if ($exercise && $exercise->is_bodyweight && !$user->shouldShowExtraWeight()) {
-                $rules['weight'] = 'nullable|numeric';
-            } else {
-                $rules['weight'] = 'required|numeric';
-            }
+        // Use exercise type strategy for validation rules
+        if ($exercise) {
+            $exerciseTypeStrategy = ExerciseTypeFactory::create($exercise);
+            $typeSpecificRules = $exerciseTypeStrategy->getValidationRules($user);
+            $rules = array_merge($rules, $typeSpecificRules);
         }
 
         $request->validate($rules);
@@ -129,12 +127,21 @@ class LiftLogController extends Controller
         $reps = $request->input('reps');
         $rounds = $request->input('rounds');
 
+        // Use exercise type strategy to process lift data
+        $exerciseTypeStrategy = ExerciseTypeFactory::create($exercise);
+        $liftData = $exerciseTypeStrategy->processLiftData([
+            'weight' => $request->input('weight'),
+            'band_color' => $request->input('band_color'),
+            'reps' => $reps,
+            'notes' => $request->input('comments'),
+        ]);
+
         for ($i = 0; $i < $rounds; $i++) {
             $liftLog->liftSets()->create([
-                'weight' => $exercise->band_type ? 0 : ($request->input('weight') ?? 0),
-                'reps' => $reps,
-                'notes' => $request->input('comments'),
-                'band_color' => $exercise->band_type ? $request->input('band_color') : null,
+                'weight' => $liftData['weight'] ?? 0,
+                'reps' => $liftData['reps'],
+                'notes' => $liftData['notes'],
+                'band_color' => $liftData['band_color'],
             ]);
         }
 
@@ -185,6 +192,7 @@ class LiftLogController extends Controller
         $exercise = Exercise::find($request->input('exercise_id'));
         $user = auth()->user();
 
+        // Base validation rules
         $rules = [
             'exercise_id' => 'required|exists:exercises,id',
             'comments' => 'nullable|string',
@@ -194,15 +202,11 @@ class LiftLogController extends Controller
             'rounds' => 'required|integer|min:1',
         ];
 
-        if ($exercise && $exercise->band_type) {
-            $rules['band_color'] = 'required|string';
-        } else {
-            // For bodyweight exercises, only require weight if user has show_extra_weight enabled
-            if ($exercise && $exercise->is_bodyweight && !$user->shouldShowExtraWeight()) {
-                $rules['weight'] = 'nullable|numeric';
-            } else {
-                $rules['weight'] = 'required|numeric';
-            }
+        // Use exercise type strategy for validation rules
+        if ($exercise) {
+            $exerciseTypeStrategy = ExerciseTypeFactory::create($exercise);
+            $typeSpecificRules = $exerciseTypeStrategy->getValidationRules($user);
+            $rules = array_merge($rules, $typeSpecificRules);
         }
 
         $request->validate($rules);
@@ -237,12 +241,21 @@ class LiftLogController extends Controller
         $reps = $request->input('reps');
         $rounds = $request->input('rounds');
 
+        // Use exercise type strategy to process lift data
+        $exerciseTypeStrategy = ExerciseTypeFactory::create($exercise);
+        $liftData = $exerciseTypeStrategy->processLiftData([
+            'weight' => $request->input('weight'),
+            'band_color' => $request->input('band_color'),
+            'reps' => $reps,
+            'notes' => $request->input('comments'),
+        ]);
+
         for ($i = 0; $i < $rounds; $i++) {
             $liftLog->liftSets()->create([
-                'weight' => $exercise->band_type ? 0 : ($request->input('weight') ?? 0),
-                'reps' => $reps,
-                'notes' => $request->input('comments'),
-                'band_color' => $exercise->band_type ? $request->input('band_color') : null,
+                'weight' => $liftData['weight'] ?? 0,
+                'reps' => $liftData['reps'],
+                'notes' => $liftData['notes'],
+                'band_color' => $liftData['band_color'],
             ]);
         }
 

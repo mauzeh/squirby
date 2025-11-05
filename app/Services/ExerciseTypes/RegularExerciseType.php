@@ -34,6 +34,25 @@ class RegularExerciseType extends BaseExerciseType
     }
     
     /**
+     * Process exercise data according to regular exercise rules
+     */
+    public function processExerciseData(array $data): array
+    {
+        $processedData = $data;
+        
+        // For regular exercises, ensure both is_bodyweight and band_type are properly set
+        if (!isset($processedData['is_bodyweight']) || !$processedData['is_bodyweight']) {
+            $processedData['is_bodyweight'] = false;
+        }
+        
+        if (!isset($processedData['band_type']) || empty($processedData['band_type'])) {
+            $processedData['band_type'] = null;
+        }
+        
+        return $processedData;
+    }
+    
+    /**
      * Format weight display for regular exercises
      */
     public function formatWeightDisplay(LiftLog $liftLog): string

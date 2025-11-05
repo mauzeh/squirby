@@ -36,6 +36,21 @@ class BandedExerciseType extends BaseExerciseType
     }
     
     /**
+     * Process exercise data according to banded exercise rules
+     */
+    public function processExerciseData(array $data): array
+    {
+        $processedData = $data;
+        
+        // If a band type is selected, it cannot be a bodyweight exercise
+        if (isset($processedData['band_type']) && !empty($processedData['band_type'])) {
+            $processedData['is_bodyweight'] = false;
+        }
+        
+        return $processedData;
+    }
+    
+    /**
      * Format weight display for banded exercises
      */
     public function formatWeightDisplay(LiftLog $liftLog): string

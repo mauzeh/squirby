@@ -38,19 +38,19 @@
   - Maintain backward compatibility with existing methods like isBandedResistance()
   - _Requirements: 2.1, 7.1, 7.2, 7.3_
 
-- [ ] 4. Refactor controllers to use strategy pattern
-- [ ] 4.1 Update LiftLogController store method
+- [x] 4. Refactor controllers to use strategy pattern
+- [x] 4.1 Update LiftLogController store method
   - Replace hardcoded validation logic with strategy-based validation rules
   - Use strategy to process lift data instead of conditional logic
   - Maintain existing API contract and error handling
   - _Requirements: 3.1, 3.2, 3.5, 7.1, 7.4_
 
-- [ ] 4.2 Update LiftLogController update method
+- [x] 4.2 Update LiftLogController update method
   - Apply same strategy-based approach as store method
   - Ensure data transformation consistency between create and update operations
   - _Requirements: 3.3, 7.1, 7.4_
 
-- [ ] 4.3 Update ExerciseController for strategy integration
+- [x] 4.3 Update ExerciseController for strategy integration
   - Integrate exercise type strategies into exercise creation and update flows
   - Maintain existing exercise management functionality
   - _Requirements: 3.4, 7.1, 7.4_
