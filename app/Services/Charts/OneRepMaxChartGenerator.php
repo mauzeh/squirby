@@ -34,6 +34,6 @@ class OneRepMaxChartGenerator implements ChartGeneratorInterface
 
     public function supports(string $exerciseType): bool
     {
-        return $exerciseType === 'weighted';
+        return in_array($exerciseType, ['weighted', 'one_rep_max']);
     }
 }

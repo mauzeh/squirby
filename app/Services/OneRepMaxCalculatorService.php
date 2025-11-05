@@ -21,6 +21,7 @@ class OneRepMaxCalculatorService
      * @param string|null $bandType
      * @return float
      * @throws NotApplicableException
+     * @deprecated Use calculateOneRepMaxWithStrategy() instead
      */
     public function calculateOneRepMax(float $weight, int $reps, bool $isBodyweightExercise = false, ?int $userId = null, ?Carbon $date = null, ?string $bandType = null): float
     {
@@ -79,9 +80,10 @@ class OneRepMaxCalculatorService
             return 0;
         }
 
-        // Exercise should already be loaded via eager loading
-        if ($liftLog->exercise->band_type !== null) {
-            throw new NotApplicableException('1RM calculation is not applicable for banded exercises.');
+        // Use exercise type strategy to check if 1RM calculation is supported
+        $strategy = $liftLog->exercise->getTypeStrategy();
+        if (!$strategy->canCalculate1RM()) {
+            throw new NotApplicableException('1RM calculation is not applicable for ' . $strategy->getTypeName() . ' exercises.');
         }
 
         // Check for uniformity
@@ -118,9 +120,10 @@ class OneRepMaxCalculatorService
             return 0;
         }
 
-        // Exercise should already be loaded via eager loading
-        if ($liftLog->exercise->band_type !== null) {
-            throw new NotApplicableException('1RM calculation is not applicable for banded exercises.');
+        // Use exercise type strategy to check if 1RM calculation is supported
+        $strategy = $liftLog->exercise->getTypeStrategy();
+        if (!$strategy->canCalculate1RM()) {
+            throw new NotApplicableException('1RM calculation is not applicable for ' . $strategy->getTypeName() . ' exercises.');
         }
 
         $isBodyweightExercise = $liftLog->exercise->is_bodyweight ?? false;
@@ -170,5 +173,57 @@ class OneRepMaxCalculatorService
             return $totalWeight;
         }
         return $totalWeight * (1 + (0.0333 * $reps));
+    }
+
+    /**
+     * Calculate the 1RM for a LiftLog using exercise type strategy
+     *
+     * @param \App\Models\LiftLog $liftLog
+     * @return float
+     * @throws NotApplicableException
+     */
+    public function calculateOneRepMaxWithStrategy(LiftLog $liftLog): float
+    {
+        if ($liftLog->liftSets->isEmpty()) {
+            return 0;
+        }
+
+        // Use exercise type strategy to check if 1RM calculation is supported
+        $strategy = $liftLog->exercise->getTypeStrategy();
+        if (!$strategy->canCalculate1RM()) {
+            throw new NotApplicableException('1RM calculation is not applicable for ' . $strategy->getTypeName() . ' exercises.');
+        }
+
+        // Get the first set for calculation (maintaining existing behavior)
+        $firstSet = $liftLog->liftSets->first();
+        $isBodyweightExercise = $liftLog->exercise->is_bodyweight ?? false;
+
+        return $this->calculateOneRepMaxOptimized($firstSet->weight, $firstSet->reps, $isBodyweightExercise, $liftLog);
+    }
+
+    /**
+     * Get the best 1RM from all LiftSets of a LiftLog using exercise type strategy
+     *
+     * @param \App\Models\LiftLog $liftLog
+     * @return float
+     * @throws NotApplicableException
+     */
+    public function getBestOneRepMaxWithStrategy(LiftLog $liftLog): float
+    {
+        if ($liftLog->liftSets->isEmpty()) {
+            return 0;
+        }
+
+        // Use exercise type strategy to check if 1RM calculation is supported
+        $strategy = $liftLog->exercise->getTypeStrategy();
+        if (!$strategy->canCalculate1RM()) {
+            throw new NotApplicableException('1RM calculation is not applicable for ' . $strategy->getTypeName() . ' exercises.');
+        }
+
+        $isBodyweightExercise = $liftLog->exercise->is_bodyweight ?? false;
+
+        return $liftLog->liftSets->max(function ($liftSet) use ($isBodyweightExercise, $liftLog) {
+            return $this->calculateOneRepMaxOptimized($liftSet->weight, $liftSet->reps, $isBodyweightExercise, $liftLog);
+        });
     }
 }

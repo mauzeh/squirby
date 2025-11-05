@@ -55,19 +55,19 @@
   - Maintain existing exercise management functionality
   - _Requirements: 3.4, 7.1, 7.4_
 
-- [ ] 5. Refactor service layer to use strategies
-- [ ] 5.1 Update OneRepMaxCalculatorService
+- [-] 5. Refactor service layer to use strategies
+- [x] 5.1 Update OneRepMaxCalculatorService
   - Replace direct exercise property checking with strategy capability checking
   - Use strategy to determine if 1RM calculation is supported before performing calculations
   - Throw appropriate exceptions for unsupported exercise types
   - _Requirements: 4.1, 4.3, 7.1, 7.3_
 
-- [ ] 5.2 Update ChartService
+- [x] 5.2 Update ChartService
   - Use exercise type strategy to determine appropriate chart type instead of conditional logic
   - Delegate chart type selection to strategy pattern
   - _Requirements: 4.2, 7.1, 7.3_
 
-- [ ] 5.3 Update TrainingProgressionService
+- [x] 5.3 Update TrainingProgressionService
   - Use strategy for progression suggestions instead of hardcoded exercise type checks
   - _Requirements: 4.4, 7.1, 7.3_
 

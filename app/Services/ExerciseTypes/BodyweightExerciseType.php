@@ -22,8 +22,10 @@ class BodyweightExerciseType extends BaseExerciseType
     {
         $rules = parent::getValidationRules($user);
         
-        // For bodyweight exercises, only require weight if user has show_extra_weight enabled
-        if ($user && !$user->shouldShowExtraWeight()) {
+        // For bodyweight exercises, require weight if user has show_extra_weight enabled
+        if ($user && $user->shouldShowExtraWeight()) {
+            $rules['weight'] = 'required|numeric|min:0';
+        } else {
             $rules['weight'] = 'nullable|numeric|min:0';
         }
         

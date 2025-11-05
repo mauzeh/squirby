@@ -33,10 +33,12 @@ class ChartService
      */
     public function generateProgressChart(Collection $liftLogs, Exercise $exercise): array
     {
-        $exerciseType = $this->determineExerciseType($exercise);
+        // Use exercise type strategy to determine chart type
+        $strategy = $exercise->getTypeStrategy();
+        $chartType = $strategy->getChartType();
         
         foreach ($this->generators as $generator) {
-            if ($generator->supports($exerciseType)) {
+            if ($generator->supports($chartType)) {
                 return $generator->generate($liftLogs);
             }
         }
@@ -57,6 +59,7 @@ class ChartService
 
     /**
      * Determine the exercise type for chart generation
+     * @deprecated Use exercise type strategy getChartType() method instead
      */
     protected function determineExerciseType(Exercise $exercise): string
     {
@@ -69,6 +72,25 @@ class ChartService
         }
         
         return 'weighted';
+    }
+
+    /**
+     * Generate appropriate chart data using exercise type strategy
+     */
+    public function generateProgressChartWithStrategy(Collection $liftLogs, Exercise $exercise): array
+    {
+        // Use exercise type strategy to determine chart type
+        $strategy = $exercise->getTypeStrategy();
+        $chartType = $strategy->getChartType();
+        
+        foreach ($this->generators as $generator) {
+            if ($generator->supports($chartType)) {
+                return $generator->generate($liftLogs);
+            }
+        }
+
+        // Fallback to empty chart data
+        return ['datasets' => []];
     }
 
     /**
