@@ -55,7 +55,7 @@
   - Maintain existing exercise management functionality
   - _Requirements: 3.4, 7.1, 7.4_
 
-- [-] 5. Refactor service layer to use strategies
+- [x] 5. Refactor service layer to use strategies
 - [x] 5.1 Update OneRepMaxCalculatorService
   - Replace direct exercise property checking with strategy capability checking
   - Use strategy to determine if 1RM calculation is supported before performing calculations
@@ -71,14 +71,14 @@
   - Use strategy for progression suggestions instead of hardcoded exercise type checks
   - _Requirements: 4.4, 7.1, 7.3_
 
-- [ ] 6. Refactor presentation layer
-- [ ] 6.1 Update LiftLogTablePresenter
+- [x] 6. Refactor presentation layer
+- [x] 6.1 Update LiftLogTablePresenter
   - Replace conditional formatting logic with strategy-based formatting methods
   - Use strategy for weight display, 1RM display, and progress formatting
   - Ensure consistent display across all exercise types
   - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5_
 
-- [ ] 6.2 Create reusable view components
+- [x] 6.2 Create reusable view components
   - Create ExerciseFormComponent that uses strategy to determine form fields
   - Create LiftLogFormComponent that shows appropriate inputs based on exercise type
   - Replace conditional rendering in blade templates with component usage

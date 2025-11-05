@@ -35,6 +35,7 @@ class LiftLogTablePresenter
             'formatted_weight' => $this->formatWeight($liftLog),
             'formatted_reps_sets' => $this->formatRepsSets($liftLog),
             'formatted_1rm' => $this->format1RM($liftLog),
+            'formatted_progression' => $this->formatProgression($liftLog),
             'truncated_comments' => Str::limit($liftLog->comments, 50),
             'full_comments' => $liftLog->comments,
             'edit_url' => route('lift-logs.edit', $liftLog->id),
@@ -44,29 +45,11 @@ class LiftLogTablePresenter
     }
 
     /**
-     * Format weight display for lift log
+     * Format weight display for lift log using exercise type strategy
      */
     private function formatWeight(LiftLog $liftLog): string
     {
-        if (!empty($liftLog->exercise->band_type)) {
-            // Use the display_weight accessor which is now optimized
-            $bandColor = $liftLog->display_weight;
-            if ($bandColor && $bandColor !== 'N/A') {
-                return 'Band: ' . $bandColor;
-            }
-            return 'Band: ' . $liftLog->exercise->band_type;
-        }
-
-        if ($liftLog->exercise->is_bodyweight) {
-            $weight = 'Bodyweight';
-            $displayWeight = $liftLog->display_weight;
-            if ($displayWeight > 0) {
-                $weight .= ' +' . $displayWeight . ' lbs';
-            }
-            return $weight;
-        }
-        
-        return $liftLog->display_weight . ' lbs';
+        return $liftLog->exercise->getTypeStrategy()->formatWeightDisplay($liftLog);
     }
 
     /**
@@ -78,25 +61,26 @@ class LiftLogTablePresenter
     }
 
     /**
-     * Format one rep max display
+     * Format one rep max display using exercise type strategy
      */
     private function format1RM(LiftLog $liftLog): string
     {
-        if (!empty($liftLog->exercise->band_type)) {
-            return 'N/A (Banded)';
-        }
-
-        if (!$liftLog->one_rep_max) {
-            return '';
-        }
-
-        $oneRM = round($liftLog->one_rep_max) . ' lbs';
+        $strategy = $liftLog->exercise->getTypeStrategy();
         
-        if ($liftLog->exercise->is_bodyweight) {
-            $oneRM .= ' (est. incl. BW)';
+        if (!$strategy->canCalculate1RM()) {
+            return 'N/A (' . ucfirst($strategy->getTypeName()) . ')';
         }
         
-        return $oneRM;
+        return $strategy->format1RMDisplay($liftLog);
+    }
+
+    /**
+     * Format progression suggestion using exercise type strategy
+     */
+    private function formatProgression(LiftLog $liftLog): string
+    {
+        $suggestion = $liftLog->exercise->getTypeStrategy()->formatProgressionSuggestion($liftLog);
+        return $suggestion ?? '';
     }
 
 
