@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
+use App\Services\ExerciseTypes\ExerciseTypeFactory;
+use App\Services\ExerciseTypes\ExerciseTypeInterface;
 
 class Exercise extends Model
 {
@@ -299,5 +301,13 @@ class Exercise extends Model
 
         // Check if the user has global exercise visibility disabled
         return $this->user && !$this->user->shouldShowGlobalExercises();
+    }
+
+    /**
+     * Get the exercise type strategy for this exercise
+     */
+    public function getTypeStrategy(): ExerciseTypeInterface
+    {
+        return ExerciseTypeFactory::create($this);
     }
 }
