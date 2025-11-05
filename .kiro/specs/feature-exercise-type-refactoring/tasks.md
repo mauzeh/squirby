@@ -6,21 +6,21 @@
   - Set up configuration system for exercise types in config/exercise_types.php
   - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5, 8.1, 8.2_
 
-- [ ] 2. Implement concrete exercise type strategies
-- [ ] 2.1 Create RegularExerciseType strategy
+- [x] 2. Implement concrete exercise type strategies
+- [x] 2.1 Create RegularExerciseType strategy
   - Implement validation rules requiring weight field
   - Implement data processing that stores weight and nullifies band_color
   - Implement 1RM calculation capability and weight display formatting
   - _Requirements: 1.1, 1.2, 1.3, 1.4_
 
-- [ ] 2.2 Create BandedExerciseType strategy
+- [x] 2.2 Create BandedExerciseType strategy
   - Implement validation rules requiring band_color field
   - Implement data processing that sets weight to 0 and stores band_color
   - Implement band color display formatting and disable 1RM calculation
   - Handle both resistance and assistance band subtypes
   - _Requirements: 1.1, 1.2, 1.3, 1.4_
 
-- [ ] 2.3 Create BodyweightExerciseType strategy
+- [x] 2.3 Create BodyweightExerciseType strategy
   - Implement validation rules with optional weight field for extra weight
   - Implement data processing that handles bodyweight plus extra weight calculations
   - Implement bodyweight display formatting with 1RM calculation support
