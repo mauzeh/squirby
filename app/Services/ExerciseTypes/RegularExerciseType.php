@@ -40,14 +40,11 @@ class RegularExerciseType extends BaseExerciseType
     {
         $processedData = $data;
         
-        // For regular exercises, ensure both is_bodyweight and band_type are properly set
-        if (!isset($processedData['is_bodyweight']) || !$processedData['is_bodyweight']) {
-            $processedData['is_bodyweight'] = false;
-        }
+        // For regular exercises, ensure is_bodyweight is false
+        $processedData['is_bodyweight'] = false;
         
-        if (!isset($processedData['band_type']) || empty($processedData['band_type'])) {
-            $processedData['band_type'] = null;
-        }
+        // For regular exercises, ensure band_type is null
+        $processedData['band_type'] = null;
         
         return $processedData;
     }

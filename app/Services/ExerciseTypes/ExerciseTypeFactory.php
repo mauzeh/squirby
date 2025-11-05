@@ -65,7 +65,11 @@ class ExerciseTypeFactory
             $fallbackConfig = config("exercise_types.types.{$fallbackType}");
             
             if ($fallbackConfig && isset($fallbackConfig['class']) && class_exists($fallbackConfig['class'])) {
-                return new $fallbackConfig['class']();
+                $fallbackStrategy = new $fallbackConfig['class']();
+                
+                if ($fallbackStrategy instanceof ExerciseTypeInterface) {
+                    return $fallbackStrategy;
+                }
             }
             
             // Last resort: throw the original exception
