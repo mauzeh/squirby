@@ -143,32 +143,63 @@ class LiftLogService extends MobileEntryBaseService
                 }
             }
             
-            // Add reps and sets fields
-            $numericFields[] = [
-                'id' => $formId . '-reps',
-                'name' => 'reps',
-                'label' => 'Reps:',
-                'defaultValue' => $defaultReps,
-                'increment' => 1,
-                'min' => 1,
-                'ariaLabels' => [
-                    'decrease' => 'Decrease reps',
-                    'increase' => 'Increase reps'
-                ]
-            ];
-            
-            $numericFields[] = [
-                'id' => $formId . '-rounds',
-                'name' => 'rounds',
-                'label' => 'Sets:',
-                'defaultValue' => $defaultSets,
-                'increment' => 1,
-                'min' => 1,
-                'ariaLabels' => [
-                    'decrease' => 'Decrease sets',
-                    'increase' => 'Increase sets'
-                ]
-            ];
+            // Add reps and sets fields (with cardio-specific handling)
+            if ($strategy->getTypeName() === 'cardio') {
+                // For cardio exercises, use distance and rounds terminology
+                $numericFields[] = [
+                    'id' => $formId . '-reps',
+                    'name' => 'reps',
+                    'label' => 'Distance (m):',
+                    'defaultValue' => $defaultReps,
+                    'increment' => 50, // 50m increments for distance
+                    'min' => 50,
+                    'max' => 50000,
+                    'ariaLabels' => [
+                        'decrease' => 'Decrease distance',
+                        'increase' => 'Increase distance'
+                    ]
+                ];
+                
+                $numericFields[] = [
+                    'id' => $formId . '-rounds',
+                    'name' => 'rounds',
+                    'label' => 'Rounds:',
+                    'defaultValue' => $defaultSets,
+                    'increment' => 1,
+                    'min' => 1,
+                    'ariaLabels' => [
+                        'decrease' => 'Decrease rounds',
+                        'increase' => 'Increase rounds'
+                    ]
+                ];
+            } else {
+                // For non-cardio exercises, use standard terminology
+                $numericFields[] = [
+                    'id' => $formId . '-reps',
+                    'name' => 'reps',
+                    'label' => 'Reps:',
+                    'defaultValue' => $defaultReps,
+                    'increment' => 1,
+                    'min' => 1,
+                    'ariaLabels' => [
+                        'decrease' => 'Decrease reps',
+                        'increase' => 'Increase reps'
+                    ]
+                ];
+                
+                $numericFields[] = [
+                    'id' => $formId . '-rounds',
+                    'name' => 'rounds',
+                    'label' => 'Sets:',
+                    'defaultValue' => $defaultSets,
+                    'increment' => 1,
+                    'min' => 1,
+                    'ariaLabels' => [
+                        'decrease' => 'Decrease sets',
+                        'increase' => 'Increase sets'
+                    ]
+                ];
+            }
             
             $forms[] = [
                 'id' => $formId,

@@ -2311,4 +2311,55 @@ class LiftLogServiceTest extends TestCase
         $this->assertContains('blue', $optionValues);
         $this->assertContains('green', $optionValues);
     }
+
+    #[Test]
+    public function it_generates_cardio_exercise_forms_with_distance_and_rounds_labels()
+    {
+        $user = User::factory()->create();
+        
+        // Create a cardio exercise
+        $exercise = Exercise::factory()->create([
+            'title' => 'Run',
+            'user_id' => $user->id,
+            'exercise_type' => 'cardio'
+        ]);
+        
+        // Create a program for the cardio exercise
+        Program::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'date' => $this->testDate,
+            'sets' => 5,
+            'reps' => 500, // 500m distance
+            'priority' => 1
+        ]);
+
+        $forms = $this->service->generateProgramForms($user->id, $this->testDate);
+        
+        $this->assertCount(1, $forms);
+        $form = $forms[0];
+        
+        // Find the distance field (reps field with cardio labeling)
+        $distanceField = collect($form['numericFields'])->firstWhere('name', 'reps');
+        $this->assertNotNull($distanceField);
+        $this->assertEquals('Distance (m):', $distanceField['label']);
+        $this->assertEquals(50, $distanceField['increment']); // 50m increments
+        $this->assertEquals(50, $distanceField['min']);
+        $this->assertEquals(50000, $distanceField['max']);
+        $this->assertEquals('Decrease distance', $distanceField['ariaLabels']['decrease']);
+        $this->assertEquals('Increase distance', $distanceField['ariaLabels']['increase']);
+        
+        // Find the rounds field (sets field with cardio labeling)
+        $roundsField = collect($form['numericFields'])->firstWhere('name', 'rounds');
+        $this->assertNotNull($roundsField);
+        $this->assertEquals('Rounds:', $roundsField['label']);
+        $this->assertEquals(1, $roundsField['increment']);
+        $this->assertEquals(1, $roundsField['min']);
+        $this->assertEquals('Decrease rounds', $roundsField['ariaLabels']['decrease']);
+        $this->assertEquals('Increase rounds', $roundsField['ariaLabels']['increase']);
+        
+        // Verify no weight field is present for cardio exercises
+        $weightField = collect($form['numericFields'])->firstWhere('name', 'weight');
+        $this->assertNull($weightField);
+    }
 }
