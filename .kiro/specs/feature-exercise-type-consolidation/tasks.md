@@ -32,7 +32,7 @@
   - Update processLiftData() and formatWeightDisplay() methods for each type
   - _Requirements: 2.1, 2.2, 2.4, 5.1_
 
-- [ ] 5. Update exercise_types.php configuration for new type structure
+- [x] 5. Update exercise_types.php configuration for new type structure
   - Add 'banded_resistance' configuration entry with appropriate validation rules
   - Add 'banded_assistance' configuration entry with appropriate validation rules
   - Update existing 'bodyweight' and 'regular' configurations if needed

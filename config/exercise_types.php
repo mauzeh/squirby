@@ -47,27 +47,26 @@ return [
         'regular' => [
             'class' => \App\Services\ExerciseTypes\RegularExerciseType::class,
             'validation' => [
-                'weight' => 'required|numeric|min:0',
+                'weight' => 'required|numeric|min:0|max:2000',
                 'reps' => 'required|integer|min:1|max:100',
             ],
-            'chart_type' => 'one_rep_max',
+            'chart_type' => 'weight_progression',
             'supports_1rm' => true,
             'form_fields' => ['weight', 'reps'],
-            'progression_types' => ['linear', 'double_progression'],
+            'progression_types' => ['weight_progression', 'volume_progression'],
             'display_format' => 'weight_lbs',
         ],
         
         /**
-         * Banded Exercise Type (Legacy - kept for backward compatibility)
+         * Banded Exercise Type (DEPRECATED - use banded_resistance or banded_assistance instead)
          * 
-         * Exercises using resistance or assistance bands. Band color indicates
-         * the resistance level. Weight is always set to 0 since bands don't
-         * use traditional weight measurements.
+         * @deprecated This type is deprecated. Use 'banded_resistance' or 'banded_assistance' instead.
+         * Kept for backward compatibility only. Will be removed in future version.
          */
         'banded' => [
             'class' => \App\Services\ExerciseTypes\BandedExerciseType::class,
             'validation' => [
-                'band_color' => 'required|string|in:red,blue,green',
+                'band_color' => 'required|string|in:' . implode(',', array_keys(config('bands.colors', ['red', 'blue', 'green']))),
                 'reps' => 'required|integer|min:1|max:100',
             ],
             'chart_type' => 'volume_progression',
@@ -75,6 +74,8 @@ return [
             'form_fields' => ['band_color', 'reps'],
             'progression_types' => ['volume_progression', 'band_progression'],
             'display_format' => 'band_color',
+            'deprecated' => true,
+            'replacement' => ['banded_resistance', 'banded_assistance'],
             'subtypes' => [
                 'resistance' => [
                     'description' => 'Resistance bands that add difficulty',
@@ -91,18 +92,19 @@ return [
          * Banded Resistance Exercise Type
          * 
          * Exercises using resistance bands that add difficulty to the movement.
-         * Band color indicates the resistance level.
+         * Band color indicates the resistance level. Weight is forced to 0 since
+         * bands don't use traditional weight measurements.
          */
         'banded_resistance' => [
             'class' => \App\Services\ExerciseTypes\BandedResistanceExerciseType::class,
             'validation' => [
-                'band_color' => 'required|string|in:red,blue,green',
-                'reps' => 'required|integer|min:1|max:100',
                 'weight' => 'nullable|numeric|in:0',
+                'reps' => 'required|integer|min:1|max:100',
+                'band_color' => 'required|string|in:' . implode(',', array_keys(config('bands.colors', ['red', 'blue', 'green']))),
             ],
             'chart_type' => 'band_progression',
             'supports_1rm' => false,
-            'form_fields' => ['band_color', 'reps'],
+            'form_fields' => ['reps', 'band_color'],
             'progression_types' => ['band_progression'],
             'display_format' => 'band_reps',
         ],
@@ -111,18 +113,19 @@ return [
          * Banded Assistance Exercise Type
          * 
          * Exercises using assistance bands that reduce difficulty of the movement.
-         * Band color indicates the assistance level.
+         * Band color indicates the assistance level. Weight is forced to 0 since
+         * bands don't use traditional weight measurements.
          */
         'banded_assistance' => [
             'class' => \App\Services\ExerciseTypes\BandedAssistanceExerciseType::class,
             'validation' => [
-                'band_color' => 'required|string|in:red,blue,green',
-                'reps' => 'required|integer|min:1|max:100',
                 'weight' => 'nullable|numeric|in:0',
+                'reps' => 'required|integer|min:1|max:100',
+                'band_color' => 'required|string|in:' . implode(',', array_keys(config('bands.colors', ['red', 'blue', 'green']))),
             ],
             'chart_type' => 'band_progression',
             'supports_1rm' => false,
-            'form_fields' => ['band_color', 'reps'],
+            'form_fields' => ['reps', 'band_color'],
             'progression_types' => ['band_progression'],
             'display_format' => 'band_reps',
         ],
@@ -132,19 +135,19 @@ return [
          * 
          * Exercises that primarily use body weight as resistance. The weight field
          * represents additional weight (e.g., weighted vest, dip belt) rather than
-         * the total resistance. Supports 1RM calculation by including estimated body weight.
+         * the total resistance. Weight can be 0 for pure bodyweight exercises.
          */
         'bodyweight' => [
             'class' => \App\Services\ExerciseTypes\BodyweightExerciseType::class,
             'validation' => [
-                'weight' => 'nullable|numeric|min:0',
+                'weight' => 'nullable|numeric|in:0',
                 'reps' => 'required|integer|min:1|max:100',
             ],
-            'chart_type' => 'bodyweight_progression',
-            'supports_1rm' => true,
-            'form_fields' => ['weight', 'reps'],
-            'progression_types' => ['linear', 'double_progression', 'bodyweight_progression'],
-            'display_format' => 'bodyweight_plus_extra',
+            'chart_type' => 'reps_progression',
+            'supports_1rm' => false,
+            'form_fields' => ['reps'],
+            'progression_types' => ['reps_progression'],
+            'display_format' => 'reps_only',
         ],
     ],
     

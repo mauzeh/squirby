@@ -43,7 +43,7 @@ class BandedResistanceExerciseTypeTest extends TestCase
     /** @test */
     public function it_returns_form_fields_from_config()
     {
-        $expectedFields = ['band_color', 'reps'];
+        $expectedFields = ['reps', 'band_color'];
 
         $this->assertEquals($expectedFields, $this->strategy->getFormFields());
     }

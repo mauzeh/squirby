@@ -39,7 +39,7 @@ class BaseExerciseTypeTest extends TestCase
 
         $this->assertIsArray($rules);
         $this->assertArrayHasKey('weight', $rules);
-        $this->assertEquals('required|numeric|min:0', $rules['weight']);
+        $this->assertEquals('required|numeric|min:0|max:2000', $rules['weight']);
     }
 
     /** @test */
@@ -78,7 +78,7 @@ class BaseExerciseTypeTest extends TestCase
     {
         $chartType = $this->strategy->getChartType();
 
-        $this->assertEquals('one_rep_max', $chartType);
+        $this->assertEquals('weight_progression', $chartType);
     }
 
     /** @test */
@@ -87,8 +87,8 @@ class BaseExerciseTypeTest extends TestCase
         $progressionTypes = $this->strategy->getSupportedProgressionTypes();
 
         $this->assertIsArray($progressionTypes);
-        $this->assertContains('linear', $progressionTypes);
-        $this->assertContains('double_progression', $progressionTypes);
+        $this->assertContains('weight_progression', $progressionTypes);
+        $this->assertContains('volume_progression', $progressionTypes);
     }
 
     /** @test */
