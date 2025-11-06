@@ -1006,11 +1006,15 @@ class ImportJsonLiftLogTest extends TestCase
             [
                 'exercise' => 'Auto Created Exercise',
                 'canonical_name' => 'auto_created_exercise',
-                'weight' => 100,
-                'reps' => 10,
-                'sets' => 1,
-            'exercise_type' => 'bodyweight'
-        ]
+                'exercise_type' => 'bodyweight',
+                'lift_logs' => [
+                    [
+                        'weight' => 100,
+                        'reps' => 10,
+                        'sets' => 1,
+                    ]
+                ]
+            ]
         ];
         
         $tempFile = $this->createTestJsonFile($exercises);

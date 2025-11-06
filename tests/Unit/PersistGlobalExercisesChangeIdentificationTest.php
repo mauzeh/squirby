@@ -34,22 +34,19 @@ class PersistGlobalExercisesChangeIdentificationTest extends TestCase
         $exercise1->title = 'Push Up';
         $exercise1->description = 'A basic push up';
         $exercise1->canonical_name = 'push_up';
-        $exercise1->is_bodyweight = true;
-        $exercise1->band_type = null;
+        $exercise1->exercise_type = 'bodyweight';
         
         $exercise2 = new Exercise();
         $exercise2->title = 'Pull Up';
         $exercise2->description = 'A basic pull up';
         $exercise2->canonical_name = 'pull_up';
-        $exercise2->is_bodyweight = true;
-        $exercise2->band_type = null;
+        $exercise2->exercise_type = 'bodyweight';
         
         $exercise3 = new Exercise();
         $exercise3->title = 'New Exercise';
         $exercise3->description = 'A new exercise';
         $exercise3->canonical_name = 'new_exercise';
-        $exercise3->is_bodyweight = false;
-        $exercise3->band_type = 'resistance';
+        $exercise3->exercise_type = 'banded_resistance';
         
         $exercises = collect([$exercise1, $exercise2, $exercise3]);
         
@@ -59,14 +56,14 @@ class PersistGlobalExercisesChangeIdentificationTest extends TestCase
                 'title' => 'Push-Up', // Different title
                 'description' => 'A basic push up',
                 'canonical_name' => 'push_up',
-            'exercise_type' => 'regular'
-        ],
+                'exercise_type' => 'bodyweight'
+            ],
             'pull_up' => [
-            'title' => 'Pull Up',
+                'title' => 'Pull Up',
                 'description' => 'A basic pull up',
                 'canonical_name' => 'pull_up',
-            'exercise_type' => 'regular'
-        ]
+                'exercise_type' => 'bodyweight'
+            ]
         ];
         
         $changes = $this->callPrivateMethod($command, 'identifyChanges', [$exercises, $csvData]);
@@ -96,7 +93,7 @@ class PersistGlobalExercisesChangeIdentificationTest extends TestCase
         $exercise = new Exercise();
         $exercise->title = 'Push Up';
         $exercise->canonical_name = 'push_up';
-        $exercise->is_bodyweight = true;
+        $exercise->exercise_type = 'bodyweight';
         
         $exercises = collect([$exercise]);
         
@@ -116,36 +113,35 @@ class PersistGlobalExercisesChangeIdentificationTest extends TestCase
     {
         $command = $this->getCommand();
         
-        // Exercise with band_type in database
+        // Exercise with banded_resistance exercise_type in database
         $exercise = new Exercise();
         $exercise->title = 'Band Pull';
         $exercise->description = 'Pull with resistance band';
         $exercise->canonical_name = 'band_pull';
-        $exercise->is_bodyweight = false;
-        $exercise->band_type = 'resistance';
+        $exercise->exercise_type = 'banded_resistance';
         
         $exercises = collect([$exercise]);
         
-        // CSV data without band_type
+        // CSV data with different exercise_type
         $csvData = [
             'band_pull' => [
                 'title' => 'Band Pull',
                 'description' => 'Pull with resistance band',
                 'canonical_name' => 'band_pull',
-            'exercise_type' => 'regular'
-        ]
+                'exercise_type' => 'regular'
+            ]
         ];
         
         $changes = $this->callPrivateMethod($command, 'identifyChanges', [$exercises, $csvData]);
         
-        // Should detect band_type difference
+        // Should detect exercise_type difference
         $this->assertEquals(1, $changes['summary']['updates_count']);
         $this->assertEquals(0, $changes['summary']['new_entries_count']);
         $this->assertEquals(0, $changes['summary']['no_change_count']);
         
         $this->assertArrayHasKey('band_pull', $changes['updates_needed']);
-        $this->assertArrayHasKey('band_type', $changes['updates_needed']['band_pull']['differences']);
-        $this->assertContains('band_type', $changes['updates_needed']['band_pull']['field_changes']);
+        $this->assertArrayHasKey('exercise_type', $changes['updates_needed']['band_pull']['differences']);
+        $this->assertContains('exercise_type', $changes['updates_needed']['band_pull']['field_changes']);
     }
 
     public function test_identify_changes_categorizes_mixed_scenarios()
@@ -156,20 +152,17 @@ class PersistGlobalExercisesChangeIdentificationTest extends TestCase
         $exercise1 = new Exercise();
         $exercise1->title = 'Unchanged Exercise';
         $exercise1->canonical_name = 'unchanged';
-        $exercise1->is_bodyweight = true;
-        $exercise1->band_type = null;
+        $exercise1->exercise_type = 'bodyweight';
         
         $exercise2 = new Exercise();
         $exercise2->title = 'Updated Exercise';
         $exercise2->canonical_name = 'updated';
-        $exercise2->is_bodyweight = false;
-        $exercise2->band_type = 'resistance';
+        $exercise2->exercise_type = 'banded_resistance';
         
         $exercise3 = new Exercise();
         $exercise3->title = 'New Exercise';
         $exercise3->canonical_name = 'new_exercise';
-        $exercise3->is_bodyweight = true;
-        $exercise3->band_type = 'assistance';
+        $exercise3->exercise_type = 'banded_assistance';
         
         $exercises = collect([$exercise1, $exercise2, $exercise3]);
         
@@ -179,14 +172,14 @@ class PersistGlobalExercisesChangeIdentificationTest extends TestCase
                 'title' => 'Unchanged Exercise',
                 'description' => '',
                 'canonical_name' => 'unchanged',
-            'exercise_type' => 'regular'
-        ],
+                'exercise_type' => 'bodyweight'
+            ],
             'updated' => [
-            'title' => 'Old Title', // Different title
+                'title' => 'Old Title', // Different title
                 'description' => '',
                 'canonical_name' => 'updated',
-            'exercise_type' => 'regular'
-        ]
+                'exercise_type' => 'regular'
+            ]
         ];
         
         $changes = $this->callPrivateMethod($command, 'identifyChanges', [$exercises, $csvData]);
@@ -205,6 +198,6 @@ class PersistGlobalExercisesChangeIdentificationTest extends TestCase
         // Verify update details
         $updateInfo = $changes['updates_needed']['updated'];
         $this->assertContains('title', $updateInfo['field_changes']);
-        $this->assertContains('band_type', $updateInfo['field_changes']);
+        $this->assertContains('exercise_type', $updateInfo['field_changes']);
     }
 }
