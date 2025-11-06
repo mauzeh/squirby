@@ -228,6 +228,88 @@ class CardioExerciseTypeTest extends TestCase
     }
 
     /** @test */
+    public function it_formats_long_distances_in_kilometers()
+    {
+        $exercise = Exercise::factory()->create(['exercise_type' => 'cardio']);
+        $liftLog = LiftLog::factory()->create(['exercise_id' => $exercise->id]);
+        LiftSet::factory()->create([
+            'lift_log_id' => $liftLog->id,
+            'reps' => 15000, // 15km
+            'weight' => 0
+        ]);
+
+        $formatted = $this->strategy->formatWeightDisplay($liftLog);
+
+        $this->assertEquals('15.0km', $formatted);
+    }
+
+    /** @test */
+    public function it_formats_complete_cardio_display()
+    {
+        $exercise = Exercise::factory()->create(['exercise_type' => 'cardio']);
+        $liftLog = LiftLog::factory()->create(['exercise_id' => $exercise->id]);
+        
+        // Create multiple sets to test rounds counting
+        LiftSet::factory()->create([
+            'lift_log_id' => $liftLog->id,
+            'reps' => 500,
+            'weight' => 0
+        ]);
+        LiftSet::factory()->create([
+            'lift_log_id' => $liftLog->id,
+            'reps' => 500,
+            'weight' => 0
+        ]);
+        LiftSet::factory()->create([
+            'lift_log_id' => $liftLog->id,
+            'reps' => 500,
+            'weight' => 0
+        ]);
+
+        $formatted = $this->strategy->formatCompleteDisplay($liftLog);
+
+        $this->assertEquals('500m × 3 rounds', $formatted);
+    }
+
+    /** @test */
+    public function it_formats_complete_cardio_display_with_single_round()
+    {
+        $exercise = Exercise::factory()->create(['exercise_type' => 'cardio']);
+        $liftLog = LiftLog::factory()->create(['exercise_id' => $exercise->id]);
+        LiftSet::factory()->create([
+            'lift_log_id' => $liftLog->id,
+            'reps' => 1000,
+            'weight' => 0
+        ]);
+
+        $formatted = $this->strategy->formatCompleteDisplay($liftLog);
+
+        $this->assertEquals('1,000m × 1 round', $formatted);
+    }
+
+    /** @test */
+    public function it_formats_complete_cardio_display_with_long_distance()
+    {
+        $exercise = Exercise::factory()->create(['exercise_type' => 'cardio']);
+        $liftLog = LiftLog::factory()->create(['exercise_id' => $exercise->id]);
+        
+        LiftSet::factory()->create([
+            'lift_log_id' => $liftLog->id,
+            'reps' => 12000, // 12km
+            'weight' => 0
+        ]);
+        LiftSet::factory()->create([
+            'lift_log_id' => $liftLog->id,
+            'reps' => 12000,
+            'weight' => 0
+        ]);
+
+        $formatted = $this->strategy->formatCompleteDisplay($liftLog);
+
+        $this->assertEquals('12.0km × 2 rounds', $formatted);
+    }
+
+    /** @test */
     public function it_returns_progression_suggestion_for_short_distance()
     {
         $exercise = Exercise::factory()->create(['exercise_type' => 'cardio']);

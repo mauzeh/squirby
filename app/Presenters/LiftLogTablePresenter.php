@@ -71,6 +71,22 @@ class LiftLogTablePresenter
      */
     private function formatRepsSets(LiftLog $liftLog): string
     {
+        try {
+            $strategy = $liftLog->exercise->getTypeStrategy();
+            
+            // Use cardio-specific formatting for cardio exercises
+            if ($strategy->getTypeName() === 'cardio' && method_exists($strategy, 'formatCompleteDisplay')) {
+                return $strategy->formatCompleteDisplay($liftLog);
+            }
+        } catch (\Exception $e) {
+            Log::warning('Reps/sets formatting failed, using fallback', [
+                'lift_log_id' => $liftLog->id,
+                'exercise_id' => $liftLog->exercise_id,
+                'error' => $e->getMessage(),
+            ]);
+        }
+        
+        // Default formatting for non-cardio exercises
         return $liftLog->display_rounds . ' x ' . $liftLog->display_reps;
     }
 

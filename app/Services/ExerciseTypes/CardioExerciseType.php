@@ -134,8 +134,43 @@ class CardioExerciseType extends BaseExerciseType
             return '0m';
         }
         
-        // Format as whole number since distance is always in meters
-        return number_format($distance, 0) . 'm';
+        // Handle edge cases for very short or very long distances
+        if ($distance < 100) {
+            // For very short distances, show with decimal if needed
+            return number_format($distance, 0) . 'm';
+        } elseif ($distance >= 10000) {
+            // For distances 10km and above, show in km format
+            $kilometers = $distance / 1000;
+            return number_format($kilometers, 1) . 'km';
+        } else {
+            // Standard format for distances between 100m and 10km
+            return number_format($distance, 0) . 'm';
+        }
+    }
+    
+    /**
+     * Format complete cardio display showing distance and rounds
+     * 
+     * Returns a formatted string like "500m × 7 rounds" for cardio exercises.
+     * This provides cardio-appropriate terminology instead of weight/reps/sets.
+     */
+    public function formatCompleteDisplay(LiftLog $liftLog): string
+    {
+        $distance = $liftLog->display_reps;
+        $rounds = $liftLog->display_rounds;
+        
+        if (!is_numeric($distance) || $distance <= 0) {
+            $distance = 0;
+        }
+        
+        if (!is_numeric($rounds) || $rounds <= 0) {
+            $rounds = 1;
+        }
+        
+        $distanceDisplay = $this->formatWeightDisplay($liftLog);
+        $roundsText = $rounds == 1 ? 'round' : 'rounds';
+        
+        return "{$distanceDisplay} × {$rounds} {$roundsText}";
     }
     
     /**
