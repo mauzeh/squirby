@@ -9,6 +9,7 @@ use App\Services\ExerciseTypes\BandedExerciseType;
 use App\Services\ExerciseTypes\BandedResistanceExerciseType;
 use App\Services\ExerciseTypes\BandedAssistanceExerciseType;
 use App\Services\ExerciseTypes\BodyweightExerciseType;
+use App\Services\ExerciseTypes\CardioExerciseType;
 use App\Services\ExerciseTypes\ExerciseTypeInterface;
 use App\Models\Exercise;
 use App\Models\User;
@@ -76,6 +77,19 @@ class ExerciseTypeFactoryTest extends TestCase
 
         $this->assertInstanceOf(BodyweightExerciseType::class, $strategy);
         $this->assertEquals('bodyweight', $strategy->getTypeName());
+    }
+
+    /** @test */
+    public function it_creates_cardio_exercise_type_for_cardio_exercise()
+    {
+        $exercise = Exercise::factory()->create([
+            'exercise_type' => 'cardio',
+        ]);
+
+        $strategy = ExerciseTypeFactory::create($exercise);
+
+        $this->assertInstanceOf(CardioExerciseType::class, $strategy);
+        $this->assertEquals('cardio', $strategy->getTypeName());
     }
 
     /** @test */
@@ -363,6 +377,7 @@ class ExerciseTypeFactoryTest extends TestCase
             'bodyweight' => BodyweightExerciseType::class,
             'banded_resistance' => BandedResistanceExerciseType::class,
             'banded_assistance' => BandedAssistanceExerciseType::class,
+            'cardio' => CardioExerciseType::class,
         ];
 
         foreach ($testCases as $exerciseType => $expectedClass) {

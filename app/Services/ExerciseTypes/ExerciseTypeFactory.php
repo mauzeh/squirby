@@ -160,25 +160,16 @@ class ExerciseTypeFactory
     
     /**
      * Determine the exercise type based on exercise properties
-     * Now simplified to use the exercise_type field directly, with fallback to legacy logic
+     * Uses the exercise_type field directly
      */
     private static function determineExerciseType(Exercise $exercise): string
     {
-        // If exercise_type is set, use it directly
+        // Use exercise_type field directly - all exercises should have this set
         if (!empty($exercise->exercise_type)) {
             return $exercise->exercise_type;
         }
         
-        // Fallback to legacy logic for exercises without exercise_type (e.g., during testing with make())
-        if (isset($exercise->band_type) && $exercise->band_type) {
-            // Map legacy band_type to new exercise_type values
-            return $exercise->band_type === 'assistance' ? 'banded_assistance' : 'banded_resistance';
-        }
-        
-        if ($exercise->is_bodyweight) {
-            return 'bodyweight';
-        }
-        
+        // Default fallback for any edge cases
         return 'regular';
     }
     

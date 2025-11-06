@@ -47,7 +47,7 @@
   - Ensure cardio exercises don't use weight-based progression models
   - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5_
 
-- [ ] 7. Update exercise type detection logic
+- [x] 7. Update exercise type detection logic
   - Update ExerciseTypeFactory to use exercise_type database field for type determination
   - Add fallback logic for exercises without exercise_type set (keyword detection)
   - Ensure CardioExerciseType is created when exercise_type = 'cardio'
