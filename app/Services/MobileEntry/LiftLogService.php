@@ -360,7 +360,17 @@ class LiftLogService extends MobileEntryBaseService
             ]));
             
             $resistanceText = $strategy->formatWeightDisplay($mockLiftLog);
-            $messageText = $resistanceText . ' × ' . $lastSession['reps'] . ' reps × ' . $lastSession['sets'] . ' sets';
+            
+            // For cardio exercises, use different formatting to avoid showing distance twice
+            if ($strategy->getTypeName() === 'cardio') {
+                // For cardio, formatWeightDisplay already shows distance (e.g., "500m")
+                // So we just need to add rounds, not reps (which is the same as distance)
+                $roundsText = $lastSession['sets'] == 1 ? 'round' : 'rounds';
+                $messageText = $resistanceText . ' × ' . $lastSession['sets'] . ' ' . $roundsText;
+            } else {
+                // For non-cardio exercises, use the standard format
+                $messageText = $resistanceText . ' × ' . $lastSession['reps'] . ' reps × ' . $lastSession['sets'] . ' sets';
+            }
             
             $messages[] = [
                 'type' => 'info',

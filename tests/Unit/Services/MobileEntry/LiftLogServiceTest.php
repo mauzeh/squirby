@@ -2362,4 +2362,109 @@ class LiftLogServiceTest extends TestCase
         $weightField = collect($form['numericFields'])->firstWhere('name', 'weight');
         $this->assertNull($weightField);
     }
+
+    #[Test]
+    public function it_generates_cardio_exercise_messages_with_proper_formatting()
+    {
+        $program = Program::factory()->create(['comments' => null]);
+        $exercise = Exercise::factory()->create([
+            'exercise_type' => 'cardio'
+        ]);
+        $program->exercise = $exercise;
+        
+        $lastSession = [
+            'weight' => 0, // Always 0 for cardio
+            'reps' => 500, // Distance in meters
+            'sets' => 3, // Rounds
+            'date' => 'Jan 13'
+        ];
+        
+        $user = \App\Models\User::factory()->create();
+        $messages = $this->service->generateFormMessages($program, $lastSession, $user->id);
+        
+        // Debug: Let's see what messages are actually generated
+        $this->assertGreaterThanOrEqual(1, $messages);
+        
+        // Check if we have a progression suggestion
+        $hasProgressionSuggestion = collect($messages)->contains(function($message) {
+            return $message['prefix'] === 'Try this:';
+        });
+        
+        if ($hasProgressionSuggestion) {
+            $this->assertCount(2, $messages); // Last session + progression suggestion
+        } else {
+            $this->assertCount(1, $messages); // Only last session message
+        }
+        
+        $lastSessionMessage = $messages[0];
+        $this->assertEquals('info', $lastSessionMessage['type']);
+        $this->assertEquals('Last workout (Jan 13):', $lastSessionMessage['prefix']);
+        // Should show "500m × 3 rounds" instead of "500m × 500 reps × 3 sets"
+        $this->assertEquals('500m × 3 rounds', $lastSessionMessage['text']);
+    }
+
+    #[Test]
+    public function it_generates_cardio_exercise_messages_with_singular_round()
+    {
+        $program = Program::factory()->create(['comments' => null]);
+        $exercise = Exercise::factory()->create([
+            'exercise_type' => 'cardio'
+        ]);
+        $program->exercise = $exercise;
+        
+        $lastSession = [
+            'weight' => 0,
+            'reps' => 1000, // 1km distance
+            'sets' => 1, // Single round
+            'date' => 'Jan 13'
+        ];
+        
+        $user = \App\Models\User::factory()->create();
+        $messages = $this->service->generateFormMessages($program, $lastSession, $user->id);
+        
+        // Check if we have a progression suggestion
+        $hasProgressionSuggestion = collect($messages)->contains(function($message) {
+            return $message['prefix'] === 'Try this:';
+        });
+        
+        if ($hasProgressionSuggestion) {
+            $this->assertCount(2, $messages); // Last session + progression suggestion
+        } else {
+            $this->assertCount(1, $messages); // Only last session message
+        }
+        
+        $lastSessionMessage = $messages[0];
+        $this->assertEquals('info', $lastSessionMessage['type']);
+        $this->assertEquals('Last workout (Jan 13):', $lastSessionMessage['prefix']);
+        // Should show "1,000m × 1 round" (singular) - note the comma formatting
+        $this->assertEquals('1,000m × 1 round', $lastSessionMessage['text']);
+    }
+
+    #[Test]
+    public function it_generates_regular_exercise_messages_with_standard_formatting()
+    {
+        $program = Program::factory()->create(['comments' => null]);
+        $exercise = Exercise::factory()->create([
+            'exercise_type' => 'regular'
+        ]);
+        $program->exercise = $exercise;
+        
+        $lastSession = [
+            'weight' => 225,
+            'reps' => 5,
+            'sets' => 3,
+            'date' => 'Jan 13'
+        ];
+        
+        $user = \App\Models\User::factory()->create();
+        $messages = $this->service->generateFormMessages($program, $lastSession, $user->id);
+        
+        $this->assertCount(2, $messages); // Last session + suggestion
+        
+        $lastSessionMessage = $messages[0];
+        $this->assertEquals('info', $lastSessionMessage['type']);
+        $this->assertEquals('Last workout (Jan 13):', $lastSessionMessage['prefix']);
+        // Should show standard format "225 lbs × 5 reps × 3 sets"
+        $this->assertEquals('225 lbs × 5 reps × 3 sets', $lastSessionMessage['text']);
+    }
 }
