@@ -374,4 +374,33 @@ class LiftLogFormComponentTest extends TestCase
         $this->assertFalse($component->shouldShowField('band_color'), 'Band_color field should not be shown when not in strategy');
         $this->assertFalse($component->shouldShowField('exercise_id'), 'Exercise_id field should not be shown when not in strategy');
     }
+
+    public function test_exercise_dropdown_visibility_for_new_vs_existing_lift_logs()
+    {
+        // Test new lift log shows exercise dropdown
+        $exercises = new Collection();
+        $newComponent = new LiftLogFormComponent(null, $exercises);
+        
+        $this->assertTrue($newComponent->shouldShowExerciseDropdown(), 'New lift logs should show exercise dropdown');
+        $this->assertFalse($newComponent->shouldIncludeHiddenExerciseId(), 'New lift logs should not include hidden exercise_id');
+        
+        // Test existing lift log shows hidden exercise_id
+        $exercise = Mockery::mock(Exercise::class);
+        $strategy = Mockery::mock(ExerciseTypeInterface::class);
+        $strategy->shouldReceive('getFormFields')->andReturn(['reps']);
+        $strategy->shouldReceive('getValidationRules')->andReturn([]);
+        $exercise->shouldReceive('getTypeStrategy')->andReturn($strategy);
+        
+        $liftLog = Mockery::mock(LiftLog::class);
+        $liftLog->shouldReceive('getAttribute')->with('exists')->andReturn(true);
+        $liftLog->shouldReceive('getAttribute')->with('exercise')->andReturn($exercise);
+        $liftLog->shouldReceive('setAttribute')->andReturnSelf();
+        $liftLog->exists = true;
+        $liftLog->exercise = $exercise;
+
+        $existingComponent = new LiftLogFormComponent($liftLog, $exercises, '', 'PUT');
+        
+        $this->assertFalse($existingComponent->shouldShowExerciseDropdown(), 'Existing lift logs should not show exercise dropdown');
+        $this->assertTrue($existingComponent->shouldIncludeHiddenExerciseId(), 'Existing lift logs should include hidden exercise_id');
+    }
 }

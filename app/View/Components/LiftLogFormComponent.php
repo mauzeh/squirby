@@ -88,13 +88,30 @@ class LiftLogFormComponent extends Component
             return true;
         }
         
-        // For new lift logs, show all fields
+        // For new lift logs, show all fields including exercise_id dropdown
         if (!$this->liftLog->exists) {
             return true;
         }
         
         // For existing lift logs, show fields defined by the exercise type strategy
+        // Note: exercise_id is handled separately as a hidden field for existing lift logs
         return in_array($field, $this->formFields);
+    }
+
+    /**
+     * Check if exercise_id should be shown as a dropdown (for new lift logs)
+     */
+    public function shouldShowExerciseDropdown(): bool
+    {
+        return !$this->liftLog->exists;
+    }
+
+    /**
+     * Check if exercise_id should be included as a hidden field (for existing lift logs)
+     */
+    public function shouldIncludeHiddenExerciseId(): bool
+    {
+        return $this->liftLog->exists;
     }
 
     /**

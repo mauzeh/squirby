@@ -1,6 +1,6 @@
 # Cardio Exercise Type Implementation Plan
 
-- [x] 1. Create CardioExerciseType strategy class
+- [ ] 1. Create CardioExerciseType strategy class
   - Create new CardioExerciseType class extending BaseExerciseType
   - Implement getTypeName() method returning 'cardio'
   - Implement processLiftData() to force weight=0 and band_color=null
@@ -8,7 +8,7 @@
   - Add distance validation (minimum 50m, maximum 50km)
   - _Requirements: 1.1, 1.3, 5.1, 5.3_
 
-- [x] 2. Create database migration for exercise_type field
+- [ ] 2. Create database migration for exercise_type field
   - Create migration to add exercise_type column to exercises table
   - Add database index on exercise_type for efficient querying
   - Populate exercise_type field for existing exercises based on characteristics
@@ -16,7 +16,7 @@
   - Add cardio and nonCardio query scopes to Exercise model
   - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5_
 
-- [x] 3. Add cardio configuration to exercise types config
+- [ ] 3. Add cardio configuration to exercise types config
   - Add 'cardio' entry to config/exercise_types.php
   - Define validation rules for cardio exercises (reps as distance, weight must be 0)
   - Set supports_1rm to false for cardio exercises
@@ -24,14 +24,14 @@
   - Set progression_types to ['cardio_progression']
   - _Requirements: 1.4, 1.5, 5.2_
 
-- [x] 4. Implement cardio-specific display formatting
+- [ ] 4. Implement cardio-specific display formatting
   - Update formatWeightDisplay() to return distance in meters (e.g., "500m")
   - Add method to format complete cardio display (e.g., "500m × 7 rounds")
   - Ensure cardio exercises don't show weight-related information
   - Handle edge cases for very short or very long distances
   - _Requirements: 2.3, 2.4, 2.5_
 
-- [x] 5. Update mobile entry interface for cardio exercises
+- [ ] 5. Update mobile entry interface for cardio exercises
   - Modify LiftLogService::generateProgramForms() to detect cardio exercises
   - Change "Reps:" label to "Distance (m):" for cardio exercises
   - Change "Sets:" label to "Rounds:" for cardio exercises
