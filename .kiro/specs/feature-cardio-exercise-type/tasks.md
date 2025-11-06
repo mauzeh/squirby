@@ -16,7 +16,7 @@
   - Add cardio and nonCardio query scopes to Exercise model
   - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5_
 
-- [ ] 3. Add cardio configuration to exercise types config
+- [x] 3. Add cardio configuration to exercise types config
   - Add 'cardio' entry to config/exercise_types.php
   - Define validation rules for cardio exercises (reps as distance, weight must be 0)
   - Set supports_1rm to false for cardio exercises
