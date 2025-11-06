@@ -81,7 +81,20 @@ class LiftLogFormComponent extends Component
      */
     public function shouldShowField(string $field): bool
     {
-        return in_array($field, $this->formFields) || !$this->liftLog->exists;
+        // Always show these essential fields regardless of exercise type
+        $alwaysShowFields = ['comments', 'date', 'logged_at', 'rounds'];
+        
+        if (in_array($field, $alwaysShowFields)) {
+            return true;
+        }
+        
+        // For new lift logs, show all fields
+        if (!$this->liftLog->exists) {
+            return true;
+        }
+        
+        // For existing lift logs, show fields defined by the exercise type strategy
+        return in_array($field, $this->formFields);
     }
 
     /**
