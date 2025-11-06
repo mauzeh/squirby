@@ -378,19 +378,16 @@ class ExerciseTypeStrategyIntegrationTest extends TestCase
             'exercise_type' => 'banded_resistance'
         ];
 
-        // Regular exercise should set is_bodyweight to false, band_type to null
+        // Regular exercise should set exercise_type to regular
         $regularProcessed = $regularStrategy->processExerciseData($inputData);
-        $this->assertFalse($regularProcessed['is_bodyweight']);
-        $this->assertNull($regularProcessed['band_type']);
+        $this->assertEquals('regular', $regularProcessed['exercise_type']);
 
-        // Banded exercise should set is_bodyweight to false when band_type is set
+        // Banded exercise
         $bandedProcessed = $bandedStrategy->processExerciseData($inputData);
-        $this->assertFalse($bandedProcessed['is_bodyweight']);
-        $this->assertEquals('resistance', $bandedProcessed['band_type']);
+        $this->assertEquals('banded_resistance', $bandedProcessed['exercise_type']);
 
-        // Bodyweight exercise should set band_type to null when is_bodyweight is true
+        // Bodyweight exercise
         $bodyweightProcessed = $bodyweightStrategy->processExerciseData($inputData);
-        $this->assertTrue($bodyweightProcessed['is_bodyweight']);
-        $this->assertNull($bodyweightProcessed['band_type']);
+        $this->assertEquals('bodyweight', $bodyweightProcessed['exercise_type']);
     }
 }

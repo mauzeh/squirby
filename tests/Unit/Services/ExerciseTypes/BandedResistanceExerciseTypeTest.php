@@ -92,8 +92,7 @@ class BandedResistanceExerciseTypeTest extends TestCase
         $processedData = $this->strategy->processExerciseData($inputData);
 
         $this->assertEquals('Banded Squat', $processedData['title']);
-        $this->assertFalse($processedData['is_bodyweight']);
-        $this->assertEquals('resistance', $processedData['band_type']);
+        $this->assertEquals('banded_resistance', $processedData['exercise_type']);
     }
 
     /** @test */

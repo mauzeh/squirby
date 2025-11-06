@@ -92,7 +92,6 @@ class BandedAssistanceExerciseTypeTest extends TestCase
 
         $this->assertEquals('Assisted Pull-up', $processedData['title']);
         $this->assertEquals('banded_assistance', $processedData['exercise_type']);
-        $this->assertEquals('assistance', $processedData['band_type']);
     }
 
     /** @test */
