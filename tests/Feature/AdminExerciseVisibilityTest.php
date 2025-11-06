@@ -348,6 +348,7 @@ class AdminExerciseVisibilityTest extends TestCase
         $response = $this->put(route('exercises.update', $userExercise), [
             'title' => 'Updated User Exercise',
             'description' => 'Updated description',
+            'exercise_type' => 'regular'
         ]);
         $response->assertRedirect(route('exercises.index'));
         $response->assertSessionHas('success');

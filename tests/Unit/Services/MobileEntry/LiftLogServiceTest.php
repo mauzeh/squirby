@@ -2037,8 +2037,7 @@ class LiftLogServiceTest extends TestCase
     {
         $user = User::factory()->create();
         $regularExercise = Exercise::factory()->create([
-            'title' => 'Bench Press',
-            'band_type' => null
+            'title' => 'Bench Press'
         ]);
         
         Program::factory()->create([

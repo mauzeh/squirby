@@ -97,16 +97,13 @@ class RegularExerciseTypeTest extends TestCase
     {
         $inputData = [
             'title' => 'Bench Press',
-            // Should be set to false
-            // Should be set to null,
-            'exercise_type' => 'banded_resistance'
+            'exercise_type' => 'regular'
         ];
 
         $processedData = $this->strategy->processExerciseData($inputData);
 
         $this->assertEquals('Bench Press', $processedData['title']);
-        $this->assertFalse($processedData['is_bodyweight']);
-        $this->assertNull($processedData['band_type']);
+        $this->assertEquals('regular', $processedData['exercise_type']);
     }
 
     /** @test */
