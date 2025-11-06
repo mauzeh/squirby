@@ -1,6 +1,6 @@
 # Cardio Exercise Type Implementation Plan
 
-- [ ] 1. Create CardioExerciseType strategy class
+- [x] 1. Create CardioExerciseType strategy class
   - Create new CardioExerciseType class extending BaseExerciseType
   - Implement getTypeName() method returning 'cardio'
   - Implement processLiftData() to force weight=0 and band_color=null
@@ -8,7 +8,7 @@
   - Add distance validation (minimum 50m, maximum 50km)
   - _Requirements: 1.1, 1.3, 5.1, 5.3_
 
-- [ ] 2. Add cardio configuration to exercise types config
+- [x] 2. Add cardio configuration to exercise types config
   - Add 'cardio' entry to config/exercise_types.php
   - Define validation rules for cardio exercises (reps as distance, weight must be 0)
   - Set supports_1rm to false for cardio exercises

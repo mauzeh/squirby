@@ -106,6 +106,26 @@ return [
             'progression_types' => ['linear', 'double_progression', 'bodyweight_progression'],
             'display_format' => 'bodyweight_plus_extra',
         ],
+        
+        /**
+         * Cardio Exercise Type
+         * 
+         * Distance-based cardiovascular exercises like running, cycling, and rowing.
+         * Uses the reps field to store distance in meters and sets field for rounds.
+         * Weight is always 0 and band_color is always null for cardio exercises.
+         */
+        'cardio' => [
+            'class' => \App\Services\ExerciseTypes\CardioExerciseType::class,
+            'validation' => [
+                'reps' => 'required|integer|min:50|max:50000', // Distance in meters
+                'weight' => 'nullable|numeric|in:0', // Must be 0
+            ],
+            'chart_type' => 'cardio_progression',
+            'supports_1rm' => false,
+            'form_fields' => ['reps'], // Only distance, no weight
+            'progression_types' => ['cardio_progression'],
+            'display_format' => 'distance_rounds',
+        ],
     ],
     
     /**
