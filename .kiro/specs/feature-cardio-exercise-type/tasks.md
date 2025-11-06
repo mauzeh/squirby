@@ -54,7 +54,7 @@
   - Update exercise creation to automatically set exercise_type based on characteristics
   - _Requirements: 4.2, 4.3, 6.1, 6.2_
 
-- [ ] 8. Create comprehensive test suite for cardio exercise type
+- [x] 8. Create comprehensive test suite for cardio exercise type
   - Create CardioExerciseTypeTest for strategy class testing
   - Test processLiftData() forces weight=0 and validates distance
   - Test formatWeightDisplay() returns correct distance format

@@ -19,28 +19,16 @@
         </div>
     @endif
 
-    @if ($shouldShowField('band_type'))
-        <div class="form-group">
-            <label for="band_type">Band Type:</label>
-            <select name="band_type" id="band_type" class="form-control">
-                @foreach($getBandTypes() as $value => $label)
-                    <option value="{{ $value }}" {{ old('band_type', $exercise->band_type) == $value ? 'selected' : '' }}>
-                        {{ $label }}
-                    </option>
-                @endforeach
-            </select>
-        </div>
-    @endif
-
     @if ($shouldShowField('exercise_type'))
         <div class="form-group">
             <label for="exercise_type">Exercise Type</label>
             <select name="exercise_type" id="exercise_type" class="form-control" required>
                 <option value="">Select Exercise Type</option>
-                <option value="regular" {{ old('exercise_type', $exercise->exercise_type ?? '') === 'regular' ? 'selected' : '' }}>Regular (Weighted)</option>
-                <option value="bodyweight" {{ old('exercise_type', $exercise->exercise_type ?? '') === 'bodyweight' ? 'selected' : '' }}>Bodyweight</option>
-                <option value="banded_resistance" {{ old('exercise_type', $exercise->exercise_type ?? '') === 'banded_resistance' ? 'selected' : '' }}>Banded Resistance</option>
-                <option value="banded_assistance" {{ old('exercise_type', $exercise->exercise_type ?? '') === 'banded_assistance' ? 'selected' : '' }}>Banded Assistance</option>
+                @foreach($getExerciseTypes() as $value => $label)
+                    <option value="{{ $value }}" {{ old('exercise_type', $exercise->exercise_type ?? '') === $value ? 'selected' : '' }}>
+                        {{ $label }}
+                    </option>
+                @endforeach
             </select>
         </div>
     @endif

@@ -54,15 +54,14 @@ class ExerciseFormComponent extends Component
         $this->action = $action;
         $this->method = $method;
         
-        // Get form fields and validation rules from strategy
+        // Always show basic fields and exercise type selection
+        $this->formFields = ['title', 'description', 'exercise_type'];
+        
+        // Get validation rules from strategy if exercise exists
         if ($this->exercise->exists) {
             $strategy = $this->exercise->getTypeStrategy();
-            // For existing exercises, always show basic fields plus strategy-specific fields
-            $this->formFields = array_merge(['title', 'description'], $strategy->getFormFields());
             $this->validationRules = $strategy->getValidationRules();
         } else {
-            // For new exercises, show all possible fields
-            $this->formFields = ['title', 'description', 'exercise_type'];
             $this->validationRules = [];
         }
     }
@@ -80,18 +79,42 @@ class ExerciseFormComponent extends Component
      */
     public function shouldShowField(string $field): bool
     {
-        return in_array($field, $this->formFields) || !$this->exercise->exists;
+        return in_array($field, $this->formFields);
     }
 
     /**
-     * Get available band types
+     * Get available exercise types from configuration
      */
-    public function getBandTypes(): array
+    public function getExerciseTypes(): array
     {
-        return [
-            '' => 'None',
-            'resistance' => 'Resistance',
-            'assistance' => 'Assistance'
+        $types = [];
+        $typeConfigs = config('exercise_types.types', []);
+        
+        foreach ($typeConfigs as $key => $config) {
+            // Skip deprecated types
+            if (isset($config['deprecated']) && $config['deprecated']) {
+                continue;
+            }
+            
+            $types[$key] = $this->getExerciseTypeLabel($key);
+        }
+        
+        return $types;
+    }
+
+    /**
+     * Get human-readable label for exercise type
+     */
+    private function getExerciseTypeLabel(string $type): string
+    {
+        $labels = [
+            'regular' => 'Regular (Weighted)',
+            'bodyweight' => 'Bodyweight',
+            'banded_resistance' => 'Banded Resistance',
+            'banded_assistance' => 'Banded Assistance',
+            'cardio' => 'Cardio'
         ];
+        
+        return $labels[$type] ?? ucfirst(str_replace('_', ' ', $type));
     }
 }

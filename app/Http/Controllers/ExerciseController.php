@@ -87,7 +87,7 @@ class ExerciseController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'exercise_type' => 'required|in:regular,bodyweight,banded_resistance,banded_assistance',
+            'exercise_type' => 'required|in:regular,bodyweight,banded_resistance,banded_assistance,cardio',
             'is_global' => 'nullable|boolean',
         ]);
 
@@ -155,7 +155,7 @@ class ExerciseController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'exercise_type' => 'required|in:regular,bodyweight,banded_resistance,banded_assistance',
+            'exercise_type' => 'required|in:regular,bodyweight,banded_resistance,banded_assistance,cardio',
             'is_global' => 'nullable|boolean',
         ]);
 

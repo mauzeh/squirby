@@ -131,6 +131,37 @@ class ExerciseTypeStrategyIntegrationTest extends TestCase
     }
 
     /** @test */
+    public function it_integrates_cardio_exercise_strategy_with_one_rep_max_service()
+    {
+        $exercise = Exercise::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_type' => 'cardio'
+        ]);
+
+        $liftLog = LiftLog::factory()->create([
+            'exercise_id' => $exercise->id,
+            'user_id' => $this->user->id,
+        ]);
+
+        LiftSet::factory()->create([
+            'lift_log_id' => $liftLog->id,
+            'weight' => 0, // Always 0 for cardio
+            'reps' => 500, // Distance in meters
+        ]);
+
+        $strategy = ExerciseTypeFactory::create($exercise);
+        
+        // Strategy should NOT support 1RM calculation for cardio exercises
+        $this->assertFalse($strategy->canCalculate1RM());
+        
+        // OneRepMaxService should throw exception for cardio exercises
+        $this->expectException(\App\Services\ExerciseTypes\Exceptions\UnsupportedOperationException::class);
+        $this->expectExceptionMessage('1RM calculation not supported for cardio exercises');
+        
+        $this->oneRepMaxService->getLiftLogOneRepMax($liftLog);
+    }
+
+    /** @test */
     public function it_integrates_exercise_strategies_with_chart_service()
     {
         $regularExercise = Exercise::factory()->create([
@@ -148,14 +179,21 @@ class ExerciseTypeStrategyIntegrationTest extends TestCase
             'exercise_type' => 'bodyweight'
         ]);
 
+        $cardioExercise = Exercise::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_type' => 'cardio'
+        ]);
+
         $regularStrategy = ExerciseTypeFactory::create($regularExercise);
         $bandedStrategy = ExerciseTypeFactory::create($bandedExercise);
         $bodyweightStrategy = ExerciseTypeFactory::create($bodyweightExercise);
+        $cardioStrategy = ExerciseTypeFactory::create($cardioExercise);
 
         // Each strategy should return appropriate chart type
         $this->assertEquals('weight_progression', $regularStrategy->getChartType());
         $this->assertEquals('band_progression', $bandedStrategy->getChartType());
         $this->assertEquals('bodyweight_progression', $bodyweightStrategy->getChartType());
+        $this->assertEquals('cardio_progression', $cardioStrategy->getChartType());
     }
 
     /** @test */
@@ -176,9 +214,15 @@ class ExerciseTypeStrategyIntegrationTest extends TestCase
             'exercise_type' => 'bodyweight'
         ]);
 
+        $cardioExercise = Exercise::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_type' => 'cardio'
+        ]);
+
         $regularStrategy = ExerciseTypeFactory::create($regularExercise);
         $bandedStrategy = ExerciseTypeFactory::create($bandedExercise);
         $bodyweightStrategy = ExerciseTypeFactory::create($bodyweightExercise);
+        $cardioStrategy = ExerciseTypeFactory::create($cardioExercise);
 
         // Each strategy should return appropriate progression types
         $this->assertContains('weight_progression', $regularStrategy->getSupportedProgressionTypes());
@@ -189,6 +233,7 @@ class ExerciseTypeStrategyIntegrationTest extends TestCase
         $this->assertContains('band_progression', $bandedStrategy->getSupportedProgressionTypes());
         
         $this->assertContains('bodyweight_progression', $bodyweightStrategy->getSupportedProgressionTypes());
+        $this->assertContains('cardio_progression', $cardioStrategy->getSupportedProgressionTypes());
     }
 
     /** @test */
@@ -257,6 +302,27 @@ class ExerciseTypeStrategyIntegrationTest extends TestCase
         $bodyweightStrategy = ExerciseTypeFactory::create($bodyweightExercise);
         $bodyweightWeightDisplay = $bodyweightStrategy->formatWeightDisplay($bodyweightLiftLog);
         $this->assertStringContainsString('Bodyweight', $bodyweightWeightDisplay);
+
+        // Cardio exercise
+        $cardioExercise = Exercise::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_type' => 'cardio'
+        ]);
+
+        $cardioLiftLog = LiftLog::factory()->create([
+            'exercise_id' => $cardioExercise->id,
+            'user_id' => $this->user->id,
+        ]);
+
+        LiftSet::factory()->create([
+            'lift_log_id' => $cardioLiftLog->id,
+            'weight' => 0,
+            'reps' => 500, // Distance in meters
+        ]);
+
+        $cardioStrategy = ExerciseTypeFactory::create($cardioExercise);
+        $cardioWeightDisplay = $cardioStrategy->formatWeightDisplay($cardioLiftLog);
+        $this->assertStringContainsString('500m', $cardioWeightDisplay);
     }
 
     /** @test */
@@ -328,13 +394,18 @@ class ExerciseTypeStrategyIntegrationTest extends TestCase
             'exercise_type' => 'bodyweight'
         ]);
 
+        $cardioExercise = Exercise::factory()->create([
+            'exercise_type' => 'cardio'
+        ]);
+
         $regularStrategy = ExerciseTypeFactory::create($regularExercise);
         $bandedStrategy = ExerciseTypeFactory::create($bandedExercise);
         $bodyweightStrategy = ExerciseTypeFactory::create($bodyweightExercise);
+        $cardioStrategy = ExerciseTypeFactory::create($cardioExercise);
 
         $inputData = [
             'weight' => 100,
-            'reps' => 5,
+            'reps' => 500, // Distance for cardio
             'band_color' => 'red',
         ];
 
@@ -352,6 +423,12 @@ class ExerciseTypeStrategyIntegrationTest extends TestCase
         $bodyweightProcessed = $bodyweightStrategy->processLiftData($inputData);
         $this->assertEquals(100, $bodyweightProcessed['weight']);
         $this->assertNull($bodyweightProcessed['band_color']);
+
+        // Cardio exercise should force weight to 0, nullify band_color
+        $cardioProcessed = $cardioStrategy->processLiftData($inputData);
+        $this->assertEquals(0, $cardioProcessed['weight']);
+        $this->assertNull($cardioProcessed['band_color']);
+        $this->assertEquals(500, $cardioProcessed['reps']); // Distance preserved
     }
 
     /** @test */
@@ -373,6 +450,11 @@ class ExerciseTypeStrategyIntegrationTest extends TestCase
             'exercise_type' => 'bodyweight'
         ]));
 
+        ExerciseTypeFactory::clearCache();
+        $cardioStrategy = ExerciseTypeFactory::create(Exercise::factory()->make([
+            'exercise_type' => 'cardio'
+        ]));
+
         $inputData = [
             'title' => 'Test Exercise',
             'exercise_type' => 'banded_resistance'
@@ -389,5 +471,9 @@ class ExerciseTypeStrategyIntegrationTest extends TestCase
         // Bodyweight exercise
         $bodyweightProcessed = $bodyweightStrategy->processExerciseData($inputData);
         $this->assertEquals('bodyweight', $bodyweightProcessed['exercise_type']);
+
+        // Cardio exercise
+        $cardioProcessed = $cardioStrategy->processExerciseData($inputData);
+        $this->assertEquals('cardio', $cardioProcessed['exercise_type']);
     }
 }
