@@ -48,8 +48,8 @@ class ImportJsonLiftLogUserExerciseDuplicateTest extends TestCase
             'title' => 'Custom Exercise',
             'canonical_name' => 'custom_exercise',
             'description' => 'User-specific exercise',
-            'is_bodyweight' => false,
-            'user_id' => $user->id // User-specific exercise
+            'user_id' => $user->id, // User-specific exercise
+            'exercise_type' => 'regular'
         ]);
         
         // Create existing lift log for this user exercise
@@ -71,14 +71,14 @@ class ImportJsonLiftLogUserExerciseDuplicateTest extends TestCase
                 'exercise' => 'Custom Exercise',
                 'canonical_name' => 'custom_exercise',
                 'description' => 'User-specific exercise',
-                'is_bodyweight' => false,
                 'lift_logs' => [
                     [
                         'weight' => 100,
                         'reps' => 10,
                         'sets' => 1,
-                        'notes' => null
-                    ]
+                        'notes' => null,
+            'exercise_type' => 'regular'
+        ]
                 ]
             ]
         ];
@@ -104,14 +104,14 @@ class ImportJsonLiftLogUserExerciseDuplicateTest extends TestCase
                 'exercise' => 'New Custom Exercise',
                 'canonical_name' => 'new_custom_exercise',
                 'description' => 'A new user-specific exercise',
-                'is_bodyweight' => false,
                 'lift_logs' => [
                     [
                         'weight' => 150,
                         'reps' => 8,
                         'sets' => 1,
-                        'notes' => null
-                    ]
+                        'notes' => null,
+            'exercise_type' => 'regular'
+        ]
                 ]
             ]
         ];
@@ -182,8 +182,8 @@ class ImportJsonLiftLogUserExerciseDuplicateTest extends TestCase
             'title' => 'Global Exercise',
             'canonical_name' => 'global_exercise',
             'description' => 'Global exercise',
-            'is_bodyweight' => false,
-            'user_id' => null // Global exercise
+            'user_id' => null, // Global exercise
+            'exercise_type' => 'regular'
         ]);
         
         // Create a user-specific exercise
@@ -191,8 +191,8 @@ class ImportJsonLiftLogUserExerciseDuplicateTest extends TestCase
             'title' => 'User Exercise',
             'canonical_name' => 'user_exercise',
             'description' => 'User-specific exercise',
-            'is_bodyweight' => false,
-            'user_id' => $user->id // User-specific exercise
+            'user_id' => $user->id, // User-specific exercise
+            'exercise_type' => 'regular'
         ]);
         
         // Create existing lift logs for both exercises
@@ -270,16 +270,16 @@ class ImportJsonLiftLogUserExerciseDuplicateTest extends TestCase
             'title' => 'Custom Exercise',
             'canonical_name' => 'custom_exercise',
             'description' => 'User 1 exercise',
-            'is_bodyweight' => false,
-            'user_id' => $user1->id
+            'user_id' => $user1->id,
+            'exercise_type' => 'regular'
         ]);
         
         $user2Exercise = Exercise::create([
             'title' => 'Custom Exercise',
             'canonical_name' => 'custom_exercise',
             'description' => 'User 2 exercise',
-            'is_bodyweight' => false,
-            'user_id' => $user2->id
+            'user_id' => $user2->id,
+            'exercise_type' => 'regular'
         ]);
         
         // Create lift log for user2's exercise

@@ -70,7 +70,7 @@ class MobileEntryTest extends TestCase
         $user = User::factory()->create();
         $exercise = Exercise::factory()->create([
             'title' => 'Test Exercise',
-            'is_bodyweight' => false
+            'exercise_type' => 'regular'
         ]);
         
         // Create a program that will generate a form
@@ -97,7 +97,7 @@ class MobileEntryTest extends TestCase
         $user = User::factory()->create();
         $exercise = Exercise::factory()->create([
             'title' => 'Push-ups',
-            'is_bodyweight' => true
+            'exercise_type' => 'bodyweight'
         ]);
         
         Program::factory()->create([
@@ -121,7 +121,7 @@ class MobileEntryTest extends TestCase
         $user = User::factory()->create();
         $exercise = Exercise::factory()->create([
             'title' => 'Band Pull-aparts',
-            'band_type' => 'resistance'
+            'exercise_type' => 'banded_resistance'
         ]);
         
         Program::factory()->create([

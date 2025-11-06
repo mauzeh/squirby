@@ -54,7 +54,9 @@ class TrainingProgressionServiceTest extends TestCase
     public function test_banded_exercise_progression_reps_increase_within_band()
     {
         $user = User::factory()->create();
-        $exercise = Exercise::factory()->create(['band_type' => 'resistance']);
+        $exercise = Exercise::factory()->create([
+            'exercise_type' => 'banded_resistance'
+        ]);
 
         // Log a lift with red band, 10 reps
         $liftLog = LiftLog::factory()->create([
@@ -78,7 +80,9 @@ class TrainingProgressionServiceTest extends TestCase
     public function test_banded_exercise_progression_band_changes_after_max_reps()
     {
         $user = User::factory()->create();
-        $exercise = Exercise::factory()->create(['band_type' => 'resistance']);
+        $exercise = Exercise::factory()->create([
+            'exercise_type' => 'banded_resistance'
+        ]);
 
         // Log a lift with red band, max reps (15)
         $liftLog = LiftLog::factory()->create([
@@ -102,7 +106,9 @@ class TrainingProgressionServiceTest extends TestCase
     public function test_banded_exercise_progression_handles_hardest_band()
     {
         $user = User::factory()->create();
-        $exercise = Exercise::factory()->create(['band_type' => 'resistance']);
+        $exercise = Exercise::factory()->create([
+            'exercise_type' => 'banded_resistance'
+        ]);
 
         // Log a lift with green band, max reps (15)
         $liftLog = LiftLog::factory()->create([
@@ -126,7 +132,9 @@ class TrainingProgressionServiceTest extends TestCase
     public function test_banded_exercise_progression_with_assistance_type_reps_increase()
     {
         $user = User::factory()->create();
-        $exercise = Exercise::factory()->create(['band_type' => 'assistance']);
+        $exercise = Exercise::factory()->create([
+            'exercise_type' => 'banded_assistance'
+        ]);
 
         // Log a lift with red band (less assistance), 10 reps
         $liftLog = LiftLog::factory()->create([
@@ -150,7 +158,9 @@ class TrainingProgressionServiceTest extends TestCase
     public function test_banded_exercise_progression_with_assistance_type_band_changes()
     {
         $user = User::factory()->create();
-        $exercise = Exercise::factory()->create(['band_type' => 'assistance']);
+        $exercise = Exercise::factory()->create([
+            'exercise_type' => 'banded_assistance'
+        ]);
 
         // Log a lift with green band (most assistance), max reps (15)
         $liftLog = LiftLog::factory()->create([
@@ -391,7 +401,9 @@ class TrainingProgressionServiceTest extends TestCase
     public function test_bodyweight_exercises_use_strategy_based_progression()
     {
         $user = User::factory()->create();
-        $exercise = Exercise::factory()->create(['is_bodyweight' => true]);
+        $exercise = Exercise::factory()->create([
+            'exercise_type' => 'bodyweight'
+        ]);
 
         // Create pattern that would suggest progression based on strategy
         $olderLog = LiftLog::factory()->create([

@@ -369,7 +369,10 @@ class ProgramFeatureTest extends TestCase
     {
         $user = User::factory()->create();
         // Create a banded exercise
-        $exercise = Exercise::factory()->create(['user_id' => $user->id, 'band_type' => 'resistance']);
+        $exercise = Exercise::factory()->create([
+            'user_id' => $user->id,
+            'exercise_type' => 'banded_resistance'
+        ]);
         
         // Create a LiftLog for the banded exercise to ensure $lastLog is not null
         LiftLog::factory()->create([

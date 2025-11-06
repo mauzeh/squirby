@@ -59,16 +59,14 @@ class PersistGlobalExercisesChangeIdentificationTest extends TestCase
                 'title' => 'Push-Up', // Different title
                 'description' => 'A basic push up',
                 'canonical_name' => 'push_up',
-                'is_bodyweight' => '1',
-                'band_type' => ''
-            ],
+            'exercise_type' => 'regular'
+        ],
             'pull_up' => [
-                'title' => 'Pull Up',
+            'title' => 'Pull Up',
                 'description' => 'A basic pull up',
                 'canonical_name' => 'pull_up',
-                'is_bodyweight' => '1',
-                'band_type' => ''
-            ]
+            'exercise_type' => 'regular'
+        ]
         ];
         
         $changes = $this->callPrivateMethod($command, 'identifyChanges', [$exercises, $csvData]);
@@ -134,9 +132,8 @@ class PersistGlobalExercisesChangeIdentificationTest extends TestCase
                 'title' => 'Band Pull',
                 'description' => 'Pull with resistance band',
                 'canonical_name' => 'band_pull',
-                'is_bodyweight' => '0',
-                'band_type' => ''
-            ]
+            'exercise_type' => 'regular'
+        ]
         ];
         
         $changes = $this->callPrivateMethod($command, 'identifyChanges', [$exercises, $csvData]);
@@ -182,16 +179,14 @@ class PersistGlobalExercisesChangeIdentificationTest extends TestCase
                 'title' => 'Unchanged Exercise',
                 'description' => '',
                 'canonical_name' => 'unchanged',
-                'is_bodyweight' => '1',
-                'band_type' => ''
-            ],
+            'exercise_type' => 'regular'
+        ],
             'updated' => [
-                'title' => 'Old Title', // Different title
+            'title' => 'Old Title', // Different title
                 'description' => '',
                 'canonical_name' => 'updated',
-                'is_bodyweight' => '0',
-                'band_type' => '' // Different band_type
-            ]
+            'exercise_type' => 'regular'
+        ]
         ];
         
         $changes = $this->callPrivateMethod($command, 'identifyChanges', [$exercises, $csvData]);

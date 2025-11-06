@@ -35,13 +35,13 @@ class DoubleProgressionBodyweightTest extends TestCase
         $this->bodyweightExercise = Exercise::factory()->create([
             'user_id' => $this->user->id,
             'title' => 'Push-ups',
-            'is_bodyweight' => true
+            'exercise_type' => 'bodyweight'
         ]);
         
         $this->weightedExercise = Exercise::factory()->create([
             'user_id' => $this->user->id,
             'title' => 'Bench Press',
-            'is_bodyweight' => false
+            'exercise_type' => 'regular'
         ]);
     }
 

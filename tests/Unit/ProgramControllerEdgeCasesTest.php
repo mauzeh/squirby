@@ -27,8 +27,14 @@ class ProgramControllerEdgeCasesTest extends TestCase
         parent::setUp();
         
         $this->user = User::factory()->create();
-        $this->exercise = Exercise::factory()->create(['user_id' => $this->user->id, 'is_bodyweight' => false]);
-        $this->bodyweightExercise = Exercise::factory()->create(['user_id' => $this->user->id, 'is_bodyweight' => true]);
+        $this->exercise = Exercise::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_type' => 'regular'
+        ]);
+        $this->bodyweightExercise = Exercise::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_type' => 'bodyweight'
+        ]);
         
         // Mock the TrainingProgressionService
         $this->trainingProgressionService = Mockery::mock(TrainingProgressionService::class);

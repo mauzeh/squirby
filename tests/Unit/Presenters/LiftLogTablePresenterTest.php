@@ -28,7 +28,7 @@ class LiftLogTablePresenterTest extends TestCase
         $exercise = Exercise::factory()->create([
             'user_id' => $this->user->id,
             'title' => 'Back Squat',
-            'is_bodyweight' => false
+            'exercise_type' => 'regular'
         ]);
 
         $liftLog = LiftLog::factory()->create([
@@ -61,7 +61,7 @@ class LiftLogTablePresenterTest extends TestCase
         $exercise = Exercise::factory()->create([
             'user_id' => $this->user->id,
             'title' => 'Pull-ups',
-            'is_bodyweight' => true
+            'exercise_type' => 'bodyweight'
         ]);
 
         $liftLog = LiftLog::factory()->create([
@@ -85,7 +85,7 @@ class LiftLogTablePresenterTest extends TestCase
         $exercise = Exercise::factory()->create([
             'user_id' => $this->user->id,
             'title' => 'Push-ups',
-            'is_bodyweight' => true
+            'exercise_type' => 'bodyweight'
         ]);
 
         $liftLog = LiftLog::factory()->create([
@@ -151,7 +151,7 @@ class LiftLogTablePresenterTest extends TestCase
     {
         $exercise = Exercise::factory()->create([
             'user_id' => $this->user->id,
-            'is_bodyweight' => false
+            'exercise_type' => 'regular'
         ]);
 
         $liftLog = LiftLog::factory()->create([

@@ -46,27 +46,24 @@ class PersistGlobalExercisesSyncIntegrationTest extends TestCase
             'title' => 'Push Up',
             'description' => 'Basic bodyweight exercise',
             'canonical_name' => 'push_up',
-            'is_bodyweight' => true,
-            'band_type' => null,
-            'user_id' => null
+            'user_id' => null,
+            'exercise_type' => 'bodyweight'
         ]);
 
         $exercise2 = Exercise::create([
             'title' => 'Band Row',
             'description' => 'Rowing with resistance band',
             'canonical_name' => 'band_row',
-            'is_bodyweight' => false,
-            'band_type' => 'resistance',
-            'user_id' => null
+            'user_id' => null,
+            'exercise_type' => 'banded_resistance'
         ]);
 
         $exercise3 = Exercise::create([
             'title' => 'New Exercise',
             'description' => 'This is new',
             'canonical_name' => 'new_exercise',
-            'is_bodyweight' => true,
-            'band_type' => 'assistance',
-            'user_id' => null
+            'user_id' => null,
+            'exercise_type' => 'banded_assistance'
         ]);
 
         // Create existing CSV with some outdated data
@@ -189,9 +186,8 @@ class PersistGlobalExercisesSyncIntegrationTest extends TestCase
             'title' => 'Push Up',
             'description' => 'Basic exercise',
             'canonical_name' => 'push_up',
-            'is_bodyweight' => true,
-            'band_type' => null,
-            'user_id' => null
+            'user_id' => null,
+            'exercise_type' => 'bodyweight'
         ]);
 
         // Create CSV that matches database exactly
@@ -254,27 +250,24 @@ class PersistGlobalExercisesSyncIntegrationTest extends TestCase
             'title' => 'Exercise A',
             'description' => 'Description A',
             'canonical_name' => 'exercise_a',
-            'is_bodyweight' => false,
-            'band_type' => 'resistance',
-            'user_id' => null
+            'user_id' => null,
+            'exercise_type' => 'banded_resistance'
         ]);
 
         Exercise::create([
             'title' => 'Exercise B',
             'description' => 'Description B',
             'canonical_name' => 'exercise_b',
-            'is_bodyweight' => true,
-            'band_type' => 'assistance',
-            'user_id' => null
+            'user_id' => null,
+            'exercise_type' => 'banded_assistance'
         ]);
 
         Exercise::create([
             'title' => 'Exercise C',
             'description' => 'Description C',
             'canonical_name' => 'exercise_c',
-            'is_bodyweight' => false,
-            'band_type' => null,
-            'user_id' => null
+            'user_id' => null,
+            'exercise_type' => 'regular'
         ]);
 
         // Create CSV with different order and some missing exercises

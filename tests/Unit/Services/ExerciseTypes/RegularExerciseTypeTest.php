@@ -97,8 +97,9 @@ class RegularExerciseTypeTest extends TestCase
     {
         $inputData = [
             'title' => 'Bench Press',
-            'is_bodyweight' => true, // Should be set to false
-            'band_type' => 'resistance', // Should be set to null
+            // Should be set to false
+            // Should be set to null,
+            'exercise_type' => 'banded_resistance'
         ];
 
         $processedData = $this->strategy->processExerciseData($inputData);
@@ -131,7 +132,9 @@ class RegularExerciseTypeTest extends TestCase
     /** @test */
     public function it_formats_weight_display_correctly()
     {
-        $exercise = Exercise::factory()->create(['is_bodyweight' => false, 'band_type' => null]);
+        $exercise = Exercise::factory()->create([
+            'exercise_type' => 'regular'
+        ]);
         $liftLog = LiftLog::factory()->create(['exercise_id' => $exercise->id]);
         LiftSet::factory()->create([
             'lift_log_id' => $liftLog->id,
@@ -147,7 +150,9 @@ class RegularExerciseTypeTest extends TestCase
     /** @test */
     public function it_formats_zero_weight_display()
     {
-        $exercise = Exercise::factory()->create(['is_bodyweight' => false, 'band_type' => null]);
+        $exercise = Exercise::factory()->create([
+            'exercise_type' => 'regular'
+        ]);
         $liftLog = LiftLog::factory()->create(['exercise_id' => $exercise->id]);
         LiftSet::factory()->create([
             'lift_log_id' => $liftLog->id,
@@ -163,7 +168,9 @@ class RegularExerciseTypeTest extends TestCase
     /** @test */
     public function it_formats_negative_weight_as_zero()
     {
-        $exercise = Exercise::factory()->create(['is_bodyweight' => false, 'band_type' => null]);
+        $exercise = Exercise::factory()->create([
+            'exercise_type' => 'regular'
+        ]);
         $liftLog = LiftLog::factory()->create(['exercise_id' => $exercise->id]);
         LiftSet::factory()->create([
             'lift_log_id' => $liftLog->id,
@@ -179,7 +186,9 @@ class RegularExerciseTypeTest extends TestCase
     /** @test */
     public function it_formats_non_numeric_weight_as_zero()
     {
-        $exercise = Exercise::factory()->create(['is_bodyweight' => false, 'band_type' => null]);
+        $exercise = Exercise::factory()->create([
+            'exercise_type' => 'regular'
+        ]);
         $liftLog = LiftLog::factory()->create(['exercise_id' => $exercise->id]);
         LiftSet::factory()->create([
             'lift_log_id' => $liftLog->id,
@@ -195,7 +204,9 @@ class RegularExerciseTypeTest extends TestCase
     /** @test */
     public function it_formats_1rm_display_correctly()
     {
-        $exercise = Exercise::factory()->create(['is_bodyweight' => false, 'band_type' => null]);
+        $exercise = Exercise::factory()->create([
+            'exercise_type' => 'regular'
+        ]);
         $liftLog = LiftLog::factory()->create(['exercise_id' => $exercise->id]);
         LiftSet::factory()->create([
             'lift_log_id' => $liftLog->id,
@@ -213,7 +224,9 @@ class RegularExerciseTypeTest extends TestCase
     /** @test */
     public function it_formats_zero_1rm_as_empty_string()
     {
-        $exercise = Exercise::factory()->create(['is_bodyweight' => false, 'band_type' => null]);
+        $exercise = Exercise::factory()->create([
+            'exercise_type' => 'regular'
+        ]);
         $liftLog = LiftLog::factory()->create(['exercise_id' => $exercise->id]);
         // Don't create any lift sets, so 1RM will be 0
 
@@ -225,7 +238,9 @@ class RegularExerciseTypeTest extends TestCase
     /** @test */
     public function it_returns_null_progression_suggestion()
     {
-        $exercise = Exercise::factory()->create(['is_bodyweight' => false, 'band_type' => null]);
+        $exercise = Exercise::factory()->create([
+            'exercise_type' => 'regular'
+        ]);
         $liftLog = LiftLog::factory()->create(['exercise_id' => $exercise->id]);
         LiftSet::factory()->create([
             'lift_log_id' => $liftLog->id,

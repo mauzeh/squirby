@@ -85,7 +85,7 @@ class BandedAssistanceExerciseTypeTest extends TestCase
     {
         $inputData = [
             'title' => 'Assisted Pull-up',
-            'band_type' => 'assistance',
+            'exercise_type' => 'banded_assistance'
         ];
 
         $processedData = $this->strategy->processExerciseData($inputData);

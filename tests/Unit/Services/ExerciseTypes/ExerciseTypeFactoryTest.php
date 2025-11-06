@@ -449,8 +449,7 @@ class ExerciseTypeFactoryTest extends TestCase
         // Create exercise using legacy fields (simulating old data)
         $exercise = Exercise::factory()->make([
             'exercise_type' => null,
-            'is_bodyweight' => true,
-            'band_type' => null,
+            'exercise_type' => 'bodyweight'
         ]);
 
         $strategy = ExerciseTypeFactory::create($exercise);
@@ -469,8 +468,7 @@ class ExerciseTypeFactoryTest extends TestCase
         $resistanceExercise = Exercise::factory()->make([
             'id' => 999,
             'exercise_type' => null,
-            'is_bodyweight' => false,
-            'band_type' => 'resistance',
+            'exercise_type' => 'banded_resistance'
         ]);
 
         $resistanceStrategy = ExerciseTypeFactory::create($resistanceExercise);
@@ -484,8 +482,7 @@ class ExerciseTypeFactoryTest extends TestCase
         $assistanceExercise = Exercise::factory()->make([
             'id' => 998,
             'exercise_type' => null,
-            'is_bodyweight' => false,
-            'band_type' => 'assistance',
+            'exercise_type' => 'banded_assistance'
         ]);
 
         $assistanceStrategy = ExerciseTypeFactory::create($assistanceExercise);

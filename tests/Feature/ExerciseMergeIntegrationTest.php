@@ -42,8 +42,7 @@ class ExerciseMergeIntegrationTest extends TestCase
             'user_id' => $this->regularUser->id,
             'title' => 'User Bench Press',
             'description' => 'User created bench press',
-            'is_bodyweight' => false,
-            'band_type' => null
+            'exercise_type' => 'regular'
         ]);
 
         // Create target exercise
@@ -51,8 +50,7 @@ class ExerciseMergeIntegrationTest extends TestCase
             'user_id' => null,
             'title' => 'Bench Press',
             'description' => 'Standard bench press',
-            'is_bodyweight' => false,
-            'band_type' => null
+            'exercise_type' => 'regular'
         ]);
 
         // Create lift logs with various scenarios
@@ -219,14 +217,14 @@ class ExerciseMergeIntegrationTest extends TestCase
         // Create incompatible exercises (different bodyweight settings)
         $sourceExercise = Exercise::factory()->create([
             'user_id' => $this->regularUser->id,
-            'is_bodyweight' => true,
-            'title' => 'Push-ups'
+            'title' => 'Push-ups',
+            'exercise_type' => 'bodyweight'
         ]);
 
         $targetExercise = Exercise::factory()->create([
             'user_id' => null,
-            'is_bodyweight' => false,
-            'title' => 'Bench Press'
+            'title' => 'Bench Press',
+            'exercise_type' => 'regular'
         ]);
 
         // Try to merge incompatible exercises
@@ -258,12 +256,12 @@ class ExerciseMergeIntegrationTest extends TestCase
         
         $sourceExercise = Exercise::factory()->create([
             'user_id' => $userWithDisabledVisibility->id,
-            'is_bodyweight' => false
+            'exercise_type' => 'regular'
         ]);
 
         $targetExercise = Exercise::factory()->create([
             'user_id' => null,
-            'is_bodyweight' => false
+            'exercise_type' => 'regular'
         ]);
 
         // Access merge interface
@@ -422,14 +420,12 @@ class ExerciseMergeIntegrationTest extends TestCase
         // Test null source with resistance target (should be compatible)
         $sourceExercise = Exercise::factory()->create([
             'user_id' => $this->regularUser->id,
-            'band_type' => null,
-            'is_bodyweight' => false
+            'exercise_type' => 'regular'
         ]);
 
         $targetExercise = Exercise::factory()->create([
             'user_id' => null,
-            'band_type' => 'resistance',
-            'is_bodyweight' => false
+            'exercise_type' => 'banded_resistance'
         ]);
 
         $response = $this->post(route('exercises.merge', $sourceExercise), [
@@ -452,14 +448,12 @@ class ExerciseMergeIntegrationTest extends TestCase
         // Test resistance source with assistance target (should be incompatible)
         $sourceExercise = Exercise::factory()->create([
             'user_id' => $this->regularUser->id,
-            'band_type' => 'resistance',
-            'is_bodyweight' => false
+            'exercise_type' => 'banded_resistance'
         ]);
 
         $targetExercise = Exercise::factory()->create([
             'user_id' => null,
-            'band_type' => 'assistance',
-            'is_bodyweight' => false
+            'exercise_type' => 'banded_assistance'
         ]);
 
         $response = $this->post(route('exercises.merge', $sourceExercise), [
@@ -482,8 +476,7 @@ class ExerciseMergeIntegrationTest extends TestCase
         // Create source exercise with unique characteristics
         $sourceExercise = Exercise::factory()->create([
             'user_id' => $this->regularUser->id,
-            'is_bodyweight' => true,
-            'band_type' => 'resistance'
+            'exercise_type' => 'banded_resistance'
         ]);
 
         // No compatible global exercises exist

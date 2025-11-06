@@ -209,7 +209,9 @@ class LiftLogServiceTest extends TestCase
     #[Test]
     public function it_calculates_default_weight_for_bodyweight_exercises()
     {
-        $exercise = Exercise::factory()->create(['is_bodyweight' => true]);
+        $exercise = Exercise::factory()->create([
+            'exercise_type' => 'bodyweight'
+        ]);
         
         // Without last session
         $weight = $this->service->getDefaultWeight($exercise, null);
@@ -224,7 +226,9 @@ class LiftLogServiceTest extends TestCase
     #[Test]
     public function it_calculates_default_weight_with_progression()
     {
-        $exercise = Exercise::factory()->create(['is_bodyweight' => false]);
+        $exercise = Exercise::factory()->create([
+            'exercise_type' => 'regular'
+        ]);
         $user = \App\Models\User::factory()->create();
         
         $lastSession = ['weight' => 225];
@@ -247,9 +251,9 @@ class LiftLogServiceTest extends TestCase
         
         foreach ($testCases as $canonicalName => $expectedWeight) {
             $exercise = Exercise::factory()->create([
-                'is_bodyweight' => false,
-                'canonical_name' => $canonicalName === 'unknown_exercise' ? null : $canonicalName
-            ]);
+            'canonical_name' => $canonicalName === 'unknown_exercise' ? null : $canonicalName,
+            'exercise_type' => 'regular'
+        ]);
             
             $weight = $this->service->getDefaultWeight($exercise, null);
             $this->assertEquals($expectedWeight, $weight, "Failed for {$canonicalName}");
@@ -260,7 +264,9 @@ class LiftLogServiceTest extends TestCase
     public function it_generates_empty_messages_when_no_data_available()
     {
         $program = Program::factory()->create(['comments' => null]);
-        $exercise = Exercise::factory()->create(['is_bodyweight' => false]);
+        $exercise = Exercise::factory()->create([
+            'exercise_type' => 'regular'
+        ]);
         $program->exercise = $exercise;
         
         $messages = $this->service->generateFormMessages($program, null);
@@ -275,7 +281,9 @@ class LiftLogServiceTest extends TestCase
     public function it_generates_last_session_message()
     {
         $program = Program::factory()->create(['comments' => null]);
-        $exercise = Exercise::factory()->create(['is_bodyweight' => false]);
+        $exercise = Exercise::factory()->create([
+            'exercise_type' => 'regular'
+        ]);
         $program->exercise = $exercise;
         
         $lastSession = [
@@ -305,7 +313,9 @@ class LiftLogServiceTest extends TestCase
     public function it_generates_last_session_message_with_comments()
     {
         $program = Program::factory()->create(['comments' => null]);
-        $exercise = Exercise::factory()->create(['is_bodyweight' => false]);
+        $exercise = Exercise::factory()->create([
+            'exercise_type' => 'regular'
+        ]);
         $program->exercise = $exercise;
         
         $lastSession = [
@@ -341,7 +351,9 @@ class LiftLogServiceTest extends TestCase
     public function it_does_not_show_last_notes_when_comments_are_empty()
     {
         $program = Program::factory()->create(['comments' => null]);
-        $exercise = Exercise::factory()->create(['is_bodyweight' => false]);
+        $exercise = Exercise::factory()->create([
+            'exercise_type' => 'regular'
+        ]);
         $program->exercise = $exercise;
         
         $lastSession = [
@@ -366,7 +378,9 @@ class LiftLogServiceTest extends TestCase
     public function it_generates_program_comments_message()
     {
         $program = Program::factory()->create(['comments' => 'Focus on form today']);
-        $exercise = Exercise::factory()->create(['is_bodyweight' => false]);
+        $exercise = Exercise::factory()->create([
+            'exercise_type' => 'regular'
+        ]);
         $program->exercise = $exercise;
         
         $messages = $this->service->generateFormMessages($program, null);
@@ -388,7 +402,9 @@ class LiftLogServiceTest extends TestCase
     public function it_does_not_suggest_progression_for_bodyweight_exercises()
     {
         $program = Program::factory()->create(['comments' => null]);
-        $exercise = Exercise::factory()->create(['is_bodyweight' => true]);
+        $exercise = Exercise::factory()->create([
+            'exercise_type' => 'bodyweight'
+        ]);
         $program->exercise = $exercise;
         
         $lastSession = [
@@ -733,8 +749,8 @@ class LiftLogServiceTest extends TestCase
         $this->assertDatabaseHas('exercises', [
             'title' => 'Custom Exercise',
             'user_id' => $user->id,
-            'is_bodyweight' => false,
-            'canonical_name' => 'custom_exercise'
+            'canonical_name' => 'custom_exercise',
+            'exercise_type' => 'regular'
         ]);
         
         // Verify program was created with priority 99 (100 - 1, no existing programs)
@@ -921,7 +937,7 @@ class LiftLogServiceTest extends TestCase
         $user = \App\Models\User::factory()->create();
         $exercise = Exercise::factory()->create([
             'title' => 'Test Exercise',
-            'is_bodyweight' => false
+            'exercise_type' => 'regular'
         ]);
         
         $program = Program::factory()->create([
@@ -974,7 +990,7 @@ class LiftLogServiceTest extends TestCase
         ]);
         $exercise = Exercise::factory()->create([
             'title' => 'Pull-ups',
-            'is_bodyweight' => true
+            'exercise_type' => 'bodyweight'
         ]);
         
         Program::factory()->create([
@@ -1001,7 +1017,9 @@ class LiftLogServiceTest extends TestCase
     public function it_includes_last_session_data_in_form_defaults()
     {
         $user = \App\Models\User::factory()->create();
-        $exercise = Exercise::factory()->create(['is_bodyweight' => false]);
+        $exercise = Exercise::factory()->create([
+            'exercise_type' => 'regular'
+        ]);
         
         // Create a previous lift log
         $previousLog = LiftLog::factory()->create([
@@ -1158,13 +1176,13 @@ class LiftLogServiceTest extends TestCase
         // Create different types of exercises
         $weightedExercise = Exercise::factory()->create([
             'title' => 'Bench Press',
-            'is_bodyweight' => false,
-            'canonical_name' => 'bench_press'
+            'canonical_name' => 'bench_press',
+            'exercise_type' => 'regular'
         ]);
         
         $bodyweightExercise = Exercise::factory()->create([
             'title' => 'Push-ups',
-            'is_bodyweight' => true
+            'exercise_type' => 'bodyweight'
         ]);
         
         // Create programs for both
@@ -1497,8 +1515,7 @@ class LiftLogServiceTest extends TestCase
         $user = User::factory()->create();
         $exercise = Exercise::factory()->create([
             'title' => 'Bench Press',
-            'is_bodyweight' => false,
-            'band_type' => null
+            'exercise_type' => 'regular'
         ]);
         
         $liftLog = LiftLog::factory()->create([
@@ -1549,8 +1566,7 @@ class LiftLogServiceTest extends TestCase
         $user = User::factory()->create();
         $exercise = Exercise::factory()->create([
             'title' => 'Pull-ups',
-            'is_bodyweight' => true,
-            'band_type' => null
+            'exercise_type' => 'bodyweight'
         ]);
         
         $liftLog = LiftLog::factory()->create([
@@ -1586,8 +1602,7 @@ class LiftLogServiceTest extends TestCase
         $user = User::factory()->create();
         $exercise = Exercise::factory()->create([
             'title' => 'Weighted Pull-ups',
-            'is_bodyweight' => true,
-            'band_type' => null
+            'exercise_type' => 'bodyweight'
         ]);
         
         $liftLog = LiftLog::factory()->create([
@@ -1627,8 +1642,7 @@ class LiftLogServiceTest extends TestCase
         $user = User::factory()->create();
         $exercise = Exercise::factory()->create([
             'title' => 'Band Pull-aparts',
-            'is_bodyweight' => false,
-            'band_type' => 'resistance'
+            'exercise_type' => 'banded_resistance'
         ]);
         
         $liftLog = LiftLog::factory()->create([
@@ -1983,7 +1997,7 @@ class LiftLogServiceTest extends TestCase
         $user = User::factory()->create();
         $bandedExercise = Exercise::factory()->create([
             'title' => 'Lat Pull-Down (Banded)',
-            'band_type' => 'resistance'
+            'exercise_type' => 'banded_resistance'
         ]);
         
         Program::factory()->create([
@@ -2055,7 +2069,7 @@ class LiftLogServiceTest extends TestCase
         $user = User::factory()->create();
         $bandedExercise = Exercise::factory()->create([
             'title' => 'Band Pull-aparts',
-            'band_type' => 'resistance'
+            'exercise_type' => 'banded_resistance'
         ]);
         
         // Create last session with blue band
@@ -2093,7 +2107,7 @@ class LiftLogServiceTest extends TestCase
         $user = User::factory()->create();
         $bandedExercise = Exercise::factory()->create([
             'title' => 'New Band Exercise',
-            'band_type' => 'resistance'
+            'exercise_type' => 'banded_resistance'
         ]);
         
         Program::factory()->create([
@@ -2178,7 +2192,7 @@ class LiftLogServiceTest extends TestCase
         $user = User::factory()->create();
         $bandedExercise = Exercise::factory()->create([
             'title' => 'Resistance Band Rows',
-            'band_type' => 'resistance'
+            'exercise_type' => 'banded_resistance'
         ]);
         
         Program::factory()->create([
@@ -2213,7 +2227,7 @@ class LiftLogServiceTest extends TestCase
         $user = User::factory()->create();
         $assistanceBandExercise = Exercise::factory()->create([
             'title' => 'Assisted Pull-ups',
-            'band_type' => 'assistance'
+            'exercise_type' => 'banded_assistance'
         ]);
         
         Program::factory()->create([
@@ -2242,7 +2256,7 @@ class LiftLogServiceTest extends TestCase
         $user = User::factory()->create();
         $bandedExercise = Exercise::factory()->create([
             'title' => 'Band Exercise',
-            'band_type' => 'resistance'
+            'exercise_type' => 'banded_resistance'
         ]);
         
         Program::factory()->create([
@@ -2266,7 +2280,7 @@ class LiftLogServiceTest extends TestCase
         $user = User::factory()->create();
         $bandedExercise = Exercise::factory()->create([
             'title' => 'Test Band Exercise',
-            'band_type' => 'resistance'
+            'exercise_type' => 'banded_resistance'
         ]);
         
         Program::factory()->create([

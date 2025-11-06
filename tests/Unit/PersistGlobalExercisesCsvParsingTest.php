@@ -171,9 +171,8 @@ class PersistGlobalExercisesCsvParsingTest extends TestCase
         $exercise = (object) [
             'title' => 'Test Exercise',
             'description' => 'Test description',
-            'is_bodyweight' => true,
             'canonical_name' => 'test_exercise',
-            'band_type' => 'resistance'
+            'exercise_type' => 'banded_resistance'
         ];
         
         $result = $this->callPrivateMethod($command, 'prepareExerciseForCsv', [$exercise]);
@@ -181,9 +180,8 @@ class PersistGlobalExercisesCsvParsingTest extends TestCase
         $this->assertEquals([
             'title' => 'Test Exercise',
             'description' => 'Test description',
-            'is_bodyweight' => '1',
             'canonical_name' => 'test_exercise',
-            'band_type' => 'resistance'
+            'exercise_type' => 'banded_resistance'
         ], $result);
     }
 
@@ -195,9 +193,8 @@ class PersistGlobalExercisesCsvParsingTest extends TestCase
         $exercise = (object) [
             'title' => 'Test Exercise',
             'description' => null,
-            'is_bodyweight' => false,
             'canonical_name' => 'test_exercise',
-            'band_type' => null
+            'exercise_type' => 'regular'
         ];
         
         $result = $this->callPrivateMethod($command, 'prepareExerciseForCsv', [$exercise]);
@@ -205,9 +202,8 @@ class PersistGlobalExercisesCsvParsingTest extends TestCase
         $this->assertEquals([
             'title' => 'Test Exercise',
             'description' => '',
-            'is_bodyweight' => '0',
             'canonical_name' => 'test_exercise',
-            'band_type' => ''
+            'exercise_type' => 'regular'
         ], $result);
     }
 }

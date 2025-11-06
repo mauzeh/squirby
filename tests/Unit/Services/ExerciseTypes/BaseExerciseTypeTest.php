@@ -94,7 +94,9 @@ class BaseExerciseTypeTest extends TestCase
     /** @test */
     public function it_formats_1rm_display_when_supported()
     {
-        $exercise = Exercise::factory()->create(['is_bodyweight' => false, 'band_type' => null]);
+        $exercise = Exercise::factory()->create([
+            'exercise_type' => 'regular'
+        ]);
         $liftLog = LiftLog::factory()->create(['exercise_id' => $exercise->id]);
         
         // Create lift sets to generate a 1RM calculation

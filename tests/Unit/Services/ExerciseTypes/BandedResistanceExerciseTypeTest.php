@@ -85,8 +85,8 @@ class BandedResistanceExerciseTypeTest extends TestCase
     {
         $inputData = [
             'title' => 'Banded Squat',
-            'is_bodyweight' => true, // Should be set to false when band_type is set
-            'band_type' => 'resistance',
+            // Should be set to false when band_type is set,
+            'exercise_type' => 'banded_resistance'
         ];
 
         $processedData = $this->strategy->processExerciseData($inputData);

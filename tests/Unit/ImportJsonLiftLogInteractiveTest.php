@@ -26,8 +26,8 @@ class ImportJsonLiftLogInteractiveTest extends TestCase
             'title' => $title,
             'canonical_name' => $canonicalName,
             'description' => 'Test exercise',
-            'is_bodyweight' => false,
-            'user_id' => null // Global exercise
+            'user_id' => null, // Global exercise
+            'exercise_type' => 'regular'
         ]);
     }
 
@@ -38,7 +38,7 @@ class ImportJsonLiftLogInteractiveTest extends TestCase
         $exerciseData = [
             'exercise' => 'Custom Exercise',
             'canonical_name' => 'custom_exercise',
-            'is_bodyweight' => true
+            'exercise_type' => 'bodyweight'
         ];
         
         $command = new ImportJsonLiftLog();
@@ -49,39 +49,39 @@ class ImportJsonLiftLogInteractiveTest extends TestCase
             'title' => 'Custom Exercise',
             'canonical_name' => 'custom_exercise',
             'description' => 'Imported from JSON file',
-            'is_bodyweight' => true,
-            'user_id' => $user->id
+            'user_id' => $user->id,
+            'exercise_type' => 'bodyweight'
         ]);
         
         $this->assertEquals('Custom Exercise', $result->title);
         $this->assertEquals('custom_exercise', $result->canonical_name);
         $this->assertEquals('Imported from JSON file', $result->description);
-        $this->assertTrue($result->is_bodyweight);
+        $this->assertEquals('bodyweight', $result->exercise_type);
         $this->assertEquals($user->id, $result->user_id);
     }
 
-    public function test_create_new_user_exercise_defaults_is_bodyweight_to_false()
+    public function test_create_new_user_exercise_defaults_exercise_type_to_regular()
     {
         $user = User::factory()->create();
         
         $exerciseData = [
             'exercise' => 'Weighted Exercise',
             'canonical_name' => 'weighted_exercise'
-            // Note: is_bodyweight not provided
+            // Note: exercise_type not provided
         ];
         
         $command = new ImportJsonLiftLog();
         $result = $this->callPrivateMethod($command, 'createNewUserExercise', [$exerciseData, $user]);
         
-        // Verify is_bodyweight defaults to false and it's a user exercise
+        // Verify exercise_type defaults to regular and it's a user exercise
         $this->assertDatabaseHas('exercises', [
             'title' => 'Weighted Exercise',
             'canonical_name' => 'weighted_exercise',
-            'is_bodyweight' => false,
-            'user_id' => $user->id
+            'user_id' => $user->id,
+            'exercise_type' => 'regular'
         ]);
         
-        $this->assertFalse($result->is_bodyweight);
+        $this->assertEquals('regular', $result->exercise_type);
         $this->assertEquals($user->id, $result->user_id);
     }
 
@@ -93,7 +93,7 @@ class ImportJsonLiftLogInteractiveTest extends TestCase
         $exerciseData = [
             'exercise' => 'Existing Exercise',
             'canonical_name' => 'existing_exercise',
-            'is_bodyweight' => false
+            'exercise_type' => 'regular'
         ];
         
         $command = new ImportJsonLiftLog();
@@ -114,14 +114,14 @@ class ImportJsonLiftLogInteractiveTest extends TestCase
             'title' => 'User Exercise',
             'canonical_name' => 'user_exercise',
             'description' => 'User specific exercise',
-            'is_bodyweight' => false,
-            'user_id' => $user->id
+            'user_id' => $user->id,
+            'exercise_type' => 'regular'
         ]);
         
         $exerciseData = [
             'exercise' => 'Test Exercise',
-            'canonical_name' => 'user_exercise', // Same canonical name as user exercise
-            'is_bodyweight' => false
+            'canonical_name' => 'user_exercise', // Same canonical name as user exercise,
+            'exercise_type' => 'regular'
         ];
         
         $command = new ImportJsonLiftLog();
@@ -152,8 +152,8 @@ class ImportJsonLiftLogInteractiveTest extends TestCase
             'title' => 'User Exercise',
             'canonical_name' => 'user_exercise',
             'description' => 'User specific exercise',
-            'is_bodyweight' => false,
-            'user_id' => $user->id
+            'user_id' => $user->id,
+            'exercise_type' => 'regular'
         ]);
         
         // Test global scope
@@ -175,7 +175,7 @@ class ImportJsonLiftLogInteractiveTest extends TestCase
         $exerciseData = [
             'exercise' => 'User Exercise',
             'canonical_name' => 'user_exercise',
-            'is_bodyweight' => false
+            'exercise_type' => 'regular'
         ];
         
         $command = new ImportJsonLiftLog();
@@ -196,7 +196,7 @@ class ImportJsonLiftLogInteractiveTest extends TestCase
         $exerciseData = [
             'exercise' => 'Custom Exercise Title',
             'canonical_name' => 'custom_canonical_name',
-            'is_bodyweight' => true
+            'exercise_type' => 'bodyweight'
         ];
         
         $command = new ImportJsonLiftLog();
@@ -222,7 +222,7 @@ class ImportJsonLiftLogInteractiveTest extends TestCase
         $exerciseData = [
             'exercise' => 'New Exercise',
             'canonical_name' => 'new_exercise',
-            'is_bodyweight' => false
+            'exercise_type' => 'regular'
         ];
         
         // Mock the command with --create-exercises flag
@@ -245,8 +245,8 @@ class ImportJsonLiftLogInteractiveTest extends TestCase
         $this->assertDatabaseHas('exercises', [
             'title' => 'New Exercise',
             'canonical_name' => 'new_exercise',
-            'is_bodyweight' => false,
-            'user_id' => $user->id
+            'user_id' => $user->id,
+            'exercise_type' => 'regular'
         ]);
         
         $this->assertEquals('New Exercise', $result['exercise']->title);

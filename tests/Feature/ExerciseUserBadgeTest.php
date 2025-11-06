@@ -36,7 +36,7 @@ class ExerciseUserBadgeTest extends TestCase
             'user_id' => null,
             'title' => 'Global Bench Press',
             'description' => 'Global exercise for bench press',
-            'is_bodyweight' => false,
+            'exercise_type' => 'regular'
         ]);
 
         $response = $this->actingAs($this->user)
@@ -55,7 +55,7 @@ class ExerciseUserBadgeTest extends TestCase
             'user_id' => $this->user->id,
             'title' => 'Personal Squat',
             'description' => 'User-specific squat exercise',
-            'is_bodyweight' => false,
+            'exercise_type' => 'regular'
         ]);
 
         $response = $this->actingAs($this->user)
@@ -74,14 +74,14 @@ class ExerciseUserBadgeTest extends TestCase
             'user_id' => null,
             'title' => 'Global Exercise',
             'description' => 'Global exercise',
-            'is_bodyweight' => false,
+            'exercise_type' => 'regular'
         ]);
 
         $adminExercise = Exercise::create([
             'user_id' => $this->admin->id,
             'title' => 'Admin Exercise',
             'description' => 'Admin exercise',
-            'is_bodyweight' => false,
+            'exercise_type' => 'regular'
         ]);
 
         // Admin viewing should see both global and their own exercises with appropriate badges
@@ -107,14 +107,14 @@ class ExerciseUserBadgeTest extends TestCase
             'user_id' => null,
             'title' => 'Global Exercise',
             'description' => 'Global exercise',
-            'is_bodyweight' => false,
+            'exercise_type' => 'regular'
         ]);
 
         $userExercise = Exercise::create([
             'user_id' => $this->user->id,
             'title' => 'User Exercise',
             'description' => 'User exercise',
-            'is_bodyweight' => false,
+            'exercise_type' => 'regular'
         ]);
 
         $response = $this->actingAs($this->user)

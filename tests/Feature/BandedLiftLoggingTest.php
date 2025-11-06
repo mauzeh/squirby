@@ -37,8 +37,7 @@ class BandedLiftLoggingTest extends TestCase
         $this->actingAs($this->user);
         $exercise = Exercise::factory()->create([
             'user_id' => $this->user->id,
-            'band_type' => 'resistance',
-            'is_bodyweight' => false,
+            'exercise_type' => 'banded_resistance'
         ]);
 
         $response = $this->post(route('lift-logs.store'), [
@@ -70,8 +69,7 @@ class BandedLiftLoggingTest extends TestCase
         $this->actingAs($this->user);
         $exercise = Exercise::factory()->create([
             'user_id' => $this->user->id,
-            'band_type' => 'assistance',
-            'is_bodyweight' => false,
+            'exercise_type' => 'banded_assistance'
         ]);
 
         $response = $this->post(route('lift-logs.store'), [
@@ -103,7 +101,7 @@ class BandedLiftLoggingTest extends TestCase
         $this->actingAs($this->user);
         $exercise = Exercise::factory()->create([
             'user_id' => $this->user->id,
-            'band_type' => 'resistance',
+            'exercise_type' => 'banded_resistance'
         ]);
 
         $response = $this->post(route('lift-logs.store'), [
@@ -152,7 +150,7 @@ class BandedLiftLoggingTest extends TestCase
         $this->actingAs($this->user);
         $exercise = Exercise::factory()->create([
             'user_id' => $this->user->id,
-            'band_type' => 'resistance',
+            'exercise_type' => 'banded_resistance'
         ]);
         $liftLog = LiftLog::factory()->create([
             'user_id' => $this->user->id,
@@ -197,7 +195,7 @@ class BandedLiftLoggingTest extends TestCase
         $this->actingAs($this->user);
         $exercise = Exercise::factory()->create([
             'user_id' => $this->user->id,
-            'band_type' => 'resistance',
+            'exercise_type' => 'banded_resistance'
         ]);
         $liftLog = LiftLog::factory()->create([
             'user_id' => $this->user->id,
@@ -223,7 +221,7 @@ class BandedLiftLoggingTest extends TestCase
         $this->actingAs($this->user);
         $exercise = Exercise::factory()->create([
             'user_id' => $this->user->id,
-            'band_type' => 'resistance',
+            'exercise_type' => 'banded_resistance'
         ]);
         $liftLog = LiftLog::factory()->create([
             'user_id' => $this->user->id,

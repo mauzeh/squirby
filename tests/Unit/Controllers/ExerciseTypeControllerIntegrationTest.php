@@ -33,8 +33,7 @@ class ExerciseTypeControllerIntegrationTest extends TestCase
 
         $exercise = Exercise::factory()->create([
             'user_id' => $this->user->id,
-            'is_bodyweight' => false,
-            'band_type' => null,
+            'exercise_type' => 'regular'
         ]);
 
         $strategy = ExerciseTypeFactory::create($exercise);
@@ -52,8 +51,7 @@ class ExerciseTypeControllerIntegrationTest extends TestCase
 
         $exercise = Exercise::factory()->create([
             'user_id' => $this->user->id,
-            'is_bodyweight' => false,
-            'band_type' => 'resistance',
+            'exercise_type' => 'banded_resistance'
         ]);
 
         $strategy = ExerciseTypeFactory::create($exercise);
@@ -71,8 +69,7 @@ class ExerciseTypeControllerIntegrationTest extends TestCase
 
         $exercise = Exercise::factory()->create([
             'user_id' => $this->user->id,
-            'is_bodyweight' => true,
-            'band_type' => null,
+            'exercise_type' => 'bodyweight'
         ]);
 
         $strategy = ExerciseTypeFactory::create($exercise);
@@ -91,8 +88,7 @@ class ExerciseTypeControllerIntegrationTest extends TestCase
 
         $exercise = Exercise::factory()->create([
             'user_id' => $userWithExtraWeight->id,
-            'is_bodyweight' => true,
-            'band_type' => null,
+            'exercise_type' => 'bodyweight'
         ]);
 
         $strategy = ExerciseTypeFactory::create($exercise);
@@ -108,8 +104,7 @@ class ExerciseTypeControllerIntegrationTest extends TestCase
     {
         $exercise = Exercise::factory()->create([
             'user_id' => $this->user->id,
-            'is_bodyweight' => false,
-            'band_type' => null,
+            'exercise_type' => 'regular'
         ]);
 
         $strategy = ExerciseTypeFactory::create($exercise);
@@ -131,8 +126,7 @@ class ExerciseTypeControllerIntegrationTest extends TestCase
     {
         $exercise = Exercise::factory()->create([
             'user_id' => $this->user->id,
-            'is_bodyweight' => false,
-            'band_type' => 'resistance',
+            'exercise_type' => 'banded_resistance'
         ]);
 
         $strategy = ExerciseTypeFactory::create($exercise);
@@ -154,8 +148,7 @@ class ExerciseTypeControllerIntegrationTest extends TestCase
     {
         $exercise = Exercise::factory()->create([
             'user_id' => $this->user->id,
-            'is_bodyweight' => true,
-            'band_type' => null,
+            'exercise_type' => 'bodyweight'
         ]);
 
         $strategy = ExerciseTypeFactory::create($exercise);
@@ -176,16 +169,16 @@ class ExerciseTypeControllerIntegrationTest extends TestCase
     public function exercise_controller_processes_regular_exercise_creation_data()
     {
         $exercise = Exercise::factory()->make([
-            'is_bodyweight' => false,
-            'band_type' => null,
+            'exercise_type' => 'regular'
         ]);
 
         $strategy = ExerciseTypeFactory::create($exercise);
         
         $inputData = [
             'title' => 'Bench Press',
-            'is_bodyweight' => true, // Should be set to false
-            'band_type' => 'resistance', // Should be set to null
+            // Should be set to false
+            // Should be set to null,
+            'exercise_type' => 'banded_resistance'
         ];
 
         $processedData = $strategy->processExerciseData($inputData);
@@ -198,16 +191,15 @@ class ExerciseTypeControllerIntegrationTest extends TestCase
     public function exercise_controller_processes_banded_exercise_creation_data()
     {
         $exercise = Exercise::factory()->make([
-            'is_bodyweight' => false,
-            'band_type' => 'resistance',
+            'exercise_type' => 'banded_resistance'
         ]);
 
         $strategy = ExerciseTypeFactory::create($exercise);
         
         $inputData = [
             'title' => 'Banded Squat',
-            'is_bodyweight' => true, // Should be set to false when band_type is set
-            'band_type' => 'resistance',
+            // Should be set to false when band_type is set,
+            'exercise_type' => 'banded_resistance'
         ];
 
         $processedData = $strategy->processExerciseData($inputData);
@@ -220,16 +212,15 @@ class ExerciseTypeControllerIntegrationTest extends TestCase
     public function exercise_controller_processes_bodyweight_exercise_creation_data()
     {
         $exercise = Exercise::factory()->make([
-            'is_bodyweight' => true,
-            'band_type' => null,
+            'exercise_type' => 'bodyweight'
         ]);
 
         $strategy = ExerciseTypeFactory::create($exercise);
         
         $inputData = [
             'title' => 'Push-ups',
-            'is_bodyweight' => true,
-            'band_type' => 'resistance', // Should be set to null when is_bodyweight is true
+            // Should be set to null when is_bodyweight is true,
+            'exercise_type' => 'banded_resistance'
         ];
 
         $processedData = $strategy->processExerciseData($inputData);
@@ -244,20 +235,17 @@ class ExerciseTypeControllerIntegrationTest extends TestCase
         // Create exercises with different types
         $regularExercise = Exercise::factory()->create([
             'user_id' => $this->user->id,
-            'is_bodyweight' => false,
-            'band_type' => null,
+            'exercise_type' => 'regular'
         ]);
 
         $bandedExercise = Exercise::factory()->create([
             'user_id' => $this->user->id,
-            'is_bodyweight' => false,
-            'band_type' => 'resistance',
+            'exercise_type' => 'banded_resistance'
         ]);
 
         $bodyweightExercise = Exercise::factory()->create([
             'user_id' => $this->user->id,
-            'is_bodyweight' => true,
-            'band_type' => null,
+            'exercise_type' => 'bodyweight'
         ]);
 
         // Test that existing model methods still work
@@ -285,20 +273,17 @@ class ExerciseTypeControllerIntegrationTest extends TestCase
     {
         $regularExercise = Exercise::factory()->create([
             'user_id' => $this->user->id,
-            'is_bodyweight' => false,
-            'band_type' => null,
+            'exercise_type' => 'regular'
         ]);
 
         $bandedExercise = Exercise::factory()->create([
             'user_id' => $this->user->id,
-            'is_bodyweight' => false,
-            'band_type' => 'resistance',
+            'exercise_type' => 'banded_resistance'
         ]);
 
         $bodyweightExercise = Exercise::factory()->create([
             'user_id' => $this->user->id,
-            'is_bodyweight' => true,
-            'band_type' => null,
+            'exercise_type' => 'bodyweight'
         ]);
 
         $regularStrategy = ExerciseTypeFactory::create($regularExercise);
@@ -327,8 +312,7 @@ class ExerciseTypeControllerIntegrationTest extends TestCase
     {
         $regularExercise = Exercise::factory()->create([
             'user_id' => $this->user->id,
-            'is_bodyweight' => false,
-            'band_type' => null,
+            'exercise_type' => 'regular'
         ]);
 
         $strategy = ExerciseTypeFactory::create($regularExercise);
@@ -346,8 +330,7 @@ class ExerciseTypeControllerIntegrationTest extends TestCase
     {
         $regularExercise = Exercise::factory()->create([
             'user_id' => $this->user->id,
-            'is_bodyweight' => false,
-            'band_type' => null,
+            'exercise_type' => 'regular'
         ]);
 
         $strategy = ExerciseTypeFactory::create($regularExercise);
@@ -365,8 +348,7 @@ class ExerciseTypeControllerIntegrationTest extends TestCase
     {
         $regularExercise = Exercise::factory()->create([
             'user_id' => $this->user->id,
-            'is_bodyweight' => false,
-            'band_type' => null,
+            'exercise_type' => 'regular'
         ]);
 
         $strategy = ExerciseTypeFactory::create($regularExercise);

@@ -43,8 +43,8 @@ class ImportJsonLiftLogTest extends TestCase
             'title' => $title,
             'canonical_name' => $canonicalName,
             'description' => 'Test exercise',
-            'is_bodyweight' => false,
-            'user_id' => null // Global exercise
+            'user_id' => null, // Global exercise
+            'exercise_type' => 'regular'
         ]);
     }
 
@@ -100,8 +100,8 @@ class ImportJsonLiftLogTest extends TestCase
                 'weight' => 225,
                 'reps' => 5,
                 'sets' => 1,
-                'is_bodyweight' => false
-            ]
+            'exercise_type' => 'regular'
+        ]
         ];
         
         $tempFile = $this->createTestJsonFile($exercises);
@@ -158,14 +158,14 @@ class ImportJsonLiftLogTest extends TestCase
             'exercise' => 'Bench Press',
             'canonical_name' => 'bench_press',
             'description' => 'Test exercise',
-            'is_bodyweight' => false,
             'lift_logs' => [
                 [
                     'weight' => 225,
                     'reps' => 5,
                     'sets' => 1,
-                    'notes' => null
-                ]
+                    'notes' => null,
+            'exercise_type' => 'regular'
+        ]
             ]
         ];
         
@@ -199,14 +199,14 @@ class ImportJsonLiftLogTest extends TestCase
             'exercise' => 'Bench Press',
             'canonical_name' => 'bench_press',
             'description' => 'Test exercise',
-            'is_bodyweight' => false,
             'lift_logs' => [
                 [
                     'weight' => 225,
                     'reps' => 5,
                     'sets' => 3,
-                    'notes' => null
-                ]
+                    'notes' => null,
+            'exercise_type' => 'regular'
+        ]
             ]
         ];
         
@@ -236,14 +236,14 @@ class ImportJsonLiftLogTest extends TestCase
             'exercise' => 'Plank',
             'canonical_name' => 'plank',
             'description' => 'Test exercise',
-            'is_bodyweight' => true,
             'lift_logs' => [
                 [
                     'weight' => 0,
                     'reps' => 90,
                     'sets' => 1,
-                    'notes' => 'time in seconds'
-                ]
+                    'notes' => 'time in seconds',
+            'exercise_type' => 'bodyweight'
+        ]
             ]
         ];
         
@@ -272,7 +272,7 @@ class ImportJsonLiftLogTest extends TestCase
         $exerciseData = [
             'exercise' => 'Bench Press',
             'canonical_name' => 'bench_press',
-            'is_bodyweight' => false
+            'exercise_type' => 'regular'
         ];
         
         $command = $this->getCommand();
@@ -288,7 +288,7 @@ class ImportJsonLiftLogTest extends TestCase
         $exerciseData = [
             'exercise' => 'New Exercise',
             'canonical_name' => 'new_exercise',
-            'is_bodyweight' => true
+            'exercise_type' => 'bodyweight'
         ];
         
         $command = $this->getCommand();
@@ -297,14 +297,14 @@ class ImportJsonLiftLogTest extends TestCase
         $this->assertDatabaseHas('exercises', [
             'title' => 'New Exercise',
             'canonical_name' => 'new_exercise',
-            'is_bodyweight' => true,
             'user_id' => $user->id,
-            'description' => 'Imported from JSON file'
+            'description' => 'Imported from JSON file',
+            'exercise_type' => 'bodyweight'
         ]);
         
         $this->assertEquals('New Exercise', $result->title);
         $this->assertEquals('new_exercise', $result->canonical_name);
-        $this->assertTrue($result->is_bodyweight);
+        $this->assertEquals('bodyweight', $result->exercise_type);
         $this->assertEquals($user->id, $result->user_id);
     }
 
@@ -320,8 +320,8 @@ class ImportJsonLiftLogTest extends TestCase
                 'weight' => 225,
                 'reps' => 5,
                 'sets' => 1,
-                'is_bodyweight' => false
-            ]
+            'exercise_type' => 'regular'
+        ]
         ];
         
         $tempFile = $this->createTestJsonFile($exercises);
@@ -355,8 +355,8 @@ class ImportJsonLiftLogTest extends TestCase
                 'weight' => 225,
                 'reps' => 5,
                 'sets' => 1,
-                'is_bodyweight' => false
-            ]
+            'exercise_type' => 'regular'
+        ]
         ];
         
         $tempFile = $this->createTestJsonFile($exercises);
@@ -394,16 +394,16 @@ class ImportJsonLiftLogTest extends TestCase
                 'weight' => 225,
                 'reps' => 5,
                 'sets' => 1,
-                'is_bodyweight' => false
-            ],
+            'exercise_type' => 'regular'
+        ],
             [
-                'exercise' => 'Squat',
+            'exercise' => 'Squat',
                 'canonical_name' => 'squat',
                 'weight' => 315,
                 'reps' => 8,
                 'sets' => 1,
-                'is_bodyweight' => false
-            ]
+            'exercise_type' => 'regular'
+        ]
         ];
         
         $tempFile = $this->createTestJsonFile($exercises);
@@ -453,14 +453,14 @@ class ImportJsonLiftLogTest extends TestCase
             'exercise' => 'Bench Press',
             'canonical_name' => 'bench_press',
             'description' => 'Test exercise',
-            'is_bodyweight' => false,
             'lift_logs' => [
                 [
                     'weight' => 225,
                     'reps' => 5,
                     // Note: 'sets' is not provided, should default to 1
-                    'notes' => null
-                ]
+                    'notes' => null,
+            'exercise_type' => 'regular'
+        ]
             ]
         ];
         
@@ -485,14 +485,14 @@ class ImportJsonLiftLogTest extends TestCase
             'exercise' => 'Plank',
             'canonical_name' => 'plank',
             'description' => 'Test exercise',
-            'is_bodyweight' => true,
             'lift_logs' => [
                 [
                     'weight' => 0,
                     'reps' => 60,
                     'sets' => 1,
-                    'notes' => null
-                ]
+                    'notes' => null,
+            'exercise_type' => 'bodyweight'
+        ]
             ]
         ];
         
@@ -519,14 +519,14 @@ class ImportJsonLiftLogTest extends TestCase
             'exercise' => 'Tricep Pushdown',
             'canonical_name' => 'tricep_pushdown',
             'description' => 'Test exercise',
-            'is_bodyweight' => false,
             'lift_logs' => [
                 [
                     'weight' => 52.5,
                     'reps' => 8,
                     'sets' => 1,
-                    'notes' => null
-                ]
+                    'notes' => null,
+            'exercise_type' => 'regular'
+        ]
             ]
         ];
         
@@ -556,8 +556,8 @@ class ImportJsonLiftLogTest extends TestCase
                 'weight' => 225,
                 'reps' => 5,
                 'sets' => 1,
-                'is_bodyweight' => false
-            ]
+            'exercise_type' => 'regular'
+        ]
         ];
         
         $tempFile = $this->createTestJsonFile($exercises);
@@ -606,8 +606,8 @@ class ImportJsonLiftLogTest extends TestCase
                 'weight' => 100,
                 'reps' => 10,
                 'sets' => 1,
-                'is_bodyweight' => false
-            ]
+            'exercise_type' => 'regular'
+        ]
         ];
         
         $tempFile = $this->createTestJsonFile($exercises);
@@ -670,8 +670,8 @@ class ImportJsonLiftLogTest extends TestCase
                 'weight' => 225,
                 'reps' => 5,
                 'sets' => 1,
-                'is_bodyweight' => false
-            ]
+            'exercise_type' => 'regular'
+        ]
         ];
         
         $tempFile = $this->createTestJsonFile($exercises);
@@ -725,8 +725,8 @@ class ImportJsonLiftLogTest extends TestCase
                 'weight' => 225,
                 'reps' => 5,
                 'sets' => 1,
-                'is_bodyweight' => false
-            ]
+            'exercise_type' => 'regular'
+        ]
         ];
         
         $tempFile = $this->createTestJsonFile($exercises);
@@ -779,16 +779,16 @@ class ImportJsonLiftLogTest extends TestCase
                 'weight' => 225,
                 'reps' => 5,
                 'sets' => 1,
-                'is_bodyweight' => false
-            ],
+            'exercise_type' => 'regular'
+        ],
             [
-                'exercise' => 'Squat',
+            'exercise' => 'Squat',
                 'canonical_name' => 'squat',
                 'weight' => 315,
                 'reps' => 8,
                 'sets' => 1,
-                'is_bodyweight' => false
-            ]
+            'exercise_type' => 'regular'
+        ]
         ];
         
         $tempFile = $this->createTestJsonFile($exercises);
@@ -832,8 +832,8 @@ class ImportJsonLiftLogTest extends TestCase
                 'weight' => 225,
                 'reps' => 5,
                 'sets' => 1,
-                'is_bodyweight' => false
-            ]
+            'exercise_type' => 'regular'
+        ]
         ];
         
         $tempFile = $this->createTestJsonFile($exercises);
@@ -880,8 +880,8 @@ class ImportJsonLiftLogTest extends TestCase
                 'weight' => 225, // Different weight
                 'reps' => 5,
                 'sets' => 1,
-                'is_bodyweight' => false
-            ]
+            'exercise_type' => 'regular'
+        ]
         ];
         
         $tempFile = $this->createTestJsonFile($exercises);
@@ -928,8 +928,8 @@ class ImportJsonLiftLogTest extends TestCase
                 'weight' => 225,
                 'reps' => 5, // Different reps
                 'sets' => 1,
-                'is_bodyweight' => false
-            ]
+            'exercise_type' => 'regular'
+        ]
         ];
         
         $tempFile = $this->createTestJsonFile($exercises);
@@ -976,8 +976,8 @@ class ImportJsonLiftLogTest extends TestCase
                 'weight' => 225,
                 'reps' => 5,
                 'sets' => 1,
-                'is_bodyweight' => false
-            ]
+            'exercise_type' => 'regular'
+        ]
         ];
         
         $tempFile = $this->createTestJsonFile($exercises);
@@ -1009,8 +1009,8 @@ class ImportJsonLiftLogTest extends TestCase
                 'weight' => 100,
                 'reps' => 10,
                 'sets' => 1,
-                'is_bodyweight' => true
-            ]
+            'exercise_type' => 'bodyweight'
+        ]
         ];
         
         $tempFile = $this->createTestJsonFile($exercises);
@@ -1025,11 +1025,11 @@ class ImportJsonLiftLogTest extends TestCase
             
             // Verify user-specific exercise was created automatically
             $this->assertDatabaseHas('exercises', [
-                'title' => 'Auto Created Exercise',
+            'title' => 'Auto Created Exercise',
                 'canonical_name' => 'auto_created_exercise',
-                'is_bodyweight' => true,
-                'user_id' => $user->id
-            ]);
+                'user_id' => $user->id,
+            'exercise_type' => 'bodyweight'
+        ]);
             
             // Verify lift log was created
             $this->assertDatabaseCount('lift_logs', 1);
@@ -1054,16 +1054,16 @@ class ImportJsonLiftLogTest extends TestCase
                 'weight' => 315,
                 'reps' => 8,
                 'sets' => 3,
-                'is_bodyweight' => false
-            ],
+            'exercise_type' => 'regular'
+        ],
             [
-                'exercise' => 'New Exercise',
+            'exercise' => 'New Exercise',
                 'canonical_name' => 'new_exercise',
                 'weight' => 100,
                 'reps' => 10,
                 'sets' => 2,
-                'is_bodyweight' => true
-            ]
+            'exercise_type' => 'bodyweight'
+        ]
         ];
         
         $tempFile = $this->createTestJsonFile($exercises);
@@ -1116,13 +1116,13 @@ class ImportJsonLiftLogTest extends TestCase
                 'exercise' => 'Bench Press',
                 'canonical_name' => 'bench_press',
                 'description' => 'Barbell bench press',
-                'is_bodyweight' => false,
                 'lift_logs' => [
                     [
                         'weight' => 225,
                         'reps' => 5,
-                        'sets' => 1
-                    ]
+                        'sets' => 1,
+            'exercise_type' => 'regular'
+        ]
                 ]
             ]
         ];
@@ -1170,13 +1170,13 @@ class ImportJsonLiftLogTest extends TestCase
                 'exercise' => 'Bench Press',
                 'canonical_name' => 'bench_press',
                 'description' => 'Barbell bench press',
-                'is_bodyweight' => false,
                 'lift_logs' => [
                     [
                         'weight' => 225,
                         'reps' => 5,
-                        'sets' => 1
-                    ]
+                        'sets' => 1,
+            'exercise_type' => 'regular'
+        ]
                 ]
             ]
         ];
@@ -1221,13 +1221,13 @@ class ImportJsonLiftLogTest extends TestCase
                 'exercise' => 'Bench Press',
                 'canonical_name' => 'bench_press',
                 'description' => 'Barbell bench press',
-                'is_bodyweight' => false,
                 'lift_logs' => [
                     [
                         'weight' => 225,
                         'reps' => 5,
-                        'sets' => 1
-                    ]
+                        'sets' => 1,
+            'exercise_type' => 'regular'
+        ]
                 ]
             ]
         ];
@@ -1265,13 +1265,13 @@ class ImportJsonLiftLogTest extends TestCase
                 'exercise' => 'Bench Press',
                 'canonical_name' => 'bench_press',
                 'description' => 'Barbell bench press',
-                'is_bodyweight' => false,
                 'lift_logs' => [
                     [
                         'weight' => 225,
                         'reps' => 5,
-                        'sets' => 1
-                    ]
+                        'sets' => 1,
+            'exercise_type' => 'regular'
+        ]
                 ]
             ]
         ];
@@ -1316,13 +1316,13 @@ class ImportJsonLiftLogTest extends TestCase
                 'exercise' => 'Bench Press',
                 'canonical_name' => 'bench_press',
                 'description' => 'Barbell bench press',
-                'is_bodyweight' => false,
                 'lift_logs' => [
                     [
                         'weight' => 225,
                         'reps' => 5,
-                        'sets' => 1
-                    ]
+                        'sets' => 1,
+            'exercise_type' => 'regular'
+        ]
                 ]
             ]
         ];

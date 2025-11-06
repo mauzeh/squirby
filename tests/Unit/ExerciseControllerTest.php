@@ -100,7 +100,7 @@ class ExerciseControllerTest extends TestCase
             'user_id' => $this->regularUser->id,
             'title' => 'Test Exercise',
             'description' => 'Test Description',
-            'is_bodyweight' => true
+            'exercise_type' => 'bodyweight'
         ]);
         
         $response = $this->controller->promote($userExercise);
@@ -110,8 +110,8 @@ class ExerciseControllerTest extends TestCase
             'id' => $userExercise->id,
             'title' => 'Test Exercise',
             'description' => 'Test Description',
-            'is_bodyweight' => true,
-            'user_id' => null
+            'user_id' => null,
+            'exercise_type' => 'bodyweight'
         ]);
     }
 
@@ -336,7 +336,7 @@ class ExerciseControllerTest extends TestCase
             'user_id' => null,
             'title' => 'Test Exercise',
             'description' => 'Test Description',
-            'is_bodyweight' => true
+            'exercise_type' => 'bodyweight'
         ]);
         
         // Create a lift log for the original owner
@@ -353,8 +353,8 @@ class ExerciseControllerTest extends TestCase
             'id' => $globalExercise->id,
             'title' => 'Test Exercise',
             'description' => 'Test Description',
-            'is_bodyweight' => true,
-            'user_id' => $this->regularUser->id
+            'user_id' => $this->regularUser->id,
+            'exercise_type' => 'bodyweight'
         ]);
     }
 }

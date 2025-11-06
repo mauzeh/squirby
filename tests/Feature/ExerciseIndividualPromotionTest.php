@@ -164,10 +164,10 @@ class ExerciseIndividualPromotionTest extends TestCase
         $userExercise = Exercise::factory()->create([
             'title' => 'User Exercise',
             'description' => 'Original description',
-            'is_bodyweight' => true,
             'user_id' => $this->regularUser->id,
             'created_at' => now()->subDays(5),
             'updated_at' => now()->subDays(3),
+            'exercise_type' => 'bodyweight'
         ]);
 
         $originalCreatedAt = $userExercise->created_at;
@@ -188,7 +188,7 @@ class ExerciseIndividualPromotionTest extends TestCase
         $this->assertNull($userExercise->user_id); // Now global
         $this->assertEquals('User Exercise', $userExercise->title);
         $this->assertEquals('Original description', $userExercise->description);
-        $this->assertTrue($userExercise->is_bodyweight);
+        $this->assertEquals('bodyweight', $userExercise->exercise_type);
         $this->assertEquals($originalCreatedAt->format('Y-m-d H:i:s'), $userExercise->created_at->format('Y-m-d H:i:s'));
         // Updated_at should change due to the promotion
         $this->assertNotEquals($originalUpdatedAt->format('Y-m-d H:i:s'), $userExercise->updated_at->format('Y-m-d H:i:s'));

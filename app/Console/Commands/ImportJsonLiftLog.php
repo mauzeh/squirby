@@ -549,14 +549,19 @@ class ImportJsonLiftLog extends Command
             'title' => $exerciseData['exercise'],
             'canonical_name' => $exerciseData['canonical_name'],
             'description' => $exerciseData['description'] ?? "Imported from JSON file",
-            'is_bodyweight' => $exerciseData['is_bodyweight'] ?? false,
             'user_id' => $user->id // User-specific exercise
         ];
 
-        // Add band_type if provided and valid
+        // Determine exercise_type based on band_type and is_bodyweight
+        $exerciseType = 'regular'; // Default
+        
         if (isset($exerciseData['band_type']) && in_array($exerciseData['band_type'], ['resistance', 'assistance'])) {
-            $exerciseAttributes['band_type'] = $exerciseData['band_type'];
+            $exerciseType = $exerciseData['band_type'] === 'resistance' ? 'banded_resistance' : 'banded_assistance';
+        } elseif (isset($exerciseData['is_bodyweight']) && $exerciseData['is_bodyweight']) {
+            $exerciseType = 'bodyweight';
         }
+        
+        $exerciseAttributes['exercise_type'] = $exerciseType;
 
         return Exercise::create($exerciseAttributes);
     }

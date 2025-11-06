@@ -335,7 +335,7 @@ class ExerciseUnpromoteTest extends TestCase
         $this->assertEquals($this->regularUser->id, $globalExercise->user_id); // Now owned by original owner
         $this->assertEquals('Global Exercise', $globalExercise->title);
         $this->assertEquals('Original description', $globalExercise->description);
-        $this->assertTrue($globalExercise->is_bodyweight);
+        $this->assertEquals('bodyweight', $globalExercise->exercise_type);
         $this->assertEquals($originalCreatedAt->format('Y-m-d H:i:s'), $globalExercise->created_at->format('Y-m-d H:i:s'));
 
         // Assert lift logs are preserved and still reference the exercise

@@ -19,8 +19,14 @@ class ProgramRobustnessIntegrationTest extends TestCase
     public function system_remains_robust_under_multiple_failure_conditions()
     {
         $user = User::factory()->create();
-        $regularExercise = Exercise::factory()->create(['user_id' => $user->id, 'is_bodyweight' => false]);
-        $bodyweightExercise = Exercise::factory()->create(['user_id' => $user->id, 'is_bodyweight' => true]);
+        $regularExercise = Exercise::factory()->create([
+            'user_id' => $user->id,
+            'exercise_type' => 'regular'
+        ]);
+        $bodyweightExercise = Exercise::factory()->create([
+            'user_id' => $user->id,
+            'exercise_type' => 'bodyweight'
+        ]);
 
         // Simulate a completely broken environment
         config(['training.defaults' => null]); // Missing config
