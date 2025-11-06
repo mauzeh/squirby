@@ -17,14 +17,16 @@ class Exercise extends Model
         'title',
         'description',
         'canonical_name',
-        'is_bodyweight',
+        'is_bodyweight',    // Deprecated but kept for compatibility
         'user_id',
-        'band_type',
+        'band_type',        // Deprecated but kept for compatibility
+        'exercise_type',    // New primary field
     ];
 
     protected $casts = [
         'is_bodyweight' => 'boolean',
         'band_type' => 'string',
+        'exercise_type' => 'string',
     ];
 
     protected static function boot()
@@ -35,9 +37,21 @@ class Exercise extends Model
             if (empty($exercise->canonical_name) && !empty($exercise->title)) {
                 $exercise->canonical_name = static::generateUniqueCanonicalName($exercise->title);
             }
+            
+            // Set default exercise_type if not provided
+            if (empty($exercise->exercise_type)) {
+                // Determine exercise_type based on legacy fields for backward compatibility
+                if ($exercise->band_type === 'resistance') {
+                    $exercise->exercise_type = 'banded_resistance';
+                } elseif ($exercise->band_type === 'assistance') {
+                    $exercise->exercise_type = 'banded_assistance';
+                } elseif ($exercise->is_bodyweight) {
+                    $exercise->exercise_type = 'bodyweight';
+                } else {
+                    $exercise->exercise_type = 'regular';
+                }
+            }
         });
-
-
     }
 
     public function liftLogs()
@@ -136,29 +150,84 @@ class Exercise extends Model
         return $query->whereHas('intelligence');
     }
 
+    /**
+     * Scope to filter exercises by specific type
+     */
+    public function scopeOfType($query, string $type)
+    {
+        return $query->where('exercise_type', $type);
+    }
+
+    /**
+     * Scope to filter banded exercises (both resistance and assistance)
+     */
+    public function scopeBanded($query)
+    {
+        return $query->whereIn('exercise_type', ['banded_resistance', 'banded_assistance']);
+    }
+
+    /**
+     * Scope to filter bodyweight exercises
+     */
+    public function scopeBodyweight($query)
+    {
+        return $query->where('exercise_type', 'bodyweight');
+    }
+
+    /**
+     * Scope to filter regular exercises
+     */
+    public function scopeRegular($query)
+    {
+        return $query->where('exercise_type', 'regular');
+    }
+
     // Helper methods
     public function isGlobal(): bool
     {
         return $this->user_id === null;
     }
 
+    /**
+     * Check if this exercise is of a specific type
+     */
+    public function isType(string $type): bool
+    {
+        return $this->exercise_type === $type;
+    }
+
     public function isBandedResistance(): bool
     {
-        return $this->band_type === 'resistance';
+        return $this->exercise_type === 'banded_resistance';
     }
 
     public function isBandedAssistance(): bool
     {
-        return $this->band_type === 'assistance';
+        return $this->exercise_type === 'banded_assistance';
     }
 
     /**
      * Check if this is a banded exercise (either resistance or assistance)
-     * @deprecated Use getTypeStrategy() instead
      */
     public function isBanded(): bool
     {
-        return $this->band_type !== null;
+        return in_array($this->exercise_type, ['banded_resistance', 'banded_assistance']);
+    }
+
+    /**
+     * Check if this is a bodyweight exercise
+     * @deprecated Use isType('bodyweight') instead. Will be removed in future version.
+     */
+    public function isBodyweight(): bool
+    {
+        if (config('app.debug')) {
+            \Log::warning('Deprecated method Exercise::isBodyweight() called', [
+                'exercise_id' => $this->id,
+                'trace' => debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3)
+            ]);
+        }
+        
+        return $this->isType('bodyweight');
     }
 
     /**
@@ -306,20 +375,36 @@ class Exercise extends Model
             return false;
         }
 
-        // Both exercises must have the same is_bodyweight value
-        if ($source->is_bodyweight !== $globalTarget->is_bodyweight) {
+        // Exercise types must be compatible for merging
+        $sourceType = $source->exercise_type;
+        $targetType = $globalTarget->exercise_type;
+        
+        // Exact match is always compatible
+        if ($sourceType === $targetType) {
+            return true;
+        }
+        
+        // Special compatibility rules:
+        // - Bodyweight exercises can only merge with other bodyweight exercises
+        // - Different banded types (resistance vs assistance) are NOT compatible
+        // - Regular exercises can merge with banded exercises (flexible band assignment)
+        // - Same banded types can merge with each other
+        
+        if ($sourceType === 'bodyweight' || $targetType === 'bodyweight') {
+            // Bodyweight exercises can only merge with other bodyweight exercises
+            return $sourceType === 'bodyweight' && $targetType === 'bodyweight';
+        }
+        
+        // Different specific banded types are not compatible
+        if (($sourceType === 'banded_resistance' && $targetType === 'banded_assistance') ||
+            ($sourceType === 'banded_assistance' && $targetType === 'banded_resistance')) {
             return false;
         }
-
-        // Band type compatibility: both null, both same value, or one null and one with value
-        if ($source->band_type !== null && $globalTarget->band_type !== null) {
-            // Both have band types - they must match
-            if ($source->band_type !== $globalTarget->band_type) {
-                return false;
-            }
-        }
-        // If one is null and the other has a value, they are compatible
-        // If both are null, they are compatible
+        
+        // Regular exercises can merge with any banded type
+        // Same banded types can merge with each other
+        $compatibleTypes = ['regular', 'banded_resistance', 'banded_assistance'];
+        return in_array($sourceType, $compatibleTypes) && in_array($targetType, $compatibleTypes);
 
         return true;
     }
@@ -352,5 +437,39 @@ class Exercise extends Model
     public function getTypeStrategy(): ExerciseTypeInterface
     {
         return ExerciseTypeFactory::createSafe($this);
+    }
+
+    /**
+     * Accessor for legacy is_bodyweight field
+     * @deprecated Will be removed in future version
+     */
+    public function getIsBodyweightAttribute(): bool
+    {
+        if (isset($this->attributes['is_bodyweight'])) {
+            // During transition period, use actual field if available
+            return (bool) $this->attributes['is_bodyweight'];
+        }
+        
+        // After migration, derive from exercise_type
+        return $this->exercise_type === 'bodyweight';
+    }
+    
+    /**
+     * Accessor for legacy band_type field
+     * @deprecated Will be removed in future version
+     */
+    public function getBandTypeAttribute(): ?string
+    {
+        if (isset($this->attributes['band_type'])) {
+            // During transition period, use actual field if available
+            return $this->attributes['band_type'];
+        }
+        
+        // After migration, derive from exercise_type
+        return match($this->exercise_type) {
+            'banded_resistance' => 'resistance',
+            'banded_assistance' => 'assistance',
+            default => null,
+        };
     }
 }

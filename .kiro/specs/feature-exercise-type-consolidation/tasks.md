@@ -8,7 +8,7 @@
   - Include rollback support that preserves existing legacy fields
   - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 6.1, 6.2, 6.3, 6.4, 6.5_
 
-- [ ] 2. Update Exercise model with new exercise_type field support
+- [x] 2. Update Exercise model with new exercise_type field support
   - Add exercise_type to fillable array and define appropriate casting
   - Implement isType(string $type) method for clean type checking
   - Add new query scopes: ofType(), banded(), bodyweight(), regular()
