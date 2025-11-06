@@ -108,8 +108,8 @@ interface ExerciseTypeInterface
      * 
      * @example
      * // Regular exercise processing
-     * $input = ['title' => 'Bench Press', 'is_bodyweight' => true, 'band_type' => 'resistance'];
-     * $output = ['title' => 'Bench Press', 'is_bodyweight' => false, 'band_type' => null];
+     * $input = ['title' => 'Bench Press', 'exercise_type' => 'bodyweight'];
+     * $output = ['title' => 'Bench Press', 'exercise_type' => 'regular'];
      */
     public function processExerciseData(array $data): array;
     

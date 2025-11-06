@@ -38,7 +38,7 @@ class DoubleProgression implements ProgressionModel
         $suggestedReps = $lastReps + 1;
 
         // Handle bodyweight exercises differently
-        if ($lastLog->exercise->is_bodyweight) {
+        if ($lastLog->exercise->isType('bodyweight')) {
             // Get user to check their preference
             $user = \App\Models\User::find($userId);
             

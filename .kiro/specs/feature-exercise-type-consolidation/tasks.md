@@ -56,7 +56,7 @@
   - Test query performance improvements with the simplified conditions
   - _Requirements: 1.2, 1.4, 2.3, 2.5_
 
-- [ ] 8. Update existing tests to use new exercise_type field
+- [x] 8. Update existing tests to use new exercise_type field
   - Update existing exercise model tests to use exercise_type instead of legacy fields
   - Modify factory tests to create exercises with exercise_type field
   - Update integration tests that rely on exercise type detection
@@ -64,7 +64,7 @@
   - Remove any tests that specifically test legacy field behavior
   - _Requirements: 1.1, 1.2, 8.3, 8.4_
 
-- [ ] 9. Update ExerciseTypeFactory tests for new type detection logic
+- [x] 9. Update ExerciseTypeFactory tests for new type detection logic
   - Update existing factory tests to use exercise_type field instead of legacy fields
   - Add tests for new exercise types: banded_resistance, banded_assistance
   - Test factory creates correct strategy instances for each exercise_type value

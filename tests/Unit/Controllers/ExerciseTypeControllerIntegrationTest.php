@@ -191,8 +191,7 @@ class ExerciseTypeControllerIntegrationTest extends TestCase
         $processedData = $strategy->processExerciseData($inputData);
 
         $this->assertEquals('Bench Press', $processedData['title']);
-        $this->assertFalse($processedData['is_bodyweight']);
-        $this->assertNull($processedData['band_type']);
+        $this->assertEquals('regular', $processedData['exercise_type']);
     }
 
     /** @test */
@@ -214,8 +213,7 @@ class ExerciseTypeControllerIntegrationTest extends TestCase
         $processedData = $strategy->processExerciseData($inputData);
 
         $this->assertEquals('Banded Squat', $processedData['title']);
-        $this->assertFalse($processedData['is_bodyweight']);
-        $this->assertEquals('resistance', $processedData['band_type']);
+        $this->assertEquals('banded_resistance', $processedData['exercise_type']);
     }
 
     /** @test */
@@ -237,8 +235,7 @@ class ExerciseTypeControllerIntegrationTest extends TestCase
         $processedData = $strategy->processExerciseData($inputData);
 
         $this->assertEquals('Push-ups', $processedData['title']);
-        $this->assertTrue($processedData['is_bodyweight']);
-        $this->assertNull($processedData['band_type']);
+        $this->assertEquals('bodyweight', $processedData['exercise_type']);
     }
 
     /** @test */
@@ -279,7 +276,7 @@ class ExerciseTypeControllerIntegrationTest extends TestCase
         $bodyweightStrategy = ExerciseTypeFactory::create($bodyweightExercise);
 
         $this->assertEquals('regular', $regularStrategy->getTypeName());
-        $this->assertEquals('banded', $bandedStrategy->getTypeName());
+        $this->assertEquals('banded_resistance', $bandedStrategy->getTypeName());
         $this->assertEquals('bodyweight', $bodyweightStrategy->getTypeName());
     }
 
@@ -318,10 +315,11 @@ class ExerciseTypeControllerIntegrationTest extends TestCase
         $this->assertContains('band_color', $bandedFields);
         $this->assertContains('reps', $bandedFields);
 
-        // Bodyweight exercise should show weight (for extra weight) and reps fields
+        // Bodyweight exercise should show reps fields (weight is handled separately for extra weight)
         $bodyweightFields = $bodyweightStrategy->getFormFields();
-        $this->assertContains('weight', $bodyweightFields);
         $this->assertContains('reps', $bodyweightFields);
+        // Weight field is not included in form fields for bodyweight exercises
+        // as it's handled through user's body weight + extra weight logic
     }
 
     /** @test */

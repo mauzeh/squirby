@@ -105,10 +105,8 @@ class BodyweightExerciseType extends BaseExerciseType
     {
         $processedData = $data;
         
-        // If bodyweight is selected, ensure band_type is null
-        if (isset($processedData['is_bodyweight']) && $processedData['is_bodyweight']) {
-            $processedData['band_type'] = null;
-        }
+        // For bodyweight exercises, ensure exercise_type is set correctly
+        $processedData['exercise_type'] = 'bodyweight';
         
         return $processedData;
     }

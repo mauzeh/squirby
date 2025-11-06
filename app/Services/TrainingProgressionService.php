@@ -54,7 +54,8 @@ class TrainingProgressionService
                     'band_color' => $lastLoggedBandColor,
                 ];
             } else {
-                $nextHarderBand = $this->bandService->getNextHarderBand($lastLoggedBandColor, $lastLog->exercise->band_type);
+                $bandType = $lastLog->exercise->isBandedResistance() ? 'resistance' : 'assistance';
+                $nextHarderBand = $this->bandService->getNextHarderBand($lastLoggedBandColor, $bandType);
                 if ($nextHarderBand) {
                     return (object)[
                         'sets' => $lastLog->liftSets->count(),

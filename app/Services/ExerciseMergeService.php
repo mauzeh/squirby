@@ -33,26 +33,12 @@ class ExerciseMergeService
     {
         return Exercise::onlyGlobal()
             ->where('id', '!=', $sourceExercise->id)
-            ->where('is_bodyweight', $sourceExercise->is_bodyweight)
-            ->where(function ($query) use ($sourceExercise) {
-                // Compatible band types: both null, or one null and one has value
-                $query->where(function ($q) use ($sourceExercise) {
-                    // Both have same band_type (including both null)
-                    $q->where('band_type', $sourceExercise->band_type);
-                })->orWhere(function ($q) use ($sourceExercise) {
-                    // Source has null, target has any value
-                    if ($sourceExercise->band_type === null) {
-                        $q->whereNotNull('band_type');
-                    }
-                })->orWhere(function ($q) use ($sourceExercise) {
-                    // Target has null, source has any value
-                    if ($sourceExercise->band_type !== null) {
-                        $q->whereNull('band_type');
-                    }
-                });
+            ->get()
+            ->filter(function ($target) use ($sourceExercise) {
+                return $sourceExercise->isCompatibleForMerge($target);
             })
-            ->orderBy('title')
-            ->get();
+            ->sortBy('title')
+            ->values();
     }
 
     /**
@@ -73,14 +59,9 @@ class ExerciseMergeService
             $errors[] = 'Cannot merge exercise into itself.';
         }
 
-        // Must have same bodyweight setting
-        if ($source->is_bodyweight !== $target->is_bodyweight) {
-            $errors[] = 'Exercises must have the same bodyweight setting.';
-        }
-
-        // Band type compatibility check
-        if (!$this->areBandTypesCompatible($source->band_type, $target->band_type)) {
-            $errors[] = 'Exercises have incompatible band types.';
+        // Check exercise type compatibility using the model's method
+        if (!$source->isCompatibleForMerge($target)) {
+            $errors[] = 'Exercises have incompatible types.';
         }
 
         // Check if source exercise owner has global visibility disabled
@@ -95,24 +76,7 @@ class ExerciseMergeService
         ];
     }
 
-    /**
-     * Check if band types are compatible for merging
-     */
-    private function areBandTypesCompatible(?string $sourceBandType, ?string $targetBandType): bool
-    {
-        // Same band types are always compatible (including both null)
-        if ($sourceBandType === $targetBandType) {
-            return true;
-        }
 
-        // One null and one with value is compatible
-        if ($sourceBandType === null || $targetBandType === null) {
-            return true;
-        }
-
-        // Different non-null values are not compatible
-        return false;
-    }
 
     /**
      * Perform the exercise merge operation

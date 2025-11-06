@@ -40,7 +40,7 @@ class LiftLogController extends Controller
         
         // Eager load all necessary relationships with selective fields to prevent N+1 queries
         $liftLogs = LiftLog::with([
-            'exercise:id,title,band_type,is_bodyweight', 
+            'exercise:id,title,exercise_type', 
             'liftSets:id,lift_log_id,weight,reps,band_color',
             'user:id' // Load user for potential bodyweight calculations
         ])
@@ -359,10 +359,10 @@ class LiftLogController extends Controller
         $exerciseTitle = $exercise->title;
         
         // Build the workout description
-        if ($exercise->band_type && $bandColor) {
+        if ($exercise->isBanded() && $bandColor) {
             // Band exercise
             $workoutDescription = ucfirst($bandColor) . ' band × ' . $reps . ' reps × ' . $rounds . ' sets';
-        } elseif ($exercise->is_bodyweight) {
+        } elseif ($exercise->isType('bodyweight')) {
             // Bodyweight exercise
             if ($weight > 0) {
                 $workoutDescription = '+' . $weight . ' lbs × ' . $reps . ' reps × ' . $rounds . ' sets';

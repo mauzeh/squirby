@@ -85,14 +85,13 @@ class BandedAssistanceExerciseTypeTest extends TestCase
     {
         $inputData = [
             'title' => 'Assisted Pull-up',
-            'is_bodyweight' => true, // Should be set to false when band_type is set
             'band_type' => 'assistance',
         ];
 
         $processedData = $this->strategy->processExerciseData($inputData);
 
         $this->assertEquals('Assisted Pull-up', $processedData['title']);
-        $this->assertFalse($processedData['is_bodyweight']);
+        $this->assertEquals('banded_assistance', $processedData['exercise_type']);
         $this->assertEquals('assistance', $processedData['band_type']);
     }
 

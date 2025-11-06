@@ -183,21 +183,21 @@ class ExerciseMergeServiceTest extends TestCase
     }
 
     /** @test */
-    public function validate_merge_compatibility_returns_error_for_different_bodyweight_settings()
+    public function validate_merge_compatibility_returns_error_for_different_exercise_types()
     {
         $source = Exercise::factory()->create([
             'user_id' => $this->regularUser->id,
-            'is_bodyweight' => true
+            'exercise_type' => 'bodyweight'
         ]);
         $target = Exercise::factory()->create([
             'user_id' => null,
-            'is_bodyweight' => false
+            'exercise_type' => 'regular'
         ]);
 
         $result = $this->service->validateMergeCompatibility($source, $target);
 
         $this->assertFalse($result['can_merge']);
-        $this->assertContains('Exercises must have the same bodyweight setting.', $result['errors']);
+        $this->assertContains('Exercises have incompatible types.', $result['errors']);
     }
 
     /** @test */
@@ -205,17 +205,17 @@ class ExerciseMergeServiceTest extends TestCase
     {
         $source = Exercise::factory()->create([
             'user_id' => $this->regularUser->id,
-            'band_type' => 'resistance'
+            'exercise_type' => 'banded_resistance'
         ]);
         $target = Exercise::factory()->create([
             'user_id' => null,
-            'band_type' => 'assistance'
+            'exercise_type' => 'banded_assistance'
         ]);
 
         $result = $this->service->validateMergeCompatibility($source, $target);
 
         $this->assertFalse($result['can_merge']);
-        $this->assertContains('Exercises have incompatible band types.', $result['errors']);
+        $this->assertContains('Exercises have incompatible types.', $result['errors']);
     }
 
     /** @test */

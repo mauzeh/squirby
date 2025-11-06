@@ -26,7 +26,7 @@ class ChartServiceDelegationTest extends TestCase
     /** @test */
     public function it_generates_1rm_chart_for_weighted_exercises()
     {
-        $exercise = Exercise::factory()->create(['is_bodyweight' => false, 'band_type' => null]);
+        $exercise = Exercise::factory()->create(['exercise_type' => 'regular']);
         $liftLogs = $this->createLiftLogsWithSets($exercise, [
             ['weight' => 100, 'reps' => 5],
             ['weight' => 105, 'reps' => 5],
@@ -41,7 +41,7 @@ class ChartServiceDelegationTest extends TestCase
     /** @test */
     public function it_generates_volume_chart_for_bodyweight_exercises()
     {
-        $exercise = Exercise::factory()->create(['is_bodyweight' => true, 'band_type' => null]);
+        $exercise = Exercise::factory()->create(['exercise_type' => 'bodyweight']);
         $liftLogs = $this->createLiftLogsWithSets($exercise, [
             ['weight' => 0, 'reps' => 10],
             ['weight' => 0, 'reps' => 12],
@@ -56,7 +56,7 @@ class ChartServiceDelegationTest extends TestCase
     /** @test */
     public function it_generates_volume_chart_for_banded_exercises()
     {
-        $exercise = Exercise::factory()->create(['is_bodyweight' => false, 'band_type' => 'resistance']);
+        $exercise = Exercise::factory()->create(['exercise_type' => 'banded_resistance']);
         $liftLogs = $this->createLiftLogsWithSets($exercise, [
             ['weight' => 0, 'reps' => 8],
             ['weight' => 0, 'reps' => 10],

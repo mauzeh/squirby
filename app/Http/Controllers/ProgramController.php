@@ -102,7 +102,7 @@ class ProgramController extends Controller
 
         if ($selectedDate->isToday() || $selectedDate->isTomorrow() || $selectedDate->copy()->addDay()->isTomorrow()) {
             foreach ($programs as $program) {
-                if (!$program->exercise->is_bodyweight) {
+                if (!$program->exercise->isType('bodyweight')) {
                     $suggestionDetails = $this->trainingProgressionService->getSuggestionDetails(
                         auth()->id(),
                         $program->exercise_id,

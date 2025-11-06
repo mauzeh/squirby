@@ -176,7 +176,7 @@ class LiftLogTablePresenterTest extends TestCase
     {
         $exercise = Exercise::factory()->create([
             'user_id' => $this->user->id,
-            'is_bodyweight' => true
+            'exercise_type' => 'bodyweight'
         ]);
 
         $liftLog = LiftLog::factory()->create([
@@ -192,8 +192,8 @@ class LiftLogTablePresenterTest extends TestCase
         $result = $this->presenter->formatForTable(collect([$liftLog]));
         $formattedLog = $result['liftLogs']->first();
 
-        // The 1RM should include bodyweight notation
-        $this->assertStringContainsString('(est. incl. BW)', $formattedLog['formatted_1rm']);
+        // Bodyweight exercises now show N/A since 1RM calculation is not supported
+        $this->assertStringContainsString('N/A (Bodyweight)', $formattedLog['formatted_1rm']);
     }
 
 }

@@ -726,7 +726,7 @@ class LiftLogService extends MobileEntryBaseService
         $exercise = Exercise::create([
             'title' => $exerciseName,
             'user_id' => $userId,
-            'is_bodyweight' => false, // Default to weighted exercise
+            'exercise_type' => 'regular', // Default to regular exercise
             'canonical_name' => $canonicalName
         ]);
         

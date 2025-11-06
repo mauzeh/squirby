@@ -77,10 +77,8 @@ class BandedAssistanceExerciseType extends BaseExerciseType
     {
         $processedData = $data;
         
-        // If a band type is selected, it cannot be a bodyweight exercise
-        if (isset($processedData['band_type']) && !empty($processedData['band_type'])) {
-            $processedData['is_bodyweight'] = false;
-        }
+        // For banded assistance exercises, ensure exercise_type is set correctly
+        $processedData['exercise_type'] = 'banded_assistance';
         
         return $processedData;
     }
