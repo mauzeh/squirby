@@ -798,4 +798,153 @@ class ExerciseTest extends TestCase
         
         $this->assertFalse($userExercise->hasOwnerWithGlobalVisibilityDisabled());
     }
+
+    /** @test */
+    public function exercise_can_be_created_with_exercise_type()
+    {
+        $exercise = Exercise::factory()->create([
+            'title' => 'Running',
+            'description' => 'A cardio exercise',
+            'exercise_type' => 'cardio',
+        ]);
+
+        $this->assertEquals('cardio', $exercise->exercise_type);
+        $this->assertDatabaseHas('exercises', [
+            'id' => $exercise->id,
+            'exercise_type' => 'cardio',
+        ]);
+    }
+
+    /** @test */
+    public function exercise_can_be_created_without_exercise_type()
+    {
+        $exercise = Exercise::factory()->create([
+            'title' => 'Bench Press',
+            'description' => 'A strength exercise',
+        ]);
+
+        // New exercises can be created without exercise_type (it will be null initially)
+        // The application logic or migration will set appropriate defaults
+        $this->assertTrue(in_array($exercise->exercise_type, [null, 'regular', 'cardio', 'bodyweight', 'banded']));
+    }
+
+    /** @test */
+    public function is_cardio_returns_true_for_cardio_exercises()
+    {
+        $cardioExercise = Exercise::factory()->create(['exercise_type' => 'cardio']);
+        $regularExercise = Exercise::factory()->create(['exercise_type' => 'regular']);
+
+        $this->assertTrue($cardioExercise->isCardio());
+        $this->assertFalse($regularExercise->isCardio());
+    }
+
+    /** @test */
+    public function is_cardio_returns_false_for_null_exercise_type()
+    {
+        $exercise = Exercise::factory()->create(['exercise_type' => null]);
+        $this->assertFalse($exercise->isCardio());
+    }
+
+    /** @test */
+    public function scope_cardio_returns_only_cardio_exercises()
+    {
+        $cardioExercise1 = Exercise::factory()->create(['exercise_type' => 'cardio', 'title' => 'Running']);
+        $cardioExercise2 = Exercise::factory()->create(['exercise_type' => 'cardio', 'title' => 'Cycling']);
+        $regularExercise = Exercise::factory()->create(['exercise_type' => 'regular', 'title' => 'Bench Press']);
+        $bodyweightExercise = Exercise::factory()->create(['exercise_type' => 'bodyweight', 'title' => 'Push-ups']);
+
+        $cardioExercises = Exercise::cardio()->get();
+
+        $this->assertCount(2, $cardioExercises);
+        $this->assertTrue($cardioExercises->contains($cardioExercise1));
+        $this->assertTrue($cardioExercises->contains($cardioExercise2));
+        $this->assertFalse($cardioExercises->contains($regularExercise));
+        $this->assertFalse($cardioExercises->contains($bodyweightExercise));
+    }
+
+    /** @test */
+    public function scope_non_cardio_returns_non_cardio_exercises()
+    {
+        $cardioExercise = Exercise::factory()->create(['exercise_type' => 'cardio', 'title' => 'Running']);
+        $regularExercise = Exercise::factory()->create(['exercise_type' => 'regular', 'title' => 'Bench Press']);
+        $bodyweightExercise = Exercise::factory()->create(['exercise_type' => 'bodyweight', 'title' => 'Push-ups']);
+        $bandedExercise = Exercise::factory()->create(['exercise_type' => 'banded', 'title' => 'Band Pull-apart']);
+        $nullTypeExercise = Exercise::factory()->create(['exercise_type' => null, 'title' => 'Unknown Type']);
+
+        $nonCardioExercises = Exercise::nonCardio()->get();
+
+        $this->assertCount(4, $nonCardioExercises);
+        $this->assertFalse($nonCardioExercises->contains($cardioExercise));
+        $this->assertTrue($nonCardioExercises->contains($regularExercise));
+        $this->assertTrue($nonCardioExercises->contains($bodyweightExercise));
+        $this->assertTrue($nonCardioExercises->contains($bandedExercise));
+        $this->assertTrue($nonCardioExercises->contains($nullTypeExercise));
+    }
+
+    /** @test */
+    public function exercise_type_is_included_in_fillable_attributes()
+    {
+        $exercise = new Exercise();
+        $fillable = $exercise->getFillable();
+
+        $this->assertContains('exercise_type', $fillable);
+    }
+
+    /** @test */
+    public function exercise_type_is_cast_to_string()
+    {
+        $exercise = Exercise::factory()->create(['exercise_type' => 'cardio']);
+        
+        $this->assertIsString($exercise->exercise_type);
+        $this->assertEquals('cardio', $exercise->exercise_type);
+    }
+
+    /** @test */
+    public function exercise_can_be_updated_with_different_exercise_type()
+    {
+        $exercise = Exercise::factory()->create(['exercise_type' => 'regular']);
+        
+        $exercise->update(['exercise_type' => 'cardio']);
+        $exercise->refresh();
+
+        $this->assertEquals('cardio', $exercise->exercise_type);
+        $this->assertTrue($exercise->isCardio());
+        $this->assertDatabaseHas('exercises', [
+            'id' => $exercise->id,
+            'exercise_type' => 'cardio',
+        ]);
+    }
+
+    /** @test */
+    public function cardio_and_non_cardio_scopes_are_mutually_exclusive()
+    {
+        Exercise::factory()->create(['exercise_type' => 'cardio', 'title' => 'Running']);
+        Exercise::factory()->create(['exercise_type' => 'regular', 'title' => 'Bench Press']);
+        Exercise::factory()->create(['exercise_type' => 'bodyweight', 'title' => 'Push-ups']);
+
+        $cardioCount = Exercise::cardio()->count();
+        $nonCardioCount = Exercise::nonCardio()->count();
+        $totalCount = Exercise::count();
+
+        $this->assertEquals(1, $cardioCount);
+        $this->assertEquals(2, $nonCardioCount);
+        $this->assertEquals($cardioCount + $nonCardioCount, $totalCount);
+    }
+
+    /** @test */
+    public function exercise_type_can_be_set_to_all_valid_values()
+    {
+        $validTypes = ['regular', 'cardio', 'bodyweight', 'banded'];
+
+        foreach ($validTypes as $type) {
+            $exercise = Exercise::factory()->create(['exercise_type' => $type]);
+            $this->assertEquals($type, $exercise->exercise_type);
+            
+            if ($type === 'cardio') {
+                $this->assertTrue($exercise->isCardio());
+            } else {
+                $this->assertFalse($exercise->isCardio());
+            }
+        }
+    }
 }

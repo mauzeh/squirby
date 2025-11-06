@@ -19,6 +19,19 @@
         </div>
     @endif
 
+    @if ($shouldShowField('exercise_type'))
+        <div class="form-group">
+            <label for="exercise_type">Exercise Type:</label>
+            <select name="exercise_type" id="exercise_type" class="form-control">
+                @foreach($getExerciseTypes() as $value => $label)
+                    <option value="{{ $value }}" {{ old('exercise_type', $exercise->exercise_type) == $value ? 'selected' : '' }}>
+                        {{ $label }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+    @endif
+
     @if ($shouldShowField('band_type'))
         <div class="form-group">
             <label for="band_type">Band Type:</label>

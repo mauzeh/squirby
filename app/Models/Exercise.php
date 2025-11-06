@@ -20,11 +20,13 @@ class Exercise extends Model
         'is_bodyweight',
         'user_id',
         'band_type',
+        'exercise_type',
     ];
 
     protected $casts = [
         'is_bodyweight' => 'boolean',
         'band_type' => 'string',
+        'exercise_type' => 'string',
     ];
 
     protected static function boot()
@@ -136,6 +138,23 @@ class Exercise extends Model
         return $query->whereHas('intelligence');
     }
 
+    /**
+     * Scope for cardio exercises
+     */
+    public function scopeCardio($query)
+    {
+        return $query->where('exercise_type', 'cardio');
+    }
+
+    /**
+     * Scope for non-cardio exercises
+     */
+    public function scopeNonCardio($query)
+    {
+        return $query->where('exercise_type', '!=', 'cardio')
+                     ->orWhereNull('exercise_type');
+    }
+
     // Helper methods
     public function isGlobal(): bool
     {
@@ -159,6 +178,14 @@ class Exercise extends Model
     public function isBanded(): bool
     {
         return $this->band_type !== null;
+    }
+
+    /**
+     * Check if this is a cardio exercise
+     */
+    public function isCardio(): bool
+    {
+        return $this->exercise_type === 'cardio';
     }
 
     /**

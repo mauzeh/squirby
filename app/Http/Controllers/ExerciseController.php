@@ -87,6 +87,7 @@ class ExerciseController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'exercise_type' => 'nullable|in:regular,cardio,bodyweight,banded',
             'is_bodyweight' => 'nullable|boolean',
             'is_global' => 'nullable|boolean',
             'band_type' => 'nullable|in:resistance,assistance',
@@ -104,6 +105,7 @@ class ExerciseController extends Controller
         $tempExercise = new Exercise([
             'is_bodyweight' => $request->boolean('is_bodyweight'),
             'band_type' => $validated['band_type'] ?? null,
+            'exercise_type' => $validated['exercise_type'] ?? 'regular',
         ]);
 
         // Use exercise type strategy to process exercise data
@@ -113,6 +115,7 @@ class ExerciseController extends Controller
         $exercise = new Exercise([
             'title' => $processedData['title'],
             'description' => $processedData['description'],
+            'exercise_type' => $processedData['exercise_type'] ?? $tempExercise->exercise_type,
             'is_bodyweight' => $processedData['is_bodyweight'] ?? $tempExercise->is_bodyweight,
             'band_type' => $processedData['band_type'] ?? $tempExercise->band_type,
         ]);
@@ -156,6 +159,7 @@ class ExerciseController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'exercise_type' => 'nullable|in:regular,cardio,bodyweight,banded',
             'is_bodyweight' => 'nullable|boolean',
             'is_global' => 'nullable|boolean',
             'band_type' => 'nullable|in:resistance,assistance',
@@ -173,6 +177,7 @@ class ExerciseController extends Controller
         $tempExercise = new Exercise([
             'is_bodyweight' => $request->boolean('is_bodyweight'),
             'band_type' => $validated['band_type'] ?? null,
+            'exercise_type' => $validated['exercise_type'] ?? 'regular',
         ]);
 
         // Use exercise type strategy to process exercise data
@@ -182,6 +187,7 @@ class ExerciseController extends Controller
         $exercise->update([
             'title' => $processedData['title'],
             'description' => $processedData['description'],
+            'exercise_type' => $processedData['exercise_type'] ?? $tempExercise->exercise_type,
             'is_bodyweight' => $processedData['is_bodyweight'] ?? $tempExercise->is_bodyweight,
             'band_type' => $processedData['band_type'] ?? $tempExercise->band_type,
             'user_id' => ($validated['is_global'] ?? false) ? null : auth()->id()

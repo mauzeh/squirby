@@ -724,4 +724,201 @@ class ExerciseManagementTest extends TestCase
             'user_id' => null,
         ]);
     }
+
+    /** @test */
+    public function authenticated_user_can_create_exercise_with_exercise_type()
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $exerciseData = [
+            'title' => 'Running',
+            'description' => 'A cardio exercise for endurance',
+            'exercise_type' => 'cardio',
+        ];
+
+        $response = $this->from(route('exercises.create'))
+                         ->post(route('exercises.store'), $exerciseData);
+
+        $response->assertRedirect(route('exercises.index'));
+        $response->assertSessionHas('success', 'Exercise created successfully.');
+        $this->assertDatabaseHas('exercises', [
+            'user_id' => $user->id,
+            'title' => $exerciseData['title'],
+            'description' => $exerciseData['description'],
+            'exercise_type' => 'cardio',
+        ]);
+    }
+
+    /** @test */
+    public function authenticated_user_can_create_exercise_with_different_exercise_types()
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $exerciseTypes = [
+            ['type' => 'regular', 'title' => 'Bench Press'],
+            ['type' => 'cardio', 'title' => 'Running'],
+            ['type' => 'bodyweight', 'title' => 'Push-ups'],
+            ['type' => 'banded', 'title' => 'Band Pull-apart'],
+        ];
+
+        foreach ($exerciseTypes as $exerciseType) {
+            $exerciseData = [
+                'title' => $exerciseType['title'],
+                'description' => 'Test exercise',
+                'exercise_type' => $exerciseType['type'],
+            ];
+
+            $response = $this->from(route('exercises.create'))
+                             ->post(route('exercises.store'), $exerciseData);
+
+            $response->assertRedirect(route('exercises.index'));
+            $this->assertDatabaseHas('exercises', [
+                'user_id' => $user->id,
+                'title' => $exerciseType['title'],
+                'exercise_type' => $exerciseType['type'],
+            ]);
+        }
+    }
+
+    /** @test */
+    public function authenticated_user_cannot_create_exercise_with_invalid_exercise_type()
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $exerciseData = [
+            'title' => 'Invalid Exercise',
+            'description' => 'Test exercise with invalid type',
+            'exercise_type' => 'invalid_type',
+        ];
+
+        $response = $this->from(route('exercises.create'))
+                         ->post(route('exercises.store'), $exerciseData);
+
+        $response->assertSessionHasErrors('exercise_type');
+        $this->assertDatabaseMissing('exercises', [
+            'title' => 'Invalid Exercise',
+            'exercise_type' => 'invalid_type',
+        ]);
+    }
+
+    /** @test */
+    public function authenticated_user_can_update_exercise_type()
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $exercise = Exercise::factory()->create([
+            'title' => 'Test Exercise',
+            'user_id' => $user->id,
+            'exercise_type' => 'regular',
+        ]);
+
+        $updatedData = [
+            'title' => 'Test Exercise',
+            'description' => 'Updated to cardio',
+            'exercise_type' => 'cardio',
+        ];
+
+        $response = $this->from(route('exercises.edit', $exercise))
+                         ->put(route('exercises.update', $exercise), $updatedData);
+
+        $response->assertRedirect(route('exercises.index'));
+        $response->assertSessionHas('success', 'Exercise updated successfully.');
+        $this->assertDatabaseHas('exercises', [
+            'id' => $exercise->id,
+            'exercise_type' => 'cardio',
+        ]);
+    }
+
+    /** @test */
+    public function authenticated_user_cannot_update_exercise_with_invalid_exercise_type()
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $exercise = Exercise::factory()->create([
+            'title' => 'Test Exercise',
+            'user_id' => $user->id,
+            'exercise_type' => 'regular',
+        ]);
+
+        $updatedData = [
+            'title' => 'Test Exercise',
+            'description' => 'Trying invalid type',
+            'exercise_type' => 'invalid_type',
+        ];
+
+        $response = $this->from(route('exercises.edit', $exercise))
+                         ->put(route('exercises.update', $exercise), $updatedData);
+
+        $response->assertSessionHasErrors('exercise_type');
+        $this->assertDatabaseHas('exercises', [
+            'id' => $exercise->id,
+            'exercise_type' => 'regular', // Should remain unchanged
+        ]);
+    }
+
+    /** @test */
+    public function exercise_create_form_displays_exercise_type_field()
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $response = $this->get(route('exercises.create'));
+
+        $response->assertStatus(200);
+        $response->assertSee('Exercise Type');
+        $response->assertSee('name="exercise_type"', false);
+        $response->assertSee('<option value="regular">Regular</option>', false);
+        $response->assertSee('<option value="cardio">Cardio</option>', false);
+        $response->assertSee('<option value="bodyweight">Bodyweight</option>', false);
+        $response->assertSee('<option value="banded">Banded</option>', false);
+    }
+
+    /** @test */
+    public function exercise_edit_form_displays_exercise_type_field_with_current_value()
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $exercise = Exercise::factory()->create([
+            'title' => 'Test Exercise',
+            'user_id' => $user->id,
+            'exercise_type' => 'cardio',
+        ]);
+
+        $response = $this->get(route('exercises.edit', $exercise));
+
+        $response->assertStatus(200);
+        $response->assertSee('Exercise Type');
+        $response->assertSee('name="exercise_type"', false);
+        $response->assertSee('<option value="cardio" selected>Cardio</option>', false);
+    }
+
+    /** @test */
+    public function exercise_type_field_is_optional_and_defaults_appropriately()
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $exerciseData = [
+            'title' => 'Exercise Without Type',
+            'description' => 'Test exercise without specifying type',
+            // exercise_type not provided
+        ];
+
+        $response = $this->from(route('exercises.create'))
+                         ->post(route('exercises.store'), $exerciseData);
+
+        $response->assertRedirect(route('exercises.index'));
+        $response->assertSessionHas('success', 'Exercise created successfully.');
+        
+        // Should be created successfully and have a default exercise_type
+        $exercise = Exercise::where('title', 'Exercise Without Type')->first();
+        $this->assertNotNull($exercise);
+        $this->assertNotNull($exercise->exercise_type);
+    }
 }

@@ -44,7 +44,7 @@ class ExerciseFormComponent extends Component
      * Create a new component instance.
      */
     public function __construct(
-        Exercise $exercise = null,
+        ?Exercise $exercise = null,
         bool $canCreateGlobal = false,
         string $action = '',
         string $method = 'POST'
@@ -58,11 +58,11 @@ class ExerciseFormComponent extends Component
         if ($this->exercise->exists) {
             $strategy = $this->exercise->getTypeStrategy();
             // For existing exercises, always show basic fields plus strategy-specific fields
-            $this->formFields = array_merge(['title', 'description', 'band_type', 'is_bodyweight'], $strategy->getFormFields());
+            $this->formFields = array_merge(['title', 'description', 'exercise_type', 'band_type', 'is_bodyweight'], $strategy->getFormFields());
             $this->validationRules = $strategy->getValidationRules();
         } else {
             // For new exercises, show all possible fields
-            $this->formFields = ['title', 'description', 'band_type', 'is_bodyweight'];
+            $this->formFields = ['title', 'description', 'exercise_type', 'band_type', 'is_bodyweight'];
             $this->validationRules = [];
         }
     }
@@ -92,6 +92,19 @@ class ExerciseFormComponent extends Component
             '' => 'None',
             'resistance' => 'Resistance',
             'assistance' => 'Assistance'
+        ];
+    }
+
+    /**
+     * Get available exercise types
+     */
+    public function getExerciseTypes(): array
+    {
+        return [
+            'regular' => 'Regular',
+            'cardio' => 'Cardio',
+            'bodyweight' => 'Bodyweight',
+            'banded' => 'Banded'
         ];
     }
 }
