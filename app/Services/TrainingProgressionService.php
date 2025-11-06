@@ -38,6 +38,11 @@ class TrainingProgressionService
         $strategy = $lastLog->exercise->getTypeStrategy();
         $supportedProgressionTypes = $strategy->getSupportedProgressionTypes();
         
+        // Handle cardio exercises with specific logic
+        if (in_array('cardio_progression', $supportedProgressionTypes)) {
+            return $this->getCardioProgressionSuggestion($lastLog, $userId, $exerciseId);
+        }
+        
         // Handle banded exercises with specific logic
         if (in_array('band_progression', $supportedProgressionTypes)) {
             $lastLoggedReps = $lastLog->liftSets->first()->reps ?? 0;
@@ -84,7 +89,12 @@ class TrainingProgressionService
         $strategy = $liftLog->exercise->getTypeStrategy();
         $supportedProgressionTypes = $strategy->getSupportedProgressionTypes();
         
-
+        // Cardio exercises should not use weight-based progression models
+        if (in_array('cardio_progression', $supportedProgressionTypes)) {
+            // This should not be reached since cardio is handled separately,
+            // but provide a fallback to prevent weight-based progression
+            return new LinearProgression($this->oneRepMaxCalculatorService);
+        }
         
         // Try to infer progression model from recent workout history first
         $inferredModel = $this->inferProgressionModelFromHistory($liftLog->user_id, $liftLog->exercise_id);
@@ -154,6 +164,68 @@ class TrainingProgressionService
         }
 
         return null; // Pattern unclear, use fallback logic
+    }
+
+    /**
+     * Get cardio-specific progression suggestion
+     * 
+     * Cardio progression logic:
+     * - For distances < 1000m: suggest increasing distance by 50-100m
+     * - For distances >= 1000m: suggest adding additional rounds
+     * - Handle cases with no cardio history (provide sensible defaults)
+     */
+    private function getCardioProgressionSuggestion(LiftLog $lastLog, int $userId, int $exerciseId): ?object
+    {
+        $lastDistance = $lastLog->display_reps; // reps field stores distance in meters
+        $lastRounds = $lastLog->liftSets->count();
+        
+        // Validate that we have valid cardio data
+        if (!is_numeric($lastDistance) || $lastDistance <= 0) {
+            // No valid history, provide sensible defaults
+            return $this->getDefaultCardioSuggestion();
+        }
+        
+        // For distances < 1000m: suggest increasing distance by 50-100m
+        if ($lastDistance < 1000) {
+            $increment = $lastDistance < 500 ? 50 : 100;
+            $suggestedDistance = $lastDistance + $increment;
+            
+            // Cap the distance increase to reasonable limits
+            $suggestedDistance = min($suggestedDistance, 1500);
+            
+            return (object)[
+                'sets' => $lastRounds,
+                'reps' => $suggestedDistance, // distance stored in reps field
+                'weight' => 0, // always 0 for cardio
+                'band_color' => null, // not applicable for cardio
+            ];
+        }
+        
+        // For distances >= 1000m: suggest adding additional rounds
+        $suggestedRounds = $lastRounds + 1;
+        
+        // Cap the rounds to reasonable limits
+        $suggestedRounds = min($suggestedRounds, 10);
+        
+        return (object)[
+            'sets' => $suggestedRounds,
+            'reps' => $lastDistance, // keep same distance
+            'weight' => 0, // always 0 for cardio
+            'band_color' => null, // not applicable for cardio
+        ];
+    }
+    
+    /**
+     * Provide sensible default cardio suggestions when no history exists
+     */
+    private function getDefaultCardioSuggestion(): object
+    {
+        return (object)[
+            'sets' => 1, // 1 round
+            'reps' => 500, // 500m distance
+            'weight' => 0, // always 0 for cardio
+            'band_color' => null, // not applicable for cardio
+        ];
     }
 
 

@@ -39,7 +39,7 @@
   - Remove weight field from cardio exercise forms
   - _Requirements: 2.1, 2.2, 2.5_
 
-- [ ] 6. Add cardio progression logic to TrainingProgressionService
+- [x] 6. Add cardio progression logic to TrainingProgressionService
   - Create cardio-specific progression logic in getSuggestionDetailsWithLog()
   - For distances < 1000m: suggest increasing distance by 50-100m
   - For distances >= 1000m: suggest adding additional rounds

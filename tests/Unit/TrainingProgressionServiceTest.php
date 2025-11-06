@@ -435,4 +435,227 @@ class TrainingProgressionServiceTest extends TestCase
         $this->assertEquals(0, $suggestion->suggestedWeight);
         $this->assertEquals(12, $suggestion->reps);
     }
+
+    public function test_cardio_exercise_progression_increases_distance_for_short_distances()
+    {
+        $user = User::factory()->create();
+        $exercise = Exercise::factory()->create([
+            'exercise_type' => 'cardio'
+        ]);
+
+        // Log a cardio workout with 400m distance (< 1000m)
+        $liftLog = LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => Carbon::yesterday(),
+        ]);
+        LiftSet::factory()->create([
+            'lift_log_id' => $liftLog->id,
+            'reps' => 400, // Distance in meters (stored in reps field)
+            'weight' => 0,
+        ]);
+
+        $suggestion = $this->trainingProgressionService->getSuggestionDetails($user->id, $exercise->id);
+
+        $this->assertNotNull($suggestion);
+        $this->assertEquals(450, $suggestion->reps); // Distance increased by 50m
+        $this->assertEquals(1, $suggestion->sets); // Same number of rounds
+        $this->assertEquals(0, $suggestion->weight); // Always 0 for cardio
+        $this->assertNull($suggestion->band_color); // Not applicable for cardio
+    }
+
+    public function test_cardio_exercise_progression_increases_distance_for_medium_distances()
+    {
+        $user = User::factory()->create();
+        $exercise = Exercise::factory()->create([
+            'exercise_type' => 'cardio'
+        ]);
+
+        // Log a cardio workout with 800m distance (< 1000m but >= 500m)
+        $liftLog = LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => Carbon::yesterday(),
+        ]);
+        LiftSet::factory()->create([
+            'lift_log_id' => $liftLog->id,
+            'reps' => 800, // Distance in meters
+            'weight' => 0,
+        ]);
+
+        $suggestion = $this->trainingProgressionService->getSuggestionDetails($user->id, $exercise->id);
+
+        $this->assertNotNull($suggestion);
+        $this->assertEquals(900, $suggestion->reps); // Distance increased by 100m
+        $this->assertEquals(1, $suggestion->sets); // Same number of rounds
+        $this->assertEquals(0, $suggestion->weight); // Always 0 for cardio
+        $this->assertNull($suggestion->band_color); // Not applicable for cardio
+    }
+
+    public function test_cardio_exercise_progression_adds_rounds_for_long_distances()
+    {
+        $user = User::factory()->create();
+        $exercise = Exercise::factory()->create([
+            'exercise_type' => 'cardio'
+        ]);
+
+        // Log a cardio workout with 1500m distance (>= 1000m)
+        $liftLog = LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => Carbon::yesterday(),
+        ]);
+        LiftSet::factory()->create([
+            'lift_log_id' => $liftLog->id,
+            'reps' => 1500, // Distance in meters
+            'weight' => 0,
+        ]);
+
+        $suggestion = $this->trainingProgressionService->getSuggestionDetails($user->id, $exercise->id);
+
+        $this->assertNotNull($suggestion);
+        $this->assertEquals(1500, $suggestion->reps); // Same distance
+        $this->assertEquals(2, $suggestion->sets); // Rounds increased by 1
+        $this->assertEquals(0, $suggestion->weight); // Always 0 for cardio
+        $this->assertNull($suggestion->band_color); // Not applicable for cardio
+    }
+
+    public function test_cardio_exercise_progression_handles_multiple_rounds()
+    {
+        $user = User::factory()->create();
+        $exercise = Exercise::factory()->create([
+            'exercise_type' => 'cardio'
+        ]);
+
+        // Log a cardio workout with 2000m distance and 3 rounds
+        $liftLog = LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => Carbon::yesterday(),
+        ]);
+        // Create 3 sets to represent 3 rounds
+        LiftSet::factory()->create([
+            'lift_log_id' => $liftLog->id,
+            'reps' => 2000,
+            'weight' => 0,
+        ]);
+        LiftSet::factory()->create([
+            'lift_log_id' => $liftLog->id,
+            'reps' => 2000,
+            'weight' => 0,
+        ]);
+        LiftSet::factory()->create([
+            'lift_log_id' => $liftLog->id,
+            'reps' => 2000,
+            'weight' => 0,
+        ]);
+
+        $suggestion = $this->trainingProgressionService->getSuggestionDetails($user->id, $exercise->id);
+
+        $this->assertNotNull($suggestion);
+        $this->assertEquals(2000, $suggestion->reps); // Same distance
+        $this->assertEquals(4, $suggestion->sets); // Rounds increased from 3 to 4
+        $this->assertEquals(0, $suggestion->weight); // Always 0 for cardio
+        $this->assertNull($suggestion->band_color); // Not applicable for cardio
+    }
+
+    public function test_cardio_exercise_progression_caps_distance_increase()
+    {
+        $user = User::factory()->create();
+        $exercise = Exercise::factory()->create([
+            'exercise_type' => 'cardio'
+        ]);
+
+        // Log a cardio workout with 950m distance (< 1000m, would suggest 1050m, but cap at 1500m)
+        $liftLog = LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => Carbon::yesterday(),
+        ]);
+        LiftSet::factory()->create([
+            'lift_log_id' => $liftLog->id,
+            'reps' => 950, // Distance < 1000m, so will increase distance by 100m
+            'weight' => 0,
+        ]);
+
+        $suggestion = $this->trainingProgressionService->getSuggestionDetails($user->id, $exercise->id);
+
+        $this->assertNotNull($suggestion);
+        $this->assertEquals(1050, $suggestion->reps); // Distance increased by 100m (950 + 100)
+        $this->assertEquals(1, $suggestion->sets); // Same number of rounds
+        $this->assertEquals(0, $suggestion->weight); // Always 0 for cardio
+        $this->assertNull($suggestion->band_color); // Not applicable for cardio
+    }
+
+    public function test_cardio_exercise_progression_caps_rounds_increase()
+    {
+        $user = User::factory()->create();
+        $exercise = Exercise::factory()->create([
+            'exercise_type' => 'cardio'
+        ]);
+
+        // Log a cardio workout with 2000m distance and 9 rounds (would suggest 10, which is the cap)
+        $liftLog = LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => Carbon::yesterday(),
+        ]);
+        // Create 9 sets to represent 9 rounds
+        for ($i = 0; $i < 9; $i++) {
+            LiftSet::factory()->create([
+                'lift_log_id' => $liftLog->id,
+                'reps' => 2000,
+                'weight' => 0,
+            ]);
+        }
+
+        $suggestion = $this->trainingProgressionService->getSuggestionDetails($user->id, $exercise->id);
+
+        $this->assertNotNull($suggestion);
+        $this->assertEquals(2000, $suggestion->reps); // Same distance
+        $this->assertEquals(10, $suggestion->sets); // Rounds increased to cap of 10
+        $this->assertEquals(0, $suggestion->weight); // Always 0 for cardio
+        $this->assertNull($suggestion->band_color); // Not applicable for cardio
+    }
+
+    public function test_cardio_exercise_progression_provides_default_for_no_history()
+    {
+        $user = User::factory()->create();
+        $exercise = Exercise::factory()->create([
+            'exercise_type' => 'cardio'
+        ]);
+
+        $suggestion = $this->trainingProgressionService->getSuggestionDetails($user->id, $exercise->id);
+
+        $this->assertNull($suggestion); // No history should return null from getSuggestionDetails
+    }
+
+    public function test_cardio_exercise_progression_handles_invalid_distance_data()
+    {
+        $user = User::factory()->create();
+        $exercise = Exercise::factory()->create([
+            'exercise_type' => 'cardio'
+        ]);
+
+        // Log a cardio workout with invalid distance (0 or negative)
+        $liftLog = LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => Carbon::yesterday(),
+        ]);
+        LiftSet::factory()->create([
+            'lift_log_id' => $liftLog->id,
+            'reps' => 0, // Invalid distance
+            'weight' => 0,
+        ]);
+
+        $suggestion = $this->trainingProgressionService->getSuggestionDetails($user->id, $exercise->id);
+
+        $this->assertNotNull($suggestion);
+        // Should provide default suggestion when data is invalid
+        $this->assertEquals(500, $suggestion->reps); // Default distance
+        $this->assertEquals(1, $suggestion->sets); // Default rounds
+        $this->assertEquals(0, $suggestion->weight); // Always 0 for cardio
+        $this->assertNull($suggestion->band_color); // Not applicable for cardio
+    }
 }
