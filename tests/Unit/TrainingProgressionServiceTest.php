@@ -185,7 +185,7 @@ class TrainingProgressionServiceTest extends TestCase
     public function test_non_banded_exercise_uses_linear_progression()
     {
         $user = User::factory()->create();
-        $exercise = Exercise::factory()->create(['band_type' => null]);
+        $exercise = Exercise::factory()->create(['exercise_type' => 'regular']);
 
         $liftLog = LiftLog::factory()->create([
             'user_id' => $user->id,
@@ -208,7 +208,7 @@ class TrainingProgressionServiceTest extends TestCase
     public function test_non_banded_exercise_uses_double_progression()
     {
         $user = User::factory()->create();
-        $exercise = Exercise::factory()->create(['band_type' => null]);
+        $exercise = Exercise::factory()->create(['exercise_type' => 'regular']);
 
         $liftLog = LiftLog::factory()->create([
             'user_id' => $user->id,
@@ -231,7 +231,7 @@ class TrainingProgressionServiceTest extends TestCase
     public function test_infers_double_progression_from_same_weight_increased_reps_pattern()
     {
         $user = User::factory()->create();
-        $exercise = Exercise::factory()->create(['band_type' => null]);
+        $exercise = Exercise::factory()->create(['exercise_type' => 'regular']);
 
         // Create two lift logs showing DoubleProgression pattern: same weight, reps increased
         $olderLog = LiftLog::factory()->create([
@@ -267,7 +267,7 @@ class TrainingProgressionServiceTest extends TestCase
     public function test_infers_double_progression_from_weight_increase_with_reps_reset_pattern()
     {
         $user = User::factory()->create();
-        $exercise = Exercise::factory()->create(['band_type' => null]);
+        $exercise = Exercise::factory()->create(['exercise_type' => 'regular']);
 
         // Create two lift logs showing DoubleProgression reset pattern: weight increased, reps decreased to 8-12 range
         $olderLog = LiftLog::factory()->create([
@@ -303,7 +303,7 @@ class TrainingProgressionServiceTest extends TestCase
     public function test_infers_linear_progression_from_weight_increase_same_reps_pattern()
     {
         $user = User::factory()->create();
-        $exercise = Exercise::factory()->create(['band_type' => null]);
+        $exercise = Exercise::factory()->create(['exercise_type' => 'regular']);
 
         // Create two lift logs showing LinearProgression pattern: weight increased, same reps
         $olderLog = LiftLog::factory()->create([
@@ -339,7 +339,7 @@ class TrainingProgressionServiceTest extends TestCase
     public function test_falls_back_to_rep_range_logic_when_pattern_unclear()
     {
         $user = User::factory()->create();
-        $exercise = Exercise::factory()->create(['band_type' => null]);
+        $exercise = Exercise::factory()->create(['exercise_type' => 'regular']);
 
         // Create two lift logs with unclear pattern (both weight and reps changed in unexpected way)
         $olderLog = LiftLog::factory()->create([
@@ -376,7 +376,7 @@ class TrainingProgressionServiceTest extends TestCase
     public function test_uses_rep_range_logic_when_insufficient_history()
     {
         $user = User::factory()->create();
-        $exercise = Exercise::factory()->create(['band_type' => null]);
+        $exercise = Exercise::factory()->create(['exercise_type' => 'regular']);
 
         // Create only one lift log (insufficient for pattern inference)
         $liftLog = LiftLog::factory()->create([

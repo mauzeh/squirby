@@ -37,15 +37,15 @@ class ImportJsonLiftLogBandTypeTest extends TestCase
                 'exercise' => 'Banded Lat Pulldown',
                 'canonical_name' => 'banded_lat_pulldown',
                 'description' => 'Lat pulldown with resistance band',
+                'exercise_type' => 'banded_resistance',
                 'lift_logs' => [
                     [
                         'weight' => 0,
                         'reps' => 15,
                         'sets' => 3,
                         'band_color' => 'red',
-                        'notes' => 'Heavy resistance band',
-            'exercise_type' => 'banded_resistance'
-        ]
+                        'notes' => 'Heavy resistance band'
+                    ]
                 ]
             ]
         ];
@@ -82,15 +82,15 @@ class ImportJsonLiftLogBandTypeTest extends TestCase
                 'exercise' => 'Assisted Pull-Up',
                 'canonical_name' => 'assisted_pull_up',
                 'description' => 'Pull-up with assistance band',
+                'exercise_type' => 'banded_assistance',
                 'lift_logs' => [
                     [
                         'weight' => 0,
                         'reps' => 8,
                         'sets' => 3,
                         'band_color' => 'green',
-                        'notes' => 'Medium assistance band',
-            'exercise_type' => 'banded_assistance'
-        ]
+                        'notes' => 'Medium assistance band'
+                    ]
                 ]
             ]
         ];
@@ -127,14 +127,14 @@ class ImportJsonLiftLogBandTypeTest extends TestCase
                 'exercise' => 'Regular Exercise',
                 'canonical_name' => 'regular_exercise',
                 'description' => 'Exercise without band type',
+                'exercise_type' => 'regular',
                 'lift_logs' => [
                     [
                         'weight' => 100,
                         'reps' => 10,
                         'sets' => 3,
-                        'notes' => 'Regular weight exercise',
-            'exercise_type' => 'regular'
-        ]
+                        'notes' => 'Regular weight exercise'
+                    ]
                 ]
             ]
         ];
@@ -171,14 +171,14 @@ class ImportJsonLiftLogBandTypeTest extends TestCase
                 'exercise' => 'Invalid Band Exercise',
                 'canonical_name' => 'invalid_band_exercise',
                 'description' => 'Exercise with invalid band type',
+                'exercise_type' => 'regular',
                 'lift_logs' => [
                     [
                         'weight' => 50,
                         'reps' => 12,
                         'sets' => 3,
-                        'notes' => 'Should ignore invalid band type',
-            'exercise_type' => 'regular'
-        ]
+                        'notes' => 'Should ignore invalid band type'
+                    ]
                 ]
             ]
         ];
@@ -215,44 +215,44 @@ class ImportJsonLiftLogBandTypeTest extends TestCase
                 'exercise' => 'Resistance Band Exercise',
                 'canonical_name' => 'resistance_band_exercise',
                 'description' => 'Exercise with resistance band',
+                'exercise_type' => 'banded_resistance',
                 'lift_logs' => [
                     [
                         'weight' => 0,
                         'reps' => 15,
                         'sets' => 3,
                         'band_color' => 'red',
-                        'notes' => 'Resistance band work',
-            'exercise_type' => 'banded_resistance'
-        ]
+                        'notes' => 'Resistance band work'
+                    ]
                 ]
             ],
             [
-            'exercise' => 'Assistance Band Exercise',
+                'exercise' => 'Assistance Band Exercise',
                 'canonical_name' => 'assistance_band_exercise',
                 'description' => 'Exercise with assistance band',
+                'exercise_type' => 'banded_assistance',
                 'lift_logs' => [
                     [
                         'weight' => 0,
                         'reps' => 8,
                         'sets' => 3,
                         'band_color' => 'green',
-                        'notes' => 'Assistance band work',
-            'exercise_type' => 'banded_assistance'
-        ]
+                        'notes' => 'Assistance band work'
+                    ]
                 ]
             ],
             [
-            'exercise' => 'No Band Exercise',
+                'exercise' => 'No Band Exercise',
                 'canonical_name' => 'no_band_exercise',
                 'description' => 'Exercise without bands',
+                'exercise_type' => 'regular',
                 'lift_logs' => [
                     [
                         'weight' => 100,
                         'reps' => 10,
                         'sets' => 3,
-                        'notes' => 'Regular exercise',
-            'exercise_type' => 'regular'
-        ]
+                        'notes' => 'Regular exercise'
+                    ]
                 ]
             ]
         ];
@@ -305,8 +305,8 @@ class ImportJsonLiftLogBandTypeTest extends TestCase
             'title' => 'Global Banded Exercise',
             'canonical_name' => 'global_banded_exercise',
             'description' => 'Global exercise with resistance band',
+            'exercise_type' => 'banded_resistance',
             'user_id' => null, // Global exercise
-            'exercise_type' => 'banded_resistance'
         ]);
         
         $exercises = [
@@ -321,7 +321,6 @@ class ImportJsonLiftLogBandTypeTest extends TestCase
                         'reps' => 10,
                         'sets' => 3,
                         'notes' => 'Using existing global exercise',
-            'exercise_type' => 'banded_assistance'
         ]
                 ]
             ]
@@ -362,6 +361,7 @@ class ImportJsonLiftLogBandTypeTest extends TestCase
                 'exercise' => 'Banded Exercise with Color',
                 'canonical_name' => 'banded_exercise_with_color',
                 'description' => 'Exercise with band color tracking',
+                'exercise_type' => 'banded_resistance',
                 'lift_logs' => [
                     [
                         'weight' => 0,
@@ -369,7 +369,6 @@ class ImportJsonLiftLogBandTypeTest extends TestCase
                         'sets' => 3,
                         'band_color' => 'red',
                         'notes' => 'Using red resistance band',
-            'exercise_type' => 'banded_resistance'
         ]
                 ]
             ]
@@ -418,14 +417,14 @@ class ImportJsonLiftLogBandTypeTest extends TestCase
                 'exercise' => 'Banded Exercise without Color',
                 'canonical_name' => 'banded_exercise_without_color',
                 'description' => 'Exercise with band_type but no band_color should fail validation',
+                'exercise_type' => 'banded_assistance',
                 'lift_logs' => [
                     [
                         'weight' => 0,
                         'reps' => 8,
                         'sets' => 2,
-                        'notes' => 'No band color specified - should fail',
-            'exercise_type' => 'banded_assistance'
-        ]
+                        'notes' => 'No band color specified - should fail'
+                    ]
                 ]
             ]
         ];
@@ -459,15 +458,15 @@ class ImportJsonLiftLogBandTypeTest extends TestCase
                 'exercise' => 'Banded Exercise with Empty Color',
                 'canonical_name' => 'banded_exercise_empty_color',
                 'description' => 'Exercise with band_type but empty band_color should fail validation',
+                'exercise_type' => 'banded_resistance',
                 'lift_logs' => [
                     [
                         'weight' => 0,
                         'reps' => 10,
                         'sets' => 1,
                         'band_color' => '',
-                        'notes' => 'Empty band color should fail validation',
-            'exercise_type' => 'banded_resistance'
-        ]
+                        'notes' => 'Empty band color should fail validation'
+                    ]
                 ]
             ]
         ];
@@ -544,15 +543,15 @@ class ImportJsonLiftLogBandTypeTest extends TestCase
                 'exercise' => 'Incomplete Banded Exercise',
                 'canonical_name' => 'incomplete_banded_exercise',
                 'description' => 'Exercise with band type but no band color',
+                'exercise_type' => 'banded_resistance',
                 'lift_logs' => [
                     [
                         'weight' => 0,
                         'reps' => 10,
                         'sets' => 1,
                         // Missing band_color
-                        'notes' => 'Should fail validation',
-            'exercise_type' => 'banded_resistance'
-        ]
+                        'notes' => 'Should fail validation'
+                    ]
                 ]
             ]
         ];
@@ -586,15 +585,15 @@ class ImportJsonLiftLogBandTypeTest extends TestCase
                 'exercise' => 'Mixed Band Color Exercise',
                 'canonical_name' => 'mixed_band_color_exercise',
                 'description' => 'Exercise with some lift logs missing band color',
+                'exercise_type' => 'banded_assistance',
                 'lift_logs' => [
                     [
                         'weight' => 0,
                         'reps' => 8,
                         'sets' => 1,
                         'band_color' => 'green',
-                        'notes' => 'Has band color',
-            'exercise_type' => 'banded_assistance'
-        ],
+                        'notes' => 'Has band color'
+                    ],
                     [
                         'weight' => 0,
                         'reps' => 10,
@@ -643,6 +642,7 @@ class ImportJsonLiftLogBandTypeTest extends TestCase
                 'canonical_name' => 'regular_exercise_no_bands',
                 'description' => 'Exercise without any band information',
                 // No band_type
+                'exercise_type' => 'regular',
                 'lift_logs' => [
                     [
                         'weight' => 100,
@@ -650,8 +650,7 @@ class ImportJsonLiftLogBandTypeTest extends TestCase
                         'sets' => 3,
                         // No band_color
                         'notes' => 'Regular weighted exercise',
-            'exercise_type' => 'regular'
-        ]
+                    ]
                 ]
             ]
         ];
@@ -691,7 +690,7 @@ class ImportJsonLiftLogBandTypeTest extends TestCase
                 'exercise' => 'Invalid Band Type Exercise',
                 'canonical_name' => 'invalid_band_type_exercise',
                 'description' => 'Exercise with invalid band type',
-                // Invalid band type
+                'exercise_type' => 'regular', // Invalid band type when band_color is provided
                 'lift_logs' => [
                     [
                         'weight' => 0,
@@ -699,8 +698,7 @@ class ImportJsonLiftLogBandTypeTest extends TestCase
                         'sets' => 1,
                         'band_color' => 'red',
                         'notes' => 'Should fail validation',
-            'exercise_type' => 'regular'
-        ]
+                    ]
                 ]
             ]
         ];
@@ -713,7 +711,7 @@ class ImportJsonLiftLogBandTypeTest extends TestCase
                 '--user-email' => 'test@example.com',
                 '--create-exercises' => true
             ])
-            ->expectsOutputToContain('Band type \'invalid_type\' is invalid')
+            ->expectsOutputToContain('Band type \'regular\' is invalid')
             ->assertExitCode(Command::SUCCESS);
             
             // Verify no exercise was created due to validation failure
@@ -734,6 +732,7 @@ class ImportJsonLiftLogBandTypeTest extends TestCase
                 'exercise' => 'Exercise with Invalid Band Color',
                 'canonical_name' => 'exercise_invalid_band_color',
                 'description' => 'Exercise with invalid band color',
+                'exercise_type' => 'banded_resistance',
                 'lift_logs' => [
                     [
                         'weight' => 0,
@@ -741,8 +740,7 @@ class ImportJsonLiftLogBandTypeTest extends TestCase
                         'sets' => 1,
                         'band_color' => 'whatever', // Invalid color
                         'notes' => 'Should fail validation',
-            'exercise_type' => 'banded_resistance'
-        ]
+                    ]
                 ]
             ]
         ];
@@ -775,6 +773,7 @@ class ImportJsonLiftLogBandTypeTest extends TestCase
                 'exercise' => 'Exercise with Multiple Invalid Colors',
                 'canonical_name' => 'exercise_multiple_invalid_colors',
                 'description' => 'Exercise with multiple invalid band colors',
+                'exercise_type' => 'banded_resistance',
                 'lift_logs' => [
                     [
                         'weight' => 0,
@@ -782,7 +781,6 @@ class ImportJsonLiftLogBandTypeTest extends TestCase
                         'sets' => 1,
                         'band_color' => 'purple', // Invalid color
                         'notes' => 'First invalid color',
-            'exercise_type' => 'banded_assistance'
         ],
                     [
                         'weight' => 0,
@@ -832,9 +830,10 @@ class ImportJsonLiftLogBandTypeTest extends TestCase
         $exercises = [];
         foreach ($validColors as $index => $color) {
             $exercises[] = [
-            'exercise' => "Exercise with {$color} band",
+                'exercise' => "Exercise with {$color} band",
                 'canonical_name' => "exercise_with_{$color}_band",
                 'description' => "Exercise using {$color} band",
+                'exercise_type' => 'banded_resistance',
                 'lift_logs' => [
                     [
                         'weight' => 0,
@@ -842,8 +841,7 @@ class ImportJsonLiftLogBandTypeTest extends TestCase
                         'sets' => 1,
                         'band_color' => $color,
                         'notes' => "Using {$color} band",
-            'exercise_type' => 'banded_resistance'
-        ]
+                    ]
                 ]
             ];
         }

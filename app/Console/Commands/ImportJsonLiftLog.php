@@ -552,12 +552,17 @@ class ImportJsonLiftLog extends Command
             'user_id' => $user->id // User-specific exercise
         ];
 
-        // Determine exercise_type based on band_type and is_bodyweight
+        // Determine exercise_type - prefer direct exercise_type, fall back to legacy fields
         $exerciseType = 'regular'; // Default
         
-        if (isset($exerciseData['band_type']) && in_array($exerciseData['band_type'], ['resistance', 'assistance'])) {
+        if (isset($exerciseData['exercise_type']) && in_array($exerciseData['exercise_type'], ['regular', 'bodyweight', 'banded_resistance', 'banded_assistance'])) {
+            // Use the new exercise_type field directly
+            $exerciseType = $exerciseData['exercise_type'];
+        } elseif (isset($exerciseData['band_type']) && in_array($exerciseData['band_type'], ['resistance', 'assistance'])) {
+            // Legacy support: convert band_type to exercise_type
             $exerciseType = $exerciseData['band_type'] === 'resistance' ? 'banded_resistance' : 'banded_assistance';
         } elseif (isset($exerciseData['is_bodyweight']) && $exerciseData['is_bodyweight']) {
+            // Legacy support: convert is_bodyweight to exercise_type
             $exerciseType = 'bodyweight';
         }
         
@@ -579,8 +584,17 @@ class ImportJsonLiftLog extends Command
      */
     private function validateBandedExerciseData(array $exerciseData): void
     {
-        $hasBandType = isset($exerciseData['band_type']) && 
-                      in_array($exerciseData['band_type'], ['resistance', 'assistance']);
+        // Check for banded exercise type - support both new exercise_type and legacy band_type
+        $hasBandType = false;
+        $bandTypeValue = null;
+        
+        if (isset($exerciseData['exercise_type']) && in_array($exerciseData['exercise_type'], ['banded_resistance', 'banded_assistance'])) {
+            $hasBandType = true;
+            $bandTypeValue = $exerciseData['exercise_type'] === 'banded_resistance' ? 'resistance' : 'assistance';
+        } elseif (isset($exerciseData['band_type']) && in_array($exerciseData['band_type'], ['resistance', 'assistance'])) {
+            $hasBandType = true;
+            $bandTypeValue = $exerciseData['band_type'];
+        }
         
         $validBandColors = array_keys(config('bands.colors', []));
         
@@ -632,12 +646,11 @@ class ImportJsonLiftLog extends Command
         // Rule 2: If exercise has band_type, ALL lift logs must have valid band_color
         if ($hasBandType && !empty($liftLogsWithoutBandColor)) {
             $exerciseName = $exerciseData['exercise'] ?? $exerciseData['canonical_name'];
-            $bandType = $exerciseData['band_type'];
             $missingColorLogs = implode(', ', $liftLogsWithoutBandColor);
             $validColorsStr = implode(', ', array_map(fn($c) => "'{$c}'", $validBandColors));
             
             throw new \Exception(
-                "Exercise '{$exerciseName}' has band_type '{$bandType}' but lift log(s) #{$missingColorLogs} are missing band_color. " .
+                "Exercise '{$exerciseName}' has band_type '{$bandTypeValue}' but lift log(s) #{$missingColorLogs} are missing band_color. " .
                 "All lift logs for banded exercises must specify a valid band color: {$validColorsStr}."
             );
         }
@@ -647,11 +660,18 @@ class ImportJsonLiftLog extends Command
             $exerciseName = $exerciseData['exercise'] ?? $exerciseData['canonical_name'];
             $allColoredLogs = array_merge($liftLogsWithBandColor, array_column($liftLogsWithInvalidBandColor, 'index'));
             $coloredLogs = implode(', ', $allColoredLogs);
-            $providedBandType = $exerciseData['band_type'] ?? 'not provided';
+            
+            // Check both new exercise_type and legacy band_type for error message
+            $providedType = 'not provided';
+            if (isset($exerciseData['exercise_type'])) {
+                $providedType = $exerciseData['exercise_type'];
+            } elseif (isset($exerciseData['band_type'])) {
+                $providedType = $exerciseData['band_type'];
+            }
             
             throw new \Exception(
                 "Exercise '{$exerciseName}' has lift log(s) #{$coloredLogs} with band_color but no valid band_type. " .
-                "Band type '{$providedBandType}' is invalid. Must be 'resistance' or 'assistance' for banded exercises."
+                "Band type '{$providedType}' is invalid. Must be 'resistance' or 'assistance' for banded exercises."
             );
         }
     }

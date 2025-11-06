@@ -3,7 +3,7 @@
         "exercise": "Bench Press",
         "canonical_name": "bench_press",
         "description": "Barbell bench press exercise for chest development",
-        "is_bodyweight": false,
+        "exercise_type": "regular",
         "lift_logs": [
             {
                 "weight": 225,
@@ -17,7 +17,7 @@
         "exercise": "Dumbbell Pull",
         "canonical_name": "dumbbell_pull",
         "description": "Dumbbell pulling exercise for back development",
-        "is_bodyweight": false,
+        "exercise_type": "regular",
         "lift_logs": [
             {
                 "weight": 95,
@@ -31,7 +31,7 @@
         "exercise": "Incline Bench Press",
         "canonical_name": "incline_bench_press",
         "description": "Inclined barbell bench press targeting upper chest",
-        "is_bodyweight": false,
+        "exercise_type": "regular",
         "lift_logs": [
             {
                 "weight": 165,
@@ -45,7 +45,7 @@
         "exercise": "Dumbbell Incline Bench Press",
         "canonical_name": "dumbbell_incline_bench_press",
         "description": "Inclined dumbbell press for upper chest isolation",
-        "is_bodyweight": false,
+        "exercise_type": "regular",
         "lift_logs": [
             {
                 "weight": 140,
@@ -59,7 +59,7 @@
         "exercise": "Tricep Pushdown",
         "canonical_name": "tricep_pushdown",
         "description": "Cable tricep pushdown for arm development",
-        "is_bodyweight": false,
+        "exercise_type": "regular",
         "lift_logs": [
             {
                 "weight": 47.5,
@@ -73,7 +73,7 @@
         "exercise": "Strict Press",
         "canonical_name": "strict_press",
         "description": "Standing overhead press with strict form",
-        "is_bodyweight": false,
+        "exercise_type": "regular",
         "lift_logs": [
             {
                 "weight": 105,
@@ -87,7 +87,7 @@
         "exercise": "Barbell Curl",
         "canonical_name": "barbell_curl",
         "description": "Standing barbell bicep curl",
-        "is_bodyweight": false,
+        "exercise_type": "regular",
         "lift_logs": [
             {
                 "weight": 100,
@@ -101,7 +101,7 @@
         "exercise": "Dumbbell Pull Up",
         "canonical_name": "dumbbell_pull_up",
         "description": "Assisted pull-up variation with dumbbell counterweight",
-        "is_bodyweight": true,
+        "exercise_type": "bodyweight",
         "lift_logs": [
             {
                 "weight": 15,
@@ -115,7 +115,7 @@
         "exercise": "Shoulder Press",
         "canonical_name": "shoulder_press",
         "description": "Seated or standing shoulder press for deltoid development",
-        "is_bodyweight": false,
+        "exercise_type": "regular",
         "lift_logs": [
             {
                 "weight": 105,
@@ -129,7 +129,7 @@
         "exercise": "Squat",
         "canonical_name": "squat",
         "description": "Barbell back squat for leg and glute development",
-        "is_bodyweight": false,
+        "exercise_type": "regular",
         "lift_logs": [
             {
                 "weight": 255,
@@ -143,7 +143,7 @@
         "exercise": "Leg Press",
         "canonical_name": "leg_press",
         "description": "Machine leg press for quadriceps and glute development",
-        "is_bodyweight": false,
+        "exercise_type": "regular",
         "lift_logs": [
             {
                 "weight": 450,
@@ -157,7 +157,7 @@
         "exercise": "Seated Leg Press",
         "canonical_name": "seated_leg_press",
         "description": "Seated variation of leg press machine",
-        "is_bodyweight": false,
+        "exercise_type": "regular",
         "lift_logs": [
             {
                 "weight": 370,
@@ -171,7 +171,7 @@
         "exercise": "Glute Drive",
         "canonical_name": "glute_drive",
         "description": "Hip thrust exercise for glute activation and strength",
-        "is_bodyweight": false,
+        "exercise_type": "regular",
         "lift_logs": [
             {
                 "weight": 335,
@@ -191,7 +191,7 @@
         "exercise": "Leg Curl",
         "canonical_name": "leg_curl",
         "description": "Machine leg curl for hamstring development",
-        "is_bodyweight": false,
+        "exercise_type": "regular",
         "lift_logs": [
             {
                 "weight": 145,
@@ -205,7 +205,7 @@
         "exercise": "Seated Leg Curl",
         "canonical_name": "seated_leg_curl",
         "description": "Seated variation of leg curl machine",
-        "is_bodyweight": false,
+        "exercise_type": "regular",
         "lift_logs": [
             {
                 "weight": 110,
@@ -219,7 +219,7 @@
         "exercise": "Standing Calf Raise",
         "canonical_name": "standing_calf_raise",
         "description": "Standing calf raise for gastrocnemius development",
-        "is_bodyweight": false,
+        "exercise_type": "regular",
         "lift_logs": [
             {
                 "weight": 250,
@@ -233,7 +233,7 @@
         "exercise": "Barbell Row",
         "canonical_name": "barbell_row",
         "description": "Bent-over barbell row for back development",
-        "is_bodyweight": false,
+        "exercise_type": "regular",
         "lift_logs": [
             {
                 "weight": 165,
@@ -247,7 +247,7 @@
         "exercise": "Decline Bench Press",
         "canonical_name": "decline_bench_press",
         "description": "Decline barbell bench press targeting lower chest",
-        "is_bodyweight": false,
+        "exercise_type": "regular",
         "lift_logs": [
             {
                 "weight": 170,
@@ -261,7 +261,7 @@
         "exercise": "Seated Row",
         "canonical_name": "seated_row",
         "description": "Cable seated row for mid-back development",
-        "is_bodyweight": false,
+        "exercise_type": "regular",
         "lift_logs": [
             {
                 "weight": 140,
@@ -275,7 +275,7 @@
         "exercise": "Pec Fly",
         "canonical_name": "pec_fly",
         "description": "Machine or cable pec fly for chest isolation",
-        "is_bodyweight": false,
+        "exercise_type": "regular",
         "lift_logs": [
             {
                 "weight": 155,
@@ -295,7 +295,7 @@
         "exercise": "Deadlift",
         "canonical_name": "deadlift",
         "description": "Conventional barbell deadlift for full-body strength",
-        "is_bodyweight": false,
+        "exercise_type": "regular",
         "lift_logs": [
             {
                 "weight": 275,
@@ -309,7 +309,7 @@
         "exercise": "Seated Calf Raise",
         "canonical_name": "seated_calf_raise",
         "description": "Seated calf raise for soleus muscle development",
-        "is_bodyweight": false,
+        "exercise_type": "regular",
         "lift_logs": [
             {
                 "weight": 80,
@@ -323,7 +323,7 @@
         "exercise": "Leg Extension",
         "canonical_name": "leg_extension",
         "description": "Machine leg extension for quadriceps isolation",
-        "is_bodyweight": false,
+        "exercise_type": "regular",
         "lift_logs": [
             {
                 "weight": 145,
@@ -337,7 +337,7 @@
         "exercise": "Plank",
         "canonical_name": "plank",
         "description": "Isometric core exercise performed in prone position",
-        "is_bodyweight": true,
+        "exercise_type": "bodyweight",
         "lift_logs": [
             {
                 "weight": 0,
@@ -351,7 +351,7 @@
         "exercise": "Side Plank",
         "canonical_name": "side_plank",
         "description": "Isometric core exercise performed on side for oblique strength",
-        "is_bodyweight": true,
+        "exercise_type": "bodyweight",
         "lift_logs": [
             {
                 "weight": 0,
@@ -365,7 +365,7 @@
         "exercise": "Dips",
         "canonical_name": "dips",
         "description": "Bodyweight dips for chest, triceps, and shoulders",
-        "is_bodyweight": true,
+        "exercise_type": "bodyweight",
         "lift_logs": [
             {
                 "weight": 0,
@@ -379,7 +379,7 @@
         "exercise": "Bicep Curl Machine",
         "canonical_name": "bicep_curl_machine",
         "description": "Machine bicep curl for arm isolation",
-        "is_bodyweight": false,
+        "exercise_type": "regular",
         "lift_logs": [
             {
                 "weight": 95,

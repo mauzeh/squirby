@@ -3,7 +3,7 @@
         "exercise": "Bench Press",
         "canonical_name": "bench_press",
         "description": "Example of a WEIGHTED EXERCISE - uses existing global exercise from database. Standard barbell/dumbbell exercise with weight tracking.",
-        "is_bodyweight": false,
+        "exercise_type": "regular",
         "lift_logs": [
             {
                 "weight": 225,
@@ -16,8 +16,8 @@
     {
         "exercise": "Pull-Up",
         "canonical_name": "pull_ups",
-        "description": "Example of a BODYWEIGHT EXERCISE - uses existing global exercise. is_bodyweight=true indicates no external weight needed.",
-        "is_bodyweight": true,
+        "description": "Example of a BODYWEIGHT EXERCISE - uses existing global exercise. exercise_type='bodyweight' indicates no external weight needed.",
+        "exercise_type": "bodyweight",
         "lift_logs": [
             {
                 "weight": 0,
@@ -30,9 +30,8 @@
     {
         "exercise": "Lat Pull-Down (Kneeled)",
         "canonical_name": "lat_pull_down_kneeled",
-        "description": "Example of BANDED RESISTANCE EXERCISE - uses existing global exercise. band_type='resistance' indicates resistance band usage.",
-        "is_bodyweight": false,
-        "band_type": "resistance",
+        "description": "Example of BANDED RESISTANCE EXERCISE - uses existing global exercise. exercise_type='banded_resistance' indicates resistance band usage.",
+        "exercise_type": "banded_resistance",
         "lift_logs": [
             {
                 "weight": 0,
@@ -46,9 +45,8 @@
     {
         "exercise": "Assisted Pull-Up",
         "canonical_name": "assisted_pull_up",
-        "description": "Example of BANDED ASSISTANCE EXERCISE - this will create a NEW user exercise. band_type='assistance' indicates assistance band usage.",
-        "is_bodyweight": true,
-        "band_type": "assistance",
+        "description": "Example of BANDED ASSISTANCE EXERCISE - this will create a NEW user exercise. exercise_type='banded_assistance' indicates assistance band usage.",
+        "exercise_type": "banded_assistance",
         "lift_logs": [
             {
                 "weight": 0,
@@ -63,7 +61,7 @@
         "exercise": "Farmer's Walk",
         "canonical_name": "farmers_walk",
         "description": "Example of NEW EXERCISE CREATION - this canonical_name doesn't exist in database, will trigger exercise creation workflow.",
-        "is_bodyweight": false,
+        "exercise_type": "regular",
         "lift_logs": [
             {
                 "weight": 200,

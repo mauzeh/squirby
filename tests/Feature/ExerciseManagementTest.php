@@ -24,6 +24,7 @@ class ExerciseManagementTest extends TestCase
         $exerciseData = [
             'title' => $this->faker->sentence(3),
             'description' => $this->faker->paragraph(),
+            'exercise_type' => 'regular',
         ];
 
         $response = $this->post(route('exercises.store'), $exerciseData);
@@ -46,6 +47,7 @@ class ExerciseManagementTest extends TestCase
         $exerciseData = [
             'title' => '', // Missing title
             'description' => $this->faker->paragraph(),
+            'exercise_type' => 'regular',
         ];
 
         $response = $this->post(route('exercises.store'), $exerciseData);
@@ -63,6 +65,7 @@ class ExerciseManagementTest extends TestCase
         $exerciseData = [
             'title' => $this->faker->sentence(3),
             'description' => $this->faker->paragraph(),
+            'exercise_type' => 'regular',
         ];
 
         $response = $this->post(route('exercises.store'), $exerciseData);
@@ -152,6 +155,7 @@ class ExerciseManagementTest extends TestCase
         $exerciseData = [
             'title' => 'Global Bench Press',
             'description' => 'A global exercise available to all users',
+            'exercise_type' => 'regular',
             'is_global' => true,
         ];
 
@@ -175,6 +179,7 @@ class ExerciseManagementTest extends TestCase
         $exerciseData = [
             'title' => 'Global Bench Press',
             'description' => 'A global exercise available to all users',
+            'exercise_type' => 'regular',
             'is_global' => true,
         ];
 
@@ -206,6 +211,7 @@ class ExerciseManagementTest extends TestCase
         $exerciseData = [
             'title' => 'Bench Press',
             'description' => 'User trying to create duplicate',
+            'exercise_type' => 'regular',
         ];
 
         $response = $this->post(route('exercises.store'), $exerciseData);
@@ -234,6 +240,7 @@ class ExerciseManagementTest extends TestCase
         $exerciseData = [
             'title' => 'Bench Press',
             'description' => 'Duplicate global exercise',
+            'exercise_type' => 'regular',
             'is_global' => true,
         ];
 
@@ -291,6 +298,7 @@ class ExerciseManagementTest extends TestCase
         $updatedData = [
             'title' => 'Updated Global Title',
             'description' => 'Updated description',
+            'exercise_type' => 'regular',
             'is_global' => true,
         ];
 
@@ -344,6 +352,7 @@ class ExerciseManagementTest extends TestCase
         $updatedData = [
             'title' => 'Updated Title',
             'description' => 'Updated description',
+            'exercise_type' => 'regular',
         ];
 
         $response = $this->put(route('exercises.update', $userExercise), $updatedData);
