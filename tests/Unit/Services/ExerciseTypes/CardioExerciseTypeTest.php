@@ -321,4 +321,121 @@ class CardioExerciseTypeTest extends TestCase
         $this->assertStringContainsString('max:50000', $rules['reps']);
         $this->assertStringContainsString('in:0', $rules['weight']);
     }
+
+    /** @test */
+    public function it_formats_complete_display_with_multiple_rounds()
+    {
+        $exercise = Exercise::factory()->create();
+        $liftLog = LiftLog::factory()->create(['exercise_id' => $exercise->id]);
+        
+        // Create 5 sets to simulate 5 rounds
+        LiftSet::factory()->count(5)->create([
+            'lift_log_id' => $liftLog->id,
+            'reps' => 500, // 500m distance
+            'weight' => 0
+        ]);
+
+        $formatted = $this->strategy->formatCompleteDisplay($liftLog);
+
+        $this->assertEquals('500m × 5 rounds', $formatted);
+    }
+
+    /** @test */
+    public function it_formats_complete_display_with_single_round()
+    {
+        $exercise = Exercise::factory()->create();
+        $liftLog = LiftLog::factory()->create(['exercise_id' => $exercise->id]);
+        
+        // Create 1 set to simulate 1 round
+        LiftSet::factory()->create([
+            'lift_log_id' => $liftLog->id,
+            'reps' => 1000, // 1000m distance
+            'weight' => 0
+        ]);
+
+        $formatted = $this->strategy->formatCompleteDisplay($liftLog);
+
+        $this->assertEquals('1km × 1 round', $formatted);
+    }
+
+    /** @test */
+    public function it_formats_complete_display_with_zero_rounds()
+    {
+        $exercise = Exercise::factory()->create();
+        $liftLog = LiftLog::factory()->create(['exercise_id' => $exercise->id]);
+        
+        // No sets created, so 0 rounds
+
+        $formatted = $this->strategy->formatCompleteDisplay($liftLog);
+
+        $this->assertEquals('0m', $formatted);
+    }
+
+    /** @test */
+    public function it_handles_edge_case_very_short_distance()
+    {
+        $exercise = Exercise::factory()->create();
+        $liftLog = LiftLog::factory()->create(['exercise_id' => $exercise->id]);
+        
+        LiftSet::factory()->create([
+            'lift_log_id' => $liftLog->id,
+            'reps' => 25, // Below minimum
+            'weight' => 0
+        ]);
+
+        $formatted = $this->strategy->formatWeightDisplay($liftLog);
+
+        $this->assertEquals('25m (below minimum)', $formatted);
+    }
+
+    /** @test */
+    public function it_handles_edge_case_very_long_distance()
+    {
+        $exercise = Exercise::factory()->create();
+        $liftLog = LiftLog::factory()->create(['exercise_id' => $exercise->id]);
+        
+        LiftSet::factory()->create([
+            'lift_log_id' => $liftLog->id,
+            'reps' => 60000, // Above maximum
+            'weight' => 0
+        ]);
+
+        $formatted = $this->strategy->formatWeightDisplay($liftLog);
+
+        $this->assertEquals('60,000m (exceeds maximum)', $formatted);
+    }
+
+    /** @test */
+    public function it_handles_edge_case_negative_distance()
+    {
+        $exercise = Exercise::factory()->create();
+        $liftLog = LiftLog::factory()->create(['exercise_id' => $exercise->id]);
+        
+        LiftSet::factory()->create([
+            'lift_log_id' => $liftLog->id,
+            'reps' => -100, // Negative distance
+            'weight' => 0
+        ]);
+
+        $formatted = $this->strategy->formatWeightDisplay($liftLog);
+
+        $this->assertEquals('0m', $formatted);
+    }
+
+    /** @test */
+    public function it_formats_complete_display_with_kilometers()
+    {
+        $exercise = Exercise::factory()->create();
+        $liftLog = LiftLog::factory()->create(['exercise_id' => $exercise->id]);
+        
+        LiftSet::factory()->count(3)->create([
+            'lift_log_id' => $liftLog->id,
+            'reps' => 2500, // 2.5km distance
+            'weight' => 0
+        ]);
+
+        $formatted = $this->strategy->formatCompleteDisplay($liftLog);
+
+        $this->assertEquals('2.5km × 3 rounds', $formatted);
+    }
 }

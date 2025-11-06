@@ -16,7 +16,7 @@
   - Set progression_types to ['cardio_progression']
   - _Requirements: 1.4, 1.5, 5.2_
 
-- [ ] 3. Implement cardio-specific display formatting
+- [x] 3. Implement cardio-specific display formatting
   - Update formatWeightDisplay() to return distance in meters (e.g., "500m")
   - Add method to format complete cardio display (e.g., "500m × 7 rounds")
   - Ensure cardio exercises don't show weight-related information

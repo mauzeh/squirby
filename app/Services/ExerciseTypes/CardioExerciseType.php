@@ -137,19 +137,57 @@ class CardioExerciseType extends BaseExerciseType
      */
     public function formatWeightDisplay(LiftLog $liftLog): string
     {
-        $distance = $liftLog->display_reps; // reps field contains distance
+        return $this->formatDistance($liftLog->display_reps);
+    }
+    
+    /**
+     * Format complete cardio display (e.g., "500m × 7 rounds")
+     */
+    public function formatCompleteDisplay(LiftLog $liftLog): string
+    {
+        $distance = $this->formatDistance($liftLog->display_reps);
+        $rounds = $liftLog->display_rounds;
         
+        // Handle edge case where rounds might be 0 or null
+        if (!is_numeric($rounds) || $rounds <= 0) {
+            return $distance;
+        }
+        
+        return "{$distance} × {$rounds} " . ($rounds == 1 ? 'round' : 'rounds');
+    }
+    
+    /**
+     * Format distance with appropriate units and handle edge cases
+     */
+    private function formatDistance(mixed $distance): string
+    {
+        // Handle edge cases for invalid or missing distance
         if (!is_numeric($distance) || $distance <= 0) {
             return '0m';
+        }
+        
+        $distance = (int) $distance;
+        
+        // Handle edge case for very short distances (< minimum)
+        if ($distance < self::MIN_DISTANCE) {
+            return number_format($distance, 0) . 'm (below minimum)';
+        }
+        
+        // Handle edge case for very long distances (> maximum)
+        if ($distance > self::MAX_DISTANCE) {
+            return number_format($distance, 0) . 'm (exceeds maximum)';
         }
         
         // Format distance with appropriate units
         if ($distance >= 1000) {
             // Show in kilometers for distances >= 1km
             $km = $distance / 1000;
+            
+            // Handle common distances that should be shown as whole kilometers
             if ($km == floor($km)) {
                 return number_format($km, 0) . 'km';
             } else {
+                // Show one decimal place for fractional kilometers
                 return number_format($km, 1) . 'km';
             }
         } else {
@@ -185,23 +223,13 @@ class CardioExerciseType extends BaseExerciseType
         if ($distance < 1000) {
             $increment = $distance < 500 ? 50 : 100;
             $newDistance = $distance + $increment;
-            return "Try {$newDistance}m × {$rounds} rounds";
+            $formattedDistance = $this->formatDistance($newDistance);
+            return "Try {$formattedDistance} × {$rounds} " . ($rounds == 1 ? 'round' : 'rounds');
         } else {
             // For longer distances (>= 1000m), suggest adding rounds
             $newRounds = $rounds + 1;
-            $formattedDistance = $this->formatDistanceForSuggestion($distance);
-            return "Try {$formattedDistance} × {$newRounds} rounds";
+            $formattedDistance = $this->formatDistance($distance);
+            return "Try {$formattedDistance} × {$newRounds} " . ($newRounds == 1 ? 'round' : 'rounds');
         }
-    }
-    
-    /**
-     * Format distance for progression suggestions
-     */
-    private function formatDistanceForSuggestion(int $distance): string
-    {
-        if ($distance >= 1000 && $distance % 1000 === 0) {
-            return ($distance / 1000) . 'km';
-        }
-        return $distance . 'm';
     }
 }
