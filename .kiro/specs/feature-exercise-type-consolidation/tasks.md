@@ -24,7 +24,7 @@
   - Ensure factory supports all new exercise_type values: regular, bodyweight, banded_resistance, banded_assistance
   - _Requirements: 1.1, 1.3, 1.5, 5.2, 5.3_
 
-- [ ] 4. Split BandedExerciseType into separate resistance and assistance classes
+- [x] 4. Split BandedExerciseType into separate resistance and assistance classes
   - Create BandedResistanceExerciseType class extending BaseExerciseType
   - Create BandedAssistanceExerciseType class extending BaseExerciseType
   - Implement getTypeName() methods returning 'banded_resistance' and 'banded_assistance'

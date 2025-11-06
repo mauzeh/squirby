@@ -158,7 +158,7 @@ class ExerciseTypeStrategyIntegrationTest extends TestCase
 
         // Each strategy should return appropriate chart type
         $this->assertEquals('one_rep_max', $regularStrategy->getChartType());
-        $this->assertEquals('volume_progression', $bandedStrategy->getChartType());
+        $this->assertEquals('band_progression', $bandedStrategy->getChartType());
         $this->assertEquals('bodyweight_progression', $bodyweightStrategy->getChartType());
     }
 
@@ -191,7 +191,8 @@ class ExerciseTypeStrategyIntegrationTest extends TestCase
         $this->assertContains('linear', $regularStrategy->getSupportedProgressionTypes());
         $this->assertContains('double_progression', $regularStrategy->getSupportedProgressionTypes());
         
-        $this->assertContains('volume_progression', $bandedStrategy->getSupportedProgressionTypes());
+        // Note: The banded strategy will be either BandedResistanceExerciseType or BandedAssistanceExerciseType
+        // Both support 'band_progression'
         $this->assertContains('band_progression', $bandedStrategy->getSupportedProgressionTypes());
         
         $this->assertContains('bodyweight_progression', $bodyweightStrategy->getSupportedProgressionTypes());
@@ -304,8 +305,8 @@ class ExerciseTypeStrategyIntegrationTest extends TestCase
         $assistanceStrategy = ExerciseTypeFactory::create($bandedAssistanceExercise);
         $regularStrategy = ExerciseTypeFactory::create($regularExercise);
 
-        $this->assertEquals('banded', $resistanceStrategy->getTypeName());
-        $this->assertEquals('banded', $assistanceStrategy->getTypeName());
+        $this->assertEquals('banded_resistance', $resistanceStrategy->getTypeName());
+        $this->assertEquals('banded_assistance', $assistanceStrategy->getTypeName());
         $this->assertEquals('regular', $regularStrategy->getTypeName());
     }
 
@@ -322,7 +323,7 @@ class ExerciseTypeStrategyIntegrationTest extends TestCase
         $strategy = ExerciseTypeFactory::create($mixedExercise);
         
         // Should create banded strategy (band_type takes precedence)
-        $this->assertEquals('banded', $strategy->getTypeName());
+        $this->assertEquals('banded_resistance', $strategy->getTypeName());
         $this->assertFalse($strategy->canCalculate1RM());
     }
 
@@ -373,16 +374,20 @@ class ExerciseTypeStrategyIntegrationTest extends TestCase
     /** @test */
     public function it_processes_exercise_data_correctly_across_all_exercise_types()
     {
+        // Clear cache before each strategy creation to avoid cache key conflicts
+        ExerciseTypeFactory::clearCache();
         $regularStrategy = ExerciseTypeFactory::create(Exercise::factory()->make([
             'is_bodyweight' => false,
             'band_type' => null,
         ]));
 
+        ExerciseTypeFactory::clearCache();
         $bandedStrategy = ExerciseTypeFactory::create(Exercise::factory()->make([
             'is_bodyweight' => false,
             'band_type' => 'resistance',
         ]));
 
+        ExerciseTypeFactory::clearCache();
         $bodyweightStrategy = ExerciseTypeFactory::create(Exercise::factory()->make([
             'is_bodyweight' => true,
             'band_type' => null,

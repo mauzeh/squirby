@@ -94,7 +94,7 @@ return [
          * Band color indicates the resistance level.
          */
         'banded_resistance' => [
-            'class' => \App\Services\ExerciseTypes\BandedExerciseType::class,
+            'class' => \App\Services\ExerciseTypes\BandedResistanceExerciseType::class,
             'validation' => [
                 'band_color' => 'required|string|in:red,blue,green',
                 'reps' => 'required|integer|min:1|max:100',
@@ -114,7 +114,7 @@ return [
          * Band color indicates the assistance level.
          */
         'banded_assistance' => [
-            'class' => \App\Services\ExerciseTypes\BandedExerciseType::class,
+            'class' => \App\Services\ExerciseTypes\BandedAssistanceExerciseType::class,
             'validation' => [
                 'band_color' => 'required|string|in:red,blue,green',
                 'reps' => 'required|integer|min:1|max:100',

@@ -6,6 +6,8 @@ use Tests\TestCase;
 use App\Services\ExerciseTypes\ExerciseTypeFactory;
 use App\Services\ExerciseTypes\RegularExerciseType;
 use App\Services\ExerciseTypes\BandedExerciseType;
+use App\Services\ExerciseTypes\BandedResistanceExerciseType;
+use App\Services\ExerciseTypes\BandedAssistanceExerciseType;
 use App\Services\ExerciseTypes\BodyweightExerciseType;
 use App\Services\ExerciseTypes\ExerciseTypeInterface;
 use App\Models\Exercise;
@@ -48,8 +50,8 @@ class ExerciseTypeFactoryTest extends TestCase
 
         $strategy = ExerciseTypeFactory::create($exercise);
 
-        $this->assertInstanceOf(BandedExerciseType::class, $strategy);
-        $this->assertEquals('banded', $strategy->getTypeName());
+        $this->assertInstanceOf(BandedResistanceExerciseType::class, $strategy);
+        $this->assertEquals('banded_resistance', $strategy->getTypeName());
     }
 
     /** @test */
@@ -62,8 +64,8 @@ class ExerciseTypeFactoryTest extends TestCase
 
         $strategy = ExerciseTypeFactory::create($exercise);
 
-        $this->assertInstanceOf(BandedExerciseType::class, $strategy);
-        $this->assertEquals('banded', $strategy->getTypeName());
+        $this->assertInstanceOf(BandedAssistanceExerciseType::class, $strategy);
+        $this->assertEquals('banded_assistance', $strategy->getTypeName());
     }
 
     /** @test */
@@ -90,8 +92,8 @@ class ExerciseTypeFactoryTest extends TestCase
 
         $strategy = ExerciseTypeFactory::create($exercise);
 
-        $this->assertInstanceOf(BandedExerciseType::class, $strategy);
-        $this->assertEquals('banded', $strategy->getTypeName());
+        $this->assertInstanceOf(BandedResistanceExerciseType::class, $strategy);
+        $this->assertEquals('banded_resistance', $strategy->getTypeName());
     }
 
     /** @test */
