@@ -3,6 +3,7 @@
 namespace App\Services\ExerciseTypes;
 
 use App\Models\Exercise;
+use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 
 class ExerciseTypeFactory
@@ -60,8 +61,26 @@ class ExerciseTypeFactory
             return $strategy;
             
         } catch (\Exception $e) {
-            // Fallback to default type if strategy creation fails
-            $fallbackType = config('exercise_types.factory.fallback_type', 'regular');
+            // Log the error for debugging
+            \Log::warning('Failed to create exercise type strategy', [
+                'exercise_id' => $exercise->id,
+                'exercise_type' => self::determineExerciseType($exercise),
+                'error' => $e->getMessage(),
+            ]);
+            
+            return self::createFallbackStrategy($e);
+        }
+    }
+    
+    /**
+     * Create a fallback strategy when primary strategy creation fails
+     */
+    private static function createFallbackStrategy(\Exception $originalException): ExerciseTypeInterface
+    {
+        // Try the configured fallback type
+        $fallbackType = config('exercise_types.factory.fallback_type', 'regular');
+        
+        try {
             $fallbackConfig = config("exercise_types.types.{$fallbackType}");
             
             if ($fallbackConfig && isset($fallbackConfig['class']) && class_exists($fallbackConfig['class'])) {
@@ -71,9 +90,26 @@ class ExerciseTypeFactory
                     return $fallbackStrategy;
                 }
             }
+        } catch (\Exception $fallbackException) {
+            \Log::error('Fallback strategy creation also failed', [
+                'fallback_type' => $fallbackType,
+                'fallback_error' => $fallbackException->getMessage(),
+                'original_error' => $originalException->getMessage(),
+            ]);
+        }
+        
+        // Last resort: try to create RegularExerciseType directly
+        try {
+            return new RegularExerciseType();
+        } catch (\Exception $lastResortException) {
+            \Log::critical('All fallback mechanisms failed', [
+                'original_error' => $originalException->getMessage(),
+                'fallback_error' => $fallbackException->getMessage() ?? 'N/A',
+                'last_resort_error' => $lastResortException->getMessage(),
+            ]);
             
-            // Last resort: throw the original exception
-            throw $e;
+            // If even the direct instantiation fails, throw the original exception
+            throw $originalException;
         }
     }
     
@@ -132,5 +168,55 @@ class ExerciseTypeFactory
     {
         $typeConfig = config("exercise_types.types.{$typeName}");
         return $typeConfig && isset($typeConfig['class']) && class_exists($typeConfig['class']);
+    }
+    
+    /**
+     * Create a strategy with graceful fallback for legacy code compatibility
+     * This method never throws exceptions and always returns a valid strategy
+     */
+    public static function createSafe(Exercise $exercise): ExerciseTypeInterface
+    {
+        try {
+            return self::create($exercise);
+        } catch (\Exception $e) {
+            // Log the error but don't throw it
+            Log::warning('Safe strategy creation fell back to RegularExerciseType', [
+                'exercise_id' => $exercise->id,
+                'error' => $e->getMessage(),
+            ]);
+            
+            // Always return RegularExerciseType as the safest fallback
+            return new RegularExerciseType();
+        }
+    }
+    
+    /**
+     * Validate exercise data using the appropriate strategy with fallback
+     */
+    public static function validateExerciseData(Exercise $exercise, array $data, $user = null): array
+    {
+        try {
+            $strategy = self::create($exercise);
+            $rules = $strategy->getValidationRules($user);
+            
+            // Add common validation rules
+            $commonRules = config('exercise_types.validation.common_rules', []);
+            $rules = array_merge($commonRules, $rules);
+            
+            return $rules;
+        } catch (\Exception $e) {
+            Log::warning('Validation rule generation failed, using basic rules', [
+                'exercise_id' => $exercise->id,
+                'error' => $e->getMessage(),
+            ]);
+            
+            // Return basic validation rules as fallback
+            return [
+                'weight' => 'nullable|numeric|min:0',
+                'reps' => 'required|integer|min:1|max:100',
+                'band_color' => 'nullable|string',
+                'notes' => 'nullable|string|max:1000',
+            ];
+        }
     }
 }

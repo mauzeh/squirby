@@ -198,9 +198,10 @@ class ExerciseTypeFactoryTest extends TestCase
 
         try {
             $strategy = ExerciseTypeFactory::create($exercise);
-            $this->fail('Expected InvalidArgumentException was not thrown');
-        } catch (InvalidArgumentException $e) {
-            $this->assertStringContainsString('No configuration found for exercise type', $e->getMessage());
+            
+            // Should fall back to RegularExerciseType directly
+            $this->assertInstanceOf(\App\Services\ExerciseTypes\RegularExerciseType::class, $strategy);
+            $this->assertEquals('regular', $strategy->getTypeName());
         } finally {
             // Restore original config
             config(['exercise_types.types.regular' => $originalConfig]);
@@ -221,9 +222,10 @@ class ExerciseTypeFactoryTest extends TestCase
 
         try {
             $strategy = ExerciseTypeFactory::create($exercise);
-            $this->fail('Expected InvalidArgumentException was not thrown');
-        } catch (InvalidArgumentException $e) {
-            $this->assertStringContainsString('Exercise type class does not exist', $e->getMessage());
+            
+            // Should fall back to RegularExerciseType directly
+            $this->assertInstanceOf(\App\Services\ExerciseTypes\RegularExerciseType::class, $strategy);
+            $this->assertEquals('regular', $strategy->getTypeName());
         } finally {
             // Restore original config
             config(['exercise_types.types.regular.class' => $originalConfig]);
@@ -244,9 +246,10 @@ class ExerciseTypeFactoryTest extends TestCase
 
         try {
             $strategy = ExerciseTypeFactory::create($exercise);
-            $this->fail('Expected InvalidArgumentException was not thrown');
-        } catch (InvalidArgumentException $e) {
-            $this->assertStringContainsString('Exercise type class must implement ExerciseTypeInterface', $e->getMessage());
+            
+            // Should fall back to RegularExerciseType directly
+            $this->assertInstanceOf(\App\Services\ExerciseTypes\RegularExerciseType::class, $strategy);
+            $this->assertEquals('regular', $strategy->getTypeName());
         } finally {
             // Restore original config
             config(['exercise_types.types.regular.class' => $originalConfig]);

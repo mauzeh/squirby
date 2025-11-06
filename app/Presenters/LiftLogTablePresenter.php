@@ -3,8 +3,10 @@
 namespace App\Presenters;
 
 use App\Models\LiftLog;
+use App\Services\ExerciseTypes\Exceptions\UnsupportedOperationException;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class LiftLogTablePresenter
@@ -49,7 +51,19 @@ class LiftLogTablePresenter
      */
     private function formatWeight(LiftLog $liftLog): string
     {
-        return $liftLog->exercise->getTypeStrategy()->formatWeightDisplay($liftLog);
+        try {
+            return $liftLog->exercise->getTypeStrategy()->formatWeightDisplay($liftLog);
+        } catch (\Exception $e) {
+            Log::warning('Weight formatting failed, using fallback', [
+                'lift_log_id' => $liftLog->id,
+                'exercise_id' => $liftLog->exercise_id,
+                'error' => $e->getMessage(),
+            ]);
+            
+            // Fallback to basic weight display
+            $weight = $liftLog->display_weight;
+            return is_numeric($weight) && $weight > 0 ? $weight . ' lbs' : 'N/A';
+        }
     }
 
     /**
@@ -65,13 +79,26 @@ class LiftLogTablePresenter
      */
     private function format1RM(LiftLog $liftLog): string
     {
-        $strategy = $liftLog->exercise->getTypeStrategy();
-        
-        if (!$strategy->canCalculate1RM()) {
-            return 'N/A (' . ucfirst($strategy->getTypeName()) . ')';
+        try {
+            $strategy = $liftLog->exercise->getTypeStrategy();
+            
+            if (!$strategy->canCalculate1RM()) {
+                return 'N/A (' . ucfirst($strategy->getTypeName()) . ')';
+            }
+            
+            return $strategy->format1RMDisplay($liftLog);
+        } catch (UnsupportedOperationException $e) {
+            // Expected exception for unsupported operations
+            return 'N/A';
+        } catch (\Exception $e) {
+            Log::warning('1RM formatting failed, using fallback', [
+                'lift_log_id' => $liftLog->id,
+                'exercise_id' => $liftLog->exercise_id,
+                'error' => $e->getMessage(),
+            ]);
+            
+            return 'N/A';
         }
-        
-        return $strategy->format1RMDisplay($liftLog);
     }
 
     /**
@@ -79,8 +106,18 @@ class LiftLogTablePresenter
      */
     private function formatProgression(LiftLog $liftLog): string
     {
-        $suggestion = $liftLog->exercise->getTypeStrategy()->formatProgressionSuggestion($liftLog);
-        return $suggestion ?? '';
+        try {
+            $suggestion = $liftLog->exercise->getTypeStrategy()->formatProgressionSuggestion($liftLog);
+            return $suggestion ?? '';
+        } catch (\Exception $e) {
+            Log::warning('Progression formatting failed, using fallback', [
+                'lift_log_id' => $liftLog->id,
+                'exercise_id' => $liftLog->exercise_id,
+                'error' => $e->getMessage(),
+            ]);
+            
+            return '';
+        }
     }
 
 

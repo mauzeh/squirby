@@ -4,6 +4,7 @@ namespace App\Services\ExerciseTypes;
 
 use App\Models\LiftLog;
 use App\Models\User;
+use App\Services\ExerciseTypes\Exceptions\UnsupportedOperationException;
 
 abstract class BaseExerciseType implements ExerciseTypeInterface
 {
@@ -11,7 +12,7 @@ abstract class BaseExerciseType implements ExerciseTypeInterface
     
     public function __construct()
     {
-        $this->config = config('exercise_types.types.' . $this->getTypeName(), []);
+        $this->config = config('exercise_types.types.' . $this->getTypeName()) ?? [];
     }
     
     /**
@@ -65,12 +66,12 @@ abstract class BaseExerciseType implements ExerciseTypeInterface
     
     /**
      * Format 1RM display for lift logs
-     * Default implementation returns empty string if 1RM not supported
+     * Default implementation throws exception if 1RM not supported
      */
     public function format1RMDisplay(LiftLog $liftLog): string
     {
         if (!$this->canCalculate1RM()) {
-            return '';
+            throw UnsupportedOperationException::for1RM($this->getTypeName());
         }
         
         $oneRepMax = $liftLog->one_rep_max;

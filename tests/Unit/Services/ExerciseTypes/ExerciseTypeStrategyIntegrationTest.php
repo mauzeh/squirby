@@ -97,7 +97,7 @@ class ExerciseTypeStrategyIntegrationTest extends TestCase
         $this->assertFalse($strategy->canCalculate1RM());
         
         // OneRepMaxService should throw exception for banded exercises
-        $this->expectException(NotApplicableException::class);
+        $this->expectException(\App\Services\ExerciseTypes\Exceptions\UnsupportedOperationException::class);
         $this->oneRepMaxService->getLiftLogOneRepMax($liftLog);
     }
 

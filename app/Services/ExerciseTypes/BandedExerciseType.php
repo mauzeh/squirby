@@ -3,6 +3,7 @@
 namespace App\Services\ExerciseTypes;
 
 use App\Models\LiftLog;
+use App\Services\ExerciseTypes\Exceptions\InvalidExerciseDataException;
 
 class BandedExerciseType extends BaseExerciseType
 {
@@ -25,11 +26,15 @@ class BandedExerciseType extends BaseExerciseType
         // Set weight to 0 for banded exercises
         $processedData['weight'] = 0;
         
-        // Ensure band_color is present
+        // Validate band_color is present
         if (!isset($processedData['band_color']) || empty($processedData['band_color'])) {
-            // Default to first available band color if not specified
-            $availableBands = array_keys(config('bands.colors', []));
-            $processedData['band_color'] = $availableBands[0] ?? 'red';
+            throw InvalidExerciseDataException::missingField('band_color', $this->getTypeName());
+        }
+        
+        // Validate band_color is valid
+        $availableBands = array_keys(config('bands.colors', []));
+        if (!in_array($processedData['band_color'], $availableBands)) {
+            throw InvalidExerciseDataException::invalidBandColor($processedData['band_color']);
         }
         
         return $processedData;

@@ -6,6 +6,7 @@ use App\Models\LiftLog;
 use App\Models\LiftSet;
 use App\Models\User;
 use App\Models\BodyLog;
+use App\Services\ExerciseTypes\Exceptions\UnsupportedOperationException;
 use Carbon\Carbon;
 
 class OneRepMaxCalculatorService
@@ -83,7 +84,7 @@ class OneRepMaxCalculatorService
         // Use exercise type strategy to check if 1RM calculation is supported
         $strategy = $liftLog->exercise->getTypeStrategy();
         if (!$strategy->canCalculate1RM()) {
-            throw new NotApplicableException('1RM calculation is not applicable for ' . $strategy->getTypeName() . ' exercises.');
+            throw UnsupportedOperationException::for1RM($strategy->getTypeName());
         }
 
         // Check for uniformity
@@ -123,7 +124,7 @@ class OneRepMaxCalculatorService
         // Use exercise type strategy to check if 1RM calculation is supported
         $strategy = $liftLog->exercise->getTypeStrategy();
         if (!$strategy->canCalculate1RM()) {
-            throw new NotApplicableException('1RM calculation is not applicable for ' . $strategy->getTypeName() . ' exercises.');
+            throw UnsupportedOperationException::for1RM($strategy->getTypeName());
         }
 
         $isBodyweightExercise = $liftLog->exercise->is_bodyweight ?? false;
@@ -191,7 +192,7 @@ class OneRepMaxCalculatorService
         // Use exercise type strategy to check if 1RM calculation is supported
         $strategy = $liftLog->exercise->getTypeStrategy();
         if (!$strategy->canCalculate1RM()) {
-            throw new NotApplicableException('1RM calculation is not applicable for ' . $strategy->getTypeName() . ' exercises.');
+            throw UnsupportedOperationException::for1RM($strategy->getTypeName());
         }
 
         // Get the first set for calculation (maintaining existing behavior)
@@ -217,7 +218,7 @@ class OneRepMaxCalculatorService
         // Use exercise type strategy to check if 1RM calculation is supported
         $strategy = $liftLog->exercise->getTypeStrategy();
         if (!$strategy->canCalculate1RM()) {
-            throw new NotApplicableException('1RM calculation is not applicable for ' . $strategy->getTypeName() . ' exercises.');
+            throw UnsupportedOperationException::for1RM($strategy->getTypeName());
         }
 
         $isBodyweightExercise = $liftLog->exercise->is_bodyweight ?? false;

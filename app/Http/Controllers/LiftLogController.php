@@ -9,6 +9,8 @@ use App\Models\LiftSet;
 use App\Services\ExerciseService;
 use App\Services\LiftLogService;
 use App\Services\ExerciseTypes\ExerciseTypeFactory;
+use App\Services\ExerciseTypes\Exceptions\InvalidExerciseDataException;
+use App\Services\ExerciseTypes\Exceptions\UnsupportedOperationException;
 use App\Presenters\LiftLogTablePresenter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -129,12 +131,19 @@ class LiftLogController extends Controller
 
         // Use exercise type strategy to process lift data
         $exerciseTypeStrategy = ExerciseTypeFactory::create($exercise);
-        $liftData = $exerciseTypeStrategy->processLiftData([
-            'weight' => $request->input('weight'),
-            'band_color' => $request->input('band_color'),
-            'reps' => $reps,
-            'notes' => $request->input('comments'),
-        ]);
+        
+        try {
+            $liftData = $exerciseTypeStrategy->processLiftData([
+                'weight' => $request->input('weight'),
+                'band_color' => $request->input('band_color'),
+                'reps' => $reps,
+                'notes' => $request->input('comments'),
+            ]);
+        } catch (InvalidExerciseDataException $e) {
+            // Delete the created lift log since data processing failed
+            $liftLog->delete();
+            return back()->withErrors(['exercise_data' => $e->getMessage()])->withInput();
+        }
 
         for ($i = 0; $i < $rounds; $i++) {
             $liftLog->liftSets()->create([
@@ -243,12 +252,17 @@ class LiftLogController extends Controller
 
         // Use exercise type strategy to process lift data
         $exerciseTypeStrategy = ExerciseTypeFactory::create($exercise);
-        $liftData = $exerciseTypeStrategy->processLiftData([
-            'weight' => $request->input('weight'),
-            'band_color' => $request->input('band_color'),
-            'reps' => $reps,
-            'notes' => $request->input('comments'),
-        ]);
+        
+        try {
+            $liftData = $exerciseTypeStrategy->processLiftData([
+                'weight' => $request->input('weight'),
+                'band_color' => $request->input('band_color'),
+                'reps' => $reps,
+                'notes' => $request->input('comments'),
+            ]);
+        } catch (InvalidExerciseDataException $e) {
+            return back()->withErrors(['exercise_data' => $e->getMessage()])->withInput();
+        }
 
         for ($i = 0; $i < $rounds; $i++) {
             $liftLog->liftSets()->create([

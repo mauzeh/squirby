@@ -342,9 +342,10 @@ class Exercise extends Model
 
     /**
      * Get the exercise type strategy for this exercise
+     * Uses safe creation to ensure it never fails
      */
     public function getTypeStrategy(): ExerciseTypeInterface
     {
-        return ExerciseTypeFactory::create($this);
+        return ExerciseTypeFactory::createSafe($this);
     }
 }

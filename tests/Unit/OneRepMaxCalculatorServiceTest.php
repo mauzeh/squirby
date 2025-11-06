@@ -12,7 +12,7 @@ use App\Models\MeasurementType;
 use App\Models\BodyLog;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use App\Services\NotApplicableException;
+use App\Services\ExerciseTypes\Exceptions\UnsupportedOperationException;
 
 class OneRepMaxCalculatorServiceTest extends TestCase
 {
@@ -159,8 +159,8 @@ class OneRepMaxCalculatorServiceTest extends TestCase
     /** @test */
     public function it_throws_exception_for_banded_exercise_in_get_lift_log_one_rep_max()
     {
-        $this->expectException(\App\Services\NotApplicableException::class);
-        $this->expectExceptionMessage('1RM calculation is not applicable for banded exercises.');
+        $this->expectException(\App\Services\ExerciseTypes\Exceptions\UnsupportedOperationException::class);
+        $this->expectExceptionMessage('1RM calculation not supported for banded exercises');
 
         $exercise = Exercise::factory()->create(['band_type' => 'resistance']);
         $liftLog = LiftLog::factory()->create(['exercise_id' => $exercise->id]);
@@ -172,8 +172,8 @@ class OneRepMaxCalculatorServiceTest extends TestCase
     /** @test */
     public function it_throws_exception_for_banded_exercise_in_get_best_lift_log_one_rep_max()
     {
-        $this->expectException(\App\Services\NotApplicableException::class);
-        $this->expectExceptionMessage('1RM calculation is not applicable for banded exercises.');
+        $this->expectException(\App\Services\ExerciseTypes\Exceptions\UnsupportedOperationException::class);
+        $this->expectExceptionMessage('1RM calculation not supported for banded exercises');
 
         $exercise = Exercise::factory()->create(['band_type' => 'assistance']);
         $liftLog = LiftLog::factory()->create(['exercise_id' => $exercise->id]);

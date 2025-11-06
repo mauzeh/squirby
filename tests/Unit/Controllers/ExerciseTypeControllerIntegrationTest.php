@@ -335,19 +335,48 @@ class ExerciseTypeControllerIntegrationTest extends TestCase
 
         $strategy = ExerciseTypeFactory::create($regularExercise);
 
-        // Test missing weight
+        // Test missing weight - should throw exception
+        $this->expectException(\App\Services\ExerciseTypes\Exceptions\InvalidExerciseDataException::class);
+        $this->expectExceptionMessage('Required field \'weight\' missing for regular exercise');
+        
         $dataWithoutWeight = ['reps' => 5];
-        $processed = $strategy->processLiftData($dataWithoutWeight);
-        $this->assertEquals(0, $processed['weight']);
+        $strategy->processLiftData($dataWithoutWeight);
+    }
 
-        // Test non-numeric weight
+    /** @test */
+    public function controllers_handle_invalid_weight_data()
+    {
+        $regularExercise = Exercise::factory()->create([
+            'user_id' => $this->user->id,
+            'is_bodyweight' => false,
+            'band_type' => null,
+        ]);
+
+        $strategy = ExerciseTypeFactory::create($regularExercise);
+
+        // Test non-numeric weight - should throw exception
+        $this->expectException(\App\Services\ExerciseTypes\Exceptions\InvalidExerciseDataException::class);
+        $this->expectExceptionMessage('Invalid weight value \'invalid\' for regular exercise');
+        
         $dataWithInvalidWeight = ['weight' => 'invalid', 'reps' => 5];
-        $processed = $strategy->processLiftData($dataWithInvalidWeight);
-        $this->assertEquals(0, $processed['weight']);
+        $strategy->processLiftData($dataWithInvalidWeight);
+    }
+
+    /** @test */
+    public function controllers_handle_valid_data_processing()
+    {
+        $regularExercise = Exercise::factory()->create([
+            'user_id' => $this->user->id,
+            'is_bodyweight' => false,
+            'band_type' => null,
+        ]);
+
+        $strategy = ExerciseTypeFactory::create($regularExercise);
 
         // Test that band_color is always nullified for regular exercises
         $dataWithBandColor = ['weight' => 100, 'reps' => 5, 'band_color' => 'red'];
         $processed = $strategy->processLiftData($dataWithBandColor);
+        $this->assertEquals(100, $processed['weight']);
         $this->assertNull($processed['band_color']);
     }
 }

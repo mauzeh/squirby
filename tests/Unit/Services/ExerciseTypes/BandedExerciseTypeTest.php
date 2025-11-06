@@ -73,10 +73,10 @@ class BandedExerciseTypeTest extends TestCase
             'reps' => 5,
         ];
 
-        $processedData = $this->strategy->processLiftData($inputData);
+        $this->expectException(\App\Services\ExerciseTypes\Exceptions\InvalidExerciseDataException::class);
+        $this->expectExceptionMessage('Required field \'band_color\' missing for banded exercise');
 
-        $this->assertEquals(0, $processedData['weight']);
-        $this->assertEquals('red', $processedData['band_color']); // Default from config
+        $this->strategy->processLiftData($inputData);
     }
 
     /** @test */
@@ -88,10 +88,10 @@ class BandedExerciseTypeTest extends TestCase
             'band_color' => '',
         ];
 
-        $processedData = $this->strategy->processLiftData($inputData);
+        $this->expectException(\App\Services\ExerciseTypes\Exceptions\InvalidExerciseDataException::class);
+        $this->expectExceptionMessage('Required field \'band_color\' missing for banded exercise');
 
-        $this->assertEquals(0, $processedData['weight']);
-        $this->assertEquals('red', $processedData['band_color']); // Default from config
+        $this->strategy->processLiftData($inputData);
     }
 
     /** @test */
@@ -187,9 +187,10 @@ class BandedExerciseTypeTest extends TestCase
         $liftLog = new LiftLog();
         $liftLog->one_rep_max = 125.7;
 
-        $formatted = $this->strategy->format1RMDisplay($liftLog);
+        $this->expectException(\App\Services\ExerciseTypes\Exceptions\UnsupportedOperationException::class);
+        $this->expectExceptionMessage('1RM calculation not supported for banded exercises');
 
-        $this->assertEquals('', $formatted);
+        $this->strategy->format1RMDisplay($liftLog);
     }
 
     /** @test */

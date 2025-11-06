@@ -2,6 +2,9 @@
 
 namespace App\Services\ExerciseTypes\Exceptions;
 
+/**
+ * Exception thrown when an operation is not supported by a specific exercise type
+ */
 class UnsupportedOperationException extends ExerciseTypeException
 {
     /**
@@ -11,20 +14,28 @@ class UnsupportedOperationException extends ExerciseTypeException
     {
         return new self("1RM calculation not supported for {$exerciseType} exercises");
     }
-    
+
     /**
-     * Create exception for unsupported chart type
+     * Create exception for unsupported chart generation
      */
     public static function forChart(string $exerciseType, string $chartType): self
     {
         return new self("Chart type '{$chartType}' not supported for {$exerciseType} exercises");
     }
-    
+
     /**
-     * Create exception for unsupported progression type
+     * Create exception for unsupported progression calculation
      */
-    public static function forProgression(string $exerciseType, string $progressionType): self
+    public static function forProgression(string $exerciseType): self
     {
-        return new self("Progression type '{$progressionType}' not supported for {$exerciseType} exercises");
+        return new self("Progression calculation not supported for {$exerciseType} exercises");
+    }
+
+    /**
+     * Create exception for generic unsupported operation
+     */
+    public static function forOperation(string $operation, string $exerciseType): self
+    {
+        return new self("Operation '{$operation}' not supported for {$exerciseType} exercises");
     }
 }

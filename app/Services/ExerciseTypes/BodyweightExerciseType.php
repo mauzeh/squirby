@@ -3,6 +3,7 @@
 namespace App\Services\ExerciseTypes;
 
 use App\Models\LiftLog;
+use App\Services\ExerciseTypes\Exceptions\InvalidExerciseDataException;
 use App\Models\User;
 
 class BodyweightExerciseType extends BaseExerciseType
@@ -40,8 +41,16 @@ class BodyweightExerciseType extends BaseExerciseType
         // For bodyweight exercises, weight represents extra weight added
         $processedData = $data;
         
-        // Ensure weight is numeric (can be 0 for bodyweight only)
-        if (!isset($processedData['weight']) || !is_numeric($processedData['weight'])) {
+        // Validate weight if provided
+        if (isset($processedData['weight'])) {
+            if (!is_numeric($processedData['weight'])) {
+                throw InvalidExerciseDataException::invalidWeight($processedData['weight'], $this->getTypeName());
+            }
+            
+            if ($processedData['weight'] < 0) {
+                throw InvalidExerciseDataException::forField('weight', $this->getTypeName(), 'extra weight cannot be negative');
+            }
+        } else {
             $processedData['weight'] = 0;
         }
         

@@ -129,9 +129,10 @@ class BaseExerciseTypeTest extends TestCase
         $liftLog = new LiftLog();
         $liftLog->one_rep_max = 125.7;
 
-        $formatted = $strategy->format1RMDisplay($liftLog);
+        $this->expectException(\App\Services\ExerciseTypes\Exceptions\UnsupportedOperationException::class);
+        $this->expectExceptionMessage('1RM calculation not supported for banded exercises');
 
-        $this->assertEquals('', $formatted);
+        $strategy->format1RMDisplay($liftLog);
     }
 
     /** @test */

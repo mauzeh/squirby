@@ -72,10 +72,10 @@ class RegularExerciseTypeTest extends TestCase
             'reps' => 5,
         ];
 
-        $processedData = $this->strategy->processLiftData($inputData);
+        $this->expectException(\App\Services\ExerciseTypes\Exceptions\InvalidExerciseDataException::class);
+        $this->expectExceptionMessage('Required field \'weight\' missing for regular exercise');
 
-        $this->assertEquals(0, $processedData['weight']);
-        $this->assertNull($processedData['band_color']);
+        $this->strategy->processLiftData($inputData);
     }
 
     /** @test */
@@ -86,10 +86,10 @@ class RegularExerciseTypeTest extends TestCase
             'reps' => 5,
         ];
 
-        $processedData = $this->strategy->processLiftData($inputData);
+        $this->expectException(\App\Services\ExerciseTypes\Exceptions\InvalidExerciseDataException::class);
+        $this->expectExceptionMessage('Invalid weight value \'invalid\' for regular exercise');
 
-        $this->assertEquals(0, $processedData['weight']);
-        $this->assertNull($processedData['band_color']);
+        $this->strategy->processLiftData($inputData);
     }
 
     /** @test */

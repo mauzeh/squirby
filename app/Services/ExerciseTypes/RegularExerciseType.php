@@ -3,6 +3,7 @@
 namespace App\Services\ExerciseTypes;
 
 use App\Models\LiftLog;
+use App\Services\ExerciseTypes\Exceptions\InvalidExerciseDataException;
 
 class RegularExerciseType extends BaseExerciseType
 {
@@ -22,9 +23,17 @@ class RegularExerciseType extends BaseExerciseType
         // For regular exercises, ensure weight is set and band_color is null
         $processedData = $data;
         
-        // Ensure weight is present and numeric
-        if (!isset($processedData['weight']) || !is_numeric($processedData['weight'])) {
-            $processedData['weight'] = 0;
+        // Validate weight is present and numeric
+        if (!isset($processedData['weight'])) {
+            throw InvalidExerciseDataException::missingField('weight', $this->getTypeName());
+        }
+        
+        if (!is_numeric($processedData['weight'])) {
+            throw InvalidExerciseDataException::invalidWeight($processedData['weight'], $this->getTypeName());
+        }
+        
+        if ($processedData['weight'] < 0) {
+            throw InvalidExerciseDataException::forField('weight', $this->getTypeName(), 'weight cannot be negative');
         }
         
         // Nullify band_color for regular exercises
