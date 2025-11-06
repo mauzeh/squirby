@@ -5,6 +5,32 @@ namespace App\Services\ExerciseTypes;
 use App\Models\LiftLog;
 use App\Services\ExerciseTypes\Exceptions\InvalidExerciseDataException;
 
+/**
+ * Regular Exercise Type Strategy
+ * 
+ * Handles traditional weight-based exercises like barbell and dumbbell movements.
+ * This is the most common exercise type and serves as the default fallback.
+ * 
+ * Characteristics:
+ * - Requires weight field for all lift logs
+ * - Supports 1RM calculation
+ * - Uses weight-based display formatting
+ * - Nullifies band_color field (incompatible with regular exercises)
+ * - Supports linear and double progression models
+ * 
+ * @package App\Services\ExerciseTypes
+ * @since 1.0.0
+ * 
+ * @example
+ * // Typical usage for exercises like "Bench Press", "Squat", "Deadlift"
+ * $strategy = new RegularExerciseType();
+ * $processedData = $strategy->processLiftData([
+ *     'weight' => '135',
+ *     'reps' => '8',
+ *     'band_color' => 'red' // Will be nullified
+ * ]);
+ * // Result: ['weight' => 135, 'reps' => 8, 'band_color' => null]
+ */
 class RegularExerciseType extends BaseExerciseType
 {
     /**

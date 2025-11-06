@@ -6,8 +6,46 @@ use App\Models\Exercise;
 use Illuminate\Support\Facades\Log;
 use InvalidArgumentException;
 
+/**
+ * Exercise Type Factory
+ * 
+ * Factory class responsible for creating appropriate exercise type strategy instances
+ * based on exercise properties. Implements the Factory Pattern to eliminate conditional
+ * logic throughout the application and provide a centralized point for strategy creation.
+ * 
+ * The factory supports:
+ * - Automatic strategy selection based on exercise properties
+ * - Strategy caching for performance optimization
+ * - Graceful fallback mechanisms for error recovery
+ * - Configuration-driven strategy creation
+ * - Safe creation methods that never throw exceptions
+ * 
+ * @package App\Services\ExerciseTypes
+ * @since 1.0.0
+ * 
+ * @example
+ * // Basic usage
+ * $strategy = ExerciseTypeFactory::create($exercise);
+ * $rules = $strategy->getValidationRules();
+ * 
+ * @example
+ * // Safe creation (never throws exceptions)
+ * $strategy = ExerciseTypeFactory::createSafe($exercise);
+ * 
+ * @example
+ * // Validation helper
+ * $rules = ExerciseTypeFactory::validateExerciseData($exercise, $data, $user);
+ */
 class ExerciseTypeFactory
 {
+    /**
+     * Cache of created strategy instances
+     * 
+     * Keyed by exercise properties to avoid repeated instantiation
+     * of the same strategy types. Can be disabled via configuration.
+     * 
+     * @var array<string, ExerciseTypeInterface>
+     */
     private static array $strategies = [];
     
     /**

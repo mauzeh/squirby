@@ -83,11 +83,7 @@ class TrainingProgressionService
         $strategy = $liftLog->exercise->getTypeStrategy();
         $supportedProgressionTypes = $strategy->getSupportedProgressionTypes();
         
-        // For bodyweight exercises, always use DoubleProgression since LinearProgression
-        // filters out bodyweight exercises and won't provide suggestions
-        if ($liftLog->exercise->is_bodyweight) {
-            return new DoubleProgression($this->oneRepMaxCalculatorService);
-        }
+
         
         // Try to infer progression model from recent workout history first
         $inferredModel = $this->inferProgressionModelFromHistory($liftLog->user_id, $liftLog->exercise_id);

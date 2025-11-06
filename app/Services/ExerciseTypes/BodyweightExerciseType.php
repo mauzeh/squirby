@@ -6,6 +6,44 @@ use App\Models\LiftLog;
 use App\Services\ExerciseTypes\Exceptions\InvalidExerciseDataException;
 use App\Models\User;
 
+/**
+ * Bodyweight Exercise Type Strategy
+ * 
+ * Handles exercises that primarily use body weight as resistance, with optional
+ * additional weight. The weight field represents extra weight added to the exercise,
+ * not the total resistance (which includes body weight).
+ * 
+ * Characteristics:
+ * - Optional weight field (represents extra weight only)
+ * - Supports 1RM calculation (includes estimated body weight)
+ * - Uses bodyweight-specific display formatting
+ * - Nullifies band_color field (incompatible with bodyweight exercises)
+ * - Supports bodyweight-specific progression models
+ * - Provides progression suggestions for adding weight
+ * 
+ * User Preferences:
+ * - Respects user's show_extra_weight preference for validation
+ * - Adapts display format based on whether extra weight is used
+ * 
+ * @package App\Services\ExerciseTypes
+ * @since 1.0.0
+ * 
+ * @example
+ * // Typical usage for exercises like "Push-ups", "Pull-ups", "Dips"
+ * $strategy = new BodyweightExerciseType();
+ * $processedData = $strategy->processLiftData([
+ *     'weight' => '25', // Extra weight (e.g., weighted vest)
+ *     'reps' => '8',
+ *     'band_color' => 'red' // Will be nullified
+ * ]);
+ * // Result: ['weight' => 25, 'reps' => 8, 'band_color' => null]
+ * 
+ * @example
+ * // Display formatting
+ * $display = $strategy->formatWeightDisplay($liftLog);
+ * // With extra weight: "Bodyweight +25 lbs"
+ * // Without extra weight: "Bodyweight"
+ */
 class BodyweightExerciseType extends BaseExerciseType
 {
     /**

@@ -94,9 +94,12 @@ class LiftLogService extends MobileEntryBaseService
             // Build numeric fields based on exercise type
             $numericFields = [];
             
-            // Add weight or band color field based on exercise type
-            if ($exercise->band_type) {
-                // For banded exercises, add band color selector instead of weight
+            // Add form fields based on exercise type strategy
+            $strategy = $exercise->getTypeStrategy();
+            $formFields = $strategy->getFormFields();
+            
+            if (in_array('band_color', $formFields)) {
+                // For banded exercises, add band color selector
                 $bandColors = config('bands.colors', []);
                 $defaultBandColor = $lastSession['band_color'] ?? 'red'; // Default to red band
                 
@@ -113,18 +116,23 @@ class LiftLogService extends MobileEntryBaseService
                         'field' => 'Select band color'
                     ]
                 ];
-            } else {
-                // For weighted exercises, add weight field
+            }
+            
+            if (in_array('weight', $formFields)) {
+                // For exercises that use weight field
                 // For bodyweight exercises, only show weight field if user has show_extra_weight enabled
-                $shouldShowWeightField = !$exercise->is_bodyweight || ($user && $user->shouldShowExtraWeight());
+                $shouldShowWeightField = $strategy->getTypeName() !== 'bodyweight' || ($user && $user->shouldShowExtraWeight());
                 
                 if ($shouldShowWeightField) {
+                    $weightLabel = $strategy->getTypeName() === 'bodyweight' ? 'Added Weight (lbs):' : 'Weight (lbs):';
+                    $increment = $strategy->getTypeName() === 'bodyweight' ? 2.5 : 5;
+                    
                     $numericFields[] = [
                         'id' => $formId . '-weight',
                         'name' => 'weight',
-                        'label' => $exercise->is_bodyweight ? 'Added Weight (lbs):' : 'Weight (lbs):',
+                        'label' => $weightLabel,
                         'defaultValue' => $defaultWeight,
-                        'increment' => $exercise->is_bodyweight ? 2.5 : 5,
+                        'increment' => $increment,
                         'min' => 0,
                         'max' => 600,
                         'ariaLabels' => [
@@ -250,7 +258,9 @@ class LiftLogService extends MobileEntryBaseService
      */
     public function getDefaultWeight($exercise, $lastSession, $userId = null)
     {
-        if ($exercise->is_bodyweight) {
+        $strategy = $exercise->getTypeStrategy();
+        
+        if ($strategy->getTypeName() === 'bodyweight') {
             return $lastSession['weight'] ?? 0; // Added weight for bodyweight exercises
         }
         
@@ -304,26 +314,22 @@ class LiftLogService extends MobileEntryBaseService
         
         // Add last session info if available
         if ($lastSession) {
-            // Format the resistance/weight info based on exercise type
-            if ($program->exercise->band_type) {
-                // For banded exercises, show band color
-                $bandColor = $lastSession['band_color'] ?? 'Unknown';
-                $resistanceText = ucfirst($bandColor) . ' band';
-                $messageText = $resistanceText . ' × ' . $lastSession['reps'] . ' reps × ' . $lastSession['sets'] . ' sets';
-            } elseif ($program->exercise->is_bodyweight) {
-                // For bodyweight exercises, only show additional weight if present
-                if ($lastSession['weight'] > 0) {
-                    $resistanceText = '+' . $lastSession['weight'] . ' lbs';
-                    $messageText = $resistanceText . ' × ' . $lastSession['reps'] . ' reps × ' . $lastSession['sets'] . ' sets';
-                } else {
-                    // No weight mentioned, just reps and sets
-                    $messageText = $lastSession['reps'] . ' reps × ' . $lastSession['sets'] . ' sets';
-                }
-            } else {
-                // For regular weighted exercises
-                $resistanceText = $lastSession['weight'] . ' lbs';
-                $messageText = $resistanceText . ' × ' . $lastSession['reps'] . ' reps × ' . $lastSession['sets'] . ' sets';
-            }
+            // Format the resistance/weight info using exercise type strategy
+            $strategy = $program->exercise->getTypeStrategy();
+            
+            // Create a mock lift log for formatting
+            $mockLiftLog = new \App\Models\LiftLog();
+            $mockLiftLog->exercise = $program->exercise;
+            $mockLiftLog->setRelation('liftSets', collect([
+                (object)[
+                    'weight' => $lastSession['weight'] ?? 0,
+                    'reps' => $lastSession['reps'] ?? 0,
+                    'band_color' => $lastSession['band_color'] ?? null
+                ]
+            ]));
+            
+            $resistanceText = $strategy->formatWeightDisplay($mockLiftLog);
+            $messageText = $resistanceText . ' × ' . $lastSession['reps'] . ' reps × ' . $lastSession['sets'] . ' sets';
             
             $messages[] = [
                 'type' => 'info',
@@ -358,32 +364,32 @@ class LiftLogService extends MobileEntryBaseService
             );
             
             if ($suggestion) {
+                $strategy = $program->exercise->getTypeStrategy();
+                $sets = $suggestion->sets ?? $lastSession['sets'] ?? 3;
+                
                 if (isset($suggestion->band_color)) {
                     // Banded exercise suggestion
-                    $sets = $suggestion->sets ?? $lastSession['sets'] ?? 3;
                     $messages[] = [
                         'type' => 'tip',
                         'prefix' => config('mobile_entry_messages.form_guidance.try_this'),
                         'text' => $suggestion->band_color . ' band × ' . $suggestion->reps . ' reps × ' . $sets . ' sets' . config('mobile_entry_messages.form_guidance.suggestion_suffix')
                     ];
-                } elseif (isset($suggestion->suggestedWeight) && !$program->exercise->is_bodyweight) {
+                } elseif (isset($suggestion->suggestedWeight) && $strategy->getTypeName() !== 'bodyweight') {
                     // Weighted exercise suggestion
-                    $sets = $suggestion->sets ?? $lastSession['sets'] ?? 3;
                     $messages[] = [
                         'type' => 'tip',
                         'prefix' => config('mobile_entry_messages.form_guidance.try_this'),
                         'text' => $suggestion->suggestedWeight . ' lbs × ' . $suggestion->reps . ' reps × ' . $sets . ' sets' . config('mobile_entry_messages.form_guidance.suggestion_suffix')
                     ];
-                } elseif ($program->exercise->is_bodyweight && isset($suggestion->reps)) {
+                } elseif ($strategy->getTypeName() === 'bodyweight' && isset($suggestion->reps)) {
                     // Bodyweight exercise suggestion
-                    $sets = $suggestion->sets ?? $lastSession['sets'] ?? 3;
                     $messages[] = [
                         'type' => 'tip',
                         'prefix' => config('mobile_entry_messages.form_guidance.try_this'),
                         'text' => $suggestion->reps . ' reps × ' . $sets . ' sets' . config('mobile_entry_messages.form_guidance.suggestion_suffix')
                     ];
                 }
-            } elseif (!$program->exercise->is_bodyweight) {
+            } elseif ($program->exercise->getTypeStrategy()->getTypeName() !== 'bodyweight') {
                 // Fallback to simple progression if service fails
                 $sets = $lastSession['sets'] ?? 3;
                 $reps = $lastSession['reps'] ?? 5;
@@ -435,25 +441,15 @@ class LiftLogService extends MobileEntryBaseService
             $firstSet = $log->liftSets->first();
             $setCount = $log->liftSets->count();
             
-            // Generate display text without using accessors that might trigger queries
-            if ($log->exercise->band_type) {
-                $weightText = 'Band: ' . ($firstSet->band_color ?? 'N/A');
-            } elseif ($log->exercise->is_bodyweight) {
-                // For bodyweight exercises, only show additional weight if present
-                if ($firstSet->weight > 0) {
-                    $weightText = '+' . $firstSet->weight . ' lbs';
-                } else {
-                    $weightText = '';
-                }
-            } else {
-                $weightText = $firstSet->weight . ' lbs';
-            }
+            // Generate display text using exercise type strategy
+            $strategy = $log->exercise->getTypeStrategy();
+            $weightText = $strategy->formatWeightDisplay($log);
             
             // Generate reps/sets text directly
             $repsSetsText = $setCount . ' x ' . $firstSet->reps;
             
             // Combine weight and reps/sets for the message
-            if ($log->exercise->is_bodyweight && $firstSet->weight == 0) {
+            if ($strategy->getTypeName() === 'bodyweight' && $firstSet->weight == 0) {
                 // For bodyweight with no additional weight, just show reps/sets
                 $formattedMessage = $repsSetsText;
             } else {

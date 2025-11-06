@@ -7,6 +7,32 @@ use App\Models\LiftLog;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\View\Component;
 
+/**
+ * Lift Log Form Component
+ * 
+ * A reusable view component for rendering lift log creation and edit forms.
+ * Uses the exercise type strategy pattern to determine which form fields
+ * should be displayed based on the selected exercise type.
+ * 
+ * Features:
+ * - Dynamic form field rendering based on exercise type
+ * - Strategy-based validation rule integration
+ * - Support for both new and existing lift logs
+ * - Exercise-specific input handling (weight vs band color)
+ * - Band color selection for banded exercises
+ * 
+ * @package App\View\Components
+ * @since 1.0.0
+ * 
+ * @example
+ * // In a Blade template
+ * <x-lift-log-form 
+ *     :lift-log="$liftLog" 
+ *     :exercises="$exercises"
+ *     action="{{ route('lift-logs.store') }}"
+ *     method="POST" 
+ * />
+ */
 class LiftLogFormComponent extends Component
 {
     public LiftLog $liftLog;

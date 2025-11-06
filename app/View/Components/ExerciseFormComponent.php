@@ -6,6 +6,31 @@ use App\Models\Exercise;
 use App\Services\ExerciseTypes\ExerciseTypeFactory;
 use Illuminate\View\Component;
 
+/**
+ * Exercise Form Component
+ * 
+ * A reusable view component for rendering exercise creation and edit forms.
+ * Uses the exercise type strategy pattern to determine which form fields
+ * should be displayed based on the exercise type.
+ * 
+ * Features:
+ * - Dynamic form field rendering based on exercise type
+ * - Strategy-based validation rule integration
+ * - Support for both new and existing exercises
+ * - Admin-specific features (global exercise creation)
+ * 
+ * @package App\View\Components
+ * @since 1.0.0
+ * 
+ * @example
+ * // In a Blade template
+ * <x-exercise-form 
+ *     :exercise="$exercise" 
+ *     :can-create-global="$canCreateGlobal"
+ *     action="{{ route('exercises.store') }}"
+ *     method="POST" 
+ * />
+ */
 class ExerciseFormComponent extends Component
 {
     public Exercise $exercise;

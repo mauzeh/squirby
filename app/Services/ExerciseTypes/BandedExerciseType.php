@@ -5,6 +5,37 @@ namespace App\Services\ExerciseTypes;
 use App\Models\LiftLog;
 use App\Services\ExerciseTypes\Exceptions\InvalidExerciseDataException;
 
+/**
+ * Banded Exercise Type Strategy
+ * 
+ * Handles exercises that use resistance or assistance bands instead of traditional weights.
+ * Supports both resistance bands (add difficulty) and assistance bands (reduce difficulty).
+ * 
+ * Characteristics:
+ * - Requires band_color field for all lift logs
+ * - Sets weight to 0 (bands don't use traditional weight)
+ * - Does not support 1RM calculation (band resistance varies)
+ * - Uses band color display formatting
+ * - Supports volume and band-specific progression models
+ * - Provides band progression suggestions
+ * 
+ * Band Types:
+ * - Resistance: Adds difficulty (e.g., banded squats)
+ * - Assistance: Reduces difficulty (e.g., assisted pull-ups)
+ * 
+ * @package App\Services\ExerciseTypes
+ * @since 1.0.0
+ * 
+ * @example
+ * // Typical usage for exercises like "Banded Squats", "Assisted Pull-ups"
+ * $strategy = new BandedExerciseType();
+ * $processedData = $strategy->processLiftData([
+ *     'weight' => '50', // Will be set to 0
+ *     'band_color' => 'blue',
+ *     'reps' => '10'
+ * ]);
+ * // Result: ['weight' => 0, 'band_color' => 'blue', 'reps' => 10]
+ */
 class BandedExerciseType extends BaseExerciseType
 {
     /**

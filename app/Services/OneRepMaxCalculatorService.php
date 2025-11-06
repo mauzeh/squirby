@@ -97,7 +97,8 @@ class OneRepMaxCalculatorService
             }
         }
 
-        $isBodyweightExercise = $liftLog->exercise->is_bodyweight ?? false;
+        $strategy = $liftLog->exercise->getTypeStrategy();
+        $isBodyweightExercise = $strategy->getTypeName() === 'bodyweight';
         $userId = $liftLog->user_id;
         $date = $liftLog->logged_at;
 
@@ -127,7 +128,7 @@ class OneRepMaxCalculatorService
             throw UnsupportedOperationException::for1RM($strategy->getTypeName());
         }
 
-        $isBodyweightExercise = $liftLog->exercise->is_bodyweight ?? false;
+        $isBodyweightExercise = $strategy->getTypeName() === 'bodyweight';
 
         return $liftLog->liftSets->max(function ($liftSet) use ($isBodyweightExercise, $liftLog) {
             return $this->calculateOneRepMaxOptimized($liftSet->weight, $liftSet->reps, $isBodyweightExercise, $liftLog);
@@ -197,7 +198,8 @@ class OneRepMaxCalculatorService
 
         // Get the first set for calculation (maintaining existing behavior)
         $firstSet = $liftLog->liftSets->first();
-        $isBodyweightExercise = $liftLog->exercise->is_bodyweight ?? false;
+        $strategy = $liftLog->exercise->getTypeStrategy();
+        $isBodyweightExercise = $strategy->getTypeName() === 'bodyweight';
 
         return $this->calculateOneRepMaxOptimized($firstSet->weight, $firstSet->reps, $isBodyweightExercise, $liftLog);
     }
@@ -221,7 +223,7 @@ class OneRepMaxCalculatorService
             throw UnsupportedOperationException::for1RM($strategy->getTypeName());
         }
 
-        $isBodyweightExercise = $liftLog->exercise->is_bodyweight ?? false;
+        $isBodyweightExercise = $strategy->getTypeName() === 'bodyweight';
 
         return $liftLog->liftSets->max(function ($liftSet) use ($isBodyweightExercise, $liftLog) {
             return $this->calculateOneRepMaxOptimized($liftSet->weight, $liftSet->reps, $isBodyweightExercise, $liftLog);

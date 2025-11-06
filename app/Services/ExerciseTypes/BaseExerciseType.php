@@ -6,10 +6,43 @@ use App\Models\LiftLog;
 use App\Models\User;
 use App\Services\ExerciseTypes\Exceptions\UnsupportedOperationException;
 
+/**
+ * Base Exercise Type Strategy
+ * 
+ * Abstract base class that provides common functionality for all exercise type strategies.
+ * Implements default behavior for most ExerciseTypeInterface methods and loads
+ * configuration from the config/exercise_types.php file.
+ * 
+ * Concrete exercise type classes should extend this class and implement the
+ * abstract methods: getTypeName(), processLiftData(), and formatWeightDisplay().
+ * 
+ * @package App\Services\ExerciseTypes
+ * @since 1.0.0
+ * 
+ * @example
+ * // Creating a new exercise type
+ * class CustomExerciseType extends BaseExerciseType
+ * {
+ *     public function getTypeName(): string { return 'custom'; }
+ *     public function processLiftData(array $data): array { return $data; }
+ *     public function formatWeightDisplay(LiftLog $liftLog): string { return '...'; }
+ * }
+ */
 abstract class BaseExerciseType implements ExerciseTypeInterface
 {
+    /**
+     * Configuration array loaded from config/exercise_types.php
+     * 
+     * @var array
+     */
     protected array $config;
     
+    /**
+     * Initialize the exercise type strategy with configuration
+     * 
+     * Loads the configuration for this exercise type from the config file
+     * based on the type name returned by getTypeName().
+     */
     public function __construct()
     {
         $this->config = config('exercise_types.types.' . $this->getTypeName()) ?? [];
