@@ -4,6 +4,17 @@
         @method($method)
     @endif
     
+    {{-- Display validation errors --}}
+    @if ($errors->any())
+        <div class="error-message-box">
+            <ul style="margin: 0; padding-left: 20px;">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+    
     @if ($shouldShowField('exercise_id'))
         <div class="form-group">
             <label for="exercise_id">Exercise:</label>
@@ -17,6 +28,11 @@
                 @endforeach
             </select>
         </div>
+    @endif
+
+    {{-- Hidden exercise_id field for existing lift logs --}}
+    @if ($shouldIncludeHiddenExerciseId())
+        <input type="hidden" name="exercise_id" value="{{ $liftLog->exercise_id }}">
     @endif
 
     <div class="form-group" id="weight-group">
