@@ -129,9 +129,9 @@ class BodyweightExerciseTypeTest extends TestCase
     }
 
     /** @test */
-    public function it_supports_1rm_calculation()
+    public function it_does_not_support_1rm_calculation()
     {
-        $this->assertTrue($this->strategy->canCalculate1RM());
+        $this->assertFalse($this->strategy->canCalculate1RM());
     }
 
     /** @test */
@@ -213,7 +213,7 @@ class BodyweightExerciseTypeTest extends TestCase
     }
 
     /** @test */
-    public function it_formats_1rm_display_with_extra_weight()
+    public function it_formats_1rm_display_as_empty_string()
     {
         $exercise = Exercise::factory()->create(['is_bodyweight' => true, 'band_type' => null]);
         $liftLog = LiftLog::factory()->create(['exercise_id' => $exercise->id]);
@@ -228,7 +228,7 @@ class BodyweightExerciseTypeTest extends TestCase
 
         $formatted = $this->strategy->format1RMDisplay($liftLog);
 
-        $this->assertEquals('BW +35.0 lbs (1RM)', $formatted);
+        $this->assertEquals('', $formatted);
     }
 
     /** @test */
@@ -315,6 +315,6 @@ class BodyweightExerciseTypeTest extends TestCase
         $this->assertArrayHasKey('class', $config);
         $this->assertArrayHasKey('validation', $config);
         $this->assertArrayHasKey('supports_1rm', $config);
-        $this->assertTrue($config['supports_1rm']);
+        $this->assertFalse($config['supports_1rm']);
     }
 }

@@ -80,7 +80,7 @@ class ExerciseManagementTest extends TestCase
         $exerciseData = [
             'title' => 'Bodyweight Squat',
             'description' => 'A squat performed without external weight.',
-            'is_bodyweight' => true,
+            'exercise_type' => 'bodyweight',
         ];
 
         $response = $this->post(route('exercises.store'), $exerciseData);
@@ -91,7 +91,7 @@ class ExerciseManagementTest extends TestCase
             'user_id' => $user->id,
             'title' => $exerciseData['title'],
             'description' => $exerciseData['description'],
-            'is_bodyweight' => true,
+            'exercise_type' => 'bodyweight',
         ]);
     }
 
@@ -100,12 +100,12 @@ class ExerciseManagementTest extends TestCase
     {
         $user = User::factory()->create();
         $this->actingAs($user);
-        $exercise = Exercise::factory()->create(['user_id' => $user->id, 'is_bodyweight' => false]);
+        $exercise = Exercise::factory()->create(['user_id' => $user->id, 'exercise_type' => 'regular']);
 
         $updatedData = [
             'title' => $exercise->title,
             'description' => $exercise->description,
-            'is_bodyweight' => true,
+            'exercise_type' => 'bodyweight',
         ];
 
         $response = $this->put(route('exercises.update', $exercise), $updatedData);
@@ -114,7 +114,7 @@ class ExerciseManagementTest extends TestCase
         $response->assertSessionHas('success', 'Exercise updated successfully.');
         $this->assertDatabaseHas('exercises', [
             'id' => $exercise->id,
-            'is_bodyweight' => true,
+            'exercise_type' => 'bodyweight',
         ]);
     }
 
@@ -123,12 +123,12 @@ class ExerciseManagementTest extends TestCase
     {
         $user = User::factory()->create();
         $this->actingAs($user);
-        $exercise = Exercise::factory()->create(['user_id' => $user->id, 'is_bodyweight' => true]);
+        $exercise = Exercise::factory()->create(['user_id' => $user->id, 'exercise_type' => 'bodyweight']);
 
         $updatedData = [
             'title' => $exercise->title,
             'description' => $exercise->description,
-            'is_bodyweight' => false,
+            'exercise_type' => 'regular',
         ];
 
         $response = $this->put(route('exercises.update', $exercise), $updatedData);
@@ -137,7 +137,7 @@ class ExerciseManagementTest extends TestCase
         $response->assertSessionHas('success', 'Exercise updated successfully.');
         $this->assertDatabaseHas('exercises', [
             'id' => $exercise->id,
-            'is_bodyweight' => false,
+            'exercise_type' => 'regular',
         ]);
     }
 
@@ -680,7 +680,7 @@ class ExerciseManagementTest extends TestCase
         $exerciseData = [
             'title' => 'New Global Exercise',
             'description' => 'A new global exercise',
-            'is_bodyweight' => false,
+            'exercise_type' => 'regular',
             'is_global' => true,
         ];
 
@@ -710,7 +710,7 @@ class ExerciseManagementTest extends TestCase
         $updatedData = [
             'title' => 'Now Global Exercise',
             'description' => 'Made global',
-            'is_bodyweight' => false,
+            'exercise_type' => 'regular',
             'is_global' => true,
         ];
 

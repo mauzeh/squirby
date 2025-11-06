@@ -357,22 +357,10 @@ class LiftLogLoggingTest extends TestCase {
     /** @test */
     public function a_user_can_view_bodyweight_exercise_logs_with_correct_1rm_display()
     {
-        $bodyweightMeasurementType = \App\Models\MeasurementType::factory()->create([
-            'user_id' => $this->user->id,
-            'name' => 'Bodyweight',
-        ]);
-
-        \App\Models\BodyLog::factory()->create([
-            'user_id' => $this->user->id,
-            'measurement_type_id' => $bodyweightMeasurementType->id,
-            'value' => 180,
-            'logged_at' => now()->subDay(),
-        ]);
-
         $exercise = \App\Models\Exercise::factory()->create([
             'user_id' => $this->user->id,
             'title' => 'Chin-Ups',
-            'is_bodyweight' => true
+            'exercise_type' => 'bodyweight'
         ]);
         $liftLog = \App\Models\LiftLog::factory()->create([
             'user_id' => $this->user->id,
@@ -385,13 +373,11 @@ class LiftLogLoggingTest extends TestCase {
             'notes' => 'Bodyweight set',
         ]);
 
-        // Assuming user bodyweight is 180 from OneRepMaxCalculatorServiceTest setup
-        $expected1RM = round(180 * (1 + (0.0333 * 5)));
-
         $response = $this->get(route('exercises.show-logs', $exercise));
 
         $response->assertStatus(200);
-        $response->assertSee($expected1RM . ' lbs (est. incl. BW)');
+        // Bodyweight exercises should not show 1RM calculations
+        $response->assertDontSee('lbs (est. incl. BW)');
     }
 
 

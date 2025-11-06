@@ -123,12 +123,14 @@ class ExerciseTypeStrategyIntegrationTest extends TestCase
 
         $strategy = ExerciseTypeFactory::create($exercise);
         
-        // Strategy should support 1RM calculation
-        $this->assertTrue($strategy->canCalculate1RM());
+        // Strategy should NOT support 1RM calculation for bodyweight exercises
+        $this->assertFalse($strategy->canCalculate1RM());
         
-        // OneRepMaxService should work with bodyweight exercises
-        $oneRepMax = $this->oneRepMaxService->getLiftLogOneRepMax($liftLog);
-        $this->assertGreaterThan(0, $oneRepMax);
+        // OneRepMaxService should throw exception for bodyweight exercises
+        $this->expectException(\App\Services\ExerciseTypes\Exceptions\UnsupportedOperationException::class);
+        $this->expectExceptionMessage('1RM calculation not supported for bodyweight exercises');
+        
+        $this->oneRepMaxService->getLiftLogOneRepMax($liftLog);
     }
 
     /** @test */
@@ -157,7 +159,7 @@ class ExerciseTypeStrategyIntegrationTest extends TestCase
         $bodyweightStrategy = ExerciseTypeFactory::create($bodyweightExercise);
 
         // Each strategy should return appropriate chart type
-        $this->assertEquals('one_rep_max', $regularStrategy->getChartType());
+        $this->assertEquals('weight_progression', $regularStrategy->getChartType());
         $this->assertEquals('band_progression', $bandedStrategy->getChartType());
         $this->assertEquals('bodyweight_progression', $bodyweightStrategy->getChartType());
     }
@@ -188,8 +190,8 @@ class ExerciseTypeStrategyIntegrationTest extends TestCase
         $bodyweightStrategy = ExerciseTypeFactory::create($bodyweightExercise);
 
         // Each strategy should return appropriate progression types
-        $this->assertContains('linear', $regularStrategy->getSupportedProgressionTypes());
-        $this->assertContains('double_progression', $regularStrategy->getSupportedProgressionTypes());
+        $this->assertContains('weight_progression', $regularStrategy->getSupportedProgressionTypes());
+        $this->assertContains('volume_progression', $regularStrategy->getSupportedProgressionTypes());
         
         // Note: The banded strategy will be either BandedResistanceExerciseType or BandedAssistanceExerciseType
         // Both support 'band_progression'

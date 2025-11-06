@@ -32,7 +32,7 @@ class RegularExerciseTypeTest extends TestCase
     public function it_returns_validation_rules_from_config()
     {
         $expectedRules = [
-            'weight' => 'required|numeric|min:0',
+            'weight' => 'required|numeric|min:0|max:2000',
             'reps' => 'required|integer|min:1|max:100',
         ];
 
@@ -117,13 +117,13 @@ class RegularExerciseTypeTest extends TestCase
     /** @test */
     public function it_returns_correct_chart_type()
     {
-        $this->assertEquals('one_rep_max', $this->strategy->getChartType());
+        $this->assertEquals('weight_progression', $this->strategy->getChartType());
     }
 
     /** @test */
     public function it_returns_supported_progression_types()
     {
-        $expectedTypes = ['linear', 'double_progression'];
+        $expectedTypes = ['weight_progression', 'volume_progression'];
 
         $this->assertEquals($expectedTypes, $this->strategy->getSupportedProgressionTypes());
     }

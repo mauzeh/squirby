@@ -82,6 +82,9 @@ class BandedExerciseType extends BaseExerciseType
         // This is a legacy class, so we'll default to banded_resistance
         $processedData['exercise_type'] = 'banded_resistance';
         
+        // Banded exercises are not bodyweight exercises
+        $processedData['is_bodyweight'] = false;
+        
         return $processedData;
     }
     

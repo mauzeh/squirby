@@ -32,6 +32,6 @@ class VolumeProgressionChartGenerator implements ChartGeneratorInterface
 
     public function supports(string $exerciseType): bool
     {
-        return in_array($exerciseType, ['bodyweight', 'bodyweight_progression', 'volume_progression']);
+        return in_array($exerciseType, ['bodyweight', 'bodyweight_progression', 'volume_progression', 'reps_progression']);
     }
 }

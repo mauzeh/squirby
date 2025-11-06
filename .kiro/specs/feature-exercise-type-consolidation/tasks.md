@@ -81,6 +81,8 @@
   - _Requirements: 1.1, 1.2, 5.1, 5.4, 8.4, 8.5_
 
   - [ ] 11. Remove all fallback logic and other backward compatibility logic
-   - Use the Git history to identify all code that serves to provide backward compatibility.
-   - Update tests that rely on backward compatibility to use the new system.
-   - Confirm that all logic for backward compatibility has been removed.
+   - The is_bodyweight and band_type column should be removed altogether from the database schema
+   - Any and all references to is_bodyweight and band_type should be removed
+   - Use the Git history to identify all code that serves to provide backward compatibility
+   - Update tests that rely on backward compatibility to use the new system
+   - Confirm that all logic for backward compatibility has been removed

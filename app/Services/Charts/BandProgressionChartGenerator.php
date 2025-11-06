@@ -34,6 +34,6 @@ class BandProgressionChartGenerator implements ChartGeneratorInterface
 
     public function supports(string $exerciseType): bool
     {
-        return in_array($exerciseType, ['banded', 'volume_progression']);
+        return in_array($exerciseType, ['banded', 'volume_progression', 'band_progression']);
     }
 }

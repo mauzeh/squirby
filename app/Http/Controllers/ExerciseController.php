@@ -106,9 +106,10 @@ class ExerciseController extends Controller
         $exerciseType = $validated['exercise_type'] ?? null;
         if (!$exerciseType) {
             // Fall back to legacy field logic
-            if ($validated['band_type'] === 'resistance') {
+            $bandType = $validated['band_type'] ?? null;
+            if ($bandType === 'resistance') {
                 $exerciseType = 'banded_resistance';
-            } elseif ($validated['band_type'] === 'assistance') {
+            } elseif ($bandType === 'assistance') {
                 $exerciseType = 'banded_assistance';
             } elseif ($request->boolean('is_bodyweight')) {
                 $exerciseType = 'bodyweight';
@@ -190,9 +191,10 @@ class ExerciseController extends Controller
         $exerciseType = $validated['exercise_type'] ?? null;
         if (!$exerciseType) {
             // Fall back to legacy field logic
-            if ($validated['band_type'] === 'resistance') {
+            $bandType = $validated['band_type'] ?? null;
+            if ($bandType === 'resistance') {
                 $exerciseType = 'banded_resistance';
-            } elseif ($validated['band_type'] === 'assistance') {
+            } elseif ($bandType === 'assistance') {
                 $exerciseType = 'banded_assistance';
             } elseif ($request->boolean('is_bodyweight')) {
                 $exerciseType = 'bodyweight';

@@ -140,14 +140,14 @@ return [
         'bodyweight' => [
             'class' => \App\Services\ExerciseTypes\BodyweightExerciseType::class,
             'validation' => [
-                'weight' => 'nullable|numeric|in:0',
+                'weight' => 'nullable|numeric|min:0',
                 'reps' => 'required|integer|min:1|max:100',
             ],
-            'chart_type' => 'reps_progression',
+            'chart_type' => 'bodyweight_progression',
             'supports_1rm' => false,
-            'form_fields' => ['reps'],
-            'progression_types' => ['reps_progression'],
-            'display_format' => 'reps_only',
+            'form_fields' => ['weight', 'reps'],
+            'progression_types' => ['linear', 'double_progression', 'bodyweight_progression'],
+            'display_format' => 'bodyweight_with_extra',
         ],
     ],
     

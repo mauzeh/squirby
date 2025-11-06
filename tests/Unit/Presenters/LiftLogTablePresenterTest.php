@@ -192,7 +192,7 @@ class LiftLogTablePresenterTest extends TestCase
         $result = $this->presenter->formatForTable(collect([$liftLog]));
         $formattedLog = $result['liftLogs']->first();
 
-        // Bodyweight exercises now show N/A since 1RM calculation is not supported
+        // Bodyweight exercises should not show 1RM calculations
         $this->assertStringContainsString('N/A (Bodyweight)', $formattedLog['formatted_1rm']);
     }
 

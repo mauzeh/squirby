@@ -42,7 +42,7 @@ class ExerciseManagementWorkflowTest extends TestCase
         $globalExerciseData = [
             'title' => 'Global Bench Press',
             'description' => 'Standard bench press exercise available to all users',
-            'is_bodyweight' => false,
+            'exercise_type' => 'regular',
             'is_global' => true,
         ];
 
@@ -54,7 +54,7 @@ class ExerciseManagementWorkflowTest extends TestCase
         $this->assertDatabaseHas('exercises', [
             'title' => 'Global Bench Press',
             'user_id' => null,
-            'is_bodyweight' => false,
+            'exercise_type' => 'regular',
         ]);
 
         $globalExercise = Exercise::where('title', 'Global Bench Press')->first();
@@ -75,7 +75,7 @@ class ExerciseManagementWorkflowTest extends TestCase
         $updatedData = [
             'title' => 'Updated Global Bench Press',
             'description' => 'Updated description for global exercise',
-            'is_bodyweight' => false,
+            'exercise_type' => 'regular',
             'is_global' => true,
         ];
 
@@ -124,7 +124,7 @@ class ExerciseManagementWorkflowTest extends TestCase
         $conflictData = [
             'title' => 'Squat', // Same as global exercise
             'description' => 'My personal squat variation',
-            'is_bodyweight' => false,
+            'exercise_type' => 'regular',
         ];
 
         $conflictResponse = $this->post(route('exercises.store'), $conflictData);
@@ -138,7 +138,7 @@ class ExerciseManagementWorkflowTest extends TestCase
         $personalExerciseData = [
             'title' => 'My Custom Deadlift',
             'description' => 'Personal deadlift variation',
-            'is_bodyweight' => false,
+            'exercise_type' => 'regular',
         ];
 
         $storeResponse = $this->post(route('exercises.store'), $personalExerciseData);
@@ -160,7 +160,7 @@ class ExerciseManagementWorkflowTest extends TestCase
         $updatedData = [
             'title' => 'Updated Custom Deadlift',
             'description' => 'Updated personal exercise',
-            'is_bodyweight' => true,
+            'exercise_type' => 'bodyweight',
         ];
 
         $updateResponse = $this->put(route('exercises.update', $personalExercise), $updatedData);
@@ -171,7 +171,7 @@ class ExerciseManagementWorkflowTest extends TestCase
             'id' => $personalExercise->id,
             'title' => 'Updated Custom Deadlift',
             'user_id' => $user->id,
-            'is_bodyweight' => true,
+            'exercise_type' => 'bodyweight',
         ]);
 
         // 5. User can delete their own exercise (when no lift logs exist)
