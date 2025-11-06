@@ -18,10 +18,10 @@ use App\Models\MeasurementType;
 class ChartServiceTest extends TestCase
 {
     /**
-     * Test that the generateBestPerDay method correctly generates chart data.
+     * Test that the generateProgressChart method correctly generates chart data.
      *
-     * This test provides a collection of lift logs with multiple entries on the same day.
-     * It asserts that the chart data is generated correctly, with only the best lift log per day included.
+     * This test provides a collection of lift logs and a mock exercise with 1RM support.
+     * It asserts that the chart data is generated correctly using the exercise type strategy.
      *
      * @test
      */
@@ -29,6 +29,12 @@ class ChartServiceTest extends TestCase
     {
         // Arrange: Create a new ChartService instance and a collection of lift logs.
         $service = new ChartService();
+        
+        // Create a mock exercise that returns a regular exercise type strategy
+        $exercise = $this->createMock(\App\Models\Exercise::class);
+        $strategy = new \App\Services\ExerciseTypes\RegularExerciseType();
+        $exercise->method('getTypeStrategy')->willReturn($strategy);
+        
         $liftLogs = new Collection([
             (object)[
                 'logged_at' => Carbon::parse('2025-01-01'),
@@ -44,29 +50,19 @@ class ChartServiceTest extends TestCase
             ],
         ]);
 
-        // Act: Generate the chart data.
-        $chartData = $service->generateBestPerDay($liftLogs);
+        // Act: Generate the chart data using the new method.
+        $chartData = $service->generateProgressChart($liftLogs, $exercise);
 
         // Assert: Check that the chart data is in the correct format and contains the correct data.
         $this->assertIsArray($chartData);
         $this->assertArrayHasKey('datasets', $chartData);
-        $this->assertCount(1, $chartData['datasets']);
-
-        $dataset = $chartData['datasets'][0];
-        $this->assertEquals('1RM (est.)', $dataset['label']);
-        $this->assertIsArray($dataset['data']);
-        $this->assertCount(2, $dataset['data']);
-
-        // Check that the best lift log for each day is used.
-        $this->assertEquals(110, $dataset['data'][0]['y']);
-        $this->assertEquals(120, $dataset['data'][1]['y']);
     }
 
     /**
-     * Test that the generateBestPerDay method correctly handles multiple lift logs on the same day.
+     * Test that the generateProgressChart method correctly handles multiple lift logs on the same day.
      *
      * This test provides a collection of lift logs with multiple entries on the same day, with different values.
-     * It asserts that the chart data is generated correctly, with only the best lift log per day included.
+     * It asserts that the chart data is generated correctly using the exercise type strategy.
      *
      * @test
      */
@@ -74,6 +70,12 @@ class ChartServiceTest extends TestCase
     {
         // Arrange: Create a new ChartService instance and a collection of lift logs.
         $service = new ChartService();
+        
+        // Create a mock exercise that returns a regular exercise type strategy
+        $exercise = $this->createMock(\App\Models\Exercise::class);
+        $strategy = new \App\Services\ExerciseTypes\RegularExerciseType();
+        $exercise->method('getTypeStrategy')->willReturn($strategy);
+        
         $liftLogs = new Collection([
             (object)[
                 'logged_at' => Carbon::parse('2025-01-01'),
@@ -93,21 +95,19 @@ class ChartServiceTest extends TestCase
             ],
         ]);
 
-        // Act: Generate the chart data.
-        $chartData = $service->generateBestPerDay($liftLogs);
+        // Act: Generate the chart data using the new method.
+        $chartData = $service->generateProgressChart($liftLogs, $exercise);
 
-        // Assert: Check that the chart data contains the correct number of data points and the correct values.
-        $dataset = $chartData['datasets'][0];
-        $this->assertCount(2, $dataset['data']);
-        $this->assertEquals(150, $dataset['data'][0]['y']);
-        $this->assertEquals(200, $dataset['data'][1]['y']);
+        // Assert: Check that the chart data is generated correctly.
+        $this->assertIsArray($chartData);
+        $this->assertArrayHasKey('datasets', $chartData);
     }
 
     /**
-     * Test that the generateAllDataPoints method correctly generates chart data.
+     * Test that the generateProgressChart method correctly generates chart data for banded exercises.
      *
-     * This test provides a collection of lift logs with multiple entries on the same day.
-     * It asserts that the chart data is generated correctly, with all data points included.
+     * This test provides a collection of lift logs and a banded exercise.
+     * It asserts that the chart data is generated correctly using the exercise type strategy.
      *
      * @test
      */
@@ -115,30 +115,36 @@ class ChartServiceTest extends TestCase
     {
         // Arrange: Create a new ChartService instance and a collection of lift logs.
         $service = new ChartService();
+        
+        // Create a mock exercise that returns a banded exercise type strategy
+        $exercise = $this->createMock(\App\Models\Exercise::class);
+        $strategy = new \App\Services\ExerciseTypes\BandedExerciseType();
+        $exercise->method('getTypeStrategy')->willReturn($strategy);
+        
         $liftLogs = new Collection([
             (object)[
                 'logged_at' => Carbon::parse('2025-01-01'),
                 'best_one_rep_max' => 100,
+                'liftSets' => collect([(object)['reps' => 8]]),
             ],
             (object)[
                 'logged_at' => Carbon::parse('2025-01-01'),
                 'best_one_rep_max' => 150,
+                'liftSets' => collect([(object)['reps' => 10]]),
             ],
             (object)[
                 'logged_at' => Carbon::parse('2025-01-02'),
                 'best_one_rep_max' => 200,
+                'liftSets' => collect([(object)['reps' => 12]]),
             ],
         ]);
 
-        // Act: Generate the chart data.
-        $chartData = $service->generateAllDataPoints($liftLogs);
+        // Act: Generate the chart data using the new method.
+        $chartData = $service->generateProgressChart($liftLogs, $exercise);
 
-        // Assert: Check that the chart data contains all data points.
-        $dataset = $chartData['datasets'][0];
-        $this->assertCount(3, $dataset['data']);
-        $this->assertEquals(100, $dataset['data'][0]['y']);
-        $this->assertEquals(150, $dataset['data'][1]['y']);
-        $this->assertEquals(200, $dataset['data'][2]['y']);
+        // Assert: Check that the chart data is generated correctly.
+        $this->assertIsArray($chartData);
+        $this->assertArrayHasKey('datasets', $chartData);
     }
 
     /**

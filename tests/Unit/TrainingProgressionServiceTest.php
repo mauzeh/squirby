@@ -388,12 +388,12 @@ class TrainingProgressionServiceTest extends TestCase
         $this->assertEquals(6, $suggestion->reps);
     }
 
-    public function test_bodyweight_exercises_always_use_double_progression()
+    public function test_bodyweight_exercises_use_strategy_based_progression()
     {
         $user = User::factory()->create();
         $exercise = Exercise::factory()->create(['is_bodyweight' => true]);
 
-        // Create pattern that would normally suggest LinearProgression
+        // Create pattern that would suggest progression based on strategy
         $olderLog = LiftLog::factory()->create([
             'user_id' => $user->id,
             'exercise_id' => $exercise->id,
@@ -402,7 +402,7 @@ class TrainingProgressionServiceTest extends TestCase
         LiftSet::factory()->create([
             'lift_log_id' => $olderLog->id,
             'weight' => 0,
-            'reps' => 5,
+            'reps' => 10, // In double progression range
         ]);
 
         $newerLog = LiftLog::factory()->create([
@@ -412,15 +412,15 @@ class TrainingProgressionServiceTest extends TestCase
         ]);
         LiftSet::factory()->create([
             'lift_log_id' => $newerLog->id,
-            'weight' => 5,
-            'reps' => 5,
+            'weight' => 0,
+            'reps' => 11, // Progression in reps
         ]);
 
         $suggestion = $this->trainingProgressionService->getSuggestionDetails($user->id, $exercise->id);
 
         $this->assertNotNull($suggestion);
-        // Should always use DoubleProgression for bodyweight exercises
-        $this->assertEquals(5, $suggestion->suggestedWeight);
-        $this->assertEquals(6, $suggestion->reps);
+        // Should use strategy-based progression (DoubleProgression for 10+ reps)
+        $this->assertEquals(0, $suggestion->suggestedWeight);
+        $this->assertEquals(12, $suggestion->reps);
     }
 }

@@ -1618,7 +1618,7 @@ class LiftLogServiceTest extends TestCase
         
         $item = $loggedItems['items'][0];
         $this->assertEquals('Weighted Pull-ups', $item['title']);
-        $this->assertEquals('+25 lbs × 3 x 6', $item['message']['text']); // +weight × sets x reps for bodyweight with added weight
+        $this->assertEquals('Bodyweight +25 lbs × 3 x 6', $item['message']['text']); // Bodyweight +weight × sets x reps for bodyweight with added weight
     }
 
     #[Test]
