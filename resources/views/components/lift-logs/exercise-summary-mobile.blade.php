@@ -3,14 +3,15 @@
 @php
     // Format weight display
     $weight = '';
-    if (!empty($liftLog->exercise->band_type)) {
+    if (str_contains($liftLog->exercise->exercise_type, 'banded')) {
         $bandColor = $liftLog->liftSets->first()->band_color ?? null;
         if ($bandColor) {
             $weight = 'Band: ' . $bandColor;
         } else {
-            $weight = 'Band: ' . $liftLog->exercise->band_type;
+            $bandType = str_replace('banded_', '', $liftLog->exercise->exercise_type);
+            $weight = 'Band: ' . $bandType;
         }
-    } elseif ($liftLog->exercise->is_bodyweight) {
+    } elseif ($liftLog->exercise->exercise_type === 'bodyweight') {
         $weight = 'Bodyweight';
         if ($liftLog->display_weight > 0) {
             $weight .= ' +' . $liftLog->display_weight . ' lbs';
@@ -46,7 +47,7 @@
 <div style="margin-top: 7px; margin-bottom: 15px;">
     <span style="background-color: {{ $dateBgColor }}; color: white; padding: 4px 8px; border-radius: 12px; font-size: 0.85em; margin-right: 8px;">{{ $dateText }}</span><span style="background-color: #4a5568; color: white; padding: 4px 8px; border-radius: 12px; font-size: 0.85em;">{{ $repsSets }}</span>
 </div>
-@unless($liftLog->exercise->is_bodyweight)
+@unless($liftLog->exercise->exercise_type === 'bodyweight')
 <div style="margin-bottom: 8px;">
     <span style="background-color: #2d3748; color: white; padding: 8px 12px; border-radius: 16px; font-weight: bold; font-size: 1.1em;">{{ $weight }}</span>
 </div>

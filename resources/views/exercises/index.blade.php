@@ -43,7 +43,7 @@
                                     <a href="{{ route('exercises.show-logs', $exercise) }}" class="text-white" style="flex: 1; word-wrap: break-word;">{{ $exercise->title }}</a>
                                 </div>
                                 <div class="show-on-mobile" style="font-size: 0.9em; color: #ccc;">
-                                    {{ $exercise->is_bodyweight ? 'Bodyweight' : 'Weighted' }}
+                                    {{ ucfirst(str_replace('_', ' ', $exercise->exercise_type)) }}
                                     • {{ $exercise->isGlobal() ? 'Global' : 'Personal' }}
                                     @if($exercise->description)
                                         <br><small style="font-size: 0.8em; color: #aaa;">{{ \Illuminate\Support\Str::limit($exercise->description, 50) }}</small>
@@ -51,7 +51,7 @@
                                 </div>
                             </td>
                             <td class="hide-on-mobile">{{ $exercise->description }}</td>
-                            <td class="hide-on-mobile">{{ $exercise->is_bodyweight ? 'Bodyweight' : 'Weighted' }}</td>
+                            <td class="hide-on-mobile">{{ ucfirst(str_replace('_', ' ', $exercise->exercise_type)) }}</td>
                             <td class="actions-column">
                                 <div style="display: flex; gap: 5px;">
                                     @if($exercise->canBeEditedBy(auth()->user()))

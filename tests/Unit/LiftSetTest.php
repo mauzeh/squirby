@@ -17,7 +17,7 @@ class LiftSetTest extends TestCase
     public function a_lift_set_can_be_created_with_band_color()
     {
         $user = User::factory()->create();
-        $exercise = Exercise::factory()->create(['user_id' => $user->id, 'band_type' => 'resistance']);
+        $exercise = Exercise::factory()->create(['user_id' => $user->id, 'exercise_type' => 'banded_resistance']);
         $liftLog = LiftLog::factory()->create(['user_id' => $user->id, 'exercise_id' => $exercise->id]);
 
         $liftSet = LiftSet::create([
@@ -39,7 +39,7 @@ class LiftSetTest extends TestCase
     public function a_lift_set_can_be_created_without_band_color()
     {
         $user = User::factory()->create();
-        $exercise = Exercise::factory()->create(['user_id' => $user->id, 'band_type' => null]);
+        $exercise = Exercise::factory()->create(['user_id' => $user->id, 'exercise_type' => 'regular']);
         $liftLog = LiftLog::factory()->create(['user_id' => $user->id, 'exercise_id' => $exercise->id]);
 
         $liftSet = LiftSet::create([
@@ -61,7 +61,7 @@ class LiftSetTest extends TestCase
     public function band_color_can_be_updated()
     {
         $user = User::factory()->create();
-        $exercise = Exercise::factory()->create(['user_id' => $user->id, 'band_type' => 'resistance']);
+        $exercise = Exercise::factory()->create(['user_id' => $user->id, 'exercise_type' => 'banded_resistance']);
         $liftLog = LiftLog::factory()->create(['user_id' => $user->id, 'exercise_id' => $exercise->id]);
 
         $liftSet = LiftSet::create([

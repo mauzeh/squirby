@@ -27,7 +27,7 @@ Your JSON file must contain an array of exercise objects:
     "weight": 225,
     "reps": 5,
     "sets": 1,
-    "is_bodyweight": false,
+    "exercise_type": "regular",
     "notes": "Optional notes"
   },
   {
@@ -36,7 +36,7 @@ Your JSON file must contain an array of exercise objects:
     "weight": 0,
     "reps": 60,
     "sets": 1,
-    "is_bodyweight": true,
+    "exercise_type": "bodyweight",
     "notes": "time in seconds"
   }
 ]

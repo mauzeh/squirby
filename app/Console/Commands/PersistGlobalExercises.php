@@ -28,7 +28,7 @@ class PersistGlobalExercises extends Command
     private function collectGlobalExercises()
     {
         $globalExercises = Exercise::whereNull('user_id')
-            ->select('title', 'description', 'canonical_name', 'is_bodyweight', 'band_type')
+            ->select('title', 'description', 'canonical_name', 'exercise_type')
             ->get();
         
         // Filter out exercises without canonical_name and warn about them
@@ -64,7 +64,7 @@ class PersistGlobalExercises extends Command
             $header = str_getcsv(trim($csvLines[0]));
             
             // Validate required columns exist
-            $requiredColumns = ['title', 'description', 'canonical_name', 'is_bodyweight', 'band_type'];
+            $requiredColumns = ['title', 'description', 'canonical_name', 'exercise_type'];
             foreach ($requiredColumns as $column) {
                 if (!in_array($column, $header)) {
                     $this->warn("Missing required column '{$column}' in CSV header");
@@ -103,8 +103,7 @@ class PersistGlobalExercises extends Command
                         'title' => $rowData['title'] ?? '',
                         'description' => $rowData['description'] ?? '',
                         'canonical_name' => $rowData['canonical_name'],
-                        'is_bodyweight' => $rowData['is_bodyweight'] ?? '0',
-                        'band_type' => $rowData['band_type'] ?? '',
+                        'exercise_type' => $rowData['exercise_type'] ?? 'regular',
                         'line_number' => $lineNumber
                     ];
                     
@@ -153,26 +152,13 @@ class PersistGlobalExercises extends Command
             ];
         }
         
-        // Compare is_bodyweight (handle boolean to string conversion)
-        $dbIsBodyweight = $dbExercise->is_bodyweight ? '1' : '0';
-        $csvIsBodyweight = $csvData['is_bodyweight'] ?? '0';
-        // Normalize CSV value to '1' or '0'
-        $csvIsBodyweight = in_array($csvIsBodyweight, ['1', 'true', true], true) ? '1' : '0';
-        if ($dbIsBodyweight !== $csvIsBodyweight) {
-            $differences['is_bodyweight'] = [
-                'database' => $dbIsBodyweight,
-                'csv' => $csvIsBodyweight,
-                'changed' => true
-            ];
-        }
-        
-        // Compare band_type (handle null values)
-        $dbBandType = $dbExercise->band_type ?? '';
-        $csvBandType = $csvData['band_type'] ?? '';
-        if ($dbBandType !== $csvBandType) {
-            $differences['band_type'] = [
-                'database' => $dbBandType,
-                'csv' => $csvBandType,
+        // Compare exercise_type
+        $dbExerciseType = $dbExercise->exercise_type ?? 'regular';
+        $csvExerciseType = $csvData['exercise_type'] ?? 'regular';
+        if ($dbExerciseType !== $csvExerciseType) {
+            $differences['exercise_type'] = [
+                'database' => $dbExerciseType,
+                'csv' => $csvExerciseType,
                 'changed' => true
             ];
         }
@@ -282,11 +268,8 @@ class PersistGlobalExercises extends Command
                 if ($exercise->description) {
                     $details[] = "description: '{$exercise->description}'";
                 }
-                if ($exercise->is_bodyweight) {
-                    $details[] = "bodyweight: yes";
-                }
-                if ($exercise->band_type) {
-                    $details[] = "band_type: '{$exercise->band_type}'";
+                if ($exercise->exercise_type && $exercise->exercise_type !== 'regular') {
+                    $details[] = "exercise_type: '{$exercise->exercise_type}'";
                 }
                 
                 if (!empty($details)) {
@@ -312,7 +295,7 @@ class PersistGlobalExercises extends Command
     private function synchronizeCsv(string $csvPath, array $changes, array $existingCsvData): void
     {
         // Define CSV header structure
-        $header = ['title', 'description', 'is_bodyweight', 'canonical_name', 'band_type'];
+        $header = ['title', 'description', 'canonical_name', 'exercise_type'];
         
         // Prepare all exercise data for CSV writing
         $allExercises = [];
@@ -328,9 +311,8 @@ class PersistGlobalExercises extends Command
                 $allExercises[$canonicalName] = [
                     'title' => $csvEntry['title'],
                     'description' => $csvEntry['description'],
-                    'is_bodyweight' => $csvEntry['is_bodyweight'],
                     'canonical_name' => $csvEntry['canonical_name'],
-                    'band_type' => $csvEntry['band_type']
+                    'exercise_type' => $csvEntry['exercise_type']
                 ];
             }
         }
@@ -354,9 +336,8 @@ class PersistGlobalExercises extends Command
         return [
             'title' => $exercise->title ?? '',
             'description' => $exercise->description ?? '',
-            'is_bodyweight' => $exercise->is_bodyweight ? '1' : '0',
             'canonical_name' => $exercise->canonical_name ?? '',
-            'band_type' => $exercise->band_type ?? ''
+            'exercise_type' => $exercise->exercise_type ?? 'regular'
         ];
     }
     

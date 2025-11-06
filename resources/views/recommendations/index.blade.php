@@ -128,9 +128,9 @@
                                     <div class="metadata-row">
                                         <span class="metadata-label">Exercise Type:</span>
                                         <span class="metadata-value">
-                                            @if($recommendation['exercise']->is_bodyweight)
+                                            @if($recommendation['exercise']->exercise_type === 'bodyweight')
                                                 <i class="fas fa-user"></i> Bodyweight
-                                            @elseif($recommendation['exercise']->band_type)
+                                            @elseif(str_contains($recommendation['exercise']->exercise_type, 'banded'))
                                                 <i class="fas fa-circle"></i> {{ ucfirst($recommendation['exercise']->band_type) }} Band
                                             @else
                                                 <i class="fas fa-dumbbell"></i> Weighted

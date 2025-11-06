@@ -24,7 +24,7 @@ class ExerciseFactory extends Factory
         return [
             'title' => $this->faker->sentence(3),
             'description' => $this->faker->paragraph,
-            'is_bodyweight' => false,
+            'exercise_type' => 'regular',
         ];
     }
 }

@@ -19,7 +19,7 @@
                 <td>{{ $liftLog->logged_at->format('m/d') }}</td>
                 <td><a href="{{ route('exercises.show-logs', $liftLog->exercise) }}">{{ $liftLog->exercise->title }}</a></td>
                 <td>
-                    @if ($liftLog->exercise->is_bodyweight)
+                    @if ($liftLog->exercise->exercise_type === 'bodyweight')
                         <span style="font-weight: bold; font-size: 1.2em;">Bodyweight</span><br>
                         {{ $liftLog->display_reps }} x {{ $liftLog->display_rounds }}
                         @if ($liftLog->display_weight > 0)
@@ -31,7 +31,7 @@
                     @endif
                 </td>
                 <td>
-                    @if ($liftLog->exercise->is_bodyweight)
+                    @if ($liftLog->exercise->exercise_type === 'bodyweight')
                         {{ round($liftLog->one_rep_max) }} lbs (est. incl. BW)
                     @else
                         {{ round($liftLog->one_rep_max) }} lbs

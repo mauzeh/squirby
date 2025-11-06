@@ -32,11 +32,16 @@
         </div>
     @endif
 
-    @if ($shouldShowField('is_bodyweight'))
-        <div class="form-group form-group-checkbox">
-            <input type="checkbox" name="is_bodyweight" id="is_bodyweight" value="1" 
-                   {{ old('is_bodyweight', $exercise->is_bodyweight) ? 'checked' : '' }}>
-            <label for="is_bodyweight">Bodyweight Exercise</label>
+    @if ($shouldShowField('exercise_type'))
+        <div class="form-group">
+            <label for="exercise_type">Exercise Type</label>
+            <select name="exercise_type" id="exercise_type" class="form-control" required>
+                <option value="">Select Exercise Type</option>
+                <option value="regular" {{ old('exercise_type', $exercise->exercise_type ?? '') === 'regular' ? 'selected' : '' }}>Regular (Weighted)</option>
+                <option value="bodyweight" {{ old('exercise_type', $exercise->exercise_type ?? '') === 'bodyweight' ? 'selected' : '' }}>Bodyweight</option>
+                <option value="banded_resistance" {{ old('exercise_type', $exercise->exercise_type ?? '') === 'banded_resistance' ? 'selected' : '' }}>Banded Resistance</option>
+                <option value="banded_assistance" {{ old('exercise_type', $exercise->exercise_type ?? '') === 'banded_assistance' ? 'selected' : '' }}>Banded Assistance</option>
+            </select>
         </div>
     @endif
 

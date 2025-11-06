@@ -14,7 +14,7 @@ return new class extends Migration
     {
         // Step 1: Add exercise_type column as nullable initially
         Schema::table('exercises', function (Blueprint $table) {
-            $table->string('exercise_type', 50)->nullable()->after('band_type');
+            $table->string('exercise_type', 50)->nullable()->after('description');
             $table->index('exercise_type', 'idx_exercises_exercise_type');
         });
 
@@ -25,6 +25,11 @@ return new class extends Migration
         Schema::table('exercises', function (Blueprint $table) {
             $table->string('exercise_type', 50)->nullable(false)->change();
         });
+
+        // Step 4: Remove legacy columns
+        Schema::table('exercises', function (Blueprint $table) {
+            $table->dropColumn(['is_bodyweight', 'band_type']);
+        });
     }
 
     /**
@@ -32,8 +37,16 @@ return new class extends Migration
      */
     public function down(): void
     {
-        // Rollback is safe - just drop the new column and index
-        // Legacy fields remain intact during transition
+        // Add back legacy columns
+        Schema::table('exercises', function (Blueprint $table) {
+            $table->boolean('is_bodyweight')->default(false)->after('description');
+            $table->string('band_type', 50)->nullable()->after('is_bodyweight');
+        });
+
+        // Populate legacy columns from exercise_type
+        $this->restoreLegacyFields();
+
+        // Drop the new column and index
         Schema::table('exercises', function (Blueprint $table) {
             $table->dropIndex('idx_exercises_exercise_type');
             $table->dropColumn('exercise_type');
@@ -72,5 +85,25 @@ return new class extends Migration
         $regularCount = DB::table('exercises')
             ->whereNull('exercise_type')
             ->update(['exercise_type' => 'regular']);
+    }
+
+    /**
+     * Restore legacy fields from exercise_type for rollback
+     */
+    private function restoreLegacyFields(): void
+    {
+        // Restore is_bodyweight field
+        DB::table('exercises')
+            ->where('exercise_type', 'bodyweight')
+            ->update(['is_bodyweight' => true]);
+
+        // Restore band_type field
+        DB::table('exercises')
+            ->where('exercise_type', 'banded_resistance')
+            ->update(['band_type' => 'resistance']);
+
+        DB::table('exercises')
+            ->where('exercise_type', 'banded_assistance')
+            ->update(['band_type' => 'assistance']);
     }
 };

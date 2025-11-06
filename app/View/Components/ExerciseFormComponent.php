@@ -58,11 +58,11 @@ class ExerciseFormComponent extends Component
         if ($this->exercise->exists) {
             $strategy = $this->exercise->getTypeStrategy();
             // For existing exercises, always show basic fields plus strategy-specific fields
-            $this->formFields = array_merge(['title', 'description', 'band_type', 'is_bodyweight'], $strategy->getFormFields());
+            $this->formFields = array_merge(['title', 'description'], $strategy->getFormFields());
             $this->validationRules = $strategy->getValidationRules();
         } else {
             // For new exercises, show all possible fields
-            $this->formFields = ['title', 'description', 'band_type', 'is_bodyweight'];
+            $this->formFields = ['title', 'description', 'exercise_type'];
             $this->validationRules = [];
         }
     }

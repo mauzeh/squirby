@@ -17,15 +17,11 @@ class Exercise extends Model
         'title',
         'description',
         'canonical_name',
-        'is_bodyweight',    // Deprecated but kept for compatibility
         'user_id',
-        'band_type',        // Deprecated but kept for compatibility
-        'exercise_type',    // New primary field
+        'exercise_type',
     ];
 
     protected $casts = [
-        'is_bodyweight' => 'boolean',
-        'band_type' => 'string',
         'exercise_type' => 'string',
     ];
 
@@ -40,16 +36,7 @@ class Exercise extends Model
             
             // Set default exercise_type if not provided
             if (empty($exercise->exercise_type)) {
-                // Determine exercise_type based on legacy fields for backward compatibility
-                if ($exercise->band_type === 'resistance') {
-                    $exercise->exercise_type = 'banded_resistance';
-                } elseif ($exercise->band_type === 'assistance') {
-                    $exercise->exercise_type = 'banded_assistance';
-                } elseif ($exercise->is_bodyweight) {
-                    $exercise->exercise_type = 'bodyweight';
-                } else {
-                    $exercise->exercise_type = 'regular';
-                }
+                $exercise->exercise_type = 'regular';
             }
         });
     }
@@ -214,21 +201,7 @@ class Exercise extends Model
         return in_array($this->exercise_type, ['banded_resistance', 'banded_assistance']);
     }
 
-    /**
-     * Check if this is a bodyweight exercise
-     * @deprecated Use isType('bodyweight') instead. Will be removed in future version.
-     */
-    public function isBodyweight(): bool
-    {
-        if (config('app.debug')) {
-            \Log::warning('Deprecated method Exercise::isBodyweight() called', [
-                'exercise_id' => $this->id,
-                'trace' => debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3)
-            ]);
-        }
-        
-        return $this->isType('bodyweight');
-    }
+
 
     /**
      * Check if this exercise supports 1RM calculation
@@ -439,37 +412,5 @@ class Exercise extends Model
         return ExerciseTypeFactory::createSafe($this);
     }
 
-    /**
-     * Accessor for legacy is_bodyweight field
-     * @deprecated Will be removed in future version
-     */
-    public function getIsBodyweightAttribute(): bool
-    {
-        if (isset($this->attributes['is_bodyweight'])) {
-            // During transition period, use actual field if available
-            return (bool) $this->attributes['is_bodyweight'];
-        }
-        
-        // After migration, derive from exercise_type
-        return $this->exercise_type === 'bodyweight';
-    }
-    
-    /**
-     * Accessor for legacy band_type field
-     * @deprecated Will be removed in future version
-     */
-    public function getBandTypeAttribute(): ?string
-    {
-        if (isset($this->attributes['band_type'])) {
-            // During transition period, use actual field if available
-            return $this->attributes['band_type'];
-        }
-        
-        // After migration, derive from exercise_type
-        return match($this->exercise_type) {
-            'banded_resistance' => 'resistance',
-            'banded_assistance' => 'assistance',
-            default => null,
-        };
-    }
+
 }

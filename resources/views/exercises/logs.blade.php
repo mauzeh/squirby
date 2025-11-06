@@ -23,7 +23,7 @@
             <p>No lift logs found for this exercise.</p>
         @else
         <div class="form-container">
-            @if ($exercise->is_bodyweight)
+            @if ($exercise->exercise_type === 'bodyweight')
                 <h3>Volume Progress</h3>
                 <canvas id="progressChart"></canvas>
             @elseif ($exercise->band_type)

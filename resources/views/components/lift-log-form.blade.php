@@ -11,8 +11,7 @@
                 @foreach ($exercises as $exercise)
                     <option value="{{ $exercise->id }}" 
                             {{ old('exercise_id', $liftLog->exercise_id) == $exercise->id ? 'selected' : '' }} 
-                            data-is-bodyweight="{{ $exercise->is_bodyweight ? 'true' : 'false' }}"
-                            data-band-type="{{ $exercise->band_type }}">
+                            data-exercise-type="{{ $exercise->exercise_type }}">
                         {{ $exercise->title }}
                     </option>
                 @endforeach

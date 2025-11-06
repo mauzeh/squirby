@@ -300,7 +300,7 @@ class ExerciseUnpromoteTest extends TestCase
         $globalExercise = Exercise::factory()->create([
             'title' => 'Global Exercise',
             'description' => 'Original description',
-            'is_bodyweight' => true,
+            'exercise_type' => 'bodyweight',
             'user_id' => null,
             'created_at' => now()->subDays(10),
         ]);

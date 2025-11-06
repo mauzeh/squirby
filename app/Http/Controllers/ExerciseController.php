@@ -87,11 +87,8 @@ class ExerciseController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'exercise_type' => 'nullable|in:regular,bodyweight,banded_resistance,banded_assistance',
+            'exercise_type' => 'required|in:regular,bodyweight,banded_resistance,banded_assistance',
             'is_global' => 'nullable|boolean',
-            // Legacy fields for backward compatibility
-            'is_bodyweight' => 'nullable|boolean',
-            'band_type' => 'nullable|in:resistance,assistance',
         ]);
 
         // Check admin permission for global exercises
@@ -102,21 +99,7 @@ class ExerciseController extends Controller
         // Check for name conflicts
         $this->validateExerciseName($validated['title'], $validated['is_global'] ?? false);
 
-        // Determine exercise_type from input (prioritize new field, fall back to legacy fields)
-        $exerciseType = $validated['exercise_type'] ?? null;
-        if (!$exerciseType) {
-            // Fall back to legacy field logic
-            $bandType = $validated['band_type'] ?? null;
-            if ($bandType === 'resistance') {
-                $exerciseType = 'banded_resistance';
-            } elseif ($bandType === 'assistance') {
-                $exerciseType = 'banded_assistance';
-            } elseif ($request->boolean('is_bodyweight')) {
-                $exerciseType = 'bodyweight';
-            } else {
-                $exerciseType = 'regular';
-            }
-        }
+        $exerciseType = $validated['exercise_type'];
 
         // Create a temporary exercise to determine the strategy
         $tempExercise = new Exercise([
@@ -172,11 +155,8 @@ class ExerciseController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'exercise_type' => 'nullable|in:regular,bodyweight,banded_resistance,banded_assistance',
+            'exercise_type' => 'required|in:regular,bodyweight,banded_resistance,banded_assistance',
             'is_global' => 'nullable|boolean',
-            // Legacy fields for backward compatibility
-            'is_bodyweight' => 'nullable|boolean',
-            'band_type' => 'nullable|in:resistance,assistance',
         ]);
 
         // Check admin permission for global exercises
@@ -187,21 +167,7 @@ class ExerciseController extends Controller
         // Check for name conflicts (excluding current exercise)
         $this->validateExerciseNameForUpdate($exercise, $validated['title'], $validated['is_global'] ?? false);
 
-        // Determine exercise_type from input (prioritize new field, fall back to legacy fields)
-        $exerciseType = $validated['exercise_type'] ?? null;
-        if (!$exerciseType) {
-            // Fall back to legacy field logic
-            $bandType = $validated['band_type'] ?? null;
-            if ($bandType === 'resistance') {
-                $exerciseType = 'banded_resistance';
-            } elseif ($bandType === 'assistance') {
-                $exerciseType = 'banded_assistance';
-            } elseif ($request->boolean('is_bodyweight')) {
-                $exerciseType = 'bodyweight';
-            } else {
-                $exerciseType = 'regular';
-            }
-        }
+        $exerciseType = $validated['exercise_type'];
 
         // Create a temporary exercise with new values to determine the strategy
         $tempExercise = new Exercise([

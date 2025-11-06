@@ -255,9 +255,8 @@ class CableExerciseType extends BaseExerciseType
     {
         $processedData = $data;
         
-        // Cable exercises are not bodyweight exercises
-        $processedData['is_bodyweight'] = false;
-        $processedData['band_type'] = null;
+        // Cable exercises are regular exercises
+        $processedData['exercise_type'] = 'regular';
         
         // Set cable-specific flag
         $processedData['is_cable'] = true;
@@ -310,13 +309,13 @@ private static function determineExerciseType(Exercise $exercise): string
         return 'cable';
     }
     
-    // Check for banded exercise
-    if ($exercise->band_type) {
+    // Check exercise type directly
+    if (str_contains($exercise->exercise_type, 'banded')) {
         return 'banded';
     }
     
     // Check for bodyweight exercise
-    if ($exercise->is_bodyweight) {
+    if ($exercise->exercise_type === 'bodyweight') {
         return 'bodyweight';
     }
     
@@ -746,9 +745,9 @@ If you're migrating from conditional logic, follow this pattern:
 
 **Before:**
 ```php
-if ($exercise->is_bodyweight) {
+if ($exercise->exercise_type === 'bodyweight') {
     // Bodyweight logic
-} elseif ($exercise->band_type) {
+} elseif (str_contains($exercise->exercise_type, 'banded')) {
     // Banded logic
 } else {
     // Regular logic

@@ -16,13 +16,13 @@ class ExerciseTest extends TestCase
         $exercise = Exercise::factory()->create([
             'title' => 'Push-ups',
             'description' => 'A bodyweight exercise',
-            'is_bodyweight' => true,
+            'exercise_type' => 'bodyweight',
         ]);
 
-        $this->assertTrue($exercise->is_bodyweight);
+        $this->assertEquals('bodyweight', $exercise->exercise_type);
         $this->assertDatabaseHas('exercises', [
             'id' => $exercise->id,
-            'is_bodyweight' => true,
+            'exercise_type' => 'bodyweight',
         ]);
     }
 
@@ -34,10 +34,10 @@ class ExerciseTest extends TestCase
             'description' => 'A weighted exercise',
         ]);
 
-        $this->assertFalse($exercise->is_bodyweight);
+        $this->assertEquals('regular', $exercise->exercise_type);
         $this->assertDatabaseHas('exercises', [
             'id' => $exercise->id,
-            'is_bodyweight' => false,
+            'exercise_type' => 'regular',
         ]);
     }
 
@@ -299,7 +299,7 @@ class ExerciseTest extends TestCase
     /** @test */
     public function is_banded_resistance_returns_true_for_resistance_band_type()
     {
-        $exercise = Exercise::factory()->create(['band_type' => 'resistance']);
+        $exercise = Exercise::factory()->create(['exercise_type' => 'banded_resistance']);
         $this->assertTrue($exercise->isBandedResistance());
         $this->assertFalse($exercise->isBandedAssistance());
     }
@@ -307,15 +307,15 @@ class ExerciseTest extends TestCase
     /** @test */
     public function is_banded_assistance_returns_true_for_assistance_band_type()
     {
-        $exercise = Exercise::factory()->create(['band_type' => 'assistance']);
+        $exercise = Exercise::factory()->create(['exercise_type' => 'banded_assistance']);
         $this->assertTrue($exercise->isBandedAssistance());
         $this->assertFalse($exercise->isBandedResistance());
     }
 
     /** @test */
-    public function is_banded_resistance_and_assistance_return_false_for_null_band_type()
+    public function is_banded_resistance_and_assistance_return_false_for_regular_exercise_type()
     {
-        $exercise = Exercise::factory()->create(['band_type' => null]);
+        $exercise = Exercise::factory()->create(['exercise_type' => 'regular']);
         $this->assertFalse($exercise->isBandedResistance());
         $this->assertFalse($exercise->isBandedAssistance());
     }
@@ -413,7 +413,7 @@ class ExerciseTest extends TestCase
         $exercise = Exercise::factory()->create([
             'title' => 'Test Exercise',
             'description' => 'Original description',
-            'is_bodyweight' => false,
+            'exercise_type' => 'regular',
         ]);
 
         $originalCanonicalName = $exercise->canonical_name;
@@ -422,7 +422,7 @@ class ExerciseTest extends TestCase
         // Update other fields
         $exercise->update([
             'description' => 'Updated description',
-            'is_bodyweight' => true,
+            'exercise_type' => 'bodyweight',
         ]);
         $exercise->refresh();
 
@@ -627,8 +627,7 @@ class ExerciseTest extends TestCase
         $user = \App\Models\User::factory()->create();
         $userExercise = Exercise::factory()->create([
             'user_id' => $user->id,
-            'is_bodyweight' => true,
-            'band_type' => 'resistance'
+            'exercise_type' => 'banded_resistance'
         ]);
 
         // No global exercises exist, so no compatible targets
@@ -641,15 +640,13 @@ class ExerciseTest extends TestCase
         $user = \App\Models\User::factory()->create();
         $userExercise = Exercise::factory()->create([
             'user_id' => $user->id,
-            'is_bodyweight' => false,
-            'band_type' => null
+            'exercise_type' => 'regular'
         ]);
 
         // Create compatible global exercise
         $globalExercise = Exercise::factory()->create([
             'user_id' => null,
-            'is_bodyweight' => false,
-            'band_type' => null
+            'exercise_type' => 'regular'
         ]);
 
         $this->assertTrue($userExercise->canBeMergedByAdmin());
@@ -679,11 +676,11 @@ class ExerciseTest extends TestCase
         $user = \App\Models\User::factory()->create();
         $userExercise = Exercise::factory()->create([
             'user_id' => $user->id,
-            'is_bodyweight' => true
+            'exercise_type' => 'bodyweight'
         ]);
         $globalExercise = Exercise::factory()->create([
             'user_id' => null,
-            'is_bodyweight' => false
+            'exercise_type' => 'regular'
         ]);
         
         $this->assertFalse($userExercise->isCompatibleForMerge($globalExercise));
@@ -695,13 +692,11 @@ class ExerciseTest extends TestCase
         $user = \App\Models\User::factory()->create();
         $userExercise = Exercise::factory()->create([
             'user_id' => $user->id,
-            'is_bodyweight' => false,
-            'band_type' => 'resistance'
+            'exercise_type' => 'banded_resistance'
         ]);
         $globalExercise = Exercise::factory()->create([
             'user_id' => null,
-            'is_bodyweight' => false,
-            'band_type' => 'assistance'
+            'exercise_type' => 'banded_assistance'
         ]);
         
         $this->assertFalse($userExercise->isCompatibleForMerge($globalExercise));
@@ -713,13 +708,11 @@ class ExerciseTest extends TestCase
         $user = \App\Models\User::factory()->create();
         $userExercise = Exercise::factory()->create([
             'user_id' => $user->id,
-            'is_bodyweight' => false,
-            'band_type' => null
+            'exercise_type' => 'regular'
         ]);
         $globalExercise = Exercise::factory()->create([
             'user_id' => null,
-            'is_bodyweight' => false,
-            'band_type' => null
+            'exercise_type' => 'regular'
         ]);
         
         $this->assertTrue($userExercise->isCompatibleForMerge($globalExercise));
@@ -731,13 +724,11 @@ class ExerciseTest extends TestCase
         $user = \App\Models\User::factory()->create();
         $userExercise = Exercise::factory()->create([
             'user_id' => $user->id,
-            'is_bodyweight' => false,
-            'band_type' => null
+            'exercise_type' => 'regular'
         ]);
         $globalExercise = Exercise::factory()->create([
             'user_id' => null,
-            'is_bodyweight' => false,
-            'band_type' => 'resistance'
+            'exercise_type' => 'banded_resistance'
         ]);
         
         $this->assertTrue($userExercise->isCompatibleForMerge($globalExercise));
@@ -750,13 +741,11 @@ class ExerciseTest extends TestCase
         $user = \App\Models\User::factory()->create();
         $userExercise = Exercise::factory()->create([
             'user_id' => $user->id,
-            'is_bodyweight' => false,
-            'band_type' => 'resistance'
+            'exercise_type' => 'banded_resistance'
         ]);
         $globalExercise = Exercise::factory()->create([
             'user_id' => null,
-            'is_bodyweight' => false,
-            'band_type' => 'resistance'
+            'exercise_type' => 'banded_resistance'
         ]);
         
         $this->assertTrue($userExercise->isCompatibleForMerge($globalExercise));
