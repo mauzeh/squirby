@@ -1,6 +1,6 @@
 # Cardio Exercise Type Implementation Plan
 
-- [ ] 1. Create CardioExerciseType strategy class
+- [x] 1. Create CardioExerciseType strategy class
   - Create new CardioExerciseType class extending BaseExerciseType
   - Implement getTypeName() method returning 'cardio'
   - Implement processLiftData() to force weight=0 and band_color=null
@@ -8,7 +8,7 @@
   - Add distance validation (minimum 50m, maximum 50km)
   - _Requirements: 1.1, 1.3, 5.1, 5.3_
 
-- [ ] 2. Create database migration for exercise_type field
+- [x] 2. Create database migration for exercise_type field
   - Create migration to add exercise_type column to exercises table
   - Add database index on exercise_type for efficient querying
   - Populate exercise_type field for existing exercises based on characteristics

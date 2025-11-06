@@ -169,6 +169,23 @@ class Exercise extends Model
         return $query->where('exercise_type', 'regular');
     }
 
+    /**
+     * Scope to filter cardio exercises
+     */
+    public function scopeCardio($query)
+    {
+        return $query->where('exercise_type', 'cardio');
+    }
+
+    /**
+     * Scope to filter non-cardio exercises
+     */
+    public function scopeNonCardio($query)
+    {
+        return $query->where('exercise_type', '!=', 'cardio')
+                     ->orWhereNull('exercise_type');
+    }
+
     // Helper methods
     public function isGlobal(): bool
     {
@@ -199,6 +216,14 @@ class Exercise extends Model
     public function isBanded(): bool
     {
         return in_array($this->exercise_type, ['banded_resistance', 'banded_assistance']);
+    }
+
+    /**
+     * Check if this is a cardio exercise
+     */
+    public function isCardio(): bool
+    {
+        return $this->exercise_type === 'cardio';
     }
 
 
