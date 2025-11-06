@@ -58,7 +58,7 @@ return [
         ],
         
         /**
-         * Banded Exercise Type
+         * Banded Exercise Type (Legacy - kept for backward compatibility)
          * 
          * Exercises using resistance or assistance bands. Band color indicates
          * the resistance level. Weight is always set to 0 since bands don't
@@ -85,6 +85,46 @@ return [
                     'progression_direction' => 'down',
                 ],
             ],
+        ],
+
+        /**
+         * Banded Resistance Exercise Type
+         * 
+         * Exercises using resistance bands that add difficulty to the movement.
+         * Band color indicates the resistance level.
+         */
+        'banded_resistance' => [
+            'class' => \App\Services\ExerciseTypes\BandedExerciseType::class,
+            'validation' => [
+                'band_color' => 'required|string|in:red,blue,green',
+                'reps' => 'required|integer|min:1|max:100',
+                'weight' => 'nullable|numeric|in:0',
+            ],
+            'chart_type' => 'band_progression',
+            'supports_1rm' => false,
+            'form_fields' => ['band_color', 'reps'],
+            'progression_types' => ['band_progression'],
+            'display_format' => 'band_reps',
+        ],
+
+        /**
+         * Banded Assistance Exercise Type
+         * 
+         * Exercises using assistance bands that reduce difficulty of the movement.
+         * Band color indicates the assistance level.
+         */
+        'banded_assistance' => [
+            'class' => \App\Services\ExerciseTypes\BandedExerciseType::class,
+            'validation' => [
+                'band_color' => 'required|string|in:red,blue,green',
+                'reps' => 'required|integer|min:1|max:100',
+                'weight' => 'nullable|numeric|in:0',
+            ],
+            'chart_type' => 'band_progression',
+            'supports_1rm' => false,
+            'form_fields' => ['band_color', 'reps'],
+            'progression_types' => ['band_progression'],
+            'display_format' => 'band_reps',
         ],
         
         /**

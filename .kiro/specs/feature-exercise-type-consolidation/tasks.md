@@ -16,7 +16,7 @@
   - Add deprecation warnings to legacy methods like isBodyweight()
   - _Requirements: 4.1, 4.2, 4.4, 7.1, 7.2, 7.4, 7.5_
 
-- [ ] 3. Simplify ExerciseTypeFactory to use exercise_type field
+- [x] 3. Simplify ExerciseTypeFactory to use exercise_type field
   - Update determineExerciseType() method to return exercise_type field directly
   - Simplify generateKey() method to use only exercise_type
   - Remove complex conditional logic for type detection
@@ -79,3 +79,8 @@
   - Validate that exercise type strategies are created correctly throughout the app
   - Ensure no functionality is broken by the type system consolidation
   - _Requirements: 1.1, 1.2, 5.1, 5.4, 8.4, 8.5_
+
+  - [ ] 11. Remove all fallback logic and other backward compatibility logic
+   - Use the Git history to identify all code that serves to provide backward compatibility.
+   - Update tests that rely on backward compatibility to use the new system.
+   - Confirm that all logic for backward compatibility has been removed.

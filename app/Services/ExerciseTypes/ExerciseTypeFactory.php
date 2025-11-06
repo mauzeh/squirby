@@ -70,12 +70,19 @@ class ExerciseTypeFactory
     
     /**
      * Create a strategy instance based on exercise properties
+     * Updated to handle new exercise type values: regular, bodyweight, banded_resistance, banded_assistance
      */
     private static function createStrategy(Exercise $exercise): ExerciseTypeInterface
     {
         try {
             // Determine exercise type based on properties
             $typeName = self::determineExerciseType($exercise);
+            
+            // Handle legacy 'banded' type mapping for backward compatibility
+            if ($typeName === 'banded') {
+                // Fall back to checking legacy fields if needed
+                $typeName = $exercise->band_type === 'assistance' ? 'banded_assistance' : 'banded_resistance';
+            }
             
             // Get the class from configuration
             $typeConfig = config("exercise_types.types.{$typeName}");
@@ -153,34 +160,35 @@ class ExerciseTypeFactory
     
     /**
      * Determine the exercise type based on exercise properties
+     * Now simplified to use the exercise_type field directly, with fallback to legacy logic
      */
     private static function determineExerciseType(Exercise $exercise): string
     {
-        // Check for banded exercise
-        if ($exercise->band_type) {
-            return 'banded';
+        // If exercise_type is set, use it directly
+        if (!empty($exercise->exercise_type)) {
+            return $exercise->exercise_type;
         }
         
-        // Check for bodyweight exercise
+        // Fallback to legacy logic for exercises without exercise_type (e.g., during testing with make())
+        if ($exercise->band_type) {
+            // Map legacy band_type to new exercise_type values
+            return $exercise->band_type === 'assistance' ? 'banded_assistance' : 'banded_resistance';
+        }
+        
         if ($exercise->is_bodyweight) {
             return 'bodyweight';
         }
         
-        // Default to regular exercise
         return 'regular';
     }
     
     /**
      * Generate a cache key for the exercise
+     * Simplified to use only exercise_type
      */
     private static function generateKey(Exercise $exercise): string
     {
-        return sprintf(
-            'exercise_%d_%s_%s',
-            $exercise->id,
-            $exercise->band_type ?? 'null',
-            $exercise->is_bodyweight ? 'bodyweight' : 'regular'
-        );
+        return sprintf('exercise_%d_%s', $exercise->id, $exercise->exercise_type);
     }
     
     /**

@@ -262,9 +262,9 @@ class ExerciseTypeFactoryTest extends TestCase
         // Set up fallback configuration
         config(['exercise_types.factory.fallback_type' => 'regular']);
         
-        // Temporarily break the banded configuration
-        $originalConfig = config('exercise_types.types.banded.class');
-        config(['exercise_types.types.banded.class' => 'NonExistentClass']);
+        // Temporarily break the banded_resistance configuration (which is what the exercise will actually use)
+        $originalConfig = config('exercise_types.types.banded_resistance.class');
+        config(['exercise_types.types.banded_resistance.class' => 'NonExistentClass']);
 
         $exercise = Exercise::factory()->create([
             'is_bodyweight' => false,
@@ -276,7 +276,7 @@ class ExerciseTypeFactoryTest extends TestCase
         $this->assertInstanceOf(RegularExerciseType::class, $strategy);
 
         // Restore original config
-        config(['exercise_types.types.banded.class' => $originalConfig]);
+        config(['exercise_types.types.banded_resistance.class' => $originalConfig]);
     }
 
     /** @test */
