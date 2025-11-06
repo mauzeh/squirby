@@ -1,6 +1,6 @@
 # Exercise Type Consolidation Implementation Plan
 
-- [ ] 1. Create database migration for exercise_type field
+- [x] 1. Create database migration for exercise_type field
   - Create migration to add exercise_type column to exercises table
   - Add database index on exercise_type for efficient querying
   - Implement data population logic to migrate from is_bodyweight and band_type fields
