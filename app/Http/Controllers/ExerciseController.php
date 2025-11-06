@@ -35,12 +35,39 @@ class ExerciseController extends Controller
      */
     public function index()
     {
+        // Eager load current user's roles to avoid repeated queries
+        $currentUser = auth()->user()->load('roles');
+        
         $exercises = Exercise::availableToUser()
-            ->with('user') // Load user relationship for displaying user names
+            ->with([
+                'user.roles', // Load user relationship with roles for displaying user names and checking permissions
+            ])
+            ->withCount('liftLogs') // Add lift logs count for performance
             ->orderBy('user_id') // Global exercises (null) first, then user exercises
             ->orderBy('title', 'asc')
             ->get();
-        return view('exercises.index', compact('exercises'))->with('exerciseMergeService', $this->exerciseMergeService);
+            
+        // Precompute merge eligibility for admin users to avoid N+1 queries
+        $mergeEligibleIds = collect();
+        if ($currentUser->hasRole('Admin')) {
+            $userExercises = $exercises->where('user_id', '!=', null);
+            if ($userExercises->isNotEmpty()) {
+                // Get all global exercises for comparison
+                $globalExercises = Exercise::onlyGlobal()->get();
+                
+                foreach ($userExercises as $exercise) {
+                    $hasCompatibleTargets = $globalExercises->contains(function ($global) use ($exercise) {
+                        return $exercise->isCompatibleForMerge($global);
+                    });
+                    
+                    if ($hasCompatibleTargets) {
+                        $mergeEligibleIds->push($exercise->id);
+                    }
+                }
+            }
+        }
+        
+        return view('exercises.index', compact('exercises', 'mergeEligibleIds'))->with('exerciseMergeService', $this->exerciseMergeService);
     }
 
     /**

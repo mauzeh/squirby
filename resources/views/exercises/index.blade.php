@@ -69,7 +69,7 @@
                                             <button type="submit" class="button" style="background-color: #FF9800;" onclick="return confirm('Are you sure you want to unpromote this exercise back to personal status? This will only work if no other users have workout logs with this exercise.');" title="Unpromote to personal exercise"><i class="fa-solid fa-user"></i></button>
                                         </form>
                                     @endif
-                                    @if(auth()->user()->hasRole('Admin') && $exerciseMergeService->canBeMerged($exercise))
+                                    @if(auth()->user()->hasRole('Admin') && $mergeEligibleIds->contains($exercise->id))
                                         <a href="{{ route('exercises.show-merge', $exercise->id) }}" class="button" style="background-color: #6f42c1; color: white;" title="Merge exercise into global exercise"><i class="fa-solid fa-code-branch"></i></a>
                                     @endif
                                     @if($exercise->canBeDeletedBy(auth()->user()))
@@ -78,7 +78,7 @@
                                             @method('DELETE')
                                             <button type="submit" class="button delete" onclick="return confirm('Are you sure you want to delete this exercise?');"><i class="fa-solid fa-trash"></i></button>
                                         </form>
-                                    @elseif($exercise->liftLogs()->exists())
+                                    @elseif(($exercise->lift_logs_count ?? 0) > 0)
                                         <span class="button delete" style="opacity: 0.5; cursor: not-allowed;" title="Cannot delete: has lift logs"><i class="fa-solid fa-trash"></i></span>
                                     @endif
                                 </div>

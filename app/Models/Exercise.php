@@ -205,7 +205,12 @@ class Exercise extends Model
 
     public function canBeDeletedBy(User $user): bool
     {
-        if ($this->liftLogs()->exists()) {
+        // Use preloaded lift_logs_count if available, otherwise fall back to query
+        $hasLiftLogs = isset($this->lift_logs_count) 
+            ? $this->lift_logs_count > 0 
+            : $this->liftLogs()->exists();
+            
+        if ($hasLiftLogs) {
             return false; // Cannot delete if has lift logs
         }
         

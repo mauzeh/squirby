@@ -59,6 +59,11 @@ class User extends Authenticatable
 
     public function hasRole(string $role): bool
     {
+        // Use preloaded roles if available to avoid N+1 queries
+        if ($this->relationLoaded('roles')) {
+            return $this->roles->contains('name', $role);
+        }
+        
         return $this->roles()->where('name', $role)->exists();
     }
 
