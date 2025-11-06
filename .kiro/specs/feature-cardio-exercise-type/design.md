@@ -23,10 +23,11 @@ ExerciseTypeInterface
 
 ### Data Model Mapping
 
-The Cardio type reuses existing database fields with semantic mapping:
+The Cardio type reuses existing database fields with semantic mapping and adds explicit type identification:
 
 | Database Field | Cardio Semantic | Example Value | Notes |
 |---------------|-----------------|---------------|-------|
+| `exercise_type` | Exercise Type | 'cardio' | New field for explicit type identification |
 | `reps` | Distance (meters) | 500 | Always in meters |
 | `sets` | Rounds | 7 | Number of intervals |
 | `weight` | Not used | 0 | Always zero |
@@ -160,15 +161,50 @@ private function isCardioExercise(Exercise $exercise): bool
 
 ## Data Models
 
+### Database Schema Changes
+
+Add an `exercise_type` column to the exercises table for explicit type identification:
+
+```php
+// Migration: add_exercise_type_to_exercises_table
+Schema::table('exercises', function (Blueprint $table) {
+    $table->string('exercise_type')->nullable()->after('band_type');
+    $table->index('exercise_type'); // For efficient querying
+});
+```
+
 ### Exercise Model Updates
 
-No database schema changes required. The Exercise model may need a method to determine if it's a cardio exercise:
+The Exercise model needs updates to support the new exercise_type field:
 
 ```php
 // In Exercise model
+protected $fillable = [
+    'title',
+    'description',
+    'canonical_name',
+    'is_bodyweight',
+    'user_id',
+    'band_type',
+    'exercise_type', // New field
+];
+
 public function isCardioExercise(): bool
 {
-    return $this->getTypeStrategy()->getTypeName() === 'cardio';
+    return $this->exercise_type === 'cardio';
+}
+
+// Scope for efficient cardio exercise queries
+public function scopeCardio($query)
+{
+    return $query->where('exercise_type', 'cardio');
+}
+
+// Scope for non-cardio exercises
+public function scopeNonCardio($query)
+{
+    return $query->where('exercise_type', '!=', 'cardio')
+                 ->orWhereNull('exercise_type');
 }
 ```
 
@@ -301,33 +337,65 @@ public function processLiftData(array $data): array
 
 ## Migration Strategy
 
+### Database Migration
+
+```php
+// Migration: add_exercise_type_to_exercises_table
+public function up(): void
+{
+    Schema::table('exercises', function (Blueprint $table) {
+        $table->string('exercise_type')->nullable()->after('band_type');
+        $table->index('exercise_type');
+    });
+    
+    // Populate exercise_type for existing exercises
+    $this->populateExerciseTypes();
+}
+
+private function populateExerciseTypes(): void
+{
+    // Identify and mark cardio exercises
+    $cardioKeywords = ['run', 'running', 'cycle', 'cycling', 'row', 'rowing', 'walk', 'walking'];
+    
+    foreach ($cardioKeywords as $keyword) {
+        DB::table('exercises')
+            ->where('title', 'LIKE', "%{$keyword}%")
+            ->whereNull('exercise_type')
+            ->update(['exercise_type' => 'cardio']);
+    }
+    
+    // Mark banded exercises
+    DB::table('exercises')
+        ->whereNotNull('band_type')
+        ->whereNull('exercise_type')
+        ->update(['exercise_type' => 'banded']);
+    
+    // Mark bodyweight exercises
+    DB::table('exercises')
+        ->where('is_bodyweight', true)
+        ->whereNull('exercise_type')
+        ->update(['exercise_type' => 'bodyweight']);
+    
+    // Default remaining exercises to 'regular'
+    DB::table('exercises')
+        ->whereNull('exercise_type')
+        ->update(['exercise_type' => 'regular']);
+}
+```
+
 ### Identifying Cardio Exercises
 
 ```sql
--- Find exercises that should be cardio type
+-- Efficiently find all cardio exercises
+SELECT * FROM exercises WHERE exercise_type = 'cardio';
+
+-- Find exercises that might need cardio classification
 SELECT * FROM exercises 
-WHERE LOWER(title) LIKE '%run%' 
-   OR LOWER(title) LIKE '%cycle%' 
-   OR LOWER(title) LIKE '%row%'
-   OR LOWER(title) LIKE '%walk%';
-```
-
-### Migration Script
-
-```php
-// Migration to update exercise types
-public function migrateCardioExercises()
-{
-    $cardioKeywords = ['run', 'cycle', 'row', 'walk'];
-    
-    foreach ($cardioKeywords as $keyword) {
-        Exercise::where('title', 'LIKE', "%{$keyword}%")
-            ->update(['exercise_type' => 'cardio']); // If we add this field
-    }
-    
-    // Clear any cached exercise type strategies
-    Cache::tags(['exercise_types'])->flush();
-}
+WHERE exercise_type IS NULL
+  AND (LOWER(title) LIKE '%run%' 
+       OR LOWER(title) LIKE '%cycle%' 
+       OR LOWER(title) LIKE '%row%'
+       OR LOWER(title) LIKE '%walk%');
 ```
 
 ## Performance Considerations

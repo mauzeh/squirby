@@ -10,6 +10,7 @@ This feature introduces a new Cardio exercise type to the exercise type system, 
 - **Distance**: The measurement of how far the exercise was performed (e.g., 500m, 1000m)
 - **Rounds**: The number of intervals or sets performed (equivalent to "sets" in other exercise types)
 - **Exercise Type Strategy**: The strategy pattern implementation that handles type-specific behavior
+- **Exercise Type Field**: A database column that explicitly stores the exercise type for easy identification
 - **Progression Model**: The algorithm that suggests improvements for subsequent workouts
 - **Form Fields**: The input fields displayed in the mobile entry interface
 - **Display Format**: How exercise data is presented to users in logs and summaries
@@ -61,7 +62,7 @@ This feature introduces a new Cardio exercise type to the exercise type system, 
 1. WHEN the exercise type factory creates strategies, THE Factory SHALL support creating Cardio exercise type instances
 2. WHEN the system determines exercise types, THE Type_Detection_Logic SHALL correctly identify cardio exercises
 3. WHEN cardio exercises are processed, THE System SHALL use the same interfaces as other exercise types
-4. WHEN cardio exercises are stored, THE System SHALL use the existing database schema without modifications
+4. WHEN cardio exercises are stored, THE System SHALL use an explicit exercise_type database field for easy identification
 5. WHERE cardio exercises exist, THE System SHALL maintain compatibility with existing exercise management features
 
 ### Requirement 5
@@ -77,6 +78,18 @@ This feature introduces a new Cardio exercise type to the exercise type system, 
 5. WHERE cardio functionality is added, THE Implementation SHALL include comprehensive test coverage
 
 ### Requirement 6
+
+**User Story:** As a database administrator or developer, I want cardio exercises to be easily distinguishable in the database, so that I can efficiently query and manage cardio exercises separately from other exercise types.
+
+#### Acceptance Criteria
+
+1. WHEN querying the database, THE System SHALL provide an explicit exercise_type column to identify cardio exercises
+2. WHEN creating cardio exercises, THE System SHALL automatically set the exercise_type field to 'cardio'
+3. WHEN filtering exercises by type, THE Database_Queries SHALL use the exercise_type field for efficient lookups
+4. WHEN migrating existing exercises, THE System SHALL populate the exercise_type field based on exercise characteristics
+5. WHERE cardio exercises exist, THE Database SHALL support direct SQL queries to find all cardio exercises using the exercise_type field
+
+### Requirement 7
 
 **User Story:** As a user with existing running data, I want my historical cardio exercises to work with the new Cardio type, so that my workout history remains intact and functional.
 
