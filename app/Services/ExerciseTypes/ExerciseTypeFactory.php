@@ -156,6 +156,13 @@ class ExerciseTypeFactory
      */
     private static function determineExerciseType(Exercise $exercise): string
     {
+        // First check for explicit exercise_type field (preferred method)
+        if (!empty($exercise->exercise_type)) {
+            return $exercise->exercise_type;
+        }
+        
+        // Fallback to legacy detection logic for exercises without explicit type
+        
         // Check for banded exercise
         if ($exercise->band_type) {
             return 'banded';
@@ -176,8 +183,9 @@ class ExerciseTypeFactory
     private static function generateKey(Exercise $exercise): string
     {
         return sprintf(
-            'exercise_%d_%s_%s',
+            'exercise_%d_%s_%s_%s',
             $exercise->id,
+            $exercise->exercise_type ?? 'null',
             $exercise->band_type ?? 'null',
             $exercise->is_bodyweight ? 'bodyweight' : 'regular'
         );

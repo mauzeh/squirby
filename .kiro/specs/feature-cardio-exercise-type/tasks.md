@@ -31,7 +31,7 @@
   - Handle edge cases for very short or very long distances
   - _Requirements: 2.3, 2.4, 2.5_
 
-- [ ] 5. Update mobile entry interface for cardio exercises
+- [x] 5. Update mobile entry interface for cardio exercises
   - Modify LiftLogService::generateProgramForms() to detect cardio exercises
   - Change "Reps:" label to "Distance (m):" for cardio exercises
   - Change "Sets:" label to "Rounds:" for cardio exercises

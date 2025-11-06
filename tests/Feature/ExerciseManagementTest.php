@@ -18,6 +18,7 @@ class ExerciseManagementTest extends TestCase
     /** @test */
     public function authenticated_user_can_create_exercise()
     {
+        $this->withoutMiddleware();
         $user = User::factory()->create();
         $this->actingAs($user);
 
@@ -728,6 +729,7 @@ class ExerciseManagementTest extends TestCase
     /** @test */
     public function authenticated_user_can_create_exercise_with_exercise_type()
     {
+        $this->withoutMiddleware();
         $user = User::factory()->create();
         $this->actingAs($user);
 
@@ -753,6 +755,7 @@ class ExerciseManagementTest extends TestCase
     /** @test */
     public function authenticated_user_can_create_exercise_with_different_exercise_types()
     {
+        $this->withoutMiddleware();
         $user = User::factory()->create();
         $this->actingAs($user);
 
@@ -785,6 +788,7 @@ class ExerciseManagementTest extends TestCase
     /** @test */
     public function authenticated_user_cannot_create_exercise_with_invalid_exercise_type()
     {
+        $this->withoutMiddleware();
         $user = User::factory()->create();
         $this->actingAs($user);
 
@@ -807,6 +811,7 @@ class ExerciseManagementTest extends TestCase
     /** @test */
     public function authenticated_user_can_update_exercise_type()
     {
+        $this->withoutMiddleware();
         $user = User::factory()->create();
         $this->actingAs($user);
 
@@ -836,6 +841,7 @@ class ExerciseManagementTest extends TestCase
     /** @test */
     public function authenticated_user_cannot_update_exercise_with_invalid_exercise_type()
     {
+        $this->withoutMiddleware();
         $user = User::factory()->create();
         $this->actingAs($user);
 
@@ -901,6 +907,7 @@ class ExerciseManagementTest extends TestCase
     /** @test */
     public function exercise_type_field_is_optional_and_defaults_appropriately()
     {
+        $this->withoutMiddleware();
         $user = User::factory()->create();
         $this->actingAs($user);
 

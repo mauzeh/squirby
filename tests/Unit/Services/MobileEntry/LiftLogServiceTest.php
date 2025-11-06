@@ -2298,4 +2298,109 @@ class LiftLogServiceTest extends TestCase
         $this->assertContains('blue', $optionValues);
         $this->assertContains('green', $optionValues);
     }
+
+    #[Test]
+    public function it_generates_cardio_exercise_forms_with_distance_and_rounds_labels()
+    {
+        $user = User::factory()->create();
+        
+        // Create a cardio exercise
+        $cardioExercise = Exercise::factory()->create([
+            'title' => 'Running',
+            'user_id' => $user->id,
+            'exercise_type' => 'cardio'
+        ]);
+        
+        Program::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $cardioExercise->id,
+            'date' => $this->testDate
+        ]);
+
+        $forms = $this->service->generateProgramForms($user->id, $this->testDate);
+        
+        $form = $forms[0];
+        $numericFields = $form['numericFields'];
+        
+        // Should have exactly 2 fields: distance and rounds
+        $this->assertCount(2, $numericFields);
+        
+        // Check distance field (maps to reps in database)
+        $distanceField = collect($numericFields)->firstWhere('name', 'reps');
+        $this->assertNotNull($distanceField, 'Distance field should exist');
+        $this->assertEquals('Distance (m):', $distanceField['label']);
+        $this->assertEquals(50, $distanceField['increment']); // 50m increments
+        $this->assertEquals(50, $distanceField['min']); // Minimum 50m
+        $this->assertEquals(50000, $distanceField['max']); // Maximum 50km
+        $this->assertStringContainsString('distance', $distanceField['id']);
+        
+        // Check rounds field (maps to sets in database)
+        $roundsField = collect($numericFields)->firstWhere('name', 'rounds');
+        $this->assertNotNull($roundsField, 'Rounds field should exist');
+        $this->assertEquals('Rounds:', $roundsField['label']);
+        $this->assertEquals(1, $roundsField['increment']); // 1 round increments
+        $this->assertEquals(1, $roundsField['min']); // Minimum 1 round
+        
+        // Should NOT have weight or band_color fields
+        $weightField = collect($numericFields)->firstWhere('name', 'weight');
+        $bandColorField = collect($numericFields)->firstWhere('name', 'band_color');
+        $this->assertNull($weightField, 'Cardio exercises should not have weight field');
+        $this->assertNull($bandColorField, 'Cardio exercises should not have band color field');
+        
+        // Verify aria labels are cardio-appropriate
+        $this->assertArrayHasKey('ariaLabels', $distanceField);
+        $this->assertEquals('Decrease distance', $distanceField['ariaLabels']['decrease']);
+        $this->assertEquals('Increase distance', $distanceField['ariaLabels']['increase']);
+        
+        $this->assertArrayHasKey('ariaLabels', $roundsField);
+        $this->assertEquals('Decrease rounds', $roundsField['ariaLabels']['decrease']);
+        $this->assertEquals('Increase rounds', $roundsField['ariaLabels']['increase']);
+    }
+
+    #[Test]
+    public function it_generates_non_cardio_exercise_forms_with_standard_labels()
+    {
+        $user = User::factory()->create();
+        
+        // Create a regular exercise
+        $regularExercise = Exercise::factory()->create([
+            'title' => 'Bench Press',
+            'user_id' => $user->id,
+            'exercise_type' => 'regular'
+        ]);
+        
+        Program::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $regularExercise->id,
+            'date' => $this->testDate
+        ]);
+
+        $forms = $this->service->generateProgramForms($user->id, $this->testDate);
+        
+        $form = $forms[0];
+        $numericFields = $form['numericFields'];
+        
+        // Should have weight, reps, and rounds fields
+        $this->assertGreaterThanOrEqual(3, count($numericFields));
+        
+        // Check reps field has standard label
+        $repsField = collect($numericFields)->firstWhere('name', 'reps');
+        $this->assertNotNull($repsField, 'Reps field should exist');
+        $this->assertEquals('Reps:', $repsField['label']);
+        $this->assertEquals(1, $repsField['increment']); // 1 rep increments
+        $this->assertEquals(1, $repsField['min']); // Minimum 1 rep
+        $this->assertStringContainsString('reps', $repsField['id']);
+        
+        // Check rounds field has standard label (Sets)
+        $roundsField = collect($numericFields)->firstWhere('name', 'rounds');
+        $this->assertNotNull($roundsField, 'Rounds field should exist');
+        $this->assertEquals('Sets:', $roundsField['label']);
+        $this->assertEquals(1, $roundsField['increment']); // 1 set increments
+        $this->assertEquals(1, $roundsField['min']); // Minimum 1 set
+        
+        // Should have weight field for regular exercises
+        $weightField = collect($numericFields)->firstWhere('name', 'weight');
+        $this->assertNotNull($weightField, 'Regular exercises should have weight field');
+        $this->assertEquals('Weight (lbs):', $weightField['label']);
+    }
 }
