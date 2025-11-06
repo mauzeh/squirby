@@ -25,12 +25,17 @@ class PersistGlobalExercisesCsvParsingTest extends TestCase
 
     public function test_parse_existing_csv_with_complete_data()
     {
-        $command = $this->getCommand();
+        // Create a mock command that doesn't use output methods
+        $command = new class extends PersistGlobalExercises {
+            public function warn($string, $verbosity = null) {
+                // Override to prevent output issues in tests
+            }
+        };
         
-        $csvContent = "title,description,is_bodyweight,canonical_name,band_type\n";
-        $csvContent .= "\"Push Up\",\"Basic bodyweight exercise\",1,push_up,\n";
-        $csvContent .= "\"Band Row\",\"Rowing with resistance band\",0,band_row,resistance\n";
-        $csvContent .= "\"Assisted Squat\",\"Squat with band assistance\",1,assisted_squat,assistance\n";
+        $csvContent = "title,description,canonical_name,exercise_type\n";
+        $csvContent .= "\"Push Up\",\"Basic bodyweight exercise\",push_up,bodyweight\n";
+        $csvContent .= "\"Band Row\",\"Rowing with resistance band\",band_row,banded_resistance\n";
+        $csvContent .= "\"Assisted Squat\",\"Squat with band assistance\",assisted_squat,banded_assistance\n";
         
         $tempFile = tempnam(sys_get_temp_dir(), 'test_csv');
         file_put_contents($tempFile, $csvContent);
@@ -44,17 +49,16 @@ class PersistGlobalExercisesCsvParsingTest extends TestCase
             foreach ($result as $canonicalName => $data) {
                 $this->assertArrayHasKey('title', $data);
                 $this->assertArrayHasKey('description', $data);
-                $this->assertArrayHasKey('is_bodyweight', $data);
                 $this->assertArrayHasKey('canonical_name', $data);
-                $this->assertArrayHasKey('band_type', $data);
+                $this->assertArrayHasKey('exercise_type', $data);
                 $this->assertArrayHasKey('line_number', $data);
             }
             
             // Verify specific data
             $this->assertEquals('Push Up', $result['push_up']['title']);
-            $this->assertEquals('', $result['push_up']['band_type']);
-            $this->assertEquals('resistance', $result['band_row']['band_type']);
-            $this->assertEquals('assistance', $result['assisted_squat']['band_type']);
+            $this->assertEquals('bodyweight', $result['push_up']['exercise_type']);
+            $this->assertEquals('banded_resistance', $result['band_row']['exercise_type']);
+            $this->assertEquals('banded_assistance', $result['assisted_squat']['exercise_type']);
             
         } finally {
             unlink($tempFile);
@@ -90,9 +94,9 @@ class PersistGlobalExercisesCsvParsingTest extends TestCase
             }
         };
         
-        // CSV missing band_type column
-        $csvContent = "title,description,is_bodyweight,canonical_name\n";
-        $csvContent .= "\"Push Up\",\"Basic exercise\",1,push_up\n";
+        // CSV missing exercise_type column
+        $csvContent = "title,description,canonical_name\n";
+        $csvContent .= "\"Push Up\",\"Basic exercise\",push_up\n";
         
         $tempFile = tempnam(sys_get_temp_dir(), 'test_csv');
         file_put_contents($tempFile, $csvContent);
@@ -100,10 +104,10 @@ class PersistGlobalExercisesCsvParsingTest extends TestCase
         try {
             $result = $this->callPrivateMethod($command, 'parseExistingCsv', [$tempFile]);
             
-            // Should still parse but with default band_type
+            // Should still parse but with default exercise_type
             $this->assertCount(1, $result);
             $this->assertArrayHasKey('push_up', $result);
-            $this->assertEquals('', $result['push_up']['band_type']);
+            $this->assertEquals('regular', $result['push_up']['exercise_type']);
             
         } finally {
             unlink($tempFile);
@@ -119,10 +123,10 @@ class PersistGlobalExercisesCsvParsingTest extends TestCase
             }
         };
         
-        $csvContent = "title,description,is_bodyweight,canonical_name,band_type\n";
-        $csvContent .= "\"Valid Exercise\",\"Has canonical name\",1,valid_exercise,\n";
-        $csvContent .= "\"Invalid Exercise\",\"No canonical name\",0,,\n";
-        $csvContent .= "\"Another Valid\",\"Also has canonical name\",0,another_valid,resistance\n";
+        $csvContent = "title,description,canonical_name,exercise_type\n";
+        $csvContent .= "\"Valid Exercise\",\"Has canonical name\",valid_exercise,bodyweight\n";
+        $csvContent .= "\"Invalid Exercise\",\"No canonical name\",,regular\n";
+        $csvContent .= "\"Another Valid\",\"Also has canonical name\",another_valid,banded_resistance\n";
         
         $tempFile = tempnam(sys_get_temp_dir(), 'test_csv');
         file_put_contents($tempFile, $csvContent);
@@ -144,9 +148,9 @@ class PersistGlobalExercisesCsvParsingTest extends TestCase
     {
         $command = $this->getCommand();
         
-        $csvContent = "title,description,is_bodyweight,canonical_name,band_type\n";
-        $csvContent .= "\"Exercise, with comma\",\"Description, with comma\",1,exercise_comma,\n";
-        $csvContent .= "\"Normal Exercise\",\"Normal description\",0,normal_exercise,resistance\n";
+        $csvContent = "title,description,canonical_name,exercise_type\n";
+        $csvContent .= "\"Exercise, with comma\",\"Description, with comma\",exercise_comma,bodyweight\n";
+        $csvContent .= "\"Normal Exercise\",\"Normal description\",normal_exercise,banded_resistance\n";
         
         $tempFile = tempnam(sys_get_temp_dir(), 'test_csv');
         file_put_contents($tempFile, $csvContent);

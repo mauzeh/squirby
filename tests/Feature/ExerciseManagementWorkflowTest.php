@@ -285,6 +285,7 @@ class ExerciseManagementWorkflowTest extends TestCase
         $globalAttempt = [
             'title' => 'Attempted Global Exercise',
             'description' => 'Should not be allowed',
+            'exercise_type' => 'regular',
             'is_global' => true,
         ];
 
@@ -441,12 +442,14 @@ class ExerciseManagementWorkflowTest extends TestCase
         $this->post(route('exercises.store'), [
             'title' => 'Bench Press',
             'description' => 'Global bench press',
+            'exercise_type' => 'regular',
             'is_global' => true,
         ]);
         
         $this->post(route('exercises.store'), [
             'title' => 'Squat',
             'description' => 'Global squat',
+            'exercise_type' => 'regular',
             'is_global' => true,
         ]);
 
@@ -459,6 +462,7 @@ class ExerciseManagementWorkflowTest extends TestCase
         $conflictResponse1 = $this->post(route('exercises.store'), [
             'title' => 'Bench Press',
             'description' => 'User1 bench press',
+            'exercise_type' => 'regular',
         ]);
         $conflictResponse1->assertSessionHasErrors('title');
 
@@ -466,6 +470,7 @@ class ExerciseManagementWorkflowTest extends TestCase
         $this->post(route('exercises.store'), [
             'title' => 'Incline Bench Press',
             'description' => 'User1 incline bench',
+            'exercise_type' => 'regular',
         ]);
 
         // User2 attempts to create exercise with same name as User1's exercise (should succeed - different users)
@@ -473,6 +478,7 @@ class ExerciseManagementWorkflowTest extends TestCase
         $user2Response = $this->post(route('exercises.store'), [
             'title' => 'Incline Bench Press',
             'description' => 'User2 incline bench',
+            'exercise_type' => 'regular',
         ]);
         $user2Response->assertRedirect(route('exercises.index'));
 
@@ -480,6 +486,7 @@ class ExerciseManagementWorkflowTest extends TestCase
         $conflictResponse2 = $this->post(route('exercises.store'), [
             'title' => 'Squat',
             'description' => 'User2 squat',
+            'exercise_type' => 'regular',
         ]);
         $conflictResponse2->assertSessionHasErrors('title');
 
@@ -531,6 +538,7 @@ class ExerciseManagementWorkflowTest extends TestCase
         $this->post(route('exercises.store'), [
             'title' => 'Deadlift',
             'description' => 'Global deadlift exercise',
+            'exercise_type' => 'regular',
             'is_global' => true,
         ]);
 
@@ -538,6 +546,7 @@ class ExerciseManagementWorkflowTest extends TestCase
         $conflictResponse = $this->post(route('exercises.store'), [
             'title' => 'Deadlift',
             'description' => 'Duplicate global deadlift',
+            'exercise_type' => 'regular',
             'is_global' => true,
         ]);
         
@@ -551,6 +560,7 @@ class ExerciseManagementWorkflowTest extends TestCase
         $personalResponse = $this->post(route('exercises.store'), [
             'title' => 'Romanian Deadlift',
             'description' => 'Admin personal exercise',
+            'exercise_type' => 'regular',
             'is_global' => false,
         ]);
         
