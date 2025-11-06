@@ -110,7 +110,6 @@ class BodyweightExerciseType extends BaseExerciseType
         
         // Bodyweight exercises are bodyweight exercises and don't use bands
         $processedData['is_bodyweight'] = true;
-        $processedData['band_type'] = null;
         
         return $processedData;
     }

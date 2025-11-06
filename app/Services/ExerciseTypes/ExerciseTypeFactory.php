@@ -170,7 +170,7 @@ class ExerciseTypeFactory
         }
         
         // Fallback to legacy logic for exercises without exercise_type (e.g., during testing with make())
-        if ($exercise->band_type) {
+        if (isset($exercise->band_type) && $exercise->band_type) {
             // Map legacy band_type to new exercise_type values
             return $exercise->band_type === 'assistance' ? 'banded_assistance' : 'banded_resistance';
         }

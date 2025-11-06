@@ -31,7 +31,7 @@ class BandedLiftLoggingTest extends TestCase
         ]]);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function a_user_can_log_a_resistance_band_lift()
     {
         $this->actingAs($this->user);
@@ -63,7 +63,7 @@ class BandedLiftLoggingTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function a_user_can_log_an_assistance_band_lift()
     {
         $this->actingAs($this->user);
@@ -95,7 +95,7 @@ class BandedLiftLoggingTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function band_color_is_required_for_banded_exercises()
     {
         $this->actingAs($this->user);
@@ -124,8 +124,7 @@ class BandedLiftLoggingTest extends TestCase
     {
         $this->actingAs($this->user);
         $exercise = Exercise::factory()->create([
-            'user_id' => $this->user->id,
-            'band_type' => null,
+            'user_id' => $this->user->id
         ]);
 
         $response = $this->post(route('lift-logs.store'), [
@@ -250,7 +249,6 @@ class BandedLiftLoggingTest extends TestCase
         $this->actingAs($this->user);
         $exercise = Exercise::factory()->create([
             'user_id' => $this->user->id,
-            'band_type' => null,
         ]);
         $liftLog = LiftLog::factory()->create([
             'user_id' => $this->user->id,

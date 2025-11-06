@@ -80,7 +80,6 @@ class RegularExerciseType extends BaseExerciseType
         
         // Regular exercises are not bodyweight exercises and don't use bands
         $processedData['is_bodyweight'] = false;
-        $processedData['band_type'] = null;
         
         return $processedData;
     }

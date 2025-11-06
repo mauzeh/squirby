@@ -26,7 +26,7 @@
             @if ($exercise->exercise_type === 'bodyweight')
                 <h3>Volume Progress</h3>
                 <canvas id="progressChart"></canvas>
-            @elseif ($exercise->band_type)
+            @elseif (in_array($exercise->exercise_type, ['banded_resistance', 'banded_assistance']))
                 <h3>Volume Progress</h3>
                 <canvas id="progressChart"></canvas>
             @else

@@ -106,7 +106,7 @@ class LiftLogFormComponent extends Component
     {
         return $this->liftLog->exists && 
                $this->liftLog->exercise && 
-               !empty($this->liftLog->exercise->band_type);
+               $this->liftLog->exercise->isBanded();
     }
 
     /**
