@@ -221,6 +221,51 @@ return [
                 'sets' => 20,
             ],
         ],
+
+        /**
+         * Static Hold Exercise Type
+         * 
+         * Isometric hold exercises commonly used in gymnastics and calisthenics.
+         * The reps field represents hold duration in seconds, weight is optional added weight.
+         * Examples: L-sits, planches, front levers, handstands, hollow body holds.
+         */
+        'static_hold' => [
+            'class' => \App\Services\ExerciseTypes\StaticHoldExerciseType::class,
+            'validation' => [
+                'reps' => 'required|integer|min:1|max:300', // Duration in seconds (1s - 5min)
+                'weight' => 'nullable|numeric|min:0|max:500', // Optional added weight
+            ],
+            'chart_type' => 'hold_duration_progression',
+            'supports_1rm' => false,
+            'form_fields' => ['reps', 'weight'], // Duration and optional weight
+            'progression_types' => ['duration_progression', 'weighted_progression'],
+            'display_format' => 'hold_duration',
+            'field_labels' => [
+                'reps' => 'Hold Duration (seconds):',
+                'weight' => 'Added Weight (lbs):',
+                'sets' => 'Sets:',
+            ],
+            'field_increments' => [
+                'reps' => 5, // 5-second increments
+                'weight' => 5,
+                'sets' => 1,
+            ],
+            'field_defaults' => [
+                'reps' => 30, // Default 30 second hold
+                'weight' => 0, // No weight by default
+                'sets' => 3,
+            ],
+            'field_mins' => [
+                'reps' => 1,
+                'weight' => 0,
+                'sets' => 1,
+            ],
+            'field_maxes' => [
+                'reps' => 300, // 5 minutes max
+                'weight' => 500,
+                'sets' => 20,
+            ],
+        ],
     ],
     
     /**

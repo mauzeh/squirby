@@ -84,10 +84,12 @@ class ExerciseController extends Controller
      */
     public function store(Request $request)
     {
+        $availableTypes = ExerciseTypeFactory::getAvailableTypes();
+        
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'exercise_type' => 'required|in:regular,bodyweight,banded_resistance,banded_assistance,cardio',
+            'exercise_type' => 'required|in:' . implode(',', $availableTypes),
             'is_global' => 'nullable|boolean',
         ]);
 
@@ -152,10 +154,12 @@ class ExerciseController extends Controller
     {
         $this->authorize('update', $exercise);
         
+        $availableTypes = ExerciseTypeFactory::getAvailableTypes();
+        
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'exercise_type' => 'required|in:regular,bodyweight,banded_resistance,banded_assistance,cardio',
+            'exercise_type' => 'required|in:' . implode(',', $availableTypes),
             'is_global' => 'nullable|boolean',
         ]);
 

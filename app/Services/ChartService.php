@@ -8,6 +8,7 @@ use App\Services\Charts\OneRepMaxChartGenerator;
 use App\Services\Charts\VolumeProgressionChartGenerator;
 use App\Services\Charts\BandProgressionChartGenerator;
 use App\Services\Charts\CardioProgressionChartGenerator;
+use App\Services\Charts\HoldDurationProgressionChartGenerator;
 use App\Models\Exercise;
 
 /**
@@ -27,6 +28,7 @@ class ChartService
             new VolumeProgressionChartGenerator(),
             new BandProgressionChartGenerator(),
             new CardioProgressionChartGenerator(),
+            new HoldDurationProgressionChartGenerator(),
         ];
     }
 

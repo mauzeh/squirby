@@ -186,6 +186,14 @@ class Exercise extends Model
                      ->orWhereNull('exercise_type');
     }
 
+    /**
+     * Scope to filter static hold exercises
+     */
+    public function scopeStaticHold($query)
+    {
+        return $query->where('exercise_type', 'static_hold');
+    }
+
     // Helper methods
     public function isGlobal(): bool
     {
@@ -224,6 +232,14 @@ class Exercise extends Model
     public function isCardio(): bool
     {
         return $this->exercise_type === 'cardio';
+    }
+
+    /**
+     * Check if this is a static hold exercise
+     */
+    public function isStaticHold(): bool
+    {
+        return $this->exercise_type === 'static_hold';
     }
 
 
