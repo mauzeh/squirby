@@ -537,4 +537,48 @@ interface ExerciseTypeInterface
      * // Banded exercise: "Blue band × 8 reps × 3 sets"
      */
     public function formatSuccessMessageDescription(?float $weight, int $reps, int $rounds, ?string $bandColor = null): string;
+    
+    /**
+     * Get progression suggestion for this exercise type
+     * 
+     * Analyzes the most recent lift log and provides a progression suggestion
+     * appropriate for this exercise type. Different exercise types have different
+     * progression strategies (linear weight progression, band progression, distance
+     * progression, etc.).
+     * 
+     * @param LiftLog $lastLog The most recent lift log for this exercise
+     * @param int $userId User ID for context (used for bodyweight calculations, history, etc.)
+     * @param int $exerciseId Exercise ID for context
+     * @param \Carbon\Carbon|null $forDate Date context for progression calculations
+     * @return object|null Progression suggestion object with sets, reps, weight, band_color properties, or null if no suggestion available
+     * 
+     * @example
+     * // Regular exercise progression
+     * (object)[
+     *     'sets' => 3,
+     *     'reps' => 5,
+     *     'suggestedWeight' => 140.0,
+     *     'lastWeight' => 135.0,
+     *     'lastReps' => 5,
+     *     'lastSets' => 3
+     * ]
+     * 
+     * @example
+     * // Banded exercise progression
+     * (object)[
+     *     'sets' => 3,
+     *     'reps' => 9,
+     *     'band_color' => 'blue'
+     * ]
+     * 
+     * @example
+     * // Cardio exercise progression
+     * (object)[
+     *     'sets' => 1,
+     *     'reps' => 600, // distance in meters
+     *     'weight' => 0,
+     *     'band_color' => null
+     * ]
+     */
+    public function getProgressionSuggestion(LiftLog $lastLog, int $userId, int $exerciseId, ?\Carbon\Carbon $forDate = null): ?object;
 }

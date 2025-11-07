@@ -341,6 +341,102 @@ abstract class BaseExerciseType implements ExerciseTypeInterface
     }
     
     /**
+     * Get progression suggestion for this exercise type
+     * Default implementation uses progression models (LinearProgression or DoubleProgression)
+     */
+    public function getProgressionSuggestion(\App\Models\LiftLog $lastLog, int $userId, int $exerciseId, ?\Carbon\Carbon $forDate = null): ?object
+    {
+        // Get the progression model service
+        $progressionModel = $this->getProgressionModel($lastLog);
+        
+        return $progressionModel->suggest($userId, $exerciseId, $forDate);
+    }
+    
+    /**
+     * Get the appropriate progression model for this exercise type
+     * Protected helper method for progression suggestions
+     */
+    protected function getProgressionModel(\App\Models\LiftLog $liftLog): \App\Services\ProgressionModels\ProgressionModel
+    {
+        $oneRepMaxService = app(\App\Services\OneRepMaxCalculatorService::class);
+        
+        // Try to infer progression model from recent workout history first
+        $inferredModel = $this->inferProgressionModelFromHistory($liftLog->user_id, $liftLog->exercise_id, $oneRepMaxService);
+        if ($inferredModel) {
+            return $inferredModel;
+        }
+        
+        $supportedProgressionTypes = $this->getSupportedProgressionTypes();
+        
+        // For exercises that support both linear and double progression, use rep-range logic
+        if (in_array('linear', $supportedProgressionTypes) && in_array('double_progression', $supportedProgressionTypes)) {
+            // Use rep-range logic to decide between linear and double progression
+            if ($liftLog->display_reps >= 8 && $liftLog->display_reps <= 12) {
+                return new \App\Services\ProgressionModels\DoubleProgression($oneRepMaxService);
+            }
+            return new \App\Services\ProgressionModels\LinearProgression($oneRepMaxService);
+        }
+        
+        // For exercises that only support linear progression, use LinearProgression
+        if (in_array('linear', $supportedProgressionTypes)) {
+            return new \App\Services\ProgressionModels\LinearProgression($oneRepMaxService);
+        }
+        
+        // For exercises that only support double progression, use DoubleProgression
+        if (in_array('double_progression', $supportedProgressionTypes)) {
+            return new \App\Services\ProgressionModels\DoubleProgression($oneRepMaxService);
+        }
+
+        // Fallback to rep-range based selection
+        if ($liftLog->display_reps >= 8 && $liftLog->display_reps <= 12) {
+            return new \App\Services\ProgressionModels\DoubleProgression($oneRepMaxService);
+        }
+
+        return new \App\Services\ProgressionModels\LinearProgression($oneRepMaxService);
+    }
+    
+    /**
+     * Infer progression model from workout history
+     * Protected helper method for progression suggestions
+     */
+    protected function inferProgressionModelFromHistory(int $userId, int $exerciseId, \App\Services\OneRepMaxCalculatorService $oneRepMaxService): ?\App\Services\ProgressionModels\ProgressionModel
+    {
+        $recentLogs = \App\Models\LiftLog::where('user_id', $userId)
+            ->where('exercise_id', $exerciseId)
+            ->orderBy('logged_at', 'desc')
+            ->take(2)
+            ->get();
+
+        if ($recentLogs->count() < 2) {
+            return null; // Not enough data to infer
+        }
+
+        $newer = $recentLogs->first();
+        $older = $recentLogs->last();
+
+        $weightChange = $newer->display_weight - $older->display_weight;
+        $repsChange = $newer->display_reps - $older->display_reps;
+
+        // DoubleProgression pattern: same weight, reps increased OR weight increased with reps reset to lower value
+        if ($weightChange == 0 && $repsChange > 0) {
+            // Same weight, reps increased - classic DoubleProgression
+            return new \App\Services\ProgressionModels\DoubleProgression($oneRepMaxService);
+        }
+
+        if ($weightChange > 0 && $repsChange < 0 && $newer->display_reps >= 8 && $newer->display_reps <= 12) {
+            // Weight increased, reps decreased to 8-12 range - likely DoubleProgression reset
+            return new \App\Services\ProgressionModels\DoubleProgression($oneRepMaxService);
+        }
+
+        // LinearProgression pattern: weight increased, same reps
+        if ($weightChange > 0 && $repsChange == 0) {
+            return new \App\Services\ProgressionModels\LinearProgression($oneRepMaxService);
+        }
+
+        return null; // Pattern unclear, use fallback logic
+    }
+    
+    /**
      * Get field type for a given field name
      * Protected helper method for form field generation
      */

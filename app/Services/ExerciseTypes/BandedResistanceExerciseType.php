@@ -223,6 +223,48 @@ class BandedResistanceExerciseType extends BaseExerciseType
     }
     
     /**
+     * Get progression suggestion for banded resistance exercises
+     * Implements band-specific progression logic
+     */
+    public function getProgressionSuggestion(\App\Models\LiftLog $lastLog, int $userId, int $exerciseId, ?\Carbon\Carbon $forDate = null): ?object
+    {
+        $lastLoggedReps = $lastLog->liftSets->first()->reps ?? 0;
+        $lastLoggedBandColor = $lastLog->liftSets->first()->band_color ?? null;
+
+        $maxRepsBeforeBandChange = config('bands.max_reps_before_band_change', 15);
+        $defaultRepsOnBandChange = config('bands.default_reps_on_band_change', 8);
+
+        // If reps are below threshold, suggest increasing reps
+        if ($lastLoggedReps < $maxRepsBeforeBandChange) {
+            $suggestedReps = min($lastLoggedReps + 1, $maxRepsBeforeBandChange);
+            return (object)[
+                'sets' => $lastLog->liftSets->count(),
+                'reps' => $suggestedReps,
+                'band_color' => $lastLoggedBandColor,
+            ];
+        }
+        
+        // If reps are at threshold, suggest progressing to harder band
+        $bandService = app(\App\Services\BandService::class);
+        $nextHarderBand = $bandService->getNextHarderBand($lastLoggedBandColor, 'resistance');
+        
+        if ($nextHarderBand) {
+            return (object)[
+                'sets' => $lastLog->liftSets->count(),
+                'reps' => $defaultRepsOnBandChange,
+                'band_color' => $nextHarderBand,
+            ];
+        }
+        
+        // If no harder band available, suggest same band with max reps
+        return (object)[
+            'sets' => $lastLog->liftSets->count(),
+            'reps' => $maxRepsBeforeBandChange,
+            'band_color' => $lastLoggedBandColor,
+        ];
+    }
+    
+    /**
      * Get the next band in progression order (higher resistance)
      */
     private function getNextBand(string $currentBand): ?string

@@ -334,4 +334,62 @@ class CardioExerciseType extends BaseExerciseType
         
         return "{$distanceDisplay} × {$rounds} {$roundsText}";
     }
+    
+    /**
+     * Get progression suggestion for cardio exercises
+     * Implements distance/rounds-based progression logic
+     */
+    public function getProgressionSuggestion(\App\Models\LiftLog $lastLog, int $userId, int $exerciseId, ?\Carbon\Carbon $forDate = null): ?object
+    {
+        $lastDistance = $lastLog->display_reps; // reps field stores distance in meters
+        $lastRounds = $lastLog->liftSets->count();
+        
+        // Validate that we have valid cardio data
+        if (!is_numeric($lastDistance) || $lastDistance <= 0) {
+            // No valid history, provide sensible defaults
+            return $this->getDefaultCardioSuggestion();
+        }
+        
+        // For distances < 1000m: suggest increasing distance by 50-100m
+        if ($lastDistance < 1000) {
+            $increment = $lastDistance < 500 ? 50 : 100;
+            $suggestedDistance = $lastDistance + $increment;
+            
+            // Cap the distance increase to reasonable limits
+            $suggestedDistance = min($suggestedDistance, 1500);
+            
+            return (object)[
+                'sets' => $lastRounds,
+                'reps' => $suggestedDistance, // distance stored in reps field
+                'weight' => 0, // always 0 for cardio
+                'band_color' => null, // not applicable for cardio
+            ];
+        }
+        
+        // For distances >= 1000m: suggest adding additional rounds
+        $suggestedRounds = $lastRounds + 1;
+        
+        // Cap the rounds to reasonable limits
+        $suggestedRounds = min($suggestedRounds, 10);
+        
+        return (object)[
+            'sets' => $suggestedRounds,
+            'reps' => $lastDistance, // keep same distance
+            'weight' => 0, // always 0 for cardio
+            'band_color' => null, // not applicable for cardio
+        ];
+    }
+    
+    /**
+     * Provide sensible default cardio suggestions when no history exists
+     */
+    private function getDefaultCardioSuggestion(): object
+    {
+        return (object)[
+            'sets' => 1, // 1 round
+            'reps' => 500, // 500m distance
+            'weight' => 0, // always 0 for cardio
+            'band_color' => null, // not applicable for cardio
+        ];
+    }
 }
