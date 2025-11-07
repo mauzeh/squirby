@@ -95,11 +95,11 @@
             @yield('content')
         </div>
         @auth
-        @if(app()->environment('local'))
+        @if(app()->environment('local') || (auth()->check() && auth()->user()->hasRole('Admin')))
         <footer>
             <div class="container">
                 @if(isset($queryCount))
-                    <pre class="git-log">Queries: {{ $queryCount }}</pre><br>
+                    <pre class="git-log">Queries: {{ $queryCount }} | Database: {{ $dbConnection ?? 'unknown' }} ({{ $dbDriver ?? 'unknown' }})</pre><br>
                 @endif
                 @if(isset($gitLog))
                     <pre class="git-log">{{ $gitLog }}</pre>

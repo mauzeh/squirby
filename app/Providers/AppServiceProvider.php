@@ -22,7 +22,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        if (config('app.env') !== 'production') {
+        // Enable query log for non-production or for admin users
+        if (config('app.env') !== 'production' || (Auth::check() && Auth::user()->hasRole('Admin'))) {
             \Illuminate\Support\Facades\DB::enableQueryLog();
         }
         
@@ -41,8 +42,18 @@ class AppServiceProvider extends ServiceProvider
                 $measurementTypes = MeasurementType::where('user_id', auth()->id())->orderBy('name')->get();
                 $view->with('measurementTypes', $measurementTypes);
             }
-            if (config('app.env') !== 'production') {
-                $view->with('queryCount', count(\Illuminate\Support\Facades\DB::getQueryLog()));
+            
+            // Show database info in non-production environments OR for admin users
+            $isAdmin = Auth::check() && Auth::user()->hasRole('Admin');
+            if (config('app.env') !== 'production' || $isAdmin) {
+                $queryCount = count(\Illuminate\Support\Facades\DB::getQueryLog());
+                $dbConnection = config('database.default');
+                $dbDriver = config("database.connections.{$dbConnection}.driver");
+                
+                $view->with('queryCount', $queryCount);
+                $view->with('dbConnection', $dbConnection);
+                $view->with('dbDriver', $dbDriver);
+                $view->with('showDebugInfo', true);
             }
         });
     }
