@@ -210,7 +210,7 @@ class BandedLiftLoggingTest extends TestCase
 
         $response = $this->get(route('lift-logs.index'));
 
-        $response->assertSee('Band: red');
+        $response->assertSee('Band: Red');
         $response->assertDontSee('0 lbs'); // Should not show 0 lbs for banded exercises
     }
 
@@ -236,7 +236,7 @@ class BandedLiftLoggingTest extends TestCase
 
         $response = $this->get(route('exercises.show-logs', $exercise->id));
 
-        $response->assertSee('Band: red');
+        $response->assertSee('Band: Red');
         $response->assertDontSee('0 lbs');
         $response->assertSee('Volume Progress');
         $response->assertSee('progressChart');

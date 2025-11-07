@@ -389,4 +389,112 @@ interface ExerciseTypeInterface
      * // Bodyweight exercise: "Bodyweight +25 lbs × 8 reps × 3 sets"
      */
     public function formatFormMessageDisplay(array $lastSession): string;
+    
+    /**
+     * Format table cell display for workouts table
+     * 
+     * Formats the weight/resistance information for display in table cells.
+     * Returns structured data that the view can format appropriately.
+     * 
+     * @param LiftLog $liftLog The lift log to format
+     * @return array|string Structured display data or simple string for cardio
+     * 
+     * @example
+     * // Regular exercise: ['primary' => '135 lbs', 'secondary' => '8 x 3']
+     * // Cardio exercise: "500m × 3 rounds"
+     * // Bodyweight exercise: ['primary' => 'Bodyweight', 'secondary' => '8 x 3', 'tertiary' => '+ 25 lbs']
+     */
+    public function formatTableCellDisplay(LiftLog $liftLog);
+    
+    /**
+     * Format 1RM table cell display
+     * 
+     * Formats the 1RM information for display in table cells.
+     * Returns appropriate text for exercise types that don't support 1RM.
+     * 
+     * @param LiftLog $liftLog The lift log to format
+     * @return string Formatted 1RM display or N/A message
+     * 
+     * @example
+     * // Regular exercise: "155 lbs"
+     * // Cardio exercise: "N/A (Cardio)"
+     * // Bodyweight exercise: "200 lbs (est. incl. BW)"
+     */
+    public function format1RMTableCellDisplay(LiftLog $liftLog): string;
+    
+    /**
+     * Get exercise type display name and icon
+     * 
+     * Returns a formatted display name with icon for showing exercise type
+     * in recommendations, exercise lists, and other UI elements.
+     * 
+     * @return array Array with 'icon' and 'name' keys
+     * 
+     * @example
+     * // Regular exercise: ['icon' => 'fas fa-dumbbell', 'name' => 'Weighted']
+     * // Cardio exercise: ['icon' => 'fas fa-running', 'name' => 'Cardio']
+     * // Bodyweight exercise: ['icon' => 'fas fa-user', 'name' => 'Bodyweight']
+     */
+    public function getTypeDisplayInfo(): array;
+    
+    /**
+     * Get chart title for exercise logs page
+     * 
+     * Returns the appropriate chart title for the exercise type.
+     * 
+     * @return string Chart title
+     * 
+     * @example
+     * // Regular exercise: "1RM Progress"
+     * // Cardio exercise: "Distance Progress"
+     * // Bodyweight exercise: "Volume Progress"
+     */
+    public function getChartTitle(): string;
+    
+    /**
+     * Format mobile summary display for exercise summary component
+     * 
+     * Returns structured data for displaying exercise summaries in mobile components.
+     * Includes weight display, reps/sets formatting, and display preferences.
+     * 
+     * @param LiftLog $liftLog The lift log to format
+     * @return array Structured display data
+     * 
+     * @example
+     * // Regular exercise
+     * [
+     *     'weight' => '135 lbs',
+     *     'repsSets' => '3 x 8',
+     *     'showWeight' => true
+     * ]
+     * 
+     * @example
+     * // Cardio exercise
+     * [
+     *     'weight' => '',
+     *     'repsSets' => '500m × 3 rounds',
+     *     'showWeight' => false
+     * ]
+     */
+    public function formatMobileSummaryDisplay(LiftLog $liftLog): array;
+    
+    /**
+     * Format success message description for lift log creation
+     * 
+     * Formats the workout description part of success messages when lift logs are created.
+     * Each exercise type has its own format for displaying the workout details.
+     * 
+     * @param float|null $weight The weight used (may be null for some exercise types)
+     * @param int $reps Number of reps performed
+     * @param int $rounds Number of sets/rounds performed
+     * @param string|null $bandColor Band color for banded exercises (optional)
+     * @return string Formatted workout description
+     * 
+     * @example
+     * // Regular exercise: "135 lbs × 8 reps × 3 sets"
+     * // Cardio exercise: "500m × 3 rounds"
+     * // Bodyweight exercise: "8 reps × 3 sets" or "+25 lbs × 8 reps × 3 sets"
+     * // Banded exercise: "Blue band × 8 reps × 3 sets"
+     */
+    public function formatSuccessMessageDescription(?float $weight, int $reps, int $rounds, ?string $bandColor = null): string;
 }

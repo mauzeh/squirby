@@ -244,6 +244,86 @@ abstract class BaseExerciseType implements ExerciseTypeInterface
     }
     
     /**
+     * Format table cell display for workouts table
+     * Returns array with primary and secondary text for table cell display
+     */
+    public function formatTableCellDisplay(LiftLog $liftLog): array
+    {
+        $weightText = $this->formatWeightDisplay($liftLog);
+        $repsText = $liftLog->display_reps . ' x ' . $liftLog->display_rounds;
+        
+        return [
+            'primary' => $weightText,
+            'secondary' => $repsText
+        ];
+    }
+    
+    /**
+     * Format 1RM table cell display
+     * Default implementation shows 1RM if supported, otherwise returns N/A
+     */
+    public function format1RMTableCellDisplay(LiftLog $liftLog): string
+    {
+        if (!$this->canCalculate1RM()) {
+            return 'N/A (' . ucfirst($this->getTypeName()) . ')';
+        }
+        
+        return round($liftLog->one_rep_max) . ' lbs';
+    }
+    
+    /**
+     * Get exercise type display name and icon
+     * Default implementation returns generic weighted exercise info
+     */
+    public function getTypeDisplayInfo(): array
+    {
+        return [
+            'icon' => 'fas fa-dumbbell',
+            'name' => 'Weighted'
+        ];
+    }
+    
+    /**
+     * Get chart title for exercise logs page
+     * Default implementation returns 1RM Progress if supported, otherwise Volume Progress
+     */
+    public function getChartTitle(): string
+    {
+        return $this->canCalculate1RM() ? '1RM Progress' : 'Volume Progress';
+    }
+    
+    /**
+     * Format mobile summary display for exercise summary component
+     * Default implementation provides standard weight and reps/sets formatting
+     */
+    public function formatMobileSummaryDisplay(LiftLog $liftLog): array
+    {
+        $weight = $this->formatWeightDisplay($liftLog);
+        $repsSets = $liftLog->display_rounds . ' x ' . $liftLog->display_reps;
+        
+        // For bodyweight exercises, don't show weight if it's zero
+        $showWeight = true;
+        if ($this->getTypeName() === 'bodyweight' && $liftLog->display_weight == 0) {
+            $showWeight = false;
+        }
+        
+        return [
+            'weight' => $weight,
+            'repsSets' => $repsSets,
+            'showWeight' => $showWeight
+        ];
+    }
+    
+    /**
+     * Format success message description for lift log creation
+     * Default implementation for regular weighted exercises
+     */
+    public function formatSuccessMessageDescription(?float $weight, int $reps, int $rounds, ?string $bandColor = null): string
+    {
+        return $weight . ' lbs × ' . $reps . ' reps × ' . $rounds . ' sets';
+    }
+    
+    /**
      * Get field type for a given field name
      * Protected helper method for form field generation
      */

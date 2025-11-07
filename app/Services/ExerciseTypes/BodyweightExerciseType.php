@@ -229,4 +229,87 @@ class BodyweightExerciseType extends BaseExerciseType
         
         return $definitions;
     }
+    
+    /**
+     * Format table cell display for bodyweight exercises
+     * Returns array with primary, secondary, and optional tertiary text
+     */
+    public function formatTableCellDisplay(LiftLog $liftLog): array
+    {
+        $repsText = $liftLog->display_reps . ' x ' . $liftLog->display_rounds;
+        $result = [
+            'primary' => 'Bodyweight',
+            'secondary' => $repsText
+        ];
+        
+        if ($liftLog->display_weight > 0) {
+            $result['tertiary'] = '+ ' . $liftLog->display_weight . ' lbs';
+        }
+        
+        return $result;
+    }
+    
+    /**
+     * Format 1RM table cell display for bodyweight exercises
+     * Shows 1RM with bodyweight inclusion note
+     */
+    public function format1RMTableCellDisplay(LiftLog $liftLog): string
+    {
+        if (!$this->canCalculate1RM()) {
+            return 'N/A (Bodyweight)';
+        }
+        
+        return round($liftLog->one_rep_max) . ' lbs (est. incl. BW)';
+    }
+    
+    /**
+     * Get exercise type display name and icon for bodyweight exercises
+     */
+    public function getTypeDisplayInfo(): array
+    {
+        return [
+            'icon' => 'fas fa-user',
+            'name' => 'Bodyweight'
+        ];
+    }
+    
+    /**
+     * Get chart title for bodyweight exercises
+     */
+    public function getChartTitle(): string
+    {
+        return 'Volume Progress';
+    }
+    
+    /**
+     * Format mobile summary display for bodyweight exercises
+     * Shows weight only if extra weight is added
+     */
+    public function formatMobileSummaryDisplay(LiftLog $liftLog): array
+    {
+        $weight = $this->formatWeightDisplay($liftLog);
+        $repsSets = $liftLog->display_rounds . ' x ' . $liftLog->display_reps;
+        
+        // Only show weight if there's extra weight added
+        $showWeight = $liftLog->display_weight > 0;
+        
+        return [
+            'weight' => $weight,
+            'repsSets' => $repsSets,
+            'showWeight' => $showWeight
+        ];
+    }
+    
+    /**
+     * Format success message description for bodyweight exercises
+     * Shows extra weight if added, otherwise just reps and sets
+     */
+    public function formatSuccessMessageDescription(?float $weight, int $reps, int $rounds, ?string $bandColor = null): string
+    {
+        if ($weight && $weight > 0) {
+            return '+' . $weight . ' lbs × ' . $reps . ' reps × ' . $rounds . ' sets';
+        } else {
+            return $reps . ' reps × ' . $rounds . ' sets';
+        }
+    }
 }

@@ -162,6 +162,58 @@ class BandedResistanceExerciseType extends BaseExerciseType
     }
     
     /**
+     * Format table cell display for banded resistance exercises
+     * Returns array with primary and secondary text
+     */
+    public function formatTableCellDisplay(LiftLog $liftLog): array
+    {
+        $bandDisplay = $this->formatWeightDisplay($liftLog);
+        $repsText = $liftLog->display_reps . ' x ' . $liftLog->display_rounds;
+        
+        return [
+            'primary' => $bandDisplay,
+            'secondary' => $repsText
+        ];
+    }
+    
+    /**
+     * Get exercise type display name and icon for banded resistance exercises
+     */
+    public function getTypeDisplayInfo(): array
+    {
+        return [
+            'icon' => 'fas fa-circle',
+            'name' => 'Resistance Band'
+        ];
+    }
+    
+    /**
+     * Format mobile summary display for banded resistance exercises
+     * Shows band color instead of weight
+     */
+    public function formatMobileSummaryDisplay(LiftLog $liftLog): array
+    {
+        $weight = $this->formatWeightDisplay($liftLog);
+        $repsSets = $liftLog->display_rounds . ' x ' . $liftLog->display_reps;
+        
+        return [
+            'weight' => $weight,
+            'repsSets' => $repsSets,
+            'showWeight' => true
+        ];
+    }
+    
+    /**
+     * Format success message description for banded resistance exercises
+     * Shows band color instead of weight
+     */
+    public function formatSuccessMessageDescription(?float $weight, int $reps, int $rounds, ?string $bandColor = null): string
+    {
+        $bandDisplay = $bandColor ? ucfirst($bandColor) . ' band' : 'Band';
+        return $bandDisplay . ' × ' . $reps . ' reps × ' . $rounds . ' sets';
+    }
+    
+    /**
      * Get the next band in progression order (higher resistance)
      */
     private function getNextBand(string $currentBand): ?string

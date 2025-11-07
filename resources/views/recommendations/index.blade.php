@@ -128,13 +128,11 @@
                                     <div class="metadata-row">
                                         <span class="metadata-label">Exercise Type:</span>
                                         <span class="metadata-value">
-                                            @if($recommendation['exercise']->exercise_type === 'bodyweight')
-                                                <i class="fas fa-user"></i> Bodyweight
-                                            @elseif(str_contains($recommendation['exercise']->exercise_type, 'banded'))
-                                                <i class="fas fa-circle"></i> {{ ucfirst($recommendation['exercise']->band_type) }} Band
-                                            @else
-                                                <i class="fas fa-dumbbell"></i> Weighted
-                                            @endif
+                                            @php
+                                                $strategy = $recommendation['exercise']->getTypeStrategy();
+                                                $typeInfo = $strategy->getTypeDisplayInfo();
+                                            @endphp
+                                            <i class="{{ $typeInfo['icon'] }}"></i> {{ $typeInfo['name'] }}
                                         </span>
                                     </div>
                                     

@@ -257,4 +257,81 @@ class CardioExerciseType extends BaseExerciseType
         
         return "{$distanceDisplay} × {$rounds} {$roundsText}";
     }
+    
+    /**
+     * Format table cell display for cardio exercises
+     * Returns the complete cardio display as primary text only
+     */
+    public function formatTableCellDisplay(LiftLog $liftLog): array
+    {
+        // For cardio, we show the complete display as the primary text only
+        return [
+            'primary' => $this->formatCompleteDisplay($liftLog)
+        ];
+    }
+    
+    /**
+     * Format 1RM table cell display for cardio exercises
+     * Cardio exercises don't support 1RM calculation
+     */
+    public function format1RMTableCellDisplay(LiftLog $liftLog): string
+    {
+        return 'N/A (Cardio)';
+    }
+    
+    /**
+     * Get exercise type display name and icon for cardio exercises
+     */
+    public function getTypeDisplayInfo(): array
+    {
+        return [
+            'icon' => 'fas fa-running',
+            'name' => 'Cardio'
+        ];
+    }
+    
+    /**
+     * Get chart title for cardio exercises
+     */
+    public function getChartTitle(): string
+    {
+        return 'Distance Progress';
+    }
+    
+    /**
+     * Format mobile summary display for cardio exercises
+     * Cardio exercises don't show weight and use cardio-specific formatting
+     */
+    public function formatMobileSummaryDisplay(LiftLog $liftLog): array
+    {
+        return [
+            'weight' => '',
+            'repsSets' => $this->formatCompleteDisplay($liftLog),
+            'showWeight' => false
+        ];
+    }
+    
+    /**
+     * Format success message description for cardio exercises
+     * Uses distance and rounds terminology instead of weight/reps/sets
+     */
+    public function formatSuccessMessageDescription(?float $weight, int $reps, int $rounds, ?string $bandColor = null): string
+    {
+        // For cardio, reps represents distance and rounds represents rounds
+        $distance = $reps;
+        
+        // Format distance display
+        if ($distance < 100) {
+            $distanceDisplay = number_format($distance, 0) . 'm';
+        } elseif ($distance >= 10000) {
+            $kilometers = $distance / 1000;
+            $distanceDisplay = number_format($kilometers, 1) . 'km';
+        } else {
+            $distanceDisplay = number_format($distance, 0) . 'm';
+        }
+        
+        $roundsText = $rounds == 1 ? 'round' : 'rounds';
+        
+        return "{$distanceDisplay} × {$rounds} {$roundsText}";
+    }
 }

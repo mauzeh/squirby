@@ -358,21 +358,9 @@ class LiftLogController extends Controller
     {
         $exerciseTitle = $exercise->title;
         
-        // Build the workout description
-        if ($exercise->isBanded() && $bandColor) {
-            // Band exercise
-            $workoutDescription = ucfirst($bandColor) . ' band × ' . $reps . ' reps × ' . $rounds . ' sets';
-        } elseif ($exercise->isType('bodyweight')) {
-            // Bodyweight exercise
-            if ($weight > 0) {
-                $workoutDescription = '+' . $weight . ' lbs × ' . $reps . ' reps × ' . $rounds . ' sets';
-            } else {
-                $workoutDescription = $reps . ' reps × ' . $rounds . ' sets';
-            }
-        } else {
-            // Regular weighted exercise
-            $workoutDescription = $weight . ' lbs × ' . $reps . ' reps × ' . $rounds . ' sets';
-        }
+        // Use strategy pattern to format workout description
+        $strategy = $exercise->getTypeStrategy();
+        $workoutDescription = $strategy->formatSuccessMessageDescription($weight, $reps, $rounds, $bandColor);
         
         // Get celebratory messages from config and replace placeholders
         $celebrationTemplates = config('mobile_entry_messages.success.lift_logged');

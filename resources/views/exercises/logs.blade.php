@@ -23,16 +23,12 @@
             <p>No lift logs found for this exercise.</p>
         @else
         <div class="form-container">
-            @if ($exercise->exercise_type === 'bodyweight')
-                <h3>Volume Progress</h3>
-                <canvas id="progressChart"></canvas>
-            @elseif (in_array($exercise->exercise_type, ['banded_resistance', 'banded_assistance']))
-                <h3>Volume Progress</h3>
-                <canvas id="progressChart"></canvas>
-            @else
-                <h3>1RM Progress</h3>
-                <canvas id="progressChart"></canvas>
-            @endif
+            @php
+                $strategy = $exercise->getTypeStrategy();
+                $chartTitle = $strategy->getChartTitle();
+            @endphp
+            <h3>{{ $chartTitle }}</h3>
+            <canvas id="progressChart"></canvas>
         </div>
 
         <x-lift-logs.table :liftLogs="$liftLogs" :config="$config" />
