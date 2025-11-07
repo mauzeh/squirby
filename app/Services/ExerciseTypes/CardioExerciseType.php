@@ -200,4 +200,61 @@ class CardioExerciseType extends BaseExerciseType
             return "Try {$distance}m × {$newRounds} rounds";
         }
     }
+    
+    /**
+     * Get form field definitions for cardio exercises
+     * Cardio exercises only show distance (reps) field, never weight
+     */
+    public function getFormFieldDefinitions(array $defaults = [], ?User $user = null): array
+    {
+        $labels = $this->getFieldLabels();
+        $increments = $this->getFieldIncrements();
+        
+        return [
+            [
+                'name' => 'reps',
+                'label' => $labels['reps'],
+                'type' => 'numeric',
+                'defaultValue' => $defaults['reps'] ?? 500,
+                'increment' => $increments['reps'],
+                'min' => self::MIN_DISTANCE,
+                'max' => self::MAX_DISTANCE,
+            ]
+        ];
+    }
+    
+    /**
+     * Format logged item display message for cardio exercises
+     * Uses cardio-appropriate terminology (distance × rounds)
+     */
+    public function formatLoggedItemDisplay(LiftLog $liftLog): string
+    {
+        return $this->formatCompleteDisplay($liftLog);
+    }
+    
+    /**
+     * Format form message display for cardio exercises
+     * Uses cardio-appropriate terminology (distance × rounds)
+     */
+    public function formatFormMessageDisplay(array $lastSession): string
+    {
+        $distance = $lastSession['reps'] ?? 0;
+        $rounds = $lastSession['sets'] ?? 1;
+        
+        // Format distance directly
+        if (!is_numeric($distance) || $distance <= 0) {
+            $distanceDisplay = '0m';
+        } elseif ($distance < 100) {
+            $distanceDisplay = number_format($distance, 0) . 'm';
+        } elseif ($distance >= 10000) {
+            $kilometers = $distance / 1000;
+            $distanceDisplay = number_format($kilometers, 1) . 'km';
+        } else {
+            $distanceDisplay = number_format($distance, 0) . 'm';
+        }
+        
+        $roundsText = $rounds == 1 ? 'round' : 'rounds';
+        
+        return "{$distanceDisplay} × {$rounds} {$roundsText}";
+    }
 }

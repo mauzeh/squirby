@@ -270,4 +270,123 @@ interface ExerciseTypeInterface
      * ]
      */
     public function getTypeConfig(): array;
+    
+    /**
+     * Get form field definitions for mobile entry forms
+     * 
+     * Returns an array of field definitions that should be used to generate
+     * mobile entry forms for this exercise type. Each field definition includes
+     * the field configuration needed to render the appropriate input controls.
+     * 
+     * @param array $defaults Default values for the form fields
+     * @param User|null $user User context for user-specific field behavior
+     * @return array Array of field definitions
+     * 
+     * @example
+     * // Regular exercise field definitions
+     * [
+     *     [
+     *         'name' => 'weight',
+     *         'label' => 'Weight (lbs):',
+     *         'type' => 'numeric',
+     *         'increment' => 5,
+     *         'min' => 0,
+     *         'max' => 600,
+     *         'defaultValue' => 135
+     *     ],
+     *     [
+     *         'name' => 'reps',
+     *         'label' => 'Reps:',
+     *         'type' => 'numeric',
+     *         'increment' => 1,
+     *         'min' => 1,
+     *         'defaultValue' => 5
+     *     ]
+     * ]
+     * 
+     * @example
+     * // Cardio exercise field definitions
+     * [
+     *     [
+     *         'name' => 'reps',
+     *         'label' => 'Distance (m):',
+     *         'type' => 'numeric',
+     *         'increment' => 50,
+     *         'min' => 50,
+     *         'max' => 50000,
+     *         'defaultValue' => 500
+     *     ]
+     * ]
+     */
+    public function getFormFieldDefinitions(array $defaults = [], ?User $user = null): array;
+    
+    /**
+     * Get field labels for this exercise type
+     * 
+     * Returns an array mapping field names to their display labels.
+     * Used to customize field labels based on exercise type (e.g., "Distance" vs "Reps").
+     * 
+     * @return array Array mapping field names to labels
+     * 
+     * @example
+     * // Regular exercise labels
+     * ['weight' => 'Weight (lbs):', 'reps' => 'Reps:', 'sets' => 'Sets:']
+     * 
+     * @example
+     * // Cardio exercise labels
+     * ['reps' => 'Distance (m):', 'sets' => 'Rounds:']
+     */
+    public function getFieldLabels(): array;
+    
+    /**
+     * Get increment values for numeric fields
+     * 
+     * Returns an array mapping field names to their increment values
+     * for use in mobile entry forms with +/- buttons.
+     * 
+     * @return array Array mapping field names to increment values
+     * 
+     * @example
+     * // Regular exercise increments
+     * ['weight' => 5, 'reps' => 1, 'sets' => 1]
+     * 
+     * @example
+     * // Cardio exercise increments
+     * ['reps' => 50, 'sets' => 1] // 50m increments for distance
+     */
+    public function getFieldIncrements(): array;
+    
+    /**
+     * Format logged item display message for mobile entry
+     * 
+     * Formats the display message for logged items in the mobile entry interface.
+     * This combines weight/resistance display with reps/sets information in a
+     * format appropriate for the exercise type.
+     * 
+     * @param LiftLog $liftLog The lift log to format
+     * @return string Formatted display message
+     * 
+     * @example
+     * // Regular exercise: "135 lbs × 8 reps × 3 sets"
+     * // Cardio exercise: "500m × 3 rounds"
+     * // Bodyweight exercise: "Bodyweight × 10 reps × 3 sets"
+     */
+    public function formatLoggedItemDisplay(LiftLog $liftLog): string;
+    
+    /**
+     * Format form message display for mobile entry
+     * 
+     * Formats the last session message for mobile entry forms.
+     * This shows what the user did in their previous workout in a
+     * format appropriate for the exercise type.
+     * 
+     * @param array $lastSession Last session data
+     * @return string Formatted message text
+     * 
+     * @example
+     * // Regular exercise: "135 lbs × 8 reps × 3 sets"
+     * // Cardio exercise: "500m × 3 rounds"
+     * // Bodyweight exercise: "Bodyweight +25 lbs × 8 reps × 3 sets"
+     */
+    public function formatFormMessageDisplay(array $lastSession): string;
 }

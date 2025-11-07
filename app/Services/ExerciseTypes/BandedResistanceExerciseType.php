@@ -3,6 +3,7 @@
 namespace App\Services\ExerciseTypes;
 
 use App\Models\LiftLog;
+use App\Models\User;
 use App\Services\ExerciseTypes\Exceptions\InvalidExerciseDataException;
 
 /**
@@ -129,6 +130,35 @@ class BandedResistanceExerciseType extends BaseExerciseType
         }
         
         return null;
+    }
+    
+    /**
+     * Get form field definitions for banded resistance exercises
+     * Ensures band_color field comes first, then reps
+     */
+    public function getFormFieldDefinitions(array $defaults = [], ?User $user = null): array
+    {
+        $labels = $this->getFieldLabels();
+        $increments = $this->getFieldIncrements();
+        
+        return [
+            [
+                'name' => 'band_color',
+                'label' => $labels['band_color'],
+                'type' => 'select',
+                'defaultValue' => $defaults['band_color'] ?? 'red',
+                'options' => $this->getFieldOptions('band_color'),
+            ],
+            [
+                'name' => 'reps',
+                'label' => $labels['reps'],
+                'type' => 'numeric',
+                'defaultValue' => $defaults['reps'] ?? 5,
+                'increment' => $increments['reps'],
+                'min' => 1,
+                'max' => 100,
+            ]
+        ];
     }
     
     /**

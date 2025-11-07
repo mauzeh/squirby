@@ -190,4 +190,43 @@ class BodyweightExerciseType extends BaseExerciseType
         
         return null;
     }
+    
+    /**
+     * Get form field definitions for bodyweight exercises
+     * Conditionally shows weight field based on user preference
+     */
+    public function getFormFieldDefinitions(array $defaults = [], ?User $user = null): array
+    {
+        $labels = $this->getFieldLabels();
+        $increments = $this->getFieldIncrements();
+        $definitions = [];
+        
+        // Only show weight field if user has show_extra_weight enabled
+        $shouldShowWeightField = $user && $user->shouldShowExtraWeight();
+        
+        if ($shouldShowWeightField) {
+            $definitions[] = [
+                'name' => 'weight',
+                'label' => $labels['weight'],
+                'type' => 'numeric',
+                'defaultValue' => $defaults['weight'] ?? 0,
+                'increment' => $increments['weight'],
+                'min' => 0,
+                'max' => 600,
+            ];
+        }
+        
+        // Always show reps field
+        $definitions[] = [
+            'name' => 'reps',
+            'label' => $labels['reps'],
+            'type' => 'numeric',
+            'defaultValue' => $defaults['reps'] ?? 5,
+            'increment' => $increments['reps'],
+            'min' => 1,
+            'max' => 100,
+        ];
+        
+        return $definitions;
+    }
 }

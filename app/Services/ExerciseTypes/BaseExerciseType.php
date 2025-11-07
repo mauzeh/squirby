@@ -129,6 +129,238 @@ abstract class BaseExerciseType implements ExerciseTypeInterface
     }
     
     /**
+     * Get form field definitions for mobile entry forms
+     * Default implementation builds definitions from configuration
+     */
+    public function getFormFieldDefinitions(array $defaults = [], ?User $user = null): array
+    {
+        $formFields = $this->getFormFields();
+        $labels = $this->getFieldLabels();
+        $increments = $this->getFieldIncrements();
+        $definitions = [];
+        
+        foreach ($formFields as $fieldName) {
+            $definition = [
+                'name' => $fieldName,
+                'label' => $labels[$fieldName] ?? ucfirst($fieldName) . ':',
+                'type' => $this->getFieldType($fieldName),
+                'defaultValue' => $defaults[$fieldName] ?? $this->getDefaultValue($fieldName),
+            ];
+            
+            // Add numeric field properties
+            if ($definition['type'] === 'numeric') {
+                $definition['increment'] = $increments[$fieldName] ?? 1;
+                $definition['min'] = $this->getFieldMin($fieldName);
+                $definition['max'] = $this->getFieldMax($fieldName);
+            }
+            
+            // Add select field properties
+            if ($definition['type'] === 'select') {
+                $definition['options'] = $this->getFieldOptions($fieldName);
+            }
+            
+            $definitions[] = $definition;
+        }
+        
+        return $definitions;
+    }
+    
+    /**
+     * Get field labels for this exercise type
+     * Default implementation uses standard labels
+     */
+    public function getFieldLabels(): array
+    {
+        return $this->config['field_labels'] ?? [
+            'weight' => 'Weight (lbs):',
+            'reps' => 'Reps:',
+            'sets' => 'Sets:',
+            'band_color' => 'Band Color:',
+        ];
+    }
+    
+    /**
+     * Get increment values for numeric fields
+     * Default implementation uses standard increments
+     */
+    public function getFieldIncrements(): array
+    {
+        return $this->config['field_increments'] ?? [
+            'weight' => 5,
+            'reps' => 1,
+            'sets' => 1,
+        ];
+    }
+    
+    /**
+     * Format logged item display message for mobile entry
+     * Default implementation combines weight display with reps/sets
+     */
+    public function formatLoggedItemDisplay(LiftLog $liftLog): string
+    {
+        $weightText = $this->formatWeightDisplay($liftLog);
+        $setCount = $liftLog->liftSets->count();
+        $firstSet = $liftLog->liftSets->first();
+        
+        if (!$firstSet) {
+            return $weightText;
+        }
+        
+        $repsSetsText = $setCount . ' x ' . $firstSet->reps;
+        
+        // For bodyweight with no additional weight, just show reps/sets
+        if ($this->getTypeName() === 'bodyweight' && $firstSet->weight == 0) {
+            return $repsSetsText;
+        }
+        
+        return $weightText . ' × ' . $repsSetsText;
+    }
+    
+    /**
+     * Format form message display for mobile entry
+     * Default implementation combines weight display with reps/sets using standard terminology
+     */
+    public function formatFormMessageDisplay(array $lastSession): string
+    {
+        // Create a mock lift log for formatting
+        $mockLiftLog = new \App\Models\LiftLog();
+        
+        // Create a mock exercise to avoid null pointer errors
+        $mockExercise = new \App\Models\Exercise();
+        $mockExercise->exercise_type = $this->getTypeName();
+        $mockLiftLog->setRelation('exercise', $mockExercise);
+        
+        $mockLiftLog->setRelation('liftSets', collect([
+            (object)[
+                'weight' => $lastSession['weight'] ?? 0,
+                'reps' => $lastSession['reps'] ?? 0,
+                'band_color' => $lastSession['band_color'] ?? null
+            ]
+        ]));
+        
+        $resistanceText = $this->formatWeightDisplay($mockLiftLog);
+        
+        return $resistanceText . ' × ' . $lastSession['reps'] . ' reps × ' . $lastSession['sets'] . ' sets';
+    }
+    
+    /**
+     * Get field type for a given field name
+     * Protected helper method for form field generation
+     */
+    protected function getFieldType(string $fieldName): string
+    {
+        $fieldTypes = $this->config['field_types'] ?? [];
+        
+        if (isset($fieldTypes[$fieldName])) {
+            return $fieldTypes[$fieldName];
+        }
+        
+        // Default field types based on field name
+        switch ($fieldName) {
+            case 'band_color':
+                return 'select';
+            case 'weight':
+            case 'reps':
+            case 'sets':
+                return 'numeric';
+            default:
+                return 'text';
+        }
+    }
+    
+    /**
+     * Get default value for a field
+     * Protected helper method for form field generation
+     */
+    protected function getDefaultValue(string $fieldName)
+    {
+        $defaults = $this->config['field_defaults'] ?? [];
+        
+        if (isset($defaults[$fieldName])) {
+            return $defaults[$fieldName];
+        }
+        
+        // Standard defaults
+        switch ($fieldName) {
+            case 'weight':
+                return 0;
+            case 'reps':
+                return 5;
+            case 'sets':
+                return 3;
+            case 'band_color':
+                return 'red';
+            default:
+                return '';
+        }
+    }
+    
+    /**
+     * Get minimum value for a numeric field
+     * Protected helper method for form field generation
+     */
+    protected function getFieldMin(string $fieldName): int
+    {
+        $mins = $this->config['field_mins'] ?? [];
+        
+        if (isset($mins[$fieldName])) {
+            return $mins[$fieldName];
+        }
+        
+        // Standard minimums
+        switch ($fieldName) {
+            case 'weight':
+                return 0;
+            case 'reps':
+            case 'sets':
+                return 1;
+            default:
+                return 0;
+        }
+    }
+    
+    /**
+     * Get maximum value for a numeric field
+     * Protected helper method for form field generation
+     */
+    protected function getFieldMax(string $fieldName): int
+    {
+        $maxes = $this->config['field_maxes'] ?? [];
+        
+        if (isset($maxes[$fieldName])) {
+            return $maxes[$fieldName];
+        }
+        
+        // Standard maximums
+        switch ($fieldName) {
+            case 'weight':
+                return 600;
+            case 'reps':
+                return 100;
+            case 'sets':
+                return 20;
+            default:
+                return 1000;
+        }
+    }
+    
+    /**
+     * Get options for a select field
+     * Protected helper method for form field generation
+     */
+    protected function getFieldOptions(string $fieldName): array
+    {
+        if ($fieldName === 'band_color') {
+            $bandColors = config('bands.colors', []);
+            return array_map(function($color) {
+                return ['value' => $color, 'label' => ucfirst($color)];
+            }, array_keys($bandColors));
+        }
+        
+        return [];
+    }
+    
+    /**
      * Get the type name identifier
      * Must be implemented by concrete classes
      */

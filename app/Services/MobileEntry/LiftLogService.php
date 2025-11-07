@@ -91,115 +91,74 @@ class LiftLogService extends MobileEntryBaseService
             // Check if program is completed (uses preloaded data)
             $isCompleted = $program->isCompleted();
             
-            // Build numeric fields based on exercise type
+            // Build numeric fields using exercise type strategy
+            $strategy = $exercise->getTypeStrategy();
+            $labels = $strategy->getFieldLabels();
+            
+            // Prepare default values for strategy
+            $strategyDefaults = [
+                'weight' => $defaultWeight,
+                'reps' => $defaultReps,
+                'sets' => $defaultSets,
+                'band_color' => $lastSession['band_color'] ?? 'red',
+            ];
+            
+            // Get field definitions from strategy
+            $fieldDefinitions = $strategy->getFormFieldDefinitions($strategyDefaults, $user);
+            
             $numericFields = [];
             
-            // Add form fields based on exercise type strategy
-            $strategy = $exercise->getTypeStrategy();
-            $formFields = $strategy->getFormFields();
-            
-            if (in_array('band_color', $formFields)) {
-                // For banded exercises, add band color selector
-                $bandColors = config('bands.colors', []);
-                $defaultBandColor = $lastSession['band_color'] ?? 'red'; // Default to red band
-                
-                $numericFields[] = [
-                    'id' => $formId . '-band-color',
-                    'name' => 'band_color',
-                    'label' => 'Band Color:',
-                    'type' => 'select',
-                    'defaultValue' => $defaultBandColor,
-                    'options' => array_map(function($color) {
-                        return ['value' => $color, 'label' => ucfirst($color)];
-                    }, array_keys($bandColors)),
-                    'ariaLabels' => [
-                        'field' => 'Select band color'
-                    ]
+            // Convert strategy field definitions to mobile entry format
+            foreach ($fieldDefinitions as $definition) {
+                $field = [
+                    'id' => $formId . '-' . $definition['name'],
+                    'name' => $definition['name'],
+                    'label' => $definition['label'],
+                    'type' => $definition['type'],
+                    'defaultValue' => $definition['defaultValue'],
                 ];
-            }
-            
-            if (in_array('weight', $formFields)) {
-                // For exercises that use weight field
-                // For bodyweight exercises, only show weight field if user has show_extra_weight enabled
-                $shouldShowWeightField = $strategy->getTypeName() !== 'bodyweight' || ($user && $user->shouldShowExtraWeight());
                 
-                if ($shouldShowWeightField) {
-                    $weightLabel = $strategy->getTypeName() === 'bodyweight' ? 'Added Weight (lbs):' : 'Weight (lbs):';
-                    $increment = $strategy->getTypeName() === 'bodyweight' ? 2.5 : 5;
+                // Add type-specific properties
+                if ($definition['type'] === 'numeric') {
+                    $field['increment'] = $definition['increment'];
+                    $field['min'] = $definition['min'];
+                    $field['max'] = $definition['max'] ?? 1000;
                     
-                    $numericFields[] = [
-                        'id' => $formId . '-weight',
-                        'name' => 'weight',
-                        'label' => $weightLabel,
-                        'defaultValue' => $defaultWeight,
-                        'increment' => $increment,
-                        'min' => 0,
-                        'max' => 600,
-                        'ariaLabels' => [
-                            'decrease' => 'Decrease weight',
-                            'increase' => 'Increase weight'
-                        ]
+                    // Generate aria labels from field name, not label (to match existing behavior)
+                    $fieldNameForAria = $definition['name'] === 'reps' && $strategy->getTypeName() === 'cardio' ? 'distance' : $definition['name'];
+                    $field['ariaLabels'] = [
+                        'decrease' => 'Decrease ' . $fieldNameForAria,
+                        'increase' => 'Increase ' . $fieldNameForAria
+                    ];
+                } elseif ($definition['type'] === 'select') {
+                    $field['options'] = $definition['options'];
+                    $field['ariaLabels'] = [
+                        'field' => 'Select ' . strtolower(trim($definition['label'], ':'))
                     ];
                 }
+                
+                // Remove type property for numeric fields to maintain backward compatibility
+                if ($definition['type'] === 'numeric') {
+                    unset($field['type']);
+                }
+                
+                $numericFields[] = $field;
             }
             
-            // Add reps and sets fields (with cardio-specific handling)
-            if ($strategy->getTypeName() === 'cardio') {
-                // For cardio exercises, use distance and rounds terminology
-                $numericFields[] = [
-                    'id' => $formId . '-reps',
-                    'name' => 'reps',
-                    'label' => 'Distance (m):',
-                    'defaultValue' => $defaultReps,
-                    'increment' => 50, // 50m increments for distance
-                    'min' => 50,
-                    'max' => 50000,
-                    'ariaLabels' => [
-                        'decrease' => 'Decrease distance',
-                        'increase' => 'Increase distance'
-                    ]
-                ];
-                
-                $numericFields[] = [
-                    'id' => $formId . '-rounds',
-                    'name' => 'rounds',
-                    'label' => 'Rounds:',
-                    'defaultValue' => $defaultSets,
-                    'increment' => 1,
-                    'min' => 1,
-                    'ariaLabels' => [
-                        'decrease' => 'Decrease rounds',
-                        'increase' => 'Increase rounds'
-                    ]
-                ];
-            } else {
-                // For non-cardio exercises, use standard terminology
-                $numericFields[] = [
-                    'id' => $formId . '-reps',
-                    'name' => 'reps',
-                    'label' => 'Reps:',
-                    'defaultValue' => $defaultReps,
-                    'increment' => 1,
-                    'min' => 1,
-                    'ariaLabels' => [
-                        'decrease' => 'Decrease reps',
-                        'increase' => 'Increase reps'
-                    ]
-                ];
-                
-                $numericFields[] = [
-                    'id' => $formId . '-rounds',
-                    'name' => 'rounds',
-                    'label' => 'Sets:',
-                    'defaultValue' => $defaultSets,
-                    'increment' => 1,
-                    'min' => 1,
-                    'ariaLabels' => [
-                        'decrease' => 'Decrease sets',
-                        'increase' => 'Increase sets'
-                    ]
-                ];
-            }
+            // Always add sets/rounds field (not handled by strategy field definitions)
+            $setsLabel = $labels['sets'] ?? 'Sets:';
+            $numericFields[] = [
+                'id' => $formId . '-rounds',
+                'name' => 'rounds',
+                'label' => $setsLabel,
+                'defaultValue' => $defaultSets,
+                'increment' => 1,
+                'min' => 1,
+                'ariaLabels' => [
+                    'decrease' => 'Decrease ' . strtolower(trim($setsLabel, ':')),
+                    'increase' => 'Increase ' . strtolower(trim($setsLabel, ':'))
+                ]
+            ];
             
             $forms[] = [
                 'id' => $formId,
@@ -291,8 +250,9 @@ class LiftLogService extends MobileEntryBaseService
     {
         $strategy = $exercise->getTypeStrategy();
         
+        // For bodyweight exercises, return the added weight (not total weight)
         if ($strategy->getTypeName() === 'bodyweight') {
-            return $lastSession['weight'] ?? 0; // Added weight for bodyweight exercises
+            return $lastSession['weight'] ?? 0;
         }
         
         if ($lastSession && $userId) {
@@ -347,6 +307,7 @@ class LiftLogService extends MobileEntryBaseService
         if ($lastSession) {
             // Format the resistance/weight info using exercise type strategy
             $strategy = $program->exercise->getTypeStrategy();
+            $labels = $strategy->getFieldLabels();
             
             // Create a mock lift log for formatting
             $mockLiftLog = new \App\Models\LiftLog();
@@ -361,16 +322,12 @@ class LiftLogService extends MobileEntryBaseService
             
             $resistanceText = $strategy->formatWeightDisplay($mockLiftLog);
             
-            // For cardio exercises, use different formatting to avoid showing distance twice
-            if ($strategy->getTypeName() === 'cardio') {
-                // For cardio, formatWeightDisplay already shows distance (e.g., "500m")
-                // So we just need to add rounds, not reps (which is the same as distance)
-                $roundsText = $lastSession['sets'] == 1 ? 'round' : 'rounds';
-                $messageText = $resistanceText . ' × ' . $lastSession['sets'] . ' ' . $roundsText;
-            } else {
-                // For non-cardio exercises, use the standard format
-                $messageText = $resistanceText . ' × ' . $lastSession['reps'] . ' reps × ' . $lastSession['sets'] . ' sets';
-            }
+            // Use strategy labels for consistent terminology
+            $repsLabel = strtolower(trim($labels['reps'] ?? 'reps', ':'));
+            $setsLabel = strtolower(trim($labels['sets'] ?? 'sets', ':'));
+            
+            // Use strategy to format the message text
+            $messageText = $strategy->formatFormMessageDisplay($lastSession);
             
             $messages[] = [
                 'type' => 'info',
@@ -484,19 +441,7 @@ class LiftLogService extends MobileEntryBaseService
             
             // Generate display text using exercise type strategy
             $strategy = $log->exercise->getTypeStrategy();
-            $weightText = $strategy->formatWeightDisplay($log);
-            
-            // Generate reps/sets text directly
-            $repsSetsText = $setCount . ' x ' . $firstSet->reps;
-            
-            // Combine weight and reps/sets for the message
-            if ($strategy->getTypeName() === 'bodyweight' && $firstSet->weight == 0) {
-                // For bodyweight with no additional weight, just show reps/sets
-                $formattedMessage = $repsSetsText;
-            } else {
-                // For all other cases, show weight × reps/sets
-                $formattedMessage = $weightText . ' × ' . $repsSetsText;
-            }
+            $formattedMessage = $strategy->formatLoggedItemDisplay($log);
 
             $items[] = [
                 'id' => $log->id,

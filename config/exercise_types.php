@@ -55,6 +55,16 @@ return [
             'form_fields' => ['weight', 'reps'],
             'progression_types' => ['weight_progression', 'volume_progression'],
             'display_format' => 'weight_lbs',
+            'field_labels' => [
+                'weight' => 'Weight (lbs):',
+                'reps' => 'Reps:',
+                'sets' => 'Sets:',
+            ],
+            'field_increments' => [
+                'weight' => 5,
+                'reps' => 1,
+                'sets' => 1,
+            ],
         ],
         
         /**
@@ -107,6 +117,14 @@ return [
             'form_fields' => ['reps', 'band_color'],
             'progression_types' => ['band_progression'],
             'display_format' => 'band_reps',
+            'field_labels' => [
+                'reps' => 'Reps:',
+                'sets' => 'Sets:',
+                'band_color' => 'Band Color:',
+            ],
+            'field_types' => [
+                'band_color' => 'select',
+            ],
         ],
 
         /**
@@ -128,6 +146,14 @@ return [
             'form_fields' => ['reps', 'band_color'],
             'progression_types' => ['band_progression'],
             'display_format' => 'band_reps',
+            'field_labels' => [
+                'reps' => 'Reps:',
+                'sets' => 'Sets:',
+                'band_color' => 'Band Color:',
+            ],
+            'field_types' => [
+                'band_color' => 'select',
+            ],
         ],
         
         /**
@@ -148,6 +174,16 @@ return [
             'form_fields' => ['weight', 'reps'],
             'progression_types' => ['linear', 'double_progression', 'bodyweight_progression'],
             'display_format' => 'bodyweight_with_extra',
+            'field_labels' => [
+                'weight' => 'Added Weight (lbs):',
+                'reps' => 'Reps:',
+                'sets' => 'Sets:',
+            ],
+            'field_increments' => [
+                'weight' => 2.5, // Smaller increments for bodyweight
+                'reps' => 1,
+                'sets' => 1,
+            ],
         ],
 
         /**
@@ -168,6 +204,22 @@ return [
             'form_fields' => ['reps'], // Only distance, no weight
             'progression_types' => ['cardio_progression'],
             'display_format' => 'distance_rounds',
+            'field_labels' => [
+                'reps' => 'Distance (m):',
+                'sets' => 'Rounds:',
+            ],
+            'field_increments' => [
+                'reps' => 50, // 50m increments for distance
+                'sets' => 1,
+            ],
+            'field_mins' => [
+                'reps' => 50,
+                'sets' => 1,
+            ],
+            'field_maxes' => [
+                'reps' => 50000,
+                'sets' => 20,
+            ],
         ],
     ],
     
