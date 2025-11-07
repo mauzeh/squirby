@@ -14,18 +14,19 @@ return new class extends Migration
         // Disable foreign key checks to allow table renaming
         Schema::disableForeignKeyConstraints();
 
+        // Drop the foreign key from workout_sets before renaming
+        Schema::table('workout_sets', function (Blueprint $table) {
+            $table->dropForeign(['workout_id']);
+        });
+
         // Rename workouts table to lift_logs
         Schema::rename('workouts', 'lift_logs');
 
         // Rename workout_sets table to lift_sets
         Schema::rename('workout_sets', 'lift_sets');
 
-        // Update foreign key column name in lift_sets table
+        // Update column name in lift_sets table
         Schema::table('lift_sets', function (Blueprint $table) {
-            // Drop the existing foreign key constraint
-            $table->dropForeign('workout_sets_workout_id_foreign');
-            
-            // Rename the column
             $table->renameColumn('workout_id', 'lift_log_id');
         });
 
@@ -56,14 +57,14 @@ return new class extends Migration
             $table->renameColumn('lift_log_id', 'workout_id');
         });
 
-        // Add back the original foreign key constraint
-        Schema::table('lift_sets', function (Blueprint $table) {
-            $table->foreign('workout_id', 'workout_sets_workout_id_foreign')->references('id')->on('workouts')->onDelete('cascade');
-        });
-
         // Rename tables back to original names
         Schema::rename('lift_sets', 'workout_sets');
         Schema::rename('lift_logs', 'workouts');
+
+        // Add back the original foreign key constraint
+        Schema::table('workout_sets', function (Blueprint $table) {
+            $table->foreign('workout_id')->references('id')->on('workouts')->onDelete('cascade');
+        });
 
         // Re-enable foreign key checks
         Schema::enableForeignKeyConstraints();
