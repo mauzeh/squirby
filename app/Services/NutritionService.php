@@ -56,6 +56,9 @@ class NutritionService
         ];
 
         if (in_array($nutrient, $nutrientProperties)) {
+            if ($ingredient->base_quantity == 0) {
+                return 0;
+            }
             return $ingredient->$nutrient * ($quantity / $ingredient->base_quantity);
         }
 
@@ -64,6 +67,9 @@ class NutritionService
 
     public function calculateCostForQuantity(Ingredient $ingredient, float $quantity)
     {
+        if ($ingredient->base_quantity == 0) {
+            return 0;
+        }
         return ($ingredient->cost_per_unit / $ingredient->base_quantity) * $quantity;
     }
 }
