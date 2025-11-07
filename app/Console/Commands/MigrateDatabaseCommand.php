@@ -576,6 +576,22 @@ class MigrateDatabaseCommand extends Command
     }
 
     /**
+     * Test actual connectivity to a database connection and return error message if failed.
+     *
+     * @param string $connectionName
+     * @return string|null Returns error message if connection fails, null if successful
+     */
+    protected function testConnectionWithError(string $connectionName): ?string
+    {
+        try {
+            DB::connection($connectionName)->getPdo();
+            return null;
+        } catch (Exception $e) {
+            return $e->getMessage();
+        }
+    }
+
+    /**
      * Get the database driver for a connection.
      *
      * @param string $connectionName
