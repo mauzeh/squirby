@@ -68,6 +68,21 @@ class ChartServiceDelegationTest extends TestCase
         $this->assertEquals('Total Reps', $chartData['datasets'][0]['label']);
     }
 
+    /** @test */
+    public function it_generates_distance_chart_for_cardio_exercises()
+    {
+        $exercise = Exercise::factory()->create(['exercise_type' => 'cardio']);
+        $liftLogs = $this->createLiftLogsWithSets($exercise, [
+            ['weight' => 0, 'reps' => 500],  // 500m
+            ['weight' => 0, 'reps' => 1000], // 1000m
+        ]);
+
+        $chartData = $this->chartService->generateProgressChart($liftLogs, $exercise);
+
+        $this->assertArrayHasKey('datasets', $chartData);
+        $this->assertEquals('Distance (m)', $chartData['datasets'][0]['label']);
+    }
+
     private function createLiftLogsWithSets(Exercise $exercise, array $setsData): Collection
     {
         $user = User::factory()->create();
