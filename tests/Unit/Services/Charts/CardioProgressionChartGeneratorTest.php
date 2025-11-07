@@ -28,17 +28,28 @@ class CardioProgressionChartGeneratorTest extends TestCase
     }
 
     /** @test */
-    public function it_generates_distance_chart_data_for_cardio_exercises()
+    public function it_generates_total_distance_chart_data_for_cardio_exercises()
     {
-        // Create mock lift logs with cardio data using stdClass to avoid database calls
+        // Create mock lift logs with cardio data and lift sets
+        $liftSets1 = new Collection([
+            (object) ['reps' => 500, 'weight' => 0], // First round
+            (object) ['reps' => 500, 'weight' => 0], // Second round
+        ]);
+        
         $liftLog1 = (object) [
-            'display_reps' => 500, // 500m
-            'logged_at' => Carbon::parse('2023-01-01')
+            'display_reps' => 500, // 500m per round
+            'logged_at' => Carbon::parse('2023-01-01'),
+            'liftSets' => $liftSets1
         ];
 
+        $liftSets2 = new Collection([
+            (object) ['reps' => 1000, 'weight' => 0], // Single round
+        ]);
+        
         $liftLog2 = (object) [
-            'display_reps' => 1000, // 1000m
-            'logged_at' => Carbon::parse('2023-01-02')
+            'display_reps' => 1000, // 1000m per round
+            'logged_at' => Carbon::parse('2023-01-02'),
+            'liftSets' => $liftSets2
         ];
 
         $liftLogs = new Collection([$liftLog1, $liftLog2]);
@@ -50,14 +61,14 @@ class CardioProgressionChartGeneratorTest extends TestCase
         $this->assertCount(1, $chartData['datasets']);
 
         $dataset = $chartData['datasets'][0];
-        $this->assertEquals('Distance (m)', $dataset['label']);
+        $this->assertEquals('Total Distance (m)', $dataset['label']);
         $this->assertCount(2, $dataset['data']);
         
-        // Check first data point
+        // Check first data point: 500m × 2 rounds = 1000m total
         $this->assertEquals($liftLog1->logged_at->toIso8601String(), $dataset['data'][0]['x']);
-        $this->assertEquals(500, $dataset['data'][0]['y']);
+        $this->assertEquals(1000, $dataset['data'][0]['y']);
         
-        // Check second data point
+        // Check second data point: 1000m × 1 round = 1000m total
         $this->assertEquals($liftLog2->logged_at->toIso8601String(), $dataset['data'][1]['x']);
         $this->assertEquals(1000, $dataset['data'][1]['y']);
     }

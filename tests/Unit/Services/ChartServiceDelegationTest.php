@@ -80,7 +80,7 @@ class ChartServiceDelegationTest extends TestCase
         $chartData = $this->chartService->generateProgressChart($liftLogs, $exercise);
 
         $this->assertArrayHasKey('datasets', $chartData);
-        $this->assertEquals('Distance (m)', $chartData['datasets'][0]['label']);
+        $this->assertEquals('Total Distance (m)', $chartData['datasets'][0]['label']);
     }
 
     private function createLiftLogsWithSets(Exercise $exercise, array $setsData): Collection
