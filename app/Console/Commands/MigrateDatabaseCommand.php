@@ -51,6 +51,12 @@ use Exception;
  *   Useful for testing and validation before running the actual migration.
  *   Example: php artisan db:migrate-data --to=mysql --dry-run
  * 
+ * --migrate
+ *   Run migrations on the target database before migrating data.
+ *   This ensures the target database schema is up to date.
+ *   Cannot be used with --dry-run option.
+ *   Example: php artisan db:migrate-data --to=mysql --migrate
+ * 
  * -v, --verbose
  *   Display detailed information during migration including:
  *   - Record counts per table
@@ -74,7 +80,10 @@ use Exception;
  * 4. Verbose migration with detailed output:
  *    php artisan db:migrate-data --to=mysql -v
  * 
- * 5. Migrate from default connection to a new database:
+ * 5. Run migrations on target before migrating data:
+ *    php artisan db:migrate-data --to=mysql --migrate
+ * 
+ * 6. Migrate from default connection to a new database:
  *    php artisan db:migrate-data --to=production
  * 
  * 
@@ -233,7 +242,8 @@ class MigrateDatabaseCommand extends Command
         {--from= : Source database connection name (defaults to default connection)}
         {--to= : Target database connection name (required)}
         {--fresh : Truncate all tables in target database before migrating}
-        {--dry-run : Preview migration without making changes}';
+        {--dry-run : Preview migration without making changes}
+        {--migrate : Run migrations on the target database before migrating data}';
 
     /**
      * The console command description.
@@ -318,6 +328,12 @@ class MigrateDatabaseCommand extends Command
         }
 
         $this->info('Migration setup validated successfully.');
+        
+        // Run migrations on target database if requested
+        if ($this->option('migrate') && !$this->option('dry-run')) {
+            $this->info('Running migrations on target database...');
+            $this->runMigrationsOnTarget($targetConnection);
+        }
         
         try {
             // Get tables in dependency order
@@ -993,6 +1009,31 @@ class MigrateDatabaseCommand extends Command
             DB::connection($connectionName)->statement('PRAGMA foreign_keys = ON');
         } elseif ($driver === 'mysql') {
             DB::connection($connectionName)->statement('SET FOREIGN_KEY_CHECKS = 1');
+        }
+    }
+
+    /**
+     * Run migrations on the target database.
+     *
+     * @param string $targetConnection
+     * @return void
+     */
+    protected function runMigrationsOnTarget(string $targetConnection): void
+    {
+        try {
+            $exitCode = $this->call('migrate', [
+                '--database' => $targetConnection,
+                '--force' => true,
+            ]);
+            
+            if ($exitCode === 0) {
+                $this->info('Migrations completed successfully on target database.');
+            } else {
+                $this->warn('Migrations completed with warnings on target database.');
+            }
+        } catch (Exception $e) {
+            $this->error('Failed to run migrations on target database: ' . $e->getMessage());
+            throw $e;
         }
     }
 
