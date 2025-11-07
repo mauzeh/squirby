@@ -7,7 +7,6 @@ use App\Models\LiftLog;
 use App\Models\LiftSet;
 
 use App\Services\ExerciseService;
-use App\Services\LiftLogService;
 use App\Services\ExerciseTypes\ExerciseTypeFactory;
 use App\Services\ExerciseTypes\Exceptions\InvalidExerciseDataException;
 use App\Services\ExerciseTypes\Exceptions\UnsupportedOperationException;
@@ -22,13 +21,11 @@ use App\Services\TrainingProgressionService;
 class LiftLogController extends Controller
 {
     protected $exerciseService;
-    protected $liftLogService;
     protected $liftLogTablePresenter;
 
-    public function __construct(ExerciseService $exerciseService, LiftLogService $liftLogService, LiftLogTablePresenter $liftLogTablePresenter)
+    public function __construct(ExerciseService $exerciseService, LiftLogTablePresenter $liftLogTablePresenter)
     {
         $this->exerciseService = $exerciseService;
-        $this->liftLogService = $liftLogService;
         $this->liftLogTablePresenter = $liftLogTablePresenter;
     }
     /**
@@ -41,16 +38,12 @@ class LiftLogController extends Controller
         // Eager load all necessary relationships with selective fields to prevent N+1 queries
         $liftLogs = LiftLog::with([
             'exercise:id,title,exercise_type', 
-            'liftSets:id,lift_log_id,weight,reps,band_color',
-            'user:id' // Load user for potential bodyweight calculations
+            'liftSets:id,lift_log_id,weight,reps,band_color'
         ])
         ->select('id', 'exercise_id', 'user_id', 'logged_at', 'comments')
         ->where('user_id', $userId)
         ->orderBy('logged_at', 'asc')
         ->get();
-
-        // Pre-fetch bodyweight measurements for all dates to avoid N+1 queries in OneRepMaxCalculatorService
-        $this->liftLogService->preloadBodyweightMeasurements($liftLogs, $userId);
 
         $exercises = $this->exerciseService->getExercisesWithLogs();
         $displayExercises = $this->exerciseService->getDisplayExercises(5);
