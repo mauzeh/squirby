@@ -775,6 +775,9 @@ class MigrateDatabaseCommand extends Command
                                 return (array) $record;
                             }, $records->all());
                             
+                            // Sanitize records for cross-database compatibility
+                            $recordsArray = $this->sanitizeRecords($recordsArray, $targetConnection);
+                            
                             // Handle duplicate records when not using fresh option
                             if (!$options['fresh']) {
                                 $result = $this->insertWithDuplicateHandling(
@@ -872,6 +875,35 @@ class MigrateDatabaseCommand extends Command
         } catch (Exception $e) {
             $this->warn("  Failed to truncate {$table}: " . $e->getMessage());
         }
+    }
+
+    /**
+     * Sanitize records for cross-database compatibility.
+     * Converts empty strings to NULL for numeric/date columns when migrating to MySQL.
+     *
+     * @param array $records
+     * @param string $connectionName
+     * @return array
+     */
+    protected function sanitizeRecords(array $records, string $connectionName): array
+    {
+        $driver = $this->getConnectionDriver($connectionName);
+        
+        // Only sanitize when target is MySQL (SQLite is more permissive)
+        if ($driver !== 'mysql') {
+            return $records;
+        }
+        
+        return array_map(function ($record) {
+            foreach ($record as $key => $value) {
+                // Convert empty strings to NULL for better MySQL compatibility
+                // MySQL doesn't accept empty strings for numeric/date columns
+                if ($value === '') {
+                    $record[$key] = null;
+                }
+            }
+            return $record;
+        }, $records);
     }
 
     /**
