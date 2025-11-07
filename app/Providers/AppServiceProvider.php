@@ -30,9 +30,12 @@ class AppServiceProvider extends ServiceProvider
         // Only show git log in development environment, not in testing
         if (config('app.env') === 'local') {
             try {
+                $gitBranch = trim(shell_exec('git rev-parse --abbrev-ref HEAD'));
                 $gitLog = shell_exec('git log -n 25 --pretty=format:"%h - %s (%cr)"');
+                View::share('gitBranch', $gitBranch);
                 View::share('gitLog', $gitLog);
             } catch (\Exception $e) {
+                View::share('gitBranch', 'unknown');
                 View::share('gitLog', 'Could not retrieve git log.');
             }
         }

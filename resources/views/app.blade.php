@@ -101,6 +101,9 @@
                 @if(isset($queryCount))
                     <pre class="git-log">Queries: {{ $queryCount }} | Database: {{ $dbConnection ?? 'unknown' }} ({{ $dbDriver ?? 'unknown' }})</pre><br>
                 @endif
+                @if(isset($gitBranch))
+                    <pre class="git-log">Branch: {{ $gitBranch }}</pre>
+                @endif
                 @if(isset($gitLog))
                     <pre class="git-log">{{ $gitLog }}</pre>
                 @endif
