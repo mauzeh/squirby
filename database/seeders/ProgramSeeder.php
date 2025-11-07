@@ -22,8 +22,8 @@ class ProgramSeeder extends Seeder
             return;
         }
 
-        $backSquat = Exercise::where('name', 'Back Squat')->where('user_id', $user->id)->first();
-        $benchPress = Exercise::where('name', 'Bench Press')->where('user_id', $user->id)->first();
+        $backSquat = Exercise::where('title', 'Back Squat')->where('user_id', $user->id)->first();
+        $benchPress = Exercise::where('title', 'Bench Press')->where('user_id', $user->id)->first();
 
         if ($backSquat) {
             Program::create([

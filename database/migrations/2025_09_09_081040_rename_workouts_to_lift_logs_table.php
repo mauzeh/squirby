@@ -23,7 +23,7 @@ return new class extends Migration
         // Update foreign key column name in lift_sets table
         Schema::table('lift_sets', function (Blueprint $table) {
             // Drop the existing foreign key constraint
-            $table->dropForeign(['workout_id']);
+            $table->dropForeign('workout_sets_workout_id_foreign');
             
             // Rename the column
             $table->renameColumn('workout_id', 'lift_log_id');
@@ -58,7 +58,7 @@ return new class extends Migration
 
         // Add back the original foreign key constraint
         Schema::table('lift_sets', function (Blueprint $table) {
-            $table->foreign('workout_id')->references('id')->on('workouts')->onDelete('cascade');
+            $table->foreign('workout_id', 'workout_sets_workout_id_foreign')->references('id')->on('workouts')->onDelete('cascade');
         });
 
         // Rename tables back to original names
