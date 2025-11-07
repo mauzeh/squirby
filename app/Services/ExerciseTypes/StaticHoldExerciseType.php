@@ -277,6 +277,24 @@ class StaticHoldExerciseType extends BaseExerciseType
     }
     
     /**
+     * Get default weight progression for static holds
+     * Static holds don't automatically add weight - keep the same weight
+     */
+    public function getDefaultWeightProgression(float $lastWeight): float
+    {
+        return $lastWeight;
+    }
+    
+    /**
+     * Get default starting weight for static holds
+     * Static holds start with bodyweight only (0 added weight)
+     */
+    public function getDefaultStartingWeight(\App\Models\Exercise $exercise): float
+    {
+        return 0;
+    }
+    
+    /**
      * Format logged item display message for static hold exercises
      * Uses static hold-appropriate terminology (duration × sets)
      */

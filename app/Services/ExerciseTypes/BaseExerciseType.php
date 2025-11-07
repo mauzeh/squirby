@@ -563,6 +563,34 @@ abstract class BaseExerciseType implements ExerciseTypeInterface
     }
     
     /**
+     * Get default weight progression when no intelligent suggestion is available
+     * Default implementation adds 5 lbs for regular exercises
+     */
+    public function getDefaultWeightProgression(float $lastWeight): float
+    {
+        return $lastWeight + 5;
+    }
+    
+    /**
+     * Get default starting weight for a new exercise with no history
+     * Default implementation returns 95 lbs
+     */
+    public function getDefaultStartingWeight(\App\Models\Exercise $exercise): float
+    {
+        // Default starting weights for common exercises
+        $defaults = [
+            'bench_press' => 135,
+            'squat' => 185,
+            'deadlift' => 225,
+            'overhead_press' => 95,
+            'barbell_row' => 115,
+        ];
+        
+        $canonicalName = $exercise->canonical_name ?? '';
+        return $defaults[$canonicalName] ?? 95;
+    }
+    
+    /**
      * Get the type name identifier
      * Must be implemented by concrete classes
      */

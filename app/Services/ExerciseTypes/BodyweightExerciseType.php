@@ -312,4 +312,22 @@ class BodyweightExerciseType extends BaseExerciseType
             return $reps . ' reps × ' . $rounds . ' sets';
         }
     }
+    
+    /**
+     * Get default weight progression for bodyweight exercises
+     * Bodyweight exercises don't automatically add weight - keep the same weight
+     */
+    public function getDefaultWeightProgression(float $lastWeight): float
+    {
+        return $lastWeight;
+    }
+    
+    /**
+     * Get default starting weight for bodyweight exercises
+     * Bodyweight exercises start with no added weight
+     */
+    public function getDefaultStartingWeight(\App\Models\Exercise $exercise): float
+    {
+        return 0;
+    }
 }

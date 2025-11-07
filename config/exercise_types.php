@@ -246,7 +246,7 @@ return [
                 'sets' => 'Sets:',
             ],
             'field_increments' => [
-                'reps' => 5, // 5-second increments
+                'reps' => 1, // 1-second increments (holds are difficult!)
                 'weight' => 5,
                 'sets' => 1,
             ],

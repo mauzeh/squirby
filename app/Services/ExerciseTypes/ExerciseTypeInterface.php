@@ -581,4 +581,20 @@ interface ExerciseTypeInterface
      * ]
      */
     public function getProgressionSuggestion(LiftLog $lastLog, int $userId, int $exerciseId, ?\Carbon\Carbon $forDate = null): ?object;
+    
+    /**
+     * Get default weight progression when no intelligent suggestion is available
+     * 
+     * @param float $lastWeight The weight from the last session
+     * @return float The suggested weight for the next session
+     */
+    public function getDefaultWeightProgression(float $lastWeight): float;
+    
+    /**
+     * Get default starting weight for a new exercise with no history
+     * 
+     * @param \App\Models\Exercise $exercise The exercise to get starting weight for
+     * @return float The default starting weight
+     */
+    public function getDefaultStartingWeight(\App\Models\Exercise $exercise): float;
 }

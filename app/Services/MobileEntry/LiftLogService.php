@@ -250,11 +250,6 @@ class LiftLogService extends MobileEntryBaseService
     {
         $strategy = $exercise->getTypeStrategy();
         
-        // For bodyweight exercises, return the added weight (not total weight)
-        if ($strategy->getTypeName() === 'bodyweight') {
-            return $lastSession['weight'] ?? 0;
-        }
-        
         if ($lastSession && $userId) {
             // Use TrainingProgressionService for intelligent progression
             $suggestion = $this->trainingProgressionService->getSuggestionDetails(
@@ -265,22 +260,15 @@ class LiftLogService extends MobileEntryBaseService
             if ($suggestion && isset($suggestion->suggestedWeight)) {
                 return $suggestion->suggestedWeight;
             }
-            
-            // Fallback to simple progression if service fails
-            return $lastSession['weight'] + 5;
         }
         
-        // Default starting weights for common exercises
-        $defaults = [
-            'bench_press' => 135,
-            'squat' => 185,
-            'deadlift' => 225,
-            'overhead_press' => 95,
-            'barbell_row' => 115,
-        ];
+        // If we have a last session, use strategy's progression logic
+        if ($lastSession) {
+            return $strategy->getDefaultWeightProgression($lastSession['weight'] ?? 0);
+        }
         
-        $canonicalName = $exercise->canonical_name ?? '';
-        return $defaults[$canonicalName] ?? 95; // Default to 95 lbs
+        // No last session: use strategy's default starting weight
+        return $strategy->getDefaultStartingWeight($exercise);
     }
 
     /**
