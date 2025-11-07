@@ -88,6 +88,15 @@ class BandedResistanceExerciseType extends BaseExerciseType
     }
     
     /**
+     * Get raw display weight value from a lift set
+     * For banded exercises, returns the band_color field
+     */
+    public function getRawDisplayWeight($liftSet)
+    {
+        return $liftSet->band_color ?? 'N/A';
+    }
+    
+    /**
      * Format weight display for banded resistance exercises
      */
     public function formatWeightDisplay(LiftLog $liftLog): string

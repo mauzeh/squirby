@@ -133,6 +133,29 @@ interface ExerciseTypeInterface
     public function canCalculate1RM(): bool;
     
     /**
+     * Calculate one-rep max for a lift set
+     * 
+     * Calculates the estimated 1RM based on weight and reps.
+     * Each exercise type may have different calculation logic
+     * (e.g., bodyweight exercises add user's bodyweight to the calculation).
+     * 
+     * @param float $weight The weight used in the lift
+     * @param int $reps Number of reps performed
+     * @param LiftLog $liftLog The lift log context (for accessing user, date, etc.)
+     * @return float Calculated 1RM value
+     * @throws UnsupportedOperationException If 1RM is not supported for this exercise type
+     * 
+     * @example
+     * // Regular exercise: 135 lbs × 8 reps = ~170 lbs 1RM
+     * $regularStrategy->calculate1RM(135, 8, $liftLog); // returns 170.0
+     * 
+     * @example
+     * // Bodyweight exercise: 25 lbs extra + bodyweight × 8 reps
+     * $bodyweightStrategy->calculate1RM(25, 8, $liftLog); // returns calculated value including bodyweight
+     */
+    public function calculate1RM(float $weight, int $reps, LiftLog $liftLog): float;
+    
+    /**
      * Get the chart type appropriate for this exercise type
      * 
      * Returns the chart type identifier that should be used
@@ -167,6 +190,23 @@ interface ExerciseTypeInterface
      * ['volume_progression', 'band_progression']
      */
     public function getSupportedProgressionTypes(): array;
+    
+    /**
+     * Get raw display weight value from a lift set
+     * 
+     * Returns the raw value that should be used for display_weight attribute.
+     * For regular/bodyweight exercises, this is the weight field.
+     * For banded exercises, this is the band_color field.
+     * 
+     * @param \App\Models\LiftSet|object $liftSet The lift set to extract weight from
+     * @return mixed Raw weight value (numeric for regular/bodyweight, string for banded)
+     * 
+     * @example
+     * // Regular exercise: returns 135
+     * // Banded exercise: returns "blue"
+     * // Bodyweight exercise: returns 25 (extra weight)
+     */
+    public function getRawDisplayWeight($liftSet);
     
     /**
      * Format weight display for lift logs

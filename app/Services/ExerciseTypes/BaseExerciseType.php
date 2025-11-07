@@ -82,6 +82,23 @@ abstract class BaseExerciseType implements ExerciseTypeInterface
     }
     
     /**
+     * Calculate one-rep max for a lift set
+     * Default implementation uses the Epley formula
+     */
+    public function calculate1RM(float $weight, int $reps, LiftLog $liftLog): float
+    {
+        if (!$this->canCalculate1RM()) {
+            throw UnsupportedOperationException::for1RM($this->getTypeName());
+        }
+        
+        if ($reps === 1) {
+            return $weight;
+        }
+        
+        return $weight * (1 + (0.0333 * $reps));
+    }
+    
+    /**
      * Get the chart type appropriate for this exercise type
      */
     public function getChartType(): string
@@ -438,6 +455,15 @@ abstract class BaseExerciseType implements ExerciseTypeInterface
         }
         
         return [];
+    }
+    
+    /**
+     * Get raw display weight value from a lift set
+     * Default implementation returns the weight field
+     */
+    public function getRawDisplayWeight($liftSet)
+    {
+        return $liftSet->weight ?? 0;
     }
     
     /**

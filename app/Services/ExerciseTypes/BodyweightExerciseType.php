@@ -115,6 +115,45 @@ class BodyweightExerciseType extends BaseExerciseType
     }
     
     /**
+     * Calculate one-rep max for bodyweight exercises
+     * Includes user's bodyweight in the calculation
+     */
+    public function calculate1RM(float $weight, int $reps, LiftLog $liftLog): float
+    {
+        if (!$this->canCalculate1RM()) {
+            throw UnsupportedOperationException::for1RM($this->getTypeName());
+        }
+        
+        $bodyweight = 0;
+        
+        // Try to get cached bodyweight first for performance
+        if (isset($liftLog->cached_bodyweight)) {
+            $bodyweight = $liftLog->cached_bodyweight;
+        } else {
+            // Fall back to database query
+            $bodyweightMeasurement = \App\Models\BodyLog::where('user_id', $liftLog->user_id)
+                ->whereHas('measurementType', function ($query) {
+                    $query->where('name', 'Bodyweight');
+                })
+                ->whereDate('logged_at', '<=', $liftLog->logged_at->toDateString())
+                ->orderBy('logged_at', 'desc')
+                ->first();
+
+            if ($bodyweightMeasurement) {
+                $bodyweight = $bodyweightMeasurement->value;
+            }
+        }
+        
+        $totalWeight = $weight + $bodyweight;
+        
+        if ($reps === 1) {
+            return $totalWeight;
+        }
+        
+        return $totalWeight * (1 + (0.0333 * $reps));
+    }
+    
+    /**
      * Format weight display for bodyweight exercises
      */
     public function formatWeightDisplay(LiftLog $liftLog): string

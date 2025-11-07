@@ -76,17 +76,23 @@ class LiftLog extends Model
             $this->load('exercise');
         }
         
-        if ($this->exercise->isBandedResistance() || $this->exercise->isBandedAssistance()) {
-            if ($this->relationLoaded('liftSets')) {
-                return $this->liftSets->first()->band_color ?? 'N/A';
-            }
-            return $this->liftSets()->first()->band_color ?? 'N/A';
+        // Ensure liftSets are loaded to avoid N+1
+        if (!$this->relationLoaded('liftSets')) {
+            $this->load('liftSets');
         }
         
-        if ($this->relationLoaded('liftSets')) {
-            return $this->liftSets->first()->weight ?? 0;
+        // Get first lift set
+        $firstSet = $this->relationLoaded('liftSets') 
+            ? $this->liftSets->first() 
+            : $this->liftSets()->first();
+            
+        if (!$firstSet) {
+            return 0;
         }
-        return $this->liftSets()->first()->weight ?? 0;
+        
+        // Delegate to exercise type strategy to get the raw display value
+        $strategy = $this->exercise->getTypeStrategy();
+        return $strategy->getRawDisplayWeight($firstSet);
     }
 
     public function getBestOneRepMaxAttribute()

@@ -97,15 +97,10 @@ class OneRepMaxCalculatorService
             }
         }
 
-        $strategy = $liftLog->exercise->getTypeStrategy();
-        $isBodyweightExercise = $strategy->getTypeName() === 'bodyweight';
-        $userId = $liftLog->user_id;
-        $date = $liftLog->logged_at;
-
         if ($isUniform) {
-            return $this->calculateOneRepMaxOptimized($firstSet->weight, $firstSet->reps, $isBodyweightExercise, $liftLog);
+            return $this->calculateOneRepMaxOptimized($firstSet->weight, $firstSet->reps, $liftLog);
         } else {
-            return $this->calculateOneRepMaxOptimized($firstSet->weight, $firstSet->reps, $isBodyweightExercise, $liftLog);
+            return $this->calculateOneRepMaxOptimized($firstSet->weight, $firstSet->reps, $liftLog);
         }
     }
 
@@ -128,53 +123,25 @@ class OneRepMaxCalculatorService
             throw UnsupportedOperationException::for1RM($strategy->getTypeName());
         }
 
-        $isBodyweightExercise = $strategy->getTypeName() === 'bodyweight';
-
-        return $liftLog->liftSets->max(function ($liftSet) use ($isBodyweightExercise, $liftLog) {
-            return $this->calculateOneRepMaxOptimized($liftSet->weight, $liftSet->reps, $isBodyweightExercise, $liftLog);
+        return $liftLog->liftSets->max(function ($liftSet) use ($liftLog) {
+            return $this->calculateOneRepMaxOptimized($liftSet->weight, $liftSet->reps, $liftLog);
         });
     }
 
     /**
-     * Optimized 1RM calculation that uses cached bodyweight to avoid database queries
-     * Falls back to original behavior if cached bodyweight is not available
+     * Optimized 1RM calculation using exercise type strategy
+     * Delegates to the strategy for exercise-type-specific calculation logic
      *
      * @param float $weight
      * @param int $reps
-     * @param bool $isBodyweightExercise
      * @param \App\Models\LiftLog $liftLog
      * @return float
      * @throws NotApplicableException
      */
-    private function calculateOneRepMaxOptimized(float $weight, int $reps, bool $isBodyweightExercise, $liftLog): float
+    private function calculateOneRepMaxOptimized(float $weight, int $reps, $liftLog): float
     {
-        $bodyweight = 0;
-        if ($isBodyweightExercise) {
-            if (isset($liftLog->cached_bodyweight)) {
-                // Use cached bodyweight for optimized performance
-                $bodyweight = $liftLog->cached_bodyweight;
-            } else {
-                // Fall back to original database query for backward compatibility
-                $bodyweightMeasurement = BodyLog::where('user_id', $liftLog->user_id)
-                    ->whereHas('measurementType', function ($query) {
-                        $query->where('name', 'Bodyweight');
-                    })
-                    ->whereDate('logged_at', '<=', $liftLog->logged_at->toDateString())
-                    ->orderBy('logged_at', 'desc')
-                    ->first();
-
-                if ($bodyweightMeasurement) {
-                    $bodyweight = $bodyweightMeasurement->value;
-                }
-            }
-        }
-
-        $totalWeight = $weight + $bodyweight;
-
-        if ($reps === 1) {
-            return $totalWeight;
-        }
-        return $totalWeight * (1 + (0.0333 * $reps));
+        $strategy = $liftLog->exercise->getTypeStrategy();
+        return $strategy->calculate1RM($weight, $reps, $liftLog);
     }
 
     /**
@@ -198,10 +165,8 @@ class OneRepMaxCalculatorService
 
         // Get the first set for calculation (maintaining existing behavior)
         $firstSet = $liftLog->liftSets->first();
-        $strategy = $liftLog->exercise->getTypeStrategy();
-        $isBodyweightExercise = $strategy->getTypeName() === 'bodyweight';
 
-        return $this->calculateOneRepMaxOptimized($firstSet->weight, $firstSet->reps, $isBodyweightExercise, $liftLog);
+        return $this->calculateOneRepMaxOptimized($firstSet->weight, $firstSet->reps, $liftLog);
     }
 
     /**
@@ -223,10 +188,8 @@ class OneRepMaxCalculatorService
             throw UnsupportedOperationException::for1RM($strategy->getTypeName());
         }
 
-        $isBodyweightExercise = $strategy->getTypeName() === 'bodyweight';
-
-        return $liftLog->liftSets->max(function ($liftSet) use ($isBodyweightExercise, $liftLog) {
-            return $this->calculateOneRepMaxOptimized($liftSet->weight, $liftSet->reps, $isBodyweightExercise, $liftLog);
+        return $liftLog->liftSets->max(function ($liftSet) use ($liftLog) {
+            return $this->calculateOneRepMaxOptimized($liftSet->weight, $liftSet->reps, $liftLog);
         });
     }
 }
