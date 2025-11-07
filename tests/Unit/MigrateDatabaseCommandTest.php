@@ -568,4 +568,45 @@ class MigrateDatabaseCommandTest extends TestCase
         $result = $this->callPrivateMethod($command, 'formatDuration', [3725]);
         $this->assertEquals('1h 2m 5s', $result);
     }
+
+    // ========================================================================
+    // Migration Option Tests
+    // ========================================================================
+
+    public function test_run_migrations_on_target_calls_migrate_command()
+    {
+        Config::set('database.connections.test_target', [
+            'driver' => 'sqlite',
+            'database' => ':memory:',
+        ]);
+        
+        // Create a partial mock of the command to mock the call method
+        $command = $this->getMockBuilder(MigrateDatabaseCommand::class)
+            ->onlyMethods(['call'])
+            ->getMock();
+        
+        // Expect the call method to be invoked with migrate command
+        $command->expects($this->once())
+            ->method('call')
+            ->with('migrate', [
+                '--database' => 'test_target',
+                '--force' => true,
+            ])
+            ->willReturn(0);
+        
+        // Mock the output for the command
+        $symfonyOutput = $this->createMock(\Symfony\Component\Console\Output\OutputInterface::class);
+        $output = new \Illuminate\Console\OutputStyle(
+            $this->createMock(\Symfony\Component\Console\Input\InputInterface::class),
+            $symfonyOutput
+        );
+        
+        $command->setOutput($output);
+        
+        // Call the method
+        $this->callPrivateMethod($command, 'runMigrationsOnTarget', ['test_target']);
+        
+        // If we get here without exception, the method executed successfully
+        $this->assertTrue(true);
+    }
 }
