@@ -9,6 +9,219 @@ use Illuminate\Database\QueryException;
 use PDOException;
 use Exception;
 
+/**
+ * Database Migration Command
+ * 
+ * This command migrates all data from one database connection to another while
+ * preserving referential integrity by respecting foreign key relationships.
+ * 
+ * ============================================================================
+ * USAGE MANUAL
+ * ============================================================================
+ * 
+ * BASIC USAGE:
+ * ------------
+ * php artisan db:migrate-data --to=target_connection
+ * 
+ * This will migrate all data from your default database connection to the
+ * specified target connection.
+ * 
+ * 
+ * COMMAND OPTIONS:
+ * ----------------
+ * 
+ * --from=CONNECTION_NAME
+ *   Specify the source database connection name.
+ *   If omitted, uses the default connection from config/database.php
+ *   Example: php artisan db:migrate-data --from=sqlite --to=mysql
+ * 
+ * --to=CONNECTION_NAME (REQUIRED)
+ *   Specify the target database connection name.
+ *   This option is required.
+ *   Example: php artisan db:migrate-data --to=mysql
+ * 
+ * --fresh
+ *   Truncate all tables in the target database before migrating.
+ *   WARNING: This will delete all existing data in the target database!
+ *   You will be prompted for confirmation before proceeding.
+ *   Example: php artisan db:migrate-data --to=mysql --fresh
+ * 
+ * --dry-run
+ *   Preview the migration without making any changes.
+ *   Useful for testing and validation before running the actual migration.
+ *   Example: php artisan db:migrate-data --to=mysql --dry-run
+ * 
+ * -v, --verbose
+ *   Display detailed information during migration including:
+ *   - Record counts per table
+ *   - Sample records in dry-run mode
+ *   - Skipped duplicate records
+ *   Example: php artisan db:migrate-data --to=mysql -v
+ * 
+ * 
+ * COMMON SCENARIOS:
+ * -----------------
+ * 
+ * 1. Migrate from SQLite to MySQL:
+ *    php artisan db:migrate-data --from=sqlite --to=mysql
+ * 
+ * 2. Fresh migration (clean target database first):
+ *    php artisan db:migrate-data --to=mysql --fresh
+ * 
+ * 3. Preview migration without making changes:
+ *    php artisan db:migrate-data --to=mysql --dry-run
+ * 
+ * 4. Verbose migration with detailed output:
+ *    php artisan db:migrate-data --to=mysql -v
+ * 
+ * 5. Migrate from default connection to a new database:
+ *    php artisan db:migrate-data --to=production
+ * 
+ * 
+ * SETUP REQUIREMENTS:
+ * -------------------
+ * 
+ * 1. Configure database connections in config/database.php or .env file:
+ * 
+ *    For MySQL:
+ *    DB_CONNECTION=mysql
+ *    DB_HOST=127.0.0.1
+ *    DB_PORT=3306
+ *    DB_DATABASE=your_database
+ *    DB_USERNAME=your_username
+ *    DB_PASSWORD=your_password
+ * 
+ *    For SQLite:
+ *    DB_CONNECTION=sqlite
+ *    DB_DATABASE=/absolute/path/to/database.sqlite
+ * 
+ * 2. Add additional connections in config/database.php:
+ * 
+ *    'connections' => [
+ *        'mysql' => [...],
+ *        'sqlite' => [...],
+ *        'production' => [
+ *            'driver' => 'mysql',
+ *            'host' => 'production-server.com',
+ *            'database' => 'prod_db',
+ *            ...
+ *        ],
+ *    ]
+ * 
+ * 3. Ensure both source and target databases are accessible and running.
+ * 
+ * 
+ * HOW IT WORKS:
+ * -------------
+ * 
+ * 1. Connection Validation:
+ *    - Verifies both source and target connections exist in configuration
+ *    - Tests actual connectivity to both databases
+ *    - Displays connection information (driver type)
+ * 
+ * 2. Schema Analysis:
+ *    - Discovers all tables in the source database
+ *    - Excludes Laravel system tables (migrations, cache, sessions, jobs, etc.)
+ *    - Analyzes foreign key relationships between tables
+ * 
+ * 3. Dependency Resolution:
+ *    - Uses topological sort to determine correct migration order
+ *    - Ensures parent tables are migrated before child tables
+ *    - Detects and reports circular dependencies
+ * 
+ * 4. Data Migration:
+ *    - Disables foreign key checks during migration
+ *    - Migrates tables in dependency order
+ *    - Processes data in chunks (1000 records at a time)
+ *    - Handles duplicate records gracefully (skips on unique constraint violations)
+ *    - Wraps each table migration in a transaction for safety
+ *    - Re-enables foreign key checks after completion
+ * 
+ * 5. Progress Tracking:
+ *    - Displays progress bar for each table
+ *    - Shows record counts and migration status
+ *    - Provides detailed summary at the end
+ * 
+ * 
+ * DUPLICATE HANDLING:
+ * -------------------
+ * 
+ * When NOT using --fresh option:
+ * - Duplicate records (based on unique constraints) are automatically skipped
+ * - Skipped records are counted and reported in the summary
+ * - Use -v flag to see which specific records were skipped
+ * 
+ * When using --fresh option:
+ * - Target tables are truncated before migration
+ * - No duplicate checking is performed (faster migration)
+ * - All records are inserted as new
+ * 
+ * 
+ * ERROR HANDLING:
+ * ---------------
+ * 
+ * The command handles various error scenarios:
+ * 
+ * - Connection failures: Displays helpful troubleshooting tips
+ * - Circular dependencies: Reports which tables are involved
+ * - Constraint violations: Skips duplicates, reports other violations
+ * - Transaction failures: Rolls back changes for the current table
+ * - Foreign key issues: Automatically manages FK checks
+ * 
+ * If migration fails:
+ * - Foreign key checks are re-enabled
+ * - Partial data may exist in target database
+ * - Use --fresh option to retry with clean slate
+ * 
+ * 
+ * PERFORMANCE TIPS:
+ * -----------------
+ * 
+ * - Use --fresh for faster migration when target database is empty
+ * - Chunk size is set to 1000 records (optimal for most cases)
+ * - Large databases may take significant time
+ * - Consider running during off-peak hours for production migrations
+ * - Use --dry-run first to estimate migration time
+ * 
+ * 
+ * SAFETY FEATURES:
+ * ----------------
+ * 
+ * - Confirmation prompt when using --fresh option
+ * - Dry-run mode for testing without changes
+ * - Transaction wrapping for each table
+ * - Automatic foreign key constraint management
+ * - Detailed error messages with troubleshooting guidance
+ * - Progress tracking to monitor migration status
+ * 
+ * 
+ * SUPPORTED DATABASES:
+ * --------------------
+ * 
+ * Currently supports:
+ * - MySQL / MariaDB
+ * - SQLite
+ * 
+ * You can migrate between any combination of supported databases.
+ * 
+ * 
+ * EXAMPLES:
+ * ---------
+ * 
+ * # Preview migration from SQLite to MySQL
+ * php artisan db:migrate-data --from=sqlite --to=mysql --dry-run -v
+ * 
+ * # Perform actual migration
+ * php artisan db:migrate-data --from=sqlite --to=mysql
+ * 
+ * # Fresh migration with verbose output
+ * php artisan db:migrate-data --to=mysql --fresh -v
+ * 
+ * # Migrate to production database
+ * php artisan db:migrate-data --to=production
+ * 
+ * ============================================================================
+ */
 class MigrateDatabaseCommand extends Command
 {
     /**
