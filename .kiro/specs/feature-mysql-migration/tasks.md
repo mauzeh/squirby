@@ -47,7 +47,7 @@
   - Handle transaction rollback failures
   - _Requirements: 2.5_
 
-- [ ]* 7. Write unit tests for core components
+- [x] 7. Write unit tests for core components
   - Write tests for connection validation
   - Write tests for schema analysis and table discovery
   - Write tests for dependency resolution and topological sort
