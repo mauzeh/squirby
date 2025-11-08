@@ -409,7 +409,7 @@ class FoodLogService extends MobileEntryBaseService
             // Hidden fields for form submission
             'hiddenFields' => [
                 'ingredient_id' => $ingredient->id,
-                'logged_at' => now()->format('H:i'),
+                'logged_at' => $this->getRoundedTime(),
                 'date' => $selectedDate->toDateString(),
                 'redirect_to' => 'mobile-entry-foods'
             ]
@@ -515,7 +515,7 @@ class FoodLogService extends MobileEntryBaseService
             // Hidden fields for form submission
             'hiddenFields' => [
                 'meal_id' => $meal->id,
-                'logged_at_meal' => now()->format('H:i'),
+                'logged_at_meal' => $this->getRoundedTime(),
                 'meal_date' => $selectedDate->toDateString(),
                 'redirect_to' => 'mobile-entry-foods'
             ]
@@ -991,6 +991,19 @@ class FoodLogService extends MobileEntryBaseService
         }
         
         return $messages;
+    }
+
+    private function getRoundedTime()
+    {
+        $now = now();
+        $minute = $now->minute;
+        $remainder = $minute % 15;
+        if ($remainder < 8) {
+            $now->subMinutes($remainder);
+        } else {
+            $now->addMinutes(15 - $remainder);
+        }
+        return $now->format('H:i');
     }
 
 
