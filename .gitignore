@@ -28,3 +28,5 @@ pull_db.sh
 database_backup.sqlite
 database.backup-*.sqlite
 database.sqlite
+pull_mysql_db.sh
+quantifiedathletics_prod.*.sql
