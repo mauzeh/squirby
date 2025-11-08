@@ -22,8 +22,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Enable query log for non-production or for admin users
-        if (config('app.env') !== 'production' || (Auth::check() && Auth::user()->hasRole('Admin'))) {
+        // Enable query log for non-production environments
+        if (config('app.env') !== 'production') {
             \Illuminate\Support\Facades\DB::enableQueryLog();
         }
         
