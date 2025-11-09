@@ -133,6 +133,19 @@ class RecommendationSystemIntegrationTest extends TestCase
             ]
         ]);
 
+        // Create lift logs so all exercises can be recommended (only exercises user has performed are recommended)
+        // Create old lift logs for pull-ups and squats (so they can be recommended but aren't recent)
+        LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $pullUp->id,
+            'logged_at' => Carbon::now()->subDays(20)
+        ]);
+        LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $squat->id,
+            'logged_at' => Carbon::now()->subDays(20)
+        ]);
+
         // Create user activity - heavy bench press usage, no pull or squat work
         $benchLog1 = LiftLog::factory()->create([
             'user_id' => $user->id,
@@ -415,6 +428,13 @@ class RecommendationSystemIntegrationTest extends TestCase
                     ]
                 ]
             ]
+        ]);
+
+        // Create old lift log for squat so it can be recommended
+        LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $squat->id,
+            'logged_at' => Carbon::now()->subDays(20)
         ]);
 
         // Create recent bench press workout (within 48-hour recovery)

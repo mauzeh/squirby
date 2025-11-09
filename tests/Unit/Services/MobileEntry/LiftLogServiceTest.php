@@ -127,7 +127,10 @@ class LiftLogServiceTest extends TestCase
             return $exercise->title;
         });
         
-        $this->service = new LiftLogService($mockProgressionService, $mockCacheService, $mockAliasService);
+        $mockRecommendationEngine = $this->createMock(\App\Services\RecommendationEngine::class);
+        $mockRecommendationEngine->method('getRecommendations')->willReturn([]);
+        
+        $this->service = new LiftLogService($mockProgressionService, $mockCacheService, $mockAliasService, $mockRecommendationEngine);
         $this->testDate = Carbon::parse('2024-01-15');
     }
 
@@ -1829,8 +1832,8 @@ class LiftLogServiceTest extends TestCase
         $notInProgramItem = collect($itemSelectionList['items'])->firstWhere('name', 'Not In Program');
         
         $this->assertEquals('in-program', $inProgramItem['type']['cssClass']);
-        $this->assertEquals('In Program', $inProgramItem['type']['label']);
-        $this->assertEquals(4, $inProgramItem['type']['priority']);
+        $this->assertStringContainsString('In Program', $inProgramItem['type']['label']);
+        $this->assertEquals(0.4, $inProgramItem['type']['priority']);
         
         $this->assertEquals('regular', $notInProgramItem['type']['cssClass']);
         $this->assertEquals('Available', $notInProgramItem['type']['label']);
@@ -1844,11 +1847,11 @@ class LiftLogServiceTest extends TestCase
         $exercise1 = Exercise::factory()->create(['title' => 'Recently Used']);
         $exercise2 = Exercise::factory()->create(['title' => 'Not Recently Used']);
         
-        // Create a recent lift log for exercise1 (within 7 days)
+        // Create a recent lift log for exercise1 (within 7 days from NOW, not testDate)
         LiftLog::factory()->create([
             'user_id' => $user->id,
             'exercise_id' => $exercise1->id,
-            'logged_at' => $this->testDate->copy()->subDays(3)
+            'logged_at' => Carbon::now()->subDays(3)
         ]);
 
         $itemSelectionList = $this->service->generateItemSelectionList($user->id, $this->testDate);
@@ -1858,7 +1861,7 @@ class LiftLogServiceTest extends TestCase
         
         $this->assertEquals('recent', $recentItem['type']['cssClass']);
         $this->assertEquals('Recent', $recentItem['type']['label']);
-        $this->assertEquals(1, $recentItem['type']['priority']);
+        $this->assertEquals(0.3, $recentItem['type']['priority']);
         
         $this->assertEquals('regular', $notRecentItem['type']['cssClass']);
         $this->assertEquals('Available', $notRecentItem['type']['label']);
@@ -1884,13 +1887,15 @@ class LiftLogServiceTest extends TestCase
 
         $itemSelectionList = $this->service->generateItemSelectionList($user->id, $this->testDate);
         
-        // In-program exercise should come last despite alphabetical order
-        $this->assertEquals('A Regular Exercise', $itemSelectionList['items'][0]['name']);
-        $this->assertEquals('C Regular Exercise', $itemSelectionList['items'][1]['name']);
-        $this->assertEquals('B In Program Exercise', $itemSelectionList['items'][2]['name']);
-        $this->assertEquals('in-program', $itemSelectionList['items'][2]['type']['cssClass']);
-        $this->assertEquals('In Program', $itemSelectionList['items'][2]['type']['label']);
-        $this->assertEquals(4, $itemSelectionList['items'][2]['type']['priority']);
+        // In-program exercise should come first (higher priority than regular exercises)
+        $this->assertEquals('B In Program Exercise', $itemSelectionList['items'][0]['name']);
+        $this->assertEquals('in-program', $itemSelectionList['items'][0]['type']['cssClass']);
+        $this->assertStringContainsString('In Program', $itemSelectionList['items'][0]['type']['label']);
+        $this->assertEquals(0.4, $itemSelectionList['items'][0]['type']['priority']);
+        
+        // Regular exercises come after, sorted alphabetically
+        $this->assertEquals('A Regular Exercise', $itemSelectionList['items'][1]['name']);
+        $this->assertEquals('C Regular Exercise', $itemSelectionList['items'][2]['name']);
     }
 
     #[Test]

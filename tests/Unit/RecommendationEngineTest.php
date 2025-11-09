@@ -5,6 +5,7 @@ namespace Tests\Unit;
 use Tests\TestCase;
 use App\Models\Exercise;
 use App\Models\ExerciseIntelligence;
+use App\Models\LiftLog;
 use App\Models\User;
 use App\Services\RecommendationEngine;
 use App\Services\ActivityAnalysisService;
@@ -26,6 +27,19 @@ class RecommendationEngineTest extends TestCase
         
         $this->mockActivityService = Mockery::mock(ActivityAnalysisService::class);
         $this->recommendationEngine = new RecommendationEngine($this->mockActivityService);
+    }
+
+    /**
+     * Helper method to create a lift log for an exercise so it can be recommended
+     * (Recommendation engine only recommends exercises the user has performed)
+     */
+    private function createLiftLogForExercise($userId, $exerciseId, $daysAgo = 10)
+    {
+        return LiftLog::factory()->create([
+            'user_id' => $userId,
+            'exercise_id' => $exerciseId,
+            'logged_at' => Carbon::now()->subDays($daysAgo)
+        ]);
     }
 
     /** @test */
@@ -94,6 +108,10 @@ class RecommendationEngineTest extends TestCase
             ]
         ]);
 
+        // Create lift logs so exercises are recommended (only exercises user has performed are recommended)
+        $this->createLiftLogForExercise($user->id, $exercise1->id);
+        $this->createLiftLogForExercise($user->id, $exercise2->id);
+
         $mockAnalysis = new UserActivityAnalysis(
             muscleWorkload: ['pectoralis_major' => 0.1], // Low workload = underworked
             movementArchetypes: ['push' => 1, 'pull' => 0],
@@ -143,6 +161,9 @@ class RecommendationEngineTest extends TestCase
             ]
         ]);
 
+        // Create lift log so exercise can be recommended
+        $this->createLiftLogForExercise($user->id, $exercise->id);
+
         // Mock analysis showing recent workout (1 day ago, still in 48-hour recovery)
         $mockAnalysis = new UserActivityAnalysis(
             muscleWorkload: ['pectoralis_major' => 0.8],
@@ -183,6 +204,7 @@ class RecommendationEngineTest extends TestCase
                 ]
             ]
         ]);
+        $this->createLiftLogForExercise($user->id, $underworkedExercise->id);
 
         // Exercise targeting well-worked muscle
         $workedExercise = Exercise::factory()->create(['user_id' => null]);
@@ -198,6 +220,7 @@ class RecommendationEngineTest extends TestCase
                 ]
             ]
         ]);
+        $this->createLiftLogForExercise($user->id, $workedExercise->id);
 
         $mockAnalysis = new UserActivityAnalysis(
             muscleWorkload: [
@@ -240,12 +263,14 @@ class RecommendationEngineTest extends TestCase
             'exercise_id' => $pushExercise->id,
             'movement_archetype' => 'push'
         ]);
+        $this->createLiftLogForExercise($user->id, $pushExercise->id);
 
         $pullExercise = Exercise::factory()->create(['user_id' => null]);
         $pullIntelligence = ExerciseIntelligence::factory()->create([
             'exercise_id' => $pullExercise->id,
             'movement_archetype' => 'pull'
         ]);
+        $this->createLiftLogForExercise($user->id, $pullExercise->id);
 
         // Mock analysis showing heavy push usage, no pull usage
         $mockAnalysis = new UserActivityAnalysis(
@@ -287,11 +312,13 @@ class RecommendationEngineTest extends TestCase
         $recentIntelligence = ExerciseIntelligence::factory()->create([
             'exercise_id' => $recentExercise->id
         ]);
+        $this->createLiftLogForExercise($user->id, $recentExercise->id);
 
         $newExercise = Exercise::factory()->create(['user_id' => null]);
         $newIntelligence = ExerciseIntelligence::factory()->create([
             'exercise_id' => $newExercise->id
         ]);
+        $this->createLiftLogForExercise($user->id, $newExercise->id);
 
         $mockAnalysis = new UserActivityAnalysis(
             muscleWorkload: [],
@@ -341,6 +368,7 @@ class RecommendationEngineTest extends TestCase
                 ]
             ]
         ]);
+        $this->createLiftLogForExercise($user->id, $exercise->id);
 
         $mockAnalysis = new UserActivityAnalysis(
             muscleWorkload: ['pectoralis_major' => 0.1], // Underworked
@@ -378,6 +406,7 @@ class RecommendationEngineTest extends TestCase
         for ($i = 0; $i < 5; $i++) {
             $exercise = Exercise::factory()->create(['user_id' => null]);
             ExerciseIntelligence::factory()->create(['exercise_id' => $exercise->id]);
+            $this->createLiftLogForExercise($user->id, $exercise->id);
         }
 
         $mockAnalysis = new UserActivityAnalysis(
@@ -406,10 +435,12 @@ class RecommendationEngineTest extends TestCase
         // Create global exercises with intelligence
         $globalExercise = Exercise::factory()->create(['user_id' => null]);
         $globalIntelligence = ExerciseIntelligence::factory()->create(['exercise_id' => $globalExercise->id]);
+        $this->createLiftLogForExercise($user->id, $globalExercise->id);
         
         // Create user exercises with intelligence
         $userExercise = Exercise::factory()->create(['user_id' => $user->id]);
         $userIntelligence = ExerciseIntelligence::factory()->create(['exercise_id' => $userExercise->id]);
+        $this->createLiftLogForExercise($user->id, $userExercise->id);
 
         $mockAnalysis = new UserActivityAnalysis(
             muscleWorkload: [],
@@ -442,10 +473,12 @@ class RecommendationEngineTest extends TestCase
         // Create global exercises with intelligence
         $globalExercise = Exercise::factory()->create(['user_id' => null]);
         $globalIntelligence = ExerciseIntelligence::factory()->create(['exercise_id' => $globalExercise->id]);
+        $this->createLiftLogForExercise($user->id, $globalExercise->id);
         
         // Create user exercises with intelligence
         $userExercise = Exercise::factory()->create(['user_id' => $user->id]);
         $userIntelligence = ExerciseIntelligence::factory()->create(['exercise_id' => $userExercise->id]);
+        $this->createLiftLogForExercise($user->id, $userExercise->id);
 
         $mockAnalysis = new UserActivityAnalysis(
             muscleWorkload: [],
@@ -474,10 +507,12 @@ class RecommendationEngineTest extends TestCase
         // Create global exercises with intelligence
         $globalExercise = Exercise::factory()->create(['user_id' => null]);
         $globalIntelligence = ExerciseIntelligence::factory()->create(['exercise_id' => $globalExercise->id]);
+        $this->createLiftLogForExercise($user->id, $globalExercise->id);
         
         // Create user exercises with intelligence
         $userExercise = Exercise::factory()->create(['user_id' => $user->id]);
         $userIntelligence = ExerciseIntelligence::factory()->create(['exercise_id' => $userExercise->id]);
+        $this->createLiftLogForExercise($user->id, $userExercise->id);
 
         $mockAnalysis = new UserActivityAnalysis(
             muscleWorkload: [],

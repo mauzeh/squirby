@@ -4,11 +4,13 @@ namespace Tests\Unit;
 
 use App\Models\Exercise;
 use App\Models\ExerciseIntelligence;
+use App\Models\LiftLog;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\RecommendationEngine;
 use App\Services\ActivityAnalysisService;
 use App\Services\UserActivityAnalysis;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Auth;
 use Tests\TestCase;
@@ -69,6 +71,38 @@ class RecommendationEngineVisibilityTest extends TestCase
             'movement_archetype' => 'squat',
             'difficulty_level' => 4,
             'primary_mover' => 'quadriceps'
+        ]);
+        
+        // Create lift logs so exercises can be recommended (only exercises user has performed are recommended)
+        LiftLog::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $this->globalExercise->id,
+            'logged_at' => Carbon::now()->subDays(10)
+        ]);
+        LiftLog::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $this->userExercise->id,
+            'logged_at' => Carbon::now()->subDays(10)
+        ]);
+        LiftLog::factory()->create([
+            'user_id' => $this->otherUser->id,
+            'exercise_id' => $this->otherUserExercise->id,
+            'logged_at' => Carbon::now()->subDays(10)
+        ]);
+        LiftLog::factory()->create([
+            'user_id' => $this->adminUser->id,
+            'exercise_id' => $this->globalExercise->id,
+            'logged_at' => Carbon::now()->subDays(10)
+        ]);
+        LiftLog::factory()->create([
+            'user_id' => $this->adminUser->id,
+            'exercise_id' => $this->userExercise->id,
+            'logged_at' => Carbon::now()->subDays(10)
+        ]);
+        LiftLog::factory()->create([
+            'user_id' => $this->adminUser->id,
+            'exercise_id' => $this->otherUserExercise->id,
+            'logged_at' => Carbon::now()->subDays(10)
         ]);
         
         // Create a real UserActivityAnalysis instance with empty data
@@ -216,6 +250,11 @@ class RecommendationEngineVisibilityTest extends TestCase
                 'movement_archetype' => 'push',
                 'difficulty_level' => 3,
                 'primary_mover' => 'pectoralis_major'
+            ]);
+            LiftLog::factory()->create([
+                'user_id' => $this->user->id,
+                'exercise_id' => $exercise->id,
+                'logged_at' => Carbon::now()->subDays(10)
             ]);
         }
         
