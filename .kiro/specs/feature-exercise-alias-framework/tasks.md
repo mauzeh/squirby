@@ -106,7 +106,7 @@
   - Test cascade delete on exercise deletion
   - _Requirements: 5.1, 5.2, 7.1, 7.2, 7.3, 7.4_
 
-- [ ] 13. Write integration tests for merge with alias creation
+- [x] 13. Write integration tests for merge with alias creation
   - Test merge with alias creation enabled creates alias
   - Test merge with alias creation disabled does not create alias
   - Test alias is created before source deletion
