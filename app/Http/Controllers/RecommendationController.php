@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Services\RecommendationEngine;
 use App\Services\ActivityAnalysisService;
+use App\Services\ExerciseAliasService;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use App\Models\Program;
@@ -12,7 +13,8 @@ class RecommendationController extends Controller
 {
     public function __construct(
         private RecommendationEngine $recommendationEngine,
-        private ActivityAnalysisService $activityAnalysisService
+        private ActivityAnalysisService $activityAnalysisService,
+        private ExerciseAliasService $exerciseAliasService
     ) {}
 
     /**
@@ -38,9 +40,13 @@ class RecommendationController extends Controller
         // Get all recommendations (no limit) - automatically respects user's global exercise preference
         $recommendations = $this->recommendationEngine->getRecommendations(auth()->id(), 50);
 
-        // Augment recommendations with last performed date
+        // Augment recommendations with last performed date and apply exercise aliases
         foreach ($recommendations as &$recommendation) {
             $recommendation['days_since_performed'] = $userActivity->getDaysSinceExercisePerformed($recommendation['exercise']->id);
+            
+            // Apply exercise alias to display name
+            $displayName = $this->exerciseAliasService->getDisplayName($recommendation['exercise'], auth()->user());
+            $recommendation['exercise']->title = $displayName;
         }
         unset($recommendation); // Unset reference
 
