@@ -9,9 +9,17 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Database\QueryException;
 
 class ExerciseMergeService
 {
+    protected ExerciseAliasService $aliasService;
+
+    public function __construct(ExerciseAliasService $aliasService)
+    {
+        $this->aliasService = $aliasService;
+    }
+
     /**
      * Determine if an exercise can be merged by an admin
      */
@@ -81,7 +89,7 @@ class ExerciseMergeService
     /**
      * Perform the exercise merge operation
      */
-    public function mergeExercises(Exercise $source, Exercise $target, User $admin): bool
+    public function mergeExercises(Exercise $source, Exercise $target, User $admin, bool $createAlias = true): bool
     {
         // Validate compatibility first
         $validation = $this->validateMergeCompatibility($source, $target);
@@ -101,6 +109,9 @@ class ExerciseMergeService
             // Handle exercise intelligence
             $this->handleExerciseIntelligence($source, $target);
 
+            // Create alias for the source exercise owner if requested
+            $aliasCreated = $this->createAliasForOwner($source, $target, $createAlias);
+
             // Delete the source exercise
             $source->delete();
 
@@ -111,7 +122,8 @@ class ExerciseMergeService
                 'target_exercise_id' => $target->id,
                 'target_exercise_title' => $target->title,
                 'admin_user_id' => $admin->id,
-                'admin_email' => $admin->email
+                'admin_email' => $admin->email,
+                'alias_created' => $aliasCreated,
             ]);
 
             DB::commit();
@@ -184,6 +196,79 @@ class ExerciseMergeService
         }
         
         $liftLog->save();
+    }
+
+    /**
+     * Create alias for the source exercise owner if requested
+     * 
+     * @param Exercise $source
+     * @param Exercise $target
+     * @param bool $createAlias
+     * @return bool Whether an alias was created
+     */
+    private function createAliasForOwner(Exercise $source, Exercise $target, bool $createAlias): bool
+    {
+        // Don't create alias if not requested
+        if (!$createAlias) {
+            return false;
+        }
+
+        // Don't create alias if source has no owner (global exercise)
+        if (!$source->user) {
+            return false;
+        }
+
+        try {
+            $this->aliasService->createAlias(
+                $source->user,
+                $target,
+                $source->title
+            );
+
+            Log::info('Exercise alias created during merge', [
+                'user_id' => $source->user->id,
+                'user_email' => $source->user->email,
+                'exercise_id' => $target->id,
+                'exercise_title' => $target->title,
+                'alias_name' => $source->title,
+                'created_via' => 'merge_operation',
+            ]);
+
+            return true;
+        } catch (QueryException $e) {
+            // Handle duplicate alias errors gracefully
+            if ($e->getCode() === '23000') {
+                Log::warning('Duplicate alias during merge - alias already exists', [
+                    'user_id' => $source->user->id,
+                    'exercise_id' => $target->id,
+                    'alias_name' => $source->title,
+                ]);
+                // Continue with merge - alias already exists
+                return false;
+            }
+            
+            // For other database errors, log and continue
+            Log::error('Failed to create alias during merge', [
+                'user_id' => $source->user->id,
+                'exercise_id' => $target->id,
+                'alias_name' => $source->title,
+                'error' => $e->getMessage(),
+            ]);
+            
+            // Don't fail the merge due to alias creation failure
+            return false;
+        } catch (\Exception $e) {
+            // Catch any other exceptions and log them
+            Log::error('Unexpected error creating alias during merge', [
+                'user_id' => $source->user->id,
+                'exercise_id' => $target->id,
+                'alias_name' => $source->title,
+                'error' => $e->getMessage(),
+            ]);
+            
+            // Don't fail the merge due to alias creation failure
+            return false;
+        }
     }
 
     /**

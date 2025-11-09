@@ -12,17 +12,24 @@ use Illuminate\Http\Request;
 use App\Services\TrainingProgressionService;
 use App\Services\DateNavigationService;
 use App\Services\ExerciseService;
+use App\Services\ExerciseAliasService;
 use App\Models\LiftLog;
 
 class ProgramController extends Controller
 {
     protected TrainingProgressionService $trainingProgressionService;
     protected ExerciseService $exerciseService;
+    protected ExerciseAliasService $aliasService;
 
-    public function __construct(TrainingProgressionService $trainingProgressionService, ExerciseService $exerciseService)
+    public function __construct(
+        TrainingProgressionService $trainingProgressionService, 
+        ExerciseService $exerciseService,
+        ExerciseAliasService $aliasService
+    )
     {
         $this->trainingProgressionService = $trainingProgressionService;
         $this->exerciseService = $exerciseService;
+        $this->aliasService = $aliasService;
     }
 
     /**
@@ -94,7 +101,11 @@ class ProgramController extends Controller
     {
         $selectedDate = $dateNavigationService->parseSelectedDate($request->input('date'));
 
-        $programs = Program::with('exercise')
+        $programs = Program::with(['exercise' => function ($query) {
+                $query->with(['aliases' => function ($aliasQuery) {
+                    $aliasQuery->where('user_id', auth()->id());
+                }]);
+            }])
             ->where('user_id', auth()->id())
             ->whereDate('date', $selectedDate->toDateString())
             ->orderBy('priority')
@@ -132,6 +143,14 @@ class ProgramController extends Controller
             }
         }
 
+        // Apply aliases to program exercises
+        foreach ($programs as $program) {
+            if ($program->exercise) {
+                $displayName = $this->aliasService->getDisplayName($program->exercise, auth()->user());
+                $program->exercise->title = $displayName;
+            }
+        }
+
         // Get date navigation data
         $navigationData = $dateNavigationService->getNavigationData(
             $selectedDate,
@@ -142,7 +161,15 @@ class ProgramController extends Controller
 
         // Fetch exercise data for the selector
         $displayExercises = $this->exerciseService->getDisplayExercises(5);
-        $allExercises = Exercise::availableToUser()->orderBy('title')->get();
+        $allExercises = Exercise::availableToUser()
+            ->with(['aliases' => function ($query) {
+                $query->where('user_id', auth()->id());
+            }])
+            ->orderBy('title')
+            ->get();
+        
+        // Apply aliases to all exercises for the dropdown
+        $allExercises = $this->aliasService->applyAliasesToExercises($allExercises, auth()->user());
 
         return view('programs.index', compact('programs', 'selectedDate', 'navigationData', 'displayExercises', 'allExercises'));
     }
@@ -153,7 +180,12 @@ class ProgramController extends Controller
     public function create(Request $request)
     {
         $date = $request->input('date') ? Carbon::parse($request->input('date')) : Carbon::today();
-        $exercises = Exercise::availableToUser()->orderBy('title')->get();
+        $exercises = Exercise::availableToUser()
+            ->with(['aliases' => function ($query) {
+                $query->where('user_id', auth()->id());
+            }])
+            ->orderBy('title')
+            ->get();
         $highestPriority = Program::where('user_id', auth()->id())
             ->whereDate('date', $date->toDateString())
             ->max('priority');
@@ -219,7 +251,19 @@ class ProgramController extends Controller
             abort(403);
         }
 
-        $exercises = Exercise::availableToUser()->orderBy('title')->get();
+        // Eager load the program's exercise with aliases
+        $program->load(['exercise' => function ($query) {
+            $query->with(['aliases' => function ($aliasQuery) {
+                $aliasQuery->where('user_id', auth()->id());
+            }]);
+        }]);
+
+        $exercises = Exercise::availableToUser()
+            ->with(['aliases' => function ($query) {
+                $query->where('user_id', auth()->id());
+            }])
+            ->orderBy('title')
+            ->get();
 
         return view('programs.edit', compact('program', 'exercises'));
     }

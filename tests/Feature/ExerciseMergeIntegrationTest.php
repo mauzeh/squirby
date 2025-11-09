@@ -9,6 +9,7 @@ use App\Models\Program;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Tests\TestCase;
 
@@ -102,7 +103,7 @@ class ExerciseMergeIntegrationTest extends TestCase
 
         // Verify redirect and success message
         $mergeResponse->assertRedirect(route('exercises.index'));
-        $mergeResponse->assertSessionHas('success', "Exercise 'User Bench Press' successfully merged into 'Bench Press'. All workout data has been preserved.");
+        $mergeResponse->assertSessionHas('success', "Exercise 'User Bench Press' successfully merged into 'Bench Press'. All workout data has been preserved. An alias has been created so the owner will continue to see 'User Bench Press'.");
 
         // Step 3: Verify data transfer
 
@@ -484,5 +485,286 @@ class ExerciseMergeIntegrationTest extends TestCase
         $response = $this->get(route('exercises.show-merge', $sourceExercise));
         $response->assertStatus(302); // Redirects back with error message
         $response->assertSessionHasErrors();
+    }
+
+    /** @test */
+    public function merge_with_alias_creation_enabled_creates_alias()
+    {
+        $this->actingAs($this->admin);
+
+        $sourceExercise = Exercise::factory()->create([
+            'user_id' => $this->regularUser->id,
+            'title' => 'BP',
+            'exercise_type' => 'regular'
+        ]);
+
+        $targetExercise = Exercise::factory()->create([
+            'user_id' => null,
+            'title' => 'Bench Press',
+            'exercise_type' => 'regular'
+        ]);
+
+        // Execute merge with alias creation enabled (default)
+        $response = $this->post(route('exercises.merge', $sourceExercise), [
+            'target_exercise_id' => $targetExercise->id,
+            'create_alias' => true
+        ]);
+
+        $response->assertRedirect(route('exercises.index'));
+        $response->assertSessionHas('success');
+
+        // Verify alias was created
+        $this->assertDatabaseHas('exercise_aliases', [
+            'user_id' => $this->regularUser->id,
+            'exercise_id' => $targetExercise->id,
+            'alias_name' => 'BP'
+        ]);
+
+        // Verify source exercise was deleted
+        $this->assertDatabaseMissing('exercises', ['id' => $sourceExercise->id]);
+    }
+
+    /** @test */
+    public function merge_with_alias_creation_disabled_does_not_create_alias()
+    {
+        $this->actingAs($this->admin);
+
+        $sourceExercise = Exercise::factory()->create([
+            'user_id' => $this->regularUser->id,
+            'title' => 'BP',
+            'exercise_type' => 'regular'
+        ]);
+
+        $targetExercise = Exercise::factory()->create([
+            'user_id' => null,
+            'title' => 'Bench Press',
+            'exercise_type' => 'regular'
+        ]);
+
+        // Execute merge with alias creation disabled
+        $response = $this->post(route('exercises.merge', $sourceExercise), [
+            'target_exercise_id' => $targetExercise->id,
+            'create_alias' => false
+        ]);
+
+        $response->assertRedirect(route('exercises.index'));
+        $response->assertSessionHas('success');
+
+        // Verify no alias was created
+        $this->assertDatabaseMissing('exercise_aliases', [
+            'user_id' => $this->regularUser->id,
+            'exercise_id' => $targetExercise->id
+        ]);
+
+        // Verify source exercise was deleted
+        $this->assertDatabaseMissing('exercises', ['id' => $sourceExercise->id]);
+    }
+
+    /** @test */
+    public function merge_creates_alias_before_source_deletion()
+    {
+        $this->actingAs($this->admin);
+
+        $sourceExercise = Exercise::factory()->create([
+            'user_id' => $this->regularUser->id,
+            'title' => 'Squat Variation',
+            'exercise_type' => 'regular'
+        ]);
+
+        $targetExercise = Exercise::factory()->create([
+            'user_id' => null,
+            'title' => 'Squat',
+            'exercise_type' => 'regular'
+        ]);
+
+        // Execute merge
+        $response = $this->post(route('exercises.merge', $sourceExercise), [
+            'target_exercise_id' => $targetExercise->id,
+            'create_alias' => true
+        ]);
+
+        $response->assertRedirect(route('exercises.index'));
+
+        // Verify alias exists and references the target exercise
+        $this->assertDatabaseHas('exercise_aliases', [
+            'user_id' => $this->regularUser->id,
+            'exercise_id' => $targetExercise->id,
+            'alias_name' => 'Squat Variation'
+        ]);
+
+        // Verify source exercise no longer exists
+        $this->assertDatabaseMissing('exercises', ['id' => $sourceExercise->id]);
+
+        // Verify target exercise still exists
+        $this->assertDatabaseHas('exercises', ['id' => $targetExercise->id]);
+    }
+
+    /** @test */
+    public function merge_with_alias_creation_within_transaction()
+    {
+        $this->actingAs($this->admin);
+
+        $sourceExercise = Exercise::factory()->create([
+            'user_id' => $this->regularUser->id,
+            'title' => 'DL',
+            'exercise_type' => 'regular'
+        ]);
+
+        $targetExercise = Exercise::factory()->create([
+            'user_id' => null,
+            'title' => 'Deadlift',
+            'exercise_type' => 'regular'
+        ]);
+
+        // Create lift log to verify transaction integrity
+        $liftLog = LiftLog::factory()->create([
+            'exercise_id' => $sourceExercise->id,
+            'user_id' => $this->regularUser->id,
+            'weight' => 200
+        ]);
+
+        // Execute merge
+        $response = $this->post(route('exercises.merge', $sourceExercise), [
+            'target_exercise_id' => $targetExercise->id,
+            'create_alias' => true
+        ]);
+
+        $response->assertRedirect(route('exercises.index'));
+
+        // Verify all operations completed successfully
+        // 1. Alias created
+        $this->assertDatabaseHas('exercise_aliases', [
+            'user_id' => $this->regularUser->id,
+            'exercise_id' => $targetExercise->id,
+            'alias_name' => 'DL'
+        ]);
+
+        // 2. Lift log transferred
+        $this->assertDatabaseHas('lift_logs', [
+            'id' => $liftLog->id,
+            'exercise_id' => $targetExercise->id,
+            'weight' => 200
+        ]);
+
+        // 3. Source exercise deleted
+        $this->assertDatabaseMissing('exercises', ['id' => $sourceExercise->id]);
+    }
+
+    /** @test */
+    public function merge_handles_duplicate_alias_gracefully()
+    {
+        $this->actingAs($this->admin);
+
+        $sourceExercise = Exercise::factory()->create([
+            'user_id' => $this->regularUser->id,
+            'title' => 'OHP',
+            'exercise_type' => 'regular'
+        ]);
+
+        $targetExercise = Exercise::factory()->create([
+            'user_id' => null,
+            'title' => 'Overhead Press',
+            'exercise_type' => 'regular'
+        ]);
+
+        // Create an existing alias for the user and target exercise
+        DB::table('exercise_aliases')->insert([
+            'user_id' => $this->regularUser->id,
+            'exercise_id' => $targetExercise->id,
+            'alias_name' => 'Existing Alias',
+            'created_at' => now(),
+            'updated_at' => now()
+        ]);
+
+        // Execute merge (should not fail even though alias already exists)
+        $response = $this->post(route('exercises.merge', $sourceExercise), [
+            'target_exercise_id' => $targetExercise->id,
+            'create_alias' => true
+        ]);
+
+        $response->assertRedirect(route('exercises.index'));
+        $response->assertSessionHas('success');
+
+        // Verify merge completed successfully
+        $this->assertDatabaseMissing('exercises', ['id' => $sourceExercise->id]);
+
+        // Verify existing alias remains unchanged
+        $this->assertDatabaseHas('exercise_aliases', [
+            'user_id' => $this->regularUser->id,
+            'exercise_id' => $targetExercise->id,
+            'alias_name' => 'Existing Alias'
+        ]);
+
+        // Verify no duplicate alias was created
+        $aliasCount = DB::table('exercise_aliases')
+            ->where('user_id', $this->regularUser->id)
+            ->where('exercise_id', $targetExercise->id)
+            ->count();
+        $this->assertEquals(1, $aliasCount);
+    }
+
+    /** @test */
+    public function merge_defaults_to_creating_alias_when_checkbox_not_provided()
+    {
+        $this->actingAs($this->admin);
+
+        $sourceExercise = Exercise::factory()->create([
+            'user_id' => $this->regularUser->id,
+            'title' => 'Front Squat',
+            'exercise_type' => 'regular'
+        ]);
+
+        $targetExercise = Exercise::factory()->create([
+            'user_id' => null,
+            'title' => 'Squat',
+            'exercise_type' => 'regular'
+        ]);
+
+        // Execute merge without create_alias parameter (should default to true)
+        $response = $this->post(route('exercises.merge', $sourceExercise), [
+            'target_exercise_id' => $targetExercise->id
+            // Note: create_alias not provided
+        ]);
+
+        $response->assertRedirect(route('exercises.index'));
+        $response->assertSessionHas('success');
+
+        // Verify alias was created by default
+        $this->assertDatabaseHas('exercise_aliases', [
+            'user_id' => $this->regularUser->id,
+            'exercise_id' => $targetExercise->id,
+            'alias_name' => 'Front Squat'
+        ]);
+    }
+
+    /** @test */
+    public function merge_success_message_mentions_alias_creation()
+    {
+        $this->actingAs($this->admin);
+
+        $sourceExercise = Exercise::factory()->create([
+            'user_id' => $this->regularUser->id,
+            'title' => 'RDL',
+            'exercise_type' => 'regular'
+        ]);
+
+        $targetExercise = Exercise::factory()->create([
+            'user_id' => null,
+            'title' => 'Romanian Deadlift',
+            'exercise_type' => 'regular'
+        ]);
+
+        // Execute merge with alias creation
+        $response = $this->post(route('exercises.merge', $sourceExercise), [
+            'target_exercise_id' => $targetExercise->id,
+            'create_alias' => true
+        ]);
+
+        $response->assertRedirect(route('exercises.index'));
+        
+        // Verify success message mentions alias creation
+        $response->assertSessionHas('success', function ($message) {
+            return str_contains($message, "An alias has been created so the owner will continue to see 'RDL'");
+        });
     }
 }

@@ -37,7 +37,10 @@ class LiftLogController extends Controller
         
         // Eager load all necessary relationships with selective fields to prevent N+1 queries
         $liftLogs = LiftLog::with([
-            'exercise:id,title,exercise_type', 
+            'exercise:id,title,exercise_type',
+            'exercise.aliases' => function ($query) use ($userId) {
+                $query->where('user_id', $userId);
+            },
             'liftSets:id,lift_log_id,weight,reps,band_color'
         ])
         ->select('id', 'exercise_id', 'user_id', 'logged_at', 'comments')
@@ -178,7 +181,18 @@ class LiftLogController extends Controller
         if ($liftLog->user_id !== auth()->id()) {
             abort(403, 'Unauthorized action.');
         }
-        $exercises = Exercise::availableToUser()->orderBy('title', 'asc')->get();
+        
+        // Load aliases for the lift log's exercise
+        $liftLog->load(['exercise.aliases' => function ($query) {
+            $query->where('user_id', auth()->id());
+        }]);
+        
+        $exercises = Exercise::availableToUser()
+            ->with(['aliases' => function ($query) {
+                $query->where('user_id', auth()->id());
+            }])
+            ->orderBy('title', 'asc')
+            ->get();
         return view('lift-logs.edit', compact('liftLog', 'exercises'));
     }
 
@@ -349,7 +363,9 @@ class LiftLogController extends Controller
      */
     private function generateSuccessMessage($exercise, $weight, $reps, $rounds, $bandColor = null)
     {
-        $exerciseTitle = $exercise->title;
+        // Get display name (alias if exists, otherwise title)
+        $aliasService = app(\App\Services\ExerciseAliasService::class);
+        $exerciseTitle = $aliasService->getDisplayName($exercise, auth()->user());
         
         // Use strategy pattern to format workout description
         $strategy = $exercise->getTypeStrategy();
@@ -373,7 +389,10 @@ class LiftLogController extends Controller
     private function generateDeletionMessage($liftLog, $isMobileEntry = false)
     {
         $exercise = $liftLog->exercise;
-        $exerciseTitle = $exercise->title;
+        
+        // Get display name (alias if exists, otherwise title)
+        $aliasService = app(\App\Services\ExerciseAliasService::class);
+        $exerciseTitle = $aliasService->getDisplayName($exercise, auth()->user());
         
         // Add helpful reminder for mobile-entry context
         if ($isMobileEntry) {

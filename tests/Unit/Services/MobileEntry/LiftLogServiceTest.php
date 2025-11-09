@@ -120,7 +120,14 @@ class LiftLogServiceTest extends TestCase
         
         $mockCacheService->method('clearCacheForUser')->willReturnCallback(function() {});
         
-        $this->service = new LiftLogService($mockProgressionService, $mockCacheService);
+        // Mock the ExerciseAliasService - return exercises unchanged (no aliases)
+        $mockAliasService = $this->createMock(\App\Services\ExerciseAliasService::class);
+        $mockAliasService->method('applyAliasesToExercises')->willReturnArgument(0);
+        $mockAliasService->method('getDisplayName')->willReturnCallback(function($exercise) {
+            return $exercise->title;
+        });
+        
+        $this->service = new LiftLogService($mockProgressionService, $mockCacheService, $mockAliasService);
         $this->testDate = Carbon::parse('2024-01-15');
     }
 

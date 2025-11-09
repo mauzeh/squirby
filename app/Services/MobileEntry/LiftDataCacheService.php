@@ -107,7 +107,11 @@ class LiftDataCacheService
     {
         $query = Program::where('user_id', $userId)
             ->whereDate('date', $selectedDate->toDateString())
-            ->with(['exercise'])
+            ->with(['exercise' => function ($exerciseQuery) use ($userId) {
+                $exerciseQuery->with(['aliases' => function ($aliasQuery) use ($userId) {
+                    $aliasQuery->where('user_id', $userId);
+                }]);
+            }])
             ->withCompletionStatus();
             
         if (!$includeCompleted) {

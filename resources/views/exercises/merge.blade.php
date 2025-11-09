@@ -101,6 +101,18 @@
                         </div>
                     @endforeach
                     
+                    <div style="margin: 20px 0; padding: 15px; background-color: #2a2a2a; border-radius: 5px;">
+                        <label style="display: flex; align-items: center; cursor: pointer;">
+                            <input type="checkbox" name="create_alias" value="1" checked style="margin-right: 10px; transform: scale(1.2);">
+                            <div>
+                                <strong style="color: #f2f2f2;">Create alias for exercise owner</strong>
+                                <p style="color: #aaa; margin: 5px 0 0 0; font-size: 0.9em;">
+                                    The owner will continue to see "{{ $exercise->title }}" instead of the target exercise name
+                                </p>
+                            </div>
+                        </label>
+                    </div>
+                    
                     <div style="margin-top: 30px; display: flex; gap: 10px;">
                         <button type="submit" class="button" style="background-color: #FF9800; color: white;">
                             <i class="fas fa-code-branch" style="margin-right: 5px;"></i>

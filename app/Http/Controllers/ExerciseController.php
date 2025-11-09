@@ -41,6 +41,9 @@ class ExerciseController extends Controller
         $exercises = Exercise::availableToUser()
             ->with([
                 'user.roles', // Load user relationship with roles for displaying user names and checking permissions
+                'aliases' => function ($query) {
+                    $query->where('user_id', auth()->id());
+                }
             ])
             ->withCount('liftLogs') // Add lift logs count for performance
             ->orderBy('user_id') // Global exercises (null) first, then user exercises
@@ -294,6 +297,12 @@ class ExerciseController extends Controller
         if (!$availableExercise) {
             abort(403, 'Unauthorized action.');
         }
+        
+        // Eager load aliases for the exercise
+        $exercise->load(['aliases' => function ($query) {
+            $query->where('user_id', auth()->id());
+        }]);
+        
         $liftLogsQuery = $exercise->liftLogs()->with('liftSets')->where('user_id', auth()->id())->orderBy('logged_at', 'asc')->get();
 
         $displayExercises = $this->exerciseService->getDisplayExercises(5);
@@ -352,6 +361,7 @@ class ExerciseController extends Controller
 
         $validated = $request->validate([
             'target_exercise_id' => 'required|exists:exercises,id',
+            'create_alias' => 'nullable|boolean',
         ]);
 
         $targetExercise = Exercise::findOrFail($validated['target_exercise_id']);
@@ -363,11 +373,22 @@ class ExerciseController extends Controller
             return back()->withErrors(['error' => 'Merge failed: ' . implode(', ', $compatibility['errors'])]);
         }
 
+        // Get create_alias parameter, default to true if not provided
+        $createAlias = $request->boolean('create_alias', true);
+
         try {
-            $this->exerciseMergeService->mergeExercises($exercise, $targetExercise, auth()->user());
+            $this->exerciseMergeService->mergeExercises($exercise, $targetExercise, auth()->user(), $createAlias);
+            
+            // Build success message
+            $successMessage = "Exercise '{$exercise->title}' successfully merged into '{$targetExercise->title}'. All workout data has been preserved.";
+            
+            // Add alias creation note if applicable
+            if ($createAlias && $exercise->user) {
+                $successMessage .= " An alias has been created so the owner will continue to see '{$exercise->title}'.";
+            }
             
             return redirect()->route('exercises.index')
-                ->with('success', "Exercise '{$exercise->title}' successfully merged into '{$targetExercise->title}'. All workout data has been preserved.");
+                ->with('success', $successMessage);
                 
         } catch (\Exception $e) {
             return back()->withErrors(['error' => 'Merge failed: ' . $e->getMessage()]);
