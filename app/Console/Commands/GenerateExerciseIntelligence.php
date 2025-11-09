@@ -493,6 +493,9 @@ PROMPT;
         $url = "https://generativelanguage.googleapis.com/v1/models/{$model}:generateContent?key={$apiKey}";
         
         $this->line("  Sending request to Gemini API...");
+        $this->comment("  Model: {$model}");
+        $this->comment("  Prompt length: " . strlen($prompt) . " characters");
+        
         $response = Http::timeout(30)->post($url, [
             'contents' => [
                 [
@@ -507,9 +510,28 @@ PROMPT;
             ],
         ]);
 
+        $this->line("  Response status: HTTP {$response->status()}");
+
         if ($response->successful()) {
-            $this->line("  Received response from API");
+            $this->line("  Received successful response from API");
             $data = $response->json();
+            
+            // Debug: show response structure
+            $this->comment("  Response keys: " . implode(', ', array_keys($data)));
+            
+            if (isset($data['candidates'])) {
+                $this->comment("  Candidates count: " . count($data['candidates']));
+                
+                if (isset($data['candidates'][0])) {
+                    $candidate = $data['candidates'][0];
+                    $this->comment("  Candidate keys: " . implode(', ', array_keys($candidate)));
+                    
+                    if (isset($candidate['content'])) {
+                        $this->comment("  Content keys: " . implode(', ', array_keys($candidate['content'])));
+                    }
+                }
+            }
+            
             $text = $data['candidates'][0]['content']['parts'][0]['text'] ?? null;
             
             if ($text) {
@@ -517,12 +539,20 @@ PROMPT;
                 return $text;
             } else {
                 $this->warn("  No text content in response");
+                $this->newLine();
+                $this->comment("  Full response:");
+                $this->line(json_encode($data, JSON_PRETTY_PRINT));
+                $this->newLine();
             }
         }
 
         // Log error for debugging
         if ($response->failed()) {
-            $this->error("  API Error (HTTP {$response->status()}): " . $response->body());
+            $this->error("  API Error (HTTP {$response->status()})");
+            $this->newLine();
+            $this->comment("  Error response:");
+            $this->line($response->body());
+            $this->newLine();
         }
 
         return null;
@@ -531,6 +561,14 @@ PROMPT;
     private function parseAIResponse(string $response, Exercise $exercise): ?array
     {
         $this->line("  Cleaning response text...");
+        $this->line("  Raw response length: " . strlen($response) . " characters");
+        
+        // Show first 500 chars of raw response for debugging
+        $this->newLine();
+        $this->comment("  Raw AI Response:");
+        $this->line(substr($response, 0, 500) . (strlen($response) > 500 ? '...' : ''));
+        $this->newLine();
+        
         // Clean up response - remove markdown code blocks if present
         $response = preg_replace('/```json\s*/', '', $response);
         $response = preg_replace('/```\s*$/', '', $response);
@@ -540,8 +578,11 @@ PROMPT;
         $data = json_decode($response, true);
 
         if (!$data || json_last_error() !== JSON_ERROR_NONE) {
-            $this->warn("  JSON decode error: " . json_last_error_msg());
-            $this->line("  Raw response: " . substr($response, 0, 200) . "...");
+            $this->error("  JSON decode error: " . json_last_error_msg());
+            $this->newLine();
+            $this->comment("  Full cleaned response:");
+            $this->line($response);
+            $this->newLine();
             return null;
         }
 
@@ -550,11 +591,19 @@ PROMPT;
         $required = ['canonical_name', 'muscle_data', 'primary_mover', 'largest_muscle', 
                      'movement_archetype', 'category', 'difficulty_level', 'recovery_hours'];
         
+        $missingFields = [];
         foreach ($required as $field) {
             if (!isset($data[$field])) {
-                $this->warn("  Missing required field: {$field}");
-                return null;
+                $missingFields[] = $field;
             }
+        }
+        
+        if (!empty($missingFields)) {
+            $this->error("  Missing required fields: " . implode(', ', $missingFields));
+            $this->newLine();
+            $this->comment("  Received fields: " . implode(', ', array_keys($data)));
+            $this->newLine();
+            return null;
         }
 
         $muscleCount = count($data['muscle_data']['muscles'] ?? []);
