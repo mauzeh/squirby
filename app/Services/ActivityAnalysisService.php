@@ -26,6 +26,7 @@ class ActivityAnalysisService
         $muscleWorkload = $this->calculateMuscleWorkload($liftLogs);
         $movementArchetypes = $this->identifyMovementPatterns($liftLogs);
         $recentExercises = $this->findRecentExercises($liftLogs);
+        $exerciseLastPerformed = $this->getExerciseLastPerformedDates($liftLogs);
         
         // Get muscle last worked dates for more accurate day calculations
         $muscleLastWorked = $this->getMuscleLastWorkedDates($liftLogs);
@@ -35,7 +36,8 @@ class ActivityAnalysisService
             movementArchetypes: $movementArchetypes,
             recentExercises: $recentExercises,
             analysisDate: $analysisDate,
-            muscleLastWorked: $muscleLastWorked
+            muscleLastWorked: $muscleLastWorked,
+            exerciseLastPerformed: $exerciseLastPerformed
         );
     }
 
@@ -113,6 +115,25 @@ class ActivityAnalysisService
     public function findRecentExercises(Collection $liftLogs): array
     {
         return $liftLogs->pluck('exercise_id')->unique()->values()->toArray();
+    }
+
+    /**
+     * Get the last performed date for each exercise
+     * Returns array with exercise IDs as keys and Carbon dates as values
+     */
+    public function getExerciseLastPerformedDates(Collection $liftLogs): array
+    {
+        $exerciseLastPerformed = [];
+
+        foreach ($liftLogs as $liftLog) {
+            $exerciseId = $liftLog->exercise_id;
+
+            if (!isset($exerciseLastPerformed[$exerciseId]) || $liftLog->logged_at->gt($exerciseLastPerformed[$exerciseId])) {
+                $exerciseLastPerformed[$exerciseId] = $liftLog->logged_at;
+            }
+        }
+
+        return $exerciseLastPerformed;
     }
 
     /**

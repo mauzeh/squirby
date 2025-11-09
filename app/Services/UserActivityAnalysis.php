@@ -11,7 +11,8 @@ class UserActivityAnalysis
         public readonly array $movementArchetypes,
         public readonly array $recentExercises,
         public readonly Carbon $analysisDate,
-        public readonly array $muscleLastWorked = []
+        public readonly array $muscleLastWorked = [],
+        public readonly array $exerciseLastPerformed = []
     ) {}
 
     /**
@@ -61,5 +62,22 @@ class UserActivityAnalysis
         }
         
         return max(0, intval(round((1.0 - $workloadScore) * 31)));
+    }
+
+    /**
+     * Get the number of days since an exercise was last performed
+     * Returns null if the exercise was never performed in the analysis period
+     */
+    public function getDaysSinceExercisePerformed(int $exerciseId): ?float
+    {
+        if (isset($this->exerciseLastPerformed[$exerciseId])) {
+            $lastPerformedDate = $this->exerciseLastPerformed[$exerciseId];
+
+            if ($lastPerformedDate instanceof Carbon) {
+                return $lastPerformedDate->diffInHours($this->analysisDate) / 24.0;
+            }
+        }
+
+        return null;
     }
 }

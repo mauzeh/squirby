@@ -32,13 +32,21 @@ class RecommendationController extends Controller
         $difficultyLevel = isset($validated['difficulty_level']) ? (int)$validated['difficulty_level'] : null;
         $showLoggedOnly = $validated['show_logged_only'] ?? true;
 
+        // Get user activity analysis for use in filters and data augmentation
+        $userActivity = $this->activityAnalysisService->analyzeLiftLogs(auth()->id());
+
         // Get all recommendations (no limit) - automatically respects user's global exercise preference
         $recommendations = $this->recommendationEngine->getRecommendations(auth()->id(), 50);
+
+        // Augment recommendations with last performed date
+        foreach ($recommendations as &$recommendation) {
+            $recommendation['days_since_performed'] = $userActivity->getDaysSinceExercisePerformed($recommendation['exercise']->id);
+        }
+        unset($recommendation); // Unset reference
 
         // Get recent exercise IDs for the "Logged Only" filter
         $recentExerciseIds = [];
         if ($showLoggedOnly) {
-            $userActivity = $this->activityAnalysisService->analyzeLiftLogs(auth()->id());
             $recentExerciseIds = $userActivity->recentExercises;
         }
 

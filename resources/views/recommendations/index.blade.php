@@ -154,6 +154,33 @@
                                         <span class="metadata-label">Recovery Time:</span>
                                         <span class="metadata-value">{{ $recommendation['intelligence']->recovery_hours }} hours</span>
                                     </div>
+
+                                    @if(isset($recommendation['days_since_performed']))
+                                        <div class="metadata-row">
+                                            <span class="metadata-label">Last Performed:</span>
+                                            <span class="metadata-value">
+                                                @php
+                                                    $days = floor($recommendation['days_since_performed']);
+                                                    if ($days < 1) {
+                                                        echo 'Today';
+                                                    } elseif ($days < 2) {
+                                                        echo 'Yesterday';
+                                                    } elseif ($days < 7) {
+                                                        echo $days . ' days ago';
+                                                    } elseif ($days < 14) {
+                                                        echo '1 week ago';
+                                                    } else {
+                                                        echo floor($days / 7) . ' weeks ago';
+                                                    }
+                                                @endphp
+                                            </span>
+                                        </div>
+                                    @else
+                                        <div class="metadata-row">
+                                            <span class="metadata-label">Last Performed:</span>
+                                            <span class="metadata-value">Not recently</span>
+                                        </div>
+                                    @endif
                                 </div>
                             </div>
                             
