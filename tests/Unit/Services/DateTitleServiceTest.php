@@ -69,7 +69,7 @@ class DateTitleServiceTest extends TestCase
     {
         $today = Carbon::parse('2024-01-15'); // Monday
         
-        // Test Wednesday of the same week
+        // Test Wednesday of the same week (future)
         $thisWednesday = Carbon::parse('2024-01-17');
         $result = $this->service->generateDateTitle($thisWednesday, $today);
         
@@ -78,13 +78,37 @@ class DateTitleServiceTest extends TestCase
             'subtitle' => 'Jan 17, 2024'
         ], $result);
         
-        // Test Friday of the same week
+        // Test Friday of the same week (future)
         $thisFriday = Carbon::parse('2024-01-19');
         $result = $this->service->generateDateTitle($thisFriday, $today);
         
         $this->assertEquals([
             'main' => 'This Friday',
             'subtitle' => 'Jan 19, 2024'
+        ], $result);
+    }
+
+    /** @test */
+    public function it_generates_title_for_past_days_in_current_week()
+    {
+        $today = Carbon::parse('2024-01-19'); // Friday
+        
+        // Test Wednesday of the same week (past, but not yesterday)
+        $pastWednesday = Carbon::parse('2024-01-17');
+        $result = $this->service->generateDateTitle($pastWednesday, $today);
+        
+        $this->assertEquals([
+            'main' => 'Last Wednesday',
+            'subtitle' => 'Jan 17, 2024'
+        ], $result);
+        
+        // Test Monday of the same week (past)
+        $pastMonday = Carbon::parse('2024-01-15');
+        $result = $this->service->generateDateTitle($pastMonday, $today);
+        
+        $this->assertEquals([
+            'main' => 'Last Monday',
+            'subtitle' => 'Jan 15, 2024'
         ], $result);
     }
 

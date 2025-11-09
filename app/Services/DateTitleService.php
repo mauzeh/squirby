@@ -26,9 +26,10 @@ class DateTitleService
      * - Today: { main: "Today", subtitle: "Jan 15, 2024" }
      * - Yesterday: { main: "Yesterday", subtitle: "Jan 14, 2024" }
      * - Tomorrow: { main: "Tomorrow", subtitle: "Jan 16, 2024" }
-     * - Last Monday: { main: "Last Monday", subtitle: "Jan 15, 2024" }
-     * - Next Friday: { main: "Next Friday", subtitle: "Jan 19, 2024" }
-     * - This Wednesday: { main: "This Wednesday", subtitle: "Jan 17, 2024" }
+     * - Last Monday (previous week): { main: "Last Monday", subtitle: "Jan 08, 2024" }
+     * - Last Wednesday (this week, but past): { main: "Last Wednesday", subtitle: "Jan 17, 2024" }
+     * - This Friday (this week, future): { main: "This Friday", subtitle: "Jan 19, 2024" }
+     * - Next Friday (next week): { main: "Next Friday", subtitle: "Jan 26, 2024" }
      * - Distant dates: { main: "Mon, Jan 15, 2024", subtitle: null } (full date already shown)
      * 
      * @param Carbon $selectedDate The date to generate a title for
@@ -71,6 +72,10 @@ class DateTitleService
         
         // Check if date is in this week (but not today/yesterday/tomorrow)
         if ($selectedDate->between($startOfThisWeek, $endOfThisWeek)) {
+            // If the date is in the past (before today), use "Last" instead of "This"
+            if ($selectedDate->lt($today)) {
+                return ['main' => "Last {$dayName}", 'subtitle' => $formattedDate];
+            }
             return ['main' => "This {$dayName}", 'subtitle' => $formattedDate];
         }
         
