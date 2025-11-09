@@ -148,7 +148,7 @@ class MobileEntryController extends Controller
                     'class' => 'btn-primary btn-success'
                 ],
                 [
-                    'text' => 'Help me choose',
+                    'text' => 'Help me choose...',
                     'ariaLabel' => 'Get help choosing an item',
                     'class' => 'btn-primary btn-info'
                 ]
