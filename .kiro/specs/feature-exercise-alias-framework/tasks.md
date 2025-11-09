@@ -85,7 +85,7 @@
   - Ensure aliases work in quick-add exercise forms
   - _Requirements: 2.3, 2.4_
 
-- [ ] 11. Write unit tests for ExerciseAliasService
+- [x] 11. Write unit tests for ExerciseAliasService
   - Test createAlias() creates alias with correct data
   - Test getUserAliases() returns keyed collection
   - Test getUserAliases() uses request-level cache
