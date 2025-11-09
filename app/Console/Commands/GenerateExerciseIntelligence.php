@@ -209,7 +209,8 @@ class GenerateExerciseIntelligence extends Command
                             {--api-key= : Gemini API key (or set GEMINI_API_KEY env var)}
                             {--model= : Gemini model to use (auto-detects best available if not specified)}
                             {--append : Append to existing output file instead of overwriting}
-                            {--hard-pull : Skip interactive selection and process all exercises}';
+                            {--hard-pull : Skip interactive selection and process all exercises}
+                            {--sync : Automatically sync generated intelligence to database}';
 
     protected $description = 'Generate exercise intelligence data using Google Gemini AI for exercises that lack it';
 
@@ -335,6 +336,13 @@ class GenerateExerciseIntelligence extends Command
 
         // Display summary
         $this->displaySummary($outputPath);
+
+        // Auto-sync if flag is provided
+        if ($this->option('sync') && $this->successCount > 0) {
+            $this->newLine();
+            $this->info('Auto-syncing generated intelligence to database...');
+            $this->syncToDatabase($outputPath);
+        }
 
         return Command::SUCCESS;
     }
@@ -483,16 +491,19 @@ class GenerateExerciseIntelligence extends Command
 
     private function buildPrompt(Exercise $exercise): string
     {
+        $canonicalName = $exercise->canonical_name ?: 'unknown';
+        
         return <<<PROMPT
 You are an expert exercise physiologist and biomechanics specialist. Generate detailed exercise intelligence data for the following exercise.
 
 Exercise Title: {$exercise->title}
 Exercise Description: {$exercise->description}
+Canonical Name: {$canonicalName}
 
 Provide a JSON response with the following structure (respond ONLY with valid JSON, no markdown or explanation):
 
 {
-  "canonical_name": "exercise_name_in_snake_case",
+  "canonical_name": "{$canonicalName}",
   "muscle_data": {
     "muscles": [
       {
@@ -509,6 +520,8 @@ Provide a JSON response with the following structure (respond ONLY with valid JS
   "difficulty_level": 1-5,
   "recovery_hours": 24-96
 }
+
+IMPORTANT: Use the exact canonical_name provided above: "{$canonicalName}"
 
 Guidelines:
 - Use anatomically correct muscle names in snake_case (e.g., pectoralis_major, latissimus_dorsi, rectus_femoris)
@@ -706,6 +719,27 @@ PROMPT;
         return array_intersect($selectedIds, $availableIds);
     }
 
+    private function syncToDatabase(string $outputPath): void
+    {
+        $relativePath = str_replace(base_path() . '/', '', $outputPath);
+        
+        $this->newLine();
+        $this->line("Running: php artisan exercises:sync-intelligence --file={$relativePath}");
+        $this->newLine();
+        
+        $exitCode = $this->call('exercises:sync-intelligence', [
+            '--file' => $relativePath,
+        ]);
+        
+        if ($exitCode === 0) {
+            $this->newLine();
+            $this->info('✓ Intelligence data successfully synced to database!');
+        } else {
+            $this->newLine();
+            $this->error('✗ Failed to sync intelligence data to database.');
+        }
+    }
+
     private function displaySummary(string $outputPath): void
     {
         $this->info('Generation complete!');
@@ -724,12 +758,14 @@ PROMPT;
         $this->info("Intelligence data saved to: {$outputPath}");
         $this->newLine();
         
-        if ($this->successCount > 0) {
+        if ($this->successCount > 0 && !$this->option('sync')) {
             $this->comment('Next steps:');
             $this->line('1. Review the generated JSON file for accuracy');
             $this->line('2. Make any necessary corrections');
             $this->line('3. Sync to database with:');
             $this->line("   php artisan exercises:sync-intelligence --file=" . str_replace(base_path() . '/', '', $outputPath));
+            $this->newLine();
+            $this->comment('Or use --sync flag next time to auto-sync after generation');
         }
     }
 }
