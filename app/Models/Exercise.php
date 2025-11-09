@@ -56,6 +56,11 @@ class Exercise extends Model
         return $this->hasOne(ExerciseIntelligence::class);
     }
 
+    public function aliases()
+    {
+        return $this->hasMany(ExerciseAlias::class);
+    }
+
     // Scopes for querying
     public function scopeGlobal($query)
     {
@@ -453,5 +458,23 @@ class Exercise extends Model
         return ExerciseTypeFactory::createSafe($this);
     }
 
+    /**
+     * Get the display name for this exercise for a specific user
+     * Returns the user's alias if one exists, otherwise returns the exercise title
+     * Requirements: 2.1, 2.2, 3.1, 3.2, 4.1, 4.2
+     */
+    public function getDisplayNameForUser(User $user): string
+    {
+        return app(\App\Services\ExerciseAliasService::class)->getDisplayName($this, $user);
+    }
+
+    /**
+     * Check if this exercise has an alias for a specific user
+     * Requirements: 2.1, 2.2, 3.1, 3.2, 4.1, 4.2
+     */
+    public function hasAliasForUser(User $user): bool
+    {
+        return app(\App\Services\ExerciseAliasService::class)->hasAlias($user, $this);
+    }
 
 }

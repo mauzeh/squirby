@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 use App\Models\MeasurementType;
 use Illuminate\Support\Facades\Auth;
+use App\Http\View\Composers\ExerciseAliasComposer;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -39,6 +40,18 @@ class AppServiceProvider extends ServiceProvider
                 View::share('gitLog', 'Could not retrieve git log.');
             }
         }
+
+        // Register view composer for exercise alias display
+        View::composer([
+            'exercises.index',
+            'exercises.logs',
+            'lift-logs.*',
+            'programs.*',
+            'mobile-entry.*',
+            'components.top-exercises-buttons',
+            'components.lift-log-form',
+            'components.exercise-form',
+        ], ExerciseAliasComposer::class);
 
         View::composer('app', function ($view) {
             if (Auth::check()) {

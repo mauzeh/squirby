@@ -29,10 +29,13 @@ class LiftLogTablePresenter
      */
     private function formatLiftLog(LiftLog $liftLog): array
     {
+        // Get display name (alias if exists, otherwise title)
+        $displayName = $this->getExerciseDisplayName($liftLog->exercise);
+        
         return [
             'id' => $liftLog->id,
             'formatted_date' => $liftLog->logged_at->format('m/d'),
-            'exercise_title' => $liftLog->exercise->title,
+            'exercise_title' => $displayName,
             'exercise_url' => route('exercises.show-logs', $liftLog->exercise),
             'formatted_weight' => $this->formatWeight($liftLog),
             'formatted_reps_sets' => $this->formatRepsSets($liftLog),
@@ -44,6 +47,19 @@ class LiftLogTablePresenter
 
             'raw_lift_log' => $liftLog // Keep reference for components that need it
         ];
+    }
+    
+    /**
+     * Get display name for exercise (alias if exists, otherwise title)
+     */
+    private function getExerciseDisplayName($exercise): string
+    {
+        // Check if aliases are loaded and exist for current user
+        if ($exercise->relationLoaded('aliases') && $exercise->aliases->isNotEmpty()) {
+            return $exercise->aliases->first()->alias_name;
+        }
+        
+        return $exercise->title;
     }
 
     /**

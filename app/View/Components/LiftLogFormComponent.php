@@ -4,6 +4,7 @@ namespace App\View\Components;
 
 use App\Models\Exercise;
 use App\Models\LiftLog;
+use App\Services\ExerciseAliasService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\View\Component;
 
@@ -55,6 +56,12 @@ class LiftLogFormComponent extends Component
         $this->exercises = $exercises ?? collect();
         $this->action = $action;
         $this->method = $method;
+        
+        // Apply aliases to exercises if user is authenticated
+        if (auth()->check() && $this->exercises->isNotEmpty()) {
+            $aliasService = app(ExerciseAliasService::class);
+            $this->exercises = $aliasService->applyAliasesToExercises($this->exercises, auth()->user());
+        }
         
         // Get form fields and validation rules from strategy
         if ($this->liftLog->exists && $this->liftLog->exercise) {

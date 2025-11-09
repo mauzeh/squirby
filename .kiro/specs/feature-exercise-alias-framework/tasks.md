@@ -1,6 +1,6 @@
 # Implementation Plan
 
-- [ ] 1. Create database migration and ExerciseAlias model
+- [x] 1. Create database migration and ExerciseAlias model
   - Create migration for exercise_aliases table with user_id, exercise_id, alias_name, timestamps
   - Add unique constraint on (user_id, exercise_id)
   - Add foreign key constraints with cascade delete
@@ -10,7 +10,7 @@
   - Create scopes: forUser($userId), forExercise($exerciseId)
   - _Requirements: 1.4, 1.5, 1.6, 5.1, 5.2, 7.1, 7.2, 7.3, 7.4_
 
-- [ ] 2. Create ExerciseAliasService for alias operations
+- [x] 2. Create ExerciseAliasService for alias operations
   - Create service class in app/Services/ExerciseAliasService.php
   - Implement createAlias(User $user, Exercise $exercise, string $aliasName): ExerciseAlias
   - Implement getUserAliases(User $user): Collection with request-level caching
@@ -21,14 +21,14 @@
   - Add error handling with graceful fallback to exercise title
   - _Requirements: 1.2, 1.4, 2.1, 2.2, 3.1, 3.2, 6.1, 6.2, 6.3_
 
-- [ ] 3. Enhance Exercise model with alias support
+- [x] 3. Enhance Exercise model with alias support
   - Add aliases() hasMany relationship to Exercise model
   - Add getDisplayNameForUser(User $user): string helper method
   - Add hasAliasForUser(User $user): bool helper method
   - Update model to support eager loading of aliases
   - _Requirements: 2.1, 2.2, 3.1, 3.2, 4.1, 4.2_
 
-- [ ] 4. Update ExerciseMergeService to support alias creation
+- [x] 4. Update ExerciseMergeService to support alias creation
   - Add $createAlias parameter to mergeExercises() method signature
   - Create private method createAliasForOwner(Exercise $source, Exercise $target, bool $createAlias)
   - Call createAliasForOwner() after data transfer but before source deletion
@@ -37,7 +37,7 @@
   - Handle duplicate alias errors gracefully (log and continue)
   - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7_
 
-- [ ] 5. Update merge view with alias creation checkbox
+- [x] 5. Update merge view with alias creation checkbox
   - Add checkbox input to resources/views/exercises/merge.blade.php
   - Set checkbox name to "create_alias" with value "1"
   - Check checkbox by default
@@ -46,7 +46,7 @@
   - Style checkbox section consistently with existing form
   - _Requirements: 1.1, 1.7_
 
-- [ ] 6. Update ExerciseController merge methods
+- [x] 6. Update ExerciseController merge methods
   - Update showMerge() to pass necessary data to view
   - Update merge() to accept create_alias parameter from request
   - Pass createAlias boolean to ExerciseMergeService::mergeExercises()
@@ -54,7 +54,7 @@
   - Update success message to mention alias creation if applicable
   - _Requirements: 1.1, 1.2, 1.3, 1.7_
 
-- [ ] 7. Implement alias display in exercise lists
+- [x] 7. Implement alias display in exercise lists
   - Create ExerciseAliasComposer in app/Http/View/Composers/
   - Register composer for exercises.index view in AppServiceProvider
   - Update ExerciseController::index() to eager load aliases for current user
@@ -62,7 +62,7 @@
   - Ensure alphabetical sorting works with display names
   - _Requirements: 2.1, 2.2, 2.3, 2.4, 6.1_
 
-- [ ] 8. Implement alias display in lift log views
+- [x] 8. Implement alias display in lift log views
   - Register ExerciseAliasComposer for lift-logs.* views
   - Update LiftLogController to eager load exercise aliases
   - Update LiftLogTablePresenter to use display names
@@ -70,7 +70,7 @@
   - Ensure aliases appear in lift log exports
   - _Requirements: 3.1, 3.2, 3.3, 3.4, 6.1_
 
-- [ ] 9. Implement alias display in program views
+- [x] 9. Implement alias display in program views
   - Register ExerciseAliasComposer for programs.* views
   - Update ProgramController to eager load exercise aliases
   - Apply aliases in program entry displays
@@ -78,7 +78,7 @@
   - Ensure aliases persist through workout logging from programs
   - _Requirements: 4.1, 4.2, 4.3, 4.4, 6.1_
 
-- [ ] 10. Implement alias display in exercise selection interfaces
+- [x] 10. Implement alias display in exercise selection interfaces
   - Update exercise dropdown components to use display names
   - Update exercise autocomplete to search both alias and title
   - Apply aliases in exercise picker modals

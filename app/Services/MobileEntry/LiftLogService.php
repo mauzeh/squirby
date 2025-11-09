@@ -6,6 +6,7 @@ use App\Models\Program;
 use App\Models\LiftLog;
 use App\Models\Exercise;
 use App\Services\TrainingProgressionService;
+use App\Services\ExerciseAliasService;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 use App\Services\MobileEntry\MobileEntryBaseService;
@@ -14,13 +15,16 @@ class LiftLogService extends MobileEntryBaseService
 {
     protected TrainingProgressionService $trainingProgressionService;
     protected LiftDataCacheService $cacheService;
+    protected ExerciseAliasService $aliasService;
 
     public function __construct(
         TrainingProgressionService $trainingProgressionService,
-        LiftDataCacheService $cacheService
+        LiftDataCacheService $cacheService,
+        ExerciseAliasService $aliasService
     ) {
         $this->trainingProgressionService = $trainingProgressionService;
         $this->cacheService = $cacheService;
+        $this->aliasService = $aliasService;
     }
     /**
      * Generate forms based on user's programs for the selected date
@@ -41,6 +45,14 @@ class LiftLogService extends MobileEntryBaseService
         if ($programs->isEmpty()) {
             return [];
         }
+        
+        // Apply aliases to program exercises
+        $programs->each(function ($program) use ($user) {
+            if ($program->exercise) {
+                $displayName = $this->aliasService->getDisplayName($program->exercise, $user);
+                $program->exercise->title = $displayName;
+            }
+        });
         
         // Get all exercise IDs for batch queries
         $exerciseIds = $programs->pluck('exercise.id')->filter()->unique()->toArray();
@@ -411,11 +423,25 @@ class LiftLogService extends MobileEntryBaseService
      */
     public function generateLoggedItems($userId, Carbon $selectedDate)
     {
+        $user = \App\Models\User::find($userId);
+        
         $logs = LiftLog::where('user_id', $userId)
             ->whereDate('logged_at', $selectedDate->toDateString())
-            ->with(['exercise', 'liftSets'])
+            ->with(['exercise' => function ($query) use ($userId) {
+                $query->with(['aliases' => function ($aliasQuery) use ($userId) {
+                    $aliasQuery->where('user_id', $userId);
+                }]);
+            }, 'liftSets'])
             ->orderBy('logged_at', 'desc')
             ->get();
+
+        // Apply aliases to exercises
+        $logs->each(function ($log) use ($user) {
+            if ($log->exercise) {
+                $displayName = $this->aliasService->getDisplayName($log->exercise, $user);
+                $log->exercise->title = $displayName;
+            }
+        });
 
         $items = [];
         foreach ($logs as $log) {
@@ -478,10 +504,17 @@ class LiftLogService extends MobileEntryBaseService
      */
     public function generateItemSelectionList($userId, Carbon $selectedDate)
     {
-        // Get user's accessible exercises
+        // Get user's accessible exercises with aliases
         $exercises = Exercise::availableToUser($userId)
+            ->with(['aliases' => function ($query) use ($userId) {
+                $query->where('user_id', $userId);
+            }])
             ->orderBy('title', 'asc')
             ->get();
+
+        // Apply aliases to exercises
+        $user = \App\Models\User::find($userId);
+        $exercises = $this->aliasService->applyAliasesToExercises($exercises, $user);
 
         // Get cached data for item type determination
         $cachedData = $this->cacheService->getAllCachedData($userId, $selectedDate);

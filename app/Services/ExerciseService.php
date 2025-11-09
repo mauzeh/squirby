@@ -19,6 +19,9 @@ class ExerciseService
 
         return Exercise::availableToUser()
             ->whereIn('id', $topExercisesIds)
+            ->with(['aliases' => function ($query) {
+                $query->where('user_id', Auth::id());
+            }])
             ->withCount('liftLogs')
             ->orderBy('lift_logs_count', 'desc')
             ->get();
@@ -44,6 +47,9 @@ class ExerciseService
                 ->whereHas('liftLogs', function ($query) {
                     $query->where('user_id', Auth::id());
                 })
+                ->with(['aliases' => function ($query) {
+                    $query->where('user_id', Auth::id());
+                }])
                 ->withCount('liftLogs')
                 ->orderBy('lift_logs_count', 'desc')
                 ->limit($needed)
@@ -64,6 +70,9 @@ class ExerciseService
             ->whereHas('liftLogs', function ($query) {
                 $query->where('user_id', Auth::id());
             })
+            ->with(['aliases' => function ($query) {
+                $query->where('user_id', Auth::id());
+            }])
             ->orderBy('title', 'asc')
             ->get();
     }
