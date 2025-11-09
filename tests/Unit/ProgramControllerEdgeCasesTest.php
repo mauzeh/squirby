@@ -42,8 +42,11 @@ class ProgramControllerEdgeCasesTest extends TestCase
         // Mock the ExerciseService
         $this->exerciseService = Mockery::mock(\App\Services\ExerciseService::class);
         
+        // Mock the ExerciseAliasService
+        $this->aliasService = Mockery::mock(\App\Services\ExerciseAliasService::class);
+        
         // Create controller with mocked services
-        $this->controller = new ProgramController($this->trainingProgressionService, $this->exerciseService);
+        $this->controller = new ProgramController($this->trainingProgressionService, $this->exerciseService, $this->aliasService);
         
         // Authenticate the user
         $this->actingAs($this->user);
