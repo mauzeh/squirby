@@ -68,7 +68,10 @@ class ShowExtraWeightPreferenceTest extends TestCase
             ];
         });
         
-        $this->service = new LiftLogService($mockProgressionService, $mockCacheService);
+        // Mock the ExerciseAliasService
+        $mockAliasService = $this->createMock(\App\Services\ExerciseAliasService::class);
+        
+        $this->service = new LiftLogService($mockProgressionService, $mockCacheService, $mockAliasService);
     }
 
     public function test_bodyweight_exercise_hides_weight_field_when_preference_disabled()
