@@ -24,25 +24,11 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         // Enable query log for non-production environments
-        if (config('app.env') !== 'production') {
+        // 2025-11-09 Temporarily enabled across all environments to troubleshoot discrepancy
+        // in recommendations between local and product for 1 user.
+        //if (config('app.env') !== 'production') {
             \Illuminate\Support\Facades\DB::enableQueryLog();
-        }
-
-        // Show database info for admin users
-        $isAdmin = Auth::check() && Auth::user()->hasRole('Admin');
-        
-        // Show git log for admin users (or impersonation)
-        if ($isAdmin || session()->has('impersonator_id')) {
-            try {
-                $gitBranch = trim(shell_exec('git rev-parse --abbrev-ref HEAD'));
-                $gitLog = shell_exec('git log -n 25 --pretty=format:"%h - %s (%cr)"');
-                View::share('gitBranch', $gitBranch);
-                View::share('gitLog', $gitLog);
-            } catch (\Exception $e) {
-                View::share('gitBranch', 'unknown');
-                View::share('gitLog', 'Could not retrieve git log.');
-            }
-        }
+        //}
 
         // Register view composer for exercise alias display
         View::composer([
@@ -62,9 +48,21 @@ class AppServiceProvider extends ServiceProvider
                 $view->with('measurementTypes', $measurementTypes);
             }
             
-            // Show database info for admin users
+            // Show database info and git log for admin users or when impersonating
             $isAdmin = Auth::check() && Auth::user()->hasRole('Admin');
             if ($isAdmin || session()->has('impersonator_id')) {
+                // Git log
+                try {
+                    $gitBranch = trim(shell_exec('git rev-parse --abbrev-ref HEAD'));
+                    $gitLog = shell_exec('git log -n 25 --pretty=format:"%h - %s (%cr)"');
+                    $view->with('gitBranch', $gitBranch);
+                    $view->with('gitLog', $gitLog);
+                } catch (\Exception $e) {
+                    $view->with('gitBranch', 'unknown');
+                    $view->with('gitLog', 'Could not retrieve git log.');
+                }
+                
+                // Query log
                 $queries = \Illuminate\Support\Facades\DB::getQueryLog();
                 $queryCount = count($queries);
                 $dbConnection = config('database.default');
