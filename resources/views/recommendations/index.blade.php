@@ -23,6 +23,7 @@
                 <!-- Hidden form fields to maintain filter state for bookmarking and URL parameters -->
                 <input type="hidden" name="movement_archetype" id="movement_archetype_input" value="{{ request('movement_archetype', $movementArchetype) }}">
                 <input type="hidden" name="difficulty_level" id="difficulty_level_input" value="{{ request('difficulty_level', $difficultyLevel) }}">
+                <input type="hidden" name="show_logged_only" id="show_logged_only_input" value="{{ request('show_logged_only', $showLoggedOnly) }}">
                 
                 <!-- Movement Pattern Button Group -->
                 <div class="filter-section">
@@ -51,6 +52,19 @@
                                 Level {{ $level }}
                             </button>
                         @endforeach
+                    </div>
+                </div>
+
+                <!-- Experience Button Group -->
+                <div class="filter-section">
+                    <label class="filter-label">Experience:</label>
+                    <div class="button-group" id="experience-buttons">
+                        <button type="button" class="filter-button {{ request('show_logged_only') === '0' ? 'active' : '' }}" data-filter="show_logged_only" data-value="0">
+                            All Exercises
+                        </button>
+                        <button type="button" class="filter-button {{ request('show_logged_only') === '1' || !request()->has('show_logged_only') ? 'active' : '' }}" data-filter="show_logged_only" data-value="1">
+                            Logged Only
+                        </button>
                     </div>
                 </div>
                 
@@ -197,6 +211,9 @@
                                         @if(request('difficulty_level'))
                                             <input type="hidden" name="difficulty_level" value="{{ request('difficulty_level') }}">
                                         @endif
+                                        @if(request('show_logged_only'))
+                                            <input type="hidden" name="show_logged_only" value="{{ request('show_logged_only') }}">
+                                        @endif
                                         <button type="submit" class="button delete" onclick="return confirm('Are you sure you want to remove this exercise from today\'s program?');" title="Remove from Today">
                                             <i class="fas fa-minus"></i> Remove from Today
                                         </button>
@@ -215,6 +232,9 @@
                                         }
                                         if (request('difficulty_level')) {
                                             $quickAddParams['difficulty_level'] = request('difficulty_level');
+                                        }
+                                        if (request('show_logged_only')) {
+                                            $quickAddParams['show_logged_only'] = request('show_logged_only');
                                         }
                                     @endphp
                                     <a href="{{ route('programs.quick-add', $quickAddParams) }}" class="button" style="background-color: #4CAF50;">
@@ -714,6 +734,10 @@
                 // Handle difficulty level buttons
                 const difficultyLevel = urlParams.get('difficulty_level');
                 updateButtonStates('difficulty_level', difficultyLevel || '');
+
+                // Handle experience buttons
+                const showLoggedOnly = urlParams.get('show_logged_only');
+                updateButtonStates('show_logged_only', showLoggedOnly === null ? '1' : showLoggedOnly);
             }
             
             /**
@@ -732,6 +756,12 @@
                 const difficultyInput = document.getElementById('difficulty_level_input');
                 if (difficultyInput) {
                     difficultyInput.value = urlParams.get('difficulty_level') || '';
+                }
+
+                // Sync experience
+                const showLoggedOnlyInput = document.getElementById('show_logged_only_input');
+                if (showLoggedOnlyInput) {
+                    showLoggedOnlyInput.value = urlParams.get('show_logged_only') === null ? '1' : urlParams.get('show_logged_only');
                 }
             }
             
@@ -761,6 +791,7 @@
                 // Get current filter values from hidden inputs
                 const movementArchetype = document.getElementById('movement_archetype_input').value;
                 const difficultyLevel = document.getElementById('difficulty_level_input').value;
+                const showLoggedOnly = document.getElementById('show_logged_only_input').value;
                 
                 // Build URL with parameters
                 const baseUrl = filterForm.getAttribute('action');
@@ -772,6 +803,11 @@
                 }
                 if (difficultyLevel) {
                     params.set('difficulty_level', difficultyLevel);
+                }
+                // Only add show_logged_only if it's explicitly '0' (All Exercises)
+                // Otherwise, it defaults to '1' (Logged Only) and doesn't need to be in the URL
+                if (showLoggedOnly === '0') {
+                    params.set('show_logged_only', showLoggedOnly);
                 }
                 
                 // Navigate to the new URL with parameters

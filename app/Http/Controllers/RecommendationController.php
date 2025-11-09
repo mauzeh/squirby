@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Services\RecommendationEngine;
+use App\Services\ActivityAnalysisService;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 use App\Models\Program;
@@ -10,7 +11,8 @@ use App\Models\Program;
 class RecommendationController extends Controller
 {
     public function __construct(
-        private RecommendationEngine $recommendationEngine
+        private RecommendationEngine $recommendationEngine,
+        private ActivityAnalysisService $activityAnalysisService
     ) {}
 
     /**
@@ -21,19 +23,28 @@ class RecommendationController extends Controller
         // Validate and sanitize URL parameters for filter state management
         $validated = $request->validate([
             'movement_archetype' => 'nullable|in:push,pull,squat,hinge,carry,core',
-            'difficulty_level' => 'nullable|integer|min:1|max:5'
+            'difficulty_level' => 'nullable|integer|min:1|max:5',
+            'show_logged_only' => 'nullable|boolean',
         ]);
 
         // Extract filter values from validated request for state management
         $movementArchetype = $validated['movement_archetype'] ?? null;
         $difficultyLevel = isset($validated['difficulty_level']) ? (int)$validated['difficulty_level'] : null;
+        $showLoggedOnly = $validated['show_logged_only'] ?? true;
 
         // Get all recommendations (no limit) - automatically respects user's global exercise preference
         $recommendations = $this->recommendationEngine->getRecommendations(auth()->id(), 50);
 
+        // Get recent exercise IDs for the "Logged Only" filter
+        $recentExerciseIds = [];
+        if ($showLoggedOnly) {
+            $userActivity = $this->activityAnalysisService->analyzeLiftLogs(auth()->id());
+            $recentExerciseIds = $userActivity->recentExercises;
+        }
+
         // Apply filters if provided - integrated filtering logic
-        if ($movementArchetype || $difficultyLevel) {
-            $recommendations = array_filter($recommendations, function ($recommendation) use ($movementArchetype, $difficultyLevel) {
+        if ($movementArchetype || $difficultyLevel || $showLoggedOnly) {
+            $recommendations = array_filter($recommendations, function ($recommendation) use ($movementArchetype, $difficultyLevel, $showLoggedOnly, $recentExerciseIds) {
                 $intelligence = $recommendation['intelligence'];
 
                 // Filter by movement archetype
@@ -43,6 +54,11 @@ class RecommendationController extends Controller
 
                 // Filter by difficulty level
                 if ($difficultyLevel && $intelligence->difficulty_level !== $difficultyLevel) {
+                    return false;
+                }
+
+                // Filter by recently logged exercises
+                if ($showLoggedOnly && !in_array($recommendation['exercise']->id, $recentExerciseIds)) {
                     return false;
                 }
 
@@ -67,6 +83,7 @@ class RecommendationController extends Controller
             'difficultyLevels',
             'movementArchetype',
             'difficultyLevel',
+            'showLoggedOnly',
             'todayProgramExercises' // Changed variable name
         ));
     }

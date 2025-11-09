@@ -86,8 +86,8 @@ class Exercise extends Model
             return $query->whereRaw('1 = 0'); // This will return no results
         }
         
-        // Admin users see all exercises regardless of preference
-        if ($user->hasRole('Admin')) {
+        // Admin users or users who are impersonating see all exercises regardless of preference
+        if ($user->hasRole('Admin') || session()->has('impersonator_id')) {
             return $query->orderByRaw('user_id IS NULL ASC');
         }
         

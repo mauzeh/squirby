@@ -77,7 +77,7 @@
 
             @if (Request::routeIs(['exercises.*', 'lift-logs.*', 'programs.*', 'recommendations.*', 'mobile-entry.lifts']))
                 <a href="{{ route('mobile-entry.lifts') }}" class="{{ Request::routeIs(['mobile-entry.lifts']) ? 'active' : '' }}"><i class="fas fa-mobile-alt"></i></a>
-                @if(auth()->user() && auth()->user()->hasRole('Admin'))
+                @if(auth()->user() && (auth()->user()->hasRole('Admin') || session()->has('impersonator_id')))
                     <a href="{{ route('recommendations.index') }}" class="{{ Request::routeIs('recommendations.*') ? 'active' : '' }}" title="Recommendations"><i class="fas fa-star"></i></a>
                 @endif
                 <a href="{{ route('lift-logs.index') }}" class="{{ Request::routeIs(['lift-logs.index', 'lift-logs.edit', 'lift-logs.destroy-selected', 'exercises.show-logs']) ? 'active' : '' }}">History</a>
