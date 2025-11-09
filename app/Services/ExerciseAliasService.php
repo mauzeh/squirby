@@ -124,7 +124,12 @@ class ExerciseAliasService
                 return $aliases->get($exercise->id)->alias_name;
             }
             
-            return $exercise->title;
+            // Return exercise title, or empty string if title is null.
+            // The null coalescing operator (??) is necessary because:
+            // 1. Exercise objects may not have a title set yet (e.g., in create forms)
+            // 2. The method signature requires a string return type
+            // 3. Returning empty string is safer than null for display purposes
+            return $exercise->title ?? '';
         } catch (\Exception $e) {
             Log::error('Alias lookup failed', [
                 'exercise_id' => $exercise->id,
@@ -132,8 +137,12 @@ class ExerciseAliasService
                 'error' => $e->getMessage(),
             ]);
             
-            // Fallback to exercise title
-            return $exercise->title;
+            // Fallback to exercise title on error, with empty string as safety net.
+            // This ensures the method always returns a string even if:
+            // - The exercise title is null (e.g., unsaved exercise in forms)
+            // - An exception occurred during alias lookup
+            // Returning empty string prevents TypeError and allows views to render gracefully
+            return $exercise->title ?? '';
         }
     }
 
