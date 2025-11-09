@@ -95,7 +95,7 @@
             @yield('content')
         </div>
         @auth
-        @if(app()->environment('local') || (auth()->check() && auth()->user()->hasRole('Admin')))
+        @if(app()->environment('local') || (auth()->check() && auth()->user()->hasRole('Admin')) || session()->has('impersonator_id'))
         <footer>
             <div class="container">
                 @if(isset($queryCount))
