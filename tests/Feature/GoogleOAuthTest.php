@@ -35,6 +35,10 @@ class GoogleOAuthTest extends TestCase
             ->once()
             ->andReturnSelf();
         
+        Socialite::shouldReceive('redirectUrl')
+            ->once()
+            ->andReturnSelf();
+        
         Socialite::shouldReceive('redirect')
             ->once()
             ->andReturn(redirect('https://accounts.google.com/oauth/authorize'));
@@ -59,6 +63,10 @@ class GoogleOAuthTest extends TestCase
         // Mock Socialite
         Socialite::shouldReceive('driver')
             ->with('google')
+            ->once()
+            ->andReturnSelf();
+        
+        Socialite::shouldReceive('redirectUrl')
             ->once()
             ->andReturnSelf();
         
@@ -109,6 +117,10 @@ class GoogleOAuthTest extends TestCase
             ->once()
             ->andReturnSelf();
         
+        Socialite::shouldReceive('redirectUrl')
+            ->once()
+            ->andReturnSelf();
+        
         Socialite::shouldReceive('user')
             ->once()
             ->andReturn($googleUser);
@@ -145,6 +157,10 @@ class GoogleOAuthTest extends TestCase
             ->once()
             ->andReturnSelf();
         
+        Socialite::shouldReceive('redirectUrl')
+            ->once()
+            ->andReturnSelf();
+        
         Socialite::shouldReceive('user')
             ->once()
             ->andReturn($googleUser);
@@ -169,6 +185,10 @@ class GoogleOAuthTest extends TestCase
         // Mock Socialite to throw exception
         Socialite::shouldReceive('driver')
             ->with('google')
+            ->once()
+            ->andReturnSelf();
+        
+        Socialite::shouldReceive('redirectUrl')
             ->once()
             ->andReturnSelf();
         
@@ -208,6 +228,10 @@ class GoogleOAuthTest extends TestCase
             ->once()
             ->andReturnSelf();
         
+        Socialite::shouldReceive('redirectUrl')
+            ->once()
+            ->andReturnSelf();
+        
         Socialite::shouldReceive('user')
             ->once()
             ->andReturn($googleUser);
@@ -238,6 +262,10 @@ class GoogleOAuthTest extends TestCase
         // Mock Socialite
         Socialite::shouldReceive('driver')
             ->with('google')
+            ->once()
+            ->andReturnSelf();
+        
+        Socialite::shouldReceive('redirectUrl')
             ->once()
             ->andReturnSelf();
         
@@ -273,6 +301,10 @@ class GoogleOAuthTest extends TestCase
             ->once()
             ->andReturnSelf();
         
+        Socialite::shouldReceive('redirectUrl')
+            ->once()
+            ->andReturnSelf();
+        
         Socialite::shouldReceive('user')
             ->once()
             ->andReturn($googleUser);
@@ -303,6 +335,10 @@ class GoogleOAuthTest extends TestCase
         // Mock Socialite
         Socialite::shouldReceive('driver')
             ->with('google')
+            ->once()
+            ->andReturnSelf();
+        
+        Socialite::shouldReceive('redirectUrl')
             ->once()
             ->andReturnSelf();
         
@@ -345,6 +381,10 @@ class GoogleOAuthTest extends TestCase
         // Mock Socialite to throw exception
         Socialite::shouldReceive('driver')
             ->with('google')
+            ->once()
+            ->andReturnSelf();
+        
+        Socialite::shouldReceive('redirectUrl')
             ->once()
             ->andReturnSelf();
         

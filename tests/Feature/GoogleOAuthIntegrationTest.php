@@ -34,6 +34,10 @@ class GoogleOAuthIntegrationTest extends TestCase
             ->once()
             ->andReturnSelf();
         
+        Socialite::shouldReceive('redirectUrl')
+            ->once()
+            ->andReturnSelf();
+        
         Socialite::shouldReceive('redirect')
             ->once()
             ->andReturn(redirect('https://accounts.google.com/oauth/authorize'));
@@ -49,6 +53,10 @@ class GoogleOAuthIntegrationTest extends TestCase
 
         Socialite::shouldReceive('driver')
             ->with('google')
+            ->once()
+            ->andReturnSelf();
+        
+        Socialite::shouldReceive('redirectUrl')
             ->once()
             ->andReturnSelf();
         
