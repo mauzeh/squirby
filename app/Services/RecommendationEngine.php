@@ -124,7 +124,7 @@ class RecommendationEngine
 
     /**
      * Filter exercises based on recovery periods
-     * Removes exercises that target muscles still in recovery
+     * Allows exercises where the majority of primary movers are recovered
      */
     private function filterByRecovery(Collection $exercises, UserActivityAnalysis $analysis): Collection
     {
@@ -137,32 +137,51 @@ class RecommendationEngine
                 return true; // Include exercises without intelligence data
             }
             
-            // Check if any primary mover muscles are still in recovery
-            foreach ($intelligence->muscle_data['muscles'] as $muscle) {
-                if ($muscle['role'] !== 'primary_mover') {
-                    continue;
-                }
-                
+            // Get all primary mover muscles
+            $primaryMovers = array_filter($intelligence->muscle_data['muscles'], function($muscle) {
+                return $muscle['role'] === 'primary_mover';
+            });
+            
+            if (empty($primaryMovers)) {
+                return true; // No primary movers defined, include the exercise
+            }
+            
+            $recoveryHours = $intelligence->recovery_hours;
+            $recoveryDays = $recoveryHours / 24;
+            
+            $totalPrimaryMovers = count($primaryMovers);
+            $recoveredCount = 0;
+            $inRecoveryMuscles = [];
+            
+            // Check recovery status for each primary mover
+            foreach ($primaryMovers as $muscle) {
                 $muscleName = $muscle['name'];
                 $daysSinceLastWorkout = $analysis->getDaysSinceLastWorkout($muscleName);
                 
-                // If muscle was worked recently, check recovery period
-                if ($daysSinceLastWorkout !== null) {
-                    $recoveryHours = $intelligence->recovery_hours;
-                    $recoveryDays = $recoveryHours / 24;
-                    
-                    // If muscle is still in recovery period, exclude this exercise
-                    if ($daysSinceLastWorkout < $recoveryDays) {
-                        $filteredOut[] = [
-                            'exercise_id' => $exercise->id,
-                            'exercise_title' => $exercise->title,
-                            'muscle' => $muscleName,
-                            'days_since_workout' => $daysSinceLastWorkout,
-                            'recovery_days_needed' => $recoveryDays,
-                        ];
-                        return false;
-                    }
+                // If muscle was never worked or is past recovery period, it's recovered
+                if ($daysSinceLastWorkout === null || $daysSinceLastWorkout >= $recoveryDays) {
+                    $recoveredCount++;
+                } else {
+                    $inRecoveryMuscles[] = [
+                        'muscle' => $muscleName,
+                        'days_since_workout' => $daysSinceLastWorkout,
+                        'recovery_days_needed' => $recoveryDays,
+                    ];
                 }
+            }
+            
+            // Allow exercise if majority of primary movers are recovered
+            $majorityRecovered = $recoveredCount > ($totalPrimaryMovers / 2);
+            
+            if (!$majorityRecovered) {
+                $filteredOut[] = [
+                    'exercise_id' => $exercise->id,
+                    'exercise_title' => $exercise->title,
+                    'total_primary_movers' => $totalPrimaryMovers,
+                    'recovered_count' => $recoveredCount,
+                    'in_recovery_muscles' => $inRecoveryMuscles,
+                ];
+                return false;
             }
             
             return true;
