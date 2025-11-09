@@ -64,7 +64,7 @@ class SocialiteController extends Controller
                 }
             }
 
-            Auth::login($user);
+            Auth::login($user, true); // true enables "remember me"
 
             // Show welcome message for new users
             if ($isNewUser) {
