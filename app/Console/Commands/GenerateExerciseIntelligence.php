@@ -204,11 +204,12 @@ class GenerateExerciseIntelligence extends Command
                             {--global : Only generate for global exercises}
                             {--user : Only generate for user exercises}
                             {--user-id= : Generate for specific user\'s exercises}
-                            {--limit=10 : Maximum number of exercises to process}
+                            {--limit=50 : Maximum number of exercises to process}
                             {--output= : Output file path (default: storage/app/generated_intelligence.json)}
                             {--api-key= : Gemini API key (or set GEMINI_API_KEY env var)}
                             {--model= : Gemini model to use (auto-detects best available if not specified)}
-                            {--append : Append to existing output file instead of overwriting}';
+                            {--append : Append to existing output file instead of overwriting}
+                            {--hard-pull : Skip interactive selection and process all exercises}';
 
     protected $description = 'Generate exercise intelligence data using Google Gemini AI for exercises that lack it';
 
@@ -253,20 +254,48 @@ class GenerateExerciseIntelligence extends Command
         $this->newLine();
         
         // Display list of exercises to be processed
-        $this->info("Exercises to process:");
+        $this->info("Exercises to process (sorted by most recent usage):");
         $exerciseList = $exercises->map(function ($exercise) {
             $type = $exercise->user_id ? 'User' : 'Global';
             $hasIntelligence = $exercise->intelligence ? ' (has intelligence)' : '';
+            $logCount = $exercise->lift_logs_count ?? 0;
+            
+            $latestLog = $exercise->liftLogs->first();
+            $lastUsed = $latestLog 
+                ? $latestLog->logged_at->diffForHumans() 
+                : 'Never';
+            
             return [
                 'ID' => $exercise->id,
                 'Title' => $exercise->title,
                 'Type' => $type,
+                'Logs' => $logCount,
+                'Last Used' => $lastUsed,
                 'Status' => $hasIntelligence ?: 'No intelligence',
             ];
         })->toArray();
         
-        $this->table(['ID', 'Title', 'Type', 'Status'], $exerciseList);
+        $this->table(['ID', 'Title', 'Type', 'Logs', 'Last Used', 'Status'], $exerciseList);
         $this->newLine();
+
+        // Interactive selection unless --hard-pull is specified
+        if (!$this->option('hard-pull') && !$this->option('exercise-id')) {
+            $selectedIds = $this->askForExerciseSelection($exercises);
+            
+            if (empty($selectedIds)) {
+                $this->info('No exercises selected. Exiting.');
+                return Command::SUCCESS;
+            }
+            
+            // Filter exercises to only selected ones
+            $exercises = $exercises->filter(function ($exercise) use ($selectedIds) {
+                return in_array($exercise->id, $selectedIds);
+            });
+            
+            $this->newLine();
+            $this->info("Processing {$exercises->count()} selected exercise(s)");
+            $this->newLine();
+        }
 
         // Load existing data if appending
         $outputPath = $this->getOutputPath();
@@ -328,7 +357,11 @@ class GenerateExerciseIntelligence extends Command
         }
 
         // Otherwise, query for exercises without intelligence
-        $query = Exercise::doesntHave('intelligence');
+        $query = Exercise::doesntHave('intelligence')
+            ->withCount('liftLogs')
+            ->with(['liftLogs' => function ($q) {
+                $q->latest('logged_at')->limit(1);
+            }]);
 
         if ($this->option('global')) {
             $query->whereNull('user_id');
@@ -342,7 +375,18 @@ class GenerateExerciseIntelligence extends Command
 
         $limit = (int) $this->option('limit');
         
-        return $query->limit($limit)->get();
+        $exercises = $query->get();
+        
+        // Sort by most recent lift log, then by lift log count
+        return $exercises->sortByDesc(function ($exercise) {
+            $latestLog = $exercise->liftLogs->first();
+            if ($latestLog) {
+                // Return timestamp for sorting (most recent first)
+                return $latestLog->logged_at->timestamp;
+            }
+            // Exercises with no logs go to the end
+            return 0;
+        })->take($limit)->values();
     }
 
     private function detectBestModel(string $apiKey): ?string
@@ -630,6 +674,36 @@ PROMPT;
             $outputPath,
             json_encode($this->generatedIntelligence, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)
         );
+    }
+
+    private function askForExerciseSelection($exercises): array
+    {
+        $this->info('Enter exercise IDs to process (comma-separated), or press Enter to process all:');
+        $this->comment('Example: 23,45,67 or just press Enter for all');
+        
+        $input = $this->ask('Exercise IDs');
+        
+        // If empty, process all
+        if (empty($input)) {
+            return $exercises->pluck('id')->toArray();
+        }
+        
+        // Parse comma-separated IDs
+        $selectedIds = array_map('trim', explode(',', $input));
+        $selectedIds = array_filter($selectedIds, 'is_numeric');
+        $selectedIds = array_map('intval', $selectedIds);
+        
+        // Validate that all IDs exist in the list
+        $availableIds = $exercises->pluck('id')->toArray();
+        $invalidIds = array_diff($selectedIds, $availableIds);
+        
+        if (!empty($invalidIds)) {
+            $this->warn('Invalid exercise IDs: ' . implode(', ', $invalidIds));
+            $this->warn('These IDs are not in the available list.');
+        }
+        
+        // Return only valid IDs
+        return array_intersect($selectedIds, $availableIds);
     }
 
     private function displaySummary(string $outputPath): void
