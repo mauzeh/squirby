@@ -96,7 +96,7 @@
   - Test hasAlias() returns correct boolean
   - _Requirements: 2.1, 2.2, 3.1, 3.2, 6.1, 6.2, 6.3_
 
-- [ ] 12. Write unit tests for ExerciseAlias model
+- [x] 12. Write unit tests for ExerciseAlias model
   - Test user relationship
   - Test exercise relationship
   - Test forUser scope
