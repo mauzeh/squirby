@@ -418,7 +418,7 @@ Date Navigation Component */
 /* Add Item Button */
 .add-item-section {
     display: flex;
-    margin-bottom: var(--spacing-xl);
+    margin-bottom: var(--spacing-lg);
     width: 100%;
 }
 
