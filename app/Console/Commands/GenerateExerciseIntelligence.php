@@ -251,6 +251,22 @@ class GenerateExerciseIntelligence extends Command
 
         $this->info("Found {$exercises->count()} exercises to process");
         $this->newLine();
+        
+        // Display list of exercises to be processed
+        $this->info("Exercises to process:");
+        $exerciseList = $exercises->map(function ($exercise) {
+            $type = $exercise->user_id ? 'User' : 'Global';
+            $hasIntelligence = $exercise->intelligence ? ' (has intelligence)' : '';
+            return [
+                'ID' => $exercise->id,
+                'Title' => $exercise->title,
+                'Type' => $type,
+                'Status' => $hasIntelligence ?: 'No intelligence',
+            ];
+        })->toArray();
+        
+        $this->table(['ID', 'Title', 'Type', 'Status'], $exerciseList);
+        $this->newLine();
 
         // Load existing data if appending
         $outputPath = $this->getOutputPath();
