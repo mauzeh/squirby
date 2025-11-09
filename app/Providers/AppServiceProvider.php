@@ -27,9 +27,12 @@ class AppServiceProvider extends ServiceProvider
         if (config('app.env') !== 'production') {
             \Illuminate\Support\Facades\DB::enableQueryLog();
         }
+
+        // Show database info for admin users
+        $isAdmin = Auth::check() && Auth::user()->hasRole('Admin');
         
-        // Only show git log in development environment, not in testing
-        if (config('app.env') === 'local') {
+        // Show git log for admin users (or impersonation)
+        if ($isAdmin || session()->has('impersonator_id')) {
             try {
                 $gitBranch = trim(shell_exec('git rev-parse --abbrev-ref HEAD'));
                 $gitLog = shell_exec('git log -n 25 --pretty=format:"%h - %s (%cr)"');
@@ -59,9 +62,9 @@ class AppServiceProvider extends ServiceProvider
                 $view->with('measurementTypes', $measurementTypes);
             }
             
-            // Show database info in non-production environments OR for admin users
+            // Show database info for admin users
             $isAdmin = Auth::check() && Auth::user()->hasRole('Admin');
-            if (config('app.env') !== 'production' || $isAdmin || session()->has('impersonator_id')) {
+            if ($isAdmin || session()->has('impersonator_id')) {
                 $queries = \Illuminate\Support\Facades\DB::getQueryLog();
                 $queryCount = count($queries);
                 $dbConnection = config('database.default');
