@@ -45,11 +45,13 @@ use Illuminate\Support\Facades\Http;
  * --model=MODEL          Gemini model to use (default: gemini-1.5-flash)
  * --append               Append to existing file instead of overwriting
  * 
- * AVAILABLE MODELS:
+ * MODEL SELECTION:
  * 
- * gemini-1.5-flash-latest (default) - Fast and efficient, great for most use cases
- * gemini-1.5-pro-latest             - More accurate, better for complex exercises
- * gemini-exp-1206                   - Experimental, latest features
+ * By default, the command auto-detects the best available Gemini model.
+ * You can override with --model if needed:
+ *   --model=gemini-2.5-flash  - Mid-size model with 1M token context
+ *   --model=gemini-2.5-pro    - Most accurate, best for complex exercises
+ *   --model=gemini-2.0-flash  - Fast and versatile
  * 
  * COMPLETE WORKFLOW:
  * 
@@ -119,9 +121,8 @@ use Illuminate\Support\Facades\Http;
  *   php artisan exercises:generate-intelligence --global --limit=10 --output=storage/app/batch1.json
  *   php artisan exercises:generate-intelligence --global --limit=10 --output=storage/app/batch1.json --append
  * 
- * Use different AI models:
- *   php artisan exercises:generate-intelligence --global --model=gemini-1.5-pro-latest
- *   php artisan exercises:generate-intelligence --global --model=gemini-exp-1206
+ * Override auto-detected model:
+ *   php artisan exercises:generate-intelligence --global --model=gemini-2.5-pro
  * 
  * Custom output location:
  *   php artisan exercises:generate-intelligence --global --output=database/imports/my_intelligence.json
@@ -206,7 +207,7 @@ class GenerateExerciseIntelligence extends Command
                             {--limit=10 : Maximum number of exercises to process}
                             {--output= : Output file path (default: storage/app/generated_intelligence.json)}
                             {--api-key= : Gemini API key (or set GEMINI_API_KEY env var)}
-                            {--model=gemini-1.5-flash-latest : Gemini model to use (gemini-1.5-flash-latest, gemini-1.5-pro-latest, gemini-exp-1206)}
+                            {--model= : Gemini model to use (auto-detects best available if not specified)}
                             {--append : Append to existing output file instead of overwriting}';
 
     protected $description = 'Generate exercise intelligence data using Google Gemini AI for exercises that lack it';
@@ -223,6 +224,18 @@ class GenerateExerciseIntelligence extends Command
             $this->error('Gemini API key is required. Set GEMINI_API_KEY in .env or use --api-key option.');
             $this->comment('Get your free API key at: https://aistudio.google.com/app/apikey');
             return Command::FAILURE;
+        }
+
+        // Auto-detect best model if not specified
+        $model = $this->option('model');
+        if (!$model) {
+            $this->info('Auto-detecting best available Gemini model...');
+            $model = $this->detectBestModel($apiKey);
+            if (!$model) {
+                $this->error('Failed to detect available models. Please specify --model manually.');
+                return Command::FAILURE;
+            }
+            $this->info("Using model: {$model}");
         }
 
         $this->info('Starting Gemini AI-powered exercise intelligence generation...');
@@ -250,18 +263,26 @@ class GenerateExerciseIntelligence extends Command
         }
 
         // Process each exercise
-        $bar = $this->output->createProgressBar($exercises->count());
-        $bar->start();
+        $exerciseNumber = 0;
+        $totalExercises = $exercises->count();
 
         foreach ($exercises as $exercise) {
+            $exerciseNumber++;
+            $this->newLine();
+            $this->info("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+            $this->info("Processing exercise {$exerciseNumber}/{$totalExercises}");
+            $this->comment("Exercise: {$exercise->title}");
+            if ($exercise->description) {
+                $this->line("Description: " . substr($exercise->description, 0, 100) . (strlen($exercise->description) > 100 ? '...' : ''));
+            }
+            
             $this->generateIntelligenceForExercise($exercise, $apiKey);
-            $bar->advance();
             
             // Small delay to avoid rate limiting
+            $this->line("Waiting 0.5s before next request...");
             usleep(500000); // 0.5 seconds
         }
 
-        $bar->finish();
         $this->newLine(2);
 
         // Save results
@@ -275,12 +296,25 @@ class GenerateExerciseIntelligence extends Command
 
     private function getExercisesWithoutIntelligence()
     {
+        // If specific exercise ID is provided, get it directly (even if it has intelligence)
+        if ($exerciseId = $this->option('exercise-id')) {
+            $exercise = Exercise::find($exerciseId);
+            if (!$exercise) {
+                $this->error("Exercise with ID {$exerciseId} not found.");
+                return collect([]);
+            }
+            
+            if ($exercise->intelligence) {
+                $this->warn("Note: Exercise already has intelligence data. It will be regenerated.");
+            }
+            
+            return collect([$exercise]);
+        }
+
+        // Otherwise, query for exercises without intelligence
         $query = Exercise::doesntHave('intelligence');
 
-        // Apply filters
-        if ($exerciseId = $this->option('exercise-id')) {
-            $query->where('id', $exerciseId);
-        } elseif ($this->option('global')) {
+        if ($this->option('global')) {
             $query->whereNull('user_id');
         } elseif ($this->option('user')) {
             $query->whereNotNull('user_id');
@@ -295,29 +329,95 @@ class GenerateExerciseIntelligence extends Command
         return $query->limit($limit)->get();
     }
 
+    private function detectBestModel(string $apiKey): ?string
+    {
+        try {
+            $response = Http::timeout(10)->get(
+                "https://generativelanguage.googleapis.com/v1/models?key={$apiKey}"
+            );
+
+            if (!$response->successful()) {
+                return null;
+            }
+
+            $data = $response->json();
+            $models = $data['models'] ?? [];
+
+            // Priority order: prefer flash models for speed, then pro for accuracy
+            $preferredModels = [
+                'gemini-2.5-flash',
+                'gemini-2.0-flash',
+                'gemini-2.5-pro',
+                'gemini-2.0-flash-001',
+                'gemini-1.5-flash',
+                'gemini-1.5-pro',
+            ];
+
+            foreach ($preferredModels as $preferred) {
+                foreach ($models as $model) {
+                    $modelName = str_replace('models/', '', $model['name']);
+                    if ($modelName === $preferred && in_array('generateContent', $model['supportedGenerationMethods'] ?? [])) {
+                        return $modelName;
+                    }
+                }
+            }
+
+            // Fallback: use first model that supports generateContent
+            foreach ($models as $model) {
+                if (in_array('generateContent', $model['supportedGenerationMethods'] ?? [])) {
+                    return str_replace('models/', '', $model['name']);
+                }
+            }
+
+            return null;
+        } catch (\Exception $e) {
+            return null;
+        }
+    }
+
     private function generateIntelligenceForExercise(Exercise $exercise, string $apiKey): void
     {
         try {
+            $this->line("→ Building AI prompt...");
             $prompt = $this->buildPrompt($exercise);
-            $response = $this->callGemini($prompt, $apiKey);
+            
+            $this->line("→ Detecting best model...");
+            $model = $this->option('model') ?: $this->detectBestModel($apiKey);
+            $this->comment("  Using model: {$model}");
+            
+            $this->line("→ Calling Gemini API...");
+            $response = $this->callGemini($prompt, $apiKey, $model);
             
             if ($response) {
+                $this->line("→ Parsing AI response...");
                 $intelligence = $this->parseAIResponse($response, $exercise);
                 
                 if ($intelligence) {
                     $key = $intelligence['canonical_name'] ?? $exercise->canonical_name ?? $exercise->title;
                     $this->generatedIntelligence[$key] = $intelligence;
                     $this->successCount++;
+                    
+                    $this->info("✓ Successfully generated intelligence");
+                    $this->comment("  Canonical name: {$key}");
+                    $this->comment("  Movement: {$intelligence['movement_archetype']}");
+                    $this->comment("  Primary mover: {$intelligence['primary_mover']}");
+                    $this->comment("  Difficulty: {$intelligence['difficulty_level']}/5");
+                    $this->comment("  Recovery: {$intelligence['recovery_hours']} hours");
+                    
+                    $this->newLine();
+                    $this->line("  Generated JSON:");
+                    $this->line(json_encode($intelligence, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
                 } else {
                     $this->failureCount++;
+                    $this->error("✗ Failed to parse AI response");
                 }
             } else {
                 $this->failureCount++;
+                $this->error("✗ No response from API");
             }
         } catch (\Exception $e) {
             $this->failureCount++;
-            $this->newLine();
-            $this->error("Failed to generate intelligence for '{$exercise->title}': " . $e->getMessage());
+            $this->error("✗ Exception: " . $e->getMessage());
         }
     }
 
@@ -370,14 +470,13 @@ Respond with ONLY the JSON object, no additional text.
 PROMPT;
     }
 
-    private function callGemini(string $prompt, string $apiKey): ?string
+    private function callGemini(string $prompt, string $apiKey, string $model): ?string
     {
-        $model = $this->option('model');
-        
         $systemInstruction = 'You are an expert exercise physiologist and biomechanics specialist. Respond only with valid JSON, no markdown formatting or explanations.';
         
         $url = "https://generativelanguage.googleapis.com/v1/models/{$model}:generateContent?key={$apiKey}";
         
+        $this->line("  Sending request to Gemini API...");
         $response = Http::timeout(30)->post($url, [
             'contents' => [
                 [
@@ -393,18 +492,21 @@ PROMPT;
         ]);
 
         if ($response->successful()) {
+            $this->line("  Received response from API");
             $data = $response->json();
             $text = $data['candidates'][0]['content']['parts'][0]['text'] ?? null;
             
             if ($text) {
+                $this->line("  Response length: " . strlen($text) . " characters");
                 return $text;
+            } else {
+                $this->warn("  No text content in response");
             }
         }
 
         // Log error for debugging
         if ($response->failed()) {
-            $this->newLine();
-            $this->warn("API Error: " . $response->body());
+            $this->error("  API Error (HTTP {$response->status()}): " . $response->body());
         }
 
         return null;
@@ -412,30 +514,35 @@ PROMPT;
 
     private function parseAIResponse(string $response, Exercise $exercise): ?array
     {
+        $this->line("  Cleaning response text...");
         // Clean up response - remove markdown code blocks if present
         $response = preg_replace('/```json\s*/', '', $response);
         $response = preg_replace('/```\s*$/', '', $response);
         $response = trim($response);
 
+        $this->line("  Decoding JSON...");
         $data = json_decode($response, true);
 
         if (!$data || json_last_error() !== JSON_ERROR_NONE) {
-            $this->newLine();
-            $this->warn("Failed to parse JSON for '{$exercise->title}'");
+            $this->warn("  JSON decode error: " . json_last_error_msg());
+            $this->line("  Raw response: " . substr($response, 0, 200) . "...");
             return null;
         }
 
+        $this->line("  Validating required fields...");
         // Validate required fields
         $required = ['canonical_name', 'muscle_data', 'primary_mover', 'largest_muscle', 
                      'movement_archetype', 'category', 'difficulty_level', 'recovery_hours'];
         
         foreach ($required as $field) {
             if (!isset($data[$field])) {
-                $this->newLine();
-                $this->warn("Missing required field '{$field}' for '{$exercise->title}'");
+                $this->warn("  Missing required field: {$field}");
                 return null;
             }
         }
+
+        $muscleCount = count($data['muscle_data']['muscles'] ?? []);
+        $this->line("  Found {$muscleCount} muscles in data");
 
         return $data;
     }
