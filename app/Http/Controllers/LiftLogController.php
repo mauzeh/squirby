@@ -181,6 +181,12 @@ class LiftLogController extends Controller
         if ($liftLog->user_id !== auth()->id()) {
             abort(403, 'Unauthorized action.');
         }
+        
+        // Load aliases for the lift log's exercise
+        $liftLog->load(['exercise.aliases' => function ($query) {
+            $query->where('user_id', auth()->id());
+        }]);
+        
         $exercises = Exercise::availableToUser()
             ->with(['aliases' => function ($query) {
                 $query->where('user_id', auth()->id());

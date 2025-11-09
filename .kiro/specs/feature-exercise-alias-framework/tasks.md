@@ -116,7 +116,7 @@
   - Test duplicate alias handling (should not fail)
   - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7_
 
-- [ ] 14. Write feature tests for alias display
+- [x] 14. Write feature tests for alias display
   - Test exercise list shows aliases for user with aliases
   - Test exercise list shows titles for user without aliases
   - Test lift log table shows aliases
