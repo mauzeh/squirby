@@ -126,7 +126,7 @@
   - Test export includes alias names
   - _Requirements: 2.1, 2.2, 2.3, 2.4, 3.1, 3.2, 3.3, 3.4, 4.1, 4.2, 4.3, 4.4_
 
-- [ ] 15. Write performance tests
+- [x] 15. Write performance tests
   - Test exercise list with aliases uses single additional query
   - Test lift logs with aliases uses single additional query
   - Test programs with aliases uses single additional query
