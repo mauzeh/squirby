@@ -392,10 +392,17 @@ class RecommendationEngine
         $difficulties = [];
         
         // Get exercises from recent activity and their difficulty levels
-        foreach ($analysis->recentExercises as $exerciseId) {
-            $exercise = Exercise::with('intelligence')->find($exerciseId);
-            
-            if ($exercise && $exercise->intelligence) {
+        // Use whereIn to fetch all exercises in a single query
+        if (empty($analysis->recentExercises)) {
+            return $difficulties;
+        }
+        
+        $exercises = Exercise::with('intelligence')
+            ->whereIn('id', $analysis->recentExercises)
+            ->get();
+        
+        foreach ($exercises as $exercise) {
+            if ($exercise->intelligence) {
                 $difficulties[] = $exercise->intelligence->difficulty_level;
             }
         }
