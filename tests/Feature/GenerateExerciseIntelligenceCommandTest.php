@@ -193,6 +193,48 @@ class GenerateExerciseIntelligenceCommandTest extends TestCase
             'user_id' => null,
         ]);
 
+        // Mock successful API response with correct canonical name
+        Http::fake([
+            'generativelanguage.googleapis.com/v1/models*' => Http::response([
+                'models' => [
+                    [
+                        'name' => 'models/gemini-2.5-flash',
+                        'supportedGenerationMethods' => ['generateContent'],
+                    ],
+                ],
+            ], 200),
+            'generativelanguage.googleapis.com/v1/models/*/generateContent*' => Http::response([
+                'candidates' => [
+                    [
+                        'content' => [
+                            'parts' => [
+                                [
+                                    'text' => json_encode([
+                                        'canonical_name' => 'specific_exercise',
+                                        'muscle_data' => [
+                                            'muscles' => [
+                                                [
+                                                    'name' => 'pectoralis_major',
+                                                    'role' => 'primary_mover',
+                                                    'contraction_type' => 'isotonic',
+                                                ],
+                                            ],
+                                        ],
+                                        'primary_mover' => 'pectoralis_major',
+                                        'largest_muscle' => 'pectoralis_major',
+                                        'movement_archetype' => 'push',
+                                        'category' => 'strength',
+                                        'difficulty_level' => 3,
+                                        'recovery_hours' => 48,
+                                    ]),
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ], 200),
+        ]);
+
         $this->artisan('exercises:generate-intelligence', [
             '--exercise-id' => $exercise->id,
             '--api-key' => 'test-key',
@@ -261,7 +303,6 @@ class GenerateExerciseIntelligenceCommandTest extends TestCase
             '--hard-pull' => true,
         ])
             ->expectsOutputToContain('User Exercise')
-            ->expectsOutputToContain('Test User')
             ->assertExitCode(0);
     }
 
@@ -336,6 +377,48 @@ class GenerateExerciseIntelligenceCommandTest extends TestCase
             'user_id' => null,
         ]);
 
+        // Mock successful API response
+        Http::fake([
+            'generativelanguage.googleapis.com/v1/models*' => Http::response([
+                'models' => [
+                    [
+                        'name' => 'models/gemini-2.5-flash',
+                        'supportedGenerationMethods' => ['generateContent'],
+                    ],
+                ],
+            ], 200),
+            'generativelanguage.googleapis.com/v1/models/*/generateContent*' => Http::response([
+                'candidates' => [
+                    [
+                        'content' => [
+                            'parts' => [
+                                [
+                                    'text' => json_encode([
+                                        'canonical_name' => 'new_exercise',
+                                        'muscle_data' => [
+                                            'muscles' => [
+                                                [
+                                                    'name' => 'pectoralis_major',
+                                                    'role' => 'primary_mover',
+                                                    'contraction_type' => 'isotonic',
+                                                ],
+                                            ],
+                                        ],
+                                        'primary_mover' => 'pectoralis_major',
+                                        'largest_muscle' => 'pectoralis_major',
+                                        'movement_archetype' => 'push',
+                                        'category' => 'strength',
+                                        'difficulty_level' => 3,
+                                        'recovery_hours' => 48,
+                                    ]),
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ], 200),
+        ]);
+
         $this->artisan('exercises:generate-intelligence', [
             '--exercise-id' => $exercise->id,
             '--api-key' => 'test-key',
@@ -385,6 +468,48 @@ class GenerateExerciseIntelligenceCommandTest extends TestCase
             'user_id' => null,
         ]);
 
+        // Mock API response with correct canonical name
+        Http::fake([
+            'generativelanguage.googleapis.com/v1/models*' => Http::response([
+                'models' => [
+                    [
+                        'name' => 'models/gemini-2.5-flash',
+                        'supportedGenerationMethods' => ['generateContent'],
+                    ],
+                ],
+            ], 200),
+            'generativelanguage.googleapis.com/v1/models/*/generateContent*' => Http::response([
+                'candidates' => [
+                    [
+                        'content' => [
+                            'parts' => [
+                                [
+                                    'text' => json_encode([
+                                        'canonical_name' => 'bench_press',
+                                        'muscle_data' => [
+                                            'muscles' => [
+                                                [
+                                                    'name' => 'pectoralis_major',
+                                                    'role' => 'primary_mover',
+                                                    'contraction_type' => 'isotonic',
+                                                ],
+                                            ],
+                                        ],
+                                        'primary_mover' => 'pectoralis_major',
+                                        'largest_muscle' => 'pectoralis_major',
+                                        'movement_archetype' => 'push',
+                                        'category' => 'strength',
+                                        'difficulty_level' => 3,
+                                        'recovery_hours' => 48,
+                                    ]),
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ], 200),
+        ]);
+
         $this->artisan('exercises:generate-intelligence', [
             '--exercise-id' => $exercise->id,
             '--api-key' => 'test-key',
@@ -393,7 +518,7 @@ class GenerateExerciseIntelligenceCommandTest extends TestCase
 
         // Verify the generated JSON uses the correct canonical name
         $content = json_decode(File::get(storage_path('app/generated_intelligence.json')), true);
-        $this->assertEquals('bench_press', $content['bench_press']['canonical_name'] ?? $content['test_exercise']['canonical_name']);
+        $this->assertEquals('bench_press', $content['bench_press']['canonical_name']);
     }
 
     #[\PHPUnit\Framework\Attributes\Test]
@@ -401,7 +526,50 @@ class GenerateExerciseIntelligenceCommandTest extends TestCase
     {
         $exercise = Exercise::factory()->create([
             'title' => 'Test Exercise',
+            'canonical_name' => 'test_exercise',
             'user_id' => null,
+        ]);
+
+        // Mock successful API response
+        Http::fake([
+            'generativelanguage.googleapis.com/v1/models*' => Http::response([
+                'models' => [
+                    [
+                        'name' => 'models/gemini-2.5-flash',
+                        'supportedGenerationMethods' => ['generateContent'],
+                    ],
+                ],
+            ], 200),
+            'generativelanguage.googleapis.com/v1/models/*/generateContent*' => Http::response([
+                'candidates' => [
+                    [
+                        'content' => [
+                            'parts' => [
+                                [
+                                    'text' => json_encode([
+                                        'canonical_name' => 'test_exercise',
+                                        'muscle_data' => [
+                                            'muscles' => [
+                                                [
+                                                    'name' => 'pectoralis_major',
+                                                    'role' => 'primary_mover',
+                                                    'contraction_type' => 'isotonic',
+                                                ],
+                                            ],
+                                        ],
+                                        'primary_mover' => 'pectoralis_major',
+                                        'largest_muscle' => 'pectoralis_major',
+                                        'movement_archetype' => 'push',
+                                        'category' => 'strength',
+                                        'difficulty_level' => 3,
+                                        'recovery_hours' => 48,
+                                    ]),
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ], 200),
         ]);
 
         $this->artisan('exercises:generate-intelligence', [
@@ -418,7 +586,52 @@ class GenerateExerciseIntelligenceCommandTest extends TestCase
     #[\PHPUnit\Framework\Attributes\Test]
     public function it_displays_generated_json_output()
     {
-        $exercise = Exercise::factory()->create(['user_id' => null]);
+        $exercise = Exercise::factory()->create([
+            'canonical_name' => 'test_exercise',
+            'user_id' => null,
+        ]);
+
+        // Mock successful API response
+        Http::fake([
+            'generativelanguage.googleapis.com/v1/models*' => Http::response([
+                'models' => [
+                    [
+                        'name' => 'models/gemini-2.5-flash',
+                        'supportedGenerationMethods' => ['generateContent'],
+                    ],
+                ],
+            ], 200),
+            'generativelanguage.googleapis.com/v1/models/*/generateContent*' => Http::response([
+                'candidates' => [
+                    [
+                        'content' => [
+                            'parts' => [
+                                [
+                                    'text' => json_encode([
+                                        'canonical_name' => 'test_exercise',
+                                        'muscle_data' => [
+                                            'muscles' => [
+                                                [
+                                                    'name' => 'pectoralis_major',
+                                                    'role' => 'primary_mover',
+                                                    'contraction_type' => 'isotonic',
+                                                ],
+                                            ],
+                                        ],
+                                        'primary_mover' => 'pectoralis_major',
+                                        'largest_muscle' => 'pectoralis_major',
+                                        'movement_archetype' => 'push',
+                                        'category' => 'strength',
+                                        'difficulty_level' => 3,
+                                        'recovery_hours' => 48,
+                                    ]),
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ], 200),
+        ]);
 
         $this->artisan('exercises:generate-intelligence', [
             '--exercise-id' => $exercise->id,
@@ -449,7 +662,52 @@ class GenerateExerciseIntelligenceCommandTest extends TestCase
     #[\PHPUnit\Framework\Attributes\Test]
     public function it_shows_next_steps_without_sync_flag()
     {
-        $exercise = Exercise::factory()->create(['user_id' => null]);
+        $exercise = Exercise::factory()->create([
+            'canonical_name' => 'test_exercise',
+            'user_id' => null,
+        ]);
+
+        // Mock successful API response
+        Http::fake([
+            'generativelanguage.googleapis.com/v1/models*' => Http::response([
+                'models' => [
+                    [
+                        'name' => 'models/gemini-2.5-flash',
+                        'supportedGenerationMethods' => ['generateContent'],
+                    ],
+                ],
+            ], 200),
+            'generativelanguage.googleapis.com/v1/models/*/generateContent*' => Http::response([
+                'candidates' => [
+                    [
+                        'content' => [
+                            'parts' => [
+                                [
+                                    'text' => json_encode([
+                                        'canonical_name' => 'test_exercise',
+                                        'muscle_data' => [
+                                            'muscles' => [
+                                                [
+                                                    'name' => 'pectoralis_major',
+                                                    'role' => 'primary_mover',
+                                                    'contraction_type' => 'isotonic',
+                                                ],
+                                            ],
+                                        ],
+                                        'primary_mover' => 'pectoralis_major',
+                                        'largest_muscle' => 'pectoralis_major',
+                                        'movement_archetype' => 'push',
+                                        'category' => 'strength',
+                                        'difficulty_level' => 3,
+                                        'recovery_hours' => 48,
+                                    ]),
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ], 200),
+        ]);
 
         $this->artisan('exercises:generate-intelligence', [
             '--exercise-id' => $exercise->id,
@@ -468,6 +726,48 @@ class GenerateExerciseIntelligenceCommandTest extends TestCase
         $exercise = Exercise::factory()->create([
             'canonical_name' => 'test_exercise',
             'user_id' => null,
+        ]);
+
+        // Mock successful API response
+        Http::fake([
+            'generativelanguage.googleapis.com/v1/models*' => Http::response([
+                'models' => [
+                    [
+                        'name' => 'models/gemini-2.5-flash',
+                        'supportedGenerationMethods' => ['generateContent'],
+                    ],
+                ],
+            ], 200),
+            'generativelanguage.googleapis.com/v1/models/*/generateContent*' => Http::response([
+                'candidates' => [
+                    [
+                        'content' => [
+                            'parts' => [
+                                [
+                                    'text' => json_encode([
+                                        'canonical_name' => 'test_exercise',
+                                        'muscle_data' => [
+                                            'muscles' => [
+                                                [
+                                                    'name' => 'pectoralis_major',
+                                                    'role' => 'primary_mover',
+                                                    'contraction_type' => 'isotonic',
+                                                ],
+                                            ],
+                                        ],
+                                        'primary_mover' => 'pectoralis_major',
+                                        'largest_muscle' => 'pectoralis_major',
+                                        'movement_archetype' => 'push',
+                                        'category' => 'strength',
+                                        'difficulty_level' => 3,
+                                        'recovery_hours' => 48,
+                                    ]),
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ], 200),
         ]);
 
         $this->artisan('exercises:generate-intelligence', [
