@@ -61,12 +61,14 @@ class AppServiceProvider extends ServiceProvider
             
             // Show database info in non-production environments OR for admin users
             $isAdmin = Auth::check() && Auth::user()->hasRole('Admin');
-            if (config('app.env') !== 'production' || $isAdmin) {
-                $queryCount = count(\Illuminate\Support\Facades\DB::getQueryLog());
+            if (config('app.env') !== 'production' || $isAdmin || session()->has('impersonator_id')) {
+                $queries = \Illuminate\Support\Facades\DB::getQueryLog();
+                $queryCount = count($queries);
                 $dbConnection = config('database.default');
                 $dbDriver = config("database.connections.{$dbConnection}.driver");
                 
                 $view->with('queryCount', $queryCount);
+                $view->with('queries', $queries);
                 $view->with('dbConnection', $dbConnection);
                 $view->with('dbDriver', $dbDriver);
                 $view->with('showDebugInfo', true);

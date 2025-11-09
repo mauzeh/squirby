@@ -107,6 +107,13 @@
                 @if(isset($gitLog))
                     <pre class="git-log">{{ $gitLog }}</pre>
                 @endif
+                <br />
+                <pre class="git-log">SQL Queries:</pre>
+                @if(isset($queries) && count($queries) > 0)
+                    @foreach($queries as $index => $query)
+                        <pre class="git-log">Query #{{ $index + 1 }} ({{ number_format($query['time'], 2) }}ms): {{ $query['query'] }}@if(!empty($query['bindings'])) | Bindings: {{ json_encode($query['bindings']) }}@endif</pre>
+                    @endforeach
+                @endif
             </div>
         </footer>
         @endif
