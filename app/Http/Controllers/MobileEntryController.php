@@ -140,10 +140,18 @@ class MobileEntryController extends Controller
                 ]
             ],
             
-            // Add Item button
-            'addItemButton' => [
-                'text' => 'Add Item',
-                'ariaLabel' => 'Add new item'
+            // Primary action buttons
+            'actionButtons' => [
+                [
+                    'text' => 'Add Item',
+                    'ariaLabel' => 'Add new item',
+                    'class' => 'btn-primary btn-success'
+                ],
+                [
+                    'text' => 'Help me choose',
+                    'ariaLabel' => 'Get help choosing an item',
+                    'class' => 'btn-primary btn-info'
+                ]
             ],
             
             // Item selection list (appears when Add Item is clicked)
@@ -681,9 +689,12 @@ class MobileEntryController extends Controller
             
             'summary' => $formService->generateSummary(Auth::id(), $selectedDate),
             
-            'addItemButton' => [
-                'text' => 'Add Exercise',
-                'ariaLabel' => 'Add new exercise'
+            'actionButtons' => [
+                [
+                    'text' => 'Add Exercise',
+                    'ariaLabel' => 'Add new exercise',
+                    'class' => 'btn-primary btn-success'
+                ]
             ],
             
             'itemSelectionList' => $itemSelectionList,
@@ -864,9 +875,12 @@ class MobileEntryController extends Controller
             
             'summary' => $formService->generateSummary(Auth::id(), $selectedDate),
             
-            'addItemButton' => [
-                'text' => 'Add Food',
-                'ariaLabel' => 'Add new food item'
+            'actionButtons' => [
+                [
+                    'text' => 'Add Food',
+                    'ariaLabel' => 'Add new food item',
+                    'class' => 'btn-primary btn-success'
+                ]
             ],
             
             'itemSelectionList' => $itemSelectionList,

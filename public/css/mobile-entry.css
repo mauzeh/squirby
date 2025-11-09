@@ -418,6 +418,7 @@ Date Navigation Component */
 /* Add Item Button */
 .add-item-section {
     display: flex;
+    gap: var(--spacing-sm);
     margin-bottom: var(--spacing-xl);
     width: 100%;
 }
@@ -430,6 +431,12 @@ Date Navigation Component */
 @media (max-width: 768px) {
     .add-item-section {
         margin-bottom: var(--spacing-lg);
+    }
+}
+
+@media (max-width: 480px) {
+    .add-item-section {
+        flex-direction: column;
     }
 }
 
@@ -1634,6 +1641,22 @@ Date Navigation Component */
 
 .btn-success:focus {
     outline: 2px solid var(--color-success);
+    outline-offset: 2px;
+}
+
+/* Button Info Variant - Blue background for secondary actions */
+.btn-info {
+    background-color: var(--color-primary);
+}
+
+@media (hover: hover) {
+    .btn-info:hover {
+        background-color: var(--color-primary-hover);
+    }
+}
+
+.btn-info:focus {
+    outline: 2px solid var(--color-primary);
     outline-offset: 2px;
 }
 

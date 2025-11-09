@@ -65,12 +65,14 @@
         </section>
         @endif
 
-        <!-- Add Item Button -->
-        @if(isset($data['addItemButton']))
+        <!-- Action Buttons -->
+        @if(isset($data['actionButtons']) && count($data['actionButtons']) > 0)
         <div class="add-item-section">
-            <button type="button" class="btn-primary btn-success" aria-label="{{ $data['addItemButton']['ariaLabel'] }}">
-                {{ $data['addItemButton']['text'] }}
-            </button>
+            @foreach($data['actionButtons'] as $button)
+                <button type="button" class="{{ $button['class'] }}" aria-label="{{ $button['ariaLabel'] }}">
+                    {{ $button['text'] }}
+                </button>
+            @endforeach
         </div>
         @endif
 
