@@ -26,7 +26,9 @@ class ExerciseMergeServiceTest extends TestCase
     {
         parent::setUp();
         
-        $this->service = new ExerciseMergeService();
+        // Instantiate service with required dependency
+        $aliasService = app(\App\Services\ExerciseAliasService::class);
+        $this->service = new ExerciseMergeService($aliasService);
         
         // Create admin user
         $adminRole = Role::factory()->create(['name' => 'Admin']);
