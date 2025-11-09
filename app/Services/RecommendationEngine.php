@@ -157,7 +157,9 @@ class RecommendationEngine
      */
     private function filterByRecovery(Collection $exercises, UserActivityAnalysis $analysis): Collection
     {
-        return $exercises->filter(function ($exercise) use ($analysis) {
+        $filteredOut = [];
+        
+        $result = $exercises->filter(function ($exercise) use ($analysis, &$filteredOut) {
             $intelligence = $exercise->intelligence;
             
             if (!$intelligence || !isset($intelligence->muscle_data['muscles'])) {
@@ -180,6 +182,13 @@ class RecommendationEngine
                     
                     // If muscle is still in recovery period, exclude this exercise
                     if ($daysSinceLastWorkout < $recoveryDays) {
+                        $filteredOut[] = [
+                            'exercise_id' => $exercise->id,
+                            'exercise_title' => $exercise->title,
+                            'muscle' => $muscleName,
+                            'days_since_workout' => $daysSinceLastWorkout,
+                            'recovery_days_needed' => $recoveryDays,
+                        ];
                         return false;
                     }
                 }
@@ -187,6 +196,15 @@ class RecommendationEngine
             
             return true;
         });
+        
+        if (!empty($filteredOut)) {
+            \Log::info('Recovery Filter Details', [
+                'analysis_date' => $analysis->analysisDate->toIso8601String(),
+                'filtered_out' => array_slice($filteredOut, 0, 5), // Log first 5 for brevity
+            ]);
+        }
+        
+        return $result;
     }
 
     /**
