@@ -7,9 +7,15 @@ use Illuminate\Support\ServiceProvider;
 use App\Models\MeasurementType;
 use Illuminate\Support\Facades\Auth;
 use App\Http\View\Composers\ExerciseAliasComposer;
+use Illuminate\Support\Facades\Log;
 
 class AppServiceProvider extends ServiceProvider
 {
+    /**
+     * Store logs captured during the request
+     */
+    protected static $capturedLogs = [];
+
     /**
      * Register any application services.
      */
@@ -29,6 +35,17 @@ class AppServiceProvider extends ServiceProvider
         //if (config('app.env') !== 'production') {
             \Illuminate\Support\Facades\DB::enableQueryLog();
         //}
+
+        // Capture logs for admin users and when impersonating
+        Log::listen(function ($log) {
+            if (Auth::check() && (Auth::user()->hasRole('Admin') || session()->has('impersonator_id'))) {
+                self::$capturedLogs[] = [
+                    'level' => $log->level,
+                    'message' => $log->message,
+                    'context' => $log->context,
+                ];
+            }
+        });
 
         // Register view composer for exercise alias display
         View::composer([
@@ -73,6 +90,9 @@ class AppServiceProvider extends ServiceProvider
                 $view->with('dbConnection', $dbConnection);
                 $view->with('dbDriver', $dbDriver);
                 $view->with('showDebugInfo', true);
+                
+                // Pass captured logs to view
+                $view->with('logs', self::$capturedLogs);
             }
         });
     }

@@ -114,6 +114,16 @@
                         <pre class="git-log">Query #{{ $index + 1 }} ({{ number_format($query['time'], 2) }}ms): {{ $query['query'] }}@if(!empty($query['bindings'])) | Bindings: {{ json_encode($query['bindings']) }}@endif</pre>
                     @endforeach
                 @endif
+                <br />
+                <pre class="git-log">Application Logs:</pre>
+                @if(isset($logs) && count($logs) > 0)
+                    @foreach($logs as $log)
+                        <pre class="git-log" style="color: {{ $log['level'] === 'error' ? '#ff6b6b' : ($log['level'] === 'warning' ? '#ffa500' : '#f2f2f2') }}; white-space: pre-wrap; word-wrap: break-word;">[{{ strtoupper($log['level']) }}] {{ $log['message'] }}@if(!empty($log['context']))
+Context: {{ json_encode($log['context'], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) }}@endif</pre>
+                    @endforeach
+                @else
+                    <pre class="git-log" style="color: #888;">No logs for this request</pre>
+                @endif
             </div>
         </footer>
         @endif
