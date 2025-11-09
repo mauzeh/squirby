@@ -257,7 +257,12 @@ class GenerateExerciseIntelligence extends Command
         // Display list of exercises to be processed
         $this->info("Exercises to process (sorted by most recent usage):");
         $exerciseList = $exercises->map(function ($exercise) {
-            $type = $exercise->user_id ? 'User' : 'Global';
+            if ($exercise->user_id) {
+                $type = $exercise->user ? $exercise->user->name : 'User';
+            } else {
+                $type = 'Global';
+            }
+            
             $hasIntelligence = $exercise->intelligence ? ' (has intelligence)' : '';
             $logCount = $exercise->lift_logs_count ?? 0;
             
@@ -269,14 +274,14 @@ class GenerateExerciseIntelligence extends Command
             return [
                 'ID' => $exercise->id,
                 'Title' => $exercise->title,
-                'Type' => $type,
+                'Owner' => $type,
                 'Logs' => $logCount,
                 'Last Used' => $lastUsed,
                 'Status' => $hasIntelligence ?: 'No intelligence',
             ];
         })->toArray();
         
-        $this->table(['ID', 'Title', 'Type', 'Logs', 'Last Used', 'Status'], $exerciseList);
+        $this->table(['ID', 'Title', 'Owner', 'Logs', 'Last Used', 'Status'], $exerciseList);
         $this->newLine();
 
         // Interactive selection unless --hard-pull is specified
@@ -369,7 +374,8 @@ class GenerateExerciseIntelligence extends Command
             ->withCount('liftLogs')
             ->with(['liftLogs' => function ($q) {
                 $q->latest('logged_at')->limit(1);
-            }]);
+            }])
+            ->with('user:id,name');
 
         if ($this->option('global')) {
             $query->whereNull('user_id');
