@@ -495,7 +495,7 @@ class RecommendationControllerTest extends TestCase
             'title' => 'Global Exercise No Intelligence'
         ]);
 
-        // Create user activity
+        // Create user activity for benchPress
         $liftLog = LiftLog::factory()->create([
             'user_id' => $this->user->id,
             'exercise_id' => $this->benchPress->id,
@@ -506,6 +506,19 @@ class RecommendationControllerTest extends TestCase
             'lift_log_id' => $liftLog->id,
             'reps' => 8,
             'weight' => 185
+        ]);
+
+        // Create user activity for userExercise so it shows up in recommendations
+        $userLiftLog = LiftLog::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $userExercise->id,
+            'logged_at' => Carbon::now()->subDays(5)
+        ]);
+        
+        LiftSet::factory()->create([
+            'lift_log_id' => $userLiftLog->id,
+            'reps' => 10,
+            'weight' => 100
         ]);
 
         $response = $this->actingAs($this->user)
@@ -598,6 +611,7 @@ class RecommendationControllerTest extends TestCase
         $response->assertViewHas('difficultyLevels');
         $response->assertViewHas('movementArchetype');
         $response->assertViewHas('difficultyLevel');
+        $response->assertViewHas('showLoggedOnly');
         $response->assertViewHas('todayProgramExercises');
         
         // Verify filter options are correctly structured
@@ -690,13 +704,21 @@ class RecommendationControllerTest extends TestCase
             ]
         ]);
 
-        // Create a lift log to ensure recommendations are generated
+        // Create a lift log for benchPress to ensure recommendations are generated
         $liftLog = LiftLog::factory()->create([
             'user_id' => $this->user->id,
             'exercise_id' => $this->benchPress->id,
             'logged_at' => Carbon::now()->subDays(3)
         ]);
         LiftSet::factory()->create(['lift_log_id' => $liftLog->id]);
+
+        // Create a lift log for the exercise so it shows up in recommendations (show_logged_only defaults to true)
+        $exerciseLiftLog = LiftLog::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => Carbon::now()->subDays(5)
+        ]);
+        LiftSet::factory()->create(['lift_log_id' => $exerciseLiftLog->id]);
 
         // Add the exercise to today's program
         $programEntry = \App\Models\Program::create([
