@@ -64,11 +64,11 @@ use Illuminate\Support\Facades\Http;
  *    This will:
  *    - Query Gemini AI for each exercise
  *    - Generate biomechanically accurate intelligence data
- *    - Save to storage/app/generated_intelligence.json
+ *    - Save to database/imports/generated_intelligence.json
  *    - Show progress bar and summary
  * 
  * 3. Review the generated JSON:
- *    cat storage/app/generated_intelligence.json
+ *    cat database/imports/generated_intelligence.json
  * 
  *    Example output:
  *    {
@@ -98,10 +98,10 @@ use Illuminate\Support\Facades\Http;
  *    }
  * 
  * 4. Sync to database:
- *    php artisan exercises:sync-intelligence --file=storage/app/generated_intelligence.json
+ *    php artisan exercises:sync-intelligence --file=database/imports/generated_intelligence.json
  * 
  *    Or preview first:
- *    php artisan exercises:sync-intelligence --file=storage/app/generated_intelligence.json --dry-run
+ *    php artisan exercises:sync-intelligence --file=database/imports/generated_intelligence.json --dry-run
  * 
  * WHAT THE AI GENERATES:
  * 
@@ -118,8 +118,8 @@ use Illuminate\Support\Facades\Http;
  * ADVANCED USAGE:
  * 
  * Generate in batches to manage processing:
- *   php artisan exercises:generate-intelligence --global --limit=10 --output=storage/app/batch1.json
- *   php artisan exercises:generate-intelligence --global --limit=10 --output=storage/app/batch1.json --append
+ *   php artisan exercises:generate-intelligence --global --limit=10 --output=database/imports/batch1.json
+ *   php artisan exercises:generate-intelligence --global --limit=10 --output=database/imports/batch1.json --append
  * 
  * Override auto-detected model:
  *   php artisan exercises:generate-intelligence --global --model=gemini-2.5-pro
@@ -174,13 +174,13 @@ use Illuminate\Support\Facades\Http;
  * php artisan exercises:generate-intelligence --global --limit=20
  * 
  * # 3. Review the output
- * cat storage/app/generated_intelligence.json
+ * cat database/imports/generated_intelligence.json
  * 
  * # 4. Preview sync (dry run)
- * php artisan exercises:sync-intelligence --file=storage/app/generated_intelligence.json --dry-run
+ * php artisan exercises:sync-intelligence --file=database/imports/generated_intelligence.json --dry-run
  * 
  * # 5. Apply to database
- * php artisan exercises:sync-intelligence --file=storage/app/generated_intelligence.json
+ * php artisan exercises:sync-intelligence --file=database/imports/generated_intelligence.json
  * 
  * # 6. Verify
  * php artisan exercises:list-without-intelligence --global
@@ -205,7 +205,7 @@ class GenerateExerciseIntelligence extends Command
                             {--user : Only generate for user exercises}
                             {--user-id= : Generate for specific user\'s exercises}
                             {--limit=10 : Maximum number of exercises to process}
-                            {--output= : Output file path (default: storage/app/generated_intelligence.json)}
+                            {--output= : Output file path (default: database/imports/generated_intelligence.json)}
                             {--api-key= : Gemini API key (or set GEMINI_API_KEY env var)}
                             {--model= : Gemini model to use (auto-detects best available if not specified)}
                             {--append : Append to existing output file instead of overwriting}';
@@ -506,7 +506,7 @@ PROMPT;
             ],
             'generationConfig' => [
                 'temperature' => 0.3,
-                'maxOutputTokens' => 2048,
+                'maxOutputTokens' => 8192,
             ],
         ]);
 
@@ -616,14 +616,14 @@ PROMPT;
     {
         return $this->option('output') 
             ? base_path($this->option('output'))
-            : storage_path('app/generated_intelligence.json');
+            : database_path('imports/generated_intelligence.json');
     }
 
     private function saveResults(string $outputPath): void
     {
         $directory = dirname($outputPath);
         if (!is_dir($directory)) {
-            mkdir($directory, 0755, true);
+            throw new \RuntimeException("Directory does not exist: {$directory}");
         }
 
         file_put_contents(
