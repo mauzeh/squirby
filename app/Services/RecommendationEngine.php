@@ -46,8 +46,19 @@ class RecommendationEngine
         // Find underworked muscles to prioritize
         $underworkedMuscles = $this->findUnderworkedMuscles($userActivity);
         
+        \Log::info('Before Recovery Filter', [
+            'total_exercises' => $exercises->count(),
+            'exercise_ids' => $exercises->pluck('id')->toArray(),
+        ]);
+        
         // Filter exercises by recovery periods
         $availableExercises = $this->filterByRecovery($exercises, $userActivity);
+        
+        \Log::info('After Recovery Filter', [
+            'available_exercises' => $availableExercises->count(),
+            'available_exercise_ids' => $availableExercises->pluck('id')->toArray(),
+            'filtered_out_count' => $exercises->count() - $availableExercises->count(),
+        ]);
         
         // Score and rank exercises
         $scoredExercises = $this->scoreExercises($availableExercises, $userActivity, $underworkedMuscles);
