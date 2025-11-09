@@ -51,7 +51,19 @@ class UserActivityAnalysis
             $lastWorkoutDate = $this->muscleLastWorked[$muscle];
             
             if ($lastWorkoutDate instanceof Carbon) {
-                return $lastWorkoutDate->diffInHours($this->analysisDate) / 24.0;
+                $daysSince = $lastWorkoutDate->diffInHours($this->analysisDate) / 24.0;
+                
+                // Debug logging for pectoralis_major to track the discrepancy
+                if ($muscle === 'pectoralis_major') {
+                    \Log::info('Pectoralis Major Recovery Calc', [
+                        'last_workout' => $lastWorkoutDate->toIso8601String(),
+                        'analysis_date' => $this->analysisDate->toIso8601String(),
+                        'hours_diff' => $lastWorkoutDate->diffInHours($this->analysisDate),
+                        'days_since' => $daysSince,
+                    ]);
+                }
+                
+                return $daysSince;
             }
         }
         
