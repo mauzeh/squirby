@@ -258,7 +258,8 @@ class GenerateExerciseIntelligence extends Command
         $this->info("Exercises to process (sorted by most recent usage):");
         $exerciseList = $exercises->map(function ($exercise) {
             if ($exercise->user_id) {
-                $type = $exercise->user ? $exercise->user->name : 'User';
+                $userName = $exercise->user ? $exercise->user->name : 'User';
+                $type = "{$userName} (ID: {$exercise->user_id})";
             } else {
                 $type = 'Global';
             }
@@ -730,11 +731,12 @@ PROMPT;
         $relativePath = str_replace(base_path() . '/', '', $outputPath);
         
         $this->newLine();
-        $this->line("Running: php artisan exercises:sync-intelligence --file={$relativePath}");
+        $this->line("Running: php artisan exercises:sync-intelligence --file={$relativePath} --include-user-exercises");
         $this->newLine();
         
         $exitCode = $this->call('exercises:sync-intelligence', [
             '--file' => $relativePath,
+            '--include-user-exercises' => true,
         ]);
         
         if ($exitCode === 0) {
@@ -769,7 +771,7 @@ PROMPT;
             $this->line('1. Review the generated JSON file for accuracy');
             $this->line('2. Make any necessary corrections');
             $this->line('3. Sync to database with:');
-            $this->line("   php artisan exercises:sync-intelligence --file=" . str_replace(base_path() . '/', '', $outputPath));
+            $this->line("   php artisan exercises:sync-intelligence --file=" . str_replace(base_path() . '/', '', $outputPath) . " --include-user-exercises");
             $this->newLine();
             $this->comment('Or use --sync flag next time to auto-sync after generation');
         }
