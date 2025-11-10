@@ -5,7 +5,6 @@ namespace Tests\Unit;
 use App\Models\Exercise;
 use App\Models\ExerciseIntelligence;
 use App\Models\LiftLog;
-use App\Models\Program;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\ExerciseMergeService;
@@ -296,29 +295,6 @@ class ExerciseMergeServiceTest extends TestCase
     }
 
     /** @test */
-    public function merge_exercises_transfers_program_entries_successfully()
-    {
-        $source = Exercise::factory()->create(['user_id' => $this->regularUser->id]);
-        $target = Exercise::factory()->create(['user_id' => null]);
-
-        // Create program entries for source exercise
-        $program1 = Program::factory()->create(['exercise_id' => $source->id]);
-        $program2 = Program::factory()->create(['exercise_id' => $source->id]);
-
-        $this->service->mergeExercises($source, $target, $this->admin);
-
-        // Check program entries were transferred
-        $this->assertDatabaseHas('programs', [
-            'id' => $program1->id,
-            'exercise_id' => $target->id
-        ]);
-        $this->assertDatabaseHas('programs', [
-            'id' => $program2->id,
-            'exercise_id' => $target->id
-        ]);
-    }
-
-    /** @test */
     public function merge_exercises_transfers_intelligence_when_target_has_none()
     {
         $source = Exercise::factory()->create(['user_id' => $this->regularUser->id]);
@@ -463,16 +439,12 @@ class ExerciseMergeServiceTest extends TestCase
             'user_id' => $otherUser->id
         ]);
 
-        // Create program entries
-        Program::factory()->count(2)->create(['exercise_id' => $exercise->id]);
-
         // Create exercise intelligence
         ExerciseIntelligence::factory()->create(['exercise_id' => $exercise->id]);
 
         $stats = $this->service->getMergeStatistics($exercise);
 
         $this->assertEquals(5, $stats['lift_logs_count']);
-        $this->assertEquals(2, $stats['program_entries_count']);
         $this->assertTrue($stats['has_intelligence']);
         $this->assertEquals(2, $stats['users_count']);
     }

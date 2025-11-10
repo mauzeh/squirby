@@ -4,7 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use App\Models\Exercise;
-use App\Models\Program;
+use App\Models\MobileLiftForm;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -24,18 +24,16 @@ class MobileEntryTest extends TestCase
     }
 
     /** @test */
-    public function mobile_entry_page_loads_with_programs()
+    public function mobile_entry_page_loads_with_mobile_lift_forms()
     {
         $user = User::factory()->create();
         $exercise = Exercise::factory()->create();
         
-        // Create a program for today
-        Program::factory()->create([
+        // Create a mobile lift form for today
+        MobileLiftForm::factory()->create([
             'user_id' => $user->id,
             'exercise_id' => $exercise->id,
             'date' => now(),
-            'sets' => 3,
-            'reps' => 5
         ]);
         
         $response = $this->actingAs($user)->get(route('mobile-entry.lifts'));
@@ -73,13 +71,11 @@ class MobileEntryTest extends TestCase
             'exercise_type' => 'regular'
         ]);
         
-        // Create a program that will generate a form
-        Program::factory()->create([
+        // Create a mobile lift form that will generate a form
+        MobileLiftForm::factory()->create([
             'user_id' => $user->id,
             'exercise_id' => $exercise->id,
             'date' => now(),
-            'sets' => 3,
-            'reps' => 5
         ]);
         
         $response = $this->actingAs($user)->get(route('mobile-entry.lifts'));
@@ -100,12 +96,10 @@ class MobileEntryTest extends TestCase
             'exercise_type' => 'bodyweight'
         ]);
         
-        Program::factory()->create([
+        MobileLiftForm::factory()->create([
             'user_id' => $user->id,
             'exercise_id' => $exercise->id,
             'date' => now(),
-            'sets' => 3,
-            'reps' => 10
         ]);
         
         $response = $this->actingAs($user)->get(route('mobile-entry.lifts'));
@@ -124,12 +118,10 @@ class MobileEntryTest extends TestCase
             'exercise_type' => 'banded_resistance'
         ]);
         
-        Program::factory()->create([
+        MobileLiftForm::factory()->create([
             'user_id' => $user->id,
             'exercise_id' => $exercise->id,
             'date' => now(),
-            'sets' => 3,
-            'reps' => 15
         ]);
         
         $response = $this->actingAs($user)->get(route('mobile-entry.lifts'));

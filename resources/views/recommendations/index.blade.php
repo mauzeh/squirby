@@ -226,48 +226,9 @@
                                 <a href="{{ route('exercises.show-logs', $recommendation['exercise']) }}" class="button">
                                     <i class="fas fa-chart-line"></i> View Exercise History
                                 </a>
-                                @if(isset($todayProgramExercises[$recommendation['exercise']->id]))
-                                    <form action="{{ route('programs.destroy', $todayProgramExercises[$recommendation['exercise']->id]) }}" method="POST" style="display:inline;">
-                                        @csrf
-                                        @method('DELETE')
-                                        <input type="hidden" name="redirect_to" value="recommendations">
-                                        <!-- Preserve current filter state in form submission -->
-                                        @if(request('movement_archetype'))
-                                            <input type="hidden" name="movement_archetype" value="{{ request('movement_archetype') }}">
-                                        @endif
-                                        @if(request('difficulty_level'))
-                                            <input type="hidden" name="difficulty_level" value="{{ request('difficulty_level') }}">
-                                        @endif
-                                        @if(request('show_logged_only'))
-                                            <input type="hidden" name="show_logged_only" value="{{ request('show_logged_only') }}">
-                                        @endif
-                                        <button type="submit" class="button delete" onclick="return confirm('Are you sure you want to remove this exercise from today\'s program?');" title="Remove from Today">
-                                            <i class="fas fa-minus"></i> Remove from Today
-                                        </button>
-                                    </form>
-                                @else
-                                    @php
-                                        $quickAddParams = [
-                                            'exercise' => $recommendation['exercise']->id, 
-                                            'date' => \Carbon\Carbon::today()->format('Y-m-d'), 
-                                            'redirect_to' => 'recommendations'
-                                        ];
-                                        
-                                        // Preserve current filter state in URL parameters
-                                        if (request('movement_archetype')) {
-                                            $quickAddParams['movement_archetype'] = request('movement_archetype');
-                                        }
-                                        if (request('difficulty_level')) {
-                                            $quickAddParams['difficulty_level'] = request('difficulty_level');
-                                        }
-                                        if (request('show_logged_only')) {
-                                            $quickAddParams['show_logged_only'] = request('show_logged_only');
-                                        }
-                                    @endphp
-                                    <a href="{{ route('programs.quick-add', $quickAddParams) }}" class="button" style="background-color: #4CAF50;">
-                                        <i class="fas fa-plus"></i> Add to Today
-                                    </a>
-                                @endif
+                                <a href="{{ route('mobile-entry.lifts', ['date' => \Carbon\Carbon::today()->format('Y-m-d')]) }}" class="button" style="background-color: #4CAF50;">
+                                    <i class="fas fa-mobile-alt"></i> Go to Mobile Entry
+                                </a>
                             </div>
                         </div>
                     @endforeach

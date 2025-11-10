@@ -4,7 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use App\Models\Exercise;
-use App\Models\Program;
+use App\Models\MobileLiftForm;
 use App\Services\MobileEntry\LiftLogService;
 use App\Services\TrainingProgressionService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -40,56 +40,20 @@ class ShowExtraWeightPreferenceTest extends TestCase
             'exercise_type' => 'regular'
         ]);
         
-        $mockProgressionService = $this->createMock(TrainingProgressionService::class);
-        $mockProgressionService->method('getSuggestionDetails')->willReturn(null);
-        
-        // Mock the LiftDataCacheService
-        $mockCacheService = $this->createMock(\App\Services\MobileEntry\LiftDataCacheService::class);
-        
-        // Set up default mock returns for cache service
-        $mockCacheService->method('getProgramsWithCompletionStatus')->willReturnCallback(function($userId, $selectedDate, $includeCompleted = false) {
-            $query = Program::where('user_id', $userId)
-                ->whereDate('date', $selectedDate->toDateString())
-                ->with(['exercise'])
-                ->withCompletionStatus();
-                
-            if (!$includeCompleted) {
-                $query->incomplete();
-            }
-            
-            return $query->orderBy('priority', 'asc')->get();
-        });
-        
-        $mockCacheService->method('getAllCachedData')->willReturnCallback(function($userId, $selectedDate, $exerciseIds = []) {
-            return [
-                'lastSessionData' => [],
-                'recentExerciseIds' => [],
-                'programExerciseIds' => [],
-            ];
-        });
-        
-        // Mock the ExerciseAliasService
-        $mockAliasService = $this->createMock(\App\Services\ExerciseAliasService::class);
-        
-        // Mock the RecommendationEngine
-        $mockRecommendationEngine = $this->createMock(\App\Services\RecommendationEngine::class);
-        $mockRecommendationEngine->method('getRecommendations')->willReturn([]);
-        
-        $this->service = new LiftLogService($mockProgressionService, $mockCacheService, $mockAliasService, $mockRecommendationEngine);
+        // Use real services for this test since we're testing form generation with database
+        $this->service = app(LiftLogService::class);
     }
 
     public function test_bodyweight_exercise_hides_weight_field_when_preference_disabled()
     {
-        // Create a program with bodyweight exercise (user has show_extra_weight = false by default)
-        $program = Program::factory()->create([
+        // Create a mobile lift form with bodyweight exercise (user has show_extra_weight = false by default)
+        $mobileLiftForm = MobileLiftForm::factory()->create([
             'user_id' => $this->user->id,
             'exercise_id' => $this->bodyweightExercise->id,
             'date' => Carbon::today(),
-            'reps' => 10,
-            'sets' => 3
         ]);
 
-        $forms = $this->service->generateProgramForms($this->user->id, Carbon::today());
+        $forms = $this->service->generateForms($this->user->id, Carbon::today());
 
         $this->assertCount(1, $forms);
         
@@ -109,16 +73,14 @@ class ShowExtraWeightPreferenceTest extends TestCase
         // Enable show extra weight preference
         $this->user->update(['show_extra_weight' => true]);
         
-        // Create a program with bodyweight exercise
-        $program = Program::factory()->create([
+        // Create a mobile lift form with bodyweight exercise
+        $mobileLiftForm = MobileLiftForm::factory()->create([
             'user_id' => $this->user->id,
             'exercise_id' => $this->bodyweightExercise->id,
             'date' => Carbon::today(),
-            'reps' => 10,
-            'sets' => 3
         ]);
 
-        $forms = $this->service->generateProgramForms($this->user->id, Carbon::today());
+        $forms = $this->service->generateForms($this->user->id, Carbon::today());
 
         $this->assertCount(1, $forms);
         
@@ -133,16 +95,14 @@ class ShowExtraWeightPreferenceTest extends TestCase
         // Disable show extra weight preference
         $this->user->update(['show_extra_weight' => false]);
         
-        // Create a program with weighted exercise
-        $program = Program::factory()->create([
+        // Create a mobile lift form with weighted exercise
+        $mobileLiftForm = MobileLiftForm::factory()->create([
             'user_id' => $this->user->id,
             'exercise_id' => $this->weightedExercise->id,
             'date' => Carbon::today(),
-            'reps' => 5,
-            'sets' => 3
         ]);
 
-        $forms = $this->service->generateProgramForms($this->user->id, Carbon::today());
+        $forms = $this->service->generateForms($this->user->id, Carbon::today());
 
         $this->assertCount(1, $forms);
         

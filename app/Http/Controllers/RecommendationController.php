@@ -7,7 +7,7 @@ use App\Services\ActivityAnalysisService;
 use App\Services\ExerciseAliasService;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
-use App\Models\Program;
+use App\Models\MobileLiftForm;
 
 class RecommendationController extends Controller
 {
@@ -84,12 +84,12 @@ class RecommendationController extends Controller
         $movementArchetypes = ['push', 'pull', 'squat', 'hinge', 'carry', 'core'];
         $difficultyLevels = [1, 2, 3, 4, 5];
 
-        // Get exercises already in today's program, mapped by exercise_id to program_id
-        $todayProgramExercises = \App\Models\Program::where('user_id', auth()->id())
+        // Get exercises already in today's mobile lift forms, mapped by exercise_id to form_id
+        $todayProgramExercises = MobileLiftForm::where('user_id', auth()->id())
             ->whereDate('date', \Carbon\Carbon::today())
             ->get()
             ->keyBy('exercise_id')
-            ->map(fn($program) => $program->id); // Map exercise_id to program_id
+            ->map(fn($form) => $form->id); // Map exercise_id to form_id
 
         return view('recommendations.index', compact(
             'recommendations',

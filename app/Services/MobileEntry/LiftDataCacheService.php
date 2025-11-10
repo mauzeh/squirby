@@ -2,7 +2,6 @@
 
 namespace App\Services\MobileEntry;
 
-use App\Models\Program;
 use App\Models\LiftLog;
 use App\Models\Exercise;
 use Carbon\Carbon;
@@ -11,8 +10,6 @@ class LiftDataCacheService
 {
     protected array $lastSessionCache = [];
     protected array $recentExerciseIdsCache = [];
-    protected array $programExerciseIdsCache = [];
-    protected array $completionStatusCache = [];
 
     /**
      * Get last session data for multiple exercises, with caching
@@ -71,83 +68,26 @@ class LiftDataCacheService
     }
 
     /**
-     * Get program exercise IDs for a specific date, with caching
-     * 
-     * @param int $userId
-     * @param Carbon $selectedDate
-     * @return array
-     */
-    public function getProgramExerciseIds(int $userId, Carbon $selectedDate): array
-    {
-        $cacheKey = $this->generateCacheKey('program_exercises', $userId, $selectedDate->toDateString());
-        
-        if (isset($this->programExerciseIdsCache[$cacheKey])) {
-            return $this->programExerciseIdsCache[$cacheKey];
-        }
-
-        $data = Program::where('user_id', $userId)
-            ->whereDate('date', $selectedDate->toDateString())
-            ->pluck('exercise_id')
-            ->toArray();
-
-        $this->programExerciseIdsCache[$cacheKey] = $data;
-        
-        return $data;
-    }
-
-    /**
-     * Get programs with preloaded completion status and relationships
-     * 
-     * @param int $userId
-     * @param Carbon $selectedDate
-     * @param bool $includeCompleted
-     * @return \Illuminate\Database\Eloquent\Collection
-     */
-    public function getProgramsWithCompletionStatus(int $userId, Carbon $selectedDate, bool $includeCompleted = false)
-    {
-        $query = Program::where('user_id', $userId)
-            ->whereDate('date', $selectedDate->toDateString())
-            ->with(['exercise' => function ($exerciseQuery) use ($userId) {
-                $exerciseQuery->with(['aliases' => function ($aliasQuery) use ($userId) {
-                    $aliasQuery->where('user_id', $userId);
-                }]);
-            }])
-            ->withCompletionStatus();
-            
-        if (!$includeCompleted) {
-            $query->incomplete();
-        }
-        
-        return $query->orderBy('priority', 'asc')->get();
-    }
-
-    /**
      * Determine item type using cached data
      * 
      * @param Exercise $exercise
      * @param int $userId
      * @param array $recentExerciseIds
-     * @param array $programExerciseIds
      * @return array
      */
-    public function determineItemType(Exercise $exercise, int $userId, array $recentExerciseIds, array $programExerciseIds): array
+    public function determineItemType(Exercise $exercise, int $userId, array $recentExerciseIds): array
     {
-        // Check if exercise is in today's program (using cached data)
-        $inProgram = in_array($exercise->id, $programExerciseIds);
-
         // Check if exercise is in the top recent exercises
         $isTopRecent = in_array($exercise->id, $recentExerciseIds);
 
         // Check if it's a user's custom exercise
         $isCustom = $exercise->user_id === $userId;
 
-        // Determine type based on priority: recent > custom > regular > in-program
+        // Determine type based on priority: recent > custom > regular
         if ($isTopRecent) {
             return $this->getItemTypeConfig('recent');
         } elseif ($isCustom) {
             return $this->getItemTypeConfig('custom');
-        } elseif ($inProgram) {
-            return $this->getItemTypeConfig('in-program');
         } else {
             return $this->getItemTypeConfig('regular');
         }
@@ -166,7 +106,6 @@ class LiftDataCacheService
         return [
             'lastSessionData' => !empty($exerciseIds) ? $this->getLastSessionData($exerciseIds, $selectedDate, $userId) : [],
             'recentExerciseIds' => $this->getTopRecentExerciseIds($userId, $selectedDate, 5),
-            'programExerciseIds' => $this->getProgramExerciseIds($userId, $selectedDate),
         ];
     }
 
@@ -177,8 +116,6 @@ class LiftDataCacheService
     {
         $this->lastSessionCache = [];
         $this->recentExerciseIdsCache = [];
-        $this->programExerciseIdsCache = [];
-        $this->completionStatusCache = [];
     }
 
     /**
@@ -197,12 +134,6 @@ class LiftDataCacheService
         foreach ($this->recentExerciseIdsCache as $key => $value) {
             if (str_contains($key, "user_{$userId}") && (empty($dateString) || str_contains($key, $dateString))) {
                 unset($this->recentExerciseIdsCache[$key]);
-            }
-        }
-        
-        foreach ($this->programExerciseIdsCache as $key => $value) {
-            if (str_contains($key, "user_{$userId}") && (empty($dateString) || str_contains($key, $dateString))) {
-                unset($this->programExerciseIdsCache[$key]);
             }
         }
     }
@@ -290,11 +221,6 @@ class LiftDataCacheService
                 'label' => 'Available',
                 'cssClass' => 'regular',
                 'priority' => 3
-            ],
-            'in-program' => [
-                'label' => 'In Program',
-                'cssClass' => 'in-program',
-                'priority' => 4
             ]
         ];
 

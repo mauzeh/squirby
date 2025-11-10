@@ -5,7 +5,6 @@ namespace Tests\Feature;
 use App\Models\Exercise;
 use App\Models\ExerciseIntelligence;
 use App\Models\LiftLog;
-use App\Models\Program;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -71,17 +70,6 @@ class ExerciseMergeIntegrationTest extends TestCase
             'logged_at' => now()->subDays(3)
         ]);
 
-        // Create program entries
-        $program1 = Program::factory()->create([
-            'exercise_id' => $sourceExercise->id,
-            'user_id' => $this->regularUser->id
-        ]);
-
-        $program2 = Program::factory()->create([
-            'exercise_id' => $sourceExercise->id,
-            'user_id' => $this->regularUser->id
-        ]);
-
         // Create exercise intelligence for source
         $sourceIntelligence = ExerciseIntelligence::factory()->create([
             'exercise_id' => $sourceExercise->id,
@@ -120,17 +108,6 @@ class ExerciseMergeIntegrationTest extends TestCase
             'exercise_id' => $targetExercise->id,
             'comments' => '[Merged from: User Bench Press]',
             'weight' => 105
-        ]);
-
-        // Check program entries were transferred
-        $this->assertDatabaseHas('programs', [
-            'id' => $program1->id,
-            'exercise_id' => $targetExercise->id
-        ]);
-
-        $this->assertDatabaseHas('programs', [
-            'id' => $program2->id,
-            'exercise_id' => $targetExercise->id
         ]);
 
         // Check exercise intelligence was transferred

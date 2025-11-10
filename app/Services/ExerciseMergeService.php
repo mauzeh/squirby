@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Models\Exercise;
 use App\Models\LiftLog;
-use App\Models\Program;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
@@ -103,9 +102,6 @@ class ExerciseMergeService
             // Transfer lift logs
             $this->transferLiftLogs($source, $target);
 
-            // Transfer program entries
-            $this->transferProgramEntries($source, $target);
-
             // Handle exercise intelligence
             $this->handleExerciseIntelligence($source, $target);
 
@@ -155,15 +151,6 @@ class ExerciseMergeService
             // Update exercise_id to target
             $liftLog->update(['exercise_id' => $target->id]);
         }
-    }
-
-    /**
-     * Transfer all program entries from source to target exercise
-     */
-    private function transferProgramEntries(Exercise $source, Exercise $target): void
-    {
-        Program::where('exercise_id', $source->id)
-            ->update(['exercise_id' => $target->id]);
     }
 
     /**
@@ -278,7 +265,6 @@ class ExerciseMergeService
     {
         return [
             'lift_logs_count' => $exercise->liftLogs()->count(),
-            'program_entries_count' => Program::where('exercise_id', $exercise->id)->count(),
             'has_intelligence' => $exercise->hasIntelligence(),
             'users_count' => $exercise->liftLogs()->distinct('user_id')->count('user_id')
         ];

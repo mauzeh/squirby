@@ -15,8 +15,7 @@ use App\Http\Controllers\ExerciseController;
 use App\Http\Controllers\LiftLogController;
 use App\Http\Controllers\BodyLogController;
 use App\Http\Controllers\MeasurementTypeController;
-use App\Http\Controllers\ProgramController;
-use App\Http\Controllers\RecommendationController; // Keep this import
+use App\Http\Controllers\RecommendationController;
 
 // Breeze Routes
 Route::get('/', function () {
@@ -71,10 +70,7 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('lift-logs', LiftLogController::class)->except(['show']);
 
-    Route::resource('programs', ProgramController::class);
-    Route::post('programs/destroy-selected', [ProgramController::class, 'destroySelected'])->name('programs.destroy-selected');
-
-    // Exercise Recommendations (Keep these routes)
+    // Exercise Recommendations
     Route::get('recommendations', [RecommendationController::class, 'index'])->name('recommendations.index');
 
     // Mobile Entry - Supports date parameter: /mobile-entry?date=2024-01-15
@@ -111,8 +107,5 @@ Route::middleware(['auth', 'admin'])->group(function () {
     // Remove all exercise-intelligence routes here
 });
 
-Route::get('users/impersonate/leave', [UserController::class, 'leaveImpersonate'])->name('users.leave-impersonate');    Route::get('lift-logs/quick-add/{exercise}/{date}', [LiftLogController::class, 'quickAdd'])->name('lift-logs.quick-add');
-    Route::get('programs/quick-add/{exercise}/{date}', [ProgramController::class, 'quickAdd'])->name('programs.quick-add');
-    Route::post('programs/quick-create/{date}', [ProgramController::class, 'quickCreate'])->name('programs.quick-create');
-    Route::get('programs/{program}/move-down', [ProgramController::class, 'moveDown'])->name('programs.move-down');
-    Route::get('programs/{program}/move-up', [ProgramController::class, 'moveUp'])->name('programs.move-up');
+Route::get('users/impersonate/leave', [UserController::class, 'leaveImpersonate'])->name('users.leave-impersonate');
+Route::get('lift-logs/quick-add/{exercise}/{date}', [LiftLogController::class, 'quickAdd'])->name('lift-logs.quick-add');

@@ -9,7 +9,7 @@ use App\Models\Exercise;
 use App\Models\ExerciseAlias;
 use App\Models\LiftLog;
 use App\Models\LiftSet;
-use App\Models\Program;
+use App\Models\MobileLiftForm;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -131,7 +131,7 @@ class ExerciseAliasPerformanceTest extends TestCase
     }
 
     /** @test */
-    public function programs_with_aliases_uses_single_additional_query()
+    public function mobile_lift_forms_with_aliases_uses_single_additional_query()
     {
         $user = User::factory()->create();
         
@@ -147,9 +147,9 @@ class ExerciseAliasPerformanceTest extends TestCase
             ]);
         }
         
-        // Create programs for all exercises
+        // Create mobile lift forms for all exercises
         foreach ($exercises as $exercise) {
-            Program::factory()->create([
+            MobileLiftForm::factory()->create([
                 'user_id' => $user->id,
                 'exercise_id' => $exercise->id,
                 'date' => Carbon::today()
@@ -162,7 +162,7 @@ class ExerciseAliasPerformanceTest extends TestCase
         DB::connection()->enableQueryLog();
         DB::connection()->flushQueryLog();
         
-        $response = $this->get(route('programs.index'));
+        $response = $this->get(route('mobile-entry.lifts'));
         
         $queries = DB::getQueryLog();
         DB::connection()->disableQueryLog();
@@ -175,7 +175,7 @@ class ExerciseAliasPerformanceTest extends TestCase
         })->count();
         
         // Should have limited queries for aliases (eager loaded + view composer)
-        // The key is that it doesn't scale with number of programs (no N+1)
+        // The key is that it doesn't scale with number of mobile lift forms (no N+1)
         $this->assertLessThanOrEqual(10, $aliasQueries,
             'Expected at most 10 queries for aliases (should not have N+1 problem), got ' . $aliasQueries);
         
@@ -358,7 +358,7 @@ class ExerciseAliasPerformanceTest extends TestCase
     }
 
     /** @test */
-    public function programs_page_response_time_with_aliases_is_acceptable()
+    public function mobile_entry_lifts_page_response_time_with_aliases_is_acceptable()
     {
         $user = User::factory()->create();
         
@@ -374,10 +374,10 @@ class ExerciseAliasPerformanceTest extends TestCase
             ]);
         }
         
-        // Create 30 programs
+        // Create 30 mobile lift forms
         foreach (range(1, 30) as $i) {
             $exercise = $exercises->random();
-            Program::factory()->create([
+            MobileLiftForm::factory()->create([
                 'user_id' => $user->id,
                 'exercise_id' => $exercise->id,
                 'date' => Carbon::today()->addDays($i)
@@ -388,13 +388,13 @@ class ExerciseAliasPerformanceTest extends TestCase
         
         // Measure full page load time
         $start = microtime(true);
-        $response = $this->get(route('programs.index'));
+        $response = $this->get(route('mobile-entry.lifts'));
         $duration = (microtime(true) - $start) * 1000; // Convert to ms
         
         $response->assertStatus(200);
         
-        // Full page load should be reasonable (< 500ms for 30 programs)
+        // Full page load should be reasonable (< 500ms for 30 mobile lift forms)
         $this->assertLessThan(500, $duration,
-            "Programs page load should be < 500ms, but was {$duration}ms");
+            "Mobile entry lifts page load should be < 500ms, but was {$duration}ms");
     }
 }
