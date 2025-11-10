@@ -538,9 +538,17 @@ class LiftLogService extends MobileEntryBaseService
             ->pluck('exercise_id')
             ->toArray();
 
-        // Get recent exercises (last 7 days) for the "Recent" category
+        // Get exercises already logged today (to exclude from recent list)
+        $loggedTodayExerciseIds = LiftLog::where('user_id', $userId)
+            ->whereDate('logged_at', $selectedDate->toDateString())
+            ->pluck('exercise_id')
+            ->unique()
+            ->toArray();
+
+        // Get recent exercises (last 7 days, excluding today) for the "Recent" category
         $recentExerciseIds = LiftLog::where('user_id', $userId)
             ->where('logged_at', '>=', Carbon::now()->subDays(7))
+            ->whereNotIn('exercise_id', $loggedTodayExerciseIds)
             ->pluck('exercise_id')
             ->unique()
             ->toArray();
