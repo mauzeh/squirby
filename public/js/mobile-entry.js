@@ -456,7 +456,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Determine the type of delete action and get appropriate message
                 const loggedItemsSection = this.closest('.component-items-section');
-                const formSection = this.closest('.item-logging-section');
+                const formSection = this.closest('.component-form-section');
                 
                 let confirmMessage;
                 
@@ -494,7 +494,7 @@ document.addEventListener('DOMContentLoaded', function() {
      */
     const autoScrollToFirstForm = () => {
         // Find the first form section
-        const firstForm = document.querySelector('.item-logging-section.form');
+        const firstForm = document.querySelector('.component-form-section.form');
         
         if (firstForm) {
             // Small delay to ensure page is fully rendered
