@@ -388,7 +388,7 @@ class FormComponentBuilder
     {
         $this->data = [
             'id' => $id,
-            'type' => 'general',
+            'type' => 'secondary',
             'title' => $title,
             'itemName' => $title,
             'formAction' => '#',
