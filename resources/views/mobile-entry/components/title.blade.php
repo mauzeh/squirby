@@ -1,7 +1,7 @@
 {{-- Title Component --}}
-<div class="date-title-container">
-    <h1 class="date-title">{{ $data['main'] }}</h1>
+<div class="component-title-container">
+    <h1 class="component-title">{{ $data['main'] }}</h1>
     @if($data['subtitle'])
-        <div class="date-subtitle">{{ $data['subtitle'] }}</div>
+        <div class="component-subtitle">{{ $data['subtitle'] }}</div>
     @endif
 </div>

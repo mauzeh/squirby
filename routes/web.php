@@ -95,6 +95,7 @@ Route::middleware('auth')->group(function () {
     Route::get('flexible/without-nav', [FlexibleWorkflowController::class, 'withoutNavigation'])->name('flexible.without-nav');
     Route::get('flexible/multiple-forms', [FlexibleWorkflowController::class, 'multipleForms'])->name('flexible.multiple-forms');
     Route::get('flexible/custom-order', [FlexibleWorkflowController::class, 'customOrder'])->name('flexible.custom-order');
+    Route::get('flexible/multiple-buttons', [FlexibleWorkflowController::class, 'multipleButtons'])->name('flexible.multiple-buttons');
 
     Route::post('lift-logs/destroy-selected', [LiftLogController::class, 'destroySelected'])->name('lift-logs.destroy-selected');
 

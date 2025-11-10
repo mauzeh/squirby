@@ -1,5 +1,5 @@
 {{-- Navigation Component --}}
-<nav class="date-navigation" aria-label="{{ $data['ariaLabels']['navigation'] }}">
+<nav class="component-navigation" aria-label="{{ $data['ariaLabels']['navigation'] }}">
     @if($data['prevButton'])
         @if($data['prevButton']['enabled'])
             <a href="{{ $data['prevButton']['href'] }}" class="nav-button nav-button--prev" aria-label="{{ $data['ariaLabels']['previous'] }}">

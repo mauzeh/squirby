@@ -61,6 +61,7 @@
                 <a href="{{ route('flexible.without-nav') }}" class="{{ Request::routeIs('flexible.without-nav') ? 'active' : '' }}">-Nav</a>
                 <a href="{{ route('flexible.multiple-forms') }}" class="{{ Request::routeIs('flexible.multiple-forms') ? 'active' : '' }}">Multi</a>
                 <a href="{{ route('flexible.custom-order') }}" class="{{ Request::routeIs('flexible.custom-order') ? 'active' : '' }}">Custom</a>
+                <a href="{{ route('flexible.multiple-buttons') }}" class="{{ Request::routeIs('flexible.multiple-buttons') ? 'active' : '' }}">Buttons</a>
             @endif
 
             @if (Request::routeIs(['food-logs.*', 'meals.*', 'ingredients.*', 'mobile-entry.foods']))

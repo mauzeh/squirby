@@ -201,4 +201,37 @@ class FlexibleWorkflowController extends Controller
         
         return view('mobile-entry.flexible', compact('data'));
     }
+    
+    /**
+     * Example 5: Multiple buttons
+     */
+    public function multipleButtons(Request $request)
+    {
+        $data = [
+            'components' => [
+                C::title('Quick Actions')->build(),
+                
+                // Multiple buttons
+                C::button('Add Exercise')
+                    ->ariaLabel('Add new exercise')
+                    ->build(),
+                
+                C::button('Add Food')
+                    ->ariaLabel('Add new food item')
+                    ->cssClass('btn-primary btn-success')
+                    ->build(),
+                
+                C::button('Add Measurement')
+                    ->ariaLabel('Add new measurement')
+                    ->cssClass('btn-primary')
+                    ->build(),
+                
+                C::messages()
+                    ->info('Choose an action above to get started')
+                    ->build(),
+            ]
+        ];
+        
+        return view('mobile-entry.flexible', compact('data'));
+    }
 }

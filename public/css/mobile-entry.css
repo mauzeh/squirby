@@ -98,8 +98,8 @@
 }
 
 /* 
-Date Navigation Component */
-.date-navigation {
+Navigation Component */
+.component-navigation {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -145,14 +145,14 @@ Date Navigation Component */
     outline-offset: 2px;
 }
 
-/* Date Title Container */
-.date-title-container {
+/* Title Container */
+.component-title-container {
     text-align: center;
     margin-bottom: var(--spacing-xl);
 }
 
-/* Main Date Title */
-.date-title {
+/* Main Title */
+.component-title {
     color: var(--color-primary);
     margin: 0;
     font-size: 2em;
@@ -160,8 +160,8 @@ Date Navigation Component */
     line-height: 1.2;
 }
 
-/* Date Subtitle */
-.date-subtitle {
+/* Subtitle */
+.component-subtitle {
     color: var(--text-muted);
     font-size: 1em;
     font-weight: normal;
@@ -169,9 +169,9 @@ Date Navigation Component */
     opacity: 0.8;
 }
 
-/* Responsive adjustments for date navigation */
+/* Responsive adjustments for navigation */
 @media (max-width: 768px) {
-    .date-navigation {
+    .component-navigation {
         margin-bottom: var(--spacing-md);
     }
 
@@ -181,15 +181,15 @@ Date Navigation Component */
         min-width: var(--touch-target-min);
     }
 
-    .date-title-container {
+    .component-title-container {
         margin-bottom: var(--spacing-lg);
     }
 
-    .date-title {
+    .component-title {
         font-size: 1.8em;
     }
 
-    .date-subtitle {
+    .component-subtitle {
         font-size: 0.9em;
         margin-top: 3px;
     }
@@ -202,15 +202,15 @@ Date Navigation Component */
         min-height: 40px;
     }
 
-    .date-title-container {
+    .component-title-container {
         margin-bottom: var(--spacing-md);
     }
 
-    .date-title {
+    .component-title {
         font-size: 1.6em;
     }
 
-    .date-subtitle {
+    .component-subtitle {
         font-size: 0.85em;
         margin-top: 2px;
     }
@@ -415,20 +415,20 @@ Date Navigation Component */
     }
 }
 
-/* Add Item Button */
-.add-item-section {
+/* Button Component */
+.component-button-section {
     display: flex;
     margin-bottom: var(--spacing-lg);
     width: 100%;
 }
 
-.add-item-section.hidden {
+.component-button-section.hidden {
     display: none;
 }
 
-/* Responsive adjustments for add item section */
+/* Responsive adjustments for button section */
 @media (max-width: 768px) {
-    .add-item-section {
+    .component-button-section {
         margin-bottom: var(--spacing-lg);
     }
 }
@@ -1891,11 +1891,11 @@ Date Navigation Component */
         max-width: calc(100vw - 2px);
     }
 
-    .date-navigation {
+    .component-navigation {
         margin-bottom: var(--spacing-md);
     }
 
-    .date-title {
+    .component-title {
         font-size: 1.6em;
         margin-bottom: var(--spacing-md);
     }
