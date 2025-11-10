@@ -2479,4 +2479,284 @@ class LiftLogServiceTest extends TestCase
         // Should show standard format "225 lbs × 5 reps × 3 sets"
         $this->assertEquals('225 lbs × 5 reps × 3 sets', $lastSessionMessage['text']);
     }
+
+    #[Test]
+    public function it_orders_top_pick_recommendations_by_engine_score()
+    {
+        $user = User::factory()->create();
+        
+        // Create exercises with names that would sort differently alphabetically
+        $exercise1 = Exercise::factory()->create(['title' => 'Zebra Exercise']);
+        $exercise2 = Exercise::factory()->create(['title' => 'Apple Exercise']);
+        $exercise3 = Exercise::factory()->create(['title' => 'Mango Exercise']);
+        
+        // Create lift logs so they're eligible for recommendations (last 31 days)
+        foreach ([$exercise1, $exercise2, $exercise3] as $exercise) {
+            LiftLog::factory()->create([
+                'user_id' => $user->id,
+                'exercise_id' => $exercise->id,
+                'logged_at' => Carbon::now()->subDays(10)
+            ]);
+        }
+        
+        // Mock the recommendation engine to return exercises in specific score order
+        $mockRecommendationEngine = $this->createMock(\App\Services\RecommendationEngine::class);
+        $mockRecommendationEngine->method('getRecommendations')->willReturn([
+            ['exercise' => $exercise1, 'score' => 10.5], // Highest score - should be first
+            ['exercise' => $exercise2, 'score' => 8.2],  // Second highest
+            ['exercise' => $exercise3, 'score' => 6.1],  // Third highest
+        ]);
+        
+        // Recreate service with mocked recommendation engine
+        $mockProgressionService = $this->createMock(TrainingProgressionService::class);
+        $mockProgressionService->method('getSuggestionDetails')->willReturn(null);
+        
+        $mockCacheService = $this->createMock(\App\Services\MobileEntry\LiftDataCacheService::class);
+        $mockCacheService->method('getAllCachedData')->willReturn([
+            'lastSessionData' => [],
+            'recentExerciseIds' => [],
+            'programExerciseIds' => [],
+        ]);
+        $mockCacheService->method('determineItemType')->willReturn([
+            'label' => 'Available',
+            'cssClass' => 'regular',
+            'priority' => 3,
+            'subPriority' => 0
+        ]);
+        
+        $mockAliasService = $this->createMock(\App\Services\ExerciseAliasService::class);
+        $mockAliasService->method('applyAliasesToExercises')->willReturnArgument(0);
+        $mockAliasService->method('getDisplayName')->willReturnCallback(function($exercise) {
+            return $exercise->title;
+        });
+        
+        $service = new LiftLogService($mockProgressionService, $mockCacheService, $mockAliasService, $mockRecommendationEngine);
+        
+        $itemSelectionList = $service->generateItemSelectionList($user->id, $this->testDate);
+        
+        // Top picks should be ordered by recommendation score, NOT alphabetically
+        $topPickItems = collect($itemSelectionList['items'])
+            ->filter(fn($item) => $item['type']['priority'] === 0.1)
+            ->values();
+        
+        $this->assertCount(3, $topPickItems);
+        $this->assertEquals('Zebra Exercise', $topPickItems[0]['name']); // Highest score
+        $this->assertEquals('Apple Exercise', $topPickItems[1]['name']); // Second highest
+        $this->assertEquals('Mango Exercise', $topPickItems[2]['name']); // Third highest
+        
+        // Verify they all have the Top Pick label
+        foreach ($topPickItems as $item) {
+            $this->assertStringContainsString('Top Pick', $item['type']['label']);
+            $this->assertEquals('in-program', $item['type']['cssClass']);
+        }
+    }
+
+    #[Test]
+    public function it_orders_recommended_exercises_by_engine_score()
+    {
+        $user = User::factory()->create();
+        
+        // Create 7 exercises
+        $exercises = [];
+        for ($i = 1; $i <= 7; $i++) {
+            $exercises[] = Exercise::factory()->create(['title' => "Exercise $i"]);
+        }
+        
+        // Create lift logs so they're eligible for recommendations
+        foreach ($exercises as $exercise) {
+            LiftLog::factory()->create([
+                'user_id' => $user->id,
+                'exercise_id' => $exercise->id,
+                'logged_at' => Carbon::now()->subDays(10)
+            ]);
+        }
+        
+        // Mock recommendations: top 5 are "Top Pick", ranks 6-7 are "Recommended"
+        $mockRecommendations = [];
+        foreach ($exercises as $index => $exercise) {
+            $mockRecommendations[] = [
+                'exercise' => $exercise,
+                'score' => 10 - $index // Descending scores
+            ];
+        }
+        
+        $mockRecommendationEngine = $this->createMock(\App\Services\RecommendationEngine::class);
+        $mockRecommendationEngine->method('getRecommendations')->willReturn($mockRecommendations);
+        
+        // Recreate service with mocked recommendation engine
+        $mockProgressionService = $this->createMock(TrainingProgressionService::class);
+        $mockProgressionService->method('getSuggestionDetails')->willReturn(null);
+        
+        $mockCacheService = $this->createMock(\App\Services\MobileEntry\LiftDataCacheService::class);
+        $mockCacheService->method('getAllCachedData')->willReturn([
+            'lastSessionData' => [],
+            'recentExerciseIds' => [],
+            'programExerciseIds' => [],
+        ]);
+        $mockCacheService->method('determineItemType')->willReturn([
+            'label' => 'Available',
+            'cssClass' => 'regular',
+            'priority' => 3,
+            'subPriority' => 0
+        ]);
+        
+        $mockAliasService = $this->createMock(\App\Services\ExerciseAliasService::class);
+        $mockAliasService->method('applyAliasesToExercises')->willReturnArgument(0);
+        $mockAliasService->method('getDisplayName')->willReturnCallback(function($exercise) {
+            return $exercise->title;
+        });
+        
+        $service = new LiftLogService($mockProgressionService, $mockCacheService, $mockAliasService, $mockRecommendationEngine);
+        
+        $itemSelectionList = $service->generateItemSelectionList($user->id, $this->testDate);
+        
+        // Top 5 should be "Top Pick" (priority 0.1)
+        $topPickItems = collect($itemSelectionList['items'])
+            ->filter(fn($item) => $item['type']['priority'] === 0.1)
+            ->values();
+        
+        $this->assertCount(5, $topPickItems);
+        for ($i = 0; $i < 5; $i++) {
+            $this->assertEquals("Exercise " . ($i + 1), $topPickItems[$i]['name']);
+            $this->assertStringContainsString('Top Pick', $topPickItems[$i]['type']['label']);
+        }
+        
+        // Ranks 6-7 should be "Recommended" (priority 0.2)
+        $recommendedItems = collect($itemSelectionList['items'])
+            ->filter(fn($item) => $item['type']['priority'] === 0.2)
+            ->values();
+        
+        $this->assertCount(2, $recommendedItems);
+        $this->assertEquals('Exercise 6', $recommendedItems[0]['name']);
+        $this->assertEquals('Exercise 7', $recommendedItems[1]['name']);
+        
+        foreach ($recommendedItems as $item) {
+            $this->assertStringContainsString('Recommended', $item['type']['label']);
+            $this->assertEquals('custom', $item['type']['cssClass']);
+        }
+    }
+
+    #[Test]
+    public function it_maintains_alphabetical_order_within_non_recommended_categories()
+    {
+        $user = User::factory()->create();
+        
+        // Create exercises that won't be recommended
+        $exerciseZ = Exercise::factory()->create(['title' => 'Zebra Lift']);
+        $exerciseA = Exercise::factory()->create(['title' => 'Apple Lift']);
+        $exerciseM = Exercise::factory()->create(['title' => 'Mango Lift']);
+        
+        // Don't create lift logs, so they won't be recommended
+        
+        // Mock empty recommendations
+        $mockRecommendationEngine = $this->createMock(\App\Services\RecommendationEngine::class);
+        $mockRecommendationEngine->method('getRecommendations')->willReturn([]);
+        
+        // Recreate service with mocked recommendation engine
+        $mockProgressionService = $this->createMock(TrainingProgressionService::class);
+        $mockProgressionService->method('getSuggestionDetails')->willReturn(null);
+        
+        $mockCacheService = $this->createMock(\App\Services\MobileEntry\LiftDataCacheService::class);
+        $mockCacheService->method('getAllCachedData')->willReturn([
+            'lastSessionData' => [],
+            'recentExerciseIds' => [],
+            'programExerciseIds' => [],
+        ]);
+        $mockCacheService->method('determineItemType')->willReturn([
+            'label' => 'Available',
+            'cssClass' => 'regular',
+            'priority' => 3,
+            'subPriority' => 0
+        ]);
+        
+        $mockAliasService = $this->createMock(\App\Services\ExerciseAliasService::class);
+        $mockAliasService->method('applyAliasesToExercises')->willReturnArgument(0);
+        $mockAliasService->method('getDisplayName')->willReturnCallback(function($exercise) {
+            return $exercise->title;
+        });
+        
+        $service = new LiftLogService($mockProgressionService, $mockCacheService, $mockAliasService, $mockRecommendationEngine);
+        
+        $itemSelectionList = $service->generateItemSelectionList($user->id, $this->testDate);
+        
+        // Regular exercises should be sorted alphabetically
+        $regularItems = collect($itemSelectionList['items'])
+            ->filter(fn($item) => $item['type']['priority'] === 3)
+            ->values();
+        
+        $this->assertCount(3, $regularItems);
+        $this->assertEquals('Apple Lift', $regularItems[0]['name']);
+        $this->assertEquals('Mango Lift', $regularItems[1]['name']);
+        $this->assertEquals('Zebra Lift', $regularItems[2]['name']);
+    }
+
+    #[Test]
+    public function it_uses_subpriority_to_preserve_recommendation_order()
+    {
+        $user = User::factory()->create();
+        
+        // Create exercises with similar names to test subPriority sorting
+        $exercise1 = Exercise::factory()->create(['title' => 'Push Up']);
+        $exercise2 = Exercise::factory()->create(['title' => 'Pull Up']);
+        $exercise3 = Exercise::factory()->create(['title' => 'Plank']);
+        
+        // Create lift logs
+        foreach ([$exercise1, $exercise2, $exercise3] as $exercise) {
+            LiftLog::factory()->create([
+                'user_id' => $user->id,
+                'exercise_id' => $exercise->id,
+                'logged_at' => Carbon::now()->subDays(10)
+            ]);
+        }
+        
+        // Mock recommendations with specific order
+        $mockRecommendationEngine = $this->createMock(\App\Services\RecommendationEngine::class);
+        $mockRecommendationEngine->method('getRecommendations')->willReturn([
+            ['exercise' => $exercise3, 'score' => 9.5], // Plank - rank 1
+            ['exercise' => $exercise1, 'score' => 8.0], // Push Up - rank 2
+            ['exercise' => $exercise2, 'score' => 7.0], // Pull Up - rank 3
+        ]);
+        
+        // Recreate service
+        $mockProgressionService = $this->createMock(TrainingProgressionService::class);
+        $mockProgressionService->method('getSuggestionDetails')->willReturn(null);
+        
+        $mockCacheService = $this->createMock(\App\Services\MobileEntry\LiftDataCacheService::class);
+        $mockCacheService->method('getAllCachedData')->willReturn([
+            'lastSessionData' => [],
+            'recentExerciseIds' => [],
+            'programExerciseIds' => [],
+        ]);
+        $mockCacheService->method('determineItemType')->willReturn([
+            'label' => 'Available',
+            'cssClass' => 'regular',
+            'priority' => 3,
+            'subPriority' => 0
+        ]);
+        
+        $mockAliasService = $this->createMock(\App\Services\ExerciseAliasService::class);
+        $mockAliasService->method('applyAliasesToExercises')->willReturnArgument(0);
+        $mockAliasService->method('getDisplayName')->willReturnCallback(function($exercise) {
+            return $exercise->title;
+        });
+        
+        $service = new LiftLogService($mockProgressionService, $mockCacheService, $mockAliasService, $mockRecommendationEngine);
+        
+        $itemSelectionList = $service->generateItemSelectionList($user->id, $this->testDate);
+        
+        // Verify order matches recommendation engine, not alphabetical
+        $topPickItems = collect($itemSelectionList['items'])
+            ->filter(fn($item) => $item['type']['priority'] === 0.1)
+            ->values();
+        
+        $this->assertCount(3, $topPickItems);
+        $this->assertEquals('Plank', $topPickItems[0]['name']);     // Rank 1
+        $this->assertEquals('Push Up', $topPickItems[1]['name']);   // Rank 2
+        $this->assertEquals('Pull Up', $topPickItems[2]['name']);   // Rank 3
+        
+        // Verify subPriority values
+        $this->assertEquals(1, $topPickItems[0]['type']['subPriority']);
+        $this->assertEquals(2, $topPickItems[1]['type']['subPriority']);
+        $this->assertEquals(3, $topPickItems[2]['type']['subPriority']);
+    }
 }

@@ -512,39 +512,47 @@ class LiftLogService extends MobileEntryBaseService
      *    - Label: <i class="fas fa-star"></i> Top Pick
      *    - Style: 'in-program' (green, prominent)
      *    - Priority: 0.1 (highest)
+     *    - Ordered by recommendation engine score (highest score first)
      *    - The top 5 most recommended exercises based on:
      *      * Muscle balance and underworked muscles
      *      * Movement pattern diversity
      *      * Recovery periods
      *      * Recent training history
      *    - Only shows exercises performed in last 31 days
+     *    - Order matches recommendations/index page exactly
      * 
      * 2. Recommended (Rank 6-10)
      *    - Label: <i class="fas fa-thumbs-up"></i> Recommended
      *    - Style: 'custom' (purple)
      *    - Priority: 0.2
+     *    - Ordered by recommendation engine score (highest score first)
      *    - Additional recommended exercises that complement training
      *    - Only shows exercises performed in last 31 days
+     *    - Order matches recommendations/index page exactly
      * 
      * 3. Recent (Last 7 Days)
      *    - Style: 'recent' (green, lighter)
      *    - Priority: 0.3
      *    - Exercises performed in the last 7 days (not already recommended)
+     *    - Ordered alphabetically
      * 
      * 4. In Program
      *    - Style: 'in-program' (green, prominent)
      *    - Priority: 0.4
      *    - Exercises already in today's program
+     *    - Ordered alphabetically
      * 
      * 5. Custom
      *    - Style: 'custom' (purple)
      *    - Priority: 2
      *    - User's custom exercises
+     *    - Ordered alphabetically
      * 
      * 6. Regular
      *    - Style: 'regular' (gray)
      *    - Priority: 3
      *    - Standard exercises
+     *    - Ordered alphabetically
      * 
      * Note: Reuses existing CSS classes to maintain consistency
      * 
@@ -588,20 +596,20 @@ class LiftLogService extends MobileEntryBaseService
             ->unique()
             ->toArray();
 
-        // Get top 5 recommended exercises using the recommendation engine
+        // Get top 10 recommended exercises using the recommendation engine
         // This matches the recommendations shown on recommendations/index
         // Only recommend exercises the user has already performed
-        $recommendations = $this->recommendationEngine->getRecommendations($userId, 5);
+        $recommendations = $this->recommendationEngine->getRecommendations($userId, 10);
         
         // Create a map of exercise IDs to their recommendation scores and rankings
-        // Only include top 5 recommendations
+        // Store the exact rank from the recommendation engine to preserve order
         $recommendationMap = [];
         foreach ($recommendations as $index => $recommendation) {
             $exerciseId = $recommendation['exercise']->id;
             if (in_array($exerciseId, $performedExerciseIds)) {
                 $recommendationMap[$exerciseId] = [
                     'score' => $recommendation['score'],
-                    'rank' => $index + 1
+                    'rank' => $index + 1  // Rank 1 is highest, rank 10 is lowest
                 ];
             }
         }
@@ -618,6 +626,7 @@ class LiftLogService extends MobileEntryBaseService
             
             if (isset($recommendationMap[$exercise->id])) {
                 // Exercise is recommended - HIGHEST PRIORITY
+                // Use rank as sub-priority to maintain exact recommendation engine order
                 $rank = $recommendationMap[$exercise->id]['rank'];
                 
                 // Top 5 recommendations get "In Program" styling (green, prominent)
@@ -625,14 +634,16 @@ class LiftLogService extends MobileEntryBaseService
                     $itemType = [
                         'label' => '<i class="fas fa-star"></i> Top Pick',
                         'cssClass' => 'in-program',  // Reuse existing green style
-                        'priority' => 0.1  // Highest priority
+                        'priority' => 0.1,  // Highest priority
+                        'subPriority' => $rank  // Preserve recommendation engine order
                     ];
                 } else {
                     // Remaining recommendations get "Custom" styling (purple)
                     $itemType = [
                         'label' => '<i class="fas fa-thumbs-up"></i> Recommended',
                         'cssClass' => 'custom',  // Reuse existing purple style
-                        'priority' => 0.2  // Second highest priority
+                        'priority' => 0.2,  // Second highest priority
+                        'subPriority' => $rank  // Preserve recommendation engine order
                     ];
                 }
             } elseif (in_array($exercise->id, $recentExerciseIds)) {
@@ -640,19 +651,25 @@ class LiftLogService extends MobileEntryBaseService
                 $itemType = [
                     'label' => 'Recent',
                     'cssClass' => 'recent',
-                    'priority' => 0.3
+                    'priority' => 0.3,
+                    'subPriority' => 0  // No sub-priority for recent
                 ];
             } elseif (in_array($exercise->id, $programExerciseIds)) {
                 // Exercise is in today's program - FOURTH PRIORITY
                 $itemType = [
                     'label' => 'In Program',
                     'cssClass' => 'in-program',
-                    'priority' => 0.4
+                    'priority' => 0.4,
+                    'subPriority' => 0  // No sub-priority for in-program
                 ];
             } else {
                 // Use cache service for remaining categorization (custom vs regular)
                 // These will have priorities 2 (custom) or 3 (regular) which are lower than our 0.x priorities
                 $itemType = $this->cacheService->determineItemType($exercise, $userId, [], $programExerciseIds);
+                // Add subPriority for consistency
+                if (!isset($itemType['subPriority'])) {
+                    $itemType['subPriority'] = 0;
+                }
             }
 
             $items[] = [
@@ -666,7 +683,7 @@ class LiftLogService extends MobileEntryBaseService
             ];
         }
 
-        // Sort items: by priority first, then alphabetical by name
+        // Sort items: by priority first, then by subPriority (for recommendations), then alphabetical by name
         usort($items, function ($a, $b) {
             // First sort by priority (lower number = higher priority)
             $priorityComparison = $a['type']['priority'] <=> $b['type']['priority'];
@@ -674,7 +691,15 @@ class LiftLogService extends MobileEntryBaseService
                 return $priorityComparison;
             }
             
-            // If same priority, sort alphabetically by name
+            // If same priority, sort by subPriority (for recommendations to maintain engine order)
+            $subPriorityA = $a['type']['subPriority'] ?? 0;
+            $subPriorityB = $b['type']['subPriority'] ?? 0;
+            $subPriorityComparison = $subPriorityA <=> $subPriorityB;
+            if ($subPriorityComparison !== 0) {
+                return $subPriorityComparison;
+            }
+            
+            // If same priority and subPriority, sort alphabetically by name
             return strcmp($a['name'], $b['name']);
         });
 
