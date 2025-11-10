@@ -627,8 +627,8 @@ class MobileEntryController extends Controller
             }
         }
         
-        // Generate forms based on programs using the service
-        $forms = $formService->generateProgramForms(Auth::id(), $selectedDate);
+        // Generate forms based on mobile lift forms using the service
+        $forms = $formService->generateForms(Auth::id(), $selectedDate);
         
         // Generate logged items using the service
         $loggedItems = $formService->generateLoggedItems(Auth::id(), $selectedDate);

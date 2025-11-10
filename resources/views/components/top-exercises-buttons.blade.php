@@ -1,18 +1,11 @@
-@props(['exercises', 'allExercises', 'currentExerciseId' => null, 'routeType' => 'exercises', 'date' => null])
+@props(['exercises', 'allExercises', 'currentExerciseId' => null])
 
 <div class="top-exercises-container">
         @foreach ($exercises as $exercise)
-            @if($routeType === 'programs')
-                <a href="{{ route('programs.quick-add', ['exercise' => $exercise->id, 'date' => $date]) }}" 
-                   class="button {{ $currentExerciseId == $exercise->id ? 'active' : '' }}">
-                    {{ $exercise->title }}
-                </a>
-            @else
-                <a href="{{ route('exercises.show-logs', ['exercise' => $exercise->id]) }}" 
-                   class="button {{ $currentExerciseId == $exercise->id ? 'active' : '' }}">
-                    {{ $exercise->title }}
-                </a>
-            @endif
+            <a href="{{ route('exercises.show-logs', ['exercise' => $exercise->id]) }}" 
+               class="button {{ $currentExerciseId == $exercise->id ? 'active' : '' }}">
+                {{ $exercise->title }}
+            </a>
         @endforeach
 
         @php
@@ -29,11 +22,7 @@
                 </button>
                 <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                     @foreach ($remainingExercises as $exercise)
-                        @if($routeType === 'programs')
-                            <a class="dropdown-item" href="{{ route('programs.quick-add', ['exercise' => $exercise->id, 'date' => $date]) }}">{{ $exercise->title }}</a>
-                        @else
-                            <a class="dropdown-item" href="{{ route('exercises.show-logs', ['exercise' => $exercise->id]) }}">{{ $exercise->title }}</a>
-                        @endif
+                        <a class="dropdown-item" href="{{ route('exercises.show-logs', ['exercise' => $exercise->id]) }}">{{ $exercise->title }}</a>
                     @endforeach
                 </div>
             </div>
