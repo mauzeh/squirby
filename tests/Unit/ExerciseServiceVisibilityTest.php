@@ -73,11 +73,12 @@ class ExerciseServiceVisibilityTest extends TestCase
         $this->assertNotContains('Other User Exercise', $exerciseTitles);
         
         // Test with global exercises disabled
+        // Global exercises with lift logs should still be visible
         $this->user->update(['show_global_exercises' => false]);
         $topExercises = $this->exerciseService->getTopExercises(5);
         
         $exerciseTitles = $topExercises->pluck('title')->toArray();
-        $this->assertNotContains('Global Exercise', $exerciseTitles);
+        $this->assertContains('Global Exercise', $exerciseTitles); // Still visible because user has lift logs
         $this->assertContains('User Exercise', $exerciseTitles);
         $this->assertNotContains('Other User Exercise', $exerciseTitles);
     }
@@ -107,11 +108,12 @@ class ExerciseServiceVisibilityTest extends TestCase
         $this->assertNotContains('Other User Exercise', $exerciseTitles);
         
         // Test with global exercises disabled
+        // Global exercises with lift logs should still be visible
         $this->user->update(['show_global_exercises' => false]);
         $displayExercises = $this->exerciseService->getDisplayExercises(5);
         
         $exerciseTitles = $displayExercises->pluck('title')->toArray();
-        $this->assertNotContains('Global Exercise', $exerciseTitles);
+        $this->assertContains('Global Exercise', $exerciseTitles); // Still visible because user has lift logs
         $this->assertContains('User Exercise', $exerciseTitles);
         $this->assertNotContains('Other User Exercise', $exerciseTitles);
     }
@@ -152,12 +154,13 @@ class ExerciseServiceVisibilityTest extends TestCase
         $this->assertNotContains('Other User Exercise', $exerciseTitles);
         
         // Test with global exercises disabled
+        // Global exercises with lift logs should still be visible
         $this->user->update(['show_global_exercises' => false]);
         $displayExercises = $this->exerciseService->getDisplayExercises(5);
         
         $exerciseTitles = $displayExercises->pluck('title')->toArray();
         $this->assertContains('User Exercise', $exerciseTitles); // From top exercises
-        $this->assertNotContains('Recent Global Exercise', $exerciseTitles); // Should be filtered out
+        $this->assertContains('Recent Global Exercise', $exerciseTitles); // Still visible because user has lift logs
         $this->assertContains('Recent User Exercise', $exerciseTitles); // From recent fill
         $this->assertNotContains('Other User Exercise', $exerciseTitles);
     }

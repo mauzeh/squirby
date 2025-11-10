@@ -495,8 +495,12 @@ class RecommendationEngineTest extends TestCase
 
         $recommendations = $this->recommendationEngine->getRecommendations($user->id, 5, false);
 
-        $this->assertCount(1, $recommendations);
-        $this->assertEquals($userExercise->id, $recommendations[0]['exercise']->id);
+        // Should include both exercises because global exercise has lift logs
+        $this->assertCount(2, $recommendations);
+        $exerciseIds = array_column($recommendations, 'exercise');
+        $exerciseIds = array_map(fn($ex) => $ex->id, $exerciseIds);
+        $this->assertContains($userExercise->id, $exerciseIds);
+        $this->assertContains($globalExercise->id, $exerciseIds);
     }
 
     /** @test */

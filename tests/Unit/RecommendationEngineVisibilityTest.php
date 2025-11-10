@@ -143,11 +143,11 @@ class RecommendationEngineVisibilityTest extends TestCase
         
         $recommendations = $this->recommendationEngine->getRecommendations($this->user->id, 10);
         
-        // Should include only user exercises
+        // Should include user exercises AND global exercises with lift logs
         $exerciseTitles = array_column($recommendations, 'exercise');
         $exerciseTitles = array_map(fn($ex) => $ex->title, $exerciseTitles);
         
-        $this->assertNotContains('Global Exercise', $exerciseTitles);
+        $this->assertContains('Global Exercise', $exerciseTitles); // Still visible because user has lift logs
         $this->assertContains('User Exercise', $exerciseTitles);
         $this->assertNotContains('Other User Exercise', $exerciseTitles);
     }
@@ -185,13 +185,14 @@ class RecommendationEngineVisibilityTest extends TestCase
         $this->assertNotContains('Other User Exercise', $exerciseTitles);
         
         // Override to hide global exercises
+        // But global exercises with lift logs should still be visible
         $this->user->update(['show_global_exercises' => true]);
         $recommendations = $this->recommendationEngine->getRecommendations($this->user->id, 10, false);
         
         $exerciseTitles = array_column($recommendations, 'exercise');
         $exerciseTitles = array_map(fn($ex) => $ex->title, $exerciseTitles);
         
-        $this->assertNotContains('Global Exercise', $exerciseTitles);
+        $this->assertContains('Global Exercise', $exerciseTitles); // Still visible because user has lift logs
         $this->assertContains('User Exercise', $exerciseTitles);
         $this->assertNotContains('Other User Exercise', $exerciseTitles);
     }
@@ -287,12 +288,12 @@ class RecommendationEngineVisibilityTest extends TestCase
         $user2ExerciseTitles = array_column($user2Recommendations, 'exercise');
         $user2ExerciseTitles = array_map(fn($ex) => $ex->title, $user2ExerciseTitles);
         
-        // User 1 should only see their own exercises
-        $this->assertNotContains('Global Exercise', $user1ExerciseTitles);
+        // User 1 should see their own exercises AND global exercises they have lift logs for
+        $this->assertContains('Global Exercise', $user1ExerciseTitles); // Visible because user has lift logs
         $this->assertContains('User Exercise', $user1ExerciseTitles);
         $this->assertNotContains('Other User Exercise', $user1ExerciseTitles);
         
-        // User 2 should only see their own exercises
+        // User 2 should only see their own exercises (no lift logs for global exercise)
         $this->assertNotContains('Global Exercise', $user2ExerciseTitles);
         $this->assertNotContains('User Exercise', $user2ExerciseTitles);
         $this->assertContains('Other User Exercise', $user2ExerciseTitles);
