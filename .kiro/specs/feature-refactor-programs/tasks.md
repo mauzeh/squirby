@@ -90,14 +90,14 @@
 
 - [x] 6. Verify all tests succeed, and fix any remaining failing tests.
 
-- [ ] 7. Write tests for MobileLiftForm
-  - [ ] 7.1 Write unit tests for MobileLiftForm model
+- [-] 7. Write tests for MobileLiftForm
+  - [x] 7.1 Write unit tests for MobileLiftForm model
     - Test relationships (user, exercise)
     - Test forUserAndDate scope
     - Test fillable fields and casts
     - _Requirements: 11.1_
   
-  - [ ] 7.2 Write unit tests for LiftLogService methods
+  - [x] 7.2 Write unit tests for LiftLogService methods
     - Test generateForms() with mobile_lift_forms
     - Test addExerciseForm() success and error cases
     - Test removeForm() success and error cases
@@ -106,7 +106,7 @@
     - Test dynamic calculation of sets/reps/weight
     - _Requirements: 11.2_
   
-  - [ ] 7.3 Write integration tests for MobileEntryController
+  - [x] 7.3 Write integration tests for MobileEntryController
     - Test lifts() page loads with mobile lift forms
     - Test addLiftForm() creates mobile_lift_forms record
     - Test removeForm() deletes mobile_lift_forms record
@@ -114,7 +114,7 @@
     - Test error handling for all operations
     - _Requirements: 11.3_
   
-  - [ ] 7.4 Verify all program references removed
+  - [x] 7.4 Verify all program references removed
     - Test that program routes return 404
     - Test that no program-related code remains
     - Test that mobile lift forms work identically to mobile food forms

@@ -88,26 +88,6 @@ class ExerciseAliasComposer
             });
         }
 
-        // Handle programs collection - apply aliases to their exercises
-        $programs = $viewData['programs'] ?? null;
-        if ($programs instanceof Collection) {
-            $programs->each(function ($program) {
-                if ($program->relationLoaded('exercise') && $program->exercise) {
-                    $displayName = $this->aliasService->getDisplayName($program->exercise, auth()->user());
-                    $program->exercise->title = $displayName;
-                }
-            });
-        }
-
-        // Handle single program object (for edit view)
-        $program = $viewData['program'] ?? null;
-        if ($program instanceof \App\Models\Program) {
-            if ($program->relationLoaded('exercise') && $program->exercise) {
-                $displayName = $this->aliasService->getDisplayName($program->exercise, auth()->user());
-                $program->exercise->title = $displayName;
-            }
-        }
-
         // Handle mobile entry data structure
         $data = $viewData['data'] ?? null;
         if (is_array($data) && isset($data['itemSelectionList']['items'])) {
