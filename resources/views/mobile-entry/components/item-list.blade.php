@@ -15,7 +15,7 @@
                         @foreach($data['createForm']['hiddenFields'] as $name => $value)
                             <input type="hidden" name="{{ $name }}" value="{{ $value }}">
                         @endforeach
-                        <button type="submit" class="btn-secondary btn-create" aria-label="{{ $data['createForm']['ariaLabel'] }}">
+                        <button type="submit" class="btn-secondary btn-create btn-add-item" aria-label="{{ $data['createForm']['ariaLabel'] }}">
                             <span class="plus-icon">{{ $data['createForm']['submitText'] }}</span>
                         </button>
                     </form>

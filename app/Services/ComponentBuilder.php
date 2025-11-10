@@ -293,7 +293,7 @@ class ButtonComponentBuilder
         $this->data = [
             'text' => $text,
             'ariaLabel' => $text,
-            'cssClass' => 'btn-primary btn-success',
+            'cssClass' => 'btn-primary',
             'type' => 'button' // 'button' or 'link'
         ];
     }
@@ -307,6 +307,12 @@ class ButtonComponentBuilder
     public function cssClass(string $class): self
     {
         $this->data['cssClass'] = $class;
+        return $this;
+    }
+    
+    public function addClass(string $class): self
+    {
+        $this->data['cssClass'] .= ' ' . $class;
         return $this;
     }
     

@@ -119,6 +119,7 @@ class MobileEntryController extends Controller
         // Add Exercise button
         $components[] = \App\Services\ComponentBuilder::button('Add Exercise')
             ->ariaLabel('Add new exercise')
+            ->addClass('btn-add-item')
             ->build();
         
         // Item selection list
@@ -338,6 +339,7 @@ class MobileEntryController extends Controller
         // Add Food button
         $components[] = \App\Services\ComponentBuilder::button('Add Food')
             ->ariaLabel('Add new food item')
+            ->addClass('btn-add-item')
             ->build();
         
         // Item selection list

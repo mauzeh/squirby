@@ -317,9 +317,9 @@ document.addEventListener('DOMContentLoaded', function() {
      * No dynamic form management - items link directly to backend URLs.
      */
     const setupItemListToggle = () => {
-        const addItemButton = document.querySelector('.btn-success');
+        const addItemButton = document.querySelector('.btn-add-item');
         const itemListContainer = document.querySelector('.component-list-section');
-        const addItemSection = document.querySelector('.add-item-section');
+        const addItemSection = document.querySelector('.component-button-section');
         const cancelButton = document.querySelector('.btn-cancel');
         
         // Show item selection list
