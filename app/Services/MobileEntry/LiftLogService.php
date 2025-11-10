@@ -394,125 +394,6 @@ class LiftLogService extends MobileEntryBaseService
     }
 
     /**
-     * Generate messages for a form based on program and last session
-     * 
-     * @param \App\Models\Program $program
-     * @param array|null $lastSession
-     * @return array
-     */
-    public function generateFormMessages($program, $lastSession, $userId = null)
-    {
-        $messages = [];
-        
-        // Add instructional message for new users or first-time exercises
-        if (!$lastSession) {
-            $messages[] = [
-                'type' => 'tip',
-                'prefix' => 'How to log:',
-                'text' => str_replace(':exercise', $program->exercise->title, config('mobile_entry_messages.form_guidance.how_to_log'))
-            ];
-        }
-        
-        // Add last session info if available
-        if ($lastSession) {
-            // Format the resistance/weight info using exercise type strategy
-            $strategy = $program->exercise->getTypeStrategy();
-            $labels = $strategy->getFieldLabels();
-            
-            // Create a mock lift log for formatting
-            $mockLiftLog = new \App\Models\LiftLog();
-            $mockLiftLog->exercise = $program->exercise;
-            $mockLiftLog->setRelation('liftSets', collect([
-                (object)[
-                    'weight' => $lastSession['weight'] ?? 0,
-                    'reps' => $lastSession['reps'] ?? 0,
-                    'band_color' => $lastSession['band_color'] ?? null
-                ]
-            ]));
-            
-            $resistanceText = $strategy->formatWeightDisplay($mockLiftLog);
-            
-            // Use strategy labels for consistent terminology
-            $repsLabel = strtolower(trim($labels['reps'] ?? 'reps', ':'));
-            $setsLabel = strtolower(trim($labels['sets'] ?? 'sets', ':'));
-            
-            // Use strategy to format the message text
-            $messageText = $strategy->formatFormMessageDisplay($lastSession);
-            
-            $messages[] = [
-                'type' => 'info',
-                'prefix' => str_replace(':date', $lastSession['date'], config('mobile_entry_messages.form_guidance.last_workout')),
-                'text' => $messageText
-            ];
-        }
-        
-        // Add last session comments if available
-        if ($lastSession && !empty($lastSession['comments'])) {
-            $messages[] = [
-                'type' => 'neutral',
-                'prefix' => config('mobile_entry_messages.form_guidance.your_last_notes'),
-                'text' => $lastSession['comments']
-            ];
-        }
-        
-        // Add program comments if available
-        if ($program->comments) {
-            $messages[] = [
-                'type' => 'tip',
-                'prefix' => config('mobile_entry_messages.form_guidance.todays_focus'),
-                'text' => $program->comments
-            ];
-        }
-        
-        // Add progression suggestion
-        if ($lastSession && $userId) {
-            $suggestion = $this->trainingProgressionService->getSuggestionDetails(
-                $userId, 
-                $program->exercise_id
-            );
-            
-            if ($suggestion) {
-                $strategy = $program->exercise->getTypeStrategy();
-                $sets = $suggestion->sets ?? $lastSession['sets'] ?? 3;
-                
-                if (isset($suggestion->band_color)) {
-                    // Banded exercise suggestion
-                    $messages[] = [
-                        'type' => 'tip',
-                        'prefix' => config('mobile_entry_messages.form_guidance.try_this'),
-                        'text' => $suggestion->band_color . ' band × ' . $suggestion->reps . ' reps × ' . $sets . ' sets' . config('mobile_entry_messages.form_guidance.suggestion_suffix')
-                    ];
-                } elseif (isset($suggestion->suggestedWeight) && $strategy->getTypeName() !== 'bodyweight') {
-                    // Weighted exercise suggestion
-                    $messages[] = [
-                        'type' => 'tip',
-                        'prefix' => config('mobile_entry_messages.form_guidance.try_this'),
-                        'text' => $suggestion->suggestedWeight . ' lbs × ' . $suggestion->reps . ' reps × ' . $sets . ' sets' . config('mobile_entry_messages.form_guidance.suggestion_suffix')
-                    ];
-                } elseif ($strategy->getTypeName() === 'bodyweight' && isset($suggestion->reps)) {
-                    // Bodyweight exercise suggestion
-                    $messages[] = [
-                        'type' => 'tip',
-                        'prefix' => config('mobile_entry_messages.form_guidance.try_this'),
-                        'text' => $suggestion->reps . ' reps × ' . $sets . ' sets' . config('mobile_entry_messages.form_guidance.suggestion_suffix')
-                    ];
-                }
-            } elseif ($program->exercise->getTypeStrategy()->getTypeName() !== 'bodyweight') {
-                // Fallback to simple progression if service fails
-                $sets = $lastSession['sets'] ?? 3;
-                $reps = $lastSession['reps'] ?? 5;
-                $messages[] = [
-                    'type' => 'tip',
-                    'prefix' => config('mobile_entry_messages.form_guidance.try_this'),
-                    'text' => ($lastSession['weight'] + 5) . ' lbs × ' . $reps . ' reps × ' . $sets . ' sets' . config('mobile_entry_messages.form_guidance.suggestion_suffix')
-                ];
-            }
-        }
-        
-        return $messages;
-    }
-
-    /**
      * Generate summary data based on user's logs for the selected date
      * 
      * @param int $userId
@@ -781,68 +662,7 @@ class LiftLogService extends MobileEntryBaseService
 
 
 
-    /**
-     * Get program completion statistics for a given date
-     * 
-     * @param int $userId
-     * @param Carbon $selectedDate
-     * @return array
-     */
-    public function getProgramCompletionStats($userId, Carbon $selectedDate)
-    {
-        $totalPrograms = Program::where('user_id', $userId)
-            ->whereDate('date', $selectedDate->toDateString())
-            ->count();
-            
-        $completedPrograms = Program::where('user_id', $userId)
-            ->whereDate('date', $selectedDate->toDateString())
-            ->completed()
-            ->count();
-            
-        $incompletePrograms = $totalPrograms - $completedPrograms;
-        $completionPercentage = $totalPrograms > 0 ? round(($completedPrograms / $totalPrograms) * 100) : 0;
-        
-        return [
-            'total' => $totalPrograms,
-            'completed' => $completedPrograms,
-            'incomplete' => $incompletePrograms,
-            'completionPercentage' => $completionPercentage
-        ];
-    }
 
-    /**
-     * Get incomplete programs for a given date
-     * 
-     * @param int $userId
-     * @param Carbon $selectedDate
-     * @return \Illuminate\Database\Eloquent\Collection
-     */
-    public function getIncompletePrograms($userId, Carbon $selectedDate)
-    {
-        return Program::where('user_id', $userId)
-            ->whereDate('date', $selectedDate->toDateString())
-            ->incomplete()
-            ->with(['exercise'])
-            ->orderBy('priority', 'asc')
-            ->get();
-    }
-
-    /**
-     * Get completed programs for a given date
-     * 
-     * @param int $userId
-     * @param Carbon $selectedDate
-     * @return \Illuminate\Database\Eloquent\Collection
-     */
-    public function getCompletedPrograms($userId, Carbon $selectedDate)
-    {
-        return Program::where('user_id', $userId)
-            ->whereDate('date', $selectedDate->toDateString())
-            ->completed()
-            ->with(['exercise'])
-            ->orderBy('priority', 'asc')
-            ->get();
-    }
 
     /**
      * Add an exercise form by finding the exercise and creating a mobile lift form entry
@@ -1028,8 +848,8 @@ class LiftLogService extends MobileEntryBaseService
     {
         $messages = [];
         
-        // Check if user has any programs for today
-        $programCount = Program::where('user_id', $userId)
+        // Check if user has any mobile lift forms for today
+        $formCount = MobileLiftForm::where('user_id', $userId)
             ->whereDate('date', $selectedDate->toDateString())
             ->count();
             
@@ -1038,13 +858,10 @@ class LiftLogService extends MobileEntryBaseService
             ->whereDate('logged_at', $selectedDate->toDateString())
             ->count();
             
-        // Check if user has any incomplete programs
-        $incompleteCount = Program::where('user_id', $userId)
-            ->whereDate('date', $selectedDate->toDateString())
-            ->incomplete()
-            ->count();
+        // Check if user has forms but hasn't logged them all yet
+        $incompleteCount = max(0, $formCount - $loggedCount);
         
-        if ($programCount === 0 && $loggedCount === 0) {
+        if ($formCount === 0 && $loggedCount === 0) {
             // First time user or no exercises added yet
             $messages[] = [
                 'type' => 'tip',
