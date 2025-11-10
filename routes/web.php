@@ -70,6 +70,10 @@ Route::middleware('auth')->group(function () {
     Route::post('exercises/{exercise}/merge', [ExerciseController::class, 'merge'])->name('exercises.merge');
 
     Route::resource('workout-templates', WorkoutTemplateController::class)->except(['show']);
+    Route::get('workout-templates/select-exercise', [WorkoutTemplateController::class, 'showExerciseSelection'])->name('workout-templates.show-exercise-selection');
+    Route::post('workout-templates/add-exercise', [WorkoutTemplateController::class, 'addExercise'])->name('workout-templates.add-exercise');
+    Route::post('workout-templates/remove-exercise', [WorkoutTemplateController::class, 'removeExercise'])->name('workout-templates.remove-exercise');
+    Route::post('workout-templates/reorder', [WorkoutTemplateController::class, 'reorder'])->name('workout-templates.reorder');
 
     Route::resource('lift-logs', LiftLogController::class)->except(['show']);
 

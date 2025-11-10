@@ -43,21 +43,12 @@ class WorkoutTemplateController extends Controller
      */
     public function create()
     {
-        // Use the same exercise selection system as mobile lift forms
-        // This ensures consistency and respects user's exercise visibility settings
-        $selectedDate = Carbon::today(); // Use today's date for exercise selection context
-        $exerciseSelectionList = $this->liftLogService->generateItemSelectionList(Auth::id(), $selectedDate);
-        
-        // Modify the selection list for template context (remove date-specific hidden fields)
-        if (isset($exerciseSelectionList['createForm']['hiddenFields']['date'])) {
-            unset($exerciseSelectionList['createForm']['hiddenFields']['date']);
+        // Clear any existing template exercises from session if starting fresh
+        if (!session()->has('_old_input')) {
+            session()->forget('template_exercises');
         }
         
-        // Update create form action for template context
-        $exerciseSelectionList['createForm']['action'] = route('exercises.store');
-        $exerciseSelectionList['createForm']['hiddenFields']['redirect_to'] = 'workout-template-create';
-            
-        return view('workout-templates.create', compact('exerciseSelectionList'));
+        return view('workout-templates.create');
     }
     
     /**
@@ -105,6 +96,10 @@ class WorkoutTemplateController extends Controller
             }
         });
         
+        // Clear session data
+        session()->forget('template_exercises');
+        session()->forget('template_form_data');
+        
         return redirect()->route('workout-templates.index')
             ->with('success', 'Template created successfully');
     }
@@ -128,21 +123,12 @@ class WorkoutTemplateController extends Controller
             $exercise->title = $displayName;
         }
         
-        // Use the same exercise selection system as mobile lift forms
-        $selectedDate = Carbon::today();
-        $exerciseSelectionList = $this->liftLogService->generateItemSelectionList(Auth::id(), $selectedDate);
-        
-        // Modify the selection list for template context
-        if (isset($exerciseSelectionList['createForm']['hiddenFields']['date'])) {
-            unset($exerciseSelectionList['createForm']['hiddenFields']['date']);
+        // Initialize session with current exercises if not already set
+        if (!session()->has('_old_input')) {
+            session()->forget('template_exercises');
         }
-        
-        // Update create form action for template context
-        $exerciseSelectionList['createForm']['action'] = route('exercises.store');
-        $exerciseSelectionList['createForm']['hiddenFields']['redirect_to'] = 'workout-template-edit';
-        $exerciseSelectionList['createForm']['hiddenFields']['template_id'] = $workoutTemplate->id;
             
-        return view('workout-templates.edit', compact('workoutTemplate', 'exerciseSelectionList'));
+        return view('workout-templates.edit', compact('workoutTemplate'));
     }
     
     /**
@@ -194,6 +180,10 @@ class WorkoutTemplateController extends Controller
             }
         });
         
+        // Clear session data
+        session()->forget('template_exercises');
+        session()->forget('template_form_data');
+        
         return redirect()->route('workout-templates.index')
             ->with('success', 'Template updated successfully');
     }
@@ -209,5 +199,186 @@ class WorkoutTemplateController extends Controller
         
         return redirect()->route('workout-templates.index')
             ->with('success', 'Template deleted successfully');
+    }
+    
+    /**
+     * Show exercise selection page
+     */
+    public function showExerciseSelection(Request $request)
+    {
+        $selectedDate = Carbon::today();
+        $exerciseSelectionList = $this->liftLogService->generateItemSelectionList(Auth::id(), $selectedDate);
+        
+        // Modify the selection list for template context
+        if (isset($exerciseSelectionList['createForm']['hiddenFields']['date'])) {
+            unset($exerciseSelectionList['createForm']['hiddenFields']['date']);
+        }
+        
+        // Update create form action for template context
+        $exerciseSelectionList['createForm']['action'] = route('exercises.store');
+        $exerciseSelectionList['createForm']['hiddenFields']['redirect_to'] = 'workout-template-' . $request->input('return_to', 'create');
+        
+        if ($request->input('return_to') === 'edit' && $request->has('template_id')) {
+            $exerciseSelectionList['createForm']['hiddenFields']['template_id'] = $request->input('template_id');
+        }
+        
+        // Get form data from session
+        $formData = session('template_form_data', [
+            'name' => '',
+            'description' => '',
+            'exercises' => []
+        ]);
+        
+        $currentExercises = $formData['exercises'] ?? [];
+        
+        // Determine return URL
+        $returnTo = $request->input('return_to', 'create');
+        $returnUrl = $returnTo === 'edit' && $request->has('template_id')
+            ? route('workout-templates.edit', $request->input('template_id'))
+            : route('workout-templates.create');
+        
+        return view('workout-templates.select-exercise', [
+            'exerciseSelectionList' => $exerciseSelectionList,
+            'currentExercises' => $currentExercises,
+            'returnUrl' => $returnUrl,
+            'returnTo' => $returnTo,
+            'templateId' => $request->input('template_id'),
+            'templateName' => $formData['name'] ?? '',
+            'templateDescription' => $formData['description'] ?? ''
+        ]);
+    }
+    
+    /**
+     * Add exercise to template (server-side)
+     */
+    public function addExercise(Request $request)
+    {
+        $exerciseId = $request->input('exercise_id');
+        
+        // Get form data from session
+        $formData = session('template_form_data', [
+            'name' => '',
+            'description' => '',
+            'exercises' => []
+        ]);
+        
+        $currentExercises = $formData['exercises'] ?? [];
+        
+        // Check if exercise already exists
+        if (!in_array($exerciseId, $currentExercises)) {
+            $currentExercises[] = $exerciseId;
+        }
+        
+        // Update session with new exercise list
+        $formData['exercises'] = $currentExercises;
+        session(['template_form_data' => $formData]);
+        
+        // Also store in template_exercises for compatibility
+        session(['template_exercises' => $currentExercises]);
+        
+        // Flash form data for old() helper
+        session()->flash('_old_input', [
+            'name' => $formData['name'],
+            'description' => $formData['description']
+        ]);
+        
+        // Redirect back to form
+        $returnTo = $request->input('return_to', 'create');
+        if ($returnTo === 'edit' && $request->has('template_id')) {
+            return redirect()->route('workout-templates.edit', $request->input('template_id'));
+        }
+        
+        return redirect()->route('workout-templates.create');
+    }
+    
+    /**
+     * Remove exercise from template (server-side)
+     */
+    public function removeExercise(Request $request)
+    {
+        $currentExercises = json_decode($request->input('exercises', '[]'), true);
+        $removeIndex = $request->input('remove_index');
+        
+        // Remove exercise at index
+        if (isset($currentExercises[$removeIndex])) {
+            array_splice($currentExercises, $removeIndex, 1);
+        }
+        
+        // Update session
+        $formData = session('template_form_data', [
+            'name' => $request->input('name'),
+            'description' => $request->input('description'),
+            'exercises' => []
+        ]);
+        
+        $formData['exercises'] = $currentExercises;
+        $formData['name'] = $request->input('name');
+        $formData['description'] = $request->input('description');
+        
+        session(['template_form_data' => $formData]);
+        session(['template_exercises' => $currentExercises]);
+        
+        // Flash form data
+        session()->flash('_old_input', [
+            'name' => $request->input('name'),
+            'description' => $request->input('description')
+        ]);
+        
+        // Redirect back to form
+        $returnTo = $request->input('return_to', 'create');
+        if ($returnTo === 'edit' && $request->has('template_id')) {
+            return redirect()->route('workout-templates.edit', $request->input('template_id'));
+        }
+        
+        return redirect()->route('workout-templates.create');
+    }
+    
+    /**
+     * Reorder exercises in template (server-side)
+     */
+    public function reorder(Request $request)
+    {
+        $currentExercises = json_decode($request->input('exercises', '[]'), true);
+        $moveIndex = $request->input('move_index');
+        $direction = $request->input('direction');
+        
+        // Perform the move
+        if ($direction === 'up' && $moveIndex > 0) {
+            $temp = $currentExercises[$moveIndex];
+            $currentExercises[$moveIndex] = $currentExercises[$moveIndex - 1];
+            $currentExercises[$moveIndex - 1] = $temp;
+        } elseif ($direction === 'down' && $moveIndex < count($currentExercises) - 1) {
+            $temp = $currentExercises[$moveIndex];
+            $currentExercises[$moveIndex] = $currentExercises[$moveIndex + 1];
+            $currentExercises[$moveIndex + 1] = $temp;
+        }
+        
+        // Update session
+        $formData = session('template_form_data', [
+            'name' => $request->input('name'),
+            'description' => $request->input('description'),
+            'exercises' => []
+        ]);
+        
+        $formData['exercises'] = $currentExercises;
+        $formData['name'] = $request->input('name');
+        $formData['description'] = $request->input('description');
+        
+        session(['template_form_data' => $formData]);
+        session(['template_exercises' => $currentExercises]);
+        
+        // Flash form data
+        session()->flash('_old_input', [
+            'name' => $request->input('name'),
+            'description' => $request->input('description')
+        ]);
+        
+        // Redirect back to form
+        $returnTo = $request->input('return_to', 'create');
+        if ($returnTo === 'edit' && $request->has('template_id')) {
+            return redirect()->route('workout-templates.edit', $request->input('template_id'));
+        }
+        
+        return redirect()->route('workout-templates.create');
     }
 }

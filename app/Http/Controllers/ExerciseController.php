@@ -129,6 +129,29 @@ class ExerciseController extends Controller
 
         $exercise->save();
 
+        // Handle redirect_to parameter for workout template context
+        if ($request->has('redirect_to')) {
+            $redirectTo = $request->input('redirect_to');
+            
+            if ($redirectTo === 'workout-template-create') {
+                // Add the new exercise to session
+                $exercises = session('template_exercises', []);
+                $exercises[] = $exercise->id;
+                session(['template_exercises' => $exercises]);
+                
+                return redirect()->route('workout-templates.create')
+                    ->with('success', 'Exercise created and added to template.');
+            } elseif ($redirectTo === 'workout-template-edit' && $request->has('template_id')) {
+                // Add the new exercise to session
+                $exercises = session('template_exercises', []);
+                $exercises[] = $exercise->id;
+                session(['template_exercises' => $exercises]);
+                
+                return redirect()->route('workout-templates.edit', $request->input('template_id'))
+                    ->with('success', 'Exercise created and added to template.');
+            }
+        }
+
         return redirect()->route('exercises.index')->with('success', 'Exercise created successfully.');
     }
 

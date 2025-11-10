@@ -50,7 +50,7 @@
   - Include back to list button
   - _Requirements: 2.1, 2.2, 2.3_
 
-- [ ] 7. Create template form views (create and edit)
+- [x] 7. Create template form views (create and edit)
   - Create create.blade.php for new template form
   - Create edit.blade.php for editing existing template
   - Create _form.blade.php partial for shared form elements
