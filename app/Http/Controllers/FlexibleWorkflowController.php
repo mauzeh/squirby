@@ -140,6 +140,15 @@ class FlexibleWorkflowController extends Controller
                     ->info('Complete all exercises below')
                     ->build(),
                 
+                C::form('ex-4', 'Exercise Notes')
+                    ->type('info')  // Light blue border - demonstrates text field
+                    ->formAction('#')
+                    ->textField('exercise_name', 'Exercise Name:', 'Pull-ups', 'Enter exercise name')
+                    ->numericField('sets', 'Sets:', 3, 1, 1)
+                    ->textField('notes', 'Quick Notes:', '', 'Any observations?')
+                    ->submitButton('Log')
+                    ->build(),
+                
                 C::form('ex-1', 'Bench Press')
                     ->type('primary')  // Blue border
                     ->formAction('#')
@@ -161,15 +170,6 @@ class FlexibleWorkflowController extends Controller
                     ->formAction('#')
                     ->numericField('weight', 'Weight:', 225, 5, 45)
                     ->numericField('reps', 'Reps:', 5, 1, 1)
-                    ->submitButton('Log')
-                    ->build(),
-                
-                C::form('ex-4', 'Exercise Notes')
-                    ->type('info')  // Light blue border - demonstrates text field
-                    ->formAction('#')
-                    ->textField('exercise_name', 'Exercise Name:', 'Pull-ups', 'Enter exercise name')
-                    ->numericField('sets', 'Sets:', 3, 1, 1)
-                    ->textField('notes', 'Quick Notes:', '', 'Any observations?')
                     ->submitButton('Log')
                     ->build(),
             ]
