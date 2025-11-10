@@ -74,8 +74,7 @@ Route::middleware('auth')->group(function () {
     // Exercise Recommendations
     Route::get('recommendations', [RecommendationController::class, 'index'])->name('recommendations.index');
 
-    // Mobile Entry - Supports date parameter: /mobile-entry?date=2024-01-15
-    Route::get('mobile-entry', [MobileEntryController::class, 'index'])->name('mobile-entry.index');
+    // Mobile Entry - Supports date parameter
     Route::get('mobile-entry/lifts', [MobileEntryController::class, 'lifts'])->name('mobile-entry.lifts');
     Route::get('mobile-entry/foods', [MobileEntryController::class, 'foods'])->name('mobile-entry.foods');
     Route::get('mobile-entry/measurements', [MobileEntryController::class, 'measurements'])->name('mobile-entry.measurements');

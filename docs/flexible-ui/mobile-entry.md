@@ -220,12 +220,14 @@ $data = [
 
 ## Migration Path
 
-The old `MobileEntryController` still uses the old view (`mobile-entry.index`). To migrate:
+All mobile entry methods now use the flexible UI system:
 
-1. Update controller to use `ComponentBuilder`
-2. Change view from `mobile-entry.index` to `mobile-entry.flexible`
-3. Test thoroughly
-4. Repeat for other methods (lifts, foods, measurements)
+1. ✅ `lifts()` - Uses ComponentBuilder and flexible view
+2. ✅ `foods()` - Uses ComponentBuilder and flexible view
+3. ✅ `measurements()` - Uses ComponentBuilder and flexible view
+4. ✅ Old `index()` method - Removed (was demo only)
+
+The old `mobile-entry.index` view has been completely removed.
 
 ## Files
 

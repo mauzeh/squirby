@@ -316,7 +316,7 @@ class MobileEntryController extends Controller
             ]
         ];
 
-        return view('mobile-entry.index', compact('sampleData'));
+        return view('mobile-entry.flexible', compact('data'));
     }
 }
 ```
@@ -324,5 +324,9 @@ class MobileEntryController extends Controller
 ### Route Definition
 ```php
 // In routes/web.php
-Route::get('/mobile-entry', [MobileEntryController::class, 'index'])->name('mobile-entry.index');
+// Note: The old mobile-entry.index route has been removed.
+// Use specific routes instead:
+Route::get('/mobile-entry/lifts', [MobileEntryController::class, 'lifts'])->name('mobile-entry.lifts');
+Route::get('/mobile-entry/foods', [MobileEntryController::class, 'foods'])->name('mobile-entry.foods');
+Route::get('/mobile-entry/measurements', [MobileEntryController::class, 'measurements'])->name('mobile-entry.measurements');
 ```

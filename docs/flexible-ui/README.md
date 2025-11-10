@@ -122,9 +122,10 @@ return view('mobile-entry.flexible', compact('data'));
 - MobileEntryController (lifts, foods, measurements methods)
 - All 92 MobileEntry tests updated and passing
 
-### ⏸️ Not Migrated
-- MobileEntryController::index() (demo page, not actively used)
-- Old view: mobile-entry/index.blade.php (can be deprecated)
+### 🗑️ Removed (Cleanup Complete)
+- ✅ MobileEntryController::index() method - deleted
+- ✅ Route mobile-entry.index - removed
+- ✅ Old view: mobile-entry/index.blade.php - deleted
 
 ## Testing
 
