@@ -130,10 +130,6 @@ Context: {{ json_encode($log['context'], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLAS
         @endauth
 
         <script>
-            document.addEventListener('touchmove', function(event) {
-                if (event.scale !== 1) { event.preventDefault(); }
-            }, { passive: false });
-
             document.addEventListener('DOMContentLoaded', function() {
                 // Initialize password visibility toggles
                 initializePasswordToggles();
