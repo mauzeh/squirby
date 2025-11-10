@@ -3,7 +3,7 @@
 namespace Tests\Unit\Services;
 
 use App\Models\FoodLog;
-use App\Models\Program;
+use App\Models\MobileLiftForm;
 use App\Models\User;
 use App\Models\Ingredient;
 use App\Models\Exercise;
@@ -150,18 +150,18 @@ class DateNavigationServiceTest extends TestCase
     }
 
     /** @test */
-    public function getNavigationData_finds_last_record_date_for_program_model()
+    public function getNavigationData_finds_last_record_date_for_mobile_lift_form_model()
     {
         $exercise = Exercise::factory()->create(['user_id' => $this->user->id]);
         
-        // Create programs on different dates
-        Program::factory()->create([
+        // Create mobile lift forms on different dates
+        MobileLiftForm::factory()->create([
             'user_id' => $this->user->id,
             'exercise_id' => $exercise->id,
             'date' => Carbon::parse('2025-01-10'),
         ]);
         
-        Program::factory()->create([
+        MobileLiftForm::factory()->create([
             'user_id' => $this->user->id,
             'exercise_id' => $exercise->id,
             'date' => Carbon::parse('2025-01-15'), // Most recent
@@ -171,14 +171,14 @@ class DateNavigationServiceTest extends TestCase
         
         $result = $this->service->getNavigationData(
             $selectedDate,
-            Program::class,
+            MobileLiftForm::class,
             $this->user->id,
-            'programs.index'
+            'mobile-entry.lifts'
         );
         
         $this->assertEquals('2025-01-15', $result['lastRecordDate']);
         $this->assertTrue($result['showLastRecordButton']);
-        $this->assertEquals(route('programs.index', ['date' => '2025-01-15']), $result['lastRecordUrl']);
+        $this->assertEquals(route('mobile-entry.lifts', ['date' => '2025-01-15']), $result['lastRecordUrl']);
     }
 
     /** @test */

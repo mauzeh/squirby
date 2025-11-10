@@ -88,7 +88,7 @@
   - Run migration to apply changes
   - _Requirements: 7.1_
 
-- [ ] 6. Verify all tests succeed, and fix any remaining failing tests.
+- [x] 6. Verify all tests succeed, and fix any remaining failing tests.
 
 - [ ] 7. Write tests for MobileLiftForm
   - [ ] 7.1 Write unit tests for MobileLiftForm model
