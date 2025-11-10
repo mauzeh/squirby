@@ -26,7 +26,7 @@ return [
         ],
         
         'lift_deleted' => 'Removed :exercise.',
-        'lift_deleted_mobile' => 'Removed :exercise. Need to adjust and re-log? Just update the values in the form below. Or, hit the delete button again to remove it completely from today\'s workout',
+        'lift_deleted_mobile' => 'Removed :exercise.',
         
         'bulk_deleted_single' => '1 workout entry removed.',
         'bulk_deleted_multiple' => ':count workout entries removed.',
