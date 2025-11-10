@@ -39,6 +39,10 @@
             <a id="food-nav-link" href="{{ route('mobile-entry.foods') }}" class="top-level-nav-item {{ Request::routeIs(['food-logs.*', 'meals.*', 'ingredients.*', 'mobile-entry.foods']) ? 'active' : '' }}"><i class="fas fa-utensils"></i> Food</a>
             <a href="{{ route('mobile-entry.measurements') }}" class="top-level-nav-item {{ Request::routeIs(['body-logs.*', 'measurement-types.*', 'mobile-entry.measurements']) ? 'active' : '' }}"><i class="fas fa-heartbeat"></i> Body</a>
 
+            @if (Auth::user()->hasRole('Admin'))
+                <a href="{{ route('flexible.with-nav') }}" class="top-level-nav-item {{ Request::routeIs('flexible.*') ? 'active' : '' }}"><i class="fas fa-flask"></i> Flexible UI</a>
+            @endif
+
             <div style="margin-left: auto;">
                 @if (Auth::user()->hasRole('Admin'))
                     <a href="{{ route('users.index') }}" class="{{ Request::routeIs('users.*') ? 'active' : '' }}" style="padding: 14px 8px"><i class="fas fa-cog"></i></a>
@@ -53,8 +57,15 @@
             </div>
         </div>
 
-        @if (Request::routeIs(['food-logs.*', 'meals.*', 'ingredients.*', 'exercises.*', 'lift-logs.*', 'recommendations.*', 'body-logs.*', 'measurement-types.*', 'mobile-entry.lifts', 'mobile-entry.foods', 'mobile-entry.measurements']))
+        @if (Request::routeIs(['food-logs.*', 'meals.*', 'ingredients.*', 'exercises.*', 'lift-logs.*', 'recommendations.*', 'body-logs.*', 'measurement-types.*', 'mobile-entry.lifts', 'mobile-entry.foods', 'mobile-entry.measurements', 'flexible.*']))
         <div class="navbar sub-navbar">
+            @if (Request::routeIs('flexible.*'))
+                <a href="{{ route('flexible.with-nav') }}" class="{{ Request::routeIs('flexible.with-nav') ? 'active' : '' }}">With Navigation</a>
+                <a href="{{ route('flexible.without-nav') }}" class="{{ Request::routeIs('flexible.without-nav') ? 'active' : '' }}">Without Navigation</a>
+                <a href="{{ route('flexible.multiple-forms') }}" class="{{ Request::routeIs('flexible.multiple-forms') ? 'active' : '' }}">Multiple Forms</a>
+                <a href="{{ route('flexible.custom-order') }}" class="{{ Request::routeIs('flexible.custom-order') ? 'active' : '' }}">Custom Order</a>
+            @endif
+
             @if (Request::routeIs(['food-logs.*', 'meals.*', 'ingredients.*', 'mobile-entry.foods']))
                 <a href="{{ route('mobile-entry.foods') }}" class="{{ Request::routeIs(['mobile-entry.foods']) ? 'active' : '' }}"><i class="fas fa-mobile-alt"></i></a>
                 <a href="{{ route('food-logs.index') }}" class="{{ Request::routeIs(['food-logs.index', 'food-logs.edit', 'food-logs.destroy-selected', 'food-logs.export', 'food-logs.export-all']) ? 'active' : '' }}">History</a>
