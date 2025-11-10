@@ -482,6 +482,23 @@ class FormComponentBuilder
         return $this;
     }
     
+    public function textField(string $name, string $label, string $defaultValue = '', string $placeholder = ''): self
+    {
+        $this->data['numericFields'][] = [
+            'id' => $this->data['id'] . '-' . $name,
+            'name' => $name,
+            'label' => $label,
+            'type' => 'text',
+            'defaultValue' => $defaultValue,
+            'placeholder' => $placeholder,
+            'ariaLabels' => [
+                'field' => $label
+            ]
+        ];
+        
+        return $this;
+    }
+    
     public function commentField(string $label, string $placeholder, string $defaultValue = ''): self
     {
         $this->data['commentField'] = [

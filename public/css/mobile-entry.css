@@ -1093,6 +1093,39 @@ Navigation Component */
     padding: var(--spacing-sm);
 }
 
+/* Text Input */
+.text-input {
+    width: 100%;
+    background-color: var(--input-bg);
+    border: 1px solid #555;
+    border-radius: var(--border-radius-sm);
+    color: var(--text-primary);
+    font-size: 1.5em;
+    font-weight: bold;
+    padding: var(--spacing-md);
+    transition: all var(--transition-fast);
+    font-family: inherit;
+    min-height: var(--touch-target-min);
+    box-sizing: border-box;
+}
+
+.text-input:focus {
+    background-color: var(--input-focus-bg);
+    border-color: var(--color-primary);
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.text-input::placeholder {
+    color: var(--text-placeholder);
+    opacity: 1;
+    font-weight: normal;
+}
+
+.text-input:focus::placeholder {
+    color: #666;
+}
+
 /* Comment Textarea */
 .comment-textarea {
     width: 100%;
@@ -1205,6 +1238,11 @@ Navigation Component */
         margin-bottom: 6px;
     }
 
+    .text-input {
+        font-size: 1.3em;
+        padding: 12px;
+    }
+
     .number-input {
         font-size: 2em;
         min-height: var(--touch-target-min);
@@ -1264,6 +1302,11 @@ Navigation Component */
     .form-mobile-label {
         font-size: 0.95em;
         margin-bottom: 6px;
+    }
+
+    .text-input {
+        font-size: 1.2em;
+        padding: 12px;
     }
 
     .number-input {

@@ -50,6 +50,8 @@
                         </option>
                     @endforeach
                 </select>
+            @elseif(isset($field['type']) && $field['type'] === 'text')
+                <input type="text" id="{{ $field['id'] }}" name="{{ $field['name'] }}" class="text-input" value="{{ old($field['name'], $field['defaultValue']) }}" placeholder="{{ $field['placeholder'] ?? '' }}" aria-label="{{ $field['ariaLabels']['field'] }}">
             @else
                 <div class="number-input-group" 
                      data-increment="{{ $field['increment'] }}" 
