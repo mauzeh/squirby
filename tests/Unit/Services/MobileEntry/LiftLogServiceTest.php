@@ -1923,6 +1923,38 @@ class LiftLogServiceTest extends TestCase
     }
 
     #[Test]
+    public function it_shows_last_performed_date_for_regular_exercises()
+    {
+        $user = User::factory()->create();
+        $exercise1 = Exercise::factory()->create(['title' => 'Old Exercise']);
+        $exercise2 = Exercise::factory()->create(['title' => 'Never Performed Exercise']);
+        
+        // Create a lift log from 30 days ago (outside the "Recent" 7-day window)
+        LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise1->id,
+            'logged_at' => Carbon::now()->subDays(30)
+        ]);
+
+        $itemSelectionList = $this->service->generateItemSelectionList($user->id, $this->testDate);
+        
+        $oldExerciseItem = collect($itemSelectionList['items'])->firstWhere('name', 'Old Exercise');
+        $neverPerformedItem = collect($itemSelectionList['items'])->firstWhere('name', 'Never Performed Exercise');
+        
+        // Exercise performed 30 days ago should show time ago (e.g., "1mo ago", "4w ago")
+        $this->assertNotEmpty($oldExerciseItem['type']['label']);
+        // Should contain either 'mo' for months or 'w' for weeks
+        $label = $oldExerciseItem['type']['label'];
+        $this->assertTrue(
+            str_contains($label, 'mo') || str_contains($label, 'w'),
+            "Expected label to contain 'mo' or 'w', got: {$label}"
+        );
+        
+        // Exercise never performed should have empty label
+        $this->assertEquals('', $neverPerformedItem['type']['label']);
+    }
+
+    #[Test]
     public function it_includes_date_parameter_in_form_delete_action()
     {
         $user = User::factory()->create();

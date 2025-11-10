@@ -557,6 +557,13 @@ class LiftLogService extends MobileEntryBaseService
             ->unique()
             ->toArray();
 
+        // Get last performed dates for all exercises in a single query
+        $lastPerformedDates = LiftLog::where('user_id', $userId)
+            ->whereIn('exercise_id', $exercises->pluck('id'))
+            ->select('exercise_id', \DB::raw('MAX(logged_at) as last_logged_at'))
+            ->groupBy('exercise_id')
+            ->pluck('last_logged_at', 'exercise_id');
+
         // Get top 10 recommended exercises using the recommendation engine
         $recommendations = $this->recommendationEngine->getRecommendations($userId, 10);
         
@@ -573,6 +580,13 @@ class LiftLogService extends MobileEntryBaseService
             // Skip exercises that are already in today's program
             if (in_array($exercise->id, $programExerciseIds)) {
                 continue;
+            }
+            
+            // Calculate "X ago" label for last performed date
+            $lastPerformedLabel = '';
+            if (isset($lastPerformedDates[$exercise->id])) {
+                $lastPerformed = Carbon::parse($lastPerformedDates[$exercise->id]);
+                $lastPerformedLabel = $lastPerformed->diffForHumans(['short' => true]);
             }
             
             // Simplified 3-category system
@@ -594,9 +608,9 @@ class LiftLogService extends MobileEntryBaseService
                     'subPriority' => 0
                 ];
             } else {
-                // Category 3: All Others (no label, alphabetical)
+                // Category 3: All Others (show last performed date)
                 $itemType = [
-                    'label' => '',
+                    'label' => $lastPerformedLabel,
                     'cssClass' => 'regular',  // Gray
                     'priority' => 3,
                     'subPriority' => 0
