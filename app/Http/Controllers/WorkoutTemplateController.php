@@ -30,12 +30,10 @@ class WorkoutTemplateController extends Controller
             ->subtitle('Save and reuse your favorite workouts')
             ->build();
 
-        // Message with link to create new template
-        if ($templates->isEmpty()) {
-            $components[] = C::messages()
-                ->info('No templates yet.')
-                ->build();
-        }
+        // Create button
+        $components[] = C::button('Create New Template')
+            ->asLink(route('workout-templates.create'))
+            ->build();
 
         // Table of templates
         if ($templates->isNotEmpty()) {
