@@ -207,7 +207,8 @@ class LiftLogService extends MobileEntryBaseService
                 'hiddenFields' => [
                     'exercise_id' => $exercise->id,
                     'date' => $selectedDate->toDateString(),
-                    'redirect_to' => 'mobile-entry-lifts'
+                    'redirect_to' => 'mobile-entry-lifts',
+                    'mobile_lift_form_id' => $form->id
                 ]
             ];
         }

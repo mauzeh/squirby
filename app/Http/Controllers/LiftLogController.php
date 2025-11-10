@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Exercise;
 use App\Models\LiftLog;
 use App\Models\LiftSet;
+use App\Models\MobileLiftForm;
 
 use App\Services\ExerciseService;
 use App\Services\ExerciseTypes\ExerciseTypeFactory;
@@ -150,6 +151,13 @@ class LiftLogController extends Controller
             ]);
         }
 
+        // Delete the corresponding MobileLiftForm if it exists
+        if ($request->has('mobile_lift_form_id')) {
+            MobileLiftForm::where('id', $request->input('mobile_lift_form_id'))
+                ->where('user_id', auth()->id())
+                ->delete();
+        }
+
         // Generate a celebratory success message with workout details
         $successMessage = $this->generateSuccessMessage($exercise, $request->input('weight'), $reps, $rounds, $request->input('band_color'));
 
@@ -157,14 +165,12 @@ class LiftLogController extends Controller
             $redirectParams = [
                 'date' => $request->input('date'),
                 'submitted_lift_log_id' => $liftLog->id,
-                'submitted_program_id' => $request->input('program_id'), // Assuming program_id is passed from the form
             ];
             return redirect()->route('mobile-entry.lifts', $redirectParams)->with('success', $successMessage);
         } elseif ($request->input('redirect_to') === 'mobile-entry-lifts') {
             $redirectParams = [
                 'date' => $request->input('date'),
                 'submitted_lift_log_id' => $liftLog->id,
-                'submitted_program_id' => $request->input('program_id'),
             ];
             
             return redirect()->route('mobile-entry.lifts', $redirectParams)->with('success', $successMessage);
@@ -284,14 +290,12 @@ class LiftLogController extends Controller
             $redirectParams = [
                 'date' => $request->input('date'),
                 'submitted_lift_log_id' => $liftLog->id,
-                'submitted_program_id' => $request->input('program_id'), // Assuming program_id is passed from the form
             ];
             return redirect()->route('mobile-entry.lifts', $redirectParams)->with('success', 'Lift log updated successfully.');
         } elseif ($request->input('redirect_to') === 'mobile-entry-lifts') {
             $redirectParams = [
                 'date' => $request->input('date'),
                 'submitted_lift_log_id' => $liftLog->id,
-                'submitted_program_id' => $request->input('program_id'),
             ];
             return redirect()->route('mobile-entry.lifts', $redirectParams)->with('success', 'Lift log updated successfully.');
         } else {
