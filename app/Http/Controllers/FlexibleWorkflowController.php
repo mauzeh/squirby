@@ -70,9 +70,9 @@ class FlexibleWorkflowController extends Controller
                     ->createForm('#', 'exercise_name', ['date' => $selectedDate->toDateString()])
                     ->build(),
                 
-                // Form
+                // Form (using 'primary' type for blue border)
                 C::form('workout-1', 'Bench Press')
-                    ->type('exercise')
+                    ->type('primary')  // Generic type: primary, success, warning, secondary, danger, info
                     ->formAction('#')
                     ->deleteAction('#')
                     ->message('info', '3 sets of 10 reps', 'Last time:')
@@ -141,7 +141,7 @@ class FlexibleWorkflowController extends Controller
                     ->build(),
                 
                 C::form('ex-1', 'Bench Press')
-                    ->type('exercise')
+                    ->type('primary')  // Blue border
                     ->formAction('#')
                     ->numericField('weight', 'Weight:', 135, 5, 45)
                     ->numericField('reps', 'Reps:', 10, 1, 1)
@@ -149,7 +149,7 @@ class FlexibleWorkflowController extends Controller
                     ->build(),
                 
                 C::form('ex-2', 'Squats')
-                    ->type('exercise')
+                    ->type('success')  // Green border
                     ->formAction('#')
                     ->numericField('weight', 'Weight:', 185, 5, 45)
                     ->numericField('reps', 'Reps:', 8, 1, 1)
@@ -157,7 +157,7 @@ class FlexibleWorkflowController extends Controller
                     ->build(),
                 
                 C::form('ex-3', 'Deadlift')
-                    ->type('exercise')
+                    ->type('warning')  // Yellow/orange border
                     ->formAction('#')
                     ->numericField('weight', 'Weight:', 225, 5, 45)
                     ->numericField('reps', 'Reps:', 5, 1, 1)

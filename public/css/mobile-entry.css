@@ -808,44 +808,59 @@ Navigation Component */
 }
 
 /* Form Type Variants - Visual distinction for different form types */
+/* Primary (blue) - for main/important forms */
+.component-form-section[data-form-type="primary"],
 .component-form-section[data-form-type="exercise"] {
     border-left: 4px solid var(--color-primary);
 }
 
+/* Success (green) - for positive/completion forms */
+.component-form-section[data-form-type="success"],
 .component-form-section[data-form-type="food"] {
     border-left: 4px solid var(--color-success);
 }
 
+/* Warning (yellow/orange) - for attention/measurement forms */
+.component-form-section[data-form-type="warning"],
 .component-form-section[data-form-type="measurement"] {
     border-left: 4px solid var(--color-warning);
 }
 
+/* Secondary (gray) - for general/default forms */
+.component-form-section[data-form-type="secondary"],
 .component-form-section[data-form-type="general"] {
     border-left: 4px solid var(--color-secondary);
 }
 
-/* Form-specific styling classes added by JavaScript */
-.form-type-exercise {
-    /* Exercise-specific form styling */
+/* Danger (red) - for error/critical forms */
+.component-form-section[data-form-type="danger"] {
+    border-left: 4px solid var(--color-danger);
 }
 
-.form-type-food {
-    /* Food-specific form styling */
+/* Info (light blue) - for informational forms */
+.component-form-section[data-form-type="info"] {
+    border-left: 4px solid #17a2b8;
 }
 
+/* Legacy form type classes (deprecated but kept for backward compatibility) */
+.form-type-exercise,
+.form-type-food,
 .form-type-measurement {
-    /* Measurement-specific form styling */
+    /* Legacy - use data-form-type attribute instead */
 }
 
-.section-type-exercise .component-heading {
+.section-type-exercise .component-heading,
+.section-type-primary .component-heading {
     color: var(--color-primary);
 }
 
-.section-type-food .component-heading {
+.section-type-food .component-heading,
+.section-type-success .component-heading {
     color: var(--color-success);
 }
 
-.section-type-measurement .component-heading {
+.section-type-measurement .component-heading,
+.section-type-warning .component-heading {
     color: var(--color-warning);
 }
 
