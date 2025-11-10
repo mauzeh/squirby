@@ -42,6 +42,7 @@ class RecommendationEngine
         
         // Get exercises with intelligence data using the availableToUser scope
         // This automatically respects the user's global exercise preference
+        // AND includes global exercises the user has lift logs for
         $exercises = Exercise::availableToUser($userId, $showGlobalExercises)
             ->withIntelligence()
             ->with('intelligence')

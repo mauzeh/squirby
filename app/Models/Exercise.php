@@ -74,6 +74,10 @@ class Exercise extends Model
 
     /**
      * Scope that applies user-specific exercise filtering based on preferences
+     * 
+     * Global exercises are shown if:
+     * 1. User has show_global_exercises enabled, OR
+     * 2. User has lift logs for that exercise (even if promoted to global)
      */
     public function scopeAvailableToUser($query, $userId = null, $showGlobal = null)
     {
@@ -106,9 +110,18 @@ class Exercise extends Model
                   ->orWhere('user_id', $userId); // User's own exercises
             })->orderByRaw('user_id IS NULL ASC');
         } else {
-            // Show only user's own exercises
-            return $query->where('user_id', $userId)
-                        ->orderBy('title', 'asc');
+            // Show only user's own exercises + global exercises they have lift logs for
+            // This ensures exercises that were promoted to global remain visible
+            return $query->where(function ($q) use ($userId) {
+                $q->where('user_id', $userId) // User's own exercises
+                  ->orWhere(function ($subQuery) use ($userId) {
+                      // Global exercises that user has lift logs for
+                      $subQuery->whereNull('user_id')
+                               ->whereHas('liftLogs', function ($logQuery) use ($userId) {
+                                   $logQuery->where('user_id', $userId);
+                               });
+                  });
+            })->orderBy('title', 'asc');
         }
     }
 
