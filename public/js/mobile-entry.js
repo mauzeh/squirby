@@ -494,7 +494,7 @@ document.addEventListener('DOMContentLoaded', function() {
      */
     const autoScrollToFirstForm = () => {
         // Find the first form section
-        const firstForm = document.querySelector('.component-form-section.form');
+        const firstForm = document.querySelector('.component-form-section');
         
         if (firstForm) {
             // Small delay to ensure page is fully rendered
