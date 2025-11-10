@@ -57,10 +57,10 @@
         @if (Request::routeIs(['food-logs.*', 'meals.*', 'ingredients.*', 'exercises.*', 'lift-logs.*', 'recommendations.*', 'body-logs.*', 'measurement-types.*', 'mobile-entry.lifts', 'mobile-entry.foods', 'mobile-entry.measurements', 'flexible.*']))
         <div class="navbar sub-navbar">
             @if (Request::routeIs('flexible.*'))
-                <a href="{{ route('flexible.with-nav') }}" class="{{ Request::routeIs('flexible.with-nav') ? 'active' : '' }}">With Navigation</a>
-                <a href="{{ route('flexible.without-nav') }}" class="{{ Request::routeIs('flexible.without-nav') ? 'active' : '' }}">Without Navigation</a>
-                <a href="{{ route('flexible.multiple-forms') }}" class="{{ Request::routeIs('flexible.multiple-forms') ? 'active' : '' }}">Multiple Forms</a>
-                <a href="{{ route('flexible.custom-order') }}" class="{{ Request::routeIs('flexible.custom-order') ? 'active' : '' }}">Custom Order</a>
+                <a href="{{ route('flexible.with-nav') }}" class="{{ Request::routeIs('flexible.with-nav') ? 'active' : '' }}">+Nav</a>
+                <a href="{{ route('flexible.without-nav') }}" class="{{ Request::routeIs('flexible.without-nav') ? 'active' : '' }}">-Nav</a>
+                <a href="{{ route('flexible.multiple-forms') }}" class="{{ Request::routeIs('flexible.multiple-forms') ? 'active' : '' }}">Multi</a>
+                <a href="{{ route('flexible.custom-order') }}" class="{{ Request::routeIs('flexible.custom-order') ? 'active' : '' }}">Custom</a>
             @endif
 
             @if (Request::routeIs(['food-logs.*', 'meals.*', 'ingredients.*', 'mobile-entry.foods']))
