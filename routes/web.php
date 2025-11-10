@@ -16,6 +16,7 @@ use App\Http\Controllers\LiftLogController;
 use App\Http\Controllers\BodyLogController;
 use App\Http\Controllers\MeasurementTypeController;
 use App\Http\Controllers\RecommendationController;
+use App\Http\Controllers\FlexibleWorkflowController;
 
 // Breeze Routes
 Route::get('/', function () {
@@ -89,7 +90,11 @@ Route::middleware('auth')->group(function () {
     Route::get('mobile-entry/add-food-form/{type}/{id}', [MobileEntryController::class, 'addFoodForm'])->name('mobile-entry.add-food-form');
     Route::delete('mobile-entry/remove-food-form/{id}', [MobileEntryController::class, 'removeFoodForm'])->name('mobile-entry.remove-food-form');
 
-
+    // Flexible Workflow Examples (New Component-Based Architecture)
+    Route::get('flexible/with-nav', [FlexibleWorkflowController::class, 'withDateNavigation'])->name('flexible.with-nav');
+    Route::get('flexible/without-nav', [FlexibleWorkflowController::class, 'withoutNavigation'])->name('flexible.without-nav');
+    Route::get('flexible/multiple-forms', [FlexibleWorkflowController::class, 'multipleForms'])->name('flexible.multiple-forms');
+    Route::get('flexible/custom-order', [FlexibleWorkflowController::class, 'customOrder'])->name('flexible.custom-order');
 
     Route::post('lift-logs/destroy-selected', [LiftLogController::class, 'destroySelected'])->name('lift-logs.destroy-selected');
 
