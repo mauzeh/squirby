@@ -10,21 +10,18 @@ document.addEventListener('DOMContentLoaded', function() {
     const hiddenInput = document.querySelector('.component-create-input');
     const itemList = document.querySelector('.component-list');
     
-    // Only require filterInput and itemList - other elements are optional
-    if (!filterInput || !itemList) {
-        return; // Exit if essential elements don't exist
-    }
-    
-    // Get all item cards (excluding the filter container and no-results item)
-    const getAllItemCards = () => {
-        return Array.from(itemList.querySelectorAll('.component-list-item:not(.component-list-item--no-results)'));
-    };
-    
-    // Get the no results item
-    const noResultsItem = itemList.querySelector('.no-results-item');
-    
-    // Filter function
-    const filterItems = (searchTerm) => {
+    // Only set up filtering if filter input and item list exist
+    if (filterInput && itemList) {
+        // Get all item cards (excluding the filter container and no-results item)
+        const getAllItemCards = () => {
+            return Array.from(itemList.querySelectorAll('.component-list-item:not(.component-list-item--no-results)'));
+        };
+        
+        // Get the no results item
+        const noResultsItem = itemList.querySelector('.no-results-item');
+        
+        // Filter function
+        const filterItems = (searchTerm) => {
         const itemCards = getAllItemCards();
         const normalizedSearch = searchTerm.toLowerCase().trim();
         let visibleCount = 0;
@@ -121,10 +118,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 150);
     });
     
-    // Add event listener for clear button (if it exists)
-    if (clearButton) {
-        clearButton.addEventListener('click', clearFilter);
-    }
+        // Add event listener for clear button (if it exists)
+        if (clearButton) {
+            clearButton.addEventListener('click', clearFilter);
+        }
+    } // End of filter setup
     
     /**
      * Numeric Input Increment/Decrement System
