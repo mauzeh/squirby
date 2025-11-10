@@ -31,7 +31,6 @@
                 </div>
                 <div style="display: flex; gap: 20px; margin: 10px 0; font-size: 0.9em; color: #ddd;">
                     <span><strong>{{ $sourceStats['lift_logs_count'] }}</strong> lift logs</span>
-                    <span><strong>{{ $sourceStats['program_entries_count'] }}</strong> program entries</span>
                     <span><strong>{{ $sourceStats['users_count'] }}</strong> users</span>
                     @if($sourceStats['has_intelligence'])
                         <span style="color: #4CAF50;"><i class="fas fa-brain"></i> Has AI insights</span>
@@ -78,7 +77,6 @@
                                     
                                     <div style="display: flex; gap: 20px; margin: 8px 0; font-size: 0.85em; color: #ddd;">
                                         <span><strong>{{ $stats['lift_logs_count'] }}</strong> lift logs</span>
-                                        <span><strong>{{ $stats['program_entries_count'] }}</strong> program entries</span>
                                         <span><strong>{{ $stats['users_count'] }}</strong> users</span>
                                         @if($stats['has_intelligence'])
                                             <span style="color: #4CAF50;"><i class="fas fa-brain"></i> Has AI insights</span>
