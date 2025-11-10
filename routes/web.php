@@ -17,6 +17,7 @@ use App\Http\Controllers\BodyLogController;
 use App\Http\Controllers\MeasurementTypeController;
 use App\Http\Controllers\RecommendationController;
 use App\Http\Controllers\FlexibleWorkflowController;
+use App\Http\Controllers\WorkoutTemplateController;
 
 // Breeze Routes
 Route::get('/', function () {
@@ -73,6 +74,13 @@ Route::middleware('auth')->group(function () {
 
     // Exercise Recommendations
     Route::get('recommendations', [RecommendationController::class, 'index'])->name('recommendations.index');
+
+    // Workout Templates
+    Route::resource('workout-templates', WorkoutTemplateController::class)->except(['show']);
+    Route::post('workout-templates/{workoutTemplate}/add-exercise', [WorkoutTemplateController::class, 'addExercise'])->name('workout-templates.add-exercise');
+    Route::delete('workout-templates/{workoutTemplate}/exercises/{exercise}', [WorkoutTemplateController::class, 'removeExercise'])->name('workout-templates.remove-exercise');
+    Route::get('workout-templates-browse', [WorkoutTemplateController::class, 'browse'])->name('workout-templates.browse');
+    Route::get('workout-templates/{workoutTemplate}/apply', [WorkoutTemplateController::class, 'apply'])->name('workout-templates.apply');
 
     // Mobile Entry - Supports date parameter
     Route::get('mobile-entry/lifts', [MobileEntryController::class, 'lifts'])->name('mobile-entry.lifts');
