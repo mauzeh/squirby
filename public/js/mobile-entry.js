@@ -455,7 +455,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (!form) return;
                 
                 // Determine the type of delete action and get appropriate message
-                const loggedItemsSection = this.closest('.logged-items-section');
+                const loggedItemsSection = this.closest('.component-items-section');
                 const formSection = this.closest('.item-logging-section');
                 
                 let confirmMessage;

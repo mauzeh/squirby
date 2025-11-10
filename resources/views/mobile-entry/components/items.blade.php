@@ -1,13 +1,13 @@
-{{-- Logged Items Component --}}
-<section class="logged-items-section" aria-label="{{ $data['ariaLabels']['section'] }}">
+{{-- Items Component --}}
+<section class="component-items-section" aria-label="{{ $data['ariaLabels']['section'] }}">
     @if($data['emptyMessage'] && empty($data['items']))
-    <div class="logged-item logged-items-empty">
+    <div class="component-items-empty">
         {{ $data['emptyMessage'] }}
     </div>
     @endif
     
     @foreach($data['items'] as $item)
-    <div class="component-logged-item">
+    <div class="component-item">
         <div class="component-header">
             <h2 class="component-heading">{{ $item['title'] }}</h2>
             @if(isset($item['value']) && !empty($item['value']))

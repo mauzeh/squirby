@@ -1644,16 +1644,16 @@ Navigation Component */
     outline-offset: 2px;
 }
 
-/* Logged Item Display */
-.component-logged-items-section {
+/* Items Display Component */
+.component-items-section {
     margin-bottom: var(--spacing-xl);
 }
 
-.component-logged-items-section .component-logged-item+.component-logged-item {
+.component-items-section .component-item+.component-item {
     margin-top: var(--spacing-md);
 }
 
-.component-logged-item {
+.component-item {
     background-color: var(--secondary-bg);
     border-radius: var(--border-radius-md);
     padding: var(--spacing-md);
@@ -1663,18 +1663,18 @@ Navigation Component */
 }
 
 @media (hover: hover) {
-    .component-logged-item:hover {
+    .component-item:hover {
         transform: translateY(-1px);
         box-shadow: var(--shadow-medium);
     }
 }
 
-.component-logged-item:focus {
+.component-item:focus {
     outline: 2px solid var(--color-primary);
     outline-offset: 2px;
 }
 
-.component-logged-item .component-header {
+.component-item .component-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -1682,11 +1682,11 @@ Navigation Component */
     gap: var(--spacing-sm);
 }
 
-.component-logged-item .component-header .component-value {
+.component-item .component-header .component-value {
     margin-left: auto;
 }
 
-.component-logged-item .component-value {
+.component-item .component-value {
     font-size: 1.2em;
     font-weight: bold;
     color: var(--color-success);
@@ -1698,18 +1698,18 @@ Navigation Component */
 /* Visual distinction from form elements - checkmark removed */
 
 /* Completion styling variants */
-.component-logged-item.completed {
+.component-item.completed {
     background-color: rgba(40, 167, 69, 0.1);
 }
 
-.component-logged-item.recent .component-value {
+.component-item.recent .component-value {
     color: var(--color-primary);
 }
 
 
 
-/* Empty state for logged items */
-.component-logged-items-empty {
+/* Empty state for items */
+.component-items-empty {
     text-align: center;
     padding: 40px var(--spacing-lg);
     color: var(--text-muted);
@@ -1721,8 +1721,8 @@ Navigation Component */
 
 
 
-/* Loading state for logged items */
-.component-logged-items-loading {
+/* Loading state for items */
+.component-items-loading {
     text-align: center;
     padding: 40px var(--spacing-lg);
     color: var(--text-muted);
@@ -1730,7 +1730,7 @@ Navigation Component */
     border-radius: var(--border-radius-md);
 }
 
-.component-logged-items-loading::before {
+.component-items-loading::before {
     content: "⏳";
     display: block;
     font-size: 2em;
@@ -1738,49 +1738,49 @@ Navigation Component */
     animation: pulse 1.5s ease-in-out infinite;
 }
 
-/* Responsive adjustments for logged items */
+/* Responsive adjustments for items */
 @media (max-width: 768px) {
-    .component-logged-item {
+    .component-item {
         padding: 12px;
     }
 
-    .component-logged-item .component-value {
+    .component-item .component-value {
         font-size: 1.2em;
     }
 
-    .component-logged-item .item-comment {
+    .component-item .item-comment {
         font-size: 0.9em;
         margin-top: var(--spacing-sm);
     }
 
-    .component-logged-items-empty,
-    .component-logged-items-loading {
+    .component-items-empty,
+    .component-items-loading {
         padding: 30px var(--spacing-md);
     }
 
-    .component-logged-items-empty::before,
-    .component-logged-items-loading::before {
+    .component-items-empty::before,
+    .component-items-loading::before {
         font-size: 1.8em;
     }
 }
 
 @media (max-width: 480px) {
-    .component-logged-item {
+    .component-item {
         padding: 10px;
     }
 
-    .component-logged-item .component-value {
+    .component-item .component-value {
         font-size: 1.2em;
     }
 
-    .component-logged-item .item-comment {
+    .component-item .item-comment {
         font-size: 0.85em;
     }
 
 
 
-    .component-logged-items-empty,
-    .component-logged-items-loading {
+    .component-items-empty,
+    .component-items-loading {
         padding: 25px var(--spacing-sm);
     }
 }
@@ -1852,7 +1852,7 @@ Navigation Component */
     }
 
     .summary-item,
-    .component-logged-item,
+    .component-item,
     .component-form-section {
         border: 2px solid #ffffff;
     }

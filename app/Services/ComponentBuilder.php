@@ -67,11 +67,11 @@ class ComponentBuilder
     }
     
     /**
-     * Create a logged items component
+     * Create an items component
      */
-    public static function loggedItems(): LoggedItemsComponentBuilder
+    public static function items(): ItemsComponentBuilder
     {
-        return new LoggedItemsComponentBuilder();
+        return new ItemsComponentBuilder();
     }
 }
 
@@ -517,9 +517,9 @@ class FormComponentBuilder
 }
 
 /**
- * Logged Items Component Builder
+ * Items Component Builder
  */
-class LoggedItemsComponentBuilder
+class ItemsComponentBuilder
 {
     protected array $data = [
         'items' => [],
@@ -529,15 +529,15 @@ class LoggedItemsComponentBuilder
             'removeForm' => 'Are you sure you want to remove this item?'
         ],
         'ariaLabels' => [
-            'section' => 'Logged items',
+            'section' => 'Items',
             'editItem' => 'Edit item',
             'deleteItem' => 'Delete item'
         ]
     ];
     
-    public function item(int $id, string $title, $value, string $editAction, string $deleteAction): LoggedItemBuilder
+    public function item(int $id, string $title, $value, string $editAction, string $deleteAction): ItemBuilder
     {
-        return new LoggedItemBuilder($this, $id, $title, $value, $editAction, $deleteAction);
+        return new ItemBuilder($this, $id, $title, $value, $editAction, $deleteAction);
     }
     
     public function addItem(array $item): self
@@ -561,21 +561,21 @@ class LoggedItemsComponentBuilder
     public function build(): array
     {
         return [
-            'type' => 'logged-items',
+            'type' => 'items',
             'data' => $this->data
         ];
     }
 }
 
 /**
- * Logged Item Builder (nested builder)
+ * Item Builder (nested builder)
  */
-class LoggedItemBuilder
+class ItemBuilder
 {
-    protected LoggedItemsComponentBuilder $parent;
+    protected ItemsComponentBuilder $parent;
     protected array $data;
     
-    public function __construct(LoggedItemsComponentBuilder $parent, int $id, string $title, $value, string $editAction, string $deleteAction)
+    public function __construct(ItemsComponentBuilder $parent, int $id, string $title, $value, string $editAction, string $deleteAction)
     {
         $this->parent = $parent;
         $this->data = [
@@ -611,7 +611,7 @@ class LoggedItemBuilder
         return $this;
     }
     
-    public function add(): LoggedItemsComponentBuilder
+    public function add(): ItemsComponentBuilder
     {
         $this->parent->addItem($this->data);
         return $this->parent;

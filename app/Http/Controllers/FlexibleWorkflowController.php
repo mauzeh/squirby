@@ -85,8 +85,8 @@ class FlexibleWorkflowController extends Controller
                     ->submitButton('Log Bench Press')
                     ->build(),
                 
-                // Logged items
-                C::loggedItems()
+                // Items (previously logged items)
+                C::items()
                     ->item(1, 'Morning Workout', 25, '#', '#')
                         ->message('neutral', 'Great session!', 'Comment:')
                         ->freeformText('Felt great today! Energy levels were high.')
@@ -94,7 +94,7 @@ class FlexibleWorkflowController extends Controller
                     ->item(2, 'Afternoon Session', 15, '#', '#')
                         ->message('neutral', 'Quick session', 'Comment:')
                         ->add()
-                    ->emptyMessage('No workouts logged yet.')
+                    ->emptyMessage('No items yet.')
                     ->build(),
             ]
         ];
