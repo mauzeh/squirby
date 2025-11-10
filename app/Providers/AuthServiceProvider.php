@@ -3,7 +3,9 @@
 namespace App\Providers;
 
 use App\Models\Exercise;
+use App\Models\WorkoutTemplate;
 use App\Policies\ExercisePolicy;
+use App\Policies\WorkoutTemplatePolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 
 class AuthServiceProvider extends ServiceProvider
@@ -15,6 +17,7 @@ class AuthServiceProvider extends ServiceProvider
      */
     protected $policies = [
         Exercise::class => ExercisePolicy::class,
+        WorkoutTemplate::class => WorkoutTemplatePolicy::class,
     ];
 
     /**

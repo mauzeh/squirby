@@ -113,4 +113,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(LiftLog::class);
     }
+
+    public function workoutTemplates()
+    {
+        return $this->hasMany(WorkoutTemplate::class);
+    }
 }

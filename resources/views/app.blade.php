@@ -35,7 +35,7 @@
         @endif
         @auth
         <div class="navbar">
-            <a id="lifts-nav-link" href="{{ route('mobile-entry.lifts') }}" class="top-level-nav-item {{ Request::routeIs(['exercises.*', 'lift-logs.*', 'recommendations.*', 'mobile-entry.lifts']) ? 'active' : '' }}"><i class="fas fa-dumbbell"></i> Lifts</a>
+            <a id="lifts-nav-link" href="{{ route('mobile-entry.lifts') }}" class="top-level-nav-item {{ Request::routeIs(['exercises.*', 'lift-logs.*', 'recommendations.*', 'mobile-entry.lifts', 'workout-templates.*']) ? 'active' : '' }}"><i class="fas fa-dumbbell"></i> Lifts</a>
             <a id="food-nav-link" href="{{ route('mobile-entry.foods') }}" class="top-level-nav-item {{ Request::routeIs(['food-logs.*', 'meals.*', 'ingredients.*', 'mobile-entry.foods']) ? 'active' : '' }}"><i class="fas fa-utensils"></i> Food</a>
             <a href="{{ route('mobile-entry.measurements') }}" class="top-level-nav-item {{ Request::routeIs(['body-logs.*', 'measurement-types.*', 'mobile-entry.measurements']) ? 'active' : '' }}"><i class="fas fa-heartbeat"></i> Body</a>
 
@@ -53,7 +53,7 @@
             </div>
         </div>
 
-        @if (Request::routeIs(['food-logs.*', 'meals.*', 'ingredients.*', 'exercises.*', 'lift-logs.*', 'recommendations.*', 'body-logs.*', 'measurement-types.*', 'mobile-entry.lifts', 'mobile-entry.foods', 'mobile-entry.measurements']))
+        @if (Request::routeIs(['food-logs.*', 'meals.*', 'ingredients.*', 'exercises.*', 'lift-logs.*', 'recommendations.*', 'body-logs.*', 'measurement-types.*', 'mobile-entry.lifts', 'mobile-entry.foods', 'mobile-entry.measurements', 'workout-templates.*']))
         <div class="navbar sub-navbar">
             @if (Request::routeIs(['food-logs.*', 'meals.*', 'ingredients.*', 'mobile-entry.foods']))
                 <a href="{{ route('mobile-entry.foods') }}" class="{{ Request::routeIs(['mobile-entry.foods']) ? 'active' : '' }}"><i class="fas fa-mobile-alt"></i></a>
@@ -75,13 +75,14 @@
                 @endforeach
             @endif
 
-            @if (Request::routeIs(['exercises.*', 'lift-logs.*', 'recommendations.*', 'mobile-entry.lifts']))
+            @if (Request::routeIs(['exercises.*', 'lift-logs.*', 'recommendations.*', 'mobile-entry.lifts', 'workout-templates.*']))
                 <a href="{{ route('mobile-entry.lifts') }}" class="{{ Request::routeIs(['mobile-entry.lifts']) ? 'active' : '' }}"><i class="fas fa-mobile-alt"></i></a>
                 @if(auth()->user() && (auth()->user()->hasRole('Admin') || session()->has('impersonator_id')))
                     <a href="{{ route('recommendations.index') }}" class="{{ Request::routeIs('recommendations.*') ? 'active' : '' }}" title="Recommendations"><i class="fas fa-star"></i></a>
                 @endif
                 <a href="{{ route('lift-logs.index') }}" class="{{ Request::routeIs(['lift-logs.index', 'lift-logs.edit', 'lift-logs.destroy-selected', 'exercises.show-logs']) ? 'active' : '' }}">History</a>
                 <a href="{{ route('exercises.index') }}" class="{{ Request::routeIs(['exercises.index', 'exercises.create', 'exercises.edit', 'exercises.store', 'exercises.update', 'exercises.destroy']) ? 'active' : '' }}">Exercises</a>
+                <a href="{{ route('workout-templates.index') }}" class="{{ Request::routeIs('workout-templates.*') ? 'active' : '' }}">Templates</a>
             @endif
 
 

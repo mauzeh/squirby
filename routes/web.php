@@ -16,6 +16,7 @@ use App\Http\Controllers\LiftLogController;
 use App\Http\Controllers\BodyLogController;
 use App\Http\Controllers\MeasurementTypeController;
 use App\Http\Controllers\RecommendationController;
+use App\Http\Controllers\WorkoutTemplateController;
 
 // Breeze Routes
 Route::get('/', function () {
@@ -67,6 +68,8 @@ Route::middleware('auth')->group(function () {
     Route::get('exercises/{exercise}/logs', [ExerciseController::class, 'showLogs'])->name('exercises.show-logs');
     Route::get('exercises/{exercise}/merge', [ExerciseController::class, 'showMerge'])->name('exercises.show-merge');
     Route::post('exercises/{exercise}/merge', [ExerciseController::class, 'merge'])->name('exercises.merge');
+
+    Route::resource('workout-templates', WorkoutTemplateController::class)->except(['show']);
 
     Route::resource('lift-logs', LiftLogController::class)->except(['show']);
 
