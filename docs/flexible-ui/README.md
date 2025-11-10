@@ -64,6 +64,7 @@ $data = [
 | Item List | `item-list` | Searchable list with filter and create form |
 | Form | `form` | Data entry form with fields and validation |
 | Items | `items` | Logged items with edit/delete actions |
+| Table | `table` | Tabular CRUD list optimized for narrow screens |
 
 ## Quick Start
 

@@ -73,6 +73,14 @@ class ComponentBuilder
     {
         return new ItemsComponentBuilder();
     }
+    
+    /**
+     * Create a table component
+     */
+    public static function table(): TableComponentBuilder
+    {
+        return new TableComponentBuilder();
+    }
 }
 
 /**
@@ -631,6 +639,142 @@ class ItemBuilder
     public function add(): ItemsComponentBuilder
     {
         $this->parent->addItem($this->data);
+        return $this->parent;
+    }
+}
+
+/**
+ * Table Component Builder
+ * 
+ * Builds a tabular CRUD list optimized for narrow screens.
+ * Each row can have up to 3 lines of text with edit and delete actions.
+ */
+class TableComponentBuilder
+{
+    protected array $data = [
+        'rows' => [],
+        'emptyMessage' => '',
+        'confirmMessages' => [],
+        'ariaLabels' => [
+            'section' => 'Data table',
+            'editItem' => 'Edit item',
+            'deleteItem' => 'Delete item'
+        ]
+    ];
+    
+    /**
+     * Add a row to the table
+     * 
+     * @param int $id Row identifier
+     * @param string $line1 First line (bold, primary text)
+     * @param string|null $line2 Second line (secondary text)
+     * @param string|null $line3 Third line (muted, italic text)
+     * @param string $editAction Edit URL
+     * @param string $deleteAction Delete URL
+     * @return TableRowBuilder
+     */
+    public function row(int $id, string $line1, ?string $line2, ?string $line3, string $editAction, string $deleteAction): TableRowBuilder
+    {
+        return new TableRowBuilder($this, $id, $line1, $line2, $line3, $editAction, $deleteAction);
+    }
+    
+    /**
+     * Add a row directly (internal use)
+     */
+    public function addRow(array $row): self
+    {
+        $this->data['rows'][] = $row;
+        return $this;
+    }
+    
+    /**
+     * Set empty message when no rows exist
+     */
+    public function emptyMessage(string $message): self
+    {
+        $this->data['emptyMessage'] = $message;
+        return $this;
+    }
+    
+    /**
+     * Add a confirmation message for delete actions
+     */
+    public function confirmMessage(string $key, string $message): self
+    {
+        $this->data['confirmMessages'][$key] = $message;
+        return $this;
+    }
+    
+    /**
+     * Set aria label for the table section
+     */
+    public function ariaLabel(string $label): self
+    {
+        $this->data['ariaLabels']['section'] = $label;
+        return $this;
+    }
+    
+    /**
+     * Build the component
+     */
+    public function build(): array
+    {
+        return [
+            'type' => 'table',
+            'data' => $this->data
+        ];
+    }
+}
+
+/**
+ * Table Row Builder (nested builder)
+ */
+class TableRowBuilder
+{
+    protected TableComponentBuilder $parent;
+    protected array $data;
+    
+    public function __construct(
+        TableComponentBuilder $parent,
+        int $id,
+        string $line1,
+        ?string $line2,
+        ?string $line3,
+        string $editAction,
+        string $deleteAction
+    ) {
+        $this->parent = $parent;
+        $this->data = [
+            'id' => $id,
+            'line1' => $line1,
+            'editAction' => $editAction,
+            'deleteAction' => $deleteAction
+        ];
+        
+        if ($line2 !== null) {
+            $this->data['line2'] = $line2;
+        }
+        
+        if ($line3 !== null) {
+            $this->data['line3'] = $line3;
+        }
+    }
+    
+    /**
+     * Add delete parameters (e.g., redirect date)
+     */
+    public function deleteParams(array $params): self
+    {
+        $this->data['deleteParams'] = $params;
+        return $this;
+    }
+    
+    /**
+     * Add the row and return to parent builder
+     */
+    public function add(): TableComponentBuilder
+    {
+        $this->parent->addRow($this->data);
         return $this->parent;
     }
 }

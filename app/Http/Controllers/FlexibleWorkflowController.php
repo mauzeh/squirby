@@ -243,4 +243,74 @@ class FlexibleWorkflowController extends Controller
         
         return view('mobile-entry.flexible', compact('data'));
     }
+    
+    /**
+     * Example 6: Tabular CRUD list
+     * Demonstrates the table component optimized for narrow screens
+     */
+    public function tableExample(Request $request)
+    {
+        $data = [
+            'components' => [
+                C::title('My Workouts', 'Manage your workout routines')->build(),
+                
+                C::messages()
+                    ->info('Tap any row to edit, or use the delete button to remove.')
+                    ->build(),
+                
+                // Table with sample data
+                C::table()
+                    ->row(
+                        1,
+                        'Morning Cardio',
+                        '30 minutes • 3x per week',
+                        'Last completed: 2 days ago',
+                        route('flexible.table-example'),
+                        route('flexible.table-example')
+                    )
+                    ->deleteParams(['redirect' => 'table'])
+                    ->add()
+                    ->row(
+                        2,
+                        'Upper Body Strength',
+                        'Bench Press, Rows, Shoulder Press',
+                        '45 minutes • Mon, Wed, Fri',
+                        route('flexible.table-example'),
+                        route('flexible.table-example')
+                    )
+                    ->deleteParams(['redirect' => 'table'])
+                    ->add()
+                    ->row(
+                        3,
+                        'Leg Day',
+                        'Squats, Deadlifts, Lunges',
+                        null,
+                        route('flexible.table-example'),
+                        route('flexible.table-example')
+                    )
+                    ->deleteParams(['redirect' => 'table'])
+                    ->add()
+                    ->row(
+                        4,
+                        'Core & Flexibility',
+                        '20 minutes daily',
+                        'Planks, stretches, yoga poses',
+                        route('flexible.table-example'),
+                        route('flexible.table-example')
+                    )
+                    ->deleteParams(['redirect' => 'table'])
+                    ->add()
+                    ->emptyMessage('No workouts yet. Create your first routine!')
+                    ->confirmMessage('deleteItem', 'Are you sure you want to delete this workout?')
+                    ->ariaLabel('Workout routines')
+                    ->build(),
+                
+                C::button('Add New Workout')
+                    ->ariaLabel('Create a new workout routine')
+                    ->build(),
+            ]
+        ];
+        
+        return view('mobile-entry.flexible', compact('data'));
+    }
 }

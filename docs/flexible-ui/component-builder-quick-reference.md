@@ -334,3 +334,67 @@ foreach ($forms as $form) {
 $loggedItems = $formService->generateLoggedItems($userId, $date);
 $components[] = ['type' => 'items', 'data' => $loggedItems];
 ```
+
+## Table Component
+
+### Basic Table
+```php
+C::table()
+    ->row(1, 'Line 1', 'Line 2', 'Line 3', '/edit/1', '/delete/1')
+        ->add()
+    ->row(2, 'Another row', 'Secondary text', null, '/edit/2', '/delete/2')
+        ->add()
+    ->emptyMessage('No items yet.')
+    ->confirmMessage('deleteItem', 'Are you sure?')
+    ->build()
+```
+
+### Table with Delete Parameters
+```php
+C::table()
+    ->row(1, 'Workout Name', '30 minutes', 'Last: 2 days ago', '/edit/1', '/delete/1')
+        ->deleteParams(['date' => '2025-11-10'])
+        ->add()
+    ->build()
+```
+
+### Table Methods
+
+| Method | Parameters | Description |
+|--------|-----------|-------------|
+| `row()` | `$id, $line1, $line2, $line3, $editAction, $deleteAction` | Add a row (line2 and line3 optional) |
+| `deleteParams()` | `array $params` | Add hidden params to delete form |
+| `add()` | - | Finish row and return to table builder |
+| `emptyMessage()` | `string $message` | Message when no rows |
+| `confirmMessage()` | `string $key, string $message` | Delete confirmation message |
+| `ariaLabel()` | `string $label` | Accessibility label |
+| `build()` | - | Build the component |
+
+### Complete Table Example
+```php
+$components[] = C::table()
+    ->row(
+        1,
+        'Morning Cardio',
+        '30 minutes • 3x per week',
+        'Last completed: 2 days ago',
+        route('workouts.edit', 1),
+        route('workouts.destroy', 1)
+    )
+    ->deleteParams(['redirect' => 'workouts'])
+    ->add()
+    ->row(
+        2,
+        'Upper Body Strength',
+        'Bench Press, Rows, Shoulder Press',
+        '45 minutes • Mon, Wed, Fri',
+        route('workouts.edit', 2),
+        route('workouts.destroy', 2)
+    )
+    ->deleteParams(['redirect' => 'workouts'])
+    ->add()
+    ->emptyMessage('No workouts yet. Create your first routine!')
+    ->confirmMessage('deleteItem', 'Are you sure you want to delete this workout?')
+    ->ariaLabel('Workout routines')
+    ->build();
+```

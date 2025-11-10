@@ -416,33 +416,47 @@ document.addEventListener('DOMContentLoaded', function() {
      * Adds confirmation dialogs for both:
      * 1. Deleting logged items (permanent deletion)
      * 2. Removing forms from program (removing from today's program)
+     * 3. Deleting table rows (tabular CRUD lists)
      * 
      * Uses configurable messages from the data array passed from the controller.
      */
     const setupDeleteConfirmation = () => {
         // Get confirmation messages from the page data
         const getConfirmMessages = () => {
-            // Try to get messages from a script tag or data attribute
-            const dataScript = document.querySelector('script[data-confirm-messages]');
-            if (dataScript) {
-                try {
-                    return JSON.parse(dataScript.dataset.confirmMessages);
-                } catch (e) {
-                    console.warn('Failed to parse confirmation messages:', e);
-                }
-            }
+            // Try to get messages from multiple script tags
+            const itemsScript = document.querySelector('script[data-confirm-messages]');
+            const tableScript = document.querySelector('script[data-table-confirm-messages]');
             
-            // Fallback messages
-            return {
+            let messages = {
                 deleteItem: 'Are you sure you want to delete this item? This action cannot be undone.',
                 removeForm: 'Are you sure you want to remove this item from today\'s program?'
             };
+            
+            // Merge messages from items component
+            if (itemsScript) {
+                try {
+                    Object.assign(messages, JSON.parse(itemsScript.dataset.confirmMessages));
+                } catch (e) {
+                    console.warn('Failed to parse items confirmation messages:', e);
+                }
+            }
+            
+            // Merge messages from table component
+            if (tableScript) {
+                try {
+                    Object.assign(messages, JSON.parse(tableScript.dataset.tableConfirmMessages));
+                } catch (e) {
+                    console.warn('Failed to parse table confirmation messages:', e);
+                }
+            }
+            
+            return messages;
         };
         
         const confirmMessages = getConfirmMessages();
         
-        // Target all delete buttons on the page
-        const deleteButtons = document.querySelectorAll('.btn-delete');
+        // Target all delete buttons on the page (including table delete buttons)
+        const deleteButtons = document.querySelectorAll('.btn-delete, .btn-table-delete');
         
         deleteButtons.forEach(button => {
             button.addEventListener('click', function(event) {
@@ -455,6 +469,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Determine the type of delete action and get appropriate message
                 const loggedItemsSection = this.closest('.component-items-section');
                 const formSection = this.closest('.component-form-section');
+                const tableSection = this.closest('.component-table-section');
                 
                 let confirmMessage;
                 
@@ -464,6 +479,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 } else if (formSection) {
                     // This is a form removal (removing from program)
                     confirmMessage = confirmMessages.removeForm;
+                } else if (tableSection) {
+                    // This is a table row deletion
+                    confirmMessage = confirmMessages.deleteItem;
                 } else {
                     // Fallback for any other delete buttons
                     confirmMessage = confirmMessages.deleteItem;
