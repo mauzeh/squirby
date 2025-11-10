@@ -2,7 +2,7 @@
 
 @section('content')
     <div class="container">
-        <h1>Edit Lift Log</h1>
+        <h1>Edit Lift Log - {{ $liftLog->exercise->title }}</h1>
         
         <x-lift-log-form-component 
             :liftLog="$liftLog"
