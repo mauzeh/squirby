@@ -1,7 +1,7 @@
 {{-- Form Component --}}
-<section class="item-logging-section form" aria-label="{{ $data['ariaLabels']['section'] }}" data-form-type="{{ $data['type'] }}" data-form-id="{{ $data['id'] }}">
-    <div class="item-header">
-        <h2 class="item-title">{{ $data['title'] }}</h2>
+<section class="component-form-section form" aria-label="{{ $data['ariaLabels']['section'] }}" data-form-type="{{ $data['type'] }}" data-form-id="{{ $data['id'] }}">
+    <div class="component-header">
+        <h2 class="component-heading">{{ $data['title'] }}</h2>
         @if($data['deleteAction'])
         <form class="delete-form" method="POST" action="{{ $data['deleteAction'] }}">
             @csrf
@@ -19,9 +19,9 @@
     </div>
     
     @if(!empty($data['messages']))
-    <div class="item-messages">
+    <div class="component-messages">
         @foreach($data['messages'] as $message)
-        <div class="item-message item-message--{{ $message['type'] }}">
+        <div class="component-message component-message--{{ $message['type'] }}">
             @if(isset($message['prefix']))
             <span class="message-prefix">{{ $message['prefix'] }}</span>
             @endif
@@ -31,7 +31,7 @@
     </div>
     @endif
     
-    <form class="item-form" method="POST" action="{{ $data['formAction'] }}" data-form-type="{{ $data['type'] }}">
+    <form class="component-form-element" method="POST" action="{{ $data['formAction'] }}" data-form-type="{{ $data['type'] }}">
         @csrf
         <input type="hidden" name="form_type" value="{{ $data['type'] }}">
         <input type="hidden" name="item_name" value="{{ $data['itemName'] }}">

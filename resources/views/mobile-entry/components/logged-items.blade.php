@@ -7,13 +7,13 @@
     @endif
     
     @foreach($data['items'] as $item)
-    <div class="logged-item">
-        <div class="item-header">
-            <h2 class="item-title">{{ $item['title'] }}</h2>
+    <div class="component-logged-item">
+        <div class="component-header">
+            <h2 class="component-heading">{{ $item['title'] }}</h2>
             @if(isset($item['value']) && !empty($item['value']))
-            <span class="item-value">{{ $item['value'] }}</span>
+            <span class="component-value">{{ $item['value'] }}</span>
             @endif
-            <div class="item-actions">
+            <div class="component-actions">
                 <a href="{{ $item['editAction'] }}" class="btn-edit" aria-label="{{ $data['ariaLabels']['editItem'] }}">
                     <i class="fas fa-edit"></i>
                 </a>
@@ -32,15 +32,15 @@
             </div>
         </div>
         @if(isset($item['message']))
-        <div class="item-message item-message--{{ $item['message']['type'] }}">
+        <div class="component-message component-message--{{ $item['message']['type'] }}">
             @if(isset($item['message']['prefix']))
-            <span class="message-prefix">{{ $item['message']['prefix'] }}</span>
+            <span class="message-prefix">{{ $item['message']['prefix'] }}}</span>
             @endif
             {{ $item['message']['text'] }}
         </div>
         @endif
         @if(isset($item['freeformText']) && !empty($item['freeformText']))
-        <div class="item-freeform-text">
+        <div class="component-freeform-text">
             {{ $item['freeformText'] }}
         </div>
         @endif

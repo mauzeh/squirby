@@ -1,17 +1,17 @@
 {{-- Item List Component --}}
-<section class="item-selection-section" aria-label="{{ $data['ariaLabels']['section'] }}">
-    <ul class="item-selection-list">
+<section class="component-list-section" aria-label="{{ $data['ariaLabels']['section'] }}">
+    <ul class="component-list">
         <li>
-            <div class="item-filter-container">
-                <div class="item-filter-group">
-                    <div class="item-filter-input-wrapper">
-                        <input type="text" class="item-filter-input" placeholder="{{ $data['filterPlaceholder'] }}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+            <div class="component-filter-container">
+                <div class="component-filter-group">
+                    <div class="component-filter-input-wrapper">
+                        <input type="text" class="component-filter-input" placeholder="{{ $data['filterPlaceholder'] }}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
                         <button type="button" class="btn-clear-filter" aria-label="Clear filter" style="display: none;">×</button>
                     </div>
                     @if($data['createForm'])
-                    <form method="{{ $data['createForm']['method'] }}" action="{{ $data['createForm']['action'] }}" class="create-item-form">
+                    <form method="{{ $data['createForm']['method'] }}" action="{{ $data['createForm']['action'] }}" class="component-create-form">
                         @csrf
-                        <input type="hidden" name="{{ $data['createForm']['inputName'] }}" class="create-item-input" value="">
+                        <input type="hidden" name="{{ $data['createForm']['inputName'] }}" class="component-create-input" value="">
                         @foreach($data['createForm']['hiddenFields'] as $name => $value)
                             <input type="hidden" name="{{ $name }}" value="{{ $value }}">
                         @endforeach
@@ -28,17 +28,17 @@
         </li>
         @foreach($data['items'] as $item)
         <li>
-            <a href="{{ $item['href'] }}" class="item-selection-card item-selection-card--{{ $item['type']['cssClass'] }}" 
+            <a href="{{ $item['href'] }}" class="component-list-item component-list-item--{{ $item['type']['cssClass'] }}" 
                aria-label="{{ $data['ariaLabels']['selectItem'] }}: {{ $item['name'] }}">
-                <span class="item-name">{{ $item['name'] }}</span>
-                <span class="item-type">{!! $item['type']['label'] !!}</span>
+                <span class="component-list-item-name">{{ $item['name'] }}</span>
+                <span class="component-list-item-type">{!! $item['type']['label'] !!}</span>
             </a>
         </li>
         @endforeach
         <li class="no-results-item" style="display: none;">
-            <div class="item-selection-card item-selection-card--no-results">
-                <span class="item-name">{{ $data['noResultsMessage'] }}</span>
-                <span class="item-type">No matches</span>
+            <div class="component-list-item component-list-item--no-results">
+                <span class="component-list-item-name">{{ $data['noResultsMessage'] }}</span>
+                <span class="component-list-item-type">No matches</span>
             </div>
         </li>
     </ul>

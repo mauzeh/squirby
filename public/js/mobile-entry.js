@@ -5,10 +5,10 @@
 
 document.addEventListener('DOMContentLoaded', function() {
     // Get the filter input, clear button, hidden input, and item list
-    const filterInput = document.querySelector('.item-filter-input');
+    const filterInput = document.querySelector('.component-filter-input');
     const clearButton = document.querySelector('.btn-clear-filter');
-    const hiddenInput = document.querySelector('.create-item-input');
-    const itemList = document.querySelector('.item-selection-list');
+    const hiddenInput = document.querySelector('.component-create-input');
+    const itemList = document.querySelector('.component-list');
     
     // Only require filterInput and itemList - other elements are optional
     if (!filterInput || !itemList) {
@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Get all item cards (excluding the filter container and no-results item)
     const getAllItemCards = () => {
-        return Array.from(itemList.querySelectorAll('.item-selection-card:not(.item-selection-card--no-results)'));
+        return Array.from(itemList.querySelectorAll('.component-list-item:not(.component-list-item--no-results)'));
     };
     
     // Get the no results item
@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', function() {
         let visibleCount = 0;
         
         itemCards.forEach(card => {
-            const itemNameElement = card.querySelector('.item-name');
+            const itemNameElement = card.querySelector('.component-list-item-name');
             if (!itemNameElement) return;
             
             const itemName = itemNameElement.textContent.toLowerCase();
@@ -320,7 +320,7 @@ document.addEventListener('DOMContentLoaded', function() {
      */
     const setupItemListToggle = () => {
         const addItemButton = document.querySelector('.btn-success');
-        const itemListContainer = document.querySelector('.item-selection-section');
+        const itemListContainer = document.querySelector('.component-list-section');
         const addItemSection = document.querySelector('.add-item-section');
         const cancelButton = document.querySelector('.btn-cancel');
         
@@ -337,7 +337,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Focus on the filter input field and scroll to optimal position
             // Use requestAnimationFrame for better mobile compatibility
             requestAnimationFrame(() => {
-                const filterInput = document.querySelector('.item-filter-input');
+                const filterInput = document.querySelector('.component-filter-input');
                 if (filterInput) {
                     // Force focus and click to ensure mobile keyboard opens
                     filterInput.focus();
