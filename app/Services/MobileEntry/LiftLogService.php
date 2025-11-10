@@ -544,6 +544,12 @@ class LiftLogService extends MobileEntryBaseService
         $user = \App\Models\User::find($userId);
         $exercises = $this->aliasService->applyAliasesToExercises($exercises, $user);
 
+        // Get exercises already in today's program (to exclude from selection list)
+        $programExerciseIds = Program::where('user_id', $userId)
+            ->whereDate('date', $selectedDate->toDateString())
+            ->pluck('exercise_id')
+            ->toArray();
+
         // Get recent exercises (last 7 days) for the "Recent" category
         $recentExerciseIds = LiftLog::where('user_id', $userId)
             ->where('logged_at', '>=', Carbon::now()->subDays(7))
@@ -564,6 +570,11 @@ class LiftLogService extends MobileEntryBaseService
         $items = [];
         
         foreach ($exercises as $exercise) {
+            // Skip exercises that are already in today's program
+            if (in_array($exercise->id, $programExerciseIds)) {
+                continue;
+            }
+            
             // Simplified 3-category system
             if (isset($recommendationMap[$exercise->id])) {
                 // Category 1: Recommended (Top 10 from AI)

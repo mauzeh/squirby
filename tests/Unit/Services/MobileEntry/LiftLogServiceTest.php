@@ -1898,6 +1898,31 @@ class LiftLogServiceTest extends TestCase
     }
 
     #[Test]
+    public function it_excludes_exercises_already_in_todays_program()
+    {
+        $user = User::factory()->create();
+        $exercise1 = Exercise::factory()->create(['title' => 'In Program Exercise']);
+        $exercise2 = Exercise::factory()->create(['title' => 'Not In Program Exercise']);
+        
+        // Add exercise1 to today's program
+        Program::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise1->id,
+            'date' => $this->testDate
+        ]);
+
+        $itemSelectionList = $this->service->generateItemSelectionList($user->id, $this->testDate);
+        
+        $exerciseNames = collect($itemSelectionList['items'])->pluck('name')->toArray();
+        
+        // Exercise already in program should NOT appear in selection list
+        $this->assertNotContains('In Program Exercise', $exerciseNames);
+        
+        // Exercise not in program should appear in selection list
+        $this->assertContains('Not In Program Exercise', $exerciseNames);
+    }
+
+    #[Test]
     public function it_includes_date_parameter_in_form_delete_action()
     {
         $user = User::factory()->create();

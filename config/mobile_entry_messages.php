@@ -15,7 +15,7 @@ return [
     'success' => [
         'exercise_added' => ':exercise added! Now scroll down to log your workout - adjust the weight/reps and tap \'Log :exercise\' when ready.',
         'exercise_created' => 'Created \':exercise\'! Now scroll down to log your first set - the form is ready with default values you can adjust.',
-        'form_removed' => 'Removed :exercise form. You can add it back anytime using \'Add Exercise\' below.',
+        'form_removed' => 'Removed :exercise. You can add it back anytime using \'Add Exercise\' below.',
         
         'lift_logged' => [
             'Nice work! :exercise: :details logged!',
@@ -34,7 +34,7 @@ return [
         // Food-specific success messages
         'food_added' => ':food added! Now scroll down to log your intake - adjust the quantity and tap \'Log :food\' when ready.',
         'ingredient_created' => 'Created \':ingredient\'! Now scroll down to log your first entry - update the nutrition info and quantity as needed.',
-        'food_form_removed' => 'Removed :food form. You can add it back anytime using \'Add Food\' below.',
+        'food_form_removed' => 'Removed :food. You can add it back anytime using \'Add Food\' below.',
         
         'food_logged' => [
             'Tasty! :food: :details logged!',
