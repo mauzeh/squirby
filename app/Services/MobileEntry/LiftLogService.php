@@ -502,63 +502,29 @@ class LiftLogService extends MobileEntryBaseService
   /**
      * Generate item selection list based on user's accessible exercises
      * 
-     * This method integrates the advanced recommendation engine to prioritize exercises
-     * that best match the user's training needs. Recommendations are categorized by priority
-     * and displayed with distinct visual styling.
+     * Simplified 3-category system for better mobile UX:
      * 
-     * RECOMMENDATION CATEGORIES (displayed in order):
-     * 
-     * 1. Top Pick (Top 5 AI Recommendations)
-     *    - Label: <i class="fas fa-star"></i> Top Pick
+     * 1. Recommended (Top 10 AI Recommendations)
+     *    - Label: <i class="fas fa-star"></i> Recommended
      *    - Style: 'in-program' (green, prominent)
-     *    - Priority: 0.1 (highest)
+     *    - Priority: 1
      *    - Ordered by recommendation engine score (highest score first)
-     *    - The top 5 most recommended exercises based on:
-     *      * Muscle balance and underworked muscles
-     *      * Movement pattern diversity
-     *      * Recovery periods
-     *      * Recent training history
+     *    - Based on muscle balance, movement diversity, recovery, and training history
      *    - Only shows exercises performed in last 31 days
-     *    - Order matches recommendations/index page exactly
      * 
-     * 2. Recommended (Rank 6-10)
-     *    - Label: <i class="fas fa-thumbs-up"></i> Recommended
-     *    - Style: 'custom' (purple)
-     *    - Priority: 0.2
-     *    - Ordered by recommendation engine score (highest score first)
-     *    - Additional recommended exercises that complement training
-     *    - Only shows exercises performed in last 31 days
-     *    - Order matches recommendations/index page exactly
-     * 
-     * 3. Recent (Last 7 Days)
+     * 2. Recent (Last 7 Days)
+     *    - Label: Recent
      *    - Style: 'recent' (green, lighter)
-     *    - Priority: 0.3
-     *    - Exercises performed in the last 7 days (not already recommended)
-     *    - Ordered alphabetically
-     * 
-     * 4. In Program
-     *    - Style: 'in-program' (green, prominent)
-     *    - Priority: 0.4
-     *    - Exercises already in today's program
-     *    - Ordered alphabetically
-     * 
-     * 5. Custom
-     *    - Style: 'custom' (purple)
      *    - Priority: 2
-     *    - User's custom exercises
+     *    - Exercises performed in the last 7 days (not already in top 10 recommendations)
      *    - Ordered alphabetically
      * 
-     * 6. Regular
+     * 3. All Others
+     *    - No label
      *    - Style: 'regular' (gray)
      *    - Priority: 3
-     *    - Standard exercises
+     *    - All remaining exercises (custom and regular)
      *    - Ordered alphabetically
-     * 
-     * Note: Reuses existing CSS classes to maintain consistency
-     * 
-     * IMPORTANT: Only exercises the user has performed in the last 31 days
-     * (the recommendation engine's lookback window) are shown as recommendations.
-     * This ensures users only see familiar exercises they know how to perform.
      * 
      * @param int $userId
      * @param Carbon $selectedDate
@@ -578,17 +544,6 @@ class LiftLogService extends MobileEntryBaseService
         $user = \App\Models\User::find($userId);
         $exercises = $this->aliasService->applyAliasesToExercises($exercises, $user);
 
-        // Get cached data for item type determination
-        $cachedData = $this->cacheService->getAllCachedData($userId, $selectedDate);
-        $programExerciseIds = $cachedData['programExerciseIds'];
-
-        // Get exercises the user has performed in the last 31 days (recommendation engine lookback window)
-        $performedExerciseIds = LiftLog::where('user_id', $userId)
-            ->where('logged_at', '>=', Carbon::now()->subDays(31))
-            ->pluck('exercise_id')
-            ->unique()
-            ->toArray();
-
         // Get recent exercises (last 7 days) for the "Recent" category
         $recentExerciseIds = LiftLog::where('user_id', $userId)
             ->where('logged_at', '>=', Carbon::now()->subDays(7))
@@ -597,79 +552,44 @@ class LiftLogService extends MobileEntryBaseService
             ->toArray();
 
         // Get top 10 recommended exercises using the recommendation engine
-        // This matches the recommendations shown on recommendations/index
-        // Only recommend exercises the user has already performed
         $recommendations = $this->recommendationEngine->getRecommendations($userId, 10);
         
-        // Create a map of exercise IDs to their recommendation scores and rankings
-        // Store the exact rank from the recommendation engine to preserve order
+        // Create a map of exercise IDs to their recommendation rankings
         $recommendationMap = [];
         foreach ($recommendations as $index => $recommendation) {
             $exerciseId = $recommendation['exercise']->id;
-            if (in_array($exerciseId, $performedExerciseIds)) {
-                $recommendationMap[$exerciseId] = [
-                    'score' => $recommendation['score'],
-                    'rank' => $index + 1  // Rank 1 is highest, rank 10 is lowest
-                ];
-            }
+            $recommendationMap[$exerciseId] = $index + 1;  // Rank 1 is highest, rank 10 is lowest
         }
 
         $items = [];
         
         foreach ($exercises as $exercise) {
-            // Determine item type with priority order:
-            // 1. Recommended (top/medium)
-            // 2. In Program
-            // 3. Recent (not already recommended)
-            // 4. Custom
-            // 5. Regular
-            
+            // Simplified 3-category system
             if (isset($recommendationMap[$exercise->id])) {
-                // Exercise is recommended - HIGHEST PRIORITY
-                // Use rank as sub-priority to maintain exact recommendation engine order
-                $rank = $recommendationMap[$exercise->id]['rank'];
-                
-                // Top 5 recommendations get "In Program" styling (green, prominent)
-                if ($rank <= 5) {
-                    $itemType = [
-                        'label' => '<i class="fas fa-star"></i> Top Pick',
-                        'cssClass' => 'in-program',  // Reuse existing green style
-                        'priority' => 0.1,  // Highest priority
-                        'subPriority' => $rank  // Preserve recommendation engine order
-                    ];
-                } else {
-                    // Remaining recommendations get "Custom" styling (purple)
-                    $itemType = [
-                        'label' => '<i class="fas fa-thumbs-up"></i> Recommended',
-                        'cssClass' => 'custom',  // Reuse existing purple style
-                        'priority' => 0.2,  // Second highest priority
-                        'subPriority' => $rank  // Preserve recommendation engine order
-                    ];
-                }
+                // Category 1: Recommended (Top 10 from AI)
+                $rank = $recommendationMap[$exercise->id];
+                $itemType = [
+                    'label' => '<i class="fas fa-star"></i> Recommended',
+                    'cssClass' => 'in-program',  // Green, prominent
+                    'priority' => 1,
+                    'subPriority' => $rank  // Preserve recommendation engine order
+                ];
             } elseif (in_array($exercise->id, $recentExerciseIds)) {
-                // Exercise was performed recently (but not recommended) - THIRD PRIORITY
+                // Category 2: Recent (Last 7 days, not in top 10)
                 $itemType = [
                     'label' => 'Recent',
-                    'cssClass' => 'recent',
-                    'priority' => 0.3,
-                    'subPriority' => 0  // No sub-priority for recent
-                ];
-            } elseif (in_array($exercise->id, $programExerciseIds)) {
-                // Exercise is in today's program - FOURTH PRIORITY
-                $itemType = [
-                    'label' => 'In Program',
-                    'cssClass' => 'in-program',
-                    'priority' => 0.4,
-                    'subPriority' => 0  // No sub-priority for in-program
+                    'cssClass' => 'recent',  // Green, lighter
+                    'priority' => 2,
+                    'subPriority' => 0
                 ];
             } else {
-                // Use cache service for remaining categorization (custom vs regular)
-                // These will have priorities 2 (custom) or 3 (regular) which are lower than our 0.x priorities
-                $itemType = $this->cacheService->determineItemType($exercise, $userId, [], $programExerciseIds);
-                // Add subPriority for consistency
-                if (!isset($itemType['subPriority'])) {
-                    $itemType['subPriority'] = 0;
-                }
+                // Category 3: All Others (no label, alphabetical)
+                $itemType = [
+                    'label' => '',
+                    'cssClass' => 'regular',  // Gray
+                    'priority' => 3,
+                    'subPriority' => 0
+                ];
             }
 
             $items[] = [

@@ -1812,33 +1812,7 @@ class LiftLogServiceTest extends TestCase
         $this->assertStringContainsString('date=' . $this->testDate->toDateString(), $customExerciseItem['href']);
     }
 
-    #[Test]
-    public function it_highlights_exercises_in_todays_program()
-    {
-        $user = User::factory()->create();
-        $exercise1 = Exercise::factory()->create(['title' => 'In Program']);
-        $exercise2 = Exercise::factory()->create(['title' => 'Not In Program']);
-        
-        // Add exercise1 to today's program
-        Program::factory()->create([
-            'user_id' => $user->id,
-            'exercise_id' => $exercise1->id,
-            'date' => $this->testDate
-        ]);
-
-        $itemSelectionList = $this->service->generateItemSelectionList($user->id, $this->testDate);
-        
-        $inProgramItem = collect($itemSelectionList['items'])->firstWhere('name', 'In Program');
-        $notInProgramItem = collect($itemSelectionList['items'])->firstWhere('name', 'Not In Program');
-        
-        $this->assertEquals('in-program', $inProgramItem['type']['cssClass']);
-        $this->assertStringContainsString('In Program', $inProgramItem['type']['label']);
-        $this->assertEquals(0.4, $inProgramItem['type']['priority']);
-        
-        $this->assertEquals('regular', $notInProgramItem['type']['cssClass']);
-        $this->assertEquals('Available', $notInProgramItem['type']['label']);
-        $this->assertEquals(3, $notInProgramItem['type']['priority']);
-    }
+    // Test removed - "In Program" category no longer exists in simplified 3-category system
 
     #[Test]
     public function it_highlights_recently_used_exercises()
@@ -1861,42 +1835,14 @@ class LiftLogServiceTest extends TestCase
         
         $this->assertEquals('recent', $recentItem['type']['cssClass']);
         $this->assertEquals('Recent', $recentItem['type']['label']);
-        $this->assertEquals(0.3, $recentItem['type']['priority']);
+        $this->assertEquals(2, $recentItem['type']['priority']); // Updated to priority 2
         
         $this->assertEquals('regular', $notRecentItem['type']['cssClass']);
-        $this->assertEquals('Available', $notRecentItem['type']['label']);
+        $this->assertEquals('', $notRecentItem['type']['label']); // No label for "All Others"
         $this->assertEquals(3, $notRecentItem['type']['priority']);
     }
 
-    #[Test]
-    public function it_sorts_in_program_exercises_last()
-    {
-        $user = User::factory()->create();
-        
-        // Create exercises in alphabetical order
-        $exerciseA = Exercise::factory()->create(['title' => 'A Regular Exercise']);
-        $exerciseB = Exercise::factory()->create(['title' => 'B In Program Exercise']);
-        $exerciseC = Exercise::factory()->create(['title' => 'C Regular Exercise']);
-        
-        // Make exerciseB in-program by adding to program
-        Program::factory()->create([
-            'user_id' => $user->id,
-            'exercise_id' => $exerciseB->id,
-            'date' => $this->testDate
-        ]);
-
-        $itemSelectionList = $this->service->generateItemSelectionList($user->id, $this->testDate);
-        
-        // In-program exercise should come first (higher priority than regular exercises)
-        $this->assertEquals('B In Program Exercise', $itemSelectionList['items'][0]['name']);
-        $this->assertEquals('in-program', $itemSelectionList['items'][0]['type']['cssClass']);
-        $this->assertStringContainsString('In Program', $itemSelectionList['items'][0]['type']['label']);
-        $this->assertEquals(0.4, $itemSelectionList['items'][0]['type']['priority']);
-        
-        // Regular exercises come after, sorted alphabetically
-        $this->assertEquals('A Regular Exercise', $itemSelectionList['items'][1]['name']);
-        $this->assertEquals('C Regular Exercise', $itemSelectionList['items'][2]['name']);
-    }
+    // Test removed - "In Program" category no longer exists in simplified 3-category system
 
     #[Test]
     public function it_includes_all_accessible_exercises_in_item_selection_list()
@@ -2481,7 +2427,7 @@ class LiftLogServiceTest extends TestCase
     }
 
     #[Test]
-    public function it_orders_top_pick_recommendations_by_engine_score()
+    public function it_orders_recommended_exercises_by_engine_score()
     {
         $user = User::factory()->create();
         
@@ -2518,7 +2464,7 @@ class LiftLogServiceTest extends TestCase
             'programExerciseIds' => [],
         ]);
         $mockCacheService->method('determineItemType')->willReturn([
-            'label' => 'Available',
+            'label' => '',
             'cssClass' => 'regular',
             'priority' => 3,
             'subPriority' => 0
@@ -2534,31 +2480,31 @@ class LiftLogServiceTest extends TestCase
         
         $itemSelectionList = $service->generateItemSelectionList($user->id, $this->testDate);
         
-        // Top picks should be ordered by recommendation score, NOT alphabetically
-        $topPickItems = collect($itemSelectionList['items'])
-            ->filter(fn($item) => $item['type']['priority'] === 0.1)
+        // All recommendations should be ordered by score, NOT alphabetically
+        $recommendedItems = collect($itemSelectionList['items'])
+            ->filter(fn($item) => $item['type']['priority'] === 1)
             ->values();
         
-        $this->assertCount(3, $topPickItems);
-        $this->assertEquals('Zebra Exercise', $topPickItems[0]['name']); // Highest score
-        $this->assertEquals('Apple Exercise', $topPickItems[1]['name']); // Second highest
-        $this->assertEquals('Mango Exercise', $topPickItems[2]['name']); // Third highest
+        $this->assertCount(3, $recommendedItems);
+        $this->assertEquals('Zebra Exercise', $recommendedItems[0]['name']); // Highest score
+        $this->assertEquals('Apple Exercise', $recommendedItems[1]['name']); // Second highest
+        $this->assertEquals('Mango Exercise', $recommendedItems[2]['name']); // Third highest
         
-        // Verify they all have the Top Pick label
-        foreach ($topPickItems as $item) {
-            $this->assertStringContainsString('Top Pick', $item['type']['label']);
+        // Verify they all have the Recommended label
+        foreach ($recommendedItems as $item) {
+            $this->assertStringContainsString('Recommended', $item['type']['label']);
             $this->assertEquals('in-program', $item['type']['cssClass']);
         }
     }
 
     #[Test]
-    public function it_orders_recommended_exercises_by_engine_score()
+    public function it_shows_all_top_10_recommendations_in_single_category()
     {
         $user = User::factory()->create();
         
-        // Create 7 exercises
+        // Create 10 exercises
         $exercises = [];
-        for ($i = 1; $i <= 7; $i++) {
+        for ($i = 1; $i <= 10; $i++) {
             $exercises[] = Exercise::factory()->create(['title' => "Exercise $i"]);
         }
         
@@ -2571,7 +2517,7 @@ class LiftLogServiceTest extends TestCase
             ]);
         }
         
-        // Mock recommendations: top 5 are "Top Pick", ranks 6-7 are "Recommended"
+        // Mock recommendations: all 10 in single "Recommended" category
         $mockRecommendations = [];
         foreach ($exercises as $index => $exercise) {
             $mockRecommendations[] = [
@@ -2594,7 +2540,7 @@ class LiftLogServiceTest extends TestCase
             'programExerciseIds' => [],
         ]);
         $mockCacheService->method('determineItemType')->willReturn([
-            'label' => 'Available',
+            'label' => '',
             'cssClass' => 'regular',
             'priority' => 3,
             'subPriority' => 0
@@ -2610,34 +2556,21 @@ class LiftLogServiceTest extends TestCase
         
         $itemSelectionList = $service->generateItemSelectionList($user->id, $this->testDate);
         
-        // Top 5 should be "Top Pick" (priority 0.1)
-        $topPickItems = collect($itemSelectionList['items'])
-            ->filter(fn($item) => $item['type']['priority'] === 0.1)
-            ->values();
-        
-        $this->assertCount(5, $topPickItems);
-        for ($i = 0; $i < 5; $i++) {
-            $this->assertEquals("Exercise " . ($i + 1), $topPickItems[$i]['name']);
-            $this->assertStringContainsString('Top Pick', $topPickItems[$i]['type']['label']);
-        }
-        
-        // Ranks 6-7 should be "Recommended" (priority 0.2)
+        // All 10 should be "Recommended" (priority 1)
         $recommendedItems = collect($itemSelectionList['items'])
-            ->filter(fn($item) => $item['type']['priority'] === 0.2)
+            ->filter(fn($item) => $item['type']['priority'] === 1)
             ->values();
         
-        $this->assertCount(2, $recommendedItems);
-        $this->assertEquals('Exercise 6', $recommendedItems[0]['name']);
-        $this->assertEquals('Exercise 7', $recommendedItems[1]['name']);
-        
-        foreach ($recommendedItems as $item) {
-            $this->assertStringContainsString('Recommended', $item['type']['label']);
-            $this->assertEquals('custom', $item['type']['cssClass']);
+        $this->assertCount(10, $recommendedItems);
+        for ($i = 0; $i < 10; $i++) {
+            $this->assertEquals("Exercise " . ($i + 1), $recommendedItems[$i]['name']);
+            $this->assertStringContainsString('Recommended', $recommendedItems[$i]['type']['label']);
+            $this->assertEquals('in-program', $recommendedItems[$i]['type']['cssClass']);
         }
     }
 
     #[Test]
-    public function it_maintains_alphabetical_order_within_non_recommended_categories()
+    public function it_maintains_alphabetical_order_within_all_others_category()
     {
         $user = User::factory()->create();
         
@@ -2663,7 +2596,7 @@ class LiftLogServiceTest extends TestCase
             'programExerciseIds' => [],
         ]);
         $mockCacheService->method('determineItemType')->willReturn([
-            'label' => 'Available',
+            'label' => '',
             'cssClass' => 'regular',
             'priority' => 3,
             'subPriority' => 0
@@ -2679,15 +2612,15 @@ class LiftLogServiceTest extends TestCase
         
         $itemSelectionList = $service->generateItemSelectionList($user->id, $this->testDate);
         
-        // Regular exercises should be sorted alphabetically
-        $regularItems = collect($itemSelectionList['items'])
+        // "All Others" exercises should be sorted alphabetically
+        $allOthersItems = collect($itemSelectionList['items'])
             ->filter(fn($item) => $item['type']['priority'] === 3)
             ->values();
         
-        $this->assertCount(3, $regularItems);
-        $this->assertEquals('Apple Lift', $regularItems[0]['name']);
-        $this->assertEquals('Mango Lift', $regularItems[1]['name']);
-        $this->assertEquals('Zebra Lift', $regularItems[2]['name']);
+        $this->assertCount(3, $allOthersItems);
+        $this->assertEquals('Apple Lift', $allOthersItems[0]['name']);
+        $this->assertEquals('Mango Lift', $allOthersItems[1]['name']);
+        $this->assertEquals('Zebra Lift', $allOthersItems[2]['name']);
     }
 
     #[Test]
@@ -2728,7 +2661,7 @@ class LiftLogServiceTest extends TestCase
             'programExerciseIds' => [],
         ]);
         $mockCacheService->method('determineItemType')->willReturn([
-            'label' => 'Available',
+            'label' => '',
             'cssClass' => 'regular',
             'priority' => 3,
             'subPriority' => 0
@@ -2745,18 +2678,18 @@ class LiftLogServiceTest extends TestCase
         $itemSelectionList = $service->generateItemSelectionList($user->id, $this->testDate);
         
         // Verify order matches recommendation engine, not alphabetical
-        $topPickItems = collect($itemSelectionList['items'])
-            ->filter(fn($item) => $item['type']['priority'] === 0.1)
+        $recommendedItems = collect($itemSelectionList['items'])
+            ->filter(fn($item) => $item['type']['priority'] === 1)
             ->values();
         
-        $this->assertCount(3, $topPickItems);
-        $this->assertEquals('Plank', $topPickItems[0]['name']);     // Rank 1
-        $this->assertEquals('Push Up', $topPickItems[1]['name']);   // Rank 2
-        $this->assertEquals('Pull Up', $topPickItems[2]['name']);   // Rank 3
+        $this->assertCount(3, $recommendedItems);
+        $this->assertEquals('Plank', $recommendedItems[0]['name']);     // Rank 1
+        $this->assertEquals('Push Up', $recommendedItems[1]['name']);   // Rank 2
+        $this->assertEquals('Pull Up', $recommendedItems[2]['name']);   // Rank 3
         
         // Verify subPriority values
-        $this->assertEquals(1, $topPickItems[0]['type']['subPriority']);
-        $this->assertEquals(2, $topPickItems[1]['type']['subPriority']);
-        $this->assertEquals(3, $topPickItems[2]['type']['subPriority']);
+        $this->assertEquals(1, $recommendedItems[0]['type']['subPriority']);
+        $this->assertEquals(2, $recommendedItems[1]['type']['subPriority']);
+        $this->assertEquals(3, $recommendedItems[2]['type']['subPriority']);
     }
 }
