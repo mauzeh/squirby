@@ -12,13 +12,13 @@
         <div class="component-table-row">
             <div class="component-table-cell">
                 @if(isset($row['line1']) && !empty($row['line1']))
-                <div class="cell-line cell-line-1">{{ $row['line1'] }}</div>
+                <div class="cell-title">{{ $row['line1'] }}</div>
                 @endif
                 @if(isset($row['line2']) && !empty($row['line2']))
-                <div class="cell-line cell-line-2">{{ $row['line2'] }}</div>
+                <div class="cell-content">{{ $row['line2'] }}</div>
                 @endif
                 @if(isset($row['line3']) && !empty($row['line3']))
-                <div class="cell-line cell-line-3">{{ $row['line3'] }}</div>
+                <div class="cell-detail">{{ $row['line3'] }}</div>
                 @endif
             </div>
             <div class="component-table-actions">
