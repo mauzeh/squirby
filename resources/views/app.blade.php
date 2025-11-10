@@ -39,12 +39,9 @@
             <a id="food-nav-link" href="{{ route('mobile-entry.foods') }}" class="top-level-nav-item {{ Request::routeIs(['food-logs.*', 'meals.*', 'ingredients.*', 'mobile-entry.foods']) ? 'active' : '' }}"><i class="fas fa-utensils"></i> Food</a>
             <a href="{{ route('mobile-entry.measurements') }}" class="top-level-nav-item {{ Request::routeIs(['body-logs.*', 'measurement-types.*', 'mobile-entry.measurements']) ? 'active' : '' }}"><i class="fas fa-heartbeat"></i> Body</a>
 
-            @if (Auth::user()->hasRole('Admin'))
-                <a href="{{ route('flexible.with-nav') }}" class="top-level-nav-item {{ Request::routeIs('flexible.*') ? 'active' : '' }}"><i class="fas fa-flask"></i> Flexible UI</a>
-            @endif
-
             <div style="margin-left: auto;">
                 @if (Auth::user()->hasRole('Admin'))
+                    <a href="{{ route('flexible.with-nav') }}" class="{{ Request::routeIs('flexible.*') ? 'active' : '' }}" style="padding: 14px 8px"><i class="fas fa-flask"></i></a>
                     <a href="{{ route('users.index') }}" class="{{ Request::routeIs('users.*') ? 'active' : '' }}" style="padding: 14px 8px"><i class="fas fa-cog"></i></a>
                 @endif
                 <a href="{{ route('profile.edit') }}" class="{{ Request::routeIs('profile.edit') ? 'active' : '' }}" style="padding: 14px 8px"><i class="fas fa-user"></i></a>
