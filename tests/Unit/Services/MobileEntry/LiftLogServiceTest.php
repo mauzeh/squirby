@@ -87,7 +87,7 @@ class LiftLogServiceTest extends TestCase
         $forms = $this->service->generateForms($user->id, $date);
         
         $this->assertCount(1, $forms);
-        $this->assertEquals('exercise', $forms[0]['type']);
+        $this->assertEquals('primary', $forms[0]['type']);
         $this->assertEquals('Bench Press', $forms[0]['title']);
     }
 

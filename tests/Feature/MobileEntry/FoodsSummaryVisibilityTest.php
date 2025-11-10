@@ -29,11 +29,12 @@ class FoodsSummaryVisibilityTest extends TestCase
         $response = $this->get(route('mobile-entry.foods'));
 
         $response->assertStatus(200);
-        $response->assertViewIs('mobile-entry.index');
+        $response->assertViewIs('mobile-entry.flexible');
         
-        // Check that summary is null in view data
+        // Check that summary component doesn't exist in components
         $data = $response->viewData('data');
-        $this->assertNull($data['summary']);
+        $summaryComponent = collect($data['components'])->firstWhere('type', 'summary');
+        $this->assertNull($summaryComponent);
         
         // Verify the HTML doesn't contain summary section
         $response->assertDontSee('class="summary"');
@@ -61,18 +62,20 @@ class FoodsSummaryVisibilityTest extends TestCase
         $response = $this->get(route('mobile-entry.foods'));
 
         $response->assertStatus(200);
-        $response->assertViewIs('mobile-entry.index');
+        $response->assertViewIs('mobile-entry.flexible');
         
-        // Check that summary exists in view data
+        // Check that summary exists in view data - need to extract from components
         $data = $response->viewData('data');
-        $this->assertNotNull($data['summary']);
-        $this->assertIsArray($data['summary']);
+        $summaryComponent = collect($data['components'])->firstWhere('type', 'summary');
+        $this->assertNotNull($summaryComponent);
+        $this->assertIsArray($summaryComponent['data']);
         
         // Verify the HTML contains summary section
         $response->assertSee('class="summary"', false);
         
-        // Check for the updated label
-        $this->assertEquals('7-Day Avg', $data['summary']['labels']['average']);
+        // Check for the updated label - need to find the item with key 'average'
+        $averageItem = collect($summaryComponent['data']['items'])->firstWhere('key', 'average');
+        $this->assertEquals('7-Day Avg', $averageItem['label']);
     }
 
     /** @test */
@@ -97,12 +100,15 @@ class FoodsSummaryVisibilityTest extends TestCase
         $response = $this->get(route('mobile-entry.foods'));
 
         $data = $response->viewData('data');
-        $summary = $data['summary'];
+        $summaryComponent = collect($data['components'])->firstWhere('type', 'summary');
+        $this->assertNotNull($summaryComponent);
+        
+        $items = collect($summaryComponent['data']['items']);
         
         // Check all expected labels
-        $this->assertEquals('Calories', $summary['labels']['total']);
-        $this->assertEquals('Entries', $summary['labels']['completed']);
-        $this->assertEquals('7-Day Avg', $summary['labels']['average']);
-        $this->assertEquals('Protein (g)', $summary['labels']['today']);
+        $this->assertEquals('Calories', $items->firstWhere('key', 'total')['label']);
+        $this->assertEquals('Entries', $items->firstWhere('key', 'completed')['label']);
+        $this->assertEquals('7-Day Avg', $items->firstWhere('key', 'average')['label']);
+        $this->assertEquals('Protein (g)', $items->firstWhere('key', 'today')['label']);
     }
 }

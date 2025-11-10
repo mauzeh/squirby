@@ -20,7 +20,7 @@ class MobileEntryTest extends TestCase
         $response = $this->actingAs($user)->get(route('mobile-entry.lifts'));
         
         $response->assertStatus(200);
-        $response->assertViewIs('mobile-entry.index');
+        $response->assertViewIs('mobile-entry.flexible');
     }
 
     /** @test */
@@ -51,7 +51,7 @@ class MobileEntryTest extends TestCase
         $response = $this->actingAs($user)->get(route('mobile-entry.lifts', ['date' => $testDate]));
         
         $response->assertStatus(200);
-        $response->assertViewIs('mobile-entry.index');
+        $response->assertViewIs('mobile-entry.flexible');
     }
 
     /** @test */

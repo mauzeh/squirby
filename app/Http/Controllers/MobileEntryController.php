@@ -635,7 +635,7 @@ class MobileEntryController extends Controller
         
         // If there are forms available to log, don't show the empty message for logged items
         if (!empty($forms) && isset($loggedItems['emptyMessage'])) {
-            unset($loggedItems['emptyMessage']);
+            $loggedItems['emptyMessage'] = ''; // Set to empty string instead of unsetting
         }
         
         // Generate item selection list using the service
@@ -656,46 +656,84 @@ class MobileEntryController extends Controller
             }
         }
         
-        $data = [
-            'navigation' => [
-                'prevButton' => [
-                    'text' => '← Prev',
-                    'href' => route('mobile-entry.lifts', ['date' => $prevDay->toDateString()])
-                ],
-                'todayButton' => [
-                    'text' => 'Today',
-                    'href' => route('mobile-entry.lifts', ['date' => $today->toDateString()])
-                ],
-                'nextButton' => [
-                    'text' => 'Next →',
-                    'href' => route('mobile-entry.lifts', ['date' => $nextDay->toDateString()])
-                ],
-                'dateTitle' => $dateTitleData,
-                'ariaLabels' => [
-                    'navigation' => 'Date navigation',
-                    'previousDay' => 'Previous day',
-                    'goToToday' => 'Go to today',
-                    'nextDay' => 'Next day'
-                ]
-            ],
-            
-            'summary' => $formService->generateSummary(Auth::id(), $selectedDate),
-            
-            'addItemButton' => [
-                'text' => 'Add Exercise',
-                'ariaLabel' => 'Add new exercise'
-            ],
-            
-            'itemSelectionList' => $itemSelectionList,
-            
-            'forms' => $forms,
-            
-            'loggedItems' => $loggedItems,
-            
-            'interfaceMessages' => $interfaceMessages
-        ];
+        // Build components array using ComponentBuilder
+        $components = [];
+        
+        // Navigation
+        $components[] = \App\Services\ComponentBuilder::navigation()
+            ->prev('← Prev', route('mobile-entry.lifts', ['date' => $prevDay->toDateString()]))
+            ->center('Today', route('mobile-entry.lifts', ['date' => $today->toDateString()]))
+            ->next('Next →', route('mobile-entry.lifts', ['date' => $nextDay->toDateString()]))
+            ->ariaLabel('Date navigation')
+            ->build();
+        
+        // Title
+        $components[] = \App\Services\ComponentBuilder::title(
+            $dateTitleData['main'],
+            $dateTitleData['subtitle'] ?? null
+        )->build();
+        
+        // Interface messages
+        if ($interfaceMessages['hasMessages']) {
+            $messagesBuilder = \App\Services\ComponentBuilder::messages();
+            foreach ($interfaceMessages['messages'] as $message) {
+                $messagesBuilder->add($message['type'], $message['text'], $message['prefix'] ?? null);
+            }
+            $components[] = $messagesBuilder->build();
+        }
+        
+        // Summary (if exists)
+        $summary = $formService->generateSummary(Auth::id(), $selectedDate);
+        if ($summary) {
+            $summaryBuilder = \App\Services\ComponentBuilder::summary();
+            foreach ($summary['values'] as $key => $value) {
+                $summaryBuilder->item($key, $value, $summary['labels'][$key] ?? null);
+            }
+            $components[] = $summaryBuilder->build();
+        }
+        
+        // Add Exercise button
+        $components[] = \App\Services\ComponentBuilder::button('Add Exercise')
+            ->ariaLabel('Add new exercise')
+            ->build();
+        
+        // Item selection list
+        $itemListBuilder = \App\Services\ComponentBuilder::itemList()
+            ->filterPlaceholder($itemSelectionList['filterPlaceholder'])
+            ->noResultsMessage($itemSelectionList['noResultsMessage']);
+        
+        foreach ($itemSelectionList['items'] as $item) {
+            $itemListBuilder->item(
+                $item['id'],
+                $item['name'],
+                $item['href'],
+                $item['type']['label'],
+                $item['type']['cssClass'],
+                $item['type']['priority']
+            );
+        }
+        
+        if (isset($itemSelectionList['createForm'])) {
+            $itemListBuilder->createForm(
+                $itemSelectionList['createForm']['action'],
+                $itemSelectionList['createForm']['inputName'],
+                $itemSelectionList['createForm']['hiddenFields']
+            );
+        }
+        
+        $components[] = $itemListBuilder->build();
+        
+        // Forms
+        foreach ($forms as $form) {
+            $components[] = ['type' => 'form', 'data' => $form];
+        }
+        
+        // Logged items
+        $components[] = ['type' => 'items', 'data' => $loggedItems];
+        
+        $data = ['components' => $components];
 
-        return view('mobile-entry.index', compact('data'));
+        return view('mobile-entry.flexible', compact('data'));
     }
 
     /**
@@ -837,48 +875,84 @@ class MobileEntryController extends Controller
             }
         }
         
-        $data = [
-            'selectedDate' => $selectedDate->toDateString(),
-            
-            'navigation' => [
-                'prevButton' => [
-                    'text' => '← Prev',
-                    'href' => route('mobile-entry.foods', ['date' => $prevDay->toDateString()])
-                ],
-                'todayButton' => [
-                    'text' => 'Today',
-                    'href' => route('mobile-entry.foods', ['date' => $today->toDateString()])
-                ],
-                'nextButton' => [
-                    'text' => 'Next →',
-                    'href' => route('mobile-entry.foods', ['date' => $nextDay->toDateString()])
-                ],
-                'dateTitle' => $dateTitleData,
-                'ariaLabels' => [
-                    'navigation' => 'Date navigation',
-                    'previousDay' => 'Previous day',
-                    'goToToday' => 'Go to today',
-                    'nextDay' => 'Next day'
-                ]
-            ],
-            
-            'summary' => $formService->generateSummary(Auth::id(), $selectedDate),
-            
-            'addItemButton' => [
-                'text' => 'Add Food',
-                'ariaLabel' => 'Add new food item'
-            ],
-            
-            'itemSelectionList' => $itemSelectionList,
-            
-            'forms' => $forms,
-            
-            'loggedItems' => $loggedItems,
-            
-            'interfaceMessages' => $interfaceMessages
-        ];
+        // Build components array using ComponentBuilder
+        $components = [];
+        
+        // Navigation
+        $components[] = \App\Services\ComponentBuilder::navigation()
+            ->prev('← Prev', route('mobile-entry.foods', ['date' => $prevDay->toDateString()]))
+            ->center('Today', route('mobile-entry.foods', ['date' => $today->toDateString()]))
+            ->next('Next →', route('mobile-entry.foods', ['date' => $nextDay->toDateString()]))
+            ->ariaLabel('Date navigation')
+            ->build();
+        
+        // Title
+        $components[] = \App\Services\ComponentBuilder::title(
+            $dateTitleData['main'],
+            $dateTitleData['subtitle'] ?? null
+        )->build();
+        
+        // Interface messages
+        if ($interfaceMessages['hasMessages']) {
+            $messagesBuilder = \App\Services\ComponentBuilder::messages();
+            foreach ($interfaceMessages['messages'] as $message) {
+                $messagesBuilder->add($message['type'], $message['text'], $message['prefix'] ?? null);
+            }
+            $components[] = $messagesBuilder->build();
+        }
+        
+        // Summary (if exists)
+        $summary = $formService->generateSummary(Auth::id(), $selectedDate);
+        if ($summary) {
+            $summaryBuilder = \App\Services\ComponentBuilder::summary();
+            foreach ($summary['values'] as $key => $value) {
+                $summaryBuilder->item($key, $value, $summary['labels'][$key] ?? null);
+            }
+            $components[] = $summaryBuilder->build();
+        }
+        
+        // Add Food button
+        $components[] = \App\Services\ComponentBuilder::button('Add Food')
+            ->ariaLabel('Add new food item')
+            ->build();
+        
+        // Item selection list
+        $itemListBuilder = \App\Services\ComponentBuilder::itemList()
+            ->filterPlaceholder($itemSelectionList['filterPlaceholder'])
+            ->noResultsMessage($itemSelectionList['noResultsMessage']);
+        
+        foreach ($itemSelectionList['items'] as $item) {
+            $itemListBuilder->item(
+                $item['id'],
+                $item['name'],
+                $item['href'],
+                $item['type']['label'],
+                $item['type']['cssClass'],
+                $item['type']['priority']
+            );
+        }
+        
+        if (isset($itemSelectionList['createForm'])) {
+            $itemListBuilder->createForm(
+                $itemSelectionList['createForm']['action'],
+                $itemSelectionList['createForm']['inputName'],
+                $itemSelectionList['createForm']['hiddenFields']
+            );
+        }
+        
+        $components[] = $itemListBuilder->build();
+        
+        // Forms
+        foreach ($forms as $form) {
+            $components[] = ['type' => 'form', 'data' => $form];
+        }
+        
+        // Logged items
+        $components[] = ['type' => 'items', 'data' => $loggedItems];
+        
+        $data = ['components' => $components];
 
-        return view('mobile-entry.index', compact('data'));
+        return view('mobile-entry.flexible', compact('data'));
     }
 
     /**
@@ -1025,45 +1099,46 @@ class MobileEntryController extends Controller
             }
         }
         
-        $data = [
-            'selectedDate' => $selectedDate->toDateString(),
-            
-            'navigation' => [
-                'prevButton' => [
-                    'text' => '← Prev',
-                    'href' => route('mobile-entry.measurements', ['date' => $prevDay->toDateString()])
-                ],
-                'todayButton' => [
-                    'text' => 'Today',
-                    'href' => route('mobile-entry.measurements', ['date' => $today->toDateString()])
-                ],
-                'nextButton' => [
-                    'text' => 'Next →',
-                    'href' => route('mobile-entry.measurements', ['date' => $nextDay->toDateString()])
-                ],
-                'dateTitle' => $dateTitleData,
-                'ariaLabels' => [
-                    'navigation' => 'Date navigation',
-                    'previousDay' => 'Previous day',
-                    'goToToday' => 'Go to today',
-                    'nextDay' => 'Next day'
-                ]
-            ],
-            
-            'summary' => null,
-            
-            // No add button needed - all measurement types show as forms automatically
-            
-            'itemSelectionList' => $itemSelectionList,
-            
-            'forms' => $forms,
-            
-            'loggedItems' => $loggedItems,
-            
-            'interfaceMessages' => $interfaceMessages
-        ];
+        // Build components array using ComponentBuilder
+        $components = [];
+        
+        // Navigation
+        $components[] = \App\Services\ComponentBuilder::navigation()
+            ->prev('← Prev', route('mobile-entry.measurements', ['date' => $prevDay->toDateString()]))
+            ->center('Today', route('mobile-entry.measurements', ['date' => $today->toDateString()]))
+            ->next('Next →', route('mobile-entry.measurements', ['date' => $nextDay->toDateString()]))
+            ->ariaLabel('Date navigation')
+            ->build();
+        
+        // Title
+        $components[] = \App\Services\ComponentBuilder::title(
+            $dateTitleData['main'],
+            $dateTitleData['subtitle'] ?? null
+        )->build();
+        
+        // Interface messages
+        if ($interfaceMessages['hasMessages']) {
+            $messagesBuilder = \App\Services\ComponentBuilder::messages();
+            foreach ($interfaceMessages['messages'] as $message) {
+                $messagesBuilder->add($message['type'], $message['text'], $message['prefix'] ?? null);
+            }
+            $components[] = $messagesBuilder->build();
+        }
+        
+        // No summary for measurements
+        // No add button needed - all measurement types show as forms automatically
+        
+        // Forms
+        foreach ($forms as $form) {
+            $components[] = ['type' => 'form', 'data' => $form];
+        }
+        
+        // Logged items
+        $components[] = ['type' => 'items', 'data' => $loggedItems];
+        
+        $data = ['components' => $components];
 
-        return view('mobile-entry.index', compact('data'));
+        return view('mobile-entry.flexible', compact('data'));
     }
 
 

@@ -540,7 +540,7 @@ class ItemsComponentBuilder
 {
     protected array $data = [
         'items' => [],
-        'emptyMessage' => null,
+        'emptyMessage' => '',
         'confirmMessages' => [
             'deleteItem' => 'Are you sure you want to delete this item?',
             'removeForm' => 'Are you sure you want to remove this item?'
