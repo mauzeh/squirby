@@ -731,7 +731,7 @@ class FoodLogServiceTest extends TestCase
         $result = $this->service->removeFoodForm($user->id, $formId);
         
         $this->assertTrue($result['success']);
-        $this->assertEquals('Removed Remove Test form. You can add it back anytime using \'Add Food\' below.', $result['message']);
+        $this->assertEquals('Removed Remove Test. You can add it back anytime using \'Add Food\' below.', $result['message']);
         
         // Verify database entry was deleted
         $this->assertDatabaseMissing('mobile_food_forms', [
