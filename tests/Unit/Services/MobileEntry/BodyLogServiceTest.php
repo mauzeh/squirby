@@ -48,8 +48,8 @@ class BodyLogServiceTest extends TestCase
         // Forms are sorted alphabetically, so Body Fat comes before Weight
         $this->assertEquals('Body Fat', $forms[0]['title']);
         $this->assertEquals('Weight', $forms[1]['title']);
-        $this->assertEquals('measurement', $forms[0]['type']);
-        $this->assertEquals('measurement', $forms[1]['type']);
+        $this->assertEquals('warning', $forms[0]['type']);
+        $this->assertEquals('warning', $forms[1]['type']);
     }
 
     /** @test */

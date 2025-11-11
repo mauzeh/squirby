@@ -41,11 +41,12 @@ class MobileEntryControllerTest extends TestCase
         $response = $this->get(route('mobile-entry.lifts', ['date' => $today->toDateString()]));
 
         $response->assertStatus(200);
-        $response->assertViewIs('mobile-entry.index');
+        $response->assertViewIs('mobile-entry.flexible');
         
         $data = $response->viewData('data');
-        $this->assertCount(1, $data['forms']);
-        $this->assertEquals('Bench Press', $data['forms'][0]['title']);
+        $formComponents = collect($data['components'])->where('type', 'form')->values();
+        $this->assertCount(1, $formComponents);
+        $this->assertEquals('Bench Press', $formComponents[0]['data']['title']);
     }
 
     /** @test */
@@ -273,7 +274,8 @@ class MobileEntryControllerTest extends TestCase
         $response->assertStatus(200);
         
         $data = $response->viewData('data');
-        $this->assertCount(3, $data['forms']);
+        $formComponents = collect($data['components'])->where('type', 'form')->values();
+        $this->assertCount(3, $formComponents);
     }
 
     /** @test */
@@ -303,6 +305,7 @@ class MobileEntryControllerTest extends TestCase
         $response->assertStatus(200);
         
         $data = $response->viewData('data');
-        $this->assertCount(1, $data['forms']);
+        $formComponents = collect($data['components'])->where('type', 'form')->values();
+        $this->assertCount(1, $formComponents);
     }
 }

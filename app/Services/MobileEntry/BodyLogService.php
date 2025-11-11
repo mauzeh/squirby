@@ -7,6 +7,7 @@ use App\Models\MeasurementType;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 use App\Services\MobileEntry\MobileEntryBaseService;
+use App\Services\ComponentBuilder as C;
 
 class BodyLogService extends MobileEntryBaseService
 {
@@ -27,7 +28,11 @@ class BodyLogService extends MobileEntryBaseService
             ->orderBy('logged_at', 'desc')
             ->get();
 
-        $items = [];
+        $itemsBuilder = C::items()
+            ->confirmMessage('deleteItem', 'Are you sure you want to delete this measurement? This action cannot be undone.')
+            ->confirmMessage('removeForm', 'Are you sure you want to remove this measurement from today\'s tracking?');
+        
+        $hasItems = false;
         foreach ($logs as $log) {
             if (!$log->measurementType) {
                 continue;
@@ -35,43 +40,30 @@ class BodyLogService extends MobileEntryBaseService
 
             $valueText = $log->value . ' ' . $log->measurementType->default_unit;
 
-            $items[] = [
-                'id' => $log->id,
-                'title' => $log->measurementType->name,
-                'editAction' => route('body-logs.edit', ['body_log' => $log->id]),
-                'deleteAction' => route('body-logs.destroy', ['body_log' => $log->id]),
-                'deleteParams' => [
-                    'redirect_to' => 'mobile-entry-measurements',
-                    'date' => $selectedDate->toDateString()
-                ],
-                'message' => [
-                    'type' => 'success',
-                    'prefix' => 'Logged:',
-                    'text' => $valueText
-                ],
-                'freeformText' => $log->comments
-            ];
+            $itemsBuilder->item(
+                $log->id,
+                $log->measurementType->name,
+                null,
+                route('body-logs.edit', ['body_log' => $log->id]),
+                route('body-logs.destroy', ['body_log' => $log->id])
+            )
+            ->message('success', $valueText, 'Logged:')
+            ->freeformText($log->comments ?? '')
+            ->deleteParams([
+                'redirect_to' => 'mobile-entry-measurements',
+                'date' => $selectedDate->toDateString()
+            ])
+            ->add();
+            
+            $hasItems = true;
         }
-
-        $result = [
-            'items' => $items,
-            'confirmMessages' => [
-                'deleteItem' => 'Are you sure you want to delete this measurement? This action cannot be undone.',
-                'removeForm' => 'Are you sure you want to remove this measurement from today\'s tracking?'
-            ],
-            'ariaLabels' => [
-                'section' => 'Logged measurements',
-                'editItem' => 'Edit logged measurement',
-                'deleteItem' => 'Delete logged measurement'
-            ]
-        ];
 
         // Only include empty message when there are no items
-        if (empty($items)) {
-            $result['emptyMessage'] = config('mobile_entry_messages.empty_states.no_measurements_logged', 'No measurements logged yet today!');
+        if (!$hasItems) {
+            $itemsBuilder->emptyMessage(config('mobile_entry_messages.empty_states.no_measurements_logged', 'No measurements logged yet today!'));
         }
 
-        return $result;
+        return $itemsBuilder->build()['data'];
     }
 
 
@@ -146,56 +138,61 @@ class BodyLogService extends MobileEntryBaseService
         // Determine increment based on measurement type
         $increment = $this->getValueIncrement($measurementType->name, $defaultValue);
 
-        return [
-            'id' => $formId,
-            'type' => 'measurement',
-            'title' => $measurementType->name,
-            'itemName' => $measurementType->name,
-            'formAction' => route('body-logs.store'),
-            'deleteAction' => null, // No delete action since this measurement hasn't been logged yet
-            'messages' => $messages,
-            'numericFields' => [
-                [
-                    'id' => $formId . '-value',
-                    'name' => 'value',
-                    'label' => 'Value (' . $measurementType->default_unit . '):',
-                    'defaultValue' => round($defaultValue, 2),
-                    'increment' => $increment,
-                    'step' => 'any',
-                    'min' => 0,
-                    'max' => 1000,
-                    'ariaLabels' => [
-                        'decrease' => 'Decrease value',
-                        'increase' => 'Increase value'
-                    ]
+        // Build form using ComponentBuilder
+        $formBuilder = C::form($formId, $measurementType->name)
+            ->type('warning')
+            ->formAction(route('body-logs.store'));
+        
+        // Add messages
+        foreach ($messages as $message) {
+            $formBuilder->message($message['type'], $message['text'], $message['prefix'] ?? null);
+        }
+        
+        // Build and customize form data
+        $formData = $formBuilder->build();
+        $formData['data']['deleteAction'] = null; // No delete action since this measurement hasn't been logged yet
+        $formData['data']['numericFields'] = [
+            [
+                'id' => $formId . '-value',
+                'name' => 'value',
+                'label' => 'Value (' . $measurementType->default_unit . '):',
+                'defaultValue' => round($defaultValue, 2),
+                'increment' => $increment,
+                'step' => 'any',
+                'min' => 0,
+                'max' => 1000,
+                'ariaLabels' => [
+                    'decrease' => 'Decrease value',
+                    'increase' => 'Increase value'
                 ]
-            ],
-            'commentField' => [
-                'id' => $formId . '-comments',
-                'name' => 'comments',
-                'label' => 'Notes:',
-                'placeholder' => 'Any additional notes...',
-                'defaultValue' => ''
-            ],
-            'buttons' => [
-                'decrement' => '-',
-                'increment' => '+',
-                'submit' => 'Log ' . $measurementType->name
-            ],
-            'ariaLabels' => [
-                'section' => $measurementType->name . ' entry'
-            ],
-            // Hidden fields for form submission
-            'hiddenFields' => [
-                'measurement_type_id' => $measurementType->id,
-                'logged_at' => now()->format('H:i'),
-                'date' => $selectedDate->toDateString(),
-                'redirect_to' => 'mobile-entry-measurements'
-            ],
-            // Completion status (always pending since we only show unlogged measurements)
-            'isCompleted' => false,
-            'completionStatus' => 'pending'
+            ]
         ];
+        $formData['data']['commentField'] = [
+            'id' => $formId . '-comments',
+            'name' => 'comments',
+            'label' => 'Notes:',
+            'placeholder' => 'Any additional notes...',
+            'defaultValue' => ''
+        ];
+        $formData['data']['buttons'] = [
+            'decrement' => '-',
+            'increment' => '+',
+            'submit' => 'Log ' . $measurementType->name
+        ];
+        $formData['data']['ariaLabels'] = [
+            'section' => $measurementType->name . ' entry'
+        ];
+        $formData['data']['hiddenFields'] = [
+            'measurement_type_id' => $measurementType->id,
+            'logged_at' => now()->format('H:i'),
+            'date' => $selectedDate->toDateString(),
+            'redirect_to' => 'mobile-entry-measurements'
+        ];
+        // Completion status (always pending since we only show unlogged measurements)
+        $formData['data']['isCompleted'] = false;
+        $formData['data']['completionStatus'] = 'pending';
+        
+        return $formData['data'];
     }
 
     /**

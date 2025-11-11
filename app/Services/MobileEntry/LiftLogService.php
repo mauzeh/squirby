@@ -11,6 +11,7 @@ use App\Services\RecommendationEngine;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 use App\Services\MobileEntry\MobileEntryBaseService;
+use App\Services\ComponentBuilder as C;
 
 class LiftLogService extends MobileEntryBaseService
 {
@@ -175,42 +176,49 @@ class LiftLogService extends MobileEntryBaseService
                 ]
             ];
             
-            $forms[] = [
-                'id' => $formId,
-                'type' => 'exercise',
-                'title' => $exercise->title,
-                'itemName' => $exercise->title,
-                'formAction' => route('lift-logs.store'),
-                'deleteAction' => route('mobile-entry.remove-form', ['id' => $formId]),
-                'deleteParams' => [
-                    'date' => $selectedDate->toDateString()
-                ],
-                'messages' => $messages,
-                'numericFields' => $numericFields,
-                'commentField' => [
-                    'id' => $formId . '-comment',
-                    'name' => 'comments',
-                    'label' => 'Notes:',
-                    'placeholder' => config('mobile_entry_messages.placeholders.workout_notes'),
-                    'defaultValue' => ''
-                ],
-                'buttons' => [
-                    'decrement' => '-',
-                    'increment' => '+',
-                    'submit' => 'Log ' . $exercise->title
-                ],
-                'ariaLabels' => [
-                    'section' => $exercise->title . ' entry',
-                    'deleteForm' => 'Remove this exercise form'
-                ],
-                // Hidden fields for form submission
-                'hiddenFields' => [
-                    'exercise_id' => $exercise->id,
-                    'date' => $selectedDate->toDateString(),
-                    'redirect_to' => 'mobile-entry-lifts',
-                    'mobile_lift_form_id' => $form->id
-                ]
+            // Build form using ComponentBuilder
+            $formBuilder = C::form($formId, $exercise->title)
+                ->type('primary')
+                ->formAction(route('lift-logs.store'))
+                ->deleteAction(route('mobile-entry.remove-form', ['id' => $formId]));
+            
+            // Add messages
+            foreach ($messages as $message) {
+                $formBuilder->message($message['type'], $message['text'], $message['prefix'] ?? null);
+            }
+            
+            // Add numeric fields (keeping the old numericFields structure for compatibility)
+            // Note: We're not using the builder's numericField method here because we need
+            // to preserve the exact structure including select fields and custom properties
+            $formData = $formBuilder->build();
+            $formData['data']['numericFields'] = $numericFields;
+            $formData['data']['commentField'] = [
+                'id' => $formId . '-comment',
+                'name' => 'comments',
+                'label' => 'Notes:',
+                'placeholder' => config('mobile_entry_messages.placeholders.workout_notes'),
+                'defaultValue' => ''
             ];
+            $formData['data']['buttons'] = [
+                'decrement' => '-',
+                'increment' => '+',
+                'submit' => 'Log ' . $exercise->title
+            ];
+            $formData['data']['ariaLabels'] = [
+                'section' => $exercise->title . ' entry',
+                'deleteForm' => 'Remove this exercise form'
+            ];
+            $formData['data']['hiddenFields'] = [
+                'exercise_id' => $exercise->id,
+                'date' => $selectedDate->toDateString(),
+                'redirect_to' => 'mobile-entry-lifts',
+                'mobile_lift_form_id' => $form->id
+            ];
+            $formData['data']['deleteParams'] = [
+                'date' => $selectedDate->toDateString()
+            ];
+            
+            $forms[] = $formData['data'];
         }
         
         return $forms;
@@ -435,7 +443,11 @@ class LiftLogService extends MobileEntryBaseService
             }
         });
 
-        $items = [];
+        $itemsBuilder = C::items()
+            ->confirmMessage('deleteItem', 'Are you sure you want to delete this lift log entry? This action cannot be undone.')
+            ->confirmMessage('removeForm', 'Are you sure you want to remove this exercise from today\'s program?');
+        
+        $hasItems = false;
         foreach ($logs as $log) {
             if ($log->liftSets->isEmpty()) {
                 continue;
@@ -449,43 +461,30 @@ class LiftLogService extends MobileEntryBaseService
             $strategy = $log->exercise->getTypeStrategy();
             $formattedMessage = $strategy->formatLoggedItemDisplay($log);
 
-            $items[] = [
-                'id' => $log->id,
-                'title' => $log->exercise->title,
-                'editAction' => route('lift-logs.edit', ['lift_log' => $log->id]),
-                'deleteAction' => route('lift-logs.destroy', ['lift_log' => $log->id]),
-                'deleteParams' => [
-                    'redirect_to' => 'mobile-entry-lifts',
-                    'date' => $selectedDate->toDateString()
-                ],
-                'message' => [
-                    'type' => 'success',
-                    'prefix' => 'Completed!',
-                    'text' => $formattedMessage
-                ],
-                'freeformText' => $log->comments
-            ];
+            $itemsBuilder->item(
+                $log->id,
+                $log->exercise->title,
+                null,
+                route('lift-logs.edit', ['lift_log' => $log->id]),
+                route('lift-logs.destroy', ['lift_log' => $log->id])
+            )
+            ->message('success', $formattedMessage, 'Completed!')
+            ->freeformText($log->comments ?? '')
+            ->deleteParams([
+                'redirect_to' => 'mobile-entry-lifts',
+                'date' => $selectedDate->toDateString()
+            ])
+            ->add();
+            
+            $hasItems = true;
         }
-
-        $result = [
-            'items' => $items,
-            'confirmMessages' => [
-                'deleteItem' => 'Are you sure you want to delete this lift log entry? This action cannot be undone.',
-                'removeForm' => 'Are you sure you want to remove this exercise from today\'s program?'
-            ],
-            'ariaLabels' => [
-                'section' => 'Logged entries',
-                'editItem' => 'Edit logged entry',
-                'deleteItem' => 'Delete logged entry'
-            ]
-        ];
 
         // Only include empty message when there are no items
-        if (empty($items)) {
-            $result['emptyMessage'] = config('mobile_entry_messages.empty_states.no_workouts_logged');
+        if (!$hasItems) {
+            $itemsBuilder->emptyMessage(config('mobile_entry_messages.empty_states.no_workouts_logged'));
         }
 
-        return $result;
+        return $itemsBuilder->build()['data'];
     }  
   /**
      * Generate item selection list based on user's accessible exercises

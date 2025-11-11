@@ -61,8 +61,9 @@ class AppServiceProvider extends ServiceProvider
 
         View::composer('app', function ($view) {
             if (Auth::check()) {
-                $measurementTypes = MeasurementType::where('user_id', auth()->id())->orderBy('name')->get();
-                $view->with('measurementTypes', $measurementTypes);
+                // Provide menu service to the view
+                $menuService = app(\App\Services\MenuService::class);
+                $view->with('menuService', $menuService);
             }
             
             // Show database info and git log for admin users or when impersonating

@@ -10,6 +10,7 @@ use App\Models\MobileFoodForm;
 use App\Services\NutritionService;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
+use App\Services\ComponentBuilder as C;
 
 class FoodLogService extends MobileEntryBaseService
 {
@@ -107,7 +108,11 @@ class FoodLogService extends MobileEntryBaseService
             ->orderBy('logged_at', 'desc')
             ->get();
 
-        $items = [];
+        $itemsBuilder = C::items()
+            ->confirmMessage('deleteItem', 'Are you sure you want to delete this food log entry? This action cannot be undone.')
+            ->confirmMessage('removeForm', 'Are you sure you want to remove this food item from today\'s quick entry?');
+        
+        $hasItems = false;
         foreach ($logs as $log) {
             if (!$log->ingredient || !$log->unit) {
                 continue;
@@ -120,43 +125,30 @@ class FoodLogService extends MobileEntryBaseService
             $quantityText = $log->quantity . ' ' . $log->unit->name;
             $nutritionText = $calories . ' cal, ' . $protein . 'g protein';
 
-            $items[] = [
-                'id' => $log->id,
-                'title' => $log->ingredient->name,
-                'editAction' => route('food-logs.edit', ['food_log' => $log->id]),
-                'deleteAction' => route('food-logs.destroy', ['food_log' => $log->id]),
-                'deleteParams' => [
-                    'redirect_to' => 'mobile-entry.foods',
-                    'date' => $selectedDate->toDateString()
-                ],
-                'message' => [
-                    'type' => 'success',
-                    'prefix' => 'Completed!',
-                    'text' => $quantityText . ' • ' . $nutritionText
-                ],
-                'freeformText' => $log->notes
-            ];
+            $itemsBuilder->item(
+                $log->id,
+                $log->ingredient->name,
+                null,
+                route('food-logs.edit', ['food_log' => $log->id]),
+                route('food-logs.destroy', ['food_log' => $log->id])
+            )
+            ->message('success', $quantityText . ' • ' . $nutritionText, 'Completed!')
+            ->freeformText($log->notes ?? '')
+            ->deleteParams([
+                'redirect_to' => 'mobile-entry.foods',
+                'date' => $selectedDate->toDateString()
+            ])
+            ->add();
+            
+            $hasItems = true;
         }
-
-        $result = [
-            'items' => $items,
-            'confirmMessages' => [
-                'deleteItem' => 'Are you sure you want to delete this food log entry? This action cannot be undone.',
-                'removeForm' => 'Are you sure you want to remove this food item from today\'s quick entry?'
-            ],
-            'ariaLabels' => [
-                'section' => 'Logged food entries',
-                'editItem' => 'Edit logged entry',
-                'deleteItem' => 'Delete logged entry'
-            ]
-        ];
 
         // Only include empty message when there are no items
-        if (empty($items)) {
-            $result['emptyMessage'] = config('mobile_entry_messages.empty_states.no_food_logged');
+        if (!$hasItems) {
+            $itemsBuilder->emptyMessage(config('mobile_entry_messages.empty_states.no_food_logged'));
         }
 
-        return $result;
+        return $itemsBuilder->build()['data'];
     }
 
     /**
@@ -363,57 +355,62 @@ class FoodLogService extends MobileEntryBaseService
         // Generate messages based on last session
         $messages = $this->generateIngredientFormMessages($ingredient, $lastSession);
         
-        return [
-            'id' => $formId,
-            'type' => 'food',
-            'title' => $ingredient->name,
-            'itemName' => $ingredient->name,
-            'formAction' => route('food-logs.store'),
-            'deleteAction' => route('mobile-entry.remove-food-form', ['id' => $formId]),
-            'deleteParams' => [
-                'date' => $selectedDate->toDateString()
-            ],
-            'messages' => $messages,
-            'numericFields' => [
-                [
-                    'id' => $formId . '-quantity',
-                    'name' => 'quantity',
-                    'label' => 'Quantity (' . $ingredient->baseUnit->name . '):',
-                    'defaultValue' => round($defaultQuantity, 2),
-                    'increment' => $this->getQuantityIncrement($ingredient->baseUnit->name, $defaultQuantity),
-                    'step' => 'any',
-                    'min' => 0.01,
-                    'max' => 1000,
-                    'ariaLabels' => [
-                        'decrease' => 'Decrease quantity',
-                        'increase' => 'Increase quantity'
-                    ]
+        // Build form using ComponentBuilder
+        $formBuilder = C::form($formId, $ingredient->name)
+            ->type('success')
+            ->formAction(route('food-logs.store'))
+            ->deleteAction(route('mobile-entry.remove-food-form', ['id' => $formId]));
+        
+        // Add messages
+        foreach ($messages as $message) {
+            $formBuilder->message($message['type'], $message['text'], $message['prefix'] ?? null);
+        }
+        
+        // Build and customize form data
+        $formData = $formBuilder->build();
+        $formData['data']['numericFields'] = [
+            [
+                'id' => $formId . '-quantity',
+                'name' => 'quantity',
+                'label' => 'Quantity (' . $ingredient->baseUnit->name . '):',
+                'defaultValue' => round($defaultQuantity, 2),
+                'increment' => $this->getQuantityIncrement($ingredient->baseUnit->name, $defaultQuantity),
+                'step' => 'any',
+                'min' => 0.01,
+                'max' => 1000,
+                'ariaLabels' => [
+                    'decrease' => 'Decrease quantity',
+                    'increase' => 'Increase quantity'
                 ]
-            ],
-            'commentField' => [
-                'id' => $formId . '-notes',
-                'name' => 'notes',
-                'label' => 'Notes:',
-                'placeholder' => config('mobile_entry_messages.placeholders.food_notes'),
-                'defaultValue' => ''
-            ],
-            'buttons' => [
-                'decrement' => '-',
-                'increment' => '+',
-                'submit' => 'Log ' . $ingredient->name
-            ],
-            'ariaLabels' => [
-                'section' => $ingredient->name . ' entry',
-                'deleteForm' => 'Remove this food form'
-            ],
-            // Hidden fields for form submission
-            'hiddenFields' => [
-                'ingredient_id' => $ingredient->id,
-                'logged_at' => $this->getRoundedTime(),
-                'date' => $selectedDate->toDateString(),
-                'redirect_to' => 'mobile-entry-foods'
             ]
         ];
+        $formData['data']['commentField'] = [
+            'id' => $formId . '-notes',
+            'name' => 'notes',
+            'label' => 'Notes:',
+            'placeholder' => config('mobile_entry_messages.placeholders.food_notes'),
+            'defaultValue' => ''
+        ];
+        $formData['data']['buttons'] = [
+            'decrement' => '-',
+            'increment' => '+',
+            'submit' => 'Log ' . $ingredient->name
+        ];
+        $formData['data']['ariaLabels'] = [
+            'section' => $ingredient->name . ' entry',
+            'deleteForm' => 'Remove this food form'
+        ];
+        $formData['data']['hiddenFields'] = [
+            'ingredient_id' => $ingredient->id,
+            'logged_at' => $this->getRoundedTime(),
+            'date' => $selectedDate->toDateString(),
+            'redirect_to' => 'mobile-entry-foods'
+        ];
+        $formData['data']['deleteParams'] = [
+            'date' => $selectedDate->toDateString()
+        ];
+        
+        return $formData['data'];
     }
 
     /**
@@ -469,57 +466,63 @@ class FoodLogService extends MobileEntryBaseService
             ];
         }
         
-        return [
-            'id' => $formId,
-            'type' => 'food',
-            'title' => $meal->name . ' (Meal)',
-            'itemName' => $meal->name,
-            'formAction' => route('food-logs.add-meal'),
-            'deleteAction' => route('mobile-entry.remove-food-form', ['id' => $formId]),
-            'deleteParams' => [
-                'date' => $selectedDate->toDateString()
-            ],
-            'messages' => $messages,
-            'numericFields' => [
-                [
-                    'id' => $formId . '-portion',
-                    'name' => 'portion',
-                    'label' => 'Portion:',
-                    'defaultValue' => 1.0,
-                    'increment' => 0.25,
-                    'step' => 'any',
-                    'min' => 0.1,
-                    'max' => 10,
-                    'ariaLabels' => [
-                        'decrease' => 'Decrease portion',
-                        'increase' => 'Increase portion'
-                    ]
+        // Build form using ComponentBuilder
+        $formBuilder = C::form($formId, $meal->name . ' (Meal)')
+            ->type('success')
+            ->formAction(route('food-logs.add-meal'))
+            ->deleteAction(route('mobile-entry.remove-food-form', ['id' => $formId]));
+        
+        // Add messages
+        foreach ($messages as $message) {
+            $formBuilder->message($message['type'], $message['text'], $message['prefix'] ?? null);
+        }
+        
+        // Build and customize form data
+        $formData = $formBuilder->build();
+        $formData['data']['itemName'] = $meal->name;
+        $formData['data']['numericFields'] = [
+            [
+                'id' => $formId . '-portion',
+                'name' => 'portion',
+                'label' => 'Portion:',
+                'defaultValue' => 1.0,
+                'increment' => 0.25,
+                'step' => 'any',
+                'min' => 0.1,
+                'max' => 10,
+                'ariaLabels' => [
+                    'decrease' => 'Decrease portion',
+                    'increase' => 'Increase portion'
                 ]
-            ],
-            'commentField' => [
-                'id' => $formId . '-notes',
-                'name' => 'notes',
-                'label' => 'Notes:',
-                'placeholder' => config('mobile_entry_messages.placeholders.food_notes'),
-                'defaultValue' => ''
-            ],
-            'buttons' => [
-                'decrement' => '-',
-                'increment' => '+',
-                'submit' => 'Log ' . $meal->name
-            ],
-            'ariaLabels' => [
-                'section' => $meal->name . ' entry',
-                'deleteForm' => 'Remove this meal form'
-            ],
-            // Hidden fields for form submission
-            'hiddenFields' => [
-                'meal_id' => $meal->id,
-                'logged_at_meal' => $this->getRoundedTime(),
-                'meal_date' => $selectedDate->toDateString(),
-                'redirect_to' => 'mobile-entry-foods'
             ]
         ];
+        $formData['data']['commentField'] = [
+            'id' => $formId . '-notes',
+            'name' => 'notes',
+            'label' => 'Notes:',
+            'placeholder' => config('mobile_entry_messages.placeholders.food_notes'),
+            'defaultValue' => ''
+        ];
+        $formData['data']['buttons'] = [
+            'decrement' => '-',
+            'increment' => '+',
+            'submit' => 'Log ' . $meal->name
+        ];
+        $formData['data']['ariaLabels'] = [
+            'section' => $meal->name . ' entry',
+            'deleteForm' => 'Remove this meal form'
+        ];
+        $formData['data']['hiddenFields'] = [
+            'meal_id' => $meal->id,
+            'logged_at_meal' => $this->getRoundedTime(),
+            'meal_date' => $selectedDate->toDateString(),
+            'redirect_to' => 'mobile-entry-foods'
+        ];
+        $formData['data']['deleteParams'] = [
+            'date' => $selectedDate->toDateString()
+        ];
+        
+        return $formData['data'];
     }
 
 

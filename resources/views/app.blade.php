@@ -35,56 +35,44 @@
         @endif
         @auth
         <div class="navbar">
-            <a id="lifts-nav-link" href="{{ route('mobile-entry.lifts') }}" class="top-level-nav-item {{ Request::routeIs(['exercises.*', 'lift-logs.*', 'recommendations.*', 'mobile-entry.lifts']) ? 'active' : '' }}"><i class="fas fa-dumbbell"></i> Lifts</a>
-            <a id="food-nav-link" href="{{ route('mobile-entry.foods') }}" class="top-level-nav-item {{ Request::routeIs(['food-logs.*', 'meals.*', 'ingredients.*', 'mobile-entry.foods']) ? 'active' : '' }}"><i class="fas fa-utensils"></i> Food</a>
-            <a href="{{ route('mobile-entry.measurements') }}" class="top-level-nav-item {{ Request::routeIs(['body-logs.*', 'measurement-types.*', 'mobile-entry.measurements']) ? 'active' : '' }}"><i class="fas fa-heartbeat"></i> Body</a>
+            @foreach($menuService->getMainMenu() as $item)
+                <a @if(isset($item['id']))id="{{ $item['id'] }}"@endif 
+                   href="{{ route($item['route']) }}" 
+                   class="top-level-nav-item {{ $item['active'] ? 'active' : '' }}">
+                    <i class="fas {{ $item['icon'] }}"></i> {{ $item['label'] }}
+                </a>
+            @endforeach
 
             <div style="margin-left: auto;">
-                @if (Auth::user()->hasRole('Admin'))
-                    <a href="{{ route('users.index') }}" class="{{ Request::routeIs('users.*') ? 'active' : '' }}" style="padding: 14px 8px"><i class="fas fa-cog"></i></a>
-                @endif
-                <a href="{{ route('profile.edit') }}" class="{{ Request::routeIs('profile.edit') ? 'active' : '' }}" style="padding: 14px 8px"><i class="fas fa-user"></i></a>
-                <form method="POST" action="{{ route('logout') }}" style="display: inline-block;">
-                    @csrf
-                    <button type="submit" style="background: none; border: none; color: #f2f2f2; text-align: center; padding: 14px 8px; text-decoration: none; font-size: 17px; cursor: pointer;">
-                        <i class="fas fa-sign-out-alt"></i>
-                    </button>
-                </form>
+                @foreach($menuService->getUtilityMenu() as $item)
+                    @if(isset($item['type']) && $item['type'] === 'logout')
+                        <form method="POST" action="{{ route('logout') }}" style="display: inline-block;">
+                            @csrf
+                            <button type="submit" style="background: none; border: none; color: #f2f2f2; text-align: center; padding: 14px 8px; text-decoration: none; font-size: 17px; cursor: pointer;">
+                                <i class="fas {{ $item['icon'] }}"></i>
+                            </button>
+                        </form>
+                    @else
+                        <a href="{{ route($item['route']) }}" 
+                           class="{{ $item['active'] ? 'active' : '' }}" 
+                           @if(isset($item['style']))style="{{ $item['style'] }}"@endif>
+                            <i class="fas {{ $item['icon'] }}"></i>
+                        </a>
+                    @endif
+                @endforeach
             </div>
         </div>
 
-        @if (Request::routeIs(['food-logs.*', 'meals.*', 'ingredients.*', 'exercises.*', 'lift-logs.*', 'recommendations.*', 'body-logs.*', 'measurement-types.*', 'mobile-entry.lifts', 'mobile-entry.foods', 'mobile-entry.measurements']))
+        @if ($menuService->shouldShowSubMenu())
         <div class="navbar sub-navbar">
-            @if (Request::routeIs(['food-logs.*', 'meals.*', 'ingredients.*', 'mobile-entry.foods']))
-                <a href="{{ route('mobile-entry.foods') }}" class="{{ Request::routeIs(['mobile-entry.foods']) ? 'active' : '' }}"><i class="fas fa-mobile-alt"></i></a>
-                <a href="{{ route('food-logs.index') }}" class="{{ Request::routeIs(['food-logs.index', 'food-logs.edit', 'food-logs.destroy-selected', 'food-logs.export', 'food-logs.export-all']) ? 'active' : '' }}">History</a>
-                <a href="{{ route('meals.index') }}" class="{{ Request::routeIs('meals.*') ? 'active' : '' }}">Meals</a>
-                <a href="{{ route('ingredients.index') }}" class="{{ Request::routeIs('ingredients.*') ? 'active' : '' }}">Ingredients</a>
-            @endif
-
-            @if (Request::routeIs(['body-logs.*', 'measurement-types.*', 'mobile-entry.measurements']))
-                <a href="{{ route('mobile-entry.measurements') }}" class="{{ Request::routeIs(['mobile-entry.measurements']) ? 'active' : '' }}"><i class="fas fa-mobile-alt"></i></a>
-                @if(auth()->user() && auth()->user()->hasRole('Admin'))
-                    <a href="{{ route('body-logs.index') }}" class="{{ Request::routeIs(['body-logs.index', 'body-logs.edit', 'body-logs.destroy-selected']) ? 'active' : '' }}">History</a>
-                @endif
-                @php
-                    $measurementTypes = \App\Models\MeasurementType::where('user_id', auth()->id())->orderBy('name')->get();
-                @endphp
-                @foreach ($measurementTypes as $measurementType)
-                    <a href="{{ route('body-logs.show-by-type', $measurementType) }}" class="{{ Request::is('body-logs/type/' . $measurementType->id) ? 'active' : '' }}">{{ $measurementType->name }}</a>
-                @endforeach
-            @endif
-
-            @if (Request::routeIs(['exercises.*', 'lift-logs.*', 'recommendations.*', 'mobile-entry.lifts']))
-                <a href="{{ route('mobile-entry.lifts') }}" class="{{ Request::routeIs(['mobile-entry.lifts']) ? 'active' : '' }}"><i class="fas fa-mobile-alt"></i></a>
-                @if(auth()->user() && (auth()->user()->hasRole('Admin') || session()->has('impersonator_id')))
-                    <a href="{{ route('recommendations.index') }}" class="{{ Request::routeIs('recommendations.*') ? 'active' : '' }}" title="Recommendations"><i class="fas fa-star"></i></a>
-                @endif
-                <a href="{{ route('lift-logs.index') }}" class="{{ Request::routeIs(['lift-logs.index', 'lift-logs.edit', 'lift-logs.destroy-selected', 'exercises.show-logs']) ? 'active' : '' }}">History</a>
-                <a href="{{ route('exercises.index') }}" class="{{ Request::routeIs(['exercises.index', 'exercises.create', 'exercises.edit', 'exercises.store', 'exercises.update', 'exercises.destroy']) ? 'active' : '' }}">Exercises</a>
-            @endif
-
-
+            @foreach($menuService->getSubMenu() as $item)
+                <a href="{{ isset($item['routeParams']) ? route($item['route'], $item['routeParams']) : route($item['route']) }}" 
+                   class="{{ $item['active'] ? 'active' : '' }}"
+                   @if(isset($item['title']))title="{{ $item['title'] }}"@endif>
+                    @if(isset($item['icon']))<i class="fas {{ $item['icon'] }}"></i>@endif
+                    @if(isset($item['label'])){{ $item['label'] }}@endif
+                </a>
+            @endforeach
         </div>
         @endif
         @endauth

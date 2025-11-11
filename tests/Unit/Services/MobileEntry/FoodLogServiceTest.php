@@ -121,7 +121,8 @@ class FoodLogServiceTest extends TestCase
         $loggedItems = $this->service->generateLoggedItems($user->id, $this->testDate);
         
         $this->assertCount(1, $loggedItems['items']);
-        $this->assertArrayNotHasKey('emptyMessage', $loggedItems);
+        $this->assertArrayHasKey('emptyMessage', $loggedItems);
+        $this->assertEquals('', $loggedItems['emptyMessage']); // Should be empty string when there are items
         
         $item = $loggedItems['items'][0];
         $this->assertEquals($foodLog->id, $item['id']);
@@ -458,7 +459,7 @@ class FoodLogServiceTest extends TestCase
         
         $form = $forms[0];
         $this->assertEquals('ingredient-' . $ingredient->id, $form['id']);
-        $this->assertEquals('food', $form['type']);
+        $this->assertEquals('success', $form['type']);
         $this->assertEquals('Olive Oil', $form['title']);
         $this->assertEquals('Olive Oil', $form['itemName']);
         $this->assertStringContainsString('food-logs', $form['formAction']);

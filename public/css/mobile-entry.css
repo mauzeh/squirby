@@ -98,8 +98,8 @@
 }
 
 /* 
-Date Navigation Component */
-.date-navigation {
+Navigation Component */
+.component-navigation {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -145,14 +145,19 @@ Date Navigation Component */
     outline-offset: 2px;
 }
 
-/* Date Title Container */
-.date-title-container {
+/* Title Container */
+.component-title-container {
     text-align: center;
     margin-bottom: var(--spacing-xl);
 }
 
-/* Main Date Title */
-.date-title {
+/* Add top padding when title is first component (no navigation above) */
+.mobile-entry-container > .component-title-container:first-child {
+    padding-top: var(--spacing-xl);
+}
+
+/* Main Title */
+.component-title {
     color: var(--color-primary);
     margin: 0;
     font-size: 2em;
@@ -160,8 +165,8 @@ Date Navigation Component */
     line-height: 1.2;
 }
 
-/* Date Subtitle */
-.date-subtitle {
+/* Subtitle */
+.component-subtitle {
     color: var(--text-muted);
     font-size: 1em;
     font-weight: normal;
@@ -169,9 +174,9 @@ Date Navigation Component */
     opacity: 0.8;
 }
 
-/* Responsive adjustments for date navigation */
+/* Responsive adjustments for navigation */
 @media (max-width: 768px) {
-    .date-navigation {
+    .component-navigation {
         margin-bottom: var(--spacing-md);
     }
 
@@ -181,15 +186,15 @@ Date Navigation Component */
         min-width: var(--touch-target-min);
     }
 
-    .date-title-container {
+    .component-title-container {
         margin-bottom: var(--spacing-lg);
     }
 
-    .date-title {
+    .component-title {
         font-size: 1.8em;
     }
 
-    .date-subtitle {
+    .component-subtitle {
         font-size: 0.9em;
         margin-top: 3px;
     }
@@ -202,15 +207,15 @@ Date Navigation Component */
         min-height: 40px;
     }
 
-    .date-title-container {
+    .component-title-container {
         margin-bottom: var(--spacing-md);
     }
 
-    .date-title {
+    .component-title {
         font-size: 1.6em;
     }
 
-    .date-subtitle {
+    .component-subtitle {
         font-size: 0.85em;
         margin-top: 2px;
     }
@@ -415,32 +420,32 @@ Date Navigation Component */
     }
 }
 
-/* Add Item Button */
-.add-item-section {
+/* Button Component */
+.component-button-section {
     display: flex;
     margin-bottom: var(--spacing-lg);
     width: 100%;
 }
 
-.add-item-section.hidden {
+.component-button-section.hidden {
     display: none;
 }
 
-/* Responsive adjustments for add item section */
+/* Responsive adjustments for button section */
 @media (max-width: 768px) {
-    .add-item-section {
+    .component-button-section {
         margin-bottom: var(--spacing-lg);
     }
 }
 
 /* Item Selection List */
-.item-selection-section {
+.component-list-section {
     margin-bottom: var(--spacing-xl);
     display: none;
     /* Hidden by default */
 }
 
-.item-selection-section.active {
+.component-list-section.active {
     display: block;
     /* Show when active */
 }
@@ -453,23 +458,23 @@ Date Navigation Component */
     text-align: center;
 }
 
-.item-filter-container {
+.component-filter-container {
     padding: var(--spacing-sm);
     border-bottom: 2px solid var(--color-primary);
     background-color: rgba(0, 123, 255, 0.15);
 }
 
-.item-filter-group {
+.component-filter-group {
     display: flex;
     gap: var(--spacing-sm);
 }
 
-.create-item-form {
+.component-create-form {
     margin: 0;
     display: flex;
 }
 
-.item-filter-input-wrapper {
+.component-filter-input-wrapper {
     flex: 1;
     position: relative;
     display: flex;
@@ -477,7 +482,7 @@ Date Navigation Component */
     min-height: var(--touch-target-min);
 }
 
-.item-filter-input {
+.component-filter-input {
     flex: 1;
     width: 100%;
     padding: 10px 40px 10px var(--spacing-md);
@@ -490,14 +495,14 @@ Date Navigation Component */
     box-sizing: border-box;
 }
 
-.item-filter-input:focus {
+.component-filter-input:focus {
     background-color: var(--input-focus-bg);
     border-color: var(--color-primary);
     outline: none;
     box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
 }
 
-.item-filter-input::placeholder {
+.component-filter-input::placeholder {
     color: rgba(227, 242, 253, 0.7);
     opacity: 1;
 }
@@ -539,7 +544,7 @@ Date Navigation Component */
     outline-offset: 2px;
 }
 
-.item-selection-list {
+.component-list {
     display: grid;
     gap: 0;
     list-style: none;
@@ -558,12 +563,12 @@ Date Navigation Component */
     align-content: start;
 }
 
-.item-selection-list li {
+.component-list li {
     margin: 0;
     padding: 0;
 }
 
-.item-selection-card {
+.component-list-item {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -577,29 +582,29 @@ Date Navigation Component */
     user-select: none;
 }
 
-.item-selection-list li:not(:first-child) .item-selection-card {
+.component-list li:not(:first-child) .component-list-item {
     border-top: 1px solid var(--secondary-bg);
 }
 
 @media (hover: hover) {
-    .item-selection-card:hover {
+    .component-list-item:hover {
         background-color: var(--input-bg);
         transform: translateY(-1px);
         box-shadow: var(--shadow-light);
     }
 }
 
-.item-selection-card:active {
+.component-list-item:active {
     transform: translateY(0);
     box-shadow: none;
 }
 
-.item-selection-card:focus {
+.component-list-item:focus {
     outline: 2px solid var(--color-primary);
     outline-offset: 2px;
 }
 
-.item-name {
+.component-list-item-name {
     color: var(--text-primary);
     font-weight: bold;
     font-size: 1em;
@@ -607,7 +612,7 @@ Date Navigation Component */
     flex: 1;
 }
 
-.item-type {
+.component-list-item-type {
     color: var(--text-muted);
     font-size: 0.9em;
     font-style: italic;
@@ -618,134 +623,134 @@ Date Navigation Component */
 /* Category-specific styling */
 
 /* In Program - Highest priority, most prominent styling */
-.item-selection-card--in-program {
+.component-list-item--in-program {
     background-color: rgba(40, 167, 69, 0.12);
     border-left: 3px solid #28a745;
 }
 
 @media (hover: hover) {
-    .item-selection-card--in-program:hover {
+    .component-list-item--in-program:hover {
         background-color: rgba(40, 167, 69, 0.18);
     }
 }
 
-.item-selection-card--in-program .item-name {
+.component-list-item--in-program .component-list-item-name {
     color: #d4edda;
     font-weight: 600;
 }
 
-.item-selection-card--in-program .item-type {
+.component-list-item--in-program .component-list-item-type {
     color: rgba(212, 237, 218, 0.8);
     font-weight: 500;
 }
 
 /* Recent - Second priority, green accent */
-.item-selection-card--recent {
+.component-list-item--recent {
     background-color: rgba(40, 167, 69, 0.08);
     border-left: 2px solid #28a745;
 }
 
 @media (hover: hover) {
-    .item-selection-card--recent:hover {
+    .component-list-item--recent:hover {
         background-color: rgba(40, 167, 69, 0.12);
     }
 }
 
-.item-selection-card--recent .item-name {
+.component-list-item--recent .component-list-item-name {
     color: #d4edda;
 }
 
-.item-selection-card--recent .item-type {
+.component-list-item--recent .component-list-item-type {
     color: rgba(212, 237, 218, 0.7);
 }
 
 /* Custom - Third priority, purple accent */
-.item-selection-card--custom {
+.component-list-item--custom {
     background-color: rgba(102, 16, 242, 0.08);
     border-left: 2px solid #6610f2;
 }
 
 @media (hover: hover) {
-    .item-selection-card--custom:hover {
+    .component-list-item--custom:hover {
         background-color: rgba(102, 16, 242, 0.12);
     }
 }
 
-.item-selection-card--custom .item-name {
+.component-list-item--custom .component-list-item-name {
     color: #e2d9f3;
 }
 
-.item-selection-card--custom .item-type {
+.component-list-item--custom .component-list-item-type {
     color: rgba(226, 217, 243, 0.7);
 }
 
 /* Regular - Default styling, lowest priority */
-.item-selection-card--regular {
+.component-list-item--regular {
     background-color: rgba(108, 117, 125, 0.05);
 }
 
 @media (hover: hover) {
-    .item-selection-card--regular:hover {
+    .component-list-item--regular:hover {
         background-color: rgba(108, 117, 125, 0.08);
     }
 }
 
-.item-selection-card--regular .item-name {
+.component-list-item--regular .component-list-item-name {
     color: var(--text-primary);
 }
 
-.item-selection-card--regular .item-type {
+.component-list-item--regular .component-list-item-type {
     color: var(--text-muted);
 }
 
 /* Legacy support - map old 'highlighted' class to 'recent' */
-.item-selection-card--highlighted {
+.component-list-item--highlighted {
     background-color: rgba(40, 167, 69, 0.08);
     border-left: 2px solid #28a745;
 }
 
 @media (hover: hover) {
-    .item-selection-card--highlighted:hover {
+    .component-list-item--highlighted:hover {
         background-color: rgba(40, 167, 69, 0.12);
     }
 }
 
-.item-selection-card--highlighted .item-name {
+.component-list-item--highlighted .component-list-item-name {
     color: #d4edda;
 }
 
-.item-selection-card--highlighted .item-type {
+.component-list-item--highlighted .component-list-item-type {
     color: rgba(212, 237, 218, 0.7);
 }
 
 /* No results styling */
-.item-selection-card--no-results {
+.component-list-item--no-results {
     background-color: rgba(108, 117, 125, 0.1);
     cursor: default;
     pointer-events: none;
 }
 
 @media (hover: hover) {
-    .item-selection-card--no-results:hover {
+    .component-list-item--no-results:hover {
         background-color: rgba(108, 117, 125, 0.1);
         transform: none;
         box-shadow: none;
     }
 }
 
-.item-selection-card--no-results .item-name {
+.component-list-item--no-results .component-list-item-name {
     color: var(--text-muted);
     font-style: italic;
 }
 
-.item-selection-card--no-results .item-type {
+.component-list-item--no-results .component-list-item-type {
     color: var(--text-muted);
     font-style: italic;
 }
 
 /* Responsive adjustments for item selection */
 @media (max-width: 768px) {
-    .item-selection-section {
+    .component-list-section {
         margin-bottom: var(--spacing-lg);
     }
 
@@ -754,16 +759,16 @@ Date Navigation Component */
         margin-bottom: 12px;
     }
 
-    .item-selection-card {
+    .component-list-item {
         padding: 12px;
         min-height: var(--touch-target-min);
     }
 
-    .item-name {
+    .component-list-item-name {
         font-size: 0.95em;
     }
 
-    .item-selection-list {
+    .component-list {
         height: 100vh;
         min-height: 500px;
         max-height: 800px;
@@ -776,16 +781,16 @@ Date Navigation Component */
         margin-bottom: 10px;
     }
 
-    .item-selection-card {
+    .component-list-item {
         padding: 10px;
         min-height: 40px;
     }
 
-    .item-name {
+    .component-list-item-name {
         font-size: 0.9em;
     }
 
-    .item-selection-list {
+    .component-list {
         height: 90vh;
         min-height: 400px;
         max-height: 600px;
@@ -793,7 +798,7 @@ Date Navigation Component */
 }
 
 /* Form Components */
-.item-logging-section {
+.component-form-section {
     margin-bottom: var(--spacing-xl);
     padding: var(--spacing-md);
     background-color: var(--secondary-bg);
@@ -803,76 +808,78 @@ Date Navigation Component */
 }
 
 /* Form Type Variants - Visual distinction for different form types */
-.item-logging-section[data-form-type="exercise"] {
+/* Primary (blue) - for main/important forms */
+.component-form-section[data-form-type="primary"] {
     border-left: 4px solid var(--color-primary);
 }
 
-.item-logging-section[data-form-type="food"] {
+/* Success (green) - for positive/completion forms */
+.component-form-section[data-form-type="success"] {
     border-left: 4px solid var(--color-success);
 }
 
-.item-logging-section[data-form-type="measurement"] {
+/* Warning (yellow/orange) - for attention forms */
+.component-form-section[data-form-type="warning"] {
     border-left: 4px solid var(--color-warning);
 }
 
-.item-logging-section[data-form-type="general"] {
+/* Secondary (gray) - for general/default forms */
+.component-form-section[data-form-type="secondary"] {
     border-left: 4px solid var(--color-secondary);
 }
 
-/* Form-specific styling classes added by JavaScript */
-.form-type-exercise {
-    /* Exercise-specific form styling */
+/* Danger (red) - for error/critical forms */
+.component-form-section[data-form-type="danger"] {
+    border-left: 4px solid var(--color-danger);
 }
 
-.form-type-food {
-    /* Food-specific form styling */
+/* Info (light blue) - for informational forms */
+.component-form-section[data-form-type="info"] {
+    border-left: 4px solid #17a2b8;
 }
 
-.form-type-measurement {
-    /* Measurement-specific form styling */
-}
-
-.section-type-exercise .item-title {
+/* Optional: Color the heading to match form type */
+.section-type-primary .component-heading {
     color: var(--color-primary);
 }
 
-.section-type-food .item-title {
+.section-type-success .component-heading {
     color: var(--color-success);
 }
 
-.section-type-measurement .item-title {
+.section-type-warning .component-heading {
     color: var(--color-warning);
 }
 
 /* Multiple forms responsive adjustments */
 @media (max-width: 768px) {
-    .item-logging-section {
+    .component-form-section {
         margin-bottom: var(--spacing-lg);
     }
 
-    .item-logging-section+.item-logging-section {
+    .component-form-section+.component-form-section {
         margin-top: var(--spacing-lg);
     }
 }
 
 @media (max-width: 480px) {
-    .item-logging-section {
+    .component-form-section {
         margin-bottom: var(--spacing-md);
     }
 
-    .item-logging-section+.item-logging-section {
+    .component-form-section+.component-form-section {
         margin-top: var(--spacing-md);
     }
 }
 
-.item-header {
+.component-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: var(--spacing-md);
 }
 
-.item-title {
+.component-heading {
     color: var(--text-primary);
     font-size: 1.2em;
     font-weight: bold;
@@ -880,11 +887,11 @@ Date Navigation Component */
 }
 
 /* Item Messages */
-.item-messages {
+.component-messages {
     margin-bottom: var(--spacing-md);
 }
 
-.item-message {
+.component-message {
     padding: var(--spacing-sm) var(--spacing-md);
     border-radius: var(--border-radius-sm);
     font-size: 1em;
@@ -893,41 +900,41 @@ Date Navigation Component */
     border-left: 3px solid;
 }
 
-.item-message:last-child {
+.component-message:last-child {
     margin-bottom: 0;
 }
 
-.item-message--info {
+.component-message--info {
     background-color: rgba(0, 123, 255, 0.1);
     border-left-color: var(--color-primary);
     color: var(--text-secondary);
 }
 
-.item-message--tip {
+.component-message--tip {
     background-color: rgba(255, 193, 7, 0.1);
     border-left-color: var(--color-warning);
     color: var(--text-secondary);
 }
 
-.item-message--success {
+.component-message--success {
     background-color: rgba(40, 167, 69, 0.1);
     border-left-color: var(--color-success);
     color: var(--text-secondary);
 }
 
-.item-message--error {
+.component-message--error {
     background-color: rgba(220, 53, 69, 0.1);
     border-left-color: var(--color-danger);
     color: var(--text-secondary);
 }
 
-.item-message--warning {
+.component-message--warning {
     background-color: rgba(255, 193, 7, 0.1);
     border-left-color: var(--color-warning);
     color: var(--text-secondary);
 }
 
-.item-message--neutral {
+.component-message--neutral {
     background-color: transparent;
     border-left-color: var(--text-muted);
     color: var(--text-secondary);
@@ -938,7 +945,7 @@ Date Navigation Component */
 }
 
 /* Freeform Text Display */
-.item-freeform-text {
+.component-freeform-text {
     margin-top: var(--spacing-sm);
     padding: var(--spacing-sm) var(--spacing-md);
     background-color: rgba(255, 255, 255, 0.05);
@@ -950,7 +957,7 @@ Date Navigation Component */
     font-style: italic;
 }
 
-.item-form {
+.component-form-element {
     width: 100%;
 }
 
@@ -1086,6 +1093,39 @@ Date Navigation Component */
     padding: var(--spacing-sm);
 }
 
+/* Text Input */
+.text-input {
+    width: 100%;
+    background-color: var(--input-bg);
+    border: 1px solid #555;
+    border-radius: var(--border-radius-sm);
+    color: var(--text-primary);
+    font-size: 1.5em;
+    font-weight: bold;
+    padding: var(--spacing-md);
+    transition: all var(--transition-fast);
+    font-family: inherit;
+    min-height: var(--touch-target-min);
+    box-sizing: border-box;
+}
+
+.text-input:focus {
+    background-color: var(--input-focus-bg);
+    border-color: var(--color-primary);
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.text-input::placeholder {
+    color: var(--text-placeholder);
+    opacity: 1;
+    font-weight: normal;
+}
+
+.text-input:focus::placeholder {
+    color: #666;
+}
+
 /* Comment Textarea */
 .comment-textarea {
     width: 100%;
@@ -1184,7 +1224,7 @@ Date Navigation Component */
 
 /* Responsive adjustments for form components */
 @media (max-width: 768px) {
-    .item-logging-section {
+    .component-form-section {
         padding: var(--spacing-md);
         margin-bottom: var(--spacing-lg);
     }
@@ -1196,6 +1236,11 @@ Date Navigation Component */
     .form-mobile-label {
         font-size: 1em;
         margin-bottom: 6px;
+    }
+
+    .text-input {
+        font-size: 1.3em;
+        padding: 12px;
     }
 
     .number-input {
@@ -1222,17 +1267,17 @@ Date Navigation Component */
         margin-top: var(--spacing-lg);
     }
 
-    .item-messages {
+    .component-messages {
         margin-bottom: 12px;
     }
 
-    .item-message {
+    .component-message {
         padding: 8px 12px;
         font-size: 0.95em;
         margin-bottom: 4px;
     }
 
-    .item-freeform-text {
+    .component-freeform-text {
         margin-top: 8px;
         padding: 8px 12px;
         font-size: 0.9em;
@@ -1246,7 +1291,7 @@ Date Navigation Component */
 }
 
 @media (max-width: 480px) {
-    .item-logging-section {
+    .component-form-section {
         padding: 10px;
     }
 
@@ -1257,6 +1302,11 @@ Date Navigation Component */
     .form-mobile-label {
         font-size: 0.95em;
         margin-bottom: 6px;
+    }
+
+    .text-input {
+        font-size: 1.2em;
+        padding: 12px;
     }
 
     .number-input {
@@ -1280,17 +1330,17 @@ Date Navigation Component */
         min-height: 70px;
     }
 
-    .item-messages {
+    .component-messages {
         margin-bottom: 10px;
     }
 
-    .item-message {
+    .component-message {
         padding: 6px 10px;
         font-size: 0.9em;
         margin-bottom: 3px;
     }
 
-    .item-freeform-text {
+    .component-freeform-text {
         margin-top: 6px;
         padding: 6px 10px;
         font-size: 0.85em;
@@ -1390,7 +1440,7 @@ Date Navigation Component */
     opacity: 0.6;
 }
 
-.item-filter-input::placeholder {
+.component-filter-input::placeholder {
     color: rgba(227, 242, 253, 0.7);
     opacity: 1;
 }
@@ -1481,7 +1531,7 @@ Date Navigation Component */
 }
 
 /* Action Buttons - Edit and Delete */
-.item-actions {
+.component-actions {
     display: flex;
     gap: var(--spacing-sm);
     align-items: center;
@@ -1637,16 +1687,16 @@ Date Navigation Component */
     outline-offset: 2px;
 }
 
-/* Logged Item Display */
-.logged-items-section {
+/* Items Display Component */
+.component-items-section {
     margin-bottom: var(--spacing-xl);
 }
 
-.logged-items-section .logged-item+.logged-item {
+.component-items-section .component-item+.component-item {
     margin-top: var(--spacing-md);
 }
 
-.logged-item {
+.component-item {
     background-color: var(--secondary-bg);
     border-radius: var(--border-radius-md);
     padding: var(--spacing-md);
@@ -1656,18 +1706,18 @@ Date Navigation Component */
 }
 
 @media (hover: hover) {
-    .logged-item:hover {
+    .component-item:hover {
         transform: translateY(-1px);
         box-shadow: var(--shadow-medium);
     }
 }
 
-.logged-item:focus {
+.component-item:focus {
     outline: 2px solid var(--color-primary);
     outline-offset: 2px;
 }
 
-.logged-item .item-header {
+.component-item .component-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -1675,11 +1725,11 @@ Date Navigation Component */
     gap: var(--spacing-sm);
 }
 
-.logged-item .item-header .item-value {
+.component-item .component-header .component-value {
     margin-left: auto;
 }
 
-.logged-item .item-value {
+.component-item .component-value {
     font-size: 1.2em;
     font-weight: bold;
     color: var(--color-success);
@@ -1691,18 +1741,18 @@ Date Navigation Component */
 /* Visual distinction from form elements - checkmark removed */
 
 /* Completion styling variants */
-.logged-item.completed {
+.component-item.completed {
     background-color: rgba(40, 167, 69, 0.1);
 }
 
-.logged-item.recent .item-value {
+.component-item.recent .component-value {
     color: var(--color-primary);
 }
 
 
 
-/* Empty state for logged items */
-.logged-items-empty {
+/* Empty state for items */
+.component-items-empty {
     text-align: center;
     padding: 40px var(--spacing-lg);
     color: var(--text-muted);
@@ -1714,8 +1764,8 @@ Date Navigation Component */
 
 
 
-/* Loading state for logged items */
-.logged-items-loading {
+/* Loading state for items */
+.component-items-loading {
     text-align: center;
     padding: 40px var(--spacing-lg);
     color: var(--text-muted);
@@ -1723,7 +1773,7 @@ Date Navigation Component */
     border-radius: var(--border-radius-md);
 }
 
-.logged-items-loading::before {
+.component-items-loading::before {
     content: "⏳";
     display: block;
     font-size: 2em;
@@ -1731,49 +1781,49 @@ Date Navigation Component */
     animation: pulse 1.5s ease-in-out infinite;
 }
 
-/* Responsive adjustments for logged items */
+/* Responsive adjustments for items */
 @media (max-width: 768px) {
-    .logged-item {
+    .component-item {
         padding: 12px;
     }
 
-    .logged-item .item-value {
+    .component-item .component-value {
         font-size: 1.2em;
     }
 
-    .logged-item .item-comment {
+    .component-item .item-comment {
         font-size: 0.9em;
         margin-top: var(--spacing-sm);
     }
 
-    .logged-items-empty,
-    .logged-items-loading {
+    .component-items-empty,
+    .component-items-loading {
         padding: 30px var(--spacing-md);
     }
 
-    .logged-items-empty::before,
-    .logged-items-loading::before {
+    .component-items-empty::before,
+    .component-items-loading::before {
         font-size: 1.8em;
     }
 }
 
 @media (max-width: 480px) {
-    .logged-item {
+    .component-item {
         padding: 10px;
     }
 
-    .logged-item .item-value {
+    .component-item .component-value {
         font-size: 1.2em;
     }
 
-    .logged-item .item-comment {
+    .component-item .item-comment {
         font-size: 0.85em;
     }
 
 
 
-    .logged-items-empty,
-    .logged-items-loading {
+    .component-items-empty,
+    .component-items-loading {
         padding: 25px var(--spacing-sm);
     }
 }
@@ -1845,8 +1895,8 @@ Date Navigation Component */
     }
 
     .summary-item,
-    .logged-item,
-    .item-logging-section {
+    .component-item,
+    .component-form-section {
         border: 2px solid #ffffff;
     }
 
@@ -1891,11 +1941,11 @@ Date Navigation Component */
         max-width: calc(100vw - 2px);
     }
 
-    .date-navigation {
+    .component-navigation {
         margin-bottom: var(--spacing-md);
     }
 
-    .date-title {
+    .component-title {
         font-size: 1.6em;
         margin-bottom: var(--spacing-md);
     }
@@ -1904,7 +1954,220 @@ Date Navigation Component */
         margin-bottom: var(--spacing-md);
     }
 
-    .item-logging-section {
+    .component-form-section {
         margin-bottom: var(--spacing-md);
     }
+}
+/* T
+able Component - Tabular CRUD list optimized for narrow screens */
+.component-table-section {
+    margin-bottom: var(--spacing-xl);
+}
+
+.component-table {
+    background-color: var(--secondary-bg);
+    border-radius: var(--border-radius-md);
+    overflow: hidden;
+    box-shadow: var(--shadow-light);
+}
+
+.component-table-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-md);
+    background-color: var(--tertiary-bg);
+    border-bottom: 1px solid var(--secondary-bg);
+    gap: var(--spacing-md);
+    min-height: var(--touch-target-min);
+    transition: background-color var(--transition-fast);
+}
+
+.component-table-row:last-child {
+    border-bottom: none;
+}
+
+@media (hover: hover) {
+    .component-table-row:hover {
+        background-color: var(--input-bg);
+    }
+}
+
+.component-table-cell {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.component-table-cell > div {
+    line-height: 1.3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.cell-title {
+    font-size: 1em;
+    font-weight: bold;
+    color: var(--text-primary);
+}
+
+.cell-content {
+    font-size: 0.9em;
+    color: var(--text-secondary);
+}
+
+.cell-detail {
+    font-size: 0.85em;
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+.component-table-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.btn-table-edit,
+.btn-table-delete {
+    border: none;
+    border-radius: 50%;
+    width: var(--touch-target-min);
+    height: var(--touch-target-min);
+    cursor: pointer;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-fast);
+    touch-action: manipulation;
+    user-select: none;
+    text-decoration: none;
+    color: white;
+}
+
+.btn-table-edit {
+    background-color: var(--color-edit);
+}
+
+@media (hover: hover) {
+    .btn-table-edit:hover {
+        background-color: var(--color-edit-hover);
+        transform: scale(1.08);
+    }
+}
+
+.btn-table-edit:active {
+    transform: scale(0.95);
+}
+
+.btn-table-edit:focus {
+    outline: 2px solid var(--color-edit);
+    outline-offset: 2px;
+}
+
+.btn-table-delete {
+    background-color: var(--color-danger);
+}
+
+@media (hover: hover) {
+    .btn-table-delete:hover {
+        background-color: var(--color-danger-hover);
+        transform: scale(1.08);
+    }
+}
+
+.btn-table-delete:active {
+    transform: scale(0.95);
+}
+
+.btn-table-delete:focus {
+    outline: 2px solid var(--color-danger);
+    outline-offset: 2px;
+}
+
+/* Disabled state for table buttons */
+.btn-table-edit.btn-disabled,
+.btn-table-delete.btn-disabled,
+a.btn-table-edit[href="#"],
+button.btn-table-delete:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.component-table-empty {
+    text-align: center;
+    padding: 40px var(--spacing-lg);
+    color: var(--text-muted);
+    font-style: italic;
+    background-color: var(--secondary-bg);
+    border-radius: var(--border-radius-md);
+    border: 2px dashed #555;
+}
+
+/* Responsive adjustments for table */
+@media (max-width: 768px) {
+    .component-table-row {
+        padding: 12px;
+        gap: 12px;
+    }
+
+    .cell-title {
+        font-size: 0.95em;
+    }
+
+    .cell-content {
+        font-size: 0.85em;
+    }
+
+    .cell-detail {
+        font-size: 0.8em;
+    }
+}
+
+@media (max-width: 480px) {
+    .component-table-row {
+        padding: 10px;
+        gap: 10px;
+    }
+
+    .cell-title {
+        font-size: 0.9em;
+    }
+
+    .cell-content {
+        font-size: 0.8em;
+    }
+
+    .cell-detail {
+        font-size: 0.75em;
+    }
+
+    .component-table-actions {
+        gap: 8px;
+    }
+}
+
+/* Button Component Styles */
+.component-button.btn-primary {
+    background-color: var(--color-success);
+    color: var(--text-primary);
+}
+
+.component-button.btn-primary:hover {
+    background-color: var(--color-success-hover);
+}
+
+.component-button.btn-secondary {
+    background-color: var(--color-secondary);
+    color: var(--text-primary);
+}
+
+.component-button.btn-secondary:hover {
+    background-color: var(--color-secondary-hover);
 }

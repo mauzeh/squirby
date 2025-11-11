@@ -28,7 +28,7 @@ class MeasurementsTest extends TestCase
         $response = $this->get(route('mobile-entry.measurements'));
 
         $response->assertStatus(200);
-        $response->assertViewIs('mobile-entry.index');
+        $response->assertViewIs('mobile-entry.flexible');
     }
 
 
@@ -143,12 +143,14 @@ class MeasurementsTest extends TestCase
         
         // Check that the page only shows form for unlogged measurement type
         $data = $response->viewData('data');
-        $this->assertCount(1, $data['forms']);
-        $this->assertEquals('Body Fat', $data['forms'][0]['title']);
+        $formComponents = collect($data['components'])->where('type', 'form')->values();
+        $this->assertCount(1, $formComponents);
+        $this->assertEquals('Body Fat', $formComponents[0]['data']['title']);
         
         // Should show the logged measurement in logged items
-        $this->assertCount(1, $data['loggedItems']['items']);
-        $this->assertEquals('Weight', $data['loggedItems']['items'][0]['title']);
+        $itemsComponent = collect($data['components'])->firstWhere('type', 'items');
+        $this->assertCount(1, $itemsComponent['data']['items']);
+        $this->assertEquals('Weight', $itemsComponent['data']['items'][0]['title']);
     }
 
     /** @test */
@@ -176,9 +178,10 @@ class MeasurementsTest extends TestCase
         $response->assertStatus(200);
         
         $data = $response->viewData('data');
-        $this->assertCount(1, $data['loggedItems']['items']);
+        $itemsComponent = collect($data['components'])->firstWhere('type', 'items');
+        $this->assertCount(1, $itemsComponent['data']['items']);
         
-        $loggedItem = $data['loggedItems']['items'][0];
+        $loggedItem = $itemsComponent['data']['items'][0];
         $this->assertEquals('Weight', $loggedItem['title']);
         $this->assertEquals('185.5 lbs', $loggedItem['message']['text']);
         $this->assertEquals('Morning weigh-in', $loggedItem['freeformText']);
@@ -199,9 +202,10 @@ class MeasurementsTest extends TestCase
         
         // Check that forms don't have delete actions
         $data = $response->viewData('data');
-        $this->assertCount(1, $data['forms']);
+        $formComponents = collect($data['components'])->where('type', 'form')->values();
+        $this->assertCount(1, $formComponents);
         
-        $form = $data['forms'][0];
+        $form = $formComponents[0]['data'];
         $this->assertNull($form['deleteAction']);
         $this->assertArrayNotHasKey('deleteForm', $form['ariaLabels']);
         

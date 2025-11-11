@@ -16,6 +16,8 @@ use App\Http\Controllers\LiftLogController;
 use App\Http\Controllers\BodyLogController;
 use App\Http\Controllers\MeasurementTypeController;
 use App\Http\Controllers\RecommendationController;
+use App\Http\Controllers\FlexibleWorkflowController;
+use App\Http\Controllers\WorkoutTemplateController;
 
 // Breeze Routes
 Route::get('/', function () {
@@ -73,8 +75,16 @@ Route::middleware('auth')->group(function () {
     // Exercise Recommendations
     Route::get('recommendations', [RecommendationController::class, 'index'])->name('recommendations.index');
 
-    // Mobile Entry - Supports date parameter: /mobile-entry?date=2024-01-15
-    Route::get('mobile-entry', [MobileEntryController::class, 'index'])->name('mobile-entry.index');
+    // Workout Templates
+    Route::resource('workout-templates', WorkoutTemplateController::class)->except(['show']);
+    Route::get('workout-templates/{workoutTemplate}/add-exercise', [WorkoutTemplateController::class, 'addExercise'])->name('workout-templates.add-exercise');
+    Route::post('workout-templates/{workoutTemplate}/create-exercise', [WorkoutTemplateController::class, 'createExercise'])->name('workout-templates.create-exercise');
+    Route::get('workout-templates/{workoutTemplate}/exercises/{exercise}/move', [WorkoutTemplateController::class, 'moveExercise'])->name('workout-templates.move-exercise');
+    Route::delete('workout-templates/{workoutTemplate}/exercises/{exercise}', [WorkoutTemplateController::class, 'removeExercise'])->name('workout-templates.remove-exercise');
+    Route::get('workout-templates-browse', [WorkoutTemplateController::class, 'browse'])->name('workout-templates.browse');
+    Route::get('workout-templates/{workoutTemplate}/apply', [WorkoutTemplateController::class, 'apply'])->name('workout-templates.apply');
+
+    // Mobile Entry - Supports date parameter
     Route::get('mobile-entry/lifts', [MobileEntryController::class, 'lifts'])->name('mobile-entry.lifts');
     Route::get('mobile-entry/foods', [MobileEntryController::class, 'foods'])->name('mobile-entry.foods');
     Route::get('mobile-entry/measurements', [MobileEntryController::class, 'measurements'])->name('mobile-entry.measurements');
@@ -89,7 +99,14 @@ Route::middleware('auth')->group(function () {
     Route::get('mobile-entry/add-food-form/{type}/{id}', [MobileEntryController::class, 'addFoodForm'])->name('mobile-entry.add-food-form');
     Route::delete('mobile-entry/remove-food-form/{id}', [MobileEntryController::class, 'removeFoodForm'])->name('mobile-entry.remove-food-form');
 
-
+    // Flexible Workflow Examples (New Component-Based Architecture)
+    Route::get('flexible/with-nav', [FlexibleWorkflowController::class, 'withDateNavigation'])->name('flexible.with-nav');
+    Route::get('flexible/without-nav', [FlexibleWorkflowController::class, 'withoutNavigation'])->name('flexible.without-nav');
+    Route::get('flexible/multiple-forms', [FlexibleWorkflowController::class, 'multipleForms'])->name('flexible.multiple-forms');
+    Route::get('flexible/custom-order', [FlexibleWorkflowController::class, 'customOrder'])->name('flexible.custom-order');
+    Route::get('flexible/multiple-buttons', [FlexibleWorkflowController::class, 'multipleButtons'])->name('flexible.multiple-buttons');
+    Route::get('flexible/table-example', [FlexibleWorkflowController::class, 'tableExample'])->name('flexible.table-example');
+    Route::get('flexible/table-reorder', [FlexibleWorkflowController::class, 'tableWithReorder'])->name('flexible.table-reorder');
 
     Route::post('lift-logs/destroy-selected', [LiftLogController::class, 'destroySelected'])->name('lift-logs.destroy-selected');
 

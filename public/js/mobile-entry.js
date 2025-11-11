@@ -5,32 +5,29 @@
 
 document.addEventListener('DOMContentLoaded', function() {
     // Get the filter input, clear button, hidden input, and item list
-    const filterInput = document.querySelector('.item-filter-input');
+    const filterInput = document.querySelector('.component-filter-input');
     const clearButton = document.querySelector('.btn-clear-filter');
-    const hiddenInput = document.querySelector('.create-item-input');
-    const itemList = document.querySelector('.item-selection-list');
+    const hiddenInput = document.querySelector('.component-create-input');
+    const itemList = document.querySelector('.component-list');
     
-    // Only require filterInput and itemList - other elements are optional
-    if (!filterInput || !itemList) {
-        return; // Exit if essential elements don't exist
-    }
-    
-    // Get all item cards (excluding the filter container and no-results item)
-    const getAllItemCards = () => {
-        return Array.from(itemList.querySelectorAll('.item-selection-card:not(.item-selection-card--no-results)'));
-    };
-    
-    // Get the no results item
-    const noResultsItem = itemList.querySelector('.no-results-item');
-    
-    // Filter function
-    const filterItems = (searchTerm) => {
+    // Only set up filtering if filter input and item list exist
+    if (filterInput && itemList) {
+        // Get all item cards (excluding the filter container and no-results item)
+        const getAllItemCards = () => {
+            return Array.from(itemList.querySelectorAll('.component-list-item:not(.component-list-item--no-results)'));
+        };
+        
+        // Get the no results item
+        const noResultsItem = itemList.querySelector('.no-results-item');
+        
+        // Filter function
+        const filterItems = (searchTerm) => {
         const itemCards = getAllItemCards();
         const normalizedSearch = searchTerm.toLowerCase().trim();
         let visibleCount = 0;
         
         itemCards.forEach(card => {
-            const itemNameElement = card.querySelector('.item-name');
+            const itemNameElement = card.querySelector('.component-list-item-name');
             if (!itemNameElement) return;
             
             const itemName = itemNameElement.textContent.toLowerCase();
@@ -121,10 +118,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 150);
     });
     
-    // Add event listener for clear button (if it exists)
-    if (clearButton) {
-        clearButton.addEventListener('click', clearFilter);
-    }
+        // Add event listener for clear button (if it exists)
+        if (clearButton) {
+            clearButton.addEventListener('click', clearFilter);
+        }
+    } // End of filter setup
     
     /**
      * Numeric Input Increment/Decrement System
@@ -319,9 +317,9 @@ document.addEventListener('DOMContentLoaded', function() {
      * No dynamic form management - items link directly to backend URLs.
      */
     const setupItemListToggle = () => {
-        const addItemButton = document.querySelector('.btn-success');
-        const itemListContainer = document.querySelector('.item-selection-section');
-        const addItemSection = document.querySelector('.add-item-section');
+        const addItemButton = document.querySelector('.btn-add-item');
+        const itemListContainer = document.querySelector('.component-list-section');
+        const addItemSection = document.querySelector('.component-button-section');
         const cancelButton = document.querySelector('.btn-cancel');
         
         // Show item selection list
@@ -337,7 +335,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Focus on the filter input field and scroll to optimal position
             // Use requestAnimationFrame for better mobile compatibility
             requestAnimationFrame(() => {
-                const filterInput = document.querySelector('.item-filter-input');
+                const filterInput = document.querySelector('.component-filter-input');
                 if (filterInput) {
                     // Force focus and click to ensure mobile keyboard opens
                     filterInput.focus();
@@ -418,33 +416,47 @@ document.addEventListener('DOMContentLoaded', function() {
      * Adds confirmation dialogs for both:
      * 1. Deleting logged items (permanent deletion)
      * 2. Removing forms from program (removing from today's program)
+     * 3. Deleting table rows (tabular CRUD lists)
      * 
      * Uses configurable messages from the data array passed from the controller.
      */
     const setupDeleteConfirmation = () => {
         // Get confirmation messages from the page data
         const getConfirmMessages = () => {
-            // Try to get messages from a script tag or data attribute
-            const dataScript = document.querySelector('script[data-confirm-messages]');
-            if (dataScript) {
-                try {
-                    return JSON.parse(dataScript.dataset.confirmMessages);
-                } catch (e) {
-                    console.warn('Failed to parse confirmation messages:', e);
-                }
-            }
+            // Try to get messages from multiple script tags
+            const itemsScript = document.querySelector('script[data-confirm-messages]');
+            const tableScript = document.querySelector('script[data-table-confirm-messages]');
             
-            // Fallback messages
-            return {
+            let messages = {
                 deleteItem: 'Are you sure you want to delete this item? This action cannot be undone.',
                 removeForm: 'Are you sure you want to remove this item from today\'s program?'
             };
+            
+            // Merge messages from items component
+            if (itemsScript) {
+                try {
+                    Object.assign(messages, JSON.parse(itemsScript.dataset.confirmMessages));
+                } catch (e) {
+                    console.warn('Failed to parse items confirmation messages:', e);
+                }
+            }
+            
+            // Merge messages from table component
+            if (tableScript) {
+                try {
+                    Object.assign(messages, JSON.parse(tableScript.dataset.tableConfirmMessages));
+                } catch (e) {
+                    console.warn('Failed to parse table confirmation messages:', e);
+                }
+            }
+            
+            return messages;
         };
         
         const confirmMessages = getConfirmMessages();
         
-        // Target all delete buttons on the page
-        const deleteButtons = document.querySelectorAll('.btn-delete');
+        // Target all delete buttons on the page (including table delete buttons)
+        const deleteButtons = document.querySelectorAll('.btn-delete, .btn-table-delete');
         
         deleteButtons.forEach(button => {
             button.addEventListener('click', function(event) {
@@ -455,8 +467,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (!form) return;
                 
                 // Determine the type of delete action and get appropriate message
-                const loggedItemsSection = this.closest('.logged-items-section');
-                const formSection = this.closest('.item-logging-section');
+                const loggedItemsSection = this.closest('.component-items-section');
+                const formSection = this.closest('.component-form-section');
+                const tableSection = this.closest('.component-table-section');
                 
                 let confirmMessage;
                 
@@ -466,6 +479,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 } else if (formSection) {
                     // This is a form removal (removing from program)
                     confirmMessage = confirmMessages.removeForm;
+                } else if (tableSection) {
+                    // This is a table row deletion
+                    confirmMessage = confirmMessages.deleteItem;
                 } else {
                     // Fallback for any other delete buttons
                     confirmMessage = confirmMessages.deleteItem;
@@ -494,7 +510,7 @@ document.addEventListener('DOMContentLoaded', function() {
      */
     const autoScrollToFirstForm = () => {
         // Find the first form section
-        const firstForm = document.querySelector('.item-logging-section.form');
+        const firstForm = document.querySelector('.component-form-section');
         
         if (firstForm) {
             // Small delay to ensure page is fully rendered
@@ -514,6 +530,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
     
-    // Initialize auto-scroll to first form
-    autoScrollToFirstForm();
+    // Initialize auto-scroll to first form (only if enabled via config)
+    if (window.mobileEntryConfig && window.mobileEntryConfig.autoscroll) {
+        autoScrollToFirstForm();
+    }
 });
