@@ -61,7 +61,8 @@ class WorkoutTemplateController extends Controller
                     ->filter()
                     ->join(', ');
                 
-                $line2 = $exerciseNames ?: 'No exercises';
+                $exerciseCount = $template->exercises->count();
+                $line2 = $exerciseCount . ' exercises: ' . ($exerciseNames ?: 'None');
                 $line3 = $template->description ? substr($template->description, 0, 50) : null;
 
                 $tableBuilder->row(
