@@ -274,10 +274,10 @@ class FlexibleWorkflowController extends Controller
                         1,
                         'Morning Cardio',
                         '30 minutes • 3x per week',
-                        'Last completed: 2 days ago',
-                        route('flexible.table-example'),
-                        route('flexible.table-example')
+                        'Last completed: 2 days ago'
                     )
+                    ->linkAction('fa-edit', route('flexible.table-example'), 'Edit')
+                    ->formAction('fa-trash', route('flexible.table-example'), 'DELETE', ['redirect' => 'table'], 'Delete', 'btn-danger', true)
                     ->subItem(
                         11,
                         'Running',
@@ -296,16 +296,15 @@ class FlexibleWorkflowController extends Controller
                     ->linkAction('fa-play', route('flexible.table-example'), 'Log now', 'btn-log-now')
                     ->formAction('fa-trash', route('flexible.table-example'), 'DELETE', [], 'Delete', 'btn-danger', true)
                     ->add()
-                    ->deleteParams(['redirect' => 'table'])
                     ->add()
                     ->row(
                         2,
                         'Upper Body Strength',
                         'Bench Press, Rows, Shoulder Press',
-                        '45 minutes • Mon, Wed, Fri',
-                        route('flexible.table-example'),
-                        route('flexible.table-example')
+                        '45 minutes • Mon, Wed, Fri'
                     )
+                    ->linkAction('fa-edit', route('flexible.table-example'), 'Edit')
+                    ->formAction('fa-trash', route('flexible.table-example'), 'DELETE', ['redirect' => 'table'], 'Delete', 'btn-danger', true)
                     ->subItem(
                         21,
                         'Bench Press',
@@ -333,16 +332,15 @@ class FlexibleWorkflowController extends Controller
                     ->linkAction('fa-play', route('flexible.table-example'), 'Log now', 'btn-log-now')
                     ->formAction('fa-trash', route('flexible.table-example'), 'DELETE', [], 'Delete', 'btn-danger', true)
                     ->add()
-                    ->deleteParams(['redirect' => 'table'])
                     ->add()
                     ->row(
                         3,
                         'Leg Day',
                         'Squats, Deadlifts, Lunges',
-                        null,
-                        route('flexible.table-example'),
-                        route('flexible.table-example')
+                        null
                     )
+                    ->linkAction('fa-edit', route('flexible.table-example'), 'Edit')
+                    ->formAction('fa-trash', route('flexible.table-example'), 'DELETE', ['redirect' => 'table'], 'Delete', 'btn-danger', true)
                     ->subItem(
                         31,
                         'Squats',
@@ -361,17 +359,15 @@ class FlexibleWorkflowController extends Controller
                     ->linkAction('fa-play', route('flexible.table-example'), 'Log now', 'btn-log-now')
                     ->formAction('fa-trash', route('flexible.table-example'), 'DELETE', [], 'Delete', 'btn-danger', true)
                     ->add()
-                    ->deleteParams(['redirect' => 'table'])
                     ->add()
                     ->row(
                         4,
                         'Core & Flexibility',
                         '20 minutes daily',
-                        'Planks, stretches, yoga poses',
-                        route('flexible.table-example'),
-                        route('flexible.table-example')
+                        'Planks, stretches, yoga poses'
                     )
-                    ->deleteParams(['redirect' => 'table'])
+                    ->linkAction('fa-edit', route('flexible.table-example'), 'Edit')
+                    ->formAction('fa-trash', route('flexible.table-example'), 'DELETE', ['redirect' => 'table'], 'Delete', 'btn-danger', true)
                     ->add()
                     ->emptyMessage('No workouts yet. Create your first routine!')
                     ->confirmMessage('deleteItem', 'Are you sure you want to delete this workout?')
