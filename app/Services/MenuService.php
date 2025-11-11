@@ -131,39 +131,53 @@ class MenuService
     {
         return [
             [
-                'label' => '+Nav',
+                'label' => null,
+                'icon' => 'fa-plus',
                 'route' => 'flexible.with-nav',
                 'active' => Request::routeIs('flexible.with-nav'),
+                'title' => 'With Navigation',
             ],
             [
-                'label' => '-Nav',
+                'label' => null,
+                'icon' => 'fa-minus',
                 'route' => 'flexible.without-nav',
                 'active' => Request::routeIs('flexible.without-nav'),
+                'title' => 'Without Navigation',
             ],
             [
-                'label' => 'Multi',
+                'label' => null,
+                'icon' => 'fa-clone',
                 'route' => 'flexible.multiple-forms',
                 'active' => Request::routeIs('flexible.multiple-forms'),
+                'title' => 'Multiple Forms',
             ],
             [
-                'label' => 'Custom',
+                'label' => null,
+                'icon' => 'fa-sort',
                 'route' => 'flexible.custom-order',
                 'active' => Request::routeIs('flexible.custom-order'),
+                'title' => 'Custom Order',
             ],
             [
-                'label' => 'Buttons',
+                'label' => null,
+                'icon' => 'fa-hand-pointer',
                 'route' => 'flexible.multiple-buttons',
                 'active' => Request::routeIs('flexible.multiple-buttons'),
+                'title' => 'Multiple Buttons',
             ],
             [
-                'label' => 'Table',
+                'label' => null,
+                'icon' => 'fa-table',
                 'route' => 'flexible.table-example',
                 'active' => Request::routeIs('flexible.table-example'),
+                'title' => 'Table Example',
             ],
             [
-                'label' => 'Reorder',
+                'label' => null,
+                'icon' => 'fa-arrows-alt-v',
                 'route' => 'flexible.table-reorder',
                 'active' => Request::routeIs('flexible.table-reorder'),
+                'title' => 'Table Reorder',
             ],
         ];
     }
