@@ -64,7 +64,7 @@ class WorkoutTemplateController extends Controller
                     $line2,
                     $line3
                 )
-                ->linkAction('fa-plus', route('workout-templates.edit', $template->id), 'Add exercises')
+                ->linkAction('fa-edit', route('workout-templates.edit', $template->id), 'Edit template')
                 ->formAction('fa-trash', route('workout-templates.destroy', $template->id), 'DELETE', [], 'Delete', 'btn-danger', true);
 
                 // Add exercises as sub-items
