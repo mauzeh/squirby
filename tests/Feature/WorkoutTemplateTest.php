@@ -336,4 +336,74 @@ class WorkoutTemplateTest extends TestCase
 
         $response->assertForbidden();
     }
+
+    /** @test */
+    public function user_can_move_exercise_up_in_template()
+    {
+        $user = User::factory()->create();
+        $template = WorkoutTemplate::factory()->create(['user_id' => $user->id]);
+        $exercise1 = Exercise::factory()->create(['user_id' => null]);
+        $exercise2 = Exercise::factory()->create(['user_id' => null]);
+
+        $templateEx1 = WorkoutTemplateExercise::create([
+            'workout_template_id' => $template->id,
+            'exercise_id' => $exercise1->id,
+            'order' => 1,
+        ]);
+        $templateEx2 = WorkoutTemplateExercise::create([
+            'workout_template_id' => $template->id,
+            'exercise_id' => $exercise2->id,
+            'order' => 2,
+        ]);
+
+        $response = $this->actingAs($user)->get(route('workout-templates.move-exercise', [
+            'workoutTemplate' => $template->id,
+            'exercise' => $templateEx2->id,
+            'direction' => 'up',
+        ]));
+
+        $response->assertRedirect(route('workout-templates.edit', $template->id));
+        $response->assertSessionHas('success', 'Exercise order updated!');
+
+        $templateEx1->refresh();
+        $templateEx2->refresh();
+
+        $this->assertEquals(2, $templateEx1->order);
+        $this->assertEquals(1, $templateEx2->order);
+    }
+
+    /** @test */
+    public function user_can_move_exercise_down_in_template()
+    {
+        $user = User::factory()->create();
+        $template = WorkoutTemplate::factory()->create(['user_id' => $user->id]);
+        $exercise1 = Exercise::factory()->create(['user_id' => null]);
+        $exercise2 = Exercise::factory()->create(['user_id' => null]);
+
+        $templateEx1 = WorkoutTemplateExercise::create([
+            'workout_template_id' => $template->id,
+            'exercise_id' => $exercise1->id,
+            'order' => 1,
+        ]);
+        $templateEx2 = WorkoutTemplateExercise::create([
+            'workout_template_id' => $template->id,
+            'exercise_id' => $exercise2->id,
+            'order' => 2,
+        ]);
+
+        $response = $this->actingAs($user)->get(route('workout-templates.move-exercise', [
+            'workoutTemplate' => $template->id,
+            'exercise' => $templateEx1->id,
+            'direction' => 'down',
+        ]));
+
+        $response->assertRedirect(route('workout-templates.edit', $template->id));
+        $response->assertSessionHas('success', 'Exercise order updated!');
+
+        $templateEx1->refresh();
+        $templateEx2->refresh();
+
+        $this->assertEquals(2, $templateEx1->order);
+        $this->assertEquals(1, $templateEx2->order);
+    }
 }

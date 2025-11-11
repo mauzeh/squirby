@@ -201,23 +201,68 @@ class WorkoutTemplateController extends Controller
         // Table of exercises
         if ($workoutTemplate->exercises->isNotEmpty()) {
             $tableBuilder = C::table();
+            
+            $exerciseCount = $workoutTemplate->exercises->count();
 
-            foreach ($workoutTemplate->exercises as $exercise) {
+            foreach ($workoutTemplate->exercises as $index => $exercise) {
                 $line1 = $exercise->exercise->title;
                 $line2 = 'Priority: ' . $exercise->order;
                 $line3 = null;
-
-                $tableBuilder->row(
-                    $exercise->id,
-                    $line1,
-                    $line2,
-                    $line3,
-                    '', // No edit for now
-                    route('workout-templates.remove-exercise', [$workoutTemplate->id, $exercise->id])
-                )->add();
+                
+                $isFirst = $index === 0;
+                $isLast = $index === $exerciseCount - 1;
+                
+                $rowBuilder = $tableBuilder->rowWithActions($exercise->id, $line1, $line2, $line3);
+                
+                // Add move up button (disabled if first)
+                if (!$isFirst) {
+                    $rowBuilder->linkAction(
+                        'fa-arrow-up',
+                        route('workout-templates.move-exercise', [$workoutTemplate->id, $exercise->id, 'direction' => 'up']),
+                        'Move up'
+                    );
+                } else {
+                    $rowBuilder->linkAction(
+                        'fa-arrow-up',
+                        '#',
+                        'Move up',
+                        'btn-disabled'
+                    );
+                }
+                
+                // Add move down button (disabled if last)
+                if (!$isLast) {
+                    $rowBuilder->linkAction(
+                        'fa-arrow-down',
+                        route('workout-templates.move-exercise', [$workoutTemplate->id, $exercise->id, 'direction' => 'down']),
+                        'Move down'
+                    );
+                } else {
+                    $rowBuilder->linkAction(
+                        'fa-arrow-down',
+                        '#',
+                        'Move down',
+                        'btn-disabled'
+                    );
+                }
+                
+                // Add delete button
+                $rowBuilder->formAction(
+                    'fa-trash',
+                    route('workout-templates.remove-exercise', [$workoutTemplate->id, $exercise->id]),
+                    'DELETE',
+                    [],
+                    'Remove exercise',
+                    'btn-danger',
+                    true
+                );
+                
+                $rowBuilder->add();
             }
 
-            $components[] = $tableBuilder->build();
+            $components[] = $tableBuilder
+                ->confirmMessage('deleteItem', 'Are you sure you want to remove this exercise from the template?')
+                ->build();
         } else {
             $components[] = C::messages()
                 ->info('No exercises yet. Add your first exercise above.')
@@ -351,6 +396,48 @@ class WorkoutTemplateController extends Controller
         return redirect()
             ->route('workout-templates.edit', $workoutTemplate->id)
             ->with('success', 'Exercise created and added!');
+    }
+
+    /**
+     * Move an exercise up or down in the template
+     */
+    public function moveExercise(Request $request, WorkoutTemplate $workoutTemplate, WorkoutTemplateExercise $exercise)
+    {
+        $this->authorize('update', $workoutTemplate);
+
+        if ($exercise->workout_template_id !== $workoutTemplate->id) {
+            abort(404);
+        }
+
+        $direction = $request->input('direction');
+        
+        if ($direction === 'up') {
+            // Find the exercise above this one
+            $swapWith = WorkoutTemplateExercise::where('workout_template_id', $workoutTemplate->id)
+                ->where('order', '<', $exercise->order)
+                ->orderBy('order', 'desc')
+                ->first();
+        } else {
+            // Find the exercise below this one
+            $swapWith = WorkoutTemplateExercise::where('workout_template_id', $workoutTemplate->id)
+                ->where('order', '>', $exercise->order)
+                ->orderBy('order', 'asc')
+                ->first();
+        }
+
+        if ($swapWith) {
+            // Swap the order values
+            $tempOrder = $exercise->order;
+            $exercise->order = $swapWith->order;
+            $swapWith->order = $tempOrder;
+            
+            $exercise->save();
+            $swapWith->save();
+        }
+
+        return redirect()
+            ->route('workout-templates.edit', $workoutTemplate->id)
+            ->with('success', 'Exercise order updated!');
     }
 
     /**
