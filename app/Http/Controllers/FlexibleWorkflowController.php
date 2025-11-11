@@ -254,8 +254,8 @@ class FlexibleWorkflowController extends Controller
     }
     
     /**
-     * Example 6: Tabular CRUD list
-     * Demonstrates the table component optimized for narrow screens
+     * Example 6: Tabular CRUD list with two-level rows
+     * Demonstrates the table component with sub-items
      */
     public function tableExample(Request $request)
     {
@@ -265,9 +265,10 @@ class FlexibleWorkflowController extends Controller
                 
                 C::messages()
                     ->info('Tap any row to edit, or use the delete button to remove.')
+                    ->success('Now with sub-items! See exercises under each workout.', 'New:')
                     ->build(),
                 
-                // Table with sample data
+                // Table with sample data and sub-items
                 C::table()
                     ->row(
                         1,
@@ -277,6 +278,26 @@ class FlexibleWorkflowController extends Controller
                         route('flexible.table-example'),
                         route('flexible.table-example')
                     )
+                    ->subItem(
+                        11,
+                        'Running',
+                        '15 minutes',
+                        'Warm-up pace',
+                        route('flexible.table-example'),
+                        route('flexible.table-example')
+                    )
+                    ->deleteParams(['redirect' => 'table'])
+                    ->add()
+                    ->subItem(
+                        12,
+                        'Jump Rope',
+                        '10 minutes',
+                        '3 sets of 200 jumps',
+                        route('flexible.table-example'),
+                        route('flexible.table-example')
+                    )
+                    ->deleteParams(['redirect' => 'table'])
+                    ->add()
                     ->deleteParams(['redirect' => 'table'])
                     ->add()
                     ->row(
@@ -287,6 +308,36 @@ class FlexibleWorkflowController extends Controller
                         route('flexible.table-example'),
                         route('flexible.table-example')
                     )
+                    ->subItem(
+                        21,
+                        'Bench Press',
+                        '4 sets × 8 reps',
+                        '185 lbs',
+                        route('flexible.table-example'),
+                        route('flexible.table-example')
+                    )
+                    ->deleteParams(['redirect' => 'table'])
+                    ->add()
+                    ->subItem(
+                        22,
+                        'Barbell Rows',
+                        '4 sets × 10 reps',
+                        '135 lbs',
+                        route('flexible.table-example'),
+                        route('flexible.table-example')
+                    )
+                    ->deleteParams(['redirect' => 'table'])
+                    ->add()
+                    ->subItem(
+                        23,
+                        'Shoulder Press',
+                        '3 sets × 12 reps',
+                        '95 lbs',
+                        route('flexible.table-example'),
+                        route('flexible.table-example')
+                    )
+                    ->deleteParams(['redirect' => 'table'])
+                    ->add()
                     ->deleteParams(['redirect' => 'table'])
                     ->add()
                     ->row(
@@ -297,6 +348,26 @@ class FlexibleWorkflowController extends Controller
                         route('flexible.table-example'),
                         route('flexible.table-example')
                     )
+                    ->subItem(
+                        31,
+                        'Squats',
+                        '5 sets × 5 reps',
+                        '225 lbs',
+                        route('flexible.table-example'),
+                        route('flexible.table-example')
+                    )
+                    ->deleteParams(['redirect' => 'table'])
+                    ->add()
+                    ->subItem(
+                        32,
+                        'Deadlifts',
+                        '3 sets × 5 reps',
+                        '275 lbs',
+                        route('flexible.table-example'),
+                        route('flexible.table-example')
+                    )
+                    ->deleteParams(['redirect' => 'table'])
+                    ->add()
                     ->deleteParams(['redirect' => 'table'])
                     ->add()
                     ->row(

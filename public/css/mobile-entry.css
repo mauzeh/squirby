@@ -1993,6 +1993,29 @@ able Component - Tabular CRUD list optimized for narrow screens */
     }
 }
 
+/* Sub-items styling */
+.component-table-subitems {
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
+.component-table-subitem {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-sm) var(--spacing-md);
+    padding-left: var(--spacing-lg);
+    background-color: rgba(0, 0, 0, 0.15);
+    gap: var(--spacing-md);
+    min-height: var(--touch-target-min);
+    transition: background-color var(--transition-fast);
+}
+
+@media (hover: hover) {
+    .component-table-subitem:hover {
+        background-color: rgba(0, 0, 0, 0.25);
+    }
+}
+
 .component-table-cell {
     flex: 1;
     min-width: 0;
@@ -2117,6 +2140,11 @@ button.btn-table-delete:disabled {
         gap: 12px;
     }
 
+    .component-table-subitem {
+        padding: var(--spacing-sm) 12px;
+        padding-left: var(--spacing-md);
+    }
+
     .cell-title {
         font-size: 0.95em;
     }
@@ -2134,6 +2162,11 @@ button.btn-table-delete:disabled {
     .component-table-row {
         padding: 10px;
         gap: 10px;
+    }
+
+    .component-table-subitem {
+        padding: 6px 10px;
+        padding-left: var(--spacing-sm);
     }
 
     .cell-title {

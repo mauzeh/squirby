@@ -776,7 +776,8 @@ class TableRowBuilder
             'id' => $id,
             'line1' => $line1,
             'editAction' => $editAction,
-            'deleteAction' => $deleteAction
+            'deleteAction' => $deleteAction,
+            'subItems' => []
         ];
         
         if ($line2 !== null) {
@@ -794,6 +795,31 @@ class TableRowBuilder
     public function deleteParams(array $params): self
     {
         $this->data['deleteParams'] = $params;
+        return $this;
+    }
+    
+    /**
+     * Add a sub-item to this row
+     */
+    public function subItem(int $id, string $line1, ?string $line2, ?string $line3, string $editAction, string $deleteAction): TableSubItemBuilder
+    {
+        return new TableSubItemBuilder($this, $id, $line1, $line2, $line3, $editAction, $deleteAction);
+    }
+    
+    /**
+     * Add a sub-item with custom actions
+     */
+    public function subItemWithActions(int $id, string $line1, ?string $line2 = null, ?string $line3 = null): TableSubItemBuilderV2
+    {
+        return new TableSubItemBuilderV2($this, $id, $line1, $line2, $line3);
+    }
+    
+    /**
+     * Add sub-item directly (internal use)
+     */
+    public function addSubItem(array $subItem): self
+    {
+        $this->data['subItems'][] = $subItem;
         return $this;
     }
     
@@ -826,7 +852,8 @@ class TableRowBuilderV2
         $this->data = [
             'id' => $id,
             'line1' => $line1,
-            'actions' => []
+            'actions' => [],
+            'subItems' => []
         ];
         
         if ($line2 !== null) {
@@ -885,11 +912,163 @@ class TableRowBuilderV2
     }
     
     /**
+     * Add a sub-item to this row
+     */
+    public function subItem(int $id, string $line1, ?string $line2, ?string $line3, string $editAction, string $deleteAction): TableSubItemBuilder
+    {
+        return new TableSubItemBuilder($this, $id, $line1, $line2, $line3, $editAction, $deleteAction);
+    }
+    
+    /**
+     * Add a sub-item with custom actions
+     */
+    public function subItemWithActions(int $id, string $line1, ?string $line2 = null, ?string $line3 = null): TableSubItemBuilderV2
+    {
+        return new TableSubItemBuilderV2($this, $id, $line1, $line2, $line3);
+    }
+    
+    /**
+     * Add sub-item directly (internal use)
+     */
+    public function addSubItem(array $subItem): self
+    {
+        $this->data['subItems'][] = $subItem;
+        return $this;
+    }
+    
+    /**
      * Add the row and return to parent builder
      */
     public function add(): TableComponentBuilder
     {
         $this->parent->addRow($this->data);
+        return $this->parent;
+    }
+}
+
+/**
+ * Table Sub-Item Builder (for legacy row builder)
+ */
+class TableSubItemBuilder
+{
+    protected TableRowBuilder $parent;
+    protected array $data;
+    
+    public function __construct(
+        TableRowBuilder $parent,
+        int $id,
+        string $line1,
+        ?string $line2,
+        ?string $line3,
+        string $editAction,
+        string $deleteAction
+    ) {
+        $this->parent = $parent;
+        $this->data = [
+            'id' => $id,
+            'line1' => $line1,
+            'editAction' => $editAction,
+            'deleteAction' => $deleteAction
+        ];
+        
+        if ($line2 !== null) {
+            $this->data['line2'] = $line2;
+        }
+        
+        if ($line3 !== null) {
+            $this->data['line3'] = $line3;
+        }
+    }
+    
+    /**
+     * Add delete parameters
+     */
+    public function deleteParams(array $params): self
+    {
+        $this->data['deleteParams'] = $params;
+        return $this;
+    }
+    
+    /**
+     * Add the sub-item and return to parent row builder
+     */
+    public function add(): TableRowBuilder
+    {
+        $this->parent->addSubItem($this->data);
+        return $this->parent;
+    }
+}
+
+/**
+ * Table Sub-Item Builder V2 (with custom actions support)
+ */
+class TableSubItemBuilderV2
+{
+    protected $parent; // Can be TableRowBuilder or TableRowBuilderV2
+    protected array $data;
+    
+    public function __construct(
+        $parent,
+        int $id,
+        string $line1,
+        ?string $line2,
+        ?string $line3
+    ) {
+        $this->parent = $parent;
+        $this->data = [
+            'id' => $id,
+            'line1' => $line1,
+            'actions' => []
+        ];
+        
+        if ($line2 !== null) {
+            $this->data['line2'] = $line2;
+        }
+        
+        if ($line3 !== null) {
+            $this->data['line3'] = $line3;
+        }
+    }
+    
+    /**
+     * Add a link action
+     */
+    public function linkAction(string $icon, string $url, ?string $ariaLabel = null, ?string $cssClass = null): self
+    {
+        $this->data['actions'][] = [
+            'type' => 'link',
+            'icon' => $icon,
+            'url' => $url,
+            'ariaLabel' => $ariaLabel,
+            'cssClass' => $cssClass
+        ];
+        return $this;
+    }
+    
+    /**
+     * Add a form action
+     */
+    public function formAction(string $icon, string $url, string $method = 'POST', array $params = [], ?string $ariaLabel = null, ?string $cssClass = null, bool $requiresConfirm = false): self
+    {
+        $this->data['actions'][] = [
+            'type' => 'form',
+            'icon' => $icon,
+            'url' => $url,
+            'method' => $method,
+            'params' => $params,
+            'ariaLabel' => $ariaLabel,
+            'cssClass' => $cssClass,
+            'requiresConfirm' => $requiresConfirm
+        ];
+        return $this;
+    }
+    
+    /**
+     * Add the sub-item and return to parent row builder
+     */
+    public function add()
+    {
+        $this->parent->addSubItem($this->data);
         return $this->parent;
     }
 }

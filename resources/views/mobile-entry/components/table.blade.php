@@ -9,7 +9,7 @@
     @if(!empty($data['rows']))
     <div class="component-table">
         @foreach($data['rows'] as $row)
-        <div class="component-table-row">
+        <div class="component-table-row {{ isset($row['subItems']) && !empty($row['subItems']) ? 'has-subitems' : '' }}">
             <div class="component-table-cell">
                 @if(isset($row['line1']) && !empty($row['line1']))
                 <div class="cell-title">{{ $row['line1'] }}</div>
@@ -76,6 +76,81 @@
                 @endif
             </div>
         </div>
+        
+        {{-- Sub-items --}}
+        @if(isset($row['subItems']) && !empty($row['subItems']))
+            <div class="component-table-subitems">
+                @foreach($row['subItems'] as $subItem)
+                <div class="component-table-subitem">
+                    <div class="component-table-cell">
+                        @if(isset($subItem['line1']) && !empty($subItem['line1']))
+                        <div class="cell-title">{{ $subItem['line1'] }}</div>
+                        @endif
+                        @if(isset($subItem['line2']) && !empty($subItem['line2']))
+                        <div class="cell-content">{{ $subItem['line2'] }}</div>
+                        @endif
+                        @if(isset($subItem['line3']) && !empty($subItem['line3']))
+                        <div class="cell-detail">{{ $subItem['line3'] }}</div>
+                        @endif
+                    </div>
+                    <div class="component-table-actions">
+                        @if(isset($subItem['actions']) && !empty($subItem['actions']))
+                            {{-- Custom actions --}}
+                            @foreach($subItem['actions'] as $action)
+                                @if($action['type'] === 'link')
+                                    <a href="{{ $action['url'] }}" 
+                                       class="btn-table-edit {{ $action['cssClass'] ?? '' }}" 
+                                       aria-label="{{ $action['ariaLabel'] ?? '' }}">
+                                        <i class="fas {{ $action['icon'] }}"></i>
+                                    </a>
+                                @elseif($action['type'] === 'form')
+                                    <form class="{{ $action['requiresConfirm'] ? 'delete-form' : '' }}" 
+                                          method="POST" 
+                                          action="{{ $action['url'] }}">
+                                        @csrf
+                                        @if($action['method'] !== 'POST')
+                                            @method($action['method'])
+                                        @endif
+                                        @if(isset($action['params']))
+                                            @foreach($action['params'] as $name => $value)
+                                                <input type="hidden" name="{{ $name }}" value="{{ $value }}">
+                                            @endforeach
+                                        @endif
+                                        <button type="submit" 
+                                                class="btn-table-delete {{ $action['cssClass'] ?? '' }}" 
+                                                aria-label="{{ $action['ariaLabel'] ?? '' }}">
+                                            <i class="fas {{ $action['icon'] }}"></i>
+                                        </button>
+                                    </form>
+                                @endif
+                            @endforeach
+                        @else
+                            {{-- Legacy format --}}
+                            @if(!empty($subItem['editAction']))
+                            <a href="{{ $subItem['editAction'] }}" class="btn-table-edit" aria-label="{{ $data['ariaLabels']['editItem'] ?? 'Edit item' }}">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            @endif
+                            @if(!empty($subItem['deleteAction']))
+                            <form class="delete-form" method="POST" action="{{ $subItem['deleteAction'] }}">
+                                @csrf
+                                @method('DELETE')
+                                @if(isset($subItem['deleteParams']))
+                                    @foreach($subItem['deleteParams'] as $name => $value)
+                                        <input type="hidden" name="{{ $name }}" value="{{ $value }}">
+                                    @endforeach
+                                @endif
+                                <button type="submit" class="btn-table-delete" aria-label="{{ $data['ariaLabels']['deleteItem'] ?? 'Delete item' }}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                            @endif
+                        @endif
+                    </div>
+                </div>
+                @endforeach
+            </div>
+        @endif
         @endforeach
     </div>
     @endif
