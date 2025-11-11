@@ -175,7 +175,8 @@ class FlexibleWorkflowController extends Controller
                     ->submitButton('Log')
                     ->build(),
             ],
-            'autoscroll' => true  // Enable autoscroll for this example
+            'autoscroll' => true,  // Enable autoscroll for this example
+            'showDebugIndicator' => true  // Show visual indicator (for demo only)
         ];
         
         return view('mobile-entry.flexible', compact('data'));
