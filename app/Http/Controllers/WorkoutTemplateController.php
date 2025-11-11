@@ -138,8 +138,6 @@ class WorkoutTemplateController extends Controller
             ->type('success')
             ->formAction(route('workout-templates.add-exercise', $workoutTemplate->id))
             ->textField('exercise_name', 'Exercise:', '', 'Exercise name')
-            ->numericField('sets', 'Sets:', 3, 1, 1)
-            ->numericField('reps', 'Reps:', 10, 1, 1)
             ->submitButton('Add Exercise')
             ->build();
 
@@ -149,8 +147,8 @@ class WorkoutTemplateController extends Controller
 
             foreach ($workoutTemplate->exercises as $exercise) {
                 $line1 = $exercise->exercise->title;
-                $line2 = $exercise->sets . ' sets × ' . $exercise->reps . ' reps';
-                $line3 = $exercise->notes;
+                $line2 = 'Priority: ' . $exercise->order;
+                $line3 = null;
 
                 $tableBuilder->row(
                     $exercise->id,
@@ -215,8 +213,6 @@ class WorkoutTemplateController extends Controller
 
         $validated = $request->validate([
             'exercise_name' => 'required|string',
-            'sets' => 'required|integer|min:1',
-            'reps' => 'required|integer|min:1',
         ]);
 
         // Find or create exercise
@@ -225,14 +221,12 @@ class WorkoutTemplateController extends Controller
             ['user_id' => Auth::id()]
         );
 
-        // Get next order
+        // Get next order (priority)
         $maxOrder = $workoutTemplate->exercises()->max('order') ?? 0;
 
         WorkoutTemplateExercise::create([
             'workout_template_id' => $workoutTemplate->id,
             'exercise_id' => $exercise->id,
-            'sets' => $validated['sets'],
-            'reps' => $validated['reps'],
             'order' => $maxOrder + 1,
         ]);
 

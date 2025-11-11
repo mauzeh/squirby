@@ -20,17 +20,17 @@ class WorkoutTemplateSeeder extends Seeder
             return;
         }
 
-        // Create example templates based on the brainstorm document
+        // Create example templates - just exercises in priority order
         $templates = [
             [
                 'name' => 'Push Day',
                 'description' => 'Upper body pushing exercises',
                 'tags' => ['push', 'strength', 'intermediate'],
                 'exercises' => [
-                    ['name' => 'Bench Press', 'sets' => 4, 'reps' => 6],
-                    ['name' => 'Strict Press', 'sets' => 3, 'reps' => 8],
-                    ['name' => 'Dips', 'sets' => 3, 'reps' => 10],
-                    ['name' => 'Tricep Extensions', 'sets' => 3, 'reps' => 12],
+                    'Bench Press',
+                    'Strict Press',
+                    'Dips',
+                    'Tricep Extensions',
                 ],
             ],
             [
@@ -38,10 +38,10 @@ class WorkoutTemplateSeeder extends Seeder
                 'description' => 'Upper body pulling exercises',
                 'tags' => ['pull', 'strength', 'intermediate'],
                 'exercises' => [
-                    ['name' => 'Deadlift', 'sets' => 4, 'reps' => 5],
-                    ['name' => 'Pull-Ups', 'sets' => 4, 'reps' => 8],
-                    ['name' => 'Rows', 'sets' => 4, 'reps' => 8],
-                    ['name' => 'Bicep Curls', 'sets' => 3, 'reps' => 12],
+                    'Deadlift',
+                    'Pull-Ups',
+                    'Rows',
+                    'Bicep Curls',
                 ],
             ],
             [
@@ -49,10 +49,10 @@ class WorkoutTemplateSeeder extends Seeder
                 'description' => 'Lower body exercises',
                 'tags' => ['legs', 'strength', 'intermediate'],
                 'exercises' => [
-                    ['name' => 'Back Squat', 'sets' => 4, 'reps' => 6],
-                    ['name' => 'Romanian Deadlift', 'sets' => 3, 'reps' => 8],
-                    ['name' => 'Lunges', 'sets' => 3, 'reps' => 10],
-                    ['name' => 'Leg Curls', 'sets' => 3, 'reps' => 12],
+                    'Back Squat',
+                    'Romanian Deadlift',
+                    'Lunges',
+                    'Leg Curls',
                 ],
             ],
             [
@@ -60,10 +60,10 @@ class WorkoutTemplateSeeder extends Seeder
                 'description' => 'Beginner full body workout',
                 'tags' => ['full-body', 'strength', 'beginner'],
                 'exercises' => [
-                    ['name' => 'Back Squat', 'sets' => 3, 'reps' => 5],
-                    ['name' => 'Bench Press', 'sets' => 3, 'reps' => 5],
-                    ['name' => 'Deadlift', 'sets' => 1, 'reps' => 5],
-                    ['name' => 'Pull-Ups', 'sets' => 3, 'reps' => 8],
+                    'Back Squat',
+                    'Bench Press',
+                    'Deadlift',
+                    'Pull-Ups',
                 ],
             ],
             [
@@ -71,10 +71,10 @@ class WorkoutTemplateSeeder extends Seeder
                 'description' => 'Beginner full body workout (alternate)',
                 'tags' => ['full-body', 'strength', 'beginner'],
                 'exercises' => [
-                    ['name' => 'Front Squat', 'sets' => 3, 'reps' => 5],
-                    ['name' => 'Strict Press', 'sets' => 3, 'reps' => 5],
-                    ['name' => 'Romanian Deadlift', 'sets' => 3, 'reps' => 8],
-                    ['name' => 'Rows', 'sets' => 3, 'reps' => 8],
+                    'Front Squat',
+                    'Strict Press',
+                    'Romanian Deadlift',
+                    'Rows',
                 ],
             ],
         ];
@@ -88,18 +88,16 @@ class WorkoutTemplateSeeder extends Seeder
                 'tags' => $templateData['tags'],
             ]);
 
-            foreach ($templateData['exercises'] as $index => $exerciseData) {
+            foreach ($templateData['exercises'] as $index => $exerciseName) {
                 // Find or create exercise
                 $exercise = \App\Models\Exercise::firstOrCreate(
-                    ['title' => $exerciseData['name']],
+                    ['title' => $exerciseName],
                     ['user_id' => $user->id]
                 );
 
                 \App\Models\WorkoutTemplateExercise::create([
                     'workout_template_id' => $template->id,
                     'exercise_id' => $exercise->id,
-                    'sets' => $exerciseData['sets'],
-                    'reps' => $exerciseData['reps'],
                     'order' => $index + 1,
                 ]);
             }

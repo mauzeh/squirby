@@ -8,7 +8,7 @@ The Workout Templates MVP allows users to save collections of exercises as reusa
 
 ### Core Functionality
 - ✅ Create workout templates with name and description
-- ✅ Add exercises to templates with sets/reps
+- ✅ Add exercises to templates in priority order
 - ✅ View all templates in a table
 - ✅ Edit templates (add/remove exercises)
 - ✅ Delete templates
@@ -40,11 +40,7 @@ The Workout Templates MVP allows users to save collections of exercises as reusa
 - `id` - Primary key
 - `workout_template_id` - Foreign key
 - `exercise_id` - Foreign key to exercises
-- `sets` - Integer
-- `reps` - Integer
-- `order` - Display order
-- `notes` - Optional notes (not used in MVP)
-- `rest_seconds` - Optional (not used in MVP)
+- `order` - Priority/display order (lower number = higher priority)
 - `timestamps`
 
 ## Routes
@@ -87,16 +83,17 @@ $template->duplicate(User $user)
 2. Click "Create New Template"
 3. Enter name and description
 4. Click "Create Template"
-5. Add exercises one by one with sets/reps
-6. Each exercise is added to the table
+5. Add exercises one by one in priority order
+6. Each exercise is added to the table with its priority number
 
 ### Using a Template
 1. Go to mobile entry (Lifts page)
 2. Click "Browse Templates" button (to be added)
 3. See list of templates
 4. Click "Apply" on desired template
-5. Template exercises are added to program for that date
-6. Redirect back to mobile entry with success message
+5. Template exercises are added to program for that date in priority order
+6. System suggests weights, sets, and reps based on training history
+7. Redirect back to mobile entry with success message
 
 ### Managing Templates
 1. Navigate to Lifts → Templates
@@ -106,12 +103,12 @@ $template->duplicate(User $user)
 
 ## Seeded Templates
 
-Five example templates are included:
-1. **Push Day** - Bench, Press, Dips, Triceps (intermediate)
-2. **Pull Day** - Deadlift, Pull-ups, Rows, Curls (intermediate)
-3. **Leg Day** - Squat, RDL, Lunges, Leg Curls (intermediate)
-4. **Full Body A** - Squat, Bench, Deadlift, Pull-ups (beginner)
-5. **Full Body B** - Front Squat, Press, RDL, Rows (beginner)
+Five example templates are included (exercises listed in priority order):
+1. **Push Day** - Bench Press, Strict Press, Dips, Tricep Extensions
+2. **Pull Day** - Deadlift, Pull-Ups, Rows, Bicep Curls
+3. **Leg Day** - Back Squat, Romanian Deadlift, Lunges, Leg Curls
+4. **Full Body A** - Back Squat, Bench Press, Deadlift, Pull-Ups
+5. **Full Body B** - Front Squat, Strict Press, Romanian Deadlift, Rows
 
 ## What's NOT in MVP
 
@@ -143,10 +140,11 @@ Five example templates are included:
 - Uses `firstOrCreate()` to avoid duplicates
 
 ### Integration with Mobile Entry
-- `applyToDate()` creates `MobileLiftForm` records for each exercise
+- `applyToDate()` creates `MobileLiftForm` records for each exercise in priority order
 - Each exercise in the template becomes a form in mobile entry
 - This integrates seamlessly with existing mobile entry system
-- The mobile entry system handles weight suggestions via TrainingProgressionService
+- The mobile entry system handles weight, sets, and reps suggestions via TrainingProgressionService
+- Templates only store exercise list and priority - all training parameters come from history
 
 ### Flexible Component System
 - All views use `mobile-entry.flexible` template

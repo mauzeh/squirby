@@ -27,12 +27,10 @@ You'll see a table of all your templates with:
 After creating a template, you'll see the edit page:
 
 1. Enter an exercise name (e.g., "Bench Press")
-2. Set the number of sets (e.g., 4)
-3. Set the number of reps (e.g., 6)
-4. Click **"Add Exercise"**
-5. Repeat for all exercises in your workout
+2. Click **"Add Exercise"**
+3. Repeat for all exercises in your workout
 
-The exercises will appear in a table below the form.
+The exercises will appear in a table below the form in priority order. The first exercise added has the highest priority.
 
 ### 4. Apply a Template
 
@@ -64,34 +62,34 @@ The exercises will appear in a table below the form.
 Your account comes with 5 example templates:
 
 ### Push Day (Intermediate)
-- Bench Press: 4×6
-- Strict Press: 3×8
-- Dips: 3×10
-- Tricep Extensions: 3×12
+1. Bench Press
+2. Strict Press
+3. Dips
+4. Tricep Extensions
 
 ### Pull Day (Intermediate)
-- Deadlift: 4×5
-- Pull-Ups: 4×8
-- Rows: 4×8
-- Bicep Curls: 3×12
+1. Deadlift
+2. Pull-Ups
+3. Rows
+4. Bicep Curls
 
 ### Leg Day (Intermediate)
-- Back Squat: 4×6
-- Romanian Deadlift: 3×8
-- Lunges: 3×10
-- Leg Curls: 3×12
+1. Back Squat
+2. Romanian Deadlift
+3. Lunges
+4. Leg Curls
 
 ### Full Body A (Beginner)
-- Back Squat: 3×5
-- Bench Press: 3×5
-- Deadlift: 1×5
-- Pull-Ups: 3×8
+1. Back Squat
+2. Bench Press
+3. Deadlift
+4. Pull-Ups
 
 ### Full Body B (Beginner)
-- Front Squat: 3×5
-- Strict Press: 3×5
-- Romanian Deadlift: 3×8
-- Rows: 3×8
+1. Front Squat
+2. Strict Press
+3. Romanian Deadlift
+4. Rows
 
 ## Tips
 
@@ -124,10 +122,9 @@ Your account comes with 5 example templates:
 
 ## What Happens When You Apply a Template?
 
-1. Each exercise in the template is added to your mobile entry for that date
-2. The system suggests weights based on your training history
-3. Sets and reps from the template are used as defaults
-4. You can modify everything before logging
+1. Each exercise in the template is added to your mobile entry for that date in priority order
+2. The system suggests weights, sets, and reps based on your training history
+3. You can modify everything before logging
 
 ## Frequently Asked Questions
 
@@ -140,8 +137,8 @@ A: The system will create it automatically when you add it to a template.
 **Q: Can I share templates with other users?**  
 A: Not yet. Public templates are coming in Phase 2.
 
-**Q: Do templates include weights?**  
-A: No. The system suggests weights based on your training history when you apply the template.
+**Q: Do templates include weights, sets, or reps?**  
+A: No. Templates only store the list of exercises in priority order. When you apply a template, the system suggests weights, sets, and reps based on your training history.
 
 **Q: Can I apply a template to multiple dates at once?**  
 A: Not yet. This feature is planned for Phase 2.

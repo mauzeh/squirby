@@ -67,11 +67,7 @@ class WorkoutTemplate extends Model
             WorkoutTemplateExercise::create([
                 'workout_template_id' => $newTemplate->id,
                 'exercise_id' => $exercise->exercise_id,
-                'sets' => $exercise->sets,
-                'reps' => $exercise->reps,
                 'order' => $exercise->order,
-                'notes' => $exercise->notes,
-                'rest_seconds' => $exercise->rest_seconds,
             ]);
         }
 

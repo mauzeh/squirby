@@ -10,18 +10,11 @@ class WorkoutTemplateExercise extends Model
     protected $fillable = [
         'workout_template_id',
         'exercise_id',
-        'sets',
-        'reps',
         'order',
-        'notes',
-        'rest_seconds',
     ];
 
     protected $casts = [
-        'sets' => 'integer',
-        'reps' => 'integer',
         'order' => 'integer',
-        'rest_seconds' => 'integer',
     ];
 
     public function template(): BelongsTo

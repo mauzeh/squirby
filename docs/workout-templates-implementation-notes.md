@@ -63,9 +63,9 @@ All routes under `/workout-templates` prefix:
 ## Known Limitations
 
 1. **No URL buttons** - ButtonComponentBuilder doesn't support links, so navigation uses the submenu
-2. **No drag-and-drop** - Exercise order is determined by creation order
+2. **No drag-and-drop** - Exercise order (priority) is determined by creation order
 3. **No duplicate detection** - Applying same template twice creates duplicates
-4. **No weight storage** - Templates only store sets/reps, weights come from training history
+4. **No training parameters** - Templates only store exercise list and priority. Weights, sets, and reps come from training history when applied
 
 ## Testing Performed
 
@@ -120,18 +120,17 @@ $template = WorkoutTemplate::create([
     'description' => 'Upper body pushing',
 ]);
 
-// Add exercises
+// Add exercises in priority order
 WorkoutTemplateExercise::create([
     'workout_template_id' => $template->id,
     'exercise_id' => $exercise->id,
-    'sets' => 4,
-    'reps' => 6,
-    'order' => 1,
+    'order' => 1, // Priority 1 (highest)
 ]);
 
 // Apply to a date
 $template->applyToDate(Carbon::today(), $user);
 // This creates MobileLiftForm records for each exercise
+// Training parameters (weight, sets, reps) are suggested by the system
 ```
 
 ## Success Criteria Met
