@@ -59,6 +59,7 @@ class FlexibleWorkflowController extends Controller
                 // Add button
                 C::button('Add Exercise')
                     ->ariaLabel('Add new exercise')
+                    ->addClass('btn-add-item')
                     ->build(),
                 
                 // Item list
