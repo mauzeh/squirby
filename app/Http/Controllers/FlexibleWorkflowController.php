@@ -96,7 +96,8 @@ class FlexibleWorkflowController extends Controller
                         ->add()
                     ->emptyMessage('No items yet.')
                     ->build(),
-            ]
+            ],
+            'showDebugIndicator' => true
         ];
         
         return view('mobile-entry.flexible', compact('data'));
@@ -121,7 +122,8 @@ class FlexibleWorkflowController extends Controller
                     ->commentField('Notes:', 'Add notes...', '')
                     ->submitButton('Save Workout')
                     ->build(),
-            ]
+            ],
+            'showDebugIndicator' => true
         ];
         
         return view('mobile-entry.flexible', compact('data'));
@@ -209,7 +211,8 @@ class FlexibleWorkflowController extends Controller
                 C::summary()
                     ->item('completion', '25%', 'Profile Complete')
                     ->build(),
-            ]
+            ],
+            'showDebugIndicator' => true
         ];
         
         return view('mobile-entry.flexible', compact('data'));
@@ -242,7 +245,8 @@ class FlexibleWorkflowController extends Controller
                 C::messages()
                     ->info('Choose an action above to get started')
                     ->build(),
-            ]
+            ],
+            'showDebugIndicator' => true
         ];
         
         return view('mobile-entry.flexible', compact('data'));
@@ -312,7 +316,8 @@ class FlexibleWorkflowController extends Controller
                 C::button('Add New Workout')
                     ->ariaLabel('Create a new workout routine')
                     ->build(),
-            ]
+            ],
+            'showDebugIndicator' => true
         ];
         
         return view('mobile-entry.flexible', compact('data'));
