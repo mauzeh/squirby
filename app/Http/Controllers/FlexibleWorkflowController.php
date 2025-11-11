@@ -265,7 +265,8 @@ class FlexibleWorkflowController extends Controller
                 
                 C::messages()
                     ->info('Tap any row to edit, or use the delete button to remove.')
-                    ->success('Now with sub-items! See exercises under each workout.', 'New:')
+                    ->success('Expandable sub-items! Click chevron to expand/collapse.', 'Feature:')
+                    ->tip('Last row shows always-visible sub-items (no collapse).', 'Note:')
                     ->build(),
                 
                 // Table with sample data and sub-items
@@ -368,6 +369,34 @@ class FlexibleWorkflowController extends Controller
                     )
                     ->linkAction('fa-edit', route('flexible.table-example'), 'Edit')
                     ->formAction('fa-trash', route('flexible.table-example'), 'DELETE', ['redirect' => 'table'], 'Delete', 'btn-danger', true)
+                    ->add()
+                    ->row(
+                        5,
+                        'Quick Stretches',
+                        'Always visible sub-items',
+                        'No expand/collapse button'
+                    )
+                    ->linkAction('fa-edit', route('flexible.table-example'), 'Edit')
+                    ->formAction('fa-trash', route('flexible.table-example'), 'DELETE', ['redirect' => 'table'], 'Delete', 'btn-danger', true)
+                    ->subItem(
+                        51,
+                        'Neck Rolls',
+                        '2 minutes',
+                        'Gentle circular motion'
+                    )
+                    ->linkAction('fa-play', route('flexible.table-example'), 'Log now', 'btn-log-now')
+                    ->formAction('fa-trash', route('flexible.table-example'), 'DELETE', [], 'Delete', 'btn-danger', true)
+                    ->add()
+                    ->subItem(
+                        52,
+                        'Shoulder Shrugs',
+                        '1 minute',
+                        '10 reps'
+                    )
+                    ->linkAction('fa-play', route('flexible.table-example'), 'Log now', 'btn-log-now')
+                    ->formAction('fa-trash', route('flexible.table-example'), 'DELETE', [], 'Delete', 'btn-danger', true)
+                    ->add()
+                    ->collapsible(false)
                     ->add()
                     ->emptyMessage('No workouts yet. Create your first routine!')
                     ->confirmMessage('deleteItem', 'Are you sure you want to delete this workout?')
