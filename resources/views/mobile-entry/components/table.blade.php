@@ -22,9 +22,12 @@
                 @endif
             </div>
             <div class="component-table-actions">
+                @if(!empty($row['editAction']))
                 <a href="{{ $row['editAction'] }}" class="btn-table-edit" aria-label="{{ $data['ariaLabels']['editItem'] ?? 'Edit item' }}">
                     <i class="fas fa-edit"></i>
                 </a>
+                @endif
+                @if(!empty($row['deleteAction']))
                 <form class="delete-form" method="POST" action="{{ $row['deleteAction'] }}">
                     @csrf
                     @method('DELETE')
@@ -37,6 +40,7 @@
                         <i class="fas fa-trash"></i>
                     </button>
                 </form>
+                @endif
             </div>
         </div>
         @endforeach
