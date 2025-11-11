@@ -117,7 +117,17 @@ class WorkoutTemplateController extends Controller
     {
         $this->authorize('update', $workoutTemplate);
 
-        $workoutTemplate->load('exercises.exercise');
+        $workoutTemplate->load('exercises.exercise.aliases');
+        
+        // Apply aliases to exercises
+        $user = Auth::user();
+        $aliasService = app(\App\Services\ExerciseAliasService::class);
+        foreach ($workoutTemplate->exercises as $templateExercise) {
+            if ($templateExercise->exercise) {
+                $displayName = $aliasService->getDisplayName($templateExercise->exercise, $user);
+                $templateExercise->exercise->title = $displayName;
+            }
+        }
 
         $components = [];
 
