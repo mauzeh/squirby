@@ -9,7 +9,12 @@
     @if(!empty($data['rows']))
     <div class="component-table">
         @foreach($data['rows'] as $row)
-        <div class="component-table-row {{ isset($row['subItems']) && !empty($row['subItems']) ? 'has-subitems' : '' }}">
+        <div class="component-table-row {{ isset($row['subItems']) && !empty($row['subItems']) ? 'has-subitems' : '' }}" data-row-id="{{ $row['id'] }}">
+            @if(isset($row['subItems']) && !empty($row['subItems']))
+            <button class="btn-table-expand" aria-label="Expand row" data-toggle-subitems="{{ $row['id'] }}">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+            @endif
             <div class="component-table-cell">
                 @if(isset($row['line1']) && !empty($row['line1']))
                 <div class="cell-title">{{ $row['line1'] }}</div>
@@ -79,7 +84,7 @@
         
         {{-- Sub-items --}}
         @if(isset($row['subItems']) && !empty($row['subItems']))
-            <div class="component-table-subitems">
+            <div class="component-table-subitems" data-subitems="{{ $row['id'] }}" style="display: none;">
                 @foreach($row['subItems'] as $subItem)
                 <div class="component-table-subitem">
                     <div class="component-table-cell">

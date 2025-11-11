@@ -1987,6 +1987,50 @@ able Component - Tabular CRUD list optimized for narrow screens */
     border-bottom: none;
 }
 
+.btn-table-expand {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 1.1em;
+    cursor: pointer;
+    padding: 5px 2px;
+    margin-right: 2px;
+    min-width: var(--touch-target-min);
+    min-height: var(--touch-target-min);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-fast);
+    touch-action: manipulation;
+    user-select: none;
+    flex-shrink: 0;
+}
+
+.btn-table-expand i {
+    transition: transform var(--transition-fast);
+}
+
+.btn-table-expand.expanded i {
+    transform: rotate(90deg);
+}
+
+@media (hover: hover) {
+    .btn-table-expand:hover {
+        color: var(--text-primary);
+        background-color: rgba(255, 255, 255, 0.1);
+        border-radius: var(--border-radius-sm);
+    }
+}
+
+.btn-table-expand:active {
+    transform: scale(0.95);
+}
+
+.btn-table-expand:focus {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
 @media (hover: hover) {
     .component-table-row:hover {
         background-color: var(--input-bg);
@@ -2110,6 +2154,22 @@ able Component - Tabular CRUD list optimized for narrow screens */
 
 .btn-table-delete:focus {
     outline: 2px solid var(--color-danger);
+    outline-offset: 2px;
+}
+
+/* Log now button - green variant for sub-items */
+.btn-log-now {
+    background-color: var(--color-success) !important;
+}
+
+@media (hover: hover) {
+    .btn-log-now:hover {
+        background-color: var(--color-success-hover) !important;
+    }
+}
+
+.btn-log-now:focus {
+    outline: 2px solid var(--color-success);
     outline-offset: 2px;
 }
 

@@ -534,4 +534,41 @@ document.addEventListener('DOMContentLoaded', function() {
     if (window.mobileEntryConfig && window.mobileEntryConfig.autoscroll) {
         autoScrollToFirstForm();
     }
+    
+    /**
+     * Table Row Expand/Collapse
+     * 
+     * Handles expanding and collapsing sub-items in table rows.
+     * Uses minimal JavaScript with simple toggle functionality.
+     */
+    const setupTableExpand = () => {
+        const expandButtons = document.querySelectorAll('.btn-table-expand');
+        
+        expandButtons.forEach(button => {
+            button.addEventListener('click', function(event) {
+                event.preventDefault();
+                event.stopPropagation();
+                
+                const rowId = this.dataset.toggleSubitems;
+                const subitemsContainer = document.querySelector(`[data-subitems="${rowId}"]`);
+                
+                if (subitemsContainer) {
+                    // Toggle visibility
+                    if (subitemsContainer.style.display === 'none') {
+                        subitemsContainer.style.display = '';
+                        this.classList.add('expanded');
+                        this.setAttribute('aria-label', 'Collapse row');
+                    } else {
+                        subitemsContainer.style.display = 'none';
+                        this.classList.remove('expanded');
+                        this.setAttribute('aria-label', 'Expand row');
+                    }
+                }
+            });
+        });
+    };
+    
+    // Initialize table expand/collapse
+    setupTableExpand();
 });
+ 

@@ -278,25 +278,23 @@ class FlexibleWorkflowController extends Controller
                         route('flexible.table-example'),
                         route('flexible.table-example')
                     )
-                    ->subItem(
+                    ->subItemWithActions(
                         11,
                         'Running',
                         '15 minutes',
-                        'Warm-up pace',
-                        route('flexible.table-example'),
-                        route('flexible.table-example')
+                        'Warm-up pace'
                     )
-                    ->deleteParams(['redirect' => 'table'])
+                    ->linkAction('fa-play', route('flexible.table-example'), 'Log now', 'btn-log-now')
+                    ->formAction('fa-trash', route('flexible.table-example'), 'DELETE', [], 'Delete', 'btn-danger', true)
                     ->add()
-                    ->subItem(
+                    ->subItemWithActions(
                         12,
                         'Jump Rope',
                         '10 minutes',
-                        '3 sets of 200 jumps',
-                        route('flexible.table-example'),
-                        route('flexible.table-example')
+                        '3 sets of 200 jumps'
                     )
-                    ->deleteParams(['redirect' => 'table'])
+                    ->linkAction('fa-play', route('flexible.table-example'), 'Log now', 'btn-log-now')
+                    ->formAction('fa-trash', route('flexible.table-example'), 'DELETE', [], 'Delete', 'btn-danger', true)
                     ->add()
                     ->deleteParams(['redirect' => 'table'])
                     ->add()
@@ -308,35 +306,32 @@ class FlexibleWorkflowController extends Controller
                         route('flexible.table-example'),
                         route('flexible.table-example')
                     )
-                    ->subItem(
+                    ->subItemWithActions(
                         21,
                         'Bench Press',
                         '4 sets × 8 reps',
-                        '185 lbs',
-                        route('flexible.table-example'),
-                        route('flexible.table-example')
+                        '185 lbs'
                     )
-                    ->deleteParams(['redirect' => 'table'])
+                    ->linkAction('fa-play', route('flexible.table-example'), 'Log now', 'btn-log-now')
+                    ->formAction('fa-trash', route('flexible.table-example'), 'DELETE', [], 'Delete', 'btn-danger', true)
                     ->add()
-                    ->subItem(
+                    ->subItemWithActions(
                         22,
                         'Barbell Rows',
                         '4 sets × 10 reps',
-                        '135 lbs',
-                        route('flexible.table-example'),
-                        route('flexible.table-example')
+                        '135 lbs'
                     )
-                    ->deleteParams(['redirect' => 'table'])
+                    ->linkAction('fa-play', route('flexible.table-example'), 'Log now', 'btn-log-now')
+                    ->formAction('fa-trash', route('flexible.table-example'), 'DELETE', [], 'Delete', 'btn-danger', true)
                     ->add()
-                    ->subItem(
+                    ->subItemWithActions(
                         23,
                         'Shoulder Press',
                         '3 sets × 12 reps',
-                        '95 lbs',
-                        route('flexible.table-example'),
-                        route('flexible.table-example')
+                        '95 lbs'
                     )
-                    ->deleteParams(['redirect' => 'table'])
+                    ->linkAction('fa-play', route('flexible.table-example'), 'Log now', 'btn-log-now')
+                    ->formAction('fa-trash', route('flexible.table-example'), 'DELETE', [], 'Delete', 'btn-danger', true)
                     ->add()
                     ->deleteParams(['redirect' => 'table'])
                     ->add()
@@ -348,25 +343,23 @@ class FlexibleWorkflowController extends Controller
                         route('flexible.table-example'),
                         route('flexible.table-example')
                     )
-                    ->subItem(
+                    ->subItemWithActions(
                         31,
                         'Squats',
                         '5 sets × 5 reps',
-                        '225 lbs',
-                        route('flexible.table-example'),
-                        route('flexible.table-example')
+                        '225 lbs'
                     )
-                    ->deleteParams(['redirect' => 'table'])
+                    ->linkAction('fa-play', route('flexible.table-example'), 'Log now', 'btn-log-now')
+                    ->formAction('fa-trash', route('flexible.table-example'), 'DELETE', [], 'Delete', 'btn-danger', true)
                     ->add()
-                    ->subItem(
+                    ->subItemWithActions(
                         32,
                         'Deadlifts',
                         '3 sets × 5 reps',
-                        '275 lbs',
-                        route('flexible.table-example'),
-                        route('flexible.table-example')
+                        '275 lbs'
                     )
-                    ->deleteParams(['redirect' => 'table'])
+                    ->linkAction('fa-play', route('flexible.table-example'), 'Log now', 'btn-log-now')
+                    ->formAction('fa-trash', route('flexible.table-example'), 'DELETE', [], 'Delete', 'btn-danger', true)
                     ->add()
                     ->deleteParams(['redirect' => 'table'])
                     ->add()
