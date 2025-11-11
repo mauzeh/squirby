@@ -48,35 +48,80 @@ class WorkoutTemplateController extends Controller
             ->asLink(route('workout-templates.create'))
             ->build();
 
-        // Table of templates
+        // Table of templates with exercises as sub-items
         if ($templates->isNotEmpty()) {
             $tableBuilder = C::table();
 
             foreach ($templates as $template) {
                 $line1 = $template->name;
-                
-                // Build comma-separated list of exercise names
-                $exerciseNames = $template->exercises
-                    ->pluck('exercise.title')
-                    ->filter()
-                    ->join(', ');
-                
                 $exerciseCount = $template->exercises->count();
-                $line2 = $exerciseCount . ' exercises: ' . ($exerciseNames ?: 'None');
-                $line3 = $template->description ? substr($template->description, 0, 50) : null;
+                $line2 = $exerciseCount . ' ' . ($exerciseCount === 1 ? 'exercise' : 'exercises');
+                $line3 = $template->description ?: null;
 
-                $tableBuilder->row(
+                $rowBuilder = $tableBuilder->row(
                     $template->id,
                     $line1,
                     $line2,
                     $line3
                 )
-                ->linkAction('fa-edit', route('workout-templates.edit', $template->id), 'Edit')
-                ->formAction('fa-trash', route('workout-templates.destroy', $template->id), 'DELETE', [], 'Delete', 'btn-danger', true)
-                ->add();
+                ->linkAction('fa-plus', route('workout-templates.edit', $template->id), 'Add exercises')
+                ->formAction('fa-trash', route('workout-templates.destroy', $template->id), 'DELETE', [], 'Delete', 'btn-danger', true);
+
+                // Add exercises as sub-items
+                if ($template->exercises->isNotEmpty()) {
+                    foreach ($template->exercises as $index => $exercise) {
+                        $exerciseLine1 = $exercise->exercise->title;
+                        $exerciseLine2 = 'Order: ' . $exercise->order;
+                        
+                        $isFirst = $index === 0;
+                        $isLast = $index === $exerciseCount - 1;
+                        
+                        $subItemBuilder = $rowBuilder->subItem(
+                            $exercise->id,
+                            $exerciseLine1,
+                            $exerciseLine2,
+                            null
+                        );
+                        
+                        // Add move up button (disabled if first)
+                        if (!$isFirst) {
+                            $subItemBuilder->linkAction(
+                                'fa-arrow-up',
+                                route('workout-templates.move-exercise', [$template->id, $exercise->id, 'direction' => 'up']),
+                                'Move up'
+                            );
+                        }
+                        
+                        // Add move down button (disabled if last)
+                        if (!$isLast) {
+                            $subItemBuilder->linkAction(
+                                'fa-arrow-down',
+                                route('workout-templates.move-exercise', [$template->id, $exercise->id, 'direction' => 'down']),
+                                'Move down'
+                            );
+                        }
+                        
+                        // Add delete button
+                        $subItemBuilder->formAction(
+                            'fa-trash',
+                            route('workout-templates.remove-exercise', [$template->id, $exercise->id]),
+                            'DELETE',
+                            [],
+                            'Remove',
+                            'btn-danger',
+                            true
+                        );
+                        
+                        $subItemBuilder->add();
+                    }
+                }
+
+                $rowBuilder->add();
             }
 
-            $components[] = $tableBuilder->build();
+            $components[] = $tableBuilder
+                ->confirmMessage('deleteItem', 'Are you sure you want to delete this template or remove this exercise?')
+                ->build();
         } else {
             $components[] = C::messages()
                 ->info('No templates yet. Create your first template to get started!')
