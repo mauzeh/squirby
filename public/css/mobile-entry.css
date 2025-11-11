@@ -2092,7 +2092,9 @@ able Component - Tabular CRUD list optimized for narrow screens */
 
 /* Disabled state for table buttons */
 .btn-table-edit.btn-disabled,
-.btn-table-delete.btn-disabled {
+.btn-table-delete.btn-disabled,
+a.btn-table-edit[href="#"],
+button.btn-table-delete:disabled {
     opacity: 0.3;
     cursor: not-allowed;
     pointer-events: none;
