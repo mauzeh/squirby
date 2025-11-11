@@ -69,10 +69,11 @@ class WorkoutTemplateController extends Controller
                     $template->id,
                     $line1,
                     $line2,
-                    $line3,
-                    route('workout-templates.edit', $template->id),
-                    route('workout-templates.destroy', $template->id)
-                )->add();
+                    $line3
+                )
+                ->linkAction('fa-edit', route('workout-templates.edit', $template->id), 'Edit')
+                ->formAction('fa-trash', route('workout-templates.destroy', $template->id), 'DELETE', [], 'Delete', 'btn-danger', true)
+                ->add();
             }
 
             $components[] = $tableBuilder->build();
@@ -212,7 +213,7 @@ class WorkoutTemplateController extends Controller
                 $isFirst = $index === 0;
                 $isLast = $index === $exerciseCount - 1;
                 
-                $rowBuilder = $tableBuilder->rowWithActions($exercise->id, $line1, $line2, $line3);
+                $rowBuilder = $tableBuilder->row($exercise->id, $line1, $line2, $line3);
                 
                 // Add move up button (disabled if first)
                 if (!$isFirst) {
@@ -629,17 +630,17 @@ class WorkoutTemplateController extends Controller
                 $line2 = $template->exercises_count . ' exercises';
                 $line3 = $template->description ? substr($template->description, 0, 50) : null;
 
-                // Use edit button as "Apply" button
+                // Use custom "Apply" button
                 $applyUrl = route('workout-templates.apply', $template->id) . '?date=' . $date;
                 
                 $tableBuilder->row(
                     $template->id,
                     $line1,
                     $line2,
-                    $line3,
-                    $applyUrl, // Apply button (shows as Edit)
-                    ''  // No delete
-                )->add();
+                    $line3
+                )
+                ->linkAction('fa-check', $applyUrl, 'Apply template', 'btn-log-now')
+                ->add();
             }
 
             $components[] = $tableBuilder->build();
