@@ -278,7 +278,7 @@ class FlexibleWorkflowController extends Controller
                         route('flexible.table-example'),
                         route('flexible.table-example')
                     )
-                    ->subItemWithActions(
+                    ->subItem(
                         11,
                         'Running',
                         '15 minutes',
@@ -287,7 +287,7 @@ class FlexibleWorkflowController extends Controller
                     ->linkAction('fa-play', route('flexible.table-example'), 'Log now', 'btn-log-now')
                     ->formAction('fa-trash', route('flexible.table-example'), 'DELETE', [], 'Delete', 'btn-danger', true)
                     ->add()
-                    ->subItemWithActions(
+                    ->subItem(
                         12,
                         'Jump Rope',
                         '10 minutes',
@@ -306,7 +306,7 @@ class FlexibleWorkflowController extends Controller
                         route('flexible.table-example'),
                         route('flexible.table-example')
                     )
-                    ->subItemWithActions(
+                    ->subItem(
                         21,
                         'Bench Press',
                         '4 sets × 8 reps',
@@ -315,7 +315,7 @@ class FlexibleWorkflowController extends Controller
                     ->linkAction('fa-play', route('flexible.table-example'), 'Log now', 'btn-log-now')
                     ->formAction('fa-trash', route('flexible.table-example'), 'DELETE', [], 'Delete', 'btn-danger', true)
                     ->add()
-                    ->subItemWithActions(
+                    ->subItem(
                         22,
                         'Barbell Rows',
                         '4 sets × 10 reps',
@@ -324,7 +324,7 @@ class FlexibleWorkflowController extends Controller
                     ->linkAction('fa-play', route('flexible.table-example'), 'Log now', 'btn-log-now')
                     ->formAction('fa-trash', route('flexible.table-example'), 'DELETE', [], 'Delete', 'btn-danger', true)
                     ->add()
-                    ->subItemWithActions(
+                    ->subItem(
                         23,
                         'Shoulder Press',
                         '3 sets × 12 reps',
@@ -343,7 +343,7 @@ class FlexibleWorkflowController extends Controller
                         route('flexible.table-example'),
                         route('flexible.table-example')
                     )
-                    ->subItemWithActions(
+                    ->subItem(
                         31,
                         'Squats',
                         '5 sets × 5 reps',
@@ -352,7 +352,7 @@ class FlexibleWorkflowController extends Controller
                     ->linkAction('fa-play', route('flexible.table-example'), 'Log now', 'btn-log-now')
                     ->formAction('fa-trash', route('flexible.table-example'), 'DELETE', [], 'Delete', 'btn-danger', true)
                     ->add()
-                    ->subItemWithActions(
+                    ->subItem(
                         32,
                         'Deadlifts',
                         '3 sets × 5 reps',

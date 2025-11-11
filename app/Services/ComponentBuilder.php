@@ -677,33 +677,17 @@ class TableComponentBuilder
     ];
     
     /**
-     * Add a row to the table (legacy method - supports edit/delete only)
-     * 
-     * @param int $id Row identifier
-     * @param string $line1 First line (bold, primary text)
-     * @param string|null $line2 Second line (secondary text)
-     * @param string|null $line3 Third line (muted, italic text)
-     * @param string $editAction Edit URL
-     * @param string $deleteAction Delete URL
-     * @return TableRowBuilder
-     */
-    public function row(int $id, string $line1, ?string $line2, ?string $line3, string $editAction, string $deleteAction): TableRowBuilder
-    {
-        return new TableRowBuilder($this, $id, $line1, $line2, $line3, $editAction, $deleteAction);
-    }
-    
-    /**
      * Add a row with custom actions
      * 
      * @param int $id Row identifier
      * @param string $line1 First line (bold, primary text)
      * @param string|null $line2 Second line (secondary text)
      * @param string|null $line3 Third line (muted, italic text)
-     * @return TableRowBuilderV2
+     * @return TableRowBuilder
      */
-    public function rowWithActions(int $id, string $line1, ?string $line2 = null, ?string $line3 = null): TableRowBuilderV2
+    public function row(int $id, string $line1, ?string $line2 = null, ?string $line3 = null): TableRowBuilder
     {
-        return new TableRowBuilderV2($this, $id, $line1, $line2, $line3);
+        return new TableRowBuilder($this, $id, $line1, $line2, $line3);
     }
     
     /**
@@ -758,85 +742,6 @@ class TableComponentBuilder
  * Table Row Builder (nested builder)
  */
 class TableRowBuilder
-{
-    protected TableComponentBuilder $parent;
-    protected array $data;
-    
-    public function __construct(
-        TableComponentBuilder $parent,
-        int $id,
-        string $line1,
-        ?string $line2,
-        ?string $line3,
-        string $editAction,
-        string $deleteAction
-    ) {
-        $this->parent = $parent;
-        $this->data = [
-            'id' => $id,
-            'line1' => $line1,
-            'editAction' => $editAction,
-            'deleteAction' => $deleteAction,
-            'subItems' => []
-        ];
-        
-        if ($line2 !== null) {
-            $this->data['line2'] = $line2;
-        }
-        
-        if ($line3 !== null) {
-            $this->data['line3'] = $line3;
-        }
-    }
-    
-    /**
-     * Add delete parameters (e.g., redirect date)
-     */
-    public function deleteParams(array $params): self
-    {
-        $this->data['deleteParams'] = $params;
-        return $this;
-    }
-    
-    /**
-     * Add a sub-item to this row
-     */
-    public function subItem(int $id, string $line1, ?string $line2, ?string $line3, string $editAction, string $deleteAction): TableSubItemBuilder
-    {
-        return new TableSubItemBuilder($this, $id, $line1, $line2, $line3, $editAction, $deleteAction);
-    }
-    
-    /**
-     * Add a sub-item with custom actions
-     */
-    public function subItemWithActions(int $id, string $line1, ?string $line2 = null, ?string $line3 = null): TableSubItemBuilderV2
-    {
-        return new TableSubItemBuilderV2($this, $id, $line1, $line2, $line3);
-    }
-    
-    /**
-     * Add sub-item directly (internal use)
-     */
-    public function addSubItem(array $subItem): self
-    {
-        $this->data['subItems'][] = $subItem;
-        return $this;
-    }
-    
-    /**
-     * Add the row and return to parent builder
-     */
-    public function add(): TableComponentBuilder
-    {
-        $this->parent->addRow($this->data);
-        return $this->parent;
-    }
-}
-
-/**
- * Table Row Builder V2 (with custom actions support)
- */
-class TableRowBuilderV2
 {
     protected TableComponentBuilder $parent;
     protected array $data;
@@ -912,19 +817,11 @@ class TableRowBuilderV2
     }
     
     /**
-     * Add a sub-item to this row
-     */
-    public function subItem(int $id, string $line1, ?string $line2, ?string $line3, string $editAction, string $deleteAction): TableSubItemBuilder
-    {
-        return new TableSubItemBuilder($this, $id, $line1, $line2, $line3, $editAction, $deleteAction);
-    }
-    
-    /**
      * Add a sub-item with custom actions
      */
-    public function subItemWithActions(int $id, string $line1, ?string $line2 = null, ?string $line3 = null): TableSubItemBuilderV2
+    public function subItem(int $id, string $line1, ?string $line2 = null, ?string $line3 = null): TableSubItemBuilder
     {
-        return new TableSubItemBuilderV2($this, $id, $line1, $line2, $line3);
+        return new TableSubItemBuilder($this, $id, $line1, $line2, $line3);
     }
     
     /**
@@ -933,6 +830,15 @@ class TableRowBuilderV2
     public function addSubItem(array $subItem): self
     {
         $this->data['subItems'][] = $subItem;
+        return $this;
+    }
+    
+    /**
+     * Set whether sub-items should be collapsible (default: true)
+     */
+    public function collapsible(bool $collapsible = true): self
+    {
+        $this->data['collapsible'] = $collapsible;
         return $this;
     }
     
@@ -947,62 +853,9 @@ class TableRowBuilderV2
 }
 
 /**
- * Table Sub-Item Builder (for legacy row builder)
+ * Table Sub-Item Builder
  */
 class TableSubItemBuilder
-{
-    protected TableRowBuilder $parent;
-    protected array $data;
-    
-    public function __construct(
-        TableRowBuilder $parent,
-        int $id,
-        string $line1,
-        ?string $line2,
-        ?string $line3,
-        string $editAction,
-        string $deleteAction
-    ) {
-        $this->parent = $parent;
-        $this->data = [
-            'id' => $id,
-            'line1' => $line1,
-            'editAction' => $editAction,
-            'deleteAction' => $deleteAction
-        ];
-        
-        if ($line2 !== null) {
-            $this->data['line2'] = $line2;
-        }
-        
-        if ($line3 !== null) {
-            $this->data['line3'] = $line3;
-        }
-    }
-    
-    /**
-     * Add delete parameters
-     */
-    public function deleteParams(array $params): self
-    {
-        $this->data['deleteParams'] = $params;
-        return $this;
-    }
-    
-    /**
-     * Add the sub-item and return to parent row builder
-     */
-    public function add(): TableRowBuilder
-    {
-        $this->parent->addSubItem($this->data);
-        return $this->parent;
-    }
-}
-
-/**
- * Table Sub-Item Builder V2 (with custom actions support)
- */
-class TableSubItemBuilderV2
 {
     protected $parent; // Can be TableRowBuilder or TableRowBuilderV2
     protected array $data;
