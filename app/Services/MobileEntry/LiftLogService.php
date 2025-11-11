@@ -683,8 +683,14 @@ class LiftLogService extends MobileEntryBaseService
     public function addExerciseForm($userId, $exerciseIdentifier, Carbon $selectedDate)
     {
         // Find the exercise by canonical name or ID
-        $exercise = Exercise::where('canonical_name', $exerciseIdentifier)
-            ->orWhere('id', $exerciseIdentifier)
+        // Use a closure to properly scope the OR condition
+        $exercise = Exercise::where(function ($query) use ($exerciseIdentifier) {
+                $query->where('canonical_name', $exerciseIdentifier);
+                // Only check ID if the identifier is numeric to avoid type coercion issues
+                if (is_numeric($exerciseIdentifier)) {
+                    $query->orWhere('id', $exerciseIdentifier);
+                }
+            })
             ->availableToUser($userId)
             ->first();
         
