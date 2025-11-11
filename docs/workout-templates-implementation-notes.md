@@ -4,7 +4,7 @@
 
 A complete MVP for workout templates that allows users to:
 - Create reusable workout templates
-- Add exercises with sets/reps to templates
+- Add exercises to templates using the same selection interface as mobile entry
 - View all templates in a table
 - Edit templates (add/remove exercises)
 - Delete templates

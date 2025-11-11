@@ -73,6 +73,17 @@ When applied:
 - Suggests appropriate weight, sets, and reps
 - User can modify before logging
 
+## UI Improvement
+
+The "Add Exercise" interface now matches the mobile entry system:
+- Click "Add Exercise" button to reveal exercise list
+- Filter/search through existing exercises
+- Click any exercise to add it instantly
+- Create new exercises inline if needed
+- No form submission required for existing exercises
+
+This provides a consistent, familiar experience across the app.
+
 ---
 
 **Date**: November 10, 2025

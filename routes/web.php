@@ -77,7 +77,8 @@ Route::middleware('auth')->group(function () {
 
     // Workout Templates
     Route::resource('workout-templates', WorkoutTemplateController::class)->except(['show']);
-    Route::post('workout-templates/{workoutTemplate}/add-exercise', [WorkoutTemplateController::class, 'addExercise'])->name('workout-templates.add-exercise');
+    Route::get('workout-templates/{workoutTemplate}/add-exercise', [WorkoutTemplateController::class, 'addExercise'])->name('workout-templates.add-exercise');
+    Route::post('workout-templates/{workoutTemplate}/create-exercise', [WorkoutTemplateController::class, 'createExercise'])->name('workout-templates.create-exercise');
     Route::delete('workout-templates/{workoutTemplate}/exercises/{exercise}', [WorkoutTemplateController::class, 'removeExercise'])->name('workout-templates.remove-exercise');
     Route::get('workout-templates-browse', [WorkoutTemplateController::class, 'browse'])->name('workout-templates.browse');
     Route::get('workout-templates/{workoutTemplate}/apply', [WorkoutTemplateController::class, 'apply'])->name('workout-templates.apply');

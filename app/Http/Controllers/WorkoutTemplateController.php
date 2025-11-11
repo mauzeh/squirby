@@ -133,13 +133,40 @@ class WorkoutTemplateController extends Controller
                 ->build();
         }
 
-        // Form to add exercise
-        $components[] = C::form('add-exercise', 'Add Exercise')
-            ->type('success')
-            ->formAction(route('workout-templates.add-exercise', $workoutTemplate->id))
-            ->textField('exercise_name', 'Exercise:', '', 'Exercise name')
-            ->submitButton('Add Exercise')
+        // Add Exercise button
+        $components[] = C::button('Add Exercise')
+            ->ariaLabel('Add exercise to template')
+            ->addClass('btn-add-item')
             ->build();
+
+        // Exercise selection list
+        $exercises = \App\Models\Exercise::where('user_id', Auth::id())
+            ->orderBy('title')
+            ->get();
+
+        $itemListBuilder = C::itemList()
+            ->filterPlaceholder('Search exercises...')
+            ->noResultsMessage('No exercises found.');
+
+        foreach ($exercises as $exercise) {
+            $itemListBuilder->item(
+                $exercise->id,
+                $exercise->title,
+                route('workout-templates.add-exercise', [$workoutTemplate->id, 'exercise' => $exercise->id]),
+                'Exercise',
+                'type-exercise',
+                1
+            );
+        }
+
+        // Create form for new exercises
+        $itemListBuilder->createForm(
+            route('workout-templates.create-exercise', $workoutTemplate->id),
+            'exercise_name',
+            []
+        );
+
+        $components[] = $itemListBuilder->build();
 
         // Table of exercises
         if ($workoutTemplate->exercises->isNotEmpty()) {
@@ -211,15 +238,34 @@ class WorkoutTemplateController extends Controller
     {
         $this->authorize('update', $workoutTemplate);
 
-        $validated = $request->validate([
-            'exercise_name' => 'required|string',
-        ]);
+        $exerciseId = $request->input('exercise');
+        
+        if (!$exerciseId) {
+            return redirect()
+                ->route('workout-templates.edit', $workoutTemplate->id)
+                ->with('error', 'No exercise specified.');
+        }
 
-        // Find or create exercise
-        $exercise = \App\Models\Exercise::firstOrCreate(
-            ['title' => $validated['exercise_name']],
-            ['user_id' => Auth::id()]
-        );
+        $exercise = \App\Models\Exercise::where('id', $exerciseId)
+            ->where('user_id', Auth::id())
+            ->first();
+
+        if (!$exercise) {
+            return redirect()
+                ->route('workout-templates.edit', $workoutTemplate->id)
+                ->with('error', 'Exercise not found.');
+        }
+
+        // Check if exercise already exists in template
+        $exists = WorkoutTemplateExercise::where('workout_template_id', $workoutTemplate->id)
+            ->where('exercise_id', $exercise->id)
+            ->exists();
+
+        if ($exists) {
+            return redirect()
+                ->route('workout-templates.edit', $workoutTemplate->id)
+                ->with('warning', 'Exercise already in template.');
+        }
 
         // Get next order (priority)
         $maxOrder = $workoutTemplate->exercises()->max('order') ?? 0;
@@ -233,6 +279,48 @@ class WorkoutTemplateController extends Controller
         return redirect()
             ->route('workout-templates.edit', $workoutTemplate->id)
             ->with('success', 'Exercise added!');
+    }
+
+    /**
+     * Create a new exercise and add it to the template
+     */
+    public function createExercise(Request $request, WorkoutTemplate $workoutTemplate)
+    {
+        $this->authorize('update', $workoutTemplate);
+
+        $validated = $request->validate([
+            'exercise_name' => 'required|string|max:255',
+        ]);
+
+        // Find or create exercise
+        $exercise = \App\Models\Exercise::firstOrCreate(
+            ['title' => $validated['exercise_name']],
+            ['user_id' => Auth::id()]
+        );
+
+        // Check if exercise already exists in template
+        $exists = WorkoutTemplateExercise::where('workout_template_id', $workoutTemplate->id)
+            ->where('exercise_id', $exercise->id)
+            ->exists();
+
+        if ($exists) {
+            return redirect()
+                ->route('workout-templates.edit', $workoutTemplate->id)
+                ->with('warning', 'Exercise already in template.');
+        }
+
+        // Get next order (priority)
+        $maxOrder = $workoutTemplate->exercises()->max('order') ?? 0;
+
+        WorkoutTemplateExercise::create([
+            'workout_template_id' => $workoutTemplate->id,
+            'exercise_id' => $exercise->id,
+            'order' => $maxOrder + 1,
+        ]);
+
+        return redirect()
+            ->route('workout-templates.edit', $workoutTemplate->id)
+            ->with('success', 'Exercise created and added!');
     }
 
     /**

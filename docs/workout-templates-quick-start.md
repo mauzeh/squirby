@@ -26,11 +26,13 @@ You'll see a table of all your templates with:
 
 After creating a template, you'll see the edit page:
 
-1. Enter an exercise name (e.g., "Bench Press")
-2. Click **"Add Exercise"**
-3. Repeat for all exercises in your workout
+1. Click **"Add Exercise"** button
+2. A list of your exercises appears
+3. Click on any exercise to add it to the template
+4. Or type a new exercise name and press Enter to create and add it
+5. Repeat for all exercises in your workout
 
-The exercises will appear in a table below the form in priority order. The first exercise added has the highest priority.
+The exercises will appear in a table below in priority order. The first exercise added has the highest priority.
 
 ### 4. Apply a Template
 

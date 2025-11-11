@@ -83,8 +83,9 @@ $template->duplicate(User $user)
 2. Click "Create New Template"
 3. Enter name and description
 4. Click "Create Template"
-5. Add exercises one by one in priority order
-6. Each exercise is added to the table with its priority number
+5. Click "Add Exercise" button
+6. Select exercises from the list or create new ones
+7. Each exercise is added to the table with its priority number
 
 ### Using a Template
 1. Go to mobile entry (Lifts page)
