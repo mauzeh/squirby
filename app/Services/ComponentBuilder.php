@@ -677,7 +677,7 @@ class TableComponentBuilder
     ];
     
     /**
-     * Add a row to the table
+     * Add a row to the table (legacy method - supports edit/delete only)
      * 
      * @param int $id Row identifier
      * @param string $line1 First line (bold, primary text)
@@ -690,6 +690,20 @@ class TableComponentBuilder
     public function row(int $id, string $line1, ?string $line2, ?string $line3, string $editAction, string $deleteAction): TableRowBuilder
     {
         return new TableRowBuilder($this, $id, $line1, $line2, $line3, $editAction, $deleteAction);
+    }
+    
+    /**
+     * Add a row with custom actions
+     * 
+     * @param int $id Row identifier
+     * @param string $line1 First line (bold, primary text)
+     * @param string|null $line2 Second line (secondary text)
+     * @param string|null $line3 Third line (muted, italic text)
+     * @return TableRowBuilderV2
+     */
+    public function rowWithActions(int $id, string $line1, ?string $line2 = null, ?string $line3 = null): TableRowBuilderV2
+    {
+        return new TableRowBuilderV2($this, $id, $line1, $line2, $line3);
     }
     
     /**
@@ -780,6 +794,93 @@ class TableRowBuilder
     public function deleteParams(array $params): self
     {
         $this->data['deleteParams'] = $params;
+        return $this;
+    }
+    
+    /**
+     * Add the row and return to parent builder
+     */
+    public function add(): TableComponentBuilder
+    {
+        $this->parent->addRow($this->data);
+        return $this->parent;
+    }
+}
+
+/**
+ * Table Row Builder V2 (with custom actions support)
+ */
+class TableRowBuilderV2
+{
+    protected TableComponentBuilder $parent;
+    protected array $data;
+    
+    public function __construct(
+        TableComponentBuilder $parent,
+        int $id,
+        string $line1,
+        ?string $line2,
+        ?string $line3
+    ) {
+        $this->parent = $parent;
+        $this->data = [
+            'id' => $id,
+            'line1' => $line1,
+            'actions' => []
+        ];
+        
+        if ($line2 !== null) {
+            $this->data['line2'] = $line2;
+        }
+        
+        if ($line3 !== null) {
+            $this->data['line3'] = $line3;
+        }
+    }
+    
+    /**
+     * Add a link action (GET request)
+     * 
+     * @param string $icon FontAwesome icon class (e.g., 'fa-edit', 'fa-arrow-up')
+     * @param string $url Action URL
+     * @param string|null $ariaLabel Accessibility label
+     * @param string|null $cssClass Additional CSS classes
+     */
+    public function linkAction(string $icon, string $url, ?string $ariaLabel = null, ?string $cssClass = null): self
+    {
+        $this->data['actions'][] = [
+            'type' => 'link',
+            'icon' => $icon,
+            'url' => $url,
+            'ariaLabel' => $ariaLabel,
+            'cssClass' => $cssClass
+        ];
+        return $this;
+    }
+    
+    /**
+     * Add a form action (POST/DELETE request)
+     * 
+     * @param string $icon FontAwesome icon class
+     * @param string $url Action URL
+     * @param string $method HTTP method (POST, DELETE, etc.)
+     * @param array $params Additional form parameters
+     * @param string|null $ariaLabel Accessibility label
+     * @param string|null $cssClass Additional CSS classes
+     * @param bool $requiresConfirm Whether to show confirmation dialog
+     */
+    public function formAction(string $icon, string $url, string $method = 'POST', array $params = [], ?string $ariaLabel = null, ?string $cssClass = null, bool $requiresConfirm = false): self
+    {
+        $this->data['actions'][] = [
+            'type' => 'form',
+            'icon' => $icon,
+            'url' => $url,
+            'method' => $method,
+            'params' => $params,
+            'ariaLabel' => $ariaLabel,
+            'cssClass' => $cssClass,
+            'requiresConfirm' => $requiresConfirm
+        ];
         return $this;
     }
     

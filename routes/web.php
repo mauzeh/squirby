@@ -105,6 +105,7 @@ Route::middleware('auth')->group(function () {
     Route::get('flexible/custom-order', [FlexibleWorkflowController::class, 'customOrder'])->name('flexible.custom-order');
     Route::get('flexible/multiple-buttons', [FlexibleWorkflowController::class, 'multipleButtons'])->name('flexible.multiple-buttons');
     Route::get('flexible/table-example', [FlexibleWorkflowController::class, 'tableExample'])->name('flexible.table-example');
+    Route::get('flexible/table-reorder', [FlexibleWorkflowController::class, 'tableWithReorder'])->name('flexible.table-reorder');
 
     Route::post('lift-logs/destroy-selected', [LiftLogController::class, 'destroySelected'])->name('lift-logs.destroy-selected');
 

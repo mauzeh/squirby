@@ -22,24 +22,57 @@
                 @endif
             </div>
             <div class="component-table-actions">
-                @if(!empty($row['editAction']))
-                <a href="{{ $row['editAction'] }}" class="btn-table-edit" aria-label="{{ $data['ariaLabels']['editItem'] ?? 'Edit item' }}">
-                    <i class="fas fa-edit"></i>
-                </a>
-                @endif
-                @if(!empty($row['deleteAction']))
-                <form class="delete-form" method="POST" action="{{ $row['deleteAction'] }}">
-                    @csrf
-                    @method('DELETE')
-                    @if(isset($row['deleteParams']))
-                        @foreach($row['deleteParams'] as $name => $value)
-                            <input type="hidden" name="{{ $name }}" value="{{ $value }}">
-                        @endforeach
+                @if(isset($row['actions']) && !empty($row['actions']))
+                    {{-- New format: custom actions --}}
+                    @foreach($row['actions'] as $action)
+                        @if($action['type'] === 'link')
+                            <a href="{{ $action['url'] }}" 
+                               class="btn-table-action {{ $action['cssClass'] ?? '' }}" 
+                               aria-label="{{ $action['ariaLabel'] ?? '' }}">
+                                <i class="fas {{ $action['icon'] }}"></i>
+                            </a>
+                        @elseif($action['type'] === 'form')
+                            <form class="{{ $action['requiresConfirm'] ? 'delete-form' : '' }}" 
+                                  method="POST" 
+                                  action="{{ $action['url'] }}">
+                                @csrf
+                                @if($action['method'] !== 'POST')
+                                    @method($action['method'])
+                                @endif
+                                @if(isset($action['params']))
+                                    @foreach($action['params'] as $name => $value)
+                                        <input type="hidden" name="{{ $name }}" value="{{ $value }}">
+                                    @endforeach
+                                @endif
+                                <button type="submit" 
+                                        class="btn-table-action {{ $action['cssClass'] ?? '' }}" 
+                                        aria-label="{{ $action['ariaLabel'] ?? '' }}">
+                                    <i class="fas {{ $action['icon'] }}"></i>
+                                </button>
+                            </form>
+                        @endif
+                    @endforeach
+                @else
+                    {{-- Legacy format: edit/delete only --}}
+                    @if(!empty($row['editAction']))
+                    <a href="{{ $row['editAction'] }}" class="btn-table-edit" aria-label="{{ $data['ariaLabels']['editItem'] ?? 'Edit item' }}">
+                        <i class="fas fa-edit"></i>
+                    </a>
                     @endif
-                    <button type="submit" class="btn-table-delete" aria-label="{{ $data['ariaLabels']['deleteItem'] ?? 'Delete item' }}">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </form>
+                    @if(!empty($row['deleteAction']))
+                    <form class="delete-form" method="POST" action="{{ $row['deleteAction'] }}">
+                        @csrf
+                        @method('DELETE')
+                        @if(isset($row['deleteParams']))
+                            @foreach($row['deleteParams'] as $name => $value)
+                                <input type="hidden" name="{{ $name }}" value="{{ $value }}">
+                            @endforeach
+                        @endif
+                        <button type="submit" class="btn-table-delete" aria-label="{{ $data['ariaLabels']['deleteItem'] ?? 'Delete item' }}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </form>
+                    @endif
                 @endif
             </div>
         </div>

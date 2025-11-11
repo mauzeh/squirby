@@ -160,6 +160,11 @@ class MenuService
                 'route' => 'flexible.table-example',
                 'active' => Request::routeIs('flexible.table-example'),
             ],
+            [
+                'label' => 'Reorder',
+                'route' => 'flexible.table-reorder',
+                'active' => Request::routeIs('flexible.table-reorder'),
+            ],
         ];
     }
 

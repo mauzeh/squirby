@@ -322,4 +322,45 @@ class FlexibleWorkflowController extends Controller
         
         return view('mobile-entry.flexible', compact('data'));
     }
+    
+    /**
+     * Table with custom actions (reorder buttons)
+     */
+    public function tableWithReorder()
+    {
+        $data = [
+            'components' => [
+                C::title('Table with Reorder Actions')
+                    ->subtitle('Custom action buttons for reordering')
+                    ->build(),
+                
+                C::messages()
+                    ->info('Use up/down arrows to reorder items. This example shows custom actions.')
+                    ->build(),
+                
+                // Table with custom actions
+                C::table()
+                    ->rowWithActions(1, 'First Exercise', 'Bench Press')
+                        ->linkAction('fa-arrow-up', route('flexible.table-example'), 'Move up', 'btn-disabled')
+                        ->linkAction('fa-arrow-down', route('flexible.table-example'), 'Move down')
+                        ->formAction('fa-trash', route('flexible.table-example'), 'DELETE', [], 'Delete', 'btn-danger', true)
+                        ->add()
+                    ->rowWithActions(2, 'Second Exercise', 'Squat')
+                        ->linkAction('fa-arrow-up', route('flexible.table-example'), 'Move up')
+                        ->linkAction('fa-arrow-down', route('flexible.table-example'), 'Move down')
+                        ->formAction('fa-trash', route('flexible.table-example'), 'DELETE', [], 'Delete', 'btn-danger', true)
+                        ->add()
+                    ->rowWithActions(3, 'Third Exercise', 'Deadlift')
+                        ->linkAction('fa-arrow-up', route('flexible.table-example'), 'Move up')
+                        ->linkAction('fa-arrow-down', route('flexible.table-example'), 'Move down', 'btn-disabled')
+                        ->formAction('fa-trash', route('flexible.table-example'), 'DELETE', [], 'Delete', 'btn-danger', true)
+                        ->add()
+                    ->confirmMessage('deleteItem', 'Are you sure you want to delete this exercise?')
+                    ->build(),
+            ],
+            'showDebugIndicator' => true
+        ];
+        
+        return view('mobile-entry.flexible', compact('data'));
+    }
 }
