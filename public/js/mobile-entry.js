@@ -530,6 +530,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
     
-    // Initialize auto-scroll to first form
-    autoScrollToFirstForm();
+    // Initialize auto-scroll to first form (only if enabled via config)
+    if (window.mobileEntryConfig && window.mobileEntryConfig.autoscroll) {
+        autoScrollToFirstForm();
+    }
 });

@@ -129,6 +129,7 @@ class FlexibleWorkflowController extends Controller
     
     /**
      * Example 3: Multiple forms, no other sections
+     * Demonstrates autoscroll enabled
      */
     public function multipleForms(Request $request)
     {
@@ -138,6 +139,7 @@ class FlexibleWorkflowController extends Controller
                 
                 C::messages()
                     ->info('Complete all exercises below')
+                    ->success('Autoscroll is ON - page will scroll to first form', 'Demo:')
                     ->build(),
                 
                 C::form('ex-4', 'Exercise Notes')
@@ -172,7 +174,8 @@ class FlexibleWorkflowController extends Controller
                     ->numericField('reps', 'Reps:', 5, 1, 1)
                     ->submitButton('Log')
                     ->build(),
-            ]
+            ],
+            'autoscroll' => true  // Enable autoscroll for this example
         ];
         
         return view('mobile-entry.flexible', compact('data'));

@@ -54,7 +54,7 @@
             </div>
         </div>
 
-        @if (Request::routeIs(['food-logs.*', 'meals.*', 'ingredients.*', 'exercises.*', 'lift-logs.*', 'recommendations.*', 'body-logs.*', 'measurement-types.*', 'mobile-entry.lifts', 'mobile-entry.foods', 'mobile-entry.measurements', 'flexible.*']))
+        @if (Request::routeIs(['food-logs.*', 'meals.*', 'ingredients.*', 'exercises.*', 'lift-logs.*', 'recommendations.*', 'body-logs.*', 'measurement-types.*', 'mobile-entry.lifts', 'mobile-entry.foods', 'mobile-entry.measurements', 'flexible.*', 'workout-templates.*']))
         <div class="navbar sub-navbar">
             @if (Request::routeIs('flexible.*'))
                 <a href="{{ route('flexible.with-nav') }}" class="{{ Request::routeIs('flexible.with-nav') ? 'active' : '' }}">+Nav</a>

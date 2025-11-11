@@ -156,7 +156,10 @@ class MobileEntryController extends Controller
         // Logged items
         $components[] = ['type' => 'items', 'data' => $loggedItems];
         
-        $data = ['components' => $components];
+        $data = [
+            'components' => $components,
+            'autoscroll' => true
+        ];
 
         return view('mobile-entry.flexible', compact('data'));
     }
@@ -376,7 +379,10 @@ class MobileEntryController extends Controller
         // Logged items
         $components[] = ['type' => 'items', 'data' => $loggedItems];
         
-        $data = ['components' => $components];
+        $data = [
+            'components' => $components,
+            'autoscroll' => true
+        ];
 
         return view('mobile-entry.flexible', compact('data'));
     }
@@ -562,7 +568,10 @@ class MobileEntryController extends Controller
         // Logged items
         $components[] = ['type' => 'items', 'data' => $loggedItems];
         
-        $data = ['components' => $components];
+        $data = [
+            'components' => $components,
+            'autoscroll' => false
+        ];
 
         return view('mobile-entry.flexible', compact('data'));
     }
