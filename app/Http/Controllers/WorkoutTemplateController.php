@@ -246,7 +246,7 @@ class WorkoutTemplateController extends Controller
         }
 
         $exercise = \App\Models\Exercise::where('id', $exerciseId)
-            ->where('user_id', Auth::id())
+            ->availableToUser(Auth::id())
             ->first();
 
         if (!$exercise) {
