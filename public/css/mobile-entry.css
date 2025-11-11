@@ -2142,3 +2142,22 @@ able Component - Tabular CRUD list optimized for narrow screens */
         gap: 8px;
     }
 }
+
+/* Button Component Styles */
+.component-button.btn-primary {
+    background-color: var(--color-success);
+    color: var(--text-primary);
+}
+
+.component-button.btn-primary:hover {
+    background-color: var(--color-success-hover);
+}
+
+.component-button.btn-secondary {
+    background-color: var(--color-secondary);
+    color: var(--text-primary);
+}
+
+.component-button.btn-secondary:hover {
+    background-color: var(--color-secondary-hover);
+}
