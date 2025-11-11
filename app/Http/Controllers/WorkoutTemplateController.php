@@ -19,9 +19,22 @@ class WorkoutTemplateController extends Controller
     public function index()
     {
         $templates = WorkoutTemplate::where('user_id', Auth::id())
-            ->withCount('exercises')
+            ->with(['exercises.exercise.aliases'])
             ->orderBy('name')
             ->get();
+
+        // Apply aliases to all exercises
+        $user = Auth::user();
+        $aliasService = app(\App\Services\ExerciseAliasService::class);
+        
+        foreach ($templates as $template) {
+            foreach ($template->exercises as $templateExercise) {
+                if ($templateExercise->exercise) {
+                    $displayName = $aliasService->getDisplayName($templateExercise->exercise, $user);
+                    $templateExercise->exercise->title = $displayName;
+                }
+            }
+        }
 
         $components = [];
 
@@ -41,7 +54,14 @@ class WorkoutTemplateController extends Controller
 
             foreach ($templates as $template) {
                 $line1 = $template->name;
-                $line2 = $template->exercises_count . ' exercises';
+                
+                // Build comma-separated list of exercise names
+                $exerciseNames = $template->exercises
+                    ->pluck('exercise.title')
+                    ->filter()
+                    ->join(', ');
+                
+                $line2 = $exerciseNames ?: 'No exercises';
                 $line3 = $template->description ? substr($template->description, 0, 50) : null;
 
                 $tableBuilder->row(
