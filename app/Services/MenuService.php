@@ -155,6 +155,11 @@ class MenuService
                 'route' => 'flexible.multiple-buttons',
                 'active' => Request::routeIs('flexible.multiple-buttons'),
             ],
+            [
+                'label' => 'Table',
+                'route' => 'flexible.table-example',
+                'active' => Request::routeIs('flexible.table-example'),
+            ],
         ];
     }
 
