@@ -139,32 +139,31 @@ class WorkoutTemplateController extends Controller
             ->addClass('btn-add-item')
             ->build();
 
-        // Exercise selection list
-        $exercises = \App\Models\Exercise::where('user_id', Auth::id())
-            ->orderBy('title')
-            ->get();
-
+        // Exercise selection list - use same logic as mobile entry
+        $itemSelectionList = $this->generateExerciseSelectionList(Auth::id(), $workoutTemplate);
+        
         $itemListBuilder = C::itemList()
-            ->filterPlaceholder('Search exercises...')
-            ->noResultsMessage('No exercises found.');
+            ->filterPlaceholder($itemSelectionList['filterPlaceholder'])
+            ->noResultsMessage($itemSelectionList['noResultsMessage']);
 
-        foreach ($exercises as $exercise) {
+        foreach ($itemSelectionList['items'] as $item) {
             $itemListBuilder->item(
-                $exercise->id,
-                $exercise->title,
-                route('workout-templates.add-exercise', [$workoutTemplate->id, 'exercise' => $exercise->id]),
-                'Exercise',
-                'type-exercise',
-                1
+                $item['id'],
+                $item['name'],
+                $item['href'],
+                $item['type']['label'],
+                $item['type']['cssClass'],
+                $item['type']['priority']
             );
         }
 
-        // Create form for new exercises
-        $itemListBuilder->createForm(
-            route('workout-templates.create-exercise', $workoutTemplate->id),
-            'exercise_name',
-            []
-        );
+        if (isset($itemSelectionList['createForm'])) {
+            $itemListBuilder->createForm(
+                $itemSelectionList['createForm']['action'],
+                $itemSelectionList['createForm']['inputName'],
+                $itemSelectionList['createForm']['hiddenFields']
+            );
+        }
 
         $components[] = $itemListBuilder->build();
 
@@ -339,6 +338,131 @@ class WorkoutTemplateController extends Controller
         return redirect()
             ->route('workout-templates.edit', $workoutTemplate->id)
             ->with('success', 'Exercise removed!');
+    }
+
+    /**
+     * Generate exercise selection list (similar to mobile entry)
+     */
+    private function generateExerciseSelectionList($userId, WorkoutTemplate $workoutTemplate)
+    {
+        // Get user's accessible exercises with aliases
+        $exercises = \App\Models\Exercise::availableToUser($userId)
+            ->with(['aliases' => function ($query) use ($userId) {
+                $query->where('user_id', $userId);
+            }])
+            ->orderBy('title', 'asc')
+            ->get();
+
+        // Apply aliases to exercises
+        $user = \App\Models\User::find($userId);
+        $aliasService = app(\App\Services\ExerciseAliasService::class);
+        $exercises = $aliasService->applyAliasesToExercises($exercises, $user);
+
+        // Get exercises already in this template (to exclude from selection list)
+        $templateExerciseIds = $workoutTemplate->exercises()->pluck('exercise_id')->toArray();
+
+        // Get recent exercises (last 7 days) for the "Recent" category
+        $recentExerciseIds = \App\Models\LiftLog::where('user_id', $userId)
+            ->where('logged_at', '>=', \Carbon\Carbon::now()->subDays(7))
+            ->pluck('exercise_id')
+            ->unique()
+            ->toArray();
+
+        // Get last performed dates for all exercises
+        $lastPerformedDates = \App\Models\LiftLog::where('user_id', $userId)
+            ->whereIn('exercise_id', $exercises->pluck('id'))
+            ->select('exercise_id', \DB::raw('MAX(logged_at) as last_logged_at'))
+            ->groupBy('exercise_id')
+            ->pluck('last_logged_at', 'exercise_id');
+
+        // Get top 10 recommended exercises
+        $recommendationEngine = app(\App\Services\RecommendationEngine::class);
+        $recommendations = $recommendationEngine->getRecommendations($userId, 10);
+        
+        $recommendationMap = [];
+        foreach ($recommendations as $index => $recommendation) {
+            $exerciseId = $recommendation['exercise']->id;
+            $recommendationMap[$exerciseId] = $index + 1;
+        }
+
+        $items = [];
+        
+        foreach ($exercises as $exercise) {
+            // Skip exercises already in template
+            if (in_array($exercise->id, $templateExerciseIds)) {
+                continue;
+            }
+            
+            // Calculate "X ago" label
+            $lastPerformedLabel = '';
+            if (isset($lastPerformedDates[$exercise->id])) {
+                $lastPerformed = \Carbon\Carbon::parse($lastPerformedDates[$exercise->id]);
+                $lastPerformedLabel = $lastPerformed->diffForHumans(['short' => true]);
+            }
+            
+            // Categorize exercises
+            if (isset($recommendationMap[$exercise->id])) {
+                $rank = $recommendationMap[$exercise->id];
+                $itemType = [
+                    'label' => '<i class="fas fa-star"></i> Recommended',
+                    'cssClass' => 'in-program',
+                    'priority' => 1,
+                    'subPriority' => $rank
+                ];
+            } elseif (in_array($exercise->id, $recentExerciseIds)) {
+                $itemType = [
+                    'label' => 'Recent',
+                    'cssClass' => 'recent',
+                    'priority' => 2,
+                    'subPriority' => 0
+                ];
+            } else {
+                $itemType = [
+                    'label' => $lastPerformedLabel,
+                    'cssClass' => 'regular',
+                    'priority' => 3,
+                    'subPriority' => 0
+                ];
+            }
+
+            $items[] = [
+                'id' => 'exercise-' . $exercise->id,
+                'name' => $exercise->title,
+                'type' => $itemType,
+                'href' => route('workout-templates.add-exercise', [
+                    $workoutTemplate->id,
+                    'exercise' => $exercise->id
+                ])
+            ];
+        }
+
+        // Sort items
+        usort($items, function ($a, $b) {
+            $priorityComparison = $a['type']['priority'] <=> $b['type']['priority'];
+            if ($priorityComparison !== 0) {
+                return $priorityComparison;
+            }
+            
+            $subPriorityA = $a['type']['subPriority'] ?? 0;
+            $subPriorityB = $b['type']['subPriority'] ?? 0;
+            $subPriorityComparison = $subPriorityA <=> $subPriorityB;
+            if ($subPriorityComparison !== 0) {
+                return $subPriorityComparison;
+            }
+            
+            return strcmp($a['name'], $b['name']);
+        });
+
+        return [
+            'noResultsMessage' => 'No exercises found.',
+            'createForm' => [
+                'action' => route('workout-templates.create-exercise', $workoutTemplate->id),
+                'inputName' => 'exercise_name',
+                'hiddenFields' => []
+            ],
+            'items' => $items,
+            'filterPlaceholder' => 'Search exercises...'
+        ];
     }
 
     /**
