@@ -2090,6 +2090,14 @@ able Component - Tabular CRUD list optimized for narrow screens */
     outline-offset: 2px;
 }
 
+/* Disabled state for table buttons */
+.btn-table-edit.btn-disabled,
+.btn-table-delete.btn-disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
 .component-table-empty {
     text-align: center;
     padding: 40px var(--spacing-lg);

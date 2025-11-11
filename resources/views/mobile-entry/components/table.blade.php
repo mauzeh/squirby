@@ -27,7 +27,7 @@
                     @foreach($row['actions'] as $action)
                         @if($action['type'] === 'link')
                             <a href="{{ $action['url'] }}" 
-                               class="btn-table-action {{ $action['cssClass'] ?? '' }}" 
+                               class="btn-table-edit {{ $action['cssClass'] ?? '' }}" 
                                aria-label="{{ $action['ariaLabel'] ?? '' }}">
                                 <i class="fas {{ $action['icon'] }}"></i>
                             </a>
@@ -45,7 +45,7 @@
                                     @endforeach
                                 @endif
                                 <button type="submit" 
-                                        class="btn-table-action {{ $action['cssClass'] ?? '' }}" 
+                                        class="btn-table-delete {{ $action['cssClass'] ?? '' }}" 
                                         aria-label="{{ $action['ariaLabel'] ?? '' }}">
                                     <i class="fas {{ $action['icon'] }}"></i>
                                 </button>
