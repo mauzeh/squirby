@@ -68,7 +68,7 @@ class WorkoutTemplateController extends Controller
 
                 // Add "Add Exercise" as first sub-item
                 $rowBuilder->subItem(
-                    'add-' . $template->id,
+                    999000 + $template->id, // Use high number to avoid conflicts with exercise IDs
                     '+ Add Exercise',
                     'Click to add exercises to this template',
                     null
