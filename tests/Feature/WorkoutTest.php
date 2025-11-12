@@ -6,11 +6,11 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 use App\Models\User;
 use App\Models\Exercise;
-use App\Models\WorkoutTemplate;
-use App\Models\WorkoutTemplateExercise;
+use App\Models\Workout;
+use App\Models\WorkoutExercise;
 use App\Models\ExerciseAlias;
 
-class WorkoutTemplateTest extends TestCase
+class WorkoutTest extends TestCase
 {
     use RefreshDatabase;
 
@@ -18,12 +18,12 @@ class WorkoutTemplateTest extends TestCase
     public function user_can_view_their_templates()
     {
         $user = User::factory()->create();
-        $template = WorkoutTemplate::factory()->create(['user_id' => $user->id]);
+        $workout = Workout::factory()->create(['user_id' => $user->id]);
 
-        $response = $this->actingAs($user)->get(route('workout-templates.index'));
+        $response = $this->actingAs($user)->get(route('workouts.index'));
 
         $response->assertOk();
-        $response->assertSee($template->name);
+        $response->assertSee($workout->name);
     }
 
     /** @test */
@@ -31,13 +31,13 @@ class WorkoutTemplateTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $response = $this->actingAs($user)->post(route('workout-templates.store'), [
+        $response = $this->actingAs($user)->post(route('workouts.store'), [
             'name' => 'Push Day',
             'description' => 'Upper body pushing exercises',
         ]);
 
         $response->assertRedirect();
-        $this->assertDatabaseHas('workout_templates', [
+        $this->assertDatabaseHas('workouts', [
             'user_id' => $user->id,
             'name' => 'Push Day',
             'description' => 'Upper body pushing exercises',
@@ -48,18 +48,18 @@ class WorkoutTemplateTest extends TestCase
     public function user_can_add_global_exercise_to_template()
     {
         $user = User::factory()->create();
-        $template = WorkoutTemplate::factory()->create(['user_id' => $user->id]);
+        $workout = Workout::factory()->create(['user_id' => $user->id]);
         $exercise = Exercise::factory()->create(['user_id' => null]); // Global exercise
 
-        $response = $this->actingAs($user)->get(route('workout-templates.add-exercise', [
-            'workoutTemplate' => $template->id,
+        $response = $this->actingAs($user)->get(route('workouts.add-exercise', [
+            'workout' => $workout->id,
             'exercise' => $exercise->id,
         ]));
 
-        $response->assertRedirect(route('workout-templates.edit', $template->id));
+        $response->assertRedirect(route('workouts.edit', $workout->id));
         $response->assertSessionHas('success', 'Exercise added!');
-        $this->assertDatabaseHas('workout_template_exercises', [
-            'workout_template_id' => $template->id,
+        $this->assertDatabaseHas('workout_exercises', [
+            'workout_id' => $workout->id,
             'exercise_id' => $exercise->id,
         ]);
     }
@@ -68,18 +68,18 @@ class WorkoutTemplateTest extends TestCase
     public function user_can_add_their_own_exercise_to_template()
     {
         $user = User::factory()->create();
-        $template = WorkoutTemplate::factory()->create(['user_id' => $user->id]);
+        $workout = Workout::factory()->create(['user_id' => $user->id]);
         $exercise = Exercise::factory()->create(['user_id' => $user->id]);
 
-        $response = $this->actingAs($user)->get(route('workout-templates.add-exercise', [
-            'workoutTemplate' => $template->id,
+        $response = $this->actingAs($user)->get(route('workouts.add-exercise', [
+            'workout' => $workout->id,
             'exercise' => $exercise->id,
         ]));
 
-        $response->assertRedirect(route('workout-templates.edit', $template->id));
+        $response->assertRedirect(route('workouts.edit', $workout->id));
         $response->assertSessionHas('success', 'Exercise added!');
-        $this->assertDatabaseHas('workout_template_exercises', [
-            'workout_template_id' => $template->id,
+        $this->assertDatabaseHas('workout_exercises', [
+            'workout_id' => $workout->id,
             'exercise_id' => $exercise->id,
         ]);
     }
@@ -88,51 +88,51 @@ class WorkoutTemplateTest extends TestCase
     public function user_cannot_add_duplicate_exercise_to_template()
     {
         $user = User::factory()->create();
-        $template = WorkoutTemplate::factory()->create(['user_id' => $user->id]);
+        $workout = Workout::factory()->create(['user_id' => $user->id]);
         $exercise = Exercise::factory()->create(['user_id' => null]);
 
         // Add exercise first time
-        WorkoutTemplateExercise::create([
-            'workout_template_id' => $template->id,
+        WorkoutExercise::create([
+            'workout_id' => $workout->id,
             'exercise_id' => $exercise->id,
             'order' => 1,
         ]);
 
         // Try to add again
-        $response = $this->actingAs($user)->get(route('workout-templates.add-exercise', [
-            'workoutTemplate' => $template->id,
+        $response = $this->actingAs($user)->get(route('workouts.add-exercise', [
+            'workout' => $workout->id,
             'exercise' => $exercise->id,
         ]));
 
-        $response->assertRedirect(route('workout-templates.edit', $template->id));
-        $response->assertSessionHas('warning', 'Exercise already in template.');
+        $response->assertRedirect(route('workouts.edit', $workout->id));
+        $response->assertSessionHas('warning', 'Exercise already in workout.');
     }
 
     /** @test */
     public function exercises_are_added_in_priority_order()
     {
         $user = User::factory()->create();
-        $template = WorkoutTemplate::factory()->create(['user_id' => $user->id]);
+        $workout = Workout::factory()->create(['user_id' => $user->id]);
         $exercise1 = Exercise::factory()->create(['user_id' => null]);
         $exercise2 = Exercise::factory()->create(['user_id' => null]);
         $exercise3 = Exercise::factory()->create(['user_id' => null]);
 
         // Add exercises
-        $this->actingAs($user)->get(route('workout-templates.add-exercise', [
-            'workoutTemplate' => $template->id,
+        $this->actingAs($user)->get(route('workouts.add-exercise', [
+            'workout' => $workout->id,
             'exercise' => $exercise1->id,
         ]));
-        $this->actingAs($user)->get(route('workout-templates.add-exercise', [
-            'workoutTemplate' => $template->id,
+        $this->actingAs($user)->get(route('workouts.add-exercise', [
+            'workout' => $workout->id,
             'exercise' => $exercise2->id,
         ]));
-        $this->actingAs($user)->get(route('workout-templates.add-exercise', [
-            'workoutTemplate' => $template->id,
+        $this->actingAs($user)->get(route('workouts.add-exercise', [
+            'workout' => $workout->id,
             'exercise' => $exercise3->id,
         ]));
 
-        $template->refresh();
-        $exercises = $template->exercises()->orderBy('order')->get();
+        $workout->refresh();
+        $exercises = $workout->exercises()->orderBy('order')->get();
 
         $this->assertEquals(1, $exercises[0]->order);
         $this->assertEquals(2, $exercises[1]->order);
@@ -143,13 +143,13 @@ class WorkoutTemplateTest extends TestCase
     public function user_can_create_new_exercise_and_add_to_template()
     {
         $user = User::factory()->create();
-        $template = WorkoutTemplate::factory()->create(['user_id' => $user->id]);
+        $workout = Workout::factory()->create(['user_id' => $user->id]);
 
-        $response = $this->actingAs($user)->post(route('workout-templates.create-exercise', $template->id), [
+        $response = $this->actingAs($user)->post(route('workouts.create-exercise', $workout->id), [
             'exercise_name' => 'New Custom Exercise',
         ]);
 
-        $response->assertRedirect(route('workout-templates.edit', $template->id));
+        $response->assertRedirect(route('workouts.edit', $workout->id));
         $response->assertSessionHas('success', 'Exercise created and added!');
         
         $this->assertDatabaseHas('exercises', [
@@ -158,8 +158,8 @@ class WorkoutTemplateTest extends TestCase
         ]);
 
         $exercise = Exercise::where('title', 'New Custom Exercise')->first();
-        $this->assertDatabaseHas('workout_template_exercises', [
-            'workout_template_id' => $template->id,
+        $this->assertDatabaseHas('workout_exercises', [
+            'workout_id' => $workout->id,
             'exercise_id' => $exercise->id,
         ]);
     }
@@ -168,7 +168,7 @@ class WorkoutTemplateTest extends TestCase
     public function template_edit_view_shows_aliased_exercise_names()
     {
         $user = User::factory()->create();
-        $template = WorkoutTemplate::factory()->create(['user_id' => $user->id]);
+        $workout = Workout::factory()->create(['user_id' => $user->id]);
         $exercise = Exercise::factory()->create([
             'title' => 'Bench Press',
             'user_id' => null,
@@ -181,13 +181,13 @@ class WorkoutTemplateTest extends TestCase
             'alias_name' => 'BP',
         ]);
 
-        WorkoutTemplateExercise::create([
-            'workout_template_id' => $template->id,
+        WorkoutExercise::create([
+            'workout_id' => $workout->id,
             'exercise_id' => $exercise->id,
             'order' => 1,
         ]);
 
-        $response = $this->actingAs($user)->get(route('workout-templates.edit', $template->id));
+        $response = $this->actingAs($user)->get(route('workouts.edit', $workout->id));
 
         $response->assertOk();
         $response->assertSee('BP'); // Should see alias, not original name
@@ -197,7 +197,7 @@ class WorkoutTemplateTest extends TestCase
     public function template_index_shows_exercise_names_with_aliases()
     {
         $user = User::factory()->create();
-        $template = WorkoutTemplate::factory()->create([
+        $workout = Workout::factory()->create([
             'user_id' => $user->id,
             'name' => 'Test Template',
         ]);
@@ -218,18 +218,18 @@ class WorkoutTemplateTest extends TestCase
             'alias_name' => 'BP',
         ]);
 
-        WorkoutTemplateExercise::create([
-            'workout_template_id' => $template->id,
+        WorkoutExercise::create([
+            'workout_id' => $workout->id,
             'exercise_id' => $exercise1->id,
             'order' => 1,
         ]);
-        WorkoutTemplateExercise::create([
-            'workout_template_id' => $template->id,
+        WorkoutExercise::create([
+            'workout_id' => $workout->id,
             'exercise_id' => $exercise2->id,
             'order' => 2,
         ]);
 
-        $response = $this->actingAs($user)->get(route('workout-templates.index'));
+        $response = $this->actingAs($user)->get(route('workouts.index'));
 
         $response->assertOk();
         $response->assertSee('2 exercises:');
@@ -241,7 +241,7 @@ class WorkoutTemplateTest extends TestCase
     public function template_index_shows_exercise_count_and_names()
     {
         $user = User::factory()->create();
-        $template = WorkoutTemplate::factory()->create([
+        $workout = Workout::factory()->create([
             'user_id' => $user->id,
             'name' => 'Push Day',
         ]);
@@ -250,23 +250,23 @@ class WorkoutTemplateTest extends TestCase
         $exercise2 = Exercise::factory()->create(['title' => 'Dips', 'user_id' => null]);
         $exercise3 = Exercise::factory()->create(['title' => 'Tricep Extensions', 'user_id' => null]);
 
-        WorkoutTemplateExercise::create([
-            'workout_template_id' => $template->id,
+        WorkoutExercise::create([
+            'workout_id' => $workout->id,
             'exercise_id' => $exercise1->id,
             'order' => 1,
         ]);
-        WorkoutTemplateExercise::create([
-            'workout_template_id' => $template->id,
+        WorkoutExercise::create([
+            'workout_id' => $workout->id,
             'exercise_id' => $exercise2->id,
             'order' => 2,
         ]);
-        WorkoutTemplateExercise::create([
-            'workout_template_id' => $template->id,
+        WorkoutExercise::create([
+            'workout_id' => $workout->id,
             'exercise_id' => $exercise3->id,
             'order' => 3,
         ]);
 
-        $response = $this->actingAs($user)->get(route('workout-templates.index'));
+        $response = $this->actingAs($user)->get(route('workouts.index'));
 
         $response->assertOk();
         $response->assertSee('3 exercises:');
@@ -277,24 +277,24 @@ class WorkoutTemplateTest extends TestCase
     public function user_can_remove_exercise_from_template()
     {
         $user = User::factory()->create();
-        $template = WorkoutTemplate::factory()->create(['user_id' => $user->id]);
+        $workout = Workout::factory()->create(['user_id' => $user->id]);
         $exercise = Exercise::factory()->create(['user_id' => null]);
 
-        $templateExercise = WorkoutTemplateExercise::create([
-            'workout_template_id' => $template->id,
+        $workoutExercise = WorkoutExercise::create([
+            'workout_id' => $workout->id,
             'exercise_id' => $exercise->id,
             'order' => 1,
         ]);
 
-        $response = $this->actingAs($user)->delete(route('workout-templates.remove-exercise', [
-            'workoutTemplate' => $template->id,
-            'exercise' => $templateExercise->id,
+        $response = $this->actingAs($user)->delete(route('workouts.remove-exercise', [
+            'workout' => $workout->id,
+            'exercise' => $workoutExercise->id,
         ]));
 
-        $response->assertRedirect(route('workout-templates.edit', $template->id));
+        $response->assertRedirect(route('workouts.edit', $workout->id));
         $response->assertSessionHas('success', 'Exercise removed!');
-        $this->assertDatabaseMissing('workout_template_exercises', [
-            'id' => $templateExercise->id,
+        $this->assertDatabaseMissing('workout_exercises', [
+            'id' => $workoutExercise->id,
         ]);
     }
 
@@ -302,14 +302,14 @@ class WorkoutTemplateTest extends TestCase
     public function user_can_delete_template()
     {
         $user = User::factory()->create();
-        $template = WorkoutTemplate::factory()->create(['user_id' => $user->id]);
+        $workout = Workout::factory()->create(['user_id' => $user->id]);
 
-        $response = $this->actingAs($user)->delete(route('workout-templates.destroy', $template->id));
+        $response = $this->actingAs($user)->delete(route('workouts.destroy', $workout->id));
 
-        $response->assertRedirect(route('workout-templates.index'));
-        $response->assertSessionHas('success', 'Template deleted!');
-        $this->assertDatabaseMissing('workout_templates', [
-            'id' => $template->id,
+        $response->assertRedirect(route('workouts.index'));
+        $response->assertSessionHas('success', 'Workout deleted!');
+        $this->assertDatabaseMissing('workouts', [
+            'id' => $workout->id,
         ]);
     }
 
@@ -318,9 +318,9 @@ class WorkoutTemplateTest extends TestCase
     {
         $user1 = User::factory()->create();
         $user2 = User::factory()->create();
-        $template = WorkoutTemplate::factory()->create(['user_id' => $user1->id]);
+        $workout = Workout::factory()->create(['user_id' => $user1->id]);
 
-        $response = $this->actingAs($user2)->get(route('workout-templates.edit', $template->id));
+        $response = $this->actingAs($user2)->get(route('workouts.edit', $workout->id));
 
         $response->assertForbidden();
     }
@@ -330,9 +330,9 @@ class WorkoutTemplateTest extends TestCase
     {
         $user1 = User::factory()->create();
         $user2 = User::factory()->create();
-        $template = WorkoutTemplate::factory()->create(['user_id' => $user1->id]);
+        $workout = Workout::factory()->create(['user_id' => $user1->id]);
 
-        $response = $this->actingAs($user2)->delete(route('workout-templates.destroy', $template->id));
+        $response = $this->actingAs($user2)->delete(route('workouts.destroy', $workout->id));
 
         $response->assertForbidden();
     }
@@ -341,69 +341,69 @@ class WorkoutTemplateTest extends TestCase
     public function user_can_move_exercise_up_in_template()
     {
         $user = User::factory()->create();
-        $template = WorkoutTemplate::factory()->create(['user_id' => $user->id]);
+        $workout = Workout::factory()->create(['user_id' => $user->id]);
         $exercise1 = Exercise::factory()->create(['user_id' => null]);
         $exercise2 = Exercise::factory()->create(['user_id' => null]);
 
-        $templateEx1 = WorkoutTemplateExercise::create([
-            'workout_template_id' => $template->id,
+        $workoutEx1 = WorkoutExercise::create([
+            'workout_id' => $workout->id,
             'exercise_id' => $exercise1->id,
             'order' => 1,
         ]);
-        $templateEx2 = WorkoutTemplateExercise::create([
-            'workout_template_id' => $template->id,
+        $workoutEx2 = WorkoutExercise::create([
+            'workout_id' => $workout->id,
             'exercise_id' => $exercise2->id,
             'order' => 2,
         ]);
 
-        $response = $this->actingAs($user)->get(route('workout-templates.move-exercise', [
-            'workoutTemplate' => $template->id,
-            'exercise' => $templateEx2->id,
+        $response = $this->actingAs($user)->get(route('workouts.move-exercise', [
+            'workout' => $workout->id,
+            'exercise' => $workoutEx2->id,
             'direction' => 'up',
         ]));
 
-        $response->assertRedirect(route('workout-templates.edit', $template->id));
+        $response->assertRedirect(route('workouts.edit', $workout->id));
         $response->assertSessionHas('success', 'Exercise order updated!');
 
-        $templateEx1->refresh();
-        $templateEx2->refresh();
+        $workoutEx1->refresh();
+        $workoutEx2->refresh();
 
-        $this->assertEquals(2, $templateEx1->order);
-        $this->assertEquals(1, $templateEx2->order);
+        $this->assertEquals(2, $workoutEx1->order);
+        $this->assertEquals(1, $workoutEx2->order);
     }
 
     /** @test */
     public function user_can_move_exercise_down_in_template()
     {
         $user = User::factory()->create();
-        $template = WorkoutTemplate::factory()->create(['user_id' => $user->id]);
+        $workout = Workout::factory()->create(['user_id' => $user->id]);
         $exercise1 = Exercise::factory()->create(['user_id' => null]);
         $exercise2 = Exercise::factory()->create(['user_id' => null]);
 
-        $templateEx1 = WorkoutTemplateExercise::create([
-            'workout_template_id' => $template->id,
+        $workoutEx1 = WorkoutExercise::create([
+            'workout_id' => $workout->id,
             'exercise_id' => $exercise1->id,
             'order' => 1,
         ]);
-        $templateEx2 = WorkoutTemplateExercise::create([
-            'workout_template_id' => $template->id,
+        $workoutEx2 = WorkoutExercise::create([
+            'workout_id' => $workout->id,
             'exercise_id' => $exercise2->id,
             'order' => 2,
         ]);
 
-        $response = $this->actingAs($user)->get(route('workout-templates.move-exercise', [
-            'workoutTemplate' => $template->id,
-            'exercise' => $templateEx1->id,
+        $response = $this->actingAs($user)->get(route('workouts.move-exercise', [
+            'workout' => $workout->id,
+            'exercise' => $workoutEx1->id,
             'direction' => 'down',
         ]));
 
-        $response->assertRedirect(route('workout-templates.edit', $template->id));
+        $response->assertRedirect(route('workouts.edit', $workout->id));
         $response->assertSessionHas('success', 'Exercise order updated!');
 
-        $templateEx1->refresh();
-        $templateEx2->refresh();
+        $workoutEx1->refresh();
+        $workoutEx2->refresh();
 
-        $this->assertEquals(2, $templateEx1->order);
-        $this->assertEquals(1, $templateEx2->order);
+        $this->assertEquals(2, $workoutEx1->order);
+        $this->assertEquals(1, $workoutEx2->order);
     }
 }

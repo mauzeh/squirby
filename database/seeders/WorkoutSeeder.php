@@ -5,7 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
-class WorkoutTemplateSeeder extends Seeder
+class WorkoutSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -16,12 +16,12 @@ class WorkoutTemplateSeeder extends Seeder
         $user = \App\Models\User::first();
         
         if (!$user) {
-            $this->command->warn('No users found. Skipping workout template seeding.');
+            $this->command->warn('No users found. Skipping workout seeding.');
             return;
         }
 
-        // Create example templates - just exercises in priority order
-        $templates = [
+        // Create example workouts - just exercises in priority order
+        $workouts = [
             [
                 'name' => 'Push Day',
                 'description' => 'Upper body pushing exercises',
@@ -79,32 +79,32 @@ class WorkoutTemplateSeeder extends Seeder
             ],
         ];
 
-        foreach ($templates as $templateData) {
-            $template = \App\Models\WorkoutTemplate::create([
+        foreach ($workouts as $workoutData) {
+            $workout = \App\Models\Workout::create([
                 'user_id' => $user->id,
-                'name' => $templateData['name'],
-                'description' => $templateData['description'],
+                'name' => $workoutData['name'],
+                'description' => $workoutData['description'],
                 'is_public' => false,
-                'tags' => $templateData['tags'],
+                'tags' => $workoutData['tags'],
             ]);
 
-            foreach ($templateData['exercises'] as $index => $exerciseName) {
+            foreach ($workoutData['exercises'] as $index => $exerciseName) {
                 // Find or create exercise
                 $exercise = \App\Models\Exercise::firstOrCreate(
                     ['title' => $exerciseName],
                     ['user_id' => $user->id]
                 );
 
-                \App\Models\WorkoutTemplateExercise::create([
-                    'workout_template_id' => $template->id,
+                \App\Models\WorkoutExercise::create([
+                    'workout_id' => $workout->id,
                     'exercise_id' => $exercise->id,
                     'order' => $index + 1,
                 ]);
             }
 
-            $this->command->info("Created template: {$template->name}");
+            $this->command->info("Created workout: {$workout->name}");
         }
 
-        $this->command->info('Workout templates seeded successfully!');
+        $this->command->info('Workouts seeded successfully!');
     }
 }

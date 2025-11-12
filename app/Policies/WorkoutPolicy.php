@@ -3,10 +3,10 @@
 namespace App\Policies;
 
 use App\Models\User;
-use App\Models\WorkoutTemplate;
+use App\Models\Workout;
 use Illuminate\Auth\Access\Response;
 
-class WorkoutTemplatePolicy
+class WorkoutPolicy
 {
     /**
      * Determine whether the user can view any models.
@@ -19,9 +19,9 @@ class WorkoutTemplatePolicy
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, WorkoutTemplate $workoutTemplate): bool
+    public function view(User $user, Workout $workout): bool
     {
-        return $workoutTemplate->user_id === $user->id || $workoutTemplate->is_public;
+        return $workout->user_id === $user->id || $workout->is_public;
     }
 
     /**
@@ -35,23 +35,23 @@ class WorkoutTemplatePolicy
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, WorkoutTemplate $workoutTemplate): bool
+    public function update(User $user, Workout $workout): bool
     {
-        return $workoutTemplate->user_id === $user->id;
+        return $workout->user_id === $user->id;
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, WorkoutTemplate $workoutTemplate): bool
+    public function delete(User $user, Workout $workout): bool
     {
-        return $workoutTemplate->user_id === $user->id;
+        return $workout->user_id === $user->id;
     }
 
     /**
      * Determine whether the user can restore the model.
      */
-    public function restore(User $user, WorkoutTemplate $workoutTemplate): bool
+    public function restore(User $user, Workout $workout): bool
     {
         return false;
     }
@@ -59,7 +59,7 @@ class WorkoutTemplatePolicy
     /**
      * Determine whether the user can permanently delete the model.
      */
-    public function forceDelete(User $user, WorkoutTemplate $workoutTemplate): bool
+    public function forceDelete(User $user, Workout $workout): bool
     {
         return false;
     }

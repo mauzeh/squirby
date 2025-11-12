@@ -2,19 +2,19 @@
 
 namespace Database\Factories;
 
-use App\Models\WorkoutTemplateExercise;
-use App\Models\WorkoutTemplate;
+use App\Models\WorkoutExercise;
+use App\Models\Workout;
 use App\Models\Exercise;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-class WorkoutTemplateExerciseFactory extends Factory
+class WorkoutExerciseFactory extends Factory
 {
-    protected $model = WorkoutTemplateExercise::class;
+    protected $model = WorkoutExercise::class;
 
     public function definition()
     {
         return [
-            'workout_template_id' => WorkoutTemplate::factory(),
+            'workout_id' => Workout::factory(),
             'exercise_id' => Exercise::factory(),
             'order' => 1,
         ];

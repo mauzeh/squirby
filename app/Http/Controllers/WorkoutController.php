@@ -2,26 +2,26 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\WorkoutTemplate;
-use App\Models\WorkoutTemplateExercise;
+use App\Models\Workout;
+use App\Models\WorkoutExercise;
 use App\Services\ComponentBuilder as C;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
-class WorkoutTemplateController extends Controller
+class WorkoutController extends Controller
 {
     use \Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
     /**
-     * Display a listing of the user's workout templates
+     * Display a listing of the user's workouts
      */
     public function index(Request $request)
     {
-        $expandedTemplateId = $request->query('id');
+        $expandedWorkoutId = $request->query('id');
         $today = Carbon::today();
         
-        $templates = WorkoutTemplate::where('user_id', Auth::id())
+        $workouts = Workout::where('user_id', Auth::id())
             ->with(['exercises.exercise.aliases'])
             ->orderBy('name')
             ->get();
@@ -37,11 +37,11 @@ class WorkoutTemplateController extends Controller
         $user = Auth::user();
         $aliasService = app(\App\Services\ExerciseAliasService::class);
         
-        foreach ($templates as $template) {
-            foreach ($template->exercises as $templateExercise) {
-                if ($templateExercise->exercise) {
-                    $displayName = $aliasService->getDisplayName($templateExercise->exercise, $user);
-                    $templateExercise->exercise->title = $displayName;
+        foreach ($workouts as $workout) {
+            foreach ($workout->exercises as $workoutExercise) {
+                if ($workoutExercise->exercise) {
+                    $displayName = $aliasService->getDisplayName($workoutExercise->exercise, $user);
+                    $workoutExercise->exercise->title = $displayName;
                 }
             }
         }
@@ -49,46 +49,46 @@ class WorkoutTemplateController extends Controller
         $components = [];
 
         // Title
-        $components[] = C::title('Workout Templates')
+        $components[] = C::title('Workouts')
             ->subtitle('Save and reuse your favorite workouts')
             ->build();
 
         // Create button
-        $components[] = C::button('Create New Template')
-            ->asLink(route('workout-templates.create'))
+        $components[] = C::button('Create New Workout')
+            ->asLink(route('workouts.create'))
             ->build();
 
-        // Table of templates with exercises as sub-items
-        if ($templates->isNotEmpty()) {
+        // Table of workouts with exercises as sub-items
+        if ($workouts->isNotEmpty()) {
             $tableBuilder = C::table();
 
-            foreach ($templates as $template) {
-                $line1 = $template->name;
-                $exerciseCount = $template->exercises->count();
+            foreach ($workouts as $workout) {
+                $line1 = $workout->name;
+                $exerciseCount = $workout->exercises->count();
                 
                 // Build exercise list with titles
                 if ($exerciseCount > 0) {
-                    $exerciseTitles = $template->exercises->pluck('exercise.title')->toArray();
+                    $exerciseTitles = $workout->exercises->pluck('exercise.title')->toArray();
                     $exerciseList = implode(', ', $exerciseTitles);
                     $line2 = $exerciseCount . ' ' . ($exerciseCount === 1 ? 'exercise' : 'exercises') . ': ' . $exerciseList;
                 } else {
                     $line2 = 'No exercises';
                 }
                 
-                $line3 = $template->description ?: null;
+                $line3 = $workout->description ?: null;
 
                 $rowBuilder = $tableBuilder->row(
-                    $template->id,
+                    $workout->id,
                     $line1,
                     $line2,
                     $line3
                 )
-                ->linkAction('fa-edit', route('workout-templates.edit', $template->id), 'Edit template')
-                ->formAction('fa-trash', route('workout-templates.destroy', $template->id), 'DELETE', [], 'Delete', 'btn-danger', true);
+                ->linkAction('fa-edit', route('workouts.edit', $workout->id), 'Edit workout')
+                ->formAction('fa-trash', route('workouts.destroy', $workout->id), 'DELETE', [], 'Delete', 'btn-danger', true);
 
                 // Add exercises as sub-items with log now button or completed checkmark
-                if ($template->exercises->isNotEmpty()) {
-                    foreach ($template->exercises as $index => $exercise) {
+                if ($workout->exercises->isNotEmpty()) {
+                    foreach ($workout->exercises as $index => $exercise) {
                         $exerciseLine1 = $exercise->exercise->title;
                         $exerciseLine2 = 'Order: ' . $exercise->order;
                         
@@ -104,12 +104,12 @@ class WorkoutTemplateController extends Controller
                             // Show completed checkmark (non-clickable)
                             $subItemBuilder->linkAction('fa-check-circle', '#', 'Completed today', 'btn-disabled');
                         } else {
-                            // Show log now button with redirect back to this template
+                            // Show log now button with redirect back to this workout
                             $logUrl = route('mobile-entry.add-lift-form', [
                                 'exercise' => $exercise->exercise_id,
                                 'date' => $today->toDateString(),
-                                'redirect_to' => 'workout-templates',
-                                'template_id' => $template->id
+                                'redirect_to' => 'workouts',
+                                'workout_id' => $workout->id
                             ]);
                             $subItemBuilder->linkAction('fa-play', $logUrl, 'Log now', 'btn-log-now');
                         }
@@ -118,8 +118,8 @@ class WorkoutTemplateController extends Controller
                     }
                 }
 
-                // Expand this template if it matches the ID parameter
-                if ($expandedTemplateId && $template->id == $expandedTemplateId) {
+                // Expand this workout if it matches the ID parameter
+                if ($expandedWorkoutId && $workout->id == $expandedWorkoutId) {
                     $rowBuilder->initialState('expanded');
                 }
                 
@@ -127,7 +127,7 @@ class WorkoutTemplateController extends Controller
             }
 
             $components[] = $tableBuilder
-                ->confirmMessage('deleteItem', 'Are you sure you want to delete this template or remove this exercise?')
+                ->confirmMessage('deleteItem', 'Are you sure you want to delete this workout or remove this exercise?')
                 ->build();
         } else {
             $components[] = C::messages()
@@ -147,15 +147,15 @@ class WorkoutTemplateController extends Controller
         $components = [];
 
         // Title
-        $components[] = C::title('Create Template')->build();
+        $components[] = C::title('Create Workout')->build();
 
         // Form
-        $components[] = C::form('create-template', 'Template Details')
+        $components[] = C::form('create-template', 'Workout Details')
             ->type('primary')
-            ->formAction(route('workout-templates.store'))
-            ->textField('name', 'Template Name:', '', 'e.g., Push Day')
+            ->formAction(route('workouts.store'))
+            ->textField('name', 'Workout Name:', '', 'e.g., Push Day')
             ->textField('description', 'Description:', '', 'Optional')
-            ->submitButton('Create Template')
+            ->submitButton('Create Workout')
             ->build();
 
         $data = ['components' => $components];
@@ -172,7 +172,7 @@ class WorkoutTemplateController extends Controller
             'description' => 'nullable|string',
         ]);
 
-        $template = WorkoutTemplate::create([
+        $workout = Workout::create([
             'user_id' => Auth::id(),
             'name' => $validated['name'],
             'description' => $validated['description'] ?? null,
@@ -180,26 +180,26 @@ class WorkoutTemplateController extends Controller
         ]);
 
         return redirect()
-            ->route('workout-templates.edit', $template->id)
-            ->with('success', 'Template created! Now add exercises.');
+            ->route('workouts.edit', $workout->id)
+            ->with('success', 'Workout created! Now add exercises.');
     }
 
     /**
      * Show the form for editing the specified template
      */
-    public function edit(Request $request, WorkoutTemplate $workoutTemplate)
+    public function edit(Request $request, Workout $workout)
     {
-        $this->authorize('update', $workoutTemplate);
+        $this->authorize('update', $workout);
 
-        $workoutTemplate->load('exercises.exercise.aliases');
+        $workout->load('exercises.exercise.aliases');
         
         // Apply aliases to exercises
         $user = Auth::user();
         $aliasService = app(\App\Services\ExerciseAliasService::class);
-        foreach ($workoutTemplate->exercises as $templateExercise) {
-            if ($templateExercise->exercise) {
-                $displayName = $aliasService->getDisplayName($templateExercise->exercise, $user);
-                $templateExercise->exercise->title = $displayName;
+        foreach ($workout->exercises as $workoutExercise) {
+            if ($workoutExercise->exercise) {
+                $displayName = $aliasService->getDisplayName($workoutExercise->exercise, $user);
+                $workoutExercise->exercise->title = $displayName;
             }
         }
 
@@ -209,9 +209,9 @@ class WorkoutTemplateController extends Controller
         $components = [];
 
         // Title with back button
-        $components[] = C::title($workoutTemplate->name)
-            ->subtitle('Edit template')
-            ->backButton('fa-arrow-left', route('workout-templates.index'), 'Back to templates')
+        $components[] = C::title($workout->name)
+            ->subtitle('Edit workout')
+            ->backButton('fa-arrow-left', route('workouts.index'), 'Back to workouts')
             ->build();
 
         // Messages
@@ -223,7 +223,7 @@ class WorkoutTemplateController extends Controller
 
         // Add Exercise button - hidden if list should be expanded
         $buttonBuilder = C::button('Add Exercise')
-            ->ariaLabel('Add exercise to template')
+            ->ariaLabel('Add exercise to workout')
             ->addClass('btn-add-item');
         
         if ($shouldExpandList) {
@@ -233,7 +233,7 @@ class WorkoutTemplateController extends Controller
         $components[] = $buttonBuilder->build();
 
         // Exercise selection list - expanded if coming from "Add exercises" button
-        $itemSelectionList = $this->generateExerciseSelectionList(Auth::id(), $workoutTemplate);
+        $itemSelectionList = $this->generateExerciseSelectionList(Auth::id(), $workout);
         
         $itemListBuilder = C::itemList()
             ->filterPlaceholder($itemSelectionList['filterPlaceholder'])
@@ -265,12 +265,12 @@ class WorkoutTemplateController extends Controller
         $components[] = $itemListBuilder->build();
 
         // Table of exercises
-        if ($workoutTemplate->exercises->isNotEmpty()) {
+        if ($workout->exercises->isNotEmpty()) {
             $tableBuilder = C::table();
             
-            $exerciseCount = $workoutTemplate->exercises->count();
+            $exerciseCount = $workout->exercises->count();
 
-            foreach ($workoutTemplate->exercises as $index => $exercise) {
+            foreach ($workout->exercises as $index => $exercise) {
                 $line1 = $exercise->exercise->title;
                 $line2 = 'Priority: ' . $exercise->order;
                 $line3 = null;
@@ -284,7 +284,7 @@ class WorkoutTemplateController extends Controller
                 if (!$isFirst) {
                     $rowBuilder->linkAction(
                         'fa-arrow-up',
-                        route('workout-templates.move-exercise', [$workoutTemplate->id, $exercise->id, 'direction' => 'up']),
+                        route('workouts.move-exercise', [$workout->id, $exercise->id, 'direction' => 'up']),
                         'Move up'
                     );
                 } else {
@@ -300,7 +300,7 @@ class WorkoutTemplateController extends Controller
                 if (!$isLast) {
                     $rowBuilder->linkAction(
                         'fa-arrow-down',
-                        route('workout-templates.move-exercise', [$workoutTemplate->id, $exercise->id, 'direction' => 'down']),
+                        route('workouts.move-exercise', [$workout->id, $exercise->id, 'direction' => 'down']),
                         'Move down'
                     );
                 } else {
@@ -315,7 +315,7 @@ class WorkoutTemplateController extends Controller
                 // Add delete button
                 $rowBuilder->formAction(
                     'fa-trash',
-                    route('workout-templates.remove-exercise', [$workoutTemplate->id, $exercise->id]),
+                    route('workouts.remove-exercise', [$workout->id, $exercise->id]),
                     'DELETE',
                     [],
                     'Remove exercise',
@@ -327,7 +327,7 @@ class WorkoutTemplateController extends Controller
             }
 
             $components[] = $tableBuilder
-                ->confirmMessage('deleteItem', 'Are you sure you want to remove this exercise from the template?')
+                ->confirmMessage('deleteItem', 'Are you sure you want to remove this exercise from the workout?')
                 ->build();
         } else {
             $components[] = C::messages()
@@ -336,13 +336,13 @@ class WorkoutTemplateController extends Controller
         }
 
         // Template details form at bottom
-        $components[] = C::form('edit-template-details', 'Template Details')
+        $components[] = C::form('edit-template-details', 'Workout Details')
             ->type('info')
-            ->formAction(route('workout-templates.update', $workoutTemplate->id))
-            ->textField('name', 'Template Name:', $workoutTemplate->name, 'e.g., Push Day')
-            ->textField('description', 'Description:', $workoutTemplate->description ?? '', 'Optional')
+            ->formAction(route('workouts.update', $workout->id))
+            ->textField('name', 'Workout Name:', $workout->name, 'e.g., Push Day')
+            ->textField('description', 'Description:', $workout->description ?? '', 'Optional')
             ->hiddenField('_method', 'PUT')
-            ->submitButton('Update Details')
+            ->submitButton('Update Workout')
             ->build();
 
         $data = ['components' => $components];
@@ -352,48 +352,48 @@ class WorkoutTemplateController extends Controller
     /**
      * Update the specified template
      */
-    public function update(Request $request, WorkoutTemplate $workoutTemplate)
+    public function update(Request $request, Workout $workout)
     {
-        $this->authorize('update', $workoutTemplate);
+        $this->authorize('update', $workout);
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
         ]);
 
-        $workoutTemplate->update($validated);
+        $workout->update($validated);
 
         return redirect()
-            ->route('workout-templates.edit', $workoutTemplate->id)
-            ->with('success', 'Template updated!');
+            ->route('workouts.edit', $workout->id)
+            ->with('success', 'Workout updated!');
     }
 
     /**
      * Remove the specified template
      */
-    public function destroy(WorkoutTemplate $workoutTemplate)
+    public function destroy(Workout $workout)
     {
-        $this->authorize('delete', $workoutTemplate);
+        $this->authorize('delete', $workout);
 
-        $workoutTemplate->delete();
+        $workout->delete();
 
         return redirect()
-            ->route('workout-templates.index')
-            ->with('success', 'Template deleted!');
+            ->route('workouts.index')
+            ->with('success', 'Workout deleted!');
     }
 
     /**
      * Add an exercise to a template
      */
-    public function addExercise(Request $request, WorkoutTemplate $workoutTemplate)
+    public function addExercise(Request $request, Workout $workout)
     {
-        $this->authorize('update', $workoutTemplate);
+        $this->authorize('update', $workout);
 
         $exerciseId = $request->input('exercise');
         
         if (!$exerciseId) {
             return redirect()
-                ->route('workout-templates.edit', $workoutTemplate->id)
+                ->route('workouts.edit', $workout->id)
                 ->with('error', 'No exercise specified.');
         }
 
@@ -403,41 +403,41 @@ class WorkoutTemplateController extends Controller
 
         if (!$exercise) {
             return redirect()
-                ->route('workout-templates.edit', $workoutTemplate->id)
+                ->route('workouts.edit', $workout->id)
                 ->with('error', 'Exercise not found.');
         }
 
         // Check if exercise already exists in template
-        $exists = WorkoutTemplateExercise::where('workout_template_id', $workoutTemplate->id)
+        $exists = WorkoutExercise::where('workout_id', $workout->id)
             ->where('exercise_id', $exercise->id)
             ->exists();
 
         if ($exists) {
             return redirect()
-                ->route('workout-templates.edit', $workoutTemplate->id)
-                ->with('warning', 'Exercise already in template.');
+                ->route('workouts.edit', $workout->id)
+                ->with('warning', 'Exercise already in workout.');
         }
 
         // Get next order (priority)
-        $maxOrder = $workoutTemplate->exercises()->max('order') ?? 0;
+        $maxOrder = $workout->exercises()->max('order') ?? 0;
 
-        WorkoutTemplateExercise::create([
-            'workout_template_id' => $workoutTemplate->id,
+        WorkoutExercise::create([
+            'workout_id' => $workout->id,
             'exercise_id' => $exercise->id,
             'order' => $maxOrder + 1,
         ]);
 
         return redirect()
-            ->route('workout-templates.edit', $workoutTemplate->id)
+            ->route('workouts.edit', $workout->id)
             ->with('success', 'Exercise added!');
     }
 
     /**
      * Create a new exercise and add it to the template
      */
-    public function createExercise(Request $request, WorkoutTemplate $workoutTemplate)
+    public function createExercise(Request $request, Workout $workout)
     {
-        $this->authorize('update', $workoutTemplate);
+        $this->authorize('update', $workout);
 
         $validated = $request->validate([
             'exercise_name' => 'required|string|max:255',
@@ -450,38 +450,38 @@ class WorkoutTemplateController extends Controller
         );
 
         // Check if exercise already exists in template
-        $exists = WorkoutTemplateExercise::where('workout_template_id', $workoutTemplate->id)
+        $exists = WorkoutExercise::where('workout_id', $workout->id)
             ->where('exercise_id', $exercise->id)
             ->exists();
 
         if ($exists) {
             return redirect()
-                ->route('workout-templates.edit', $workoutTemplate->id)
-                ->with('warning', 'Exercise already in template.');
+                ->route('workouts.edit', $workout->id)
+                ->with('warning', 'Exercise already in workout.');
         }
 
         // Get next order (priority)
-        $maxOrder = $workoutTemplate->exercises()->max('order') ?? 0;
+        $maxOrder = $workout->exercises()->max('order') ?? 0;
 
-        WorkoutTemplateExercise::create([
-            'workout_template_id' => $workoutTemplate->id,
+        WorkoutExercise::create([
+            'workout_id' => $workout->id,
             'exercise_id' => $exercise->id,
             'order' => $maxOrder + 1,
         ]);
 
         return redirect()
-            ->route('workout-templates.edit', $workoutTemplate->id)
+            ->route('workouts.edit', $workout->id)
             ->with('success', 'Exercise created and added!');
     }
 
     /**
      * Move an exercise up or down in the template
      */
-    public function moveExercise(Request $request, WorkoutTemplate $workoutTemplate, WorkoutTemplateExercise $exercise)
+    public function moveExercise(Request $request, Workout $workout, WorkoutExercise $exercise)
     {
-        $this->authorize('update', $workoutTemplate);
+        $this->authorize('update', $workout);
 
-        if ($exercise->workout_template_id !== $workoutTemplate->id) {
+        if ($exercise->workout_id !== $workout->id) {
             abort(404);
         }
 
@@ -489,13 +489,13 @@ class WorkoutTemplateController extends Controller
         
         if ($direction === 'up') {
             // Find the exercise above this one
-            $swapWith = WorkoutTemplateExercise::where('workout_template_id', $workoutTemplate->id)
+            $swapWith = WorkoutExercise::where('workout_id', $workout->id)
                 ->where('order', '<', $exercise->order)
                 ->orderBy('order', 'desc')
                 ->first();
         } else {
             // Find the exercise below this one
-            $swapWith = WorkoutTemplateExercise::where('workout_template_id', $workoutTemplate->id)
+            $swapWith = WorkoutExercise::where('workout_id', $workout->id)
                 ->where('order', '>', $exercise->order)
                 ->orderBy('order', 'asc')
                 ->first();
@@ -512,32 +512,32 @@ class WorkoutTemplateController extends Controller
         }
 
         return redirect()
-            ->route('workout-templates.edit', $workoutTemplate->id)
+            ->route('workouts.edit', $workout->id)
             ->with('success', 'Exercise order updated!');
     }
 
     /**
      * Remove an exercise from a template
      */
-    public function removeExercise(WorkoutTemplate $workoutTemplate, WorkoutTemplateExercise $exercise)
+    public function removeExercise(Workout $workout, WorkoutExercise $exercise)
     {
-        $this->authorize('update', $workoutTemplate);
+        $this->authorize('update', $workout);
 
-        if ($exercise->workout_template_id !== $workoutTemplate->id) {
+        if ($exercise->workout_id !== $workout->id) {
             abort(404);
         }
 
         $exercise->delete();
 
         return redirect()
-            ->route('workout-templates.edit', $workoutTemplate->id)
+            ->route('workouts.edit', $workout->id)
             ->with('success', 'Exercise removed!');
     }
 
     /**
      * Generate exercise selection list (similar to mobile entry)
      */
-    private function generateExerciseSelectionList($userId, WorkoutTemplate $workoutTemplate)
+    private function generateExerciseSelectionList($userId, Workout $workout)
     {
         // Get user's accessible exercises with aliases
         $exercises = \App\Models\Exercise::availableToUser($userId)
@@ -553,7 +553,7 @@ class WorkoutTemplateController extends Controller
         $exercises = $aliasService->applyAliasesToExercises($exercises, $user);
 
         // Get exercises already in this template (to exclude from selection list)
-        $templateExerciseIds = $workoutTemplate->exercises()->pluck('exercise_id')->toArray();
+        $workoutExerciseIds = $workout->exercises()->pluck('exercise_id')->toArray();
 
         // Get recent exercises (last 7 days) for the "Recent" category
         $recentExerciseIds = \App\Models\LiftLog::where('user_id', $userId)
@@ -582,8 +582,8 @@ class WorkoutTemplateController extends Controller
         $items = [];
         
         foreach ($exercises as $exercise) {
-            // Skip exercises already in template
-            if (in_array($exercise->id, $templateExerciseIds)) {
+            // Skip exercises already in workout
+            if (in_array($exercise->id, $workoutExerciseIds)) {
                 continue;
             }
             
@@ -623,8 +623,8 @@ class WorkoutTemplateController extends Controller
                 'id' => 'exercise-' . $exercise->id,
                 'name' => $exercise->title,
                 'type' => $itemType,
-                'href' => route('workout-templates.add-exercise', [
-                    $workoutTemplate->id,
+                'href' => route('workouts.add-exercise', [
+                    $workout->id,
                     'exercise' => $exercise->id
                 ])
             ];
@@ -650,7 +650,7 @@ class WorkoutTemplateController extends Controller
         return [
             'noResultsMessage' => 'No exercises found.',
             'createForm' => [
-                'action' => route('workout-templates.create-exercise', $workoutTemplate->id),
+                'action' => route('workouts.create-exercise', $workout->id),
                 'inputName' => 'exercise_name',
                 'hiddenFields' => []
             ],
@@ -662,29 +662,29 @@ class WorkoutTemplateController extends Controller
     /**
      * Apply a template to a specific date
      */
-    public function apply(Request $request, WorkoutTemplate $workoutTemplate)
+    public function apply(Request $request, Workout $workout)
     {
-        $this->authorize('view', $workoutTemplate);
+        $this->authorize('view', $workout);
 
         $date = $request->input('date') 
             ? Carbon::parse($request->input('date'))
             : Carbon::today();
         
-        $workoutTemplate->applyToDate($date, Auth::user());
+        $workout->applyToDate($date, Auth::user());
 
         return redirect()
             ->route('mobile-entry.lifts', ['date' => $date->toDateString()])
-            ->with('success', 'Template "' . $workoutTemplate->name . '" applied!');
+            ->with('success', 'Template "' . $workout->name . '" applied!');
     }
 
     /**
-     * Show templates for applying to a specific date
+     * Show workouts for applying to a specific date
      */
     public function browse(Request $request)
     {
         $date = $request->input('date', Carbon::today()->toDateString());
         
-        $templates = WorkoutTemplate::where('user_id', Auth::id())
+        $workouts = Workout::where('user_id', Auth::id())
             ->withCount('exercises')
             ->orderBy('name')
             ->get();
@@ -692,36 +692,36 @@ class WorkoutTemplateController extends Controller
         $components = [];
 
         // Title
-        $components[] = C::title('Apply Template')
-            ->subtitle('Choose a template for ' . Carbon::parse($date)->format('M j, Y'))
+        $components[] = C::title('Apply Workout')
+            ->subtitle('Choose a workout for ' . Carbon::parse($date)->format('M j, Y'))
             ->build();
 
-        // Table of templates with apply links
-        if ($templates->isNotEmpty()) {
+        // Table of workouts with apply links
+        if ($workouts->isNotEmpty()) {
             $tableBuilder = C::table();
 
-            foreach ($templates as $template) {
-                $line1 = $template->name;
-                $line2 = $template->exercises_count . ' exercises';
-                $line3 = $template->description ? substr($template->description, 0, 50) : null;
+            foreach ($workouts as $workout) {
+                $line1 = $workout->name;
+                $line2 = $workout->exercises_count . ' exercises';
+                $line3 = $workout->description ? substr($workout->description, 0, 50) : null;
 
                 // Use custom "Apply" button
-                $applyUrl = route('workout-templates.apply', $template->id) . '?date=' . $date;
+                $applyUrl = route('workouts.apply', $workout->id) . '?date=' . $date;
                 
                 $tableBuilder->row(
-                    $template->id,
+                    $workout->id,
                     $line1,
                     $line2,
                     $line3
                 )
-                ->linkAction('fa-check', $applyUrl, 'Apply template', 'btn-log-now')
+                ->linkAction('fa-check', $applyUrl, 'Apply workout', 'btn-log-now')
                 ->add();
             }
 
             $components[] = $tableBuilder->build();
         } else {
             $components[] = C::messages()
-                ->info('No templates yet. Create your first template!')
+                ->info('No workouts yet. Create your first workout!')
                 ->build();
         }
 

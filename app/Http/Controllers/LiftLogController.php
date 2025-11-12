@@ -308,7 +308,7 @@ class LiftLogController extends Controller
         }
         
         // Check if we're in mobile-entry context
-        $isMobileEntry = in_array(request()->input('redirect_to'), ['mobile-entry', 'mobile-entry-lifts', 'workout-templates']);
+        $isMobileEntry = in_array(request()->input('redirect_to'), ['mobile-entry', 'mobile-entry-lifts', 'workouts']);
         
         // Generate a specific deletion message before deleting
         $deletionMessage = $this->generateDeletionMessage($liftLog, $isMobileEntry);

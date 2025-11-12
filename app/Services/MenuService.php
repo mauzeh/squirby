@@ -316,9 +316,9 @@ class MenuService
         ];
 
         $items[] = [
-            'label' => 'Templates',
-            'route' => 'workout-templates.index',
-            'active' => Request::routeIs('workout-templates.*'),
+            'label' => 'Workouts',
+            'route' => 'workouts.index',
+            'active' => Request::routeIs('workouts.*'),
         ];
 
         $items[] = [

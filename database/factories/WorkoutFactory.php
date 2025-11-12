@@ -2,13 +2,13 @@
 
 namespace Database\Factories;
 
-use App\Models\WorkoutTemplate;
+use App\Models\Workout;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-class WorkoutTemplateFactory extends Factory
+class WorkoutFactory extends Factory
 {
-    protected $model = WorkoutTemplate::class;
+    protected $model = Workout::class;
 
     public function definition()
     {

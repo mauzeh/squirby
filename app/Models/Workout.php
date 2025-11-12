@@ -8,9 +8,10 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class WorkoutTemplate extends Model
+class Workout extends Model
 {
     use HasFactory;
+    
     protected $fillable = [
         'user_id',
         'name',
@@ -33,18 +34,18 @@ class WorkoutTemplate extends Model
 
     public function exercises(): HasMany
     {
-        return $this->hasMany(WorkoutTemplateExercise::class)->orderBy('order');
+        return $this->hasMany(WorkoutExercise::class)->orderBy('order');
     }
 
     /**
-     * Apply this template to a specific date for a user
+     * Apply this workout to a specific date for a user
      */
     public function applyToDate(Carbon $date, User $user): void
     {
-        foreach ($this->exercises as $templateExercise) {
+        foreach ($this->exercises as $workoutExercise) {
             MobileLiftForm::create([
                 'user_id' => $user->id,
-                'exercise_id' => $templateExercise->exercise_id,
+                'exercise_id' => $workoutExercise->exercise_id,
                 'date' => $date,
             ]);
         }
@@ -53,11 +54,11 @@ class WorkoutTemplate extends Model
     }
 
     /**
-     * Create a copy of this template for another user
+     * Create a copy of this workout for another user
      */
     public function duplicate(User $user): self
     {
-        $newTemplate = self::create([
+        $newWorkout = self::create([
             'user_id' => $user->id,
             'name' => $this->name,
             'description' => $this->description,
@@ -66,13 +67,13 @@ class WorkoutTemplate extends Model
         ]);
 
         foreach ($this->exercises as $exercise) {
-            WorkoutTemplateExercise::create([
-                'workout_template_id' => $newTemplate->id,
+            WorkoutExercise::create([
+                'workout_id' => $newWorkout->id,
                 'exercise_id' => $exercise->exercise_id,
                 'order' => $exercise->order,
             ]);
         }
 
-        return $newTemplate;
+        return $newWorkout;
     }
 }

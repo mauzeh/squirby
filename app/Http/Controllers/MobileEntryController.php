@@ -56,8 +56,8 @@ class MobileEntryController extends Controller
         if ($request->has('redirect_to')) {
             $redirectParams['redirect_to'] = $request->input('redirect_to');
         }
-        if ($request->has('template_id')) {
-            $redirectParams['template_id'] = $request->input('template_id');
+        if ($request->has('workout_id')) {
+            $redirectParams['workout_id'] = $request->input('workout_id');
         }
         
         // Generate forms based on mobile lift forms using the service
@@ -198,8 +198,8 @@ class MobileEntryController extends Controller
             $redirectParams['redirect_to'] = $request->input('redirect_to');
         }
         
-        if ($request->has('template_id')) {
-            $redirectParams['template_id'] = $request->input('template_id');
+        if ($request->has('workout_id')) {
+            $redirectParams['workout_id'] = $request->input('workout_id');
         }
         
         return redirect()->route('mobile-entry.lifts', $redirectParams)

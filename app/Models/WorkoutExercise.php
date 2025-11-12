@@ -6,11 +6,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class WorkoutTemplateExercise extends Model
+class WorkoutExercise extends Model
 {
     use HasFactory;
+    
     protected $fillable = [
-        'workout_template_id',
+        'workout_id',
         'exercise_id',
         'order',
     ];
@@ -19,9 +20,9 @@ class WorkoutTemplateExercise extends Model
         'order' => 'integer',
     ];
 
-    public function template(): BelongsTo
+    public function workout(): BelongsTo
     {
-        return $this->belongsTo(WorkoutTemplate::class, 'workout_template_id');
+        return $this->belongsTo(Workout::class);
     }
 
     public function exercise(): BelongsTo

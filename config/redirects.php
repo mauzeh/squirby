@@ -22,9 +22,9 @@ return [
                 'route' => 'mobile-entry.lifts',
                 'params' => ['date', 'submitted_lift_log_id'],
             ],
-            'workout-templates' => [
-                'route' => 'workout-templates.index',
-                'params' => ['template_id'],
+            'workouts' => [
+                'route' => 'workouts.index',
+                'params' => ['workout_id'],
             ],
             'default' => [
                 'route' => 'exercises.show-logs',
@@ -40,9 +40,9 @@ return [
                 'route' => 'mobile-entry.lifts',
                 'params' => ['date', 'submitted_lift_log_id'],
             ],
-            'workout-templates' => [
-                'route' => 'workout-templates.index',
-                'params' => ['template_id'],
+            'workouts' => [
+                'route' => 'workouts.index',
+                'params' => ['workout_id'],
             ],
             'default' => [
                 'route' => 'exercises.show-logs',
@@ -58,9 +58,9 @@ return [
                 'route' => 'mobile-entry.lifts',
                 'params' => ['date'],
             ],
-            'workout-templates' => [
-                'route' => 'workout-templates.index',
-                'params' => ['template_id'],
+            'workouts' => [
+                'route' => 'workouts.index',
+                'params' => ['workout_id'],
             ],
             'default' => [
                 'route' => 'lift-logs.index',
