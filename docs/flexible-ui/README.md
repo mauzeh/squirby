@@ -14,6 +14,7 @@ The flexible UI system has been successfully migrated and is now in production u
 - **[Mobile Entry Documentation](mobile-entry.md)** - Detailed API documentation
 - **[Testing Guide](testing.md)** - How to test flexible UI components
 - **[Admin Menu Documentation](admin-menu.md)** - Admin interface documentation
+- **[Initial State Configuration](initial-state.md)** - Configure collapsed/expanded state for item lists
 
 ## Overview
 
@@ -232,6 +233,12 @@ When adding new features:
 
 ## Version History
 
+- **v1.1** (November 11, 2025) - Initial state configuration added
+  - Added `initialState()` method to Button and ItemList components
+  - Supports collapsed/expanded initial states for item lists
+  - Backward compatible with existing code
+  - Documentation and examples added
+
 - **v1.0** (November 10, 2025) - Initial migration completed
   - All three main interfaces migrated
   - 92 tests updated and passing
@@ -241,4 +248,4 @@ When adding new features:
 ---
 
 **Status:** Production Ready ✅  
-**Last Updated:** November 10, 2025
+**Last Updated:** November 11, 2025

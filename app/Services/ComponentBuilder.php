@@ -294,7 +294,8 @@ class ButtonComponentBuilder
             'text' => $text,
             'ariaLabel' => $text,
             'cssClass' => 'btn-primary',
-            'type' => 'button' // 'button' or 'link'
+            'type' => 'button', // 'button' or 'link'
+            'initialState' => 'visible' // 'visible' or 'hidden'
         ];
     }
     
@@ -323,6 +324,12 @@ class ButtonComponentBuilder
         return $this;
     }
     
+    public function initialState(string $state): self
+    {
+        $this->data['initialState'] = $state;
+        return $this;
+    }
+    
     public function build(): array
     {
         return [
@@ -342,6 +349,7 @@ class ItemListComponentBuilder
         'filterPlaceholder' => 'Filter items...',
         'noResultsMessage' => 'No items found.',
         'createForm' => null,
+        'initialState' => 'collapsed', // 'collapsed' or 'expanded'
         'ariaLabels' => [
             'section' => 'Item selection list',
             'selectItem' => 'Select this item'
@@ -387,6 +395,12 @@ class ItemListComponentBuilder
             'hiddenFields' => $hiddenFields
         ];
         
+        return $this;
+    }
+    
+    public function initialState(string $state): self
+    {
+        $this->data['initialState'] = $state;
         return $this;
     }
     

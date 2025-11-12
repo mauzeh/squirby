@@ -54,8 +54,13 @@ C::summary()
 C::button('Add Exercise')
     ->ariaLabel('Add new exercise')
     ->cssClass('btn-primary btn-success')
+    ->initialState('visible')  // 'visible' (default) or 'hidden'
     ->build()
 ```
+
+**Initial State Options:**
+- `visible` (default) - Button shown on page load
+- `hidden` - Button hidden on page load (useful when item list starts expanded)
 
 ## Item List Component
 
@@ -66,7 +71,23 @@ C::itemList()
     ->filterPlaceholder('Search exercises...')
     ->noResultsMessage('No exercises found.')
     ->createForm(route('create'), 'exercise_name', ['date' => $date])
+    ->initialState('collapsed')  // 'collapsed' (default) or 'expanded'
     ->build()
+```
+
+**Initial State Options:**
+- `collapsed` (default) - List hidden on page load, shown when "Add" button clicked
+- `expanded` - List visible on page load (useful for dedicated add pages)
+
+**Coordinated States Example:**
+```php
+// Collapsed list (default behavior)
+C::button('Add Exercise')->build(),
+C::itemList()->items(...)->build()
+
+// Expanded list (quick-add workflow)
+C::button('Add Exercise')->initialState('hidden')->build(),
+C::itemList()->items(...)->initialState('expanded')->build()
 ```
 
 ## Form Component

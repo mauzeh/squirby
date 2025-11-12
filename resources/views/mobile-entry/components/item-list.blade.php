@@ -1,5 +1,5 @@
 {{-- Item List Component --}}
-<section class="component-list-section" aria-label="{{ $data['ariaLabels']['section'] }}">
+<section class="component-list-section{{ ($data['initialState'] ?? 'collapsed') === 'expanded' ? ' active' : '' }}" aria-label="{{ $data['ariaLabels']['section'] }}" data-initial-state="{{ $data['initialState'] ?? 'collapsed' }}">
     <ul class="component-list">
         <li>
             <div class="component-filter-container">

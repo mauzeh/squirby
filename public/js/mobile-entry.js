@@ -315,6 +315,7 @@ document.addEventListener('DOMContentLoaded', function() {
      * 
      * Simple functionality to show/hide the item selection list when "Add Item" is clicked.
      * No dynamic form management - items link directly to backend URLs.
+     * Respects initial state configuration from the controller.
      */
     const setupItemListToggle = () => {
         const addItemButton = document.querySelector('.btn-add-item');
@@ -403,8 +404,17 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
         
-        // Initialize with item list hidden
-        hideItemSelection();
+        // Initialize based on configured initial state
+        const listInitialState = itemListContainer?.dataset.initialState || 'collapsed';
+        const buttonInitialState = addItemSection?.dataset.initialState || 'visible';
+        
+        if (listInitialState === 'expanded') {
+            // Start with list expanded
+            showItemSelection();
+        } else {
+            // Start with list collapsed (default)
+            hideItemSelection();
+        }
     };
     
     // Initialize item list toggle

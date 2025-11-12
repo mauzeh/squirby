@@ -56,13 +56,14 @@ class FlexibleWorkflowController extends Controller
                     ->item('today', 12, 'Today\'s Sets')
                     ->build(),
                 
-                // Add button
+                // Add button (starts visible by default)
                 C::button('Add Exercise')
                     ->ariaLabel('Add new exercise')
                     ->addClass('btn-add-item')
                     ->build(),
                 
-                // Item list
+                // Item list (starts collapsed by default)
+                // To start expanded, add: ->initialState('expanded')
                 C::itemList()
                     ->item('ex-1', 'Bench Press', '#', 'In Program', 'in-program', 4)
                     ->item('ex-2', 'Squats', '#', 'Recent', 'recent', 1)
@@ -446,6 +447,46 @@ class FlexibleWorkflowController extends Controller
                         ->formAction('fa-trash', route('flexible.table-example'), 'DELETE', [], 'Delete', 'btn-danger', true)
                         ->add()
                     ->confirmMessage('deleteItem', 'Are you sure you want to delete this exercise?')
+                    ->build(),
+            ],
+            'showDebugIndicator' => true
+        ];
+        
+        return view('mobile-entry.flexible', compact('data'));
+    }
+    
+    /**
+     * Example 7: Expanded item list (initial state demo)
+     * Shows the item list expanded by default with the button hidden
+     */
+    public function expandedList(Request $request)
+    {
+        $data = [
+            'components' => [
+                C::title('Add Exercise', 'Select from your exercises or create a new one')->build(),
+                
+                C::messages()
+                    ->info('The item list starts expanded - perfect for quick-add workflows')
+                    ->tip('The "Add Exercise" button is hidden initially', 'Note:')
+                    ->build(),
+                
+                // Button starts hidden
+                C::button('Add Exercise')
+                    ->ariaLabel('Add new exercise')
+                    ->addClass('btn-add-item')
+                    ->initialState('hidden')
+                    ->build(),
+                
+                // Item list starts expanded
+                C::itemList()
+                    ->item('ex-1', 'Bench Press', '#', 'In Program', 'in-program', 4)
+                    ->item('ex-2', 'Squats', '#', 'Recent', 'recent', 1)
+                    ->item('ex-3', 'Deadlift', '#', 'Available', 'regular', 3)
+                    ->item('ex-4', 'Overhead Press', '#', 'Available', 'regular', 3)
+                    ->item('ex-5', 'Barbell Row', '#', 'Recent', 'recent', 1)
+                    ->filterPlaceholder('Search exercises...')
+                    ->createForm('#', 'exercise_name')
+                    ->initialState('expanded')
                     ->build(),
             ],
             'showDebugIndicator' => true
