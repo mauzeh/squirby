@@ -55,7 +55,16 @@ class WorkoutTemplateController extends Controller
             foreach ($templates as $template) {
                 $line1 = $template->name;
                 $exerciseCount = $template->exercises->count();
-                $line2 = $exerciseCount . ' ' . ($exerciseCount === 1 ? 'exercise' : 'exercises');
+                
+                // Build exercise list with titles
+                if ($exerciseCount > 0) {
+                    $exerciseTitles = $template->exercises->pluck('exercise.title')->toArray();
+                    $exerciseList = implode(', ', $exerciseTitles);
+                    $line2 = $exerciseCount . ' ' . ($exerciseCount === 1 ? 'exercise' : 'exercises') . ': ' . $exerciseList;
+                } else {
+                    $line2 = 'No exercises';
+                }
+                
                 $line3 = $template->description ?: null;
 
                 $rowBuilder = $tableBuilder->row(
