@@ -342,8 +342,28 @@ document.addEventListener('DOMContentLoaded', function() {
             
             const cancelButton = itemListContainer.querySelector('.btn-cancel');
             
+            // Scroll to filter input
+            const scrollToFilter = (delay = 300) => {
+                const filterInput = itemListContainer.querySelector('.component-filter-input');
+                if (filterInput) {
+                    const filterContainer = filterInput.closest('.item-filter-container');
+                    if (filterContainer) {
+                        setTimeout(() => {
+                            const containerRect = filterContainer.getBoundingClientRect();
+                            const viewportHeight = window.innerHeight;
+                            const targetPosition = window.scrollY + containerRect.top - (viewportHeight * 0.05);
+                            
+                            window.scrollTo({
+                                top: Math.max(0, targetPosition),
+                                behavior: 'smooth'
+                            });
+                        }, delay);
+                    }
+                }
+            };
+            
             // Show item selection list
-            const showItemSelection = () => {
+            const showItemSelection = (shouldScroll = true) => {
                 if (itemListContainer) {
                     itemListContainer.classList.add('active');
                 }
@@ -353,37 +373,27 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 
                 // Focus on the filter input field and scroll to optimal position
-                requestAnimationFrame(() => {
-                    const filterInput = itemListContainer.querySelector('.component-filter-input');
-                    if (filterInput) {
-                        // Force focus and click to ensure mobile keyboard opens
-                        filterInput.focus();
-                        
-                        // Additional mobile keyboard trigger methods
-                        if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
-                            filterInput.click();
+                if (shouldScroll) {
+                    requestAnimationFrame(() => {
+                        const filterInput = itemListContainer.querySelector('.component-filter-input');
+                        if (filterInput) {
+                            // Force focus and click to ensure mobile keyboard opens
+                            filterInput.focus();
                             
-                            setTimeout(() => {
-                                filterInput.setSelectionRange(0, 0);
-                            }, 50);
-                        }
-                        
-                        // Scroll to position the filter input optimally for mobile
-                        const filterContainer = filterInput.closest('.item-filter-container');
-                        if (filterContainer) {
-                            setTimeout(() => {
-                                const containerRect = filterContainer.getBoundingClientRect();
-                                const viewportHeight = window.innerHeight;
-                                const targetPosition = window.scrollY + containerRect.top - (viewportHeight * 0.05);
+                            // Additional mobile keyboard trigger methods
+                            if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+                                filterInput.click();
                                 
-                                window.scrollTo({
-                                    top: Math.max(0, targetPosition),
-                                    behavior: 'smooth'
-                                });
-                            }, 300);
+                                setTimeout(() => {
+                                    filterInput.setSelectionRange(0, 0);
+                                }, 50);
+                            }
+                            
+                            // Scroll to position the filter input optimally for mobile
+                            scrollToFilter(300);
                         }
-                    }
-                });
+                    });
+                }
             };
             
             // Hide item selection list and show add button
@@ -415,7 +425,10 @@ document.addEventListener('DOMContentLoaded', function() {
             const listInitialState = itemListContainer?.dataset.initialState || 'collapsed';
             
             if (listInitialState === 'expanded') {
-                showItemSelection();
+                // Show the list without focusing (to avoid keyboard on page load)
+                showItemSelection(false);
+                // Scroll to it after page is fully loaded
+                scrollToFilter(500);
             } else {
                 hideItemSelection();
             }
