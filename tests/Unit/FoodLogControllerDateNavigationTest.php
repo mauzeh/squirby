@@ -31,8 +31,9 @@ class FoodLogControllerDateNavigationTest extends TestCase
         $nutritionService = $this->createMock(NutritionService::class);
         $dateNavigationService = new DateNavigationService();
         $foodLogService = $this->createMock(\App\Services\MobileEntry\FoodLogService::class);
+        $redirectService = $this->createMock(\App\Services\RedirectService::class);
         
-        $this->controller = new FoodLogController($nutritionService, $dateNavigationService, $foodLogService);
+        $this->controller = new FoodLogController($nutritionService, $dateNavigationService, $foodLogService, $redirectService);
         $this->user = User::factory()->create();
         $this->ingredient = IngredientFactory::new()->create(['user_id' => $this->user->id]);
         

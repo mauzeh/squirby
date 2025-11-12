@@ -6,16 +6,19 @@ use App\Models\BodyLog;
 use App\Models\MeasurementType;
 
 use App\Services\ChartService;
+use App\Services\RedirectService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 
 class BodyLogController extends Controller
 {
     protected $chartService;
+    protected $redirectService;
 
-    public function __construct(ChartService $chartService)
+    public function __construct(ChartService $chartService, RedirectService $redirectService)
     {
         $this->chartService = $chartService;
+        $this->redirectService = $redirectService;
     }
 
     public function index()
@@ -69,12 +72,13 @@ class BodyLogController extends Controller
             $successMessage = 'Measurement logged successfully.';
         }
 
-        if ($request->input('redirect_to') === 'mobile-entry-measurements') {
-            return redirect()->route('mobile-entry.measurements', ['date' => $request->input('date')])
-                ->with('success', $successMessage);
-        }
-
-        return redirect()->route('body-logs.index')->with('success', $successMessage);
+        return $this->redirectService->getRedirect(
+            'body_logs',
+            'store',
+            $request,
+            [],
+            $successMessage
+        );
     }
 
     public function edit(BodyLog $bodyLog)
@@ -108,12 +112,13 @@ class BodyLogController extends Controller
             'comments' => $request->comments,
         ]);
 
-        if ($request->input('redirect_to') === 'mobile-entry-measurements') {
-            return redirect()->route('mobile-entry.measurements', ['date' => $request->input('date')])
-                ->with('success', 'Measurement updated successfully.');
-        }
-
-        return redirect()->route('body-logs.index')->with('success', 'Body log updated successfully.');
+        return $this->redirectService->getRedirect(
+            'body_logs',
+            'update',
+            $request,
+            [],
+            'Measurement updated successfully.'
+        );
     }
 
     public function destroy(BodyLog $bodyLog)
@@ -124,12 +129,13 @@ class BodyLogController extends Controller
         
         $bodyLog->delete();
 
-        if (request()->input('redirect_to') === 'mobile-entry-measurements') {
-            return redirect()->route('mobile-entry.measurements', ['date' => request()->input('date')])
-                ->with('success', 'Measurement deleted successfully.');
-        }
-
-        return redirect()->route('body-logs.index')->with('success', 'Body log deleted successfully.');
+        return $this->redirectService->getRedirect(
+            'body_logs',
+            'destroy',
+            request(),
+            [],
+            'Measurement deleted successfully.'
+        );
     }
 
     public function destroySelected(Request $request)

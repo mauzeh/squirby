@@ -12,6 +12,7 @@ use App\Services\ExerciseTypes\ExerciseTypeFactory;
 use App\Services\ExerciseTypes\Exceptions\InvalidExerciseDataException;
 use App\Services\ExerciseTypes\Exceptions\UnsupportedOperationException;
 use App\Presenters\LiftLogTablePresenter;
+use App\Services\RedirectService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -23,11 +24,16 @@ class LiftLogController extends Controller
 {
     protected $exerciseService;
     protected $liftLogTablePresenter;
+    protected $redirectService;
 
-    public function __construct(ExerciseService $exerciseService, LiftLogTablePresenter $liftLogTablePresenter)
-    {
+    public function __construct(
+        ExerciseService $exerciseService,
+        LiftLogTablePresenter $liftLogTablePresenter,
+        RedirectService $redirectService
+    ) {
         $this->exerciseService = $exerciseService;
         $this->liftLogTablePresenter = $liftLogTablePresenter;
+        $this->redirectService = $redirectService;
     }
     /**
      * Display a listing of the resource.
@@ -161,28 +167,16 @@ class LiftLogController extends Controller
         // Generate a celebratory success message with workout details
         $successMessage = $this->generateSuccessMessage($exercise, $request->input('weight'), $reps, $rounds, $request->input('band_color'));
 
-        if ($request->input('redirect_to') === 'mobile-entry') {
-            $redirectParams = [
-                'date' => $request->input('date'),
+        return $this->redirectService->getRedirect(
+            'lift_logs',
+            'store',
+            $request,
+            [
                 'submitted_lift_log_id' => $liftLog->id,
-            ];
-            return redirect()->route('mobile-entry.lifts', $redirectParams)->with('success', $successMessage);
-        } elseif ($request->input('redirect_to') === 'mobile-entry-lifts') {
-            $redirectParams = [
-                'date' => $request->input('date'),
-                'submitted_lift_log_id' => $liftLog->id,
-            ];
-            
-            return redirect()->route('mobile-entry.lifts', $redirectParams)->with('success', $successMessage);
-        } elseif ($request->input('redirect_to') === 'workout-templates') {
-            $redirectParams = [];
-            if ($request->input('template_id')) {
-                $redirectParams['id'] = $request->input('template_id');
-            }
-            return redirect()->route('workout-templates.index', $redirectParams)->with('success', $successMessage);
-        } else {
-            return redirect()->route('exercises.show-logs', ['exercise' => $liftLog->exercise_id])->with('success', $successMessage);
-        }
+                'exercise' => $liftLog->exercise_id,
+            ],
+            $successMessage
+        );
     }
 
     /**
@@ -292,27 +286,16 @@ class LiftLogController extends Controller
             ]);
         }
 
-        if ($request->input('redirect_to') === 'mobile-entry') {
-            $redirectParams = [
-                'date' => $request->input('date'),
+        return $this->redirectService->getRedirect(
+            'lift_logs',
+            'update',
+            $request,
+            [
                 'submitted_lift_log_id' => $liftLog->id,
-            ];
-            return redirect()->route('mobile-entry.lifts', $redirectParams)->with('success', 'Lift log updated successfully.');
-        } elseif ($request->input('redirect_to') === 'mobile-entry-lifts') {
-            $redirectParams = [
-                'date' => $request->input('date'),
-                'submitted_lift_log_id' => $liftLog->id,
-            ];
-            return redirect()->route('mobile-entry.lifts', $redirectParams)->with('success', 'Lift log updated successfully.');
-        } elseif ($request->input('redirect_to') === 'workout-templates') {
-            $redirectParams = [];
-            if ($request->input('template_id')) {
-                $redirectParams['id'] = $request->input('template_id');
-            }
-            return redirect()->route('workout-templates.index', $redirectParams)->with('success', 'Lift log updated successfully.');
-        } else {
-            return redirect()->route('exercises.show-logs', ['exercise' => $liftLog->exercise_id])->with('success', 'Lift log updated successfully.');
-        }
+                'exercise' => $liftLog->exercise_id,
+            ],
+            'Lift log updated successfully.'
+        );
     }
 
     /**
@@ -332,19 +315,13 @@ class LiftLogController extends Controller
         
         $liftLog->delete();
 
-        if (request()->input('redirect_to') === 'mobile-entry') {
-            return redirect()->route('mobile-entry.lifts', ['date' => request()->input('date')])->with('success', $deletionMessage);
-        } elseif (request()->input('redirect_to') === 'mobile-entry-lifts') {
-            return redirect()->route('mobile-entry.lifts', ['date' => request()->input('date')])->with('success', $deletionMessage);
-        } elseif (request()->input('redirect_to') === 'workout-templates') {
-            $redirectParams = [];
-            if (request()->input('template_id')) {
-                $redirectParams['id'] = request()->input('template_id');
-            }
-            return redirect()->route('workout-templates.index', $redirectParams)->with('success', $deletionMessage);
-        }
-
-        return redirect()->route('lift-logs.index')->with('success', $deletionMessage);
+        return $this->redirectService->getRedirect(
+            'lift_logs',
+            'destroy',
+            request(),
+            [],
+            $deletionMessage
+        );
     }
 
     public function destroySelected(Request $request)
