@@ -2125,6 +2125,12 @@ able Component - Tabular CRUD list optimized for narrow screens */
     color: var(--text-primary);
 }
 
+.cell-title-large {
+    font-size: 1.4em;
+    font-weight: bold;
+    color: var(--text-primary);
+}
+
 .cell-content {
     font-size: 0.9em;
     color: var(--text-secondary);

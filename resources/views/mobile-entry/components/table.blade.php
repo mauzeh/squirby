@@ -22,7 +22,7 @@
             @endif
             <div class="component-table-cell">
                 @if(isset($row['line1']) && !empty($row['line1']))
-                <div class="cell-title">{{ $row['line1'] }}</div>
+                <div class="{{ $row['titleClass'] ?? 'cell-title' }}">{{ $row['line1'] }}</div>
                 @endif
                 @if(isset($row['line2']) && !empty($row['line2']))
                 <div class="cell-content">{{ $row['line2'] }}</div>

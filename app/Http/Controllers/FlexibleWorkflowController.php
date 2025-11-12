@@ -367,10 +367,11 @@ class FlexibleWorkflowController extends Controller
                     ->add()
                     ->row(
                         5,
-                        'Transparent Button Example',
+                        'Transparent Button + Large Row Title',
                         'Shows transparent edit button',
                         'White icon with subtle hover effect'
                     )
+                    ->titleClass('cell-title-large')
                     ->linkAction('fa-pencil', route('flexible.table-example'), 'Edit', 'btn-transparent')
                     ->formAction('fa-trash', route('flexible.table-example'), 'DELETE', ['redirect' => 'table'], 'Delete', 'btn-danger', true)
                     ->add()

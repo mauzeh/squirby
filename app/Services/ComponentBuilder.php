@@ -786,6 +786,7 @@ class TableRowBuilder
         $this->data = [
             'id' => $id,
             'line1' => $line1,
+            'titleClass' => 'cell-title', // Default title class
             'actions' => [],
             'subItems' => []
         ];
@@ -797,6 +798,15 @@ class TableRowBuilder
         if ($line3 !== null) {
             $this->data['line3'] = $line3;
         }
+    }
+    
+    /**
+     * Set custom CSS class for the title (line1)
+     */
+    public function titleClass(string $class): self
+    {
+        $this->data['titleClass'] = $class;
+        return $this;
     }
     
     /**
