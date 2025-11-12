@@ -51,8 +51,17 @@ class MobileEntryController extends Controller
             }
         }
         
+        // Capture redirect parameters from request to pass through forms
+        $redirectParams = [];
+        if ($request->has('redirect_to')) {
+            $redirectParams['redirect_to'] = $request->input('redirect_to');
+        }
+        if ($request->has('template_id')) {
+            $redirectParams['template_id'] = $request->input('template_id');
+        }
+        
         // Generate forms based on mobile lift forms using the service
-        $forms = $formService->generateForms(Auth::id(), $selectedDate);
+        $forms = $formService->generateForms(Auth::id(), $selectedDate, $redirectParams);
         
         // Generate logged items using the service
         $loggedItems = $formService->generateLoggedItems(Auth::id(), $selectedDate);
@@ -182,7 +191,18 @@ class MobileEntryController extends Controller
         
         $messageType = $result['success'] ? 'success' : 'error';
         
-        return redirect()->route('mobile-entry.lifts', ['date' => $selectedDate->toDateString()])
+        // Pass through redirect parameters if they exist
+        $redirectParams = ['date' => $selectedDate->toDateString()];
+        
+        if ($request->has('redirect_to')) {
+            $redirectParams['redirect_to'] = $request->input('redirect_to');
+        }
+        
+        if ($request->has('template_id')) {
+            $redirectParams['template_id'] = $request->input('template_id');
+        }
+        
+        return redirect()->route('mobile-entry.lifts', $redirectParams)
             ->with($messageType, $result['message']);
     }
 

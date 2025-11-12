@@ -37,9 +37,10 @@ class LiftLogService extends MobileEntryBaseService
      * 
      * @param int $userId
      * @param Carbon $selectedDate
+     * @param array $redirectParams Optional redirect parameters to pass through forms
      * @return array
      */
-    public function generateForms($userId, Carbon $selectedDate)
+    public function generateForms($userId, Carbon $selectedDate, array $redirectParams = [])
     {
         // Get user to check preferences
         $user = \App\Models\User::find($userId);
@@ -208,12 +209,26 @@ class LiftLogService extends MobileEntryBaseService
                 'section' => $exercise->title . ' entry',
                 'deleteForm' => 'Remove this exercise form'
             ];
-            $formData['data']['hiddenFields'] = [
+            // Build hidden fields with redirect params if provided
+            $hiddenFields = [
                 'exercise_id' => $exercise->id,
                 'date' => $selectedDate->toDateString(),
-                'redirect_to' => 'mobile-entry-lifts',
                 'mobile_lift_form_id' => $form->id
             ];
+            
+            // Add redirect parameters if they exist, otherwise default to mobile-entry-lifts
+            if (!empty($redirectParams['redirect_to'])) {
+                $hiddenFields['redirect_to'] = $redirectParams['redirect_to'];
+                
+                // Add template_id if it exists
+                if (!empty($redirectParams['template_id'])) {
+                    $hiddenFields['template_id'] = $redirectParams['template_id'];
+                }
+            } else {
+                $hiddenFields['redirect_to'] = 'mobile-entry-lifts';
+            }
+            
+            $formData['data']['hiddenFields'] = $hiddenFields;
             $formData['data']['deleteParams'] = [
                 'date' => $selectedDate->toDateString()
             ];
