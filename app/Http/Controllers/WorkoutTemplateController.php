@@ -219,18 +219,20 @@ class WorkoutTemplateController extends Controller
                 ->build();
         }
 
-        // Add Exercise button
+        // Add Exercise button (hidden - list starts expanded)
         $components[] = C::button('Add Exercise')
             ->ariaLabel('Add exercise to template')
             ->addClass('btn-add-item')
+            ->initialState('hidden')
             ->build();
 
-        // Exercise selection list - use same logic as mobile entry
+        // Exercise selection list - starts expanded for quick access
         $itemSelectionList = $this->generateExerciseSelectionList(Auth::id(), $workoutTemplate);
         
         $itemListBuilder = C::itemList()
             ->filterPlaceholder($itemSelectionList['filterPlaceholder'])
-            ->noResultsMessage($itemSelectionList['noResultsMessage']);
+            ->noResultsMessage($itemSelectionList['noResultsMessage'])
+            ->initialState('expanded');
 
         foreach ($itemSelectionList['items'] as $item) {
             $itemListBuilder->item(
