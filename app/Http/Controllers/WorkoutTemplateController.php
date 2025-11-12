@@ -73,7 +73,7 @@ class WorkoutTemplateController extends Controller
                     'Click to add exercises to this template',
                     null
                 )
-                ->linkAction('fa-plus', route('workout-templates.edit', ['workoutTemplate' => $template->id, 'expand' => 'true']), 'Add exercises', 'btn-log-now')
+                ->linkAction('fa-plus', route('workout-templates.edit', $template->id) . '?expand=true', 'Add exercises', 'btn-log-now')
                 ->add();
 
                 // Add exercises as sub-items
