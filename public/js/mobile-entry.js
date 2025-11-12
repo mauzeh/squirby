@@ -313,108 +313,113 @@ document.addEventListener('DOMContentLoaded', function() {
     /**
      * Item Selection List Show/Hide
      * 
-     * Simple functionality to show/hide the item selection list when "Add Item" is clicked.
-     * No dynamic form management - items link directly to backend URLs.
+     * Enhanced to support multiple independent item lists on the same page.
+     * Each button/list pair is identified by a data-list-id attribute.
      * Respects initial state configuration from the controller.
      */
     const setupItemListToggle = () => {
-        const addItemButton = document.querySelector('.btn-add-item');
-        const itemListContainer = document.querySelector('.component-list-section');
-        const addItemSection = document.querySelector('.component-button-section');
-        const cancelButton = document.querySelector('.btn-cancel');
+        // Find all button sections with add-item buttons
+        const buttonSections = document.querySelectorAll('.component-button-section');
         
-        // Show item selection list
-        const showItemSelection = () => {
-            if (itemListContainer) {
-                itemListContainer.classList.add('active');
+        buttonSections.forEach((buttonSection, index) => {
+            const addItemButton = buttonSection.querySelector('.btn-add-item');
+            if (!addItemButton) return;
+            
+            // Assign a unique ID if not already set
+            const listId = buttonSection.dataset.listId || `list-${index}`;
+            buttonSection.dataset.listId = listId;
+            
+            // Find the corresponding item list (next sibling with component-list-section class)
+            let itemListContainer = buttonSection.nextElementSibling;
+            while (itemListContainer && !itemListContainer.classList.contains('component-list-section')) {
+                itemListContainer = itemListContainer.nextElementSibling;
             }
             
-            if (addItemSection) {
-                addItemSection.classList.add('hidden');
-            }
+            if (!itemListContainer) return;
             
-            // Focus on the filter input field and scroll to optimal position
-            // Use requestAnimationFrame for better mobile compatibility
-            requestAnimationFrame(() => {
-                const filterInput = document.querySelector('.component-filter-input');
-                if (filterInput) {
-                    // Force focus and click to ensure mobile keyboard opens
-                    filterInput.focus();
-                    
-                    // Additional mobile keyboard trigger methods
-                    if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
-                        // For mobile devices, try multiple approaches
-                        filterInput.click();
-                        
-                        // Set cursor position to ensure input is active
-                        setTimeout(() => {
-                            filterInput.setSelectionRange(0, 0);
-                        }, 50);
-                    }
-                    
-                    // Scroll to position the filter input optimally for mobile
-                    // This ensures maximum list visibility below the input
-                    const filterContainer = filterInput.closest('.item-filter-container');
-                    if (filterContainer) {
-                        // Small delay to allow keyboard animation to start
-                        setTimeout(() => {
-                            // Calculate optimal scroll position
-                            const containerRect = filterContainer.getBoundingClientRect();
-                            const viewportHeight = window.innerHeight;
-                            
-                            // Position the filter container about 5% from the top of viewport
-                            // This leaves 95% of screen space for the list below
-                            const targetPosition = window.scrollY + containerRect.top - (viewportHeight * 0.05);
-                            
-                            // Smooth scroll to the calculated position
-                            window.scrollTo({
-                                top: Math.max(0, targetPosition),
-                                behavior: 'smooth'
-                            });
-                        }, 300); // Delay to account for keyboard animation
-                    }
+            // Link the list to this button
+            itemListContainer.dataset.listId = listId;
+            
+            const cancelButton = itemListContainer.querySelector('.btn-cancel');
+            
+            // Show item selection list
+            const showItemSelection = () => {
+                if (itemListContainer) {
+                    itemListContainer.classList.add('active');
                 }
-            });
-        };
-        
-        // Hide item selection list and show add button
-        const hideItemSelection = () => {
-            if (itemListContainer) {
-                itemListContainer.classList.remove('active');
-            }
+                
+                if (buttonSection) {
+                    buttonSection.classList.add('hidden');
+                }
+                
+                // Focus on the filter input field and scroll to optimal position
+                requestAnimationFrame(() => {
+                    const filterInput = itemListContainer.querySelector('.component-filter-input');
+                    if (filterInput) {
+                        // Force focus and click to ensure mobile keyboard opens
+                        filterInput.focus();
+                        
+                        // Additional mobile keyboard trigger methods
+                        if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+                            filterInput.click();
+                            
+                            setTimeout(() => {
+                                filterInput.setSelectionRange(0, 0);
+                            }, 50);
+                        }
+                        
+                        // Scroll to position the filter input optimally for mobile
+                        const filterContainer = filterInput.closest('.item-filter-container');
+                        if (filterContainer) {
+                            setTimeout(() => {
+                                const containerRect = filterContainer.getBoundingClientRect();
+                                const viewportHeight = window.innerHeight;
+                                const targetPosition = window.scrollY + containerRect.top - (viewportHeight * 0.05);
+                                
+                                window.scrollTo({
+                                    top: Math.max(0, targetPosition),
+                                    behavior: 'smooth'
+                                });
+                            }, 300);
+                        }
+                    }
+                });
+            };
             
-            if (addItemSection) {
-                addItemSection.classList.remove('hidden');
-            }
-        };
-        
-        // Add click handler to "Add Item" button
-        if (addItemButton) {
+            // Hide item selection list and show add button
+            const hideItemSelection = () => {
+                if (itemListContainer) {
+                    itemListContainer.classList.remove('active');
+                }
+                
+                if (buttonSection) {
+                    buttonSection.classList.remove('hidden');
+                }
+            };
+            
+            // Add click handler to "Add Item" button
             addItemButton.addEventListener('click', function(event) {
                 event.preventDefault();
                 showItemSelection();
             });
-        }
-        
-        // Add click handler to cancel button in filter section
-        if (cancelButton) {
-            cancelButton.addEventListener('click', function(event) {
-                event.preventDefault();
+            
+            // Add click handler to cancel button in filter section
+            if (cancelButton) {
+                cancelButton.addEventListener('click', function(event) {
+                    event.preventDefault();
+                    hideItemSelection();
+                });
+            }
+            
+            // Initialize based on configured initial state
+            const listInitialState = itemListContainer?.dataset.initialState || 'collapsed';
+            
+            if (listInitialState === 'expanded') {
+                showItemSelection();
+            } else {
                 hideItemSelection();
-            });
-        }
-        
-        // Initialize based on configured initial state
-        const listInitialState = itemListContainer?.dataset.initialState || 'collapsed';
-        const buttonInitialState = addItemSection?.dataset.initialState || 'visible';
-        
-        if (listInitialState === 'expanded') {
-            // Start with list expanded
-            showItemSelection();
-        } else {
-            // Start with list collapsed (default)
-            hideItemSelection();
-        }
+            }
+        });
     };
     
     // Initialize item list toggle

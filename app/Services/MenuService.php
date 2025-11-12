@@ -181,6 +181,13 @@ class MenuService
             ],
             [
                 'label' => null,
+                'icon' => 'fa-list-ul',
+                'route' => 'flexible.multiple-lists',
+                'active' => Request::routeIs('flexible.multiple-lists'),
+                'title' => 'Multiple Lists',
+            ],
+            [
+                'label' => null,
                 'icon' => 'fa-expand',
                 'route' => 'flexible.expanded-list',
                 'active' => Request::routeIs('flexible.expanded-list'),

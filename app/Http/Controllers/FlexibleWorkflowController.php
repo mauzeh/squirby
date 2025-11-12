@@ -456,7 +456,61 @@ class FlexibleWorkflowController extends Controller
     }
     
     /**
-     * Example 7: Expanded item list (initial state demo)
+     * Example 7: Multiple item lists on one page
+     * Demonstrates independent item selection lists for different categories
+     */
+    public function multipleItemLists(Request $request)
+    {
+        $data = [
+            'components' => [
+                C::title('Multiple Item Lists', 'Each list operates independently')->build(),
+                
+                C::messages()
+                    ->info('This page has two separate item lists - one for exercises and one for meals')
+                    ->tip('Each button/list pair works independently', 'Note:')
+                    ->build(),
+                
+                // First list: Exercises
+                C::button('Add Exercise')
+                    ->ariaLabel('Add new exercise')
+                    ->addClass('btn-add-item')
+                    ->build(),
+                
+                C::itemList()
+                    ->item('ex-1', 'Bench Press', '#', 'In Program', 'in-program', 4)
+                    ->item('ex-2', 'Squats', '#', 'Recent', 'recent', 1)
+                    ->item('ex-3', 'Deadlift', '#', 'Available', 'regular', 3)
+                    ->filterPlaceholder('Search exercises...')
+                    ->createForm('#', 'exercise_name')
+                    ->build(),
+                
+                // Separator
+                C::messages()
+                    ->info('Second list below - completely independent')
+                    ->build(),
+                
+                // Second list: Meals
+                C::button('Add Meal')
+                    ->ariaLabel('Add new meal')
+                    ->addClass('btn-add-item')
+                    ->build(),
+                
+                C::itemList()
+                    ->item('meal-1', 'Chicken & Rice', '#', 'Favorite', 'in-program', 4)
+                    ->item('meal-2', 'Protein Shake', '#', 'Recent', 'recent', 1)
+                    ->item('meal-3', 'Oatmeal', '#', 'Available', 'regular', 3)
+                    ->filterPlaceholder('Search meals...')
+                    ->createForm('#', 'meal_name')
+                    ->build(),
+            ],
+            'showDebugIndicator' => true
+        ];
+        
+        return view('mobile-entry.flexible', compact('data'));
+    }
+    
+    /**
+     * Example 8: Expanded item list (initial state demo)
      * Shows the item list expanded by default with the button hidden
      */
     public function expandedList(Request $request)
