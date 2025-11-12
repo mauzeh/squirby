@@ -224,16 +224,6 @@ class WorkoutTemplateController extends Controller
                 ->build();
         }
 
-        // Template details form
-        $components[] = C::form('edit-template-details', 'Template Details')
-            ->type('info')
-            ->formAction(route('workout-templates.update', $workoutTemplate->id))
-            ->textField('name', 'Template Name:', $workoutTemplate->name, 'e.g., Push Day')
-            ->textField('description', 'Description:', $workoutTemplate->description ?? '', 'Optional')
-            ->hiddenField('_method', 'PUT')
-            ->submitButton('Update Details')
-            ->build();
-
         // Add Exercise button - hidden if list should be expanded
         $buttonBuilder = C::button('Add Exercise')
             ->ariaLabel('Add exercise to template')
@@ -347,6 +337,16 @@ class WorkoutTemplateController extends Controller
                 ->info('No exercises yet. Add your first exercise above.')
                 ->build();
         }
+
+        // Template details form at bottom
+        $components[] = C::form('edit-template-details', 'Template Details')
+            ->type('info')
+            ->formAction(route('workout-templates.update', $workoutTemplate->id))
+            ->textField('name', 'Template Name:', $workoutTemplate->name, 'e.g., Push Day')
+            ->textField('description', 'Description:', $workoutTemplate->description ?? '', 'Optional')
+            ->hiddenField('_method', 'PUT')
+            ->submitButton('Update Details')
+            ->build();
 
         $data = ['components' => $components];
         return view('mobile-entry.flexible', compact('data'));
