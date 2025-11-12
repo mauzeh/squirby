@@ -262,6 +262,7 @@ class FlexibleWorkflowController extends Controller
                     ->info('Tap any row to edit, or use the delete button to remove.')
                     ->success('Expandable sub-items! Click chevron to expand/collapse.', 'Feature:')
                     ->tip('Last row shows always-visible sub-items (no collapse).', 'Note:')
+                    ->tip('Sub-items can now have inline messages in different styles!', 'New:')
                     ->build(),
                 
                 // Table with sample data and sub-items
@@ -280,7 +281,8 @@ class FlexibleWorkflowController extends Controller
                         '15 minutes',
                         'Warm-up pace'
                     )
-                    ->linkAction('fa-play', route('flexible.table-example'), 'Log now', 'btn-log-now')
+                    ->message('success', '3.2 miles completed!', 'Completed:')
+                    ->linkAction('fa-pencil', route('flexible.table-example'), 'Edit', 'btn-transparent')
                     ->formAction('fa-trash', route('flexible.table-example'), 'DELETE', [], 'Delete', 'btn-danger', true)
                     ->add()
                     ->subItem(
@@ -304,27 +306,30 @@ class FlexibleWorkflowController extends Controller
                     ->subItem(
                         21,
                         'Bench Press',
-                        '4 sets × 8 reps',
-                        '185 lbs'
+                        'Felt strong today!',
+                        null
                     )
-                    ->linkAction('fa-play', route('flexible.table-example'), 'Log now', 'btn-log-now')
+                    ->message('success', '185 lbs × 8 reps × 4 sets', 'Completed:')
+                    ->linkAction('fa-pencil', route('flexible.table-example'), 'Edit', 'btn-transparent')
                     ->formAction('fa-trash', route('flexible.table-example'), 'DELETE', [], 'Delete', 'btn-danger', true)
                     ->add()
                     ->subItem(
                         22,
                         'Barbell Rows',
-                        '4 sets × 10 reps',
-                        '135 lbs'
+                        null,
+                        null
                     )
+                    ->message('info', '135 lbs × 10 reps × 4 sets', 'Last time:')
                     ->linkAction('fa-play', route('flexible.table-example'), 'Log now', 'btn-log-now')
                     ->formAction('fa-trash', route('flexible.table-example'), 'DELETE', [], 'Delete', 'btn-danger', true)
                     ->add()
                     ->subItem(
                         23,
                         'Shoulder Press',
-                        '3 sets × 12 reps',
-                        '95 lbs'
+                        null,
+                        null
                     )
+                    ->message('tip', 'Try 100 lbs × 12 reps × 3 sets', 'Suggestion:')
                     ->linkAction('fa-play', route('flexible.table-example'), 'Log now', 'btn-log-now')
                     ->formAction('fa-trash', route('flexible.table-example'), 'DELETE', [], 'Delete', 'btn-danger', true)
                     ->add()
@@ -340,18 +345,22 @@ class FlexibleWorkflowController extends Controller
                     ->subItem(
                         31,
                         'Squats',
-                        '5 sets × 5 reps',
-                        '225 lbs'
+                        'Knees felt a bit sore',
+                        null
                     )
-                    ->linkAction('fa-play', route('flexible.table-example'), 'Log now', 'btn-log-now')
+                    ->message('warning', '225 lbs × 5 reps × 5 sets', 'Completed:')
+                    ->message('neutral', 'Consider reducing weight next time', 'Note:')
+                    ->linkAction('fa-pencil', route('flexible.table-example'), 'Edit', 'btn-transparent')
                     ->formAction('fa-trash', route('flexible.table-example'), 'DELETE', [], 'Delete', 'btn-danger', true)
                     ->add()
                     ->subItem(
                         32,
                         'Deadlifts',
-                        '3 sets × 5 reps',
-                        '275 lbs'
+                        null,
+                        null
                     )
+                    ->message('error', 'Form breakdown on last set', 'Issue:')
+                    ->message('tip', 'Focus on form before adding weight', 'Advice:')
                     ->linkAction('fa-play', route('flexible.table-example'), 'Log now', 'btn-log-now')
                     ->formAction('fa-trash', route('flexible.table-example'), 'DELETE', [], 'Delete', 'btn-danger', true)
                     ->add()
@@ -386,18 +395,20 @@ class FlexibleWorkflowController extends Controller
                     ->subItem(
                         61,
                         'Neck Rolls',
-                        '2 minutes',
-                        'Gentle circular motion'
+                        'Gentle circular motion',
+                        null
                     )
-                    ->linkAction('fa-play', route('flexible.table-example'), 'Log now', 'btn-log-now')
+                    ->message('success', '2 minutes completed', 'Done:')
+                    ->linkAction('fa-pencil', route('flexible.table-example'), 'Edit', 'btn-transparent')
                     ->formAction('fa-trash', route('flexible.table-example'), 'DELETE', [], 'Delete', 'btn-danger', true)
                     ->add()
                     ->subItem(
                         62,
                         'Shoulder Shrugs',
-                        '1 minute',
-                        '10 reps'
+                        null,
+                        null
                     )
+                    ->message('info', '10 reps recommended', 'Target:')
                     ->linkAction('fa-play', route('flexible.table-example'), 'Log now', 'btn-log-now')
                     ->formAction('fa-trash', route('flexible.table-example'), 'DELETE', [], 'Delete', 'btn-danger', true)
                     ->add()

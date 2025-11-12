@@ -108,6 +108,16 @@
                         @if(isset($subItem['line3']) && !empty($subItem['line3']))
                         <div class="cell-detail">{{ $subItem['line3'] }}</div>
                         @endif
+                        @if(isset($subItem['messages']) && !empty($subItem['messages']))
+                            @foreach($subItem['messages'] as $message)
+                            <div class="component-message component-message--{{ $message['type'] }}">
+                                @if(isset($message['prefix']) && !empty($message['prefix']))
+                                <span class="message-prefix">{{ $message['prefix'] }}</span>
+                                @endif
+                                {!! $message['text'] !!}
+                            </div>
+                            @endforeach
+                        @endif
                     </div>
                     <div class="component-table-actions">
                         @if(isset($subItem['actions']) && !empty($subItem['actions']))

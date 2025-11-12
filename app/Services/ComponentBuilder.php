@@ -965,6 +965,28 @@ class TableSubItemBuilder
     }
     
     /**
+     * Add a message to the sub-item
+     */
+    public function message(string $type, string $text, ?string $prefix = null): self
+    {
+        if (!isset($this->data['messages'])) {
+            $this->data['messages'] = [];
+        }
+        
+        $message = [
+            'type' => $type,
+            'text' => $text
+        ];
+        
+        if ($prefix !== null) {
+            $message['prefix'] = $prefix;
+        }
+        
+        $this->data['messages'][] = $message;
+        return $this;
+    }
+    
+    /**
      * Add the sub-item and return to parent row builder
      */
     public function add()

@@ -18,7 +18,6 @@ class WorkoutController extends Controller
      */
     public function index(Request $request)
     {
-        $expandedWorkoutId = $request->query('id');
         $today = Carbon::today();
         
         $workouts = Workout::where('user_id', Auth::id())
@@ -26,12 +25,19 @@ class WorkoutController extends Controller
             ->orderBy('name')
             ->get();
 
-        // Get today's logged exercises for this user
-        $loggedExerciseIds = \App\Models\LiftLog::where('user_id', Auth::id())
+        // Get today's logged exercises with their lift log data for this user
+        $todaysLiftLogs = \App\Models\LiftLog::where('user_id', Auth::id())
             ->whereDate('logged_at', $today)
-            ->pluck('exercise_id')
-            ->unique()
-            ->toArray();
+            ->with(['liftSets'])
+            ->get();
+        
+        // Create a map of exercise_id => lift log for quick lookup
+        $loggedExerciseData = [];
+        foreach ($todaysLiftLogs as $log) {
+            $loggedExerciseData[$log->exercise_id] = $log;
+        }
+        
+        $loggedExerciseIds = array_keys($loggedExerciseData);
 
         // Apply aliases to all exercises
         $user = Auth::user();
@@ -86,30 +92,65 @@ class WorkoutController extends Controller
                 ->titleClass('cell-title-large')
                 ->linkAction('fa-pencil', route('workouts.edit', $workout->id), 'Edit workout', 'btn-transparent');
 
-                // Add exercises as sub-items with log now button or completed checkmark
+                // Check if this workout has any exercises logged today (for auto-expand)
+                $hasLoggedExercisesToday = false;
+
+                // Add exercises as sub-items with log now button or edit button
                 if ($workout->exercises->isNotEmpty()) {
                     foreach ($workout->exercises as $index => $exercise) {
                         $exerciseLine1 = $exercise->exercise->title;
-                        $exerciseLine2 = 'Order: ' . $exercise->order;
-                        
-                        $subItemBuilder = $rowBuilder->subItem(
-                            $exercise->id,
-                            $exerciseLine1,
-                            $exerciseLine2,
-                            null
-                        );
+                        $exerciseLine2 = null;
+                        $exerciseLine3 = null;
                         
                         // Check if exercise was logged today
                         if (in_array($exercise->exercise_id, $loggedExerciseIds)) {
-                            // Show completed checkmark (non-clickable)
-                            $subItemBuilder->linkAction('fa-check-circle', '#', 'Completed today', 'btn-disabled');
+                            $hasLoggedExercisesToday = true;
+                            
+                            // Get the lift log data
+                            $liftLog = $loggedExerciseData[$exercise->exercise_id];
+                            
+                            // Show comments inline if they exist
+                            if (!empty($liftLog->comments)) {
+                                $exerciseLine2 = $liftLog->comments;
+                            }
+                            
+                            // Format the lift data using exercise type strategy
+                            $strategy = $exercise->exercise->getTypeStrategy();
+                            $formattedMessage = $strategy->formatLoggedItemDisplay($liftLog);
+                            
+                            $subItemBuilder = $rowBuilder->subItem(
+                                $exercise->id,
+                                $exerciseLine1,
+                                $exerciseLine2,
+                                $exerciseLine3
+                            );
+                            
+                            // Add green success message with lift details
+                            $subItemBuilder->message('success', $formattedMessage, 'Completed:');
+                            
+                            // Show edit pencil icon (transparent style)
+                            $subItemBuilder->linkAction(
+                                'fa-pencil', 
+                                route('lift-logs.edit', ['lift_log' => $liftLog->id]), 
+                                'Edit lift log', 
+                                'btn-transparent'
+                            );
                         } else {
-                            // Show log now button with redirect back to this workout
+                            // Not logged yet - show order
+                            $exerciseLine2 = 'Order: ' . $exercise->order;
+                            
+                            $subItemBuilder = $rowBuilder->subItem(
+                                $exercise->id,
+                                $exerciseLine1,
+                                $exerciseLine2,
+                                null
+                            );
+                            
+                            // Show log now button
                             $logUrl = route('mobile-entry.add-lift-form', [
                                 'exercise' => $exercise->exercise_id,
                                 'date' => $today->toDateString(),
-                                'redirect_to' => 'workouts',
-                                'workout_id' => $workout->id
+                                'redirect_to' => 'workouts'
                             ]);
                             $subItemBuilder->linkAction('fa-play', $logUrl, 'Log now', 'btn-log-now');
                         }
@@ -118,8 +159,8 @@ class WorkoutController extends Controller
                     }
                 }
 
-                // Expand this workout if it matches the ID parameter
-                if ($expandedWorkoutId && $workout->id == $expandedWorkoutId) {
+                // Auto-expand workouts that have any exercises logged today
+                if ($hasLoggedExercisesToday) {
                     $rowBuilder->initialState('expanded');
                 }
                 
