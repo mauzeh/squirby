@@ -927,7 +927,7 @@ Navigation Component */
     color: var(--text-primary);
     font-size: 1.2em;
     font-weight: bold;
-    margin: 0;
+    margin: var(--spacing-sm) 0;
 }
 
 /* Item Messages */
