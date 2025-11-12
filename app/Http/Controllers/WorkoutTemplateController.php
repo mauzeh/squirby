@@ -16,8 +16,10 @@ class WorkoutTemplateController extends Controller
     /**
      * Display a listing of the user's workout templates
      */
-    public function index()
+    public function index(Request $request)
     {
+        $expandedTemplateId = $request->query('id');
+        
         $templates = WorkoutTemplate::where('user_id', Auth::id())
             ->with(['exercises.exercise.aliases'])
             ->orderBy('name')
@@ -125,7 +127,9 @@ class WorkoutTemplateController extends Controller
                     }
                 }
 
-                $rowBuilder->add();
+                // Expand this template if it matches the ID parameter
+                $shouldExpand = $expandedTemplateId && $template->id == $expandedTemplateId;
+                $rowBuilder->collapsible(!$shouldExpand)->add();
             }
 
             $components[] = $tableBuilder
