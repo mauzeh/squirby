@@ -78,18 +78,26 @@ class WorkoutTemplateController extends Controller
                 ->linkAction('fa-edit', route('workout-templates.edit', $template->id), 'Edit template')
                 ->formAction('fa-trash', route('workout-templates.destroy', $template->id), 'DELETE', [], 'Delete', 'btn-danger', true);
 
-                // Add exercises as sub-items (read-only on index page)
+                // Add exercises as sub-items with log now button
                 if ($template->exercises->isNotEmpty()) {
                     foreach ($template->exercises as $index => $exercise) {
                         $exerciseLine1 = $exercise->exercise->title;
                         $exerciseLine2 = 'Order: ' . $exercise->order;
+                        
+                        // Build URL to mobile entry with this exercise pre-added
+                        $logUrl = route('mobile-entry.lifts', [
+                            'date' => Carbon::today()->toDateString(),
+                            'exercise_id' => $exercise->exercise_id
+                        ]);
                         
                         $rowBuilder->subItem(
                             $exercise->id,
                             $exerciseLine1,
                             $exerciseLine2,
                             null
-                        )->add();
+                        )
+                        ->linkAction('fa-play', $logUrl, 'Log now', 'btn-log-now')
+                        ->add();
                     }
                 }
 
