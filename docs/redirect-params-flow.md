@@ -1,18 +1,18 @@
 # Redirect Parameters Flow
 
 ## Problem
-When clicking "Log Now" from workout templates, the redirect parameters (`redirect_to` and `template_id`) were being lost because the flow goes through an intermediate route (`add-lift-form`) before reaching the final form page (`mobile-entry.lifts`).
+When clicking "Log Now" from workouts, the redirect parameters (`redirect_to` and `workout_id`) were being lost because the flow goes through an intermediate route (`add-lift-form`) before reaching the final form page (`mobile-entry.lifts`).
 
 ## Solution
 Pass redirect parameters through the entire chain using URL parameters and hidden form fields.
 
 ## Flow
 
-### 1. Initial Click (Workout Templates)
+### 1. Initial Click (Workouts)
 ```
-User clicks "Log Now" on workout template
+User clicks "Log Now" on workout
 ↓
-URL: /mobile-entry/add-lift-form/{exercise}?date=2025-11-12&redirect_to=workout-templates&template_id=5
+URL: /mobile-entry/add-lift-form/{exercise}?date=2025-11-12&redirect_to=workouts&workout_id=5
 ```
 
 ### 2. Add Lift Form (Intermediate Route)
@@ -28,8 +28,8 @@ if ($request->has('redirect_to')) {
     $redirectParams['redirect_to'] = $request->input('redirect_to');
 }
 
-if ($request->has('template_id')) {
-    $redirectParams['template_id'] = $request->input('template_id');
+if ($request->has('workout_id')) {
+    $redirectParams['workout_id'] = $request->input('workout_id');
 }
 
 return redirect()->route('mobile-entry.lifts', $redirectParams);
@@ -45,8 +45,8 @@ $redirectParams = [];
 if ($request->has('redirect_to')) {
     $redirectParams['redirect_to'] = $request->input('redirect_to');
 }
-if ($request->has('template_id')) {
-    $redirectParams['template_id'] = $request->input('template_id');
+if ($request->has('workout_id')) {
+    $redirectParams['workout_id'] = $request->input('workout_id');
 }
 
 $forms = $formService->generateForms(Auth::id(), $selectedDate, $redirectParams);
@@ -67,8 +67,14 @@ $hiddenFields = [
 if (!empty($redirectParams['redirect_to'])) {
     $hiddenFields['redirect_to'] = $redirectParams['redirect_to'];
     
+    // Legacy support for template_id
     if (!empty($redirectParams['template_id'])) {
         $hiddenFields['template_id'] = $redirectParams['template_id'];
+    }
+    
+    // Add workout_id if it exists
+    if (!empty($redirectParams['workout_id'])) {
+        $hiddenFields['workout_id'] = $redirectParams['workout_id'];
     }
 } else {
     $hiddenFields['redirect_to'] = 'mobile-entry-lifts';
@@ -83,11 +89,28 @@ When user submits the lift log form:
 
 ### 6. Final Redirect
 **Service:** `RedirectService::getRedirect()`
-- Reads `redirect_to` and `template_id` from request
-- Redirects back to workout templates with the template expanded
+- Reads `redirect_to` and `workout_id` from request
+- Maps `workout_id` → `id` (since the route expects `id` parameter)
+- Redirects back to workouts with the workout expanded
 
 ```
-Redirect to: /workout-templates?id=5
+Redirect to: /workouts?id=5
+```
+
+**Parameter Mapping in RedirectService:**
+```php
+// Special handling for workout_id parameter
+// The route expects 'id' but config uses 'workout_id'
+if ($paramName === 'workout_id') {
+    if (isset($context['workout_id'])) {
+        $params['id'] = $context['workout_id'];
+        continue;
+    }
+    if ($request->has('workout_id')) {
+        $params['id'] = $request->input('workout_id');
+        continue;
+    }
+}
 ```
 
 ## Key Points
@@ -101,3 +124,5 @@ Redirect to: /workout-templates?id=5
 
 - `app/Http/Controllers/MobileEntryController.php` - Pass params through intermediate route
 - `app/Services/MobileEntry/LiftLogService.php` - Accept params and embed in hidden fields
+- `app/Services/RedirectService.php` - Map `workout_id` → `id` for route parameters
+- `config/redirects.php` - Configure workout redirect targets

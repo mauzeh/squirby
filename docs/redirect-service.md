@@ -80,7 +80,10 @@ The service resolves route parameters in this order:
 
 1. **Context array** - Values passed in the `$context` parameter
 2. **Request input** - Values from `$request->input()`
-3. **Special mappings** - Automatic conversions (e.g., `exercise_id` → `exercise`)
+3. **Special mappings** - Automatic conversions:
+   - `exercise_id` → `exercise` (for exercise routes)
+   - `template_id` → `id` (legacy support)
+   - `workout_id` → `id` (for workout routes)
 
 ### Dynamic Redirects
 
@@ -139,6 +142,43 @@ return $this->redirectService->getRedirect(
 2. Add your controller and action configuration
 3. Inject `RedirectService` into your controller
 4. Replace redirect logic with `$this->redirectService->getRedirect()`
+
+## Special Parameter Mappings
+
+The service includes special handling for parameters that need to be renamed for route compatibility:
+
+### `exercise_id` → `exercise`
+Exercise routes expect the parameter to be named `exercise`, but forms and configs use `exercise_id`.
+
+```php
+// Config uses 'exercise_id'
+'params' => ['exercise_id']
+
+// Service maps to 'exercise' for the route
+route('exercises.show-logs', ['exercise' => 123])
+```
+
+### `workout_id` → `id`
+Workout routes expect the parameter to be named `id`, but forms and configs use `workout_id` for clarity.
+
+```php
+// Config uses 'workout_id'
+'params' => ['workout_id']
+
+// Service maps to 'id' for the route
+route('workouts.index', ['id' => 5])
+```
+
+### `template_id` → `id` (Legacy)
+Legacy support for the old template naming convention.
+
+```php
+// Config uses 'template_id'
+'params' => ['template_id']
+
+// Service maps to 'id' for the route
+route('workouts.index', ['id' => 5])
+```
 
 ## Testing
 
