@@ -188,6 +188,13 @@ class MenuService
             ],
             [
                 'label' => null,
+                'icon' => 'fa-arrow-left',
+                'route' => 'flexible.title-back-button',
+                'active' => Request::routeIs('flexible.title-back-button'),
+                'title' => 'Title Back Button',
+            ],
+            [
+                'label' => null,
                 'icon' => 'fa-expand',
                 'route' => 'flexible.expanded-list',
                 'active' => Request::routeIs('flexible.expanded-list'),

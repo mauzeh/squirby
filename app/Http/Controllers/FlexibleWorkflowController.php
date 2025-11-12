@@ -512,7 +512,40 @@ class FlexibleWorkflowController extends Controller
     }
     
     /**
-     * Example 8: Expanded item list (initial state demo)
+     * Example 8: Title with back button
+     * Demonstrates the back button feature in title component
+     */
+    public function titleWithBackButton(Request $request)
+    {
+        $data = [
+            'components' => [
+                C::title('Exercise Details', 'View and edit exercise information')
+                    ->backButton('fa-arrow-left', route('flexible.with-nav'), 'Back to main page')
+                    ->build(),
+                
+                C::messages()
+                    ->info('Notice the back button on the left side of the title')
+                    ->tip('Title and subtitle remain left-aligned', 'Layout:')
+                    ->build(),
+                
+                C::form('exercise-details', 'Bench Press')
+                    ->type('primary')
+                    ->formAction('#')
+                    ->numericField('weight', 'Weight (lbs):', 135, 5, 45, 500)
+                    ->numericField('reps', 'Reps:', 10, 1, 1, 50)
+                    ->numericField('sets', 'Sets:', 3, 1, 1, 10)
+                    ->commentField('Notes:', 'How did it feel?', '')
+                    ->submitButton('Save')
+                    ->build(),
+            ],
+            'showDebugIndicator' => true
+        ];
+        
+        return view('mobile-entry.flexible', compact('data'));
+    }
+    
+    /**
+     * Example 9: Expanded item list (initial state demo)
      * Shows the item list expanded by default with the button hidden
      */
     public function expandedList(Request $request)
