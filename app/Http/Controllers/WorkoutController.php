@@ -83,8 +83,7 @@ class WorkoutController extends Controller
                     $line2,
                     $line3
                 )
-                ->linkAction('fa-edit', route('workouts.edit', $workout->id), 'Edit workout')
-                ->formAction('fa-trash', route('workouts.destroy', $workout->id), 'DELETE', [], 'Delete', 'btn-danger', true);
+                ->linkAction('fa-pencil', route('workouts.edit', $workout->id), 'Edit workout');
 
                 // Add exercises as sub-items with log now button or completed checkmark
                 if ($workout->exercises->isNotEmpty()) {
@@ -344,6 +343,15 @@ class WorkoutController extends Controller
             ->textareaField('notes', 'Notes:', $workout->notes ?? '', 'Optional workout notes')
             ->hiddenField('_method', 'PUT')
             ->submitButton('Update Workout')
+            ->build();
+
+        // Delete workout button
+        $components[] = C::form('delete-workout', 'Delete Workout')
+            ->type('danger')
+            ->formAction(route('workouts.destroy', $workout->id))
+            ->hiddenField('_method', 'DELETE')
+            ->submitButton('Delete Workout')
+            ->confirmMessage('Are you sure you want to delete this workout? This action cannot be undone.')
             ->build();
 
         $data = ['components' => $components];

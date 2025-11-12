@@ -530,6 +530,32 @@ document.addEventListener('DOMContentLoaded', function() {
     setupDeleteConfirmation();
     
     /**
+     * Form Submit Confirmation
+     * 
+     * Adds confirmation dialogs for forms with data-confirm-message attribute
+     */
+    const setupFormConfirmation = () => {
+        const formsWithConfirmation = document.querySelectorAll('form[data-confirm-message]');
+        
+        formsWithConfirmation.forEach(form => {
+            form.addEventListener('submit', function(event) {
+                const confirmMessage = this.dataset.confirmMessage;
+                
+                if (confirmMessage) {
+                    const confirmed = confirm(confirmMessage);
+                    
+                    if (!confirmed) {
+                        event.preventDefault();
+                    }
+                }
+            });
+        });
+    };
+    
+    // Initialize form confirmation
+    setupFormConfirmation();
+    
+    /**
      * Auto-scroll to First Form
      * 
      * Automatically scrolls the viewport to the first form on page load

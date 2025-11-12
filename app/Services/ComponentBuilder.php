@@ -440,6 +440,7 @@ class FormComponentBuilder
             'itemName' => $title,
             'formAction' => '#',
             'deleteAction' => null,
+            'confirmMessage' => null,
             'messages' => [],
             'numericFields' => [],
             'hiddenFields' => [],
@@ -565,6 +566,12 @@ class FormComponentBuilder
     public function submitButton(string $text): self
     {
         $this->data['buttons']['submit'] = $text;
+        return $this;
+    }
+    
+    public function confirmMessage(string $message): self
+    {
+        $this->data['confirmMessage'] = $message;
         return $this;
     }
     
