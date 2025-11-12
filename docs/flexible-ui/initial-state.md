@@ -193,3 +193,142 @@ C::itemList()
     ->initialState('expanded')
     ->build()
 ```
+
+
+## Advanced Features
+
+### Multiple Independent Lists
+
+You can have multiple item lists on the same page, each with its own initial state:
+
+```php
+public function multipleCategories(Request $request)
+{
+    $data = [
+        'components' => [
+            C::title('Add Items')->build(),
+            
+            // First list - collapsed
+            C::button('Add Exercise')->addClass('btn-add-item')->build(),
+            C::itemList()
+                ->item('ex-1', 'Bench Press', '#', 'Available', 'regular', 3)
+                ->filterPlaceholder('Search exercises...')
+                ->build(),
+            
+            // Second list - expanded
+            C::button('Add Meal')->addClass('btn-add-item')->initialState('hidden')->build(),
+            C::itemList()
+                ->item('meal-1', 'Chicken & Rice', '#', 'Favorite', 'in-program', 4)
+                ->filterPlaceholder('Search meals...')
+                ->initialState('expanded')
+                ->build(),
+        ]
+    ];
+    
+    return view('mobile-entry.flexible', compact('data'));
+}
+```
+
+**Key Points:**
+- Each button/list pair operates independently
+- Automatically linked by proximity in component array
+- Each can have different initial states
+- See `/flexible/multiple-lists` for live example
+
+### Auto-Scroll and Focus
+
+When a list starts expanded, it automatically:
+1. Scrolls to position the filter input near the top of viewport (5% from top)
+2. Focuses the input field
+3. Opens mobile keyboard if on mobile device
+
+This behavior is identical whether the list is:
+- Expanded via `initialState('expanded')`
+- Expanded by clicking the "Add" button
+- Expanded via URL parameter (e.g., `?expand=true`)
+
+### Context-Aware Initial States
+
+You can conditionally set initial state based on URL parameters:
+
+```php
+public function edit(Request $request, WorkoutTemplate $template)
+{
+    $shouldExpand = $request->query('expand') === 'true';
+    
+    $components = [];
+    
+    // Button
+    $buttonBuilder = C::button('Add Exercise')->addClass('btn-add-item');
+    if ($shouldExpand) {
+        $buttonBuilder->initialState('hidden');
+    }
+    $components[] = $buttonBuilder->build();
+    
+    // List
+    $listBuilder = C::itemList()->items(...);
+    if ($shouldExpand) {
+        $listBuilder->initialState('expanded');
+    }
+    $components[] = $listBuilder->build();
+    
+    return view('mobile-entry.flexible', compact('data'));
+}
+```
+
+**Use Case:** Link from one page to another with the list pre-expanded:
+```php
+// In your view or controller
+route('workout-templates.edit', ['template' => $id]) . '?expand=true'
+```
+
+This provides context-aware UX where the interface adapts based on user intent.
+
+## Technical Details
+
+### JavaScript Implementation
+
+The `setupItemListToggle()` function in `mobile-entry.js`:
+- Finds all button/list pairs on page load
+- Assigns unique IDs to link them together
+- Reads `data-initial-state` attribute from components
+- Applies appropriate visibility and scroll behavior
+- Uses `requestAnimationFrame` for reliable DOM rendering
+
+### CSS Classes
+
+- `.active` - Applied to `.component-list-section` when visible
+- `.hidden` - Applied to `.component-button-section` when hidden
+
+### Scroll Behavior
+
+- **Target Position:** 5% from top of viewport
+- **Timing:** 300ms delay after focus for smooth animation
+- **Mobile:** Triggers keyboard opening on mobile devices
+- **Reliability:** Double `requestAnimationFrame` ensures DOM is ready
+
+## Examples
+
+All examples are available in the flexible workflow submenu:
+
+- `/flexible/with-nav` - Default collapsed state
+- `/flexible/expanded-list` - Single expanded list
+- `/flexible/multiple-lists` - Multiple independent lists with mixed states
+- `/flexible/title-back-button` - Title with back button example
+
+## Troubleshooting
+
+### List doesn't scroll on page load
+- Ensure browser cache is cleared
+- Check console for JavaScript errors
+- Verify `data-initial-state="expanded"` is in HTML
+
+### Multiple lists interfere with each other
+- Ensure button and list are adjacent in components array
+- Check that each has unique positioning
+- Verify no custom JavaScript is interfering
+
+### Mobile keyboard doesn't open
+- This is intentional on page load to avoid disruption
+- Keyboard opens when user clicks "Add" button manually
+- Focus is still applied for accessibility

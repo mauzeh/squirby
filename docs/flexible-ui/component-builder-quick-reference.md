@@ -21,9 +21,23 @@ C::navigation()
 
 ## Title Component
 
+### Basic Title
 ```php
 C::title('Main Title', 'Optional Subtitle')->build()
 ```
+
+### Title with Back Button
+```php
+C::title('Exercise Details', 'View and edit information')
+    ->backButton('fa-arrow-left', route('exercises.index'), 'Back to exercises')
+    ->build()
+```
+
+**Back Button Features:**
+- Icon-only button positioned on the left
+- Title and subtitle remain centered
+- 44px touch target for mobile
+- Optional aria label for accessibility
 
 ## Messages Component
 

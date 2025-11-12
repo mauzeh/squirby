@@ -15,6 +15,7 @@ The flexible UI system has been successfully migrated and is now in production u
 - **[Testing Guide](testing.md)** - How to test flexible UI components
 - **[Admin Menu Documentation](admin-menu.md)** - Admin interface documentation
 - **[Initial State Configuration](initial-state.md)** - Configure collapsed/expanded state for item lists
+- **[Title Back Button](title-back-button.md)** - Add navigation buttons to page titles
 
 ## Overview
 
@@ -232,6 +233,14 @@ When adding new features:
 5. Add examples to the quick reference
 
 ## Version History
+
+- **v1.2** (November 11, 2025) - Enhanced features and improvements
+  - Added back button support to title component
+  - Multiple independent item lists on same page
+  - Auto-scroll and focus for initially expanded lists
+  - Context-aware initial states (e.g., expand parameter)
+  - Submenu wrapping for better navigation
+  - Additional examples in FlexibleWorkflowController
 
 - **v1.1** (November 11, 2025) - Initial state configuration added
   - Added `initialState()` method to Button and ItemList components
