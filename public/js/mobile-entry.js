@@ -95,7 +95,7 @@ document.addEventListener('DOMContentLoaded', function() {
     filterInput.addEventListener('focus', function(e) {
         // Small delay to ensure any keyboard animations are complete
         setTimeout(() => {
-            const filterContainer = e.target.closest('.item-filter-container');
+            const filterContainer = e.target.closest('.component-filter-container');
             if (filterContainer) {
                 const containerRect = filterContainer.getBoundingClientRect();
                 const viewportHeight = window.innerHeight;
@@ -344,19 +344,14 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Scroll to filter input
             const scrollToFilter = (delay = 300) => {
-                console.log('scrollToFilter called with delay:', delay);
                 const filterInput = itemListContainer.querySelector('.component-filter-input');
-                console.log('filterInput found:', !!filterInput);
                 if (filterInput) {
-                    const filterContainer = filterInput.closest('.item-filter-container');
-                    console.log('filterContainer found:', !!filterContainer);
+                    const filterContainer = filterInput.closest('.component-filter-container');
                     if (filterContainer) {
                         setTimeout(() => {
                             const containerRect = filterContainer.getBoundingClientRect();
                             const viewportHeight = window.innerHeight;
                             const targetPosition = window.scrollY + containerRect.top - (viewportHeight * 0.05);
-                            
-                            console.log('Scrolling to position:', targetPosition, 'current:', window.scrollY);
                             
                             window.scrollTo({
                                 top: Math.max(0, targetPosition),
@@ -368,7 +363,7 @@ document.addEventListener('DOMContentLoaded', function() {
             };
             
             // Show item selection list
-            const showItemSelection = (shouldScroll = true) => {
+            const showItemSelection = () => {
                 if (itemListContainer) {
                     itemListContainer.classList.add('active');
                 }
@@ -378,27 +373,25 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 
                 // Focus on the filter input field and scroll to optimal position
-                if (shouldScroll) {
-                    requestAnimationFrame(() => {
-                        const filterInput = itemListContainer.querySelector('.component-filter-input');
-                        if (filterInput) {
-                            // Force focus and click to ensure mobile keyboard opens
-                            filterInput.focus();
+                requestAnimationFrame(() => {
+                    const filterInput = itemListContainer.querySelector('.component-filter-input');
+                    if (filterInput) {
+                        // Force focus and click to ensure mobile keyboard opens
+                        filterInput.focus();
+                        
+                        // Additional mobile keyboard trigger methods
+                        if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+                            filterInput.click();
                             
-                            // Additional mobile keyboard trigger methods
-                            if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
-                                filterInput.click();
-                                
-                                setTimeout(() => {
-                                    filterInput.setSelectionRange(0, 0);
-                                }, 50);
-                            }
-                            
-                            // Scroll to position the filter input optimally for mobile
-                            scrollToFilter(300);
+                            setTimeout(() => {
+                                filterInput.setSelectionRange(0, 0);
+                            }, 50);
                         }
-                    });
-                }
+                        
+                        // Scroll to position the filter input optimally for mobile
+                        scrollToFilter(300);
+                    }
+                });
             };
             
             // Hide item selection list and show add button
@@ -429,18 +422,11 @@ document.addEventListener('DOMContentLoaded', function() {
             // Initialize based on configured initial state
             const listInitialState = itemListContainer?.dataset.initialState || 'collapsed';
             
-            console.log('List initial state:', listInitialState, 'for list:', listId);
-            
             if (listInitialState === 'expanded') {
-                console.log('Setting up expanded list with scroll');
-                // Show the list without focusing (to avoid keyboard on page load)
-                showItemSelection(false);
-                // Scroll to it after a delay to ensure page is rendered
-                // Use requestAnimationFrame for better timing
+                // Use double requestAnimationFrame to ensure DOM is fully rendered
                 requestAnimationFrame(() => {
                     requestAnimationFrame(() => {
-                        console.log('About to call scrollToFilter');
-                        scrollToFilter(200);
+                        showItemSelection();
                     });
                 });
             } else {
