@@ -73,7 +73,7 @@ class WorkoutTemplateController extends Controller
                     'Click to add exercises to this template',
                     null
                 )
-                ->linkAction('fa-plus', route('workout-templates.edit', $template->id), 'Add exercises', 'btn-log-now')
+                ->linkAction('fa-plus', route('workout-templates.edit', ['workoutTemplate' => $template->id, 'expand' => 'true']), 'Add exercises', 'btn-log-now')
                 ->add();
 
                 // Add exercises as sub-items
@@ -189,7 +189,7 @@ class WorkoutTemplateController extends Controller
     /**
      * Show the form for editing the specified template
      */
-    public function edit(WorkoutTemplate $workoutTemplate)
+    public function edit(Request $request, WorkoutTemplate $workoutTemplate)
     {
         $this->authorize('update', $workoutTemplate);
 
@@ -205,6 +205,9 @@ class WorkoutTemplateController extends Controller
             }
         }
 
+        // Check if we should expand the list (from "Add exercises" button)
+        $shouldExpandList = $request->query('expand') === 'true';
+
         $components = [];
 
         // Title
@@ -219,20 +222,27 @@ class WorkoutTemplateController extends Controller
                 ->build();
         }
 
-        // Add Exercise button (hidden - list starts expanded)
-        $components[] = C::button('Add Exercise')
+        // Add Exercise button - hidden if list should be expanded
+        $buttonBuilder = C::button('Add Exercise')
             ->ariaLabel('Add exercise to template')
-            ->addClass('btn-add-item')
-            ->initialState('hidden')
-            ->build();
+            ->addClass('btn-add-item');
+        
+        if ($shouldExpandList) {
+            $buttonBuilder->initialState('hidden');
+        }
+        
+        $components[] = $buttonBuilder->build();
 
-        // Exercise selection list - starts expanded for quick access
+        // Exercise selection list - expanded if coming from "Add exercises" button
         $itemSelectionList = $this->generateExerciseSelectionList(Auth::id(), $workoutTemplate);
         
         $itemListBuilder = C::itemList()
             ->filterPlaceholder($itemSelectionList['filterPlaceholder'])
-            ->noResultsMessage($itemSelectionList['noResultsMessage'])
-            ->initialState('expanded');
+            ->noResultsMessage($itemSelectionList['noResultsMessage']);
+        
+        if ($shouldExpandList) {
+            $itemListBuilder->initialState('expanded');
+        }
 
         foreach ($itemSelectionList['items'] as $item) {
             $itemListBuilder->item(
