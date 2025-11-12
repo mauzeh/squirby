@@ -195,6 +195,13 @@ class MenuService
             ],
             [
                 'label' => null,
+                'icon' => 'fa-chevron-down',
+                'route' => 'flexible.table-initial-expanded',
+                'active' => Request::routeIs('flexible.table-initial-expanded'),
+                'title' => 'Table Initial Expanded',
+            ],
+            [
+                'label' => null,
                 'icon' => 'fa-expand',
                 'route' => 'flexible.expanded-list',
                 'active' => Request::routeIs('flexible.expanded-list'),

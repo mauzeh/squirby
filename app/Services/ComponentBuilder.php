@@ -868,6 +868,15 @@ class TableRowBuilder
     }
     
     /**
+     * Set initial state for collapsible rows (default: 'collapsed')
+     */
+    public function initialState(string $state): self
+    {
+        $this->data['initialState'] = $state; // 'collapsed' or 'expanded'
+        return $this;
+    }
+    
+    /**
      * Add the row and return to parent builder
      */
     public function add(): TableComponentBuilder

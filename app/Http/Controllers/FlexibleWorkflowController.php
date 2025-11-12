@@ -572,4 +572,65 @@ class FlexibleWorkflowController extends Controller
         
         return view('mobile-entry.flexible', compact('data'));
     }
+    
+    /**
+     * Example: Table with initial expanded state
+     * Demonstrates rows that start expanded but remain collapsible
+     */
+    public function tableInitialExpanded(Request $request)
+    {
+        $expandId = $request->query('id'); // Optional: expand specific row
+        
+        $data = [
+            'components' => [
+                C::title('Table Initial State Demo')
+                    ->subtitle('Second row starts expanded')
+                    ->build(),
+                
+                C::messages()
+                    ->info('Row 2 starts expanded but can still be collapsed')
+                    ->tip('Try ?id=1 or ?id=3 to expand different rows', 'URL:')
+                    ->build(),
+                
+                C::table()
+                    ->row(1, 'First Template', '2 exercises: Squat, Press')
+                        ->linkAction('fa-edit', route('flexible.table-example'), 'Edit')
+                        ->formAction('fa-trash', route('flexible.table-example'), 'DELETE', [], 'Delete', 'btn-danger', true)
+                        ->subItem(11, 'Squat', '3 sets × 5 reps', '225 lbs')
+                            ->linkAction('fa-play', route('flexible.table-example'), 'Log', 'btn-log-now')
+                            ->add()
+                        ->subItem(12, 'Press', '3 sets × 5 reps', '135 lbs')
+                            ->linkAction('fa-play', route('flexible.table-example'), 'Log', 'btn-log-now')
+                            ->add()
+                        ->initialState($expandId == 1 ? 'expanded' : 'collapsed')
+                        ->add()
+                    ->row(2, 'Second Template', '3 exercises: Bench, Row, Deadlift')
+                        ->linkAction('fa-edit', route('flexible.table-example'), 'Edit')
+                        ->formAction('fa-trash', route('flexible.table-example'), 'DELETE', [], 'Delete', 'btn-danger', true)
+                        ->subItem(21, 'Bench Press', '4 sets × 8 reps', '185 lbs')
+                            ->linkAction('fa-play', route('flexible.table-example'), 'Log', 'btn-log-now')
+                            ->add()
+                        ->subItem(22, 'Barbell Row', '4 sets × 10 reps', '135 lbs')
+                            ->linkAction('fa-play', route('flexible.table-example'), 'Log', 'btn-log-now')
+                            ->add()
+                        ->subItem(23, 'Deadlift', '3 sets × 5 reps', '275 lbs')
+                            ->linkAction('fa-play', route('flexible.table-example'), 'Log', 'btn-log-now')
+                            ->add()
+                        ->initialState($expandId == 2 ? 'expanded' : ($expandId ? 'collapsed' : 'expanded'))
+                        ->add()
+                    ->row(3, 'Third Template', '1 exercise: Cardio')
+                        ->linkAction('fa-edit', route('flexible.table-example'), 'Edit')
+                        ->formAction('fa-trash', route('flexible.table-example'), 'DELETE', [], 'Delete', 'btn-danger', true)
+                        ->subItem(31, 'Running', '30 minutes', 'Moderate pace')
+                            ->linkAction('fa-play', route('flexible.table-example'), 'Log', 'btn-log-now')
+                            ->add()
+                        ->initialState($expandId == 3 ? 'expanded' : 'collapsed')
+                        ->add()
+                    ->confirmMessage('deleteItem', 'Are you sure?')
+                    ->build(),
+            ],
+        ];
+        
+        return view('mobile-entry.flexible', compact('data'));
+    }
 }

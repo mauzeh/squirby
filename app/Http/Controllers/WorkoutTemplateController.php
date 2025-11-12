@@ -128,8 +128,11 @@ class WorkoutTemplateController extends Controller
                 }
 
                 // Expand this template if it matches the ID parameter
-                $shouldExpand = $expandedTemplateId && $template->id == $expandedTemplateId;
-                $rowBuilder->collapsible(!$shouldExpand)->add();
+                if ($expandedTemplateId && $template->id == $expandedTemplateId) {
+                    $rowBuilder->initialState('expanded');
+                }
+                
+                $rowBuilder->add();
             }
 
             $components[] = $tableBuilder

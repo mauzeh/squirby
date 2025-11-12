@@ -11,7 +11,12 @@
         @foreach($data['rows'] as $row)
         <div class="component-table-row {{ isset($row['subItems']) && !empty($row['subItems']) ? 'has-subitems' : '' }}" data-row-id="{{ $row['id'] }}">
             @if(isset($row['subItems']) && !empty($row['subItems']) && ($row['collapsible'] ?? true))
-            <button class="btn-table-expand" aria-label="Expand row" data-toggle-subitems="{{ $row['id'] }}">
+            @php
+                $initialState = $row['initialState'] ?? 'collapsed';
+                $expandedClass = $initialState === 'expanded' ? ' expanded' : '';
+                $ariaLabel = $initialState === 'expanded' ? 'Collapse row' : 'Expand row';
+            @endphp
+            <button class="btn-table-expand{{ $expandedClass }}" aria-label="{{ $ariaLabel }}" data-toggle-subitems="{{ $row['id'] }}">
                 <i class="fas fa-chevron-right"></i>
             </button>
             @endif
@@ -84,7 +89,12 @@
         
         {{-- Sub-items --}}
         @if(isset($row['subItems']) && !empty($row['subItems']))
-            <div class="component-table-subitems" data-subitems="{{ $row['id'] }}" style="display: {{ ($row['collapsible'] ?? true) ? 'none' : '' }};">
+            @php
+                $isCollapsible = $row['collapsible'] ?? true;
+                $initialState = $row['initialState'] ?? 'collapsed';
+                $shouldHide = $isCollapsible && $initialState === 'collapsed';
+            @endphp
+            <div class="component-table-subitems" data-subitems="{{ $row['id'] }}" style="display: {{ $shouldHide ? 'none' : '' }};">
 
                 @foreach($row['subItems'] as $subItem)
                 <div class="component-table-subitem">
