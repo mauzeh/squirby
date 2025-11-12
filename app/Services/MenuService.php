@@ -179,6 +179,13 @@ class MenuService
                 'active' => Request::routeIs('flexible.table-reorder'),
                 'title' => 'Table Reorder',
             ],
+            [
+                'label' => null,
+                'icon' => 'fa-expand',
+                'route' => 'flexible.expanded-list',
+                'active' => Request::routeIs('flexible.expanded-list'),
+                'title' => 'Expanded List',
+            ],
         ];
     }
 
