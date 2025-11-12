@@ -97,6 +97,19 @@ class RedirectService
                 }
             }
 
+            // Special handling for workout_id parameter
+            // The route expects 'id' but config uses 'workout_id'
+            if ($paramName === 'workout_id') {
+                if (isset($context['workout_id'])) {
+                    $params['id'] = $context['workout_id'];
+                    continue;
+                }
+                if ($request->has('workout_id')) {
+                    $params['id'] = $request->input('workout_id');
+                    continue;
+                }
+            }
+
             // First check context (for computed values like submitted_lift_log_id)
             if (isset($context[$paramName])) {
                 $params[$paramName] = $context[$paramName];

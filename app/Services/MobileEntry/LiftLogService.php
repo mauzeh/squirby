@@ -224,6 +224,11 @@ class LiftLogService extends MobileEntryBaseService
                 if (!empty($redirectParams['template_id'])) {
                     $hiddenFields['template_id'] = $redirectParams['template_id'];
                 }
+                
+                // Add workout_id if it exists
+                if (!empty($redirectParams['workout_id'])) {
+                    $hiddenFields['workout_id'] = $redirectParams['workout_id'];
+                }
             } else {
                 $hiddenFields['redirect_to'] = 'mobile-entry-lifts';
             }
