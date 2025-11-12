@@ -86,7 +86,7 @@ class WorkoutTemplateController extends Controller
                         
                         // Build URL to add lift form for this exercise
                         $logUrl = route('mobile-entry.add-lift-form', [
-                            'exercise_id' => $exercise->exercise_id,
+                            'exercise' => $exercise->exercise_id,
                             'date' => Carbon::today()->toDateString()
                         ]);
                         
