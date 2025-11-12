@@ -287,4 +287,57 @@ class BandedExerciseTypeTest extends TestCase
         $this->assertArrayHasKey('supports_1rm', $config);
         $this->assertFalse($config['supports_1rm']);
     }
+
+    /** @test */
+    public function it_formats_suggestion_text_for_banded_exercise()
+    {
+        $suggestion = (object)[
+            'band_color' => 'red',
+            'reps' => 10,
+            'sets' => 3
+        ];
+
+        $result = $this->strategy->formatSuggestionText($suggestion);
+
+        $this->assertEquals('Suggested: red band × 10 reps × 3 sets', $result);
+    }
+
+    /** @test */
+    public function it_formats_suggestion_text_with_default_sets()
+    {
+        $suggestion = (object)[
+            'band_color' => 'blue',
+            'reps' => 12
+        ];
+
+        $result = $this->strategy->formatSuggestionText($suggestion);
+
+        $this->assertEquals('Suggested: blue band × 12 reps × 3 sets', $result);
+    }
+
+    /** @test */
+    public function it_returns_null_when_banded_suggestion_missing_band_color()
+    {
+        $suggestion = (object)[
+            'reps' => 10,
+            'sets' => 3
+        ];
+
+        $result = $this->strategy->formatSuggestionText($suggestion);
+
+        $this->assertNull($result);
+    }
+
+    /** @test */
+    public function it_returns_null_when_banded_suggestion_missing_reps()
+    {
+        $suggestion = (object)[
+            'band_color' => 'red',
+            'sets' => 3
+        ];
+
+        $result = $this->strategy->formatSuggestionText($suggestion);
+
+        $this->assertNull($result);
+    }
 }

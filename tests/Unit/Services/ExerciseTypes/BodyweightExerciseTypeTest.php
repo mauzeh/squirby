@@ -315,4 +315,41 @@ class BodyweightExerciseTypeTest extends TestCase
         $this->assertArrayHasKey('supports_1rm', $config);
         $this->assertFalse($config['supports_1rm']);
     }
+
+    /** @test */
+    public function it_formats_suggestion_text_for_bodyweight_exercise()
+    {
+        $suggestion = (object)[
+            'reps' => 12,
+            'sets' => 3
+        ];
+
+        $result = $this->strategy->formatSuggestionText($suggestion);
+
+        $this->assertEquals('Suggested: 12 reps × 3 sets', $result);
+    }
+
+    /** @test */
+    public function it_formats_suggestion_text_with_default_sets()
+    {
+        $suggestion = (object)[
+            'reps' => 15
+        ];
+
+        $result = $this->strategy->formatSuggestionText($suggestion);
+
+        $this->assertEquals('Suggested: 15 reps × 3 sets', $result);
+    }
+
+    /** @test */
+    public function it_returns_null_when_bodyweight_suggestion_missing_reps()
+    {
+        $suggestion = (object)[
+            'sets' => 3
+        ];
+
+        $result = $this->strategy->formatSuggestionText($suggestion);
+
+        $this->assertNull($result);
+    }
 }

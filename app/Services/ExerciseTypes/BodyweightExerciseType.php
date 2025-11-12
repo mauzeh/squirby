@@ -330,4 +330,17 @@ class BodyweightExerciseType extends BaseExerciseType
     {
         return 0;
     }
+
+    /**
+     * Format suggestion text for bodyweight exercises
+     */
+    public function formatSuggestionText(object $suggestion): ?string
+    {
+        if (!isset($suggestion->reps)) {
+            return null;
+        }
+        
+        $sets = $suggestion->sets ?? 3;
+        return 'Suggested: ' . $suggestion->reps . ' reps × ' . $sets . ' sets';
+    }
 }

@@ -597,4 +597,27 @@ interface ExerciseTypeInterface
      * @return float The default starting weight
      */
     public function getDefaultStartingWeight(\App\Models\Exercise $exercise): float;
+
+    /**
+     * Format a suggestion object as display text
+     * 
+     * Takes a suggestion object (from getProgressionSuggestion) and formats it
+     * as human-readable text for display in the UI.
+     * 
+     * @param object $suggestion Suggestion object with properties like suggestedWeight, reps, sets, band_color
+     * @return string|null Formatted text like "Suggested: 185 lbs × 8 reps × 4 sets" or null if cannot format
+     * 
+     * @example
+     * // Weighted exercise
+     * $strategy->formatSuggestionText($suggestion); // "Suggested: 185 lbs × 8 reps × 4 sets"
+     * 
+     * @example
+     * // Banded exercise
+     * $strategy->formatSuggestionText($suggestion); // "Suggested: red band × 10 reps × 3 sets"
+     * 
+     * @example
+     * // Bodyweight exercise
+     * $strategy->formatSuggestionText($suggestion); // "Suggested: 12 reps × 3 sets"
+     */
+    public function formatSuggestionText(object $suggestion): ?string;
 }

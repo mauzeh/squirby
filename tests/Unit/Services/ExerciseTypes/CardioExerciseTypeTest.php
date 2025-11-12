@@ -402,4 +402,54 @@ class CardioExerciseTypeTest extends TestCase
 
         $this->assertIsArray($config);
     }
+
+    /** @test */
+    public function it_formats_suggestion_text_for_short_distance_in_miles()
+    {
+        $suggestion = (object)[
+            'reps' => 3.5, // 3.5 miles
+            'sets' => 2
+        ];
+
+        $result = $this->strategy->formatSuggestionText($suggestion);
+
+        $this->assertEquals('Suggested: 3.5 mi × 2 rounds', $result);
+    }
+
+    /** @test */
+    public function it_formats_suggestion_text_for_long_distance_in_kilometers()
+    {
+        $suggestion = (object)[
+            'reps' => 15, // 15 miles = ~2.8 km
+            'sets' => 1
+        ];
+
+        $result = $this->strategy->formatSuggestionText($suggestion);
+
+        $this->assertEquals('Suggested: 2.8 km × 1 rounds', $result);
+    }
+
+    /** @test */
+    public function it_formats_suggestion_text_with_default_sets()
+    {
+        $suggestion = (object)[
+            'reps' => 5
+        ];
+
+        $result = $this->strategy->formatSuggestionText($suggestion);
+
+        $this->assertEquals('Suggested: 5 mi × 1 rounds', $result);
+    }
+
+    /** @test */
+    public function it_returns_null_when_cardio_suggestion_missing_reps()
+    {
+        $suggestion = (object)[
+            'sets' => 2
+        ];
+
+        $result = $this->strategy->formatSuggestionText($suggestion);
+
+        $this->assertNull($result);
+    }
 }

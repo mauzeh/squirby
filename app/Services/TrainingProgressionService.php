@@ -33,11 +33,11 @@ class TrainingProgressionService
 
     /**
      * Format suggestion text for display
-     * Returns formatted text like "Suggested: 185 lbs × 8 reps × 4 sets"
+     * Delegates to the exercise type strategy for proper formatting
      * 
      * @param int $userId
      * @param int $exerciseId
-     * @return string|null
+     * @return string|null Formatted text like "Suggested: 185 lbs × 8 reps × 4 sets"
      */
     public function formatSuggestionText(int $userId, int $exerciseId): ?string
     {
@@ -53,30 +53,8 @@ class TrainingProgressionService
             return null;
         }
         
+        // Delegate formatting to the exercise type strategy
         $strategy = $exercise->getTypeStrategy();
-        $sets = $suggestion->sets ?? 3;
-        
-        // Format based on exercise type using strategy information
-        if (isset($suggestion->band_color)) {
-            // Banded exercise suggestion
-            return 'Suggested: ' . $suggestion->band_color . ' band × ' . $suggestion->reps . ' reps × ' . $sets . ' sets';
-        } elseif (isset($suggestion->suggestedWeight) && $strategy->getTypeName() !== 'bodyweight') {
-            // Weighted exercise suggestion
-            return 'Suggested: ' . $suggestion->suggestedWeight . ' lbs × ' . $suggestion->reps . ' reps × ' . $sets . ' sets';
-        } elseif ($strategy->getTypeName() === 'bodyweight' && isset($suggestion->reps)) {
-            // Bodyweight exercise suggestion
-            return 'Suggested: ' . $suggestion->reps . ' reps × ' . $sets . ' sets';
-        } elseif ($strategy->getTypeName() === 'cardio' && isset($suggestion->reps)) {
-            // Cardio exercise suggestion (reps = distance)
-            $distance = $suggestion->reps;
-            if ($distance >= 10) {
-                $distanceText = number_format($distance / 5.28, 1) . ' km';
-            } else {
-                $distanceText = $distance . ' mi';
-            }
-            return 'Suggested: ' . $distanceText . ' × ' . $sets . ' rounds';
-        }
-        
-        return null;
+        return $strategy->formatSuggestionText($suggestion);
     }
 }

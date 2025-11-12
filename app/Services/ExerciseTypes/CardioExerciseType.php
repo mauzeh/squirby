@@ -392,4 +392,26 @@ class CardioExerciseType extends BaseExerciseType
             'band_color' => null, // not applicable for cardio
         ];
     }
+
+    /**
+     * Format suggestion text for cardio exercises
+     */
+    public function formatSuggestionText(object $suggestion): ?string
+    {
+        if (!isset($suggestion->reps)) {
+            return null;
+        }
+        
+        $sets = $suggestion->sets ?? 1;
+        $distance = $suggestion->reps;
+        
+        // Format distance
+        if ($distance >= 10) {
+            $distanceText = number_format($distance / 5.28, 1) . ' km';
+        } else {
+            $distanceText = $distance . ' mi';
+        }
+        
+        return 'Suggested: ' . $distanceText . ' × ' . $sets . ' rounds';
+    }
 }
