@@ -67,16 +67,6 @@ class WorkoutTemplateController extends Controller
                 ->linkAction('fa-edit', route('workout-templates.edit', $template->id), 'Edit template')
                 ->formAction('fa-trash', route('workout-templates.destroy', $template->id), 'DELETE', [], 'Delete', 'btn-danger', true);
 
-                // Add "Add Exercise" as first sub-item
-                $rowBuilder->subItem(
-                    999000 + $template->id, // Use high number to avoid conflicts with exercise IDs
-                    '+ Add Exercise',
-                    'Click to add exercises to this template',
-                    null
-                )
-                ->linkAction('fa-plus', route('workout-templates.edit', $template->id) . '?expand=true', 'Add exercises', 'btn-log-now')
-                ->add();
-
                 // Add exercises as sub-items
                 if ($template->exercises->isNotEmpty()) {
                     foreach ($template->exercises as $index => $exercise) {
