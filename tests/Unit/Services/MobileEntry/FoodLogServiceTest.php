@@ -465,8 +465,8 @@ class FoodLogServiceTest extends TestCase
         $this->assertStringContainsString('food-logs', $form['formAction']);
         $this->assertStringContainsString('mobile-entry/remove-food-form/ingredient-' . $ingredient->id, $form['deleteAction']);
         
-        // Check numeric fields
-        $this->assertCount(1, $form['numericFields']);
+        // Check numeric fields (quantity + notes textarea)
+        $this->assertCount(2, $form['numericFields']);
         $quantityField = $form['numericFields'][0];
         $this->assertEquals('quantity', $quantityField['name']);
         $this->assertEquals('Quantity (g):', $quantityField['label']);
@@ -475,12 +475,11 @@ class FoodLogServiceTest extends TestCase
         $this->assertEquals(0.01, $quantityField['min']);
         $this->assertEquals(1000, $quantityField['max']);
         
-        // Check comment field
-        $commentField = $form['commentField'];
-        $this->assertEquals('notes', $commentField['name']);
-        $this->assertEquals('Notes:', $commentField['label']);
-        $this->assertEquals('Any notes about this food?', $commentField['placeholder']);
-        $this->assertEquals('', $commentField['defaultValue']);
+        // Check notes field (now in numericFields as textarea)
+        $notesField = $form['numericFields'][1];
+        $this->assertEquals('notes', $notesField['name']);
+        $this->assertEquals('textarea', $notesField['type']);
+        $this->assertEquals('Notes:', $notesField['label']);
         
         // Check hidden fields
         $hiddenFields = $form['hiddenFields'];
@@ -537,8 +536,8 @@ class FoodLogServiceTest extends TestCase
         $this->assertEquals('meal-' . $meal->id, $form['id']);
         $this->assertEquals('Protein Bowl (Meal)', $form['title']);
         
-        // Check portion field
-        $this->assertCount(1, $form['numericFields']);
+        // Check portion field (portion + notes textarea)
+        $this->assertCount(2, $form['numericFields']);
         $portionField = $form['numericFields'][0];
         $this->assertEquals('portion', $portionField['name']);
         $this->assertEquals('Portion:', $portionField['label']);
@@ -546,6 +545,11 @@ class FoodLogServiceTest extends TestCase
         $this->assertEquals(0.25, $portionField['increment']);
         $this->assertEquals(0.1, $portionField['min']);
         $this->assertEquals(10, $portionField['max']);
+        
+        // Check notes field
+        $notesField = $form['numericFields'][1];
+        $this->assertEquals('notes', $notesField['name']);
+        $this->assertEquals('textarea', $notesField['type']);
         
         // Check hidden fields for meal
         $hiddenFields = $form['hiddenFields'];

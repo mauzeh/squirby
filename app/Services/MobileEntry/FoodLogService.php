@@ -382,14 +382,18 @@ class FoodLogService extends MobileEntryBaseService
                     'decrease' => 'Decrease quantity',
                     'increase' => 'Increase quantity'
                 ]
+            ],
+            [
+                'id' => $formId . '-notes',
+                'name' => 'notes',
+                'label' => 'Notes:',
+                'type' => 'textarea',
+                'placeholder' => config('mobile_entry_messages.placeholders.food_notes'),
+                'defaultValue' => '',
+                'ariaLabels' => [
+                    'field' => 'Notes'
+                ]
             ]
-        ];
-        $formData['data']['commentField'] = [
-            'id' => $formId . '-notes',
-            'name' => 'notes',
-            'label' => 'Notes:',
-            'placeholder' => config('mobile_entry_messages.placeholders.food_notes'),
-            'defaultValue' => ''
         ];
         $formData['data']['buttons'] = [
             'decrement' => '-',
@@ -494,14 +498,18 @@ class FoodLogService extends MobileEntryBaseService
                     'decrease' => 'Decrease portion',
                     'increase' => 'Increase portion'
                 ]
+            ],
+            [
+                'id' => $formId . '-notes',
+                'name' => 'notes',
+                'label' => 'Notes:',
+                'type' => 'textarea',
+                'placeholder' => config('mobile_entry_messages.placeholders.food_notes'),
+                'defaultValue' => '',
+                'ariaLabels' => [
+                    'field' => 'Notes'
+                ]
             ]
-        ];
-        $formData['data']['commentField'] = [
-            'id' => $formId . '-notes',
-            'name' => 'notes',
-            'label' => 'Notes:',
-            'placeholder' => config('mobile_entry_messages.placeholders.food_notes'),
-            'defaultValue' => ''
         ];
         $formData['data']['buttons'] = [
             'decrement' => '-',

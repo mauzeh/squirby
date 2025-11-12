@@ -52,6 +52,8 @@
                 </select>
             @elseif(isset($field['type']) && $field['type'] === 'text')
                 <input type="text" id="{{ $field['id'] }}" name="{{ $field['name'] }}" class="text-input" value="{{ old($field['name'], $field['defaultValue']) }}" placeholder="{{ $field['placeholder'] ?? '' }}" aria-label="{{ $field['ariaLabels']['field'] }}">
+            @elseif(isset($field['type']) && $field['type'] === 'textarea')
+                <textarea id="{{ $field['id'] }}" name="{{ $field['name'] }}" class="comment-textarea" placeholder="{{ $field['placeholder'] ?? '' }}" rows="3" aria-label="{{ $field['ariaLabels']['field'] }}">{{ old($field['name'], $field['defaultValue']) }}</textarea>
             @else
                 <div class="number-input-group" 
                      data-increment="{{ $field['increment'] }}" 
@@ -64,11 +66,6 @@
             @endif
         </div>
         @endforeach
-        
-        <div class="form-mobile-group">
-            <label for="{{ $data['commentField']['id'] }}" class="form-mobile-label">{{ $data['commentField']['label'] }}</label>
-            <textarea id="{{ $data['commentField']['id'] }}" name="{{ $data['commentField']['name'] }}" class="comment-textarea" placeholder="{{ $data['commentField']['placeholder'] }}" rows="3">{{ old($data['commentField']['name'], $data['commentField']['defaultValue']) }}</textarea>
-        </div>
         
         <div class="form-actions">
             <button type="submit" class="btn-primary">{{ $data['buttons']['submit'] }}</button>

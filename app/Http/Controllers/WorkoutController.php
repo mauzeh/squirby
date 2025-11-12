@@ -341,6 +341,7 @@ class WorkoutController extends Controller
             ->formAction(route('workouts.update', $workout->id))
             ->textField('name', 'Workout Name:', $workout->name, 'e.g., Push Day')
             ->textField('description', 'Description:', $workout->description ?? '', 'Optional')
+            ->textareaField('notes', 'Notes:', $workout->notes ?? '', 'Optional workout notes')
             ->hiddenField('_method', 'PUT')
             ->submitButton('Update Workout')
             ->build();
@@ -359,6 +360,7 @@ class WorkoutController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'notes' => 'nullable|string',
         ]);
 
         $workout->update($validated);

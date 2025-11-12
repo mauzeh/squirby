@@ -16,6 +16,7 @@ class Workout extends Model
         'user_id',
         'name',
         'description',
+        'notes',
         'is_public',
         'tags',
         'times_used',

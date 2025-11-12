@@ -442,13 +442,6 @@ class FormComponentBuilder
             'deleteAction' => null,
             'messages' => [],
             'numericFields' => [],
-            'commentField' => [
-                'id' => $id . '-comment',
-                'name' => 'comment',
-                'label' => 'Notes:',
-                'placeholder' => 'Add any notes...',
-                'defaultValue' => ''
-            ],
             'hiddenFields' => [],
             'buttons' => [
                 'decrement' => '-',
@@ -546,14 +539,18 @@ class FormComponentBuilder
         return $this;
     }
     
-    public function commentField(string $label, string $placeholder, string $defaultValue = ''): self
+    public function textareaField(string $name, string $label, string $defaultValue = '', string $placeholder = ''): self
     {
-        $this->data['commentField'] = [
-            'id' => $this->data['id'] . '-comment',
-            'name' => 'comment',
+        $this->data['numericFields'][] = [
+            'id' => $this->data['id'] . '-' . $name,
+            'name' => $name,
             'label' => $label,
+            'type' => 'textarea',
+            'defaultValue' => $defaultValue,
             'placeholder' => $placeholder,
-            'defaultValue' => $defaultValue
+            'ariaLabels' => [
+                'field' => $label
+            ]
         ];
         
         return $this;

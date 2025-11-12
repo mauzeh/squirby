@@ -188,18 +188,24 @@ class LiftLogService extends MobileEntryBaseService
                 $formBuilder->message($message['type'], $message['text'], $message['prefix'] ?? null);
             }
             
+            // Add notes field as a textarea
+            $numericFields[] = [
+                'id' => $formId . '-comment',
+                'name' => 'comments',
+                'label' => 'Notes:',
+                'type' => 'textarea',
+                'placeholder' => config('mobile_entry_messages.placeholders.workout_notes'),
+                'defaultValue' => '',
+                'ariaLabels' => [
+                    'field' => 'Notes'
+                ]
+            ];
+            
             // Add numeric fields (keeping the old numericFields structure for compatibility)
             // Note: We're not using the builder's numericField method here because we need
             // to preserve the exact structure including select fields and custom properties
             $formData = $formBuilder->build();
             $formData['data']['numericFields'] = $numericFields;
-            $formData['data']['commentField'] = [
-                'id' => $formId . '-comment',
-                'name' => 'comments',
-                'label' => 'Notes:',
-                'placeholder' => config('mobile_entry_messages.placeholders.workout_notes'),
-                'defaultValue' => ''
-            ];
             $formData['data']['buttons'] = [
                 'decrement' => '-',
                 'increment' => '+',

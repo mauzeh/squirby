@@ -165,14 +165,18 @@ class BodyLogService extends MobileEntryBaseService
                     'decrease' => 'Decrease value',
                     'increase' => 'Increase value'
                 ]
+            ],
+            [
+                'id' => $formId . '-comments',
+                'name' => 'comments',
+                'label' => 'Notes:',
+                'type' => 'textarea',
+                'placeholder' => 'Any additional notes...',
+                'defaultValue' => '',
+                'ariaLabels' => [
+                    'field' => 'Notes'
+                ]
             ]
-        ];
-        $formData['data']['commentField'] = [
-            'id' => $formId . '-comments',
-            'name' => 'comments',
-            'label' => 'Notes:',
-            'placeholder' => 'Any additional notes...',
-            'defaultValue' => ''
         ];
         $formData['data']['buttons'] = [
             'decrement' => '-',
