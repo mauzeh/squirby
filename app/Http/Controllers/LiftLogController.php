@@ -174,6 +174,12 @@ class LiftLogController extends Controller
             ];
             
             return redirect()->route('mobile-entry.lifts', $redirectParams)->with('success', $successMessage);
+        } elseif ($request->input('redirect_to') === 'workout-templates') {
+            $redirectParams = [];
+            if ($request->input('template_id')) {
+                $redirectParams['id'] = $request->input('template_id');
+            }
+            return redirect()->route('workout-templates.index', $redirectParams)->with('success', $successMessage);
         } else {
             return redirect()->route('exercises.show-logs', ['exercise' => $liftLog->exercise_id])->with('success', $successMessage);
         }
@@ -298,6 +304,12 @@ class LiftLogController extends Controller
                 'submitted_lift_log_id' => $liftLog->id,
             ];
             return redirect()->route('mobile-entry.lifts', $redirectParams)->with('success', 'Lift log updated successfully.');
+        } elseif ($request->input('redirect_to') === 'workout-templates') {
+            $redirectParams = [];
+            if ($request->input('template_id')) {
+                $redirectParams['id'] = $request->input('template_id');
+            }
+            return redirect()->route('workout-templates.index', $redirectParams)->with('success', 'Lift log updated successfully.');
         } else {
             return redirect()->route('exercises.show-logs', ['exercise' => $liftLog->exercise_id])->with('success', 'Lift log updated successfully.');
         }
@@ -313,7 +325,7 @@ class LiftLogController extends Controller
         }
         
         // Check if we're in mobile-entry context
-        $isMobileEntry = in_array(request()->input('redirect_to'), ['mobile-entry', 'mobile-entry-lifts']);
+        $isMobileEntry = in_array(request()->input('redirect_to'), ['mobile-entry', 'mobile-entry-lifts', 'workout-templates']);
         
         // Generate a specific deletion message before deleting
         $deletionMessage = $this->generateDeletionMessage($liftLog, $isMobileEntry);
@@ -324,6 +336,12 @@ class LiftLogController extends Controller
             return redirect()->route('mobile-entry.lifts', ['date' => request()->input('date')])->with('success', $deletionMessage);
         } elseif (request()->input('redirect_to') === 'mobile-entry-lifts') {
             return redirect()->route('mobile-entry.lifts', ['date' => request()->input('date')])->with('success', $deletionMessage);
+        } elseif (request()->input('redirect_to') === 'workout-templates') {
+            $redirectParams = [];
+            if (request()->input('template_id')) {
+                $redirectParams['id'] = request()->input('template_id');
+            }
+            return redirect()->route('workout-templates.index', $redirectParams)->with('success', $deletionMessage);
         }
 
         return redirect()->route('lift-logs.index')->with('success', $deletionMessage);

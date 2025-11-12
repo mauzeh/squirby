@@ -104,10 +104,12 @@ class WorkoutTemplateController extends Controller
                             // Show completed checkmark (non-clickable)
                             $subItemBuilder->linkAction('fa-check-circle', '#', 'Completed today', 'btn-disabled');
                         } else {
-                            // Show log now button
+                            // Show log now button with redirect back to this template
                             $logUrl = route('mobile-entry.add-lift-form', [
                                 'exercise' => $exercise->exercise_id,
-                                'date' => $today->toDateString()
+                                'date' => $today->toDateString(),
+                                'redirect_to' => 'workout-templates',
+                                'template_id' => $template->id
                             ]);
                             $subItemBuilder->linkAction('fa-play', $logUrl, 'Log now', 'btn-log-now');
                         }
