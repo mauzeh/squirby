@@ -156,16 +156,19 @@ Navigation Component */
     padding-top: var(--spacing-xl);
 }
 
-/* Title Row - flexbox for back button + title */
+/* Title Row - relative positioning for back button + centered title */
 .component-title-row {
+    position: relative;
     display: flex;
     align-items: flex-start;
-    gap: var(--spacing-md);
+    justify-content: center;
 }
 
-/* Back Button */
+/* Back Button - positioned absolutely on the left */
 .component-title-back-button {
-    flex-shrink: 0;
+    position: absolute;
+    left: 0;
+    top: 0;
     width: var(--touch-target-min);
     height: var(--touch-target-min);
     display: flex;
@@ -177,6 +180,7 @@ Navigation Component */
     text-decoration: none;
     transition: background-color var(--transition-fast);
     font-size: 1.2em;
+    z-index: 1;
 }
 
 .component-title-back-button:hover {
@@ -188,10 +192,11 @@ Navigation Component */
     background-color: var(--input-bg);
 }
 
-/* Title Content - left aligned when back button present */
+/* Title Content - always centered */
 .component-title-content {
     flex: 1;
-    text-align: left;
+    text-align: center;
+    padding: 0 calc(var(--touch-target-min) + var(--spacing-md));
 }
 
 /* Main Title */
