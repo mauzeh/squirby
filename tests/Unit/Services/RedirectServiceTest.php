@@ -174,11 +174,11 @@ class RedirectServiceTest extends TestCase
 
         $this->assertEquals(302, $redirect->getStatusCode());
         $this->assertStringContainsString('workouts', $redirect->getTargetUrl());
-        $this->assertStringContainsString('id=42', $redirect->getTargetUrl());
+        $this->assertStringContainsString('workout_id=42', $redirect->getTargetUrl());
     }
 
     /** @test */
-    public function it_maps_workout_id_to_id_parameter()
+    public function it_keeps_workout_id_as_query_parameter()
     {
         $request = Request::create('/', 'POST', [
             'redirect_to' => 'workouts',
@@ -197,9 +197,8 @@ class RedirectServiceTest extends TestCase
         $this->assertEquals(302, $redirect->getStatusCode());
         $url = $redirect->getTargetUrl();
         $this->assertStringContainsString('workouts', $url);
-        // The workout_id should be mapped to 'id' parameter
-        $this->assertStringContainsString('id=5', $url);
-        $this->assertStringNotContainsString('workout_id=5', $url);
+        // The workout_id should remain as 'workout_id' parameter
+        $this->assertStringContainsString('workout_id=5', $url);
     }
 
     /** @test */
@@ -224,8 +223,8 @@ class RedirectServiceTest extends TestCase
         $this->assertEquals(302, $redirect->getStatusCode());
         $url = $redirect->getTargetUrl();
         $this->assertStringContainsString('workouts', $url);
-        // The workout_id from context should be mapped to 'id' parameter
-        $this->assertStringContainsString('id=7', $url);
+        // The workout_id from context should remain as 'workout_id' parameter
+        $this->assertStringContainsString('workout_id=7', $url);
     }
 
     /** @test */

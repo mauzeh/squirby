@@ -75,16 +75,16 @@ class WorkoutLogNowRedirectTest extends TestCase
             'workout_id' => $workout->id,
         ]);
 
-        // Should redirect back to workouts.index with id parameter
+        // Should redirect back to workouts.index with workout_id parameter
         $response->assertRedirect();
         $redirectUrl = $response->headers->get('Location');
         $this->assertStringContainsString('workouts', $redirectUrl);
-        $this->assertStringContainsString('id=' . $workout->id, $redirectUrl);
+        $this->assertStringContainsString('workout_id=' . $workout->id, $redirectUrl);
         $response->assertSessionHas('success');
     }
 
     /** @test */
-    public function log_now_redirects_to_correct_workout_with_id_parameter()
+    public function log_now_redirects_to_correct_workout_with_workout_id_parameter()
     {
         $user = User::factory()->create();
         $workout = Workout::factory()->create(['user_id' => $user->id]);
@@ -107,12 +107,12 @@ class WorkoutLogNowRedirectTest extends TestCase
             'workout_id' => $workout->id,
         ]);
 
-        // Verify redirect includes id parameter (not workout_id)
-        $response->assertRedirect(route('workouts.index', ['id' => $workout->id]));
+        // Verify redirect includes workout_id parameter
+        $response->assertRedirect(route('workouts.index', ['workout_id' => $workout->id]));
     }
 
     /** @test */
-    public function workout_id_parameter_is_mapped_to_id_in_redirect()
+    public function workout_id_parameter_is_preserved_in_redirect()
     {
         $user = User::factory()->create();
         $workout = Workout::factory()->create(['user_id' => $user->id]);
@@ -136,9 +136,8 @@ class WorkoutLogNowRedirectTest extends TestCase
 
         $redirectUrl = $response->headers->get('Location');
         
-        // Should have 'id' parameter, not 'workout_id'
-        $this->assertStringContainsString('id=' . $workout->id, $redirectUrl);
-        $this->assertStringNotContainsString('workout_id=', $redirectUrl);
+        // Should have 'workout_id' parameter
+        $this->assertStringContainsString('workout_id=' . $workout->id, $redirectUrl);
     }
 
     /** @test */
