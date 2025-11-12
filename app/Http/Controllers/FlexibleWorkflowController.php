@@ -99,7 +99,6 @@ class FlexibleWorkflowController extends Controller
                     ->emptyMessage('No items yet.')
                     ->build(),
             ],
-            'showDebugIndicator' => true
         ];
         
         return view('mobile-entry.flexible', compact('data'));
@@ -125,7 +124,6 @@ class FlexibleWorkflowController extends Controller
                     ->submitButton('Save Workout')
                     ->build(),
             ],
-            'showDebugIndicator' => true
         ];
         
         return view('mobile-entry.flexible', compact('data'));
@@ -179,8 +177,6 @@ class FlexibleWorkflowController extends Controller
                     ->submitButton('Log')
                     ->build(),
             ],
-            'autoscroll' => true,  // Enable autoscroll for this example
-            'showDebugIndicator' => true  // Show visual indicator (for demo only)
         ];
         
         return view('mobile-entry.flexible', compact('data'));
@@ -214,7 +210,6 @@ class FlexibleWorkflowController extends Controller
                     ->item('completion', '25%', 'Profile Complete')
                     ->build(),
             ],
-            'showDebugIndicator' => true
         ];
         
         return view('mobile-entry.flexible', compact('data'));
@@ -248,7 +243,6 @@ class FlexibleWorkflowController extends Controller
                     ->info('Choose an action above to get started')
                     ->build(),
             ],
-            'showDebugIndicator' => true
         ];
         
         return view('mobile-entry.flexible', compact('data'));
@@ -408,7 +402,6 @@ class FlexibleWorkflowController extends Controller
                     ->ariaLabel('Create a new workout routine')
                     ->build(),
             ],
-            'showDebugIndicator' => true
         ];
         
         return view('mobile-entry.flexible', compact('data'));
@@ -449,7 +442,6 @@ class FlexibleWorkflowController extends Controller
                     ->confirmMessage('deleteItem', 'Are you sure you want to delete this exercise?')
                     ->build(),
             ],
-            'showDebugIndicator' => true
         ];
         
         return view('mobile-entry.flexible', compact('data'));
@@ -505,7 +497,6 @@ class FlexibleWorkflowController extends Controller
                     ->initialState('expanded')
                     ->build(),
             ],
-            'showDebugIndicator' => true
         ];
         
         return view('mobile-entry.flexible', compact('data'));
@@ -538,7 +529,6 @@ class FlexibleWorkflowController extends Controller
                     ->submitButton('Save')
                     ->build(),
             ],
-            'showDebugIndicator' => true
         ];
         
         return view('mobile-entry.flexible', compact('data'));
@@ -578,7 +568,6 @@ class FlexibleWorkflowController extends Controller
                     ->initialState('expanded')
                     ->build(),
             ],
-            'showDebugIndicator' => true
         ];
         
         return view('mobile-entry.flexible', compact('data'));
