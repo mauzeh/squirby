@@ -346,13 +346,15 @@ class WorkoutController extends Controller
             ->build();
 
         // Delete workout button
-        $components[] = C::form('delete-workout', 'Delete Workout')
-            ->type('danger')
-            ->formAction(route('workouts.destroy', $workout->id))
-            ->hiddenField('_method', 'DELETE')
-            ->submitButton('Delete Workout')
-            ->confirmMessage('Are you sure you want to delete this workout? This action cannot be undone.')
-            ->build();
+        $components[] = [
+            'type' => 'delete-button',
+            'data' => [
+                'text' => 'Delete Workout',
+                'action' => route('workouts.destroy', $workout->id),
+                'method' => 'DELETE',
+                'confirmMessage' => 'Are you sure you want to delete this workout? This action cannot be undone.'
+            ]
+        ];
 
         $data = ['components' => $components];
         return view('mobile-entry.flexible', compact('data'));
