@@ -19,11 +19,19 @@ class WorkoutTemplateController extends Controller
     public function index(Request $request)
     {
         $expandedTemplateId = $request->query('id');
+        $today = Carbon::today();
         
         $templates = WorkoutTemplate::where('user_id', Auth::id())
             ->with(['exercises.exercise.aliases'])
             ->orderBy('name')
             ->get();
+
+        // Get today's logged exercises for this user
+        $loggedExerciseIds = \App\Models\LiftLog::where('user_id', Auth::id())
+            ->whereDate('logged_at', $today)
+            ->pluck('exercise_id')
+            ->unique()
+            ->toArray();
 
         // Apply aliases to all exercises
         $user = Auth::user();
@@ -78,26 +86,33 @@ class WorkoutTemplateController extends Controller
                 ->linkAction('fa-edit', route('workout-templates.edit', $template->id), 'Edit template')
                 ->formAction('fa-trash', route('workout-templates.destroy', $template->id), 'DELETE', [], 'Delete', 'btn-danger', true);
 
-                // Add exercises as sub-items with log now button
+                // Add exercises as sub-items with log now button or completed checkmark
                 if ($template->exercises->isNotEmpty()) {
                     foreach ($template->exercises as $index => $exercise) {
                         $exerciseLine1 = $exercise->exercise->title;
                         $exerciseLine2 = 'Order: ' . $exercise->order;
                         
-                        // Build URL to add lift form for this exercise
-                        $logUrl = route('mobile-entry.add-lift-form', [
-                            'exercise' => $exercise->exercise_id,
-                            'date' => Carbon::today()->toDateString()
-                        ]);
-                        
-                        $rowBuilder->subItem(
+                        $subItemBuilder = $rowBuilder->subItem(
                             $exercise->id,
                             $exerciseLine1,
                             $exerciseLine2,
                             null
-                        )
-                        ->linkAction('fa-play', $logUrl, 'Log now', 'btn-log-now')
-                        ->add();
+                        );
+                        
+                        // Check if exercise was logged today
+                        if (in_array($exercise->exercise_id, $loggedExerciseIds)) {
+                            // Show completed checkmark (non-clickable)
+                            $subItemBuilder->linkAction('fa-check-circle', '#', 'Completed today', 'btn-disabled');
+                        } else {
+                            // Show log now button
+                            $logUrl = route('mobile-entry.add-lift-form', [
+                                'exercise' => $exercise->exercise_id,
+                                'date' => $today->toDateString()
+                            ]);
+                            $subItemBuilder->linkAction('fa-play', $logUrl, 'Log now', 'btn-log-now');
+                        }
+                        
+                        $subItemBuilder->add();
                     }
                 }
 
