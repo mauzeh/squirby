@@ -467,10 +467,10 @@ class FlexibleWorkflowController extends Controller
                 
                 C::messages()
                     ->info('This page has two separate item lists - one for exercises and one for meals')
-                    ->tip('Each button/list pair works independently', 'Note:')
+                    ->tip('Exercise list starts collapsed, meal list starts expanded', 'Note:')
                     ->build(),
                 
-                // First list: Exercises
+                // First list: Exercises (collapsed by default)
                 C::button('Add Exercise')
                     ->ariaLabel('Add new exercise')
                     ->addClass('btn-add-item')
@@ -486,13 +486,14 @@ class FlexibleWorkflowController extends Controller
                 
                 // Separator
                 C::messages()
-                    ->info('Second list below - completely independent')
+                    ->info('Second list below - starts expanded')
                     ->build(),
                 
-                // Second list: Meals
+                // Second list: Meals (expanded by default)
                 C::button('Add Meal')
                     ->ariaLabel('Add new meal')
                     ->addClass('btn-add-item')
+                    ->initialState('hidden')
                     ->build(),
                 
                 C::itemList()
@@ -501,6 +502,7 @@ class FlexibleWorkflowController extends Controller
                     ->item('meal-3', 'Oatmeal', '#', 'Available', 'regular', 3)
                     ->filterPlaceholder('Search meals...')
                     ->createForm('#', 'meal_name')
+                    ->initialState('expanded')
                     ->build(),
             ],
             'showDebugIndicator' => true
