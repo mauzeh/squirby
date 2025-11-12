@@ -427,8 +427,13 @@ document.addEventListener('DOMContentLoaded', function() {
             if (listInitialState === 'expanded') {
                 // Show the list without focusing (to avoid keyboard on page load)
                 showItemSelection(false);
-                // Scroll to it after page is fully loaded
-                scrollToFilter(500);
+                // Scroll to it after a delay to ensure page is rendered
+                // Use requestAnimationFrame for better timing
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        scrollToFilter(200);
+                    });
+                });
             } else {
                 hideItemSelection();
             }
