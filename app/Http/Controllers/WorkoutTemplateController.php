@@ -84,10 +84,10 @@ class WorkoutTemplateController extends Controller
                         $exerciseLine1 = $exercise->exercise->title;
                         $exerciseLine2 = 'Order: ' . $exercise->order;
                         
-                        // Build URL to mobile entry with this exercise pre-added
-                        $logUrl = route('mobile-entry.lifts', [
-                            'date' => Carbon::today()->toDateString(),
-                            'exercise_id' => $exercise->exercise_id
+                        // Build URL to add lift form for this exercise
+                        $logUrl = route('mobile-entry.add-lift-form', [
+                            'exercise_id' => $exercise->exercise_id,
+                            'date' => Carbon::today()->toDateString()
                         ]);
                         
                         $rowBuilder->subItem(
