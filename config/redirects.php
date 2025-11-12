@@ -60,7 +60,7 @@ return [
             ],
             'workouts' => [
                 'route' => 'workouts.index',
-                'params' => [],
+                'params' => ['workout_id'],
             ],
             'default' => [
                 'route' => 'lift-logs.index',

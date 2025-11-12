@@ -98,14 +98,14 @@ class RedirectService
             }
 
             // Special handling for workout_id parameter
-            // The route expects 'id' but config uses 'workout_id'
+            // Keep as 'workout_id' for query parameter
             if ($paramName === 'workout_id') {
                 if (isset($context['workout_id'])) {
-                    $params['id'] = $context['workout_id'];
+                    $params['workout_id'] = $context['workout_id'];
                     continue;
                 }
                 if ($request->has('workout_id')) {
-                    $params['id'] = $request->input('workout_id');
+                    $params['workout_id'] = $request->input('workout_id');
                     continue;
                 }
             }

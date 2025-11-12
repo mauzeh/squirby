@@ -19,6 +19,7 @@ class WorkoutController extends Controller
     public function index(Request $request)
     {
         $today = Carbon::today();
+        $expandWorkoutId = $request->query('workout_id'); // For manual expansion after delete
         
         $workouts = Workout::where('user_id', Auth::id())
             ->with(['exercises.exercise.aliases'])
@@ -135,6 +136,20 @@ class WorkoutController extends Controller
                                 'Edit lift log', 
                                 'btn-transparent'
                             );
+                            
+                            // Add delete button for the lift log
+                            $subItemBuilder->formAction(
+                                'fa-trash',
+                                route('lift-logs.destroy', ['lift_log' => $liftLog->id]),
+                                'DELETE',
+                                [
+                                    'redirect_to' => 'workouts',
+                                    'workout_id' => $workout->id
+                                ],
+                                'Delete lift log',
+                                'btn-danger',
+                                true
+                            );
                         } else {
                             // Not logged yet - show order
                             $exerciseLine2 = 'Order: ' . $exercise->order;
@@ -160,7 +175,8 @@ class WorkoutController extends Controller
                 }
 
                 // Auto-expand workouts that have any exercises logged today
-                if ($hasLoggedExercisesToday) {
+                // OR if this workout was explicitly requested (e.g., after deletion)
+                if ($hasLoggedExercisesToday || ($expandWorkoutId && $workout->id == $expandWorkoutId)) {
                     $rowBuilder->initialState('expanded');
                 }
                 
@@ -168,7 +184,7 @@ class WorkoutController extends Controller
             }
 
             $components[] = $tableBuilder
-                ->confirmMessage('deleteItem', 'Are you sure you want to delete this workout or remove this exercise?')
+                ->confirmMessage('deleteItem', 'Are you sure you want to delete this workout, exercise, or lift log? This action cannot be undone.')
                 ->build();
         } else {
             $components[] = C::messages()
