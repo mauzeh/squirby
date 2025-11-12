@@ -211,16 +211,10 @@ class WorkoutTemplateController extends Controller
 
         $components = [];
 
-        // Back button
-        $components[] = C::button('← Back to Templates')
-            ->asLink(route('workout-templates.index'))
-            ->cssClass('btn-secondary')
-            ->ariaLabel('Back to templates list')
-            ->build();
-
-        // Title
+        // Title with back button
         $components[] = C::title($workoutTemplate->name)
             ->subtitle('Edit template')
+            ->backButton('fa-arrow-left', route('workout-templates.index'), 'Back to templates')
             ->build();
 
         // Messages

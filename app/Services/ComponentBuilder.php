@@ -171,13 +171,24 @@ class TitleComponentBuilder
     {
         $this->data = [
             'main' => $main,
-            'subtitle' => $subtitle
+            'subtitle' => $subtitle,
+            'backButton' => null
         ];
     }
     
     public function subtitle(string $subtitle): self
     {
         $this->data['subtitle'] = $subtitle;
+        return $this;
+    }
+    
+    public function backButton(string $icon, string $url, ?string $ariaLabel = null): self
+    {
+        $this->data['backButton'] = [
+            'icon' => $icon,
+            'url' => $url,
+            'ariaLabel' => $ariaLabel ?? 'Go back'
+        ];
         return $this;
     }
     

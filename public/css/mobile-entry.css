@@ -156,6 +156,44 @@ Navigation Component */
     padding-top: var(--spacing-xl);
 }
 
+/* Title Row - flexbox for back button + title */
+.component-title-row {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-md);
+}
+
+/* Back Button */
+.component-title-back-button {
+    flex-shrink: 0;
+    width: var(--touch-target-min);
+    height: var(--touch-target-min);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--secondary-bg);
+    color: var(--text-primary);
+    border-radius: var(--border-radius-sm);
+    text-decoration: none;
+    transition: background-color var(--transition-fast);
+    font-size: 1.2em;
+}
+
+.component-title-back-button:hover {
+    background-color: var(--tertiary-bg);
+    color: var(--color-primary);
+}
+
+.component-title-back-button:active {
+    background-color: var(--input-bg);
+}
+
+/* Title Content - left aligned when back button present */
+.component-title-content {
+    flex: 1;
+    text-align: left;
+}
+
 /* Main Title */
 .component-title {
     color: var(--color-primary);
