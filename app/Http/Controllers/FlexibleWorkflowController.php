@@ -367,6 +367,15 @@ class FlexibleWorkflowController extends Controller
                     ->add()
                     ->row(
                         5,
+                        'Transparent Button Example',
+                        'Shows transparent edit button',
+                        'White icon with subtle hover effect'
+                    )
+                    ->linkAction('fa-pencil', route('flexible.table-example'), 'Edit', 'btn-transparent')
+                    ->formAction('fa-trash', route('flexible.table-example'), 'DELETE', ['redirect' => 'table'], 'Delete', 'btn-danger', true)
+                    ->add()
+                    ->row(
+                        6,
                         'Quick Stretches',
                         'Always visible sub-items',
                         'No expand/collapse button'
@@ -374,7 +383,7 @@ class FlexibleWorkflowController extends Controller
                     ->linkAction('fa-edit', route('flexible.table-example'), 'Edit')
                     ->formAction('fa-trash', route('flexible.table-example'), 'DELETE', ['redirect' => 'table'], 'Delete', 'btn-danger', true)
                     ->subItem(
-                        51,
+                        61,
                         'Neck Rolls',
                         '2 minutes',
                         'Gentle circular motion'
@@ -383,7 +392,7 @@ class FlexibleWorkflowController extends Controller
                     ->formAction('fa-trash', route('flexible.table-example'), 'DELETE', [], 'Delete', 'btn-danger', true)
                     ->add()
                     ->subItem(
-                        52,
+                        62,
                         'Shoulder Shrugs',
                         '1 minute',
                         '10 reps'
