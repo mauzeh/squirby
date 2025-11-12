@@ -153,7 +153,8 @@ Navigation Component */
 
 /* Add top padding when title is first component (no navigation above) */
 .mobile-entry-container > .component-title-container:first-child {
-    padding-top: var(--spacing-xl);
+    padding-top: var(--spacing-lg);
+    padding-bottom: var(--spacing-sm);
 }
 
 /* Title Row - relative positioning for back button + centered title */
