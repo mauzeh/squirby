@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Services\NutritionService;
 use App\Services\MobileEntry\FoodLogService;
 use App\Services\DateNavigationService;
+use App\Services\RedirectService;
 use Carbon\Carbon;
 
 class FoodLogController extends Controller
@@ -19,12 +20,18 @@ class FoodLogController extends Controller
     protected $nutritionService;
     protected $dateNavigationService;
     protected $foodLogService;
+    protected $redirectService;
 
-    public function __construct(NutritionService $nutritionService, DateNavigationService $dateNavigationService, FoodLogService $foodLogService)
-    {
+    public function __construct(
+        NutritionService $nutritionService,
+        DateNavigationService $dateNavigationService,
+        FoodLogService $foodLogService,
+        RedirectService $redirectService
+    ) {
         $this->nutritionService = $nutritionService;
         $this->dateNavigationService = $dateNavigationService;
         $this->foodLogService = $foodLogService;
+        $this->redirectService = $redirectService;
     }
 
     /**
@@ -107,11 +114,22 @@ class FoodLogController extends Controller
             // Generate celebratory message
             $celebratoryMessage = $this->generateCelebratoryMessage($logEntry);
             
-            return redirect()->route('mobile-entry.foods', ['date' => $validated['date']])
-                ->with('success', $celebratoryMessage);
+            return $this->redirectService->getRedirect(
+                'food_logs',
+                'store',
+                $request,
+                [],
+                $celebratoryMessage
+            );
         }
 
-        return redirect()->route('food-logs.index', ['date' => $validated['date']])->with('success', 'Log entry added successfully!');
+        return $this->redirectService->getRedirect(
+            'food_logs',
+            'store',
+            $request,
+            [],
+            'Log entry added successfully!'
+        );
     }
 
 
@@ -157,13 +175,13 @@ class FoodLogController extends Controller
         $date = $foodLog->logged_at->format('Y-m-d');
         $foodLog->delete();
 
-        // Check for redirect parameter and use it directly
-        $redirectTo = $request->input('redirect_to');
-        if ($redirectTo) {
-            return redirect()->route($redirectTo, ['date' => $date])->with('success', 'Log entry deleted successfully!');
-        }
-
-        return redirect()->route('food-logs.index', ['date' => $date])->with('success', 'Log entry deleted successfully!');
+        return $this->redirectService->getRedirect(
+            'food_logs',
+            'destroy',
+            $request,
+            ['date' => $date],
+            'Log entry deleted successfully!'
+        );
     }
 
     public function destroySelected(Request $request)
@@ -239,11 +257,22 @@ class FoodLogController extends Controller
             // Generate celebratory message for meal
             $celebratoryMessage = $this->generateMealCelebratoryMessage($meal, $validated['portion']);
             
-            return redirect()->route('mobile-entry.foods', ['date' => $validated['meal_date']])
-                ->with('success', $celebratoryMessage);
+            return $this->redirectService->getRedirect(
+                'food_logs',
+                'add_meal',
+                $request,
+                ['date' => $validated['meal_date']],
+                $celebratoryMessage
+            );
         }
 
-        return redirect()->route('food-logs.index', ['date' => $validated['meal_date']])->with('success', 'Meal added to log successfully!');
+        return $this->redirectService->getRedirect(
+            'food_logs',
+            'add_meal',
+            $request,
+            ['date' => $validated['meal_date']],
+            'Meal added to log successfully!'
+        );
     }
 
     public function export(Request $request)
