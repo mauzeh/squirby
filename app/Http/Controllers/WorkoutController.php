@@ -83,7 +83,7 @@ class WorkoutController extends Controller
                     $line2,
                     $line3
                 )
-                ->linkAction('fa-pencil', route('workouts.edit', $workout->id), 'Edit workout');
+                ->linkAction('fa-pencil', route('workouts.edit', $workout->id), 'Edit workout', 'btn-transparent');
 
                 // Add exercises as sub-items with log now button or completed checkmark
                 if ($workout->exercises->isNotEmpty()) {

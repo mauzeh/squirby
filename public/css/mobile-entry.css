@@ -2162,13 +2162,12 @@ able Component - Tabular CRUD list optimized for narrow screens */
 }
 
 .btn-table-edit {
-    background-color: transparent;
-    color: #666;
+    background-color: var(--color-edit);
 }
 
 @media (hover: hover) {
     .btn-table-edit:hover {
-        background-color: rgba(0, 0, 0, 0.05);
+        background-color: var(--color-edit-hover);
         transform: scale(1.08);
     }
 }
@@ -2178,7 +2177,29 @@ able Component - Tabular CRUD list optimized for narrow screens */
 }
 
 .btn-table-edit:focus {
-    outline: 2px solid #666;
+    outline: 2px solid var(--color-edit);
+    outline-offset: 2px;
+}
+
+/* Transparent button variant - for specific use cases */
+.btn-transparent {
+    background-color: transparent;
+    color: white;
+}
+
+@media (hover: hover) {
+    .btn-transparent:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+        transform: scale(1.08);
+    }
+}
+
+.btn-transparent:active {
+    transform: scale(0.95);
+}
+
+.btn-transparent:focus {
+    outline: 2px solid white;
     outline-offset: 2px;
 }
 
