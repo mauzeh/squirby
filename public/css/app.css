@@ -67,8 +67,10 @@ a {
 }
 .sub-navbar {
     background-color: #444; /* Slightly lighter than the main navbar */
-    overflow: hidden;
+    overflow: visible;
     width: 100%;
+    display: flex;
+    flex-wrap: wrap;
 }
 .content {
     padding: 10px; /* Add horizontal padding */
