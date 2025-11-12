@@ -78,52 +78,18 @@ class WorkoutTemplateController extends Controller
                 ->linkAction('fa-edit', route('workout-templates.edit', $template->id), 'Edit template')
                 ->formAction('fa-trash', route('workout-templates.destroy', $template->id), 'DELETE', [], 'Delete', 'btn-danger', true);
 
-                // Add exercises as sub-items
+                // Add exercises as sub-items (read-only on index page)
                 if ($template->exercises->isNotEmpty()) {
                     foreach ($template->exercises as $index => $exercise) {
                         $exerciseLine1 = $exercise->exercise->title;
                         $exerciseLine2 = 'Order: ' . $exercise->order;
                         
-                        $isFirst = $index === 0;
-                        $isLast = $index === $exerciseCount - 1;
-                        
-                        $subItemBuilder = $rowBuilder->subItem(
+                        $rowBuilder->subItem(
                             $exercise->id,
                             $exerciseLine1,
                             $exerciseLine2,
                             null
-                        );
-                        
-                        // Add move up button (disabled if first)
-                        if (!$isFirst) {
-                            $subItemBuilder->linkAction(
-                                'fa-arrow-up',
-                                route('workout-templates.move-exercise', [$template->id, $exercise->id, 'direction' => 'up']),
-                                'Move up'
-                            );
-                        }
-                        
-                        // Add move down button (disabled if last)
-                        if (!$isLast) {
-                            $subItemBuilder->linkAction(
-                                'fa-arrow-down',
-                                route('workout-templates.move-exercise', [$template->id, $exercise->id, 'direction' => 'down']),
-                                'Move down'
-                            );
-                        }
-                        
-                        // Add delete button
-                        $subItemBuilder->formAction(
-                            'fa-trash',
-                            route('workout-templates.remove-exercise', [$template->id, $exercise->id]),
-                            'DELETE',
-                            [],
-                            'Remove',
-                            'btn-danger',
-                            true
-                        );
-                        
-                        $subItemBuilder->add();
+                        )->add();
                     }
                 }
 
