@@ -20,7 +20,7 @@ class MenuService
                 'label' => 'Lifts',
                 'icon' => 'fa-dumbbell',
                 'route' => 'mobile-entry.lifts',
-                'active' => Request::routeIs(['exercises.*', 'lift-logs.*', 'recommendations.*', 'mobile-entry.lifts', 'workout-templates.*']),
+                'active' => Request::routeIs(['exercises.*', 'lift-logs.*', 'recommendations.*', 'mobile-entry.lifts', 'workouts.*']),
             ],
             [
                 'id' => 'food-nav-link',
@@ -99,7 +99,7 @@ class MenuService
             return $this->getBodySubMenu();
         }
 
-        if (Request::routeIs(['exercises.*', 'lift-logs.*', 'recommendations.*', 'mobile-entry.lifts', 'workout-templates.*'])) {
+        if (Request::routeIs(['exercises.*', 'lift-logs.*', 'recommendations.*', 'mobile-entry.lifts', 'workouts.*'])) {
             return $this->getLiftsSubMenu();
         }
 
@@ -118,7 +118,7 @@ class MenuService
             'exercises.*', 'lift-logs.*', 'recommendations.*',
             'body-logs.*', 'measurement-types.*',
             'mobile-entry.lifts', 'mobile-entry.foods', 'mobile-entry.measurements',
-            'flexible.*', 'workout-templates.*'
+            'flexible.*', 'workouts.*'
         ]);
     }
 
