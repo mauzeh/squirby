@@ -151,8 +151,9 @@ class WorkoutController extends Controller
                                 true
                             );
                         } else {
-                            // Not logged yet - show order
-                            $exerciseLine2 = 'Order: ' . $exercise->order;
+                            // Not logged yet - show suggestion inline
+                            $trainingProgressionService = app(\App\Services\TrainingProgressionService::class);
+                            $exerciseLine2 = $trainingProgressionService->formatSuggestionText(Auth::id(), $exercise->exercise_id);
                             
                             $subItemBuilder = $rowBuilder->subItem(
                                 $exercise->id,
