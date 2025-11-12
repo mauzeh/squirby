@@ -82,7 +82,7 @@ class FlexibleWorkflowController extends Controller
                     ->numericField('weight', 'Weight (lbs):', 135, 5, 45, 500)
                     ->numericField('reps', 'Reps:', 10, 1, 1, 50)
                     ->numericField('sets', 'Sets:', 3, 1, 1, 10)
-                    ->commentField('Notes:', 'How did it feel?', 'Felt strong!')
+                    ->textareaField('notes', 'Notes:', 'Felt strong!', 'How did it feel?')
                     ->hiddenField('date', $selectedDate->toDateString())
                     ->submitButton('Log Bench Press')
                     ->build(),
@@ -120,7 +120,7 @@ class FlexibleWorkflowController extends Controller
                     ->formAction('#')
                     ->numericField('sets', 'Sets:', 3, 1, 1)
                     ->numericField('reps', 'Reps:', 10, 1, 1)
-                    ->commentField('Notes:', 'Add notes...', '')
+                    ->textareaField('notes', 'Notes:', '', 'Add notes...')
                     ->submitButton('Save Workout')
                     ->build(),
             ],
@@ -525,7 +525,7 @@ class FlexibleWorkflowController extends Controller
                     ->numericField('weight', 'Weight (lbs):', 135, 5, 45, 500)
                     ->numericField('reps', 'Reps:', 10, 1, 1, 50)
                     ->numericField('sets', 'Sets:', 3, 1, 1, 10)
-                    ->commentField('Notes:', 'How did it feel?', '')
+                    ->textareaField('notes', 'Notes:', '', 'How did it feel?')
                     ->submitButton('Save')
                     ->build(),
             ],
