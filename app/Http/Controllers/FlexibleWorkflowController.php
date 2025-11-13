@@ -301,7 +301,7 @@ class FlexibleWorkflowController extends Controller
                         'Bench Press, Rows, Shoulder Press',
                         '45 minutes • Mon, Wed, Fri'
                     )
-                    ->linkAction('fa-edit', route('flexible.table-example'), 'Edit')
+                    ->linkAction('fa-info', route('flexible.table-example'), 'View details', 'btn-info-circle')
                     ->formAction('fa-trash', route('flexible.table-example'), 'DELETE', ['redirect' => 'table'], 'Delete', 'btn-danger', true)
                     ->subItem(
                         21,
