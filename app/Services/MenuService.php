@@ -293,9 +293,23 @@ class MenuService
         $items = [];
 
         $items[] = [
-            'label' => 'Work out',
+            'label' => null,
+            'icon' => 'fa-mobile-alt',
+            'route' => 'mobile-entry.lifts',
+            'active' => Request::routeIs(['mobile-entry.lifts']),
+            'title' => 'Direct Entry'
+        ];
+
+        $items[] = [
+            'label' => 'Workouts',
             'route' => 'workouts.index',
-            'active' => Request::routeIs(['workouts.*', 'mobile-entry.lifts']),
+            'active' => Request::routeIs(['workouts.*']),
+        ];
+
+        $items[] = [
+            'label' => 'History',
+            'route' => 'lift-logs.index',
+            'active' => Request::routeIs(['lift-logs.index', 'lift-logs.edit', 'lift-logs.destroy-selected', 'exercises.show-logs']),
         ];
 
         if (Auth::user() && (Auth::user()->hasRole('Admin') || session()->has('impersonator_id'))) {
@@ -307,12 +321,6 @@ class MenuService
                 'title' => 'Recommendations',
             ];
         }
-
-        $items[] = [
-            'label' => 'Your history',
-            'route' => 'lift-logs.index',
-            'active' => Request::routeIs(['lift-logs.index', 'lift-logs.edit', 'lift-logs.destroy-selected', 'exercises.show-logs']),
-        ];
 
         // Only show Exercises to admins
         if (Auth::user() && Auth::user()->hasRole('Admin')) {
