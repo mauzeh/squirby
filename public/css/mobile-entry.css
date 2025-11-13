@@ -2201,6 +2201,32 @@ able Component - Tabular CRUD list optimized for narrow screens */
     outline-offset: 2px;
 }
 
+/* Info circle button - small circle with border */
+.btn-info-circle {
+    background-color: transparent;
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 50%;
+    padding: 8px;
+}
+
+@media (hover: hover) {
+    .btn-info-circle:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.8);
+        transform: scale(1.08);
+    }
+}
+
+.btn-info-circle:active {
+    transform: scale(0.95);
+}
+
+.btn-info-circle:focus {
+    outline: 2px solid white;
+    outline-offset: 2px;
+}
+
 .btn-table-delete {
     background-color: var(--color-danger);
 }

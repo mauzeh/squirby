@@ -91,7 +91,7 @@ class WorkoutController extends Controller
                     $line3
                 )
                 ->titleClass('cell-title-large')
-                ->linkAction('fa-pencil', route('workouts.edit', $workout->id), 'Edit workout', 'btn-transparent');
+                ->linkAction('fa-info', route('workouts.edit', $workout->id), 'View workout details', 'btn-info-circle');
 
                 // Check if this workout has any exercises logged today (for auto-expand)
                 $hasLoggedExercisesToday = false;
