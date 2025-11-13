@@ -263,6 +263,7 @@ class LabsController extends Controller
                     ->success('Expandable sub-items! Click chevron to expand/collapse.', 'Feature:')
                     ->tip('Row 7 shows compact buttons (75% size) using ->compact()', 'New:')
                     ->tip('Sub-items can have inline messages in different styles!', 'Note:')
+                    ->tip('Sub-items with only ONE action are fully clickable!', 'NEW:')
                     ->build(),
                 
                 // Table with sample data and sub-items
@@ -424,6 +425,41 @@ class LabsController extends Controller
                     ->linkAction('fa-edit', route('labs.table-example'), 'Edit')
                     ->formAction('fa-trash', route('labs.table-example'), 'DELETE', ['redirect' => 'table'], 'Delete', 'btn-danger', true)
                     ->compact()
+                    ->add()
+                    ->row(
+                        8,
+                        'Quick Workout Templates',
+                        'Tap any exercise to start logging',
+                        'Single-action sub-items are fully clickable'
+                    )
+                    ->linkAction('fa-edit', route('labs.table-example'), 'Edit')
+                    ->formAction('fa-trash', route('labs.table-example'), 'DELETE', ['redirect' => 'table'], 'Delete', 'btn-danger', true)
+                    ->subItem(
+                        81,
+                        'Push-ups',
+                        '3 sets × 15 reps',
+                        'Tap anywhere to log'
+                    )
+                    ->message('info', 'Last time: 45 total reps', 'History:')
+                    ->linkAction('fa-play', route('labs.table-example'), 'Log now', 'btn-log-now')
+                    ->add()
+                    ->subItem(
+                        82,
+                        'Pull-ups',
+                        '3 sets × 8 reps',
+                        'Tap anywhere to log'
+                    )
+                    ->message('tip', 'Try to beat your record!', 'Goal:')
+                    ->linkAction('fa-play', route('labs.table-example'), 'Log now', 'btn-log-now')
+                    ->add()
+                    ->subItem(
+                        83,
+                        'Plank Hold',
+                        '3 sets × 60 seconds',
+                        'Tap anywhere to log'
+                    )
+                    ->linkAction('fa-play', route('labs.table-example'), 'Log now', 'btn-log-now')
+                    ->add()
                     ->add()
                     ->emptyMessage('No workouts yet. Create your first routine!')
                     ->confirmMessage('deleteItem', 'Are you sure you want to delete this workout?')

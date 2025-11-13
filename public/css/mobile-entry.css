@@ -2102,6 +2102,22 @@ able Component - Tabular CRUD list optimized for narrow screens */
     }
 }
 
+/* Clickable sub-items (single action) */
+.component-table-subitem.subitem-clickable {
+    cursor: pointer;
+    user-select: none;
+}
+
+@media (hover: hover) {
+    .component-table-subitem.subitem-clickable:hover {
+        background-color: rgba(0, 123, 255, 0.15);
+    }
+}
+
+.component-table-subitem.subitem-clickable:active {
+    background-color: rgba(0, 123, 255, 0.25);
+}
+
 .component-table-cell {
     flex: 1;
     min-width: 0;

@@ -96,7 +96,14 @@
             <div class="component-table-subitems" data-subitems="{{ $row['id'] }}" style="display: {{ $shouldHide ? 'none' : '' }};">
 
                 @foreach($row['subItems'] as $subItem)
-                <div class="component-table-subitem">
+                @php
+                    // Check if this sub-item has exactly one link action
+                    $hasOneLinkAction = isset($subItem['actions']) 
+                        && count($subItem['actions']) === 1 
+                        && $subItem['actions'][0]['type'] === 'link';
+                    $singleActionUrl = $hasOneLinkAction ? $subItem['actions'][0]['url'] : null;
+                @endphp
+                <div class="component-table-subitem{{ $hasOneLinkAction ? ' subitem-clickable' : '' }}" @if($hasOneLinkAction) data-href="{{ $singleActionUrl }}" @endif>
                     <div class="component-table-cell">
                         @if(isset($subItem['line1']) && !empty($subItem['line1']))
                         <div class="cell-title">{{ $subItem['line1'] }}</div>
