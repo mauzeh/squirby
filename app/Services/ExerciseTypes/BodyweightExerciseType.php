@@ -343,4 +343,14 @@ class BodyweightExerciseType extends BaseExerciseType
         $sets = $suggestion->sets ?? 3;
         return 'Suggested: ' . $suggestion->reps . ' reps × ' . $sets . ' sets';
     }
+    
+    /**
+     * Get the appropriate progression model for bodyweight exercises
+     * Always uses DoubleProgression which handles bodyweight-specific logic
+     */
+    protected function getProgressionModel(\App\Models\LiftLog $liftLog): \App\Services\ProgressionModels\ProgressionModel
+    {
+        $oneRepMaxService = app(\App\Services\OneRepMaxCalculatorService::class);
+        return new \App\Services\ProgressionModels\DoubleProgression($oneRepMaxService);
+    }
 }

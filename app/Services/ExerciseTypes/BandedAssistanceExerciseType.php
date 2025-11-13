@@ -254,4 +254,17 @@ class BandedAssistanceExerciseType extends BaseExerciseType
         
         return null;
     }
+    
+    /**
+     * Format suggestion text for banded assistance exercises
+     */
+    public function formatSuggestionText(object $suggestion): ?string
+    {
+        if (!isset($suggestion->band_color) || !isset($suggestion->reps)) {
+            return null;
+        }
+        
+        $sets = $suggestion->sets ?? 3;
+        return 'Suggested: ' . ucfirst($suggestion->band_color) . ' band × ' . $suggestion->reps . ' reps × ' . $sets . ' sets';
+    }
 }

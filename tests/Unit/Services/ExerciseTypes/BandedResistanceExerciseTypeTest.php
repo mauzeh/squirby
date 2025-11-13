@@ -224,4 +224,55 @@ class BandedResistanceExerciseTypeTest extends TestCase
         $this->assertFalse($config['supports_1rm']);
         $this->assertEquals(\App\Services\ExerciseTypes\BandedResistanceExerciseType::class, $config['class']);
     }
+    
+    /** @test */
+    public function it_formats_suggestion_text_for_banded_resistance_exercise()
+    {
+        $suggestion = (object)[
+            'band_color' => 'blue',
+            'reps' => 10,
+            'sets' => 3
+        ];
+        
+        $formatted = $this->strategy->formatSuggestionText($suggestion);
+        
+        $this->assertEquals('Suggested: Blue band × 10 reps × 3 sets', $formatted);
+    }
+    
+    /** @test */
+    public function it_formats_suggestion_text_with_default_sets()
+    {
+        $suggestion = (object)[
+            'band_color' => 'red',
+            'reps' => 12
+        ];
+        
+        $formatted = $this->strategy->formatSuggestionText($suggestion);
+        
+        $this->assertEquals('Suggested: Red band × 12 reps × 3 sets', $formatted);
+    }
+    
+    /** @test */
+    public function it_returns_null_when_banded_resistance_suggestion_missing_band_color()
+    {
+        $suggestion = (object)[
+            'reps' => 10
+        ];
+        
+        $formatted = $this->strategy->formatSuggestionText($suggestion);
+        
+        $this->assertNull($formatted);
+    }
+    
+    /** @test */
+    public function it_returns_null_when_banded_resistance_suggestion_missing_reps()
+    {
+        $suggestion = (object)[
+            'band_color' => 'blue'
+        ];
+        
+        $formatted = $this->strategy->formatSuggestionText($suggestion);
+        
+        $this->assertNull($formatted);
+    }
 }
