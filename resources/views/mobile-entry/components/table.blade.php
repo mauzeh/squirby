@@ -118,7 +118,7 @@
                             @endforeach
                         @endif
                     </div>
-                    <div class="component-table-actions">
+                    <div class="component-table-actions{{ isset($subItem['compact']) && $subItem['compact'] ? ' actions-compact' : '' }}">
                         @if(isset($subItem['actions']) && !empty($subItem['actions']))
                             {{-- Custom actions --}}
                             @foreach($subItem['actions'] as $action)

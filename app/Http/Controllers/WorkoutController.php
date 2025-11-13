@@ -149,7 +149,8 @@ class WorkoutController extends Controller
                                 'Delete lift log',
                                 'btn-danger',
                                 true
-                            );
+                            )
+                            ->compact();
                         } else {
                             // Not logged yet - show suggestion inline
                             $trainingProgressionService = app(\App\Services\TrainingProgressionService::class);
@@ -168,7 +169,8 @@ class WorkoutController extends Controller
                                 'date' => $today->toDateString(),
                                 'redirect_to' => 'workouts'
                             ]);
-                            $subItemBuilder->linkAction('fa-play', $logUrl, 'Log now', 'btn-log-now');
+                            $subItemBuilder->linkAction('fa-play', $logUrl, 'Log now', 'btn-log-now')
+                                ->compact();
                         }
                         
                         $subItemBuilder->add();

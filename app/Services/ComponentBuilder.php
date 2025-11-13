@@ -996,6 +996,15 @@ class TableSubItemBuilder
     }
     
     /**
+     * Use compact button size (75% of normal)
+     */
+    public function compact(bool $compact = true): self
+    {
+        $this->data['compact'] = $compact;
+        return $this;
+    }
+    
+    /**
      * Add the sub-item and return to parent row builder
      */
     public function add()
