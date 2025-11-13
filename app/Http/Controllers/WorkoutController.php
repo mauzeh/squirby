@@ -152,13 +152,11 @@ class WorkoutController extends Controller
                             )
                             ->compact();
                         } else {
-                            // Not logged yet - show simple prompt
-                            $exerciseLine2 = 'Tap to start logging...';
-                            
+                            // Not logged yet - show only exercise name
                             $subItemBuilder = $rowBuilder->subItem(
                                 $exercise->id,
                                 $exerciseLine1,
-                                $exerciseLine2,
+                                null,
                                 null
                             );
                             
