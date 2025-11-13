@@ -290,13 +290,12 @@ class MenuService
      */
     protected function getLiftsSubMenu(): array
     {
-        $items = [
-            [
-                'label' => null,
-                'icon' => 'fa-mobile-alt',
-                'route' => 'mobile-entry.lifts',
-                'active' => Request::routeIs(['mobile-entry.lifts']),
-            ],
+        $items = [];
+
+        $items[] = [
+            'label' => 'Work out',
+            'route' => 'workouts.index',
+            'active' => Request::routeIs(['workouts.*', 'mobile-entry.lifts']),
         ];
 
         if (Auth::user() && (Auth::user()->hasRole('Admin') || session()->has('impersonator_id'))) {
@@ -310,22 +309,19 @@ class MenuService
         }
 
         $items[] = [
-            'label' => 'History',
+            'label' => 'Your history',
             'route' => 'lift-logs.index',
             'active' => Request::routeIs(['lift-logs.index', 'lift-logs.edit', 'lift-logs.destroy-selected', 'exercises.show-logs']),
         ];
 
-        $items[] = [
-            'label' => 'Workouts',
-            'route' => 'workouts.index',
-            'active' => Request::routeIs('workouts.*'),
-        ];
-
-        $items[] = [
-            'label' => 'Exercises',
-            'route' => 'exercises.index',
-            'active' => Request::routeIs(['exercises.index', 'exercises.create', 'exercises.edit', 'exercises.store', 'exercises.update', 'exercises.destroy']),
-        ];
+        // Only show Exercises to admins
+        if (Auth::user() && Auth::user()->hasRole('Admin')) {
+            $items[] = [
+                'label' => 'Exercises',
+                'route' => 'exercises.index',
+                'active' => Request::routeIs(['exercises.index', 'exercises.create', 'exercises.edit', 'exercises.store', 'exercises.update', 'exercises.destroy']),
+            ];
+        }
 
         return $items;
     }
