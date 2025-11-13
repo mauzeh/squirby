@@ -810,6 +810,15 @@ class TableRowBuilder
     }
     
     /**
+     * Use compact button size (75% of normal)
+     */
+    public function compact(bool $compact = true): self
+    {
+        $this->data['compact'] = $compact;
+        return $this;
+    }
+    
+    /**
      * Add a link action (GET request)
      * 
      * @param string $icon FontAwesome icon class (e.g., 'fa-edit', 'fa-arrow-up')

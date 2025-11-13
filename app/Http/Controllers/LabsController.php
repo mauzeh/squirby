@@ -261,8 +261,8 @@ class LabsController extends Controller
                 C::messages()
                     ->info('Tap any row to edit, or use the delete button to remove.')
                     ->success('Expandable sub-items! Click chevron to expand/collapse.', 'Feature:')
-                    ->tip('Last row shows always-visible sub-items (no collapse).', 'Note:')
-                    ->tip('Sub-items can now have inline messages in different styles!', 'New:')
+                    ->tip('Row 7 shows compact buttons (75% size) using ->compact()', 'New:')
+                    ->tip('Sub-items can have inline messages in different styles!', 'Note:')
                     ->build(),
                 
                 // Table with sample data and sub-items
@@ -413,6 +413,17 @@ class LabsController extends Controller
                     ->formAction('fa-trash', route('labs.table-example'), 'DELETE', [], 'Delete', 'btn-danger', true)
                     ->add()
                     ->collapsible(false)
+                    ->add()
+                    ->row(
+                        7,
+                        'Compact Button Demo',
+                        'Shows 75% sized buttons',
+                        'Useful for less prominent actions'
+                    )
+                    ->linkAction('fa-info', route('labs.table-example'), 'Info', 'btn-info-circle')
+                    ->linkAction('fa-edit', route('labs.table-example'), 'Edit')
+                    ->formAction('fa-trash', route('labs.table-example'), 'DELETE', ['redirect' => 'table'], 'Delete', 'btn-danger', true)
+                    ->compact()
                     ->add()
                     ->emptyMessage('No workouts yet. Create your first routine!')
                     ->confirmMessage('deleteItem', 'Are you sure you want to delete this workout?')

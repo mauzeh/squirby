@@ -48,6 +48,7 @@
     /* Touch Targets */
     --touch-target-min: 44px;
     --touch-target-small: 32px;
+    --touch-target-compact: 33px; /* 75% of min */
 
     /* Border Radius */
     --border-radius-sm: 5px;
@@ -2261,6 +2262,14 @@ able Component - Tabular CRUD list optimized for narrow screens */
 .btn-log-now:focus {
     outline: 2px solid var(--color-success);
     outline-offset: 2px;
+}
+
+/* Compact actions container - makes all buttons 75% size */
+.component-table-actions.actions-compact .btn-table-edit,
+.component-table-actions.actions-compact .btn-table-delete {
+    width: var(--touch-target-compact);
+    height: var(--touch-target-compact);
+    font-size: 15px;
 }
 
 /* Disabled state for table buttons */

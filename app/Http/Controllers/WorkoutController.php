@@ -90,7 +90,8 @@ class WorkoutController extends Controller
                     $line2,
                     $line3
                 )
-                ->linkAction('fa-info', route('workouts.edit', $workout->id), 'View workout details', 'btn-info-circle');
+                ->linkAction('fa-info', route('workouts.edit', $workout->id), 'View workout details', 'btn-info-circle')
+                ->compact();
 
                 // Check if this workout has any exercises logged today (for auto-expand)
                 $hasLoggedExercisesToday = false;

@@ -30,7 +30,7 @@
                 <div class="cell-detail">{{ $row['line3'] }}</div>
                 @endif
             </div>
-            <div class="component-table-actions">
+            <div class="component-table-actions{{ isset($row['compact']) && $row['compact'] ? ' actions-compact' : '' }}">
                 @if(isset($row['actions']) && !empty($row['actions']))
                     {{-- New format: custom actions --}}
                     @foreach($row['actions'] as $action)
