@@ -149,17 +149,4 @@ class BandedExerciseType extends BaseExerciseType
         
         return null;
     }
-
-    /**
-     * Format suggestion text for banded exercises
-     */
-    public function formatSuggestionText(object $suggestion): ?string
-    {
-        if (!isset($suggestion->band_color) || !isset($suggestion->reps)) {
-            return null;
-        }
-        
-        $sets = $suggestion->sets ?? 3;
-        return 'Suggested: ' . $suggestion->band_color . ' band × ' . $suggestion->reps . ' reps × ' . $sets . ' sets';
-    }
 }

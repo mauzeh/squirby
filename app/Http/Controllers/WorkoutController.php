@@ -152,9 +152,8 @@ class WorkoutController extends Controller
                             )
                             ->compact();
                         } else {
-                            // Not logged yet - show suggestion inline
-                            $trainingProgressionService = app(\App\Services\TrainingProgressionService::class);
-                            $exerciseLine2 = $trainingProgressionService->formatSuggestionText(Auth::id(), $exercise->exercise_id);
+                            // Not logged yet - show simple prompt
+                            $exerciseLine2 = 'Tap to start logging...';
                             
                             $subItemBuilder = $rowBuilder->subItem(
                                 $exercise->id,

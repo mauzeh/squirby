@@ -608,23 +608,4 @@ abstract class BaseExerciseType implements ExerciseTypeInterface
      */
     abstract public function formatWeightDisplay(LiftLog $liftLog): string;
 
-    /**
-     * Format a suggestion object as display text
-     * Default implementation for weighted exercises
-     */
-    public function formatSuggestionText(object $suggestion): ?string
-    {
-        if (!isset($suggestion->reps)) {
-            return null;
-        }
-        
-        $sets = $suggestion->sets ?? 3;
-        
-        // Default format for weighted exercises
-        if (isset($suggestion->suggestedWeight)) {
-            return 'Suggested: ' . $suggestion->suggestedWeight . ' lbs × ' . $suggestion->reps . ' reps × ' . $sets . ' sets';
-        }
-        
-        return null;
-    }
 }
