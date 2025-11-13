@@ -234,6 +234,15 @@ When adding new features:
 
 ## Version History
 
+- **v1.3** (November 13, 2025) - Table component enhancements
+  - Clickable sub-items (entire row tappable for single actions)
+  - Compact button mode (75% size for secondary actions)
+  - Additional button styles (transparent, info-circle, log-now)
+  - Table row initial state (expanded/collapsed)
+  - Sub-item inline messages (success, info, tip, warning, error)
+  - Large title class for prominent rows
+  - Non-collapsible sub-items option
+
 - **v1.2** (November 11, 2025) - Enhanced features and improvements
   - Added back button support to title component
   - Multiple independent item lists on same page
@@ -257,4 +266,4 @@ When adding new features:
 ---
 
 **Status:** Production Ready ✅  
-**Last Updated:** November 11, 2025
+**Last Updated:** November 13, 2025

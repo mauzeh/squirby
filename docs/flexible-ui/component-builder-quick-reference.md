@@ -405,31 +405,100 @@ C::table()
 | `ariaLabel()` | `string $label` | Accessibility label |
 | `build()` | - | Build the component |
 
-### Complete Table Example
+### Complete Table Example (v1.3 Features)
 ```php
 $components[] = C::table()
-    ->row(
-        1,
-        'Morning Cardio',
-        '30 minutes • 3x per week',
-        'Last completed: 2 days ago',
-        route('workouts.edit', 1),
-        route('workouts.destroy', 1)
-    )
-    ->deleteParams(['redirect' => 'workouts'])
-    ->add()
-    ->row(
-        2,
-        'Upper Body Strength',
-        'Bench Press, Rows, Shoulder Press',
-        '45 minutes • Mon, Wed, Fri',
-        route('workouts.edit', 2),
-        route('workouts.destroy', 2)
-    )
-    ->deleteParams(['redirect' => 'workouts'])
-    ->add()
-    ->emptyMessage('No workouts yet. Create your first routine!')
-    ->confirmMessage('deleteItem', 'Are you sure you want to delete this workout?')
+    ->row(1, 'Morning Workout', '3 exercises', 'Last completed: 2 days ago')
+        ->linkAction('fa-edit', route('edit', 1), 'Edit')
+        ->formAction('fa-trash', route('delete', 1), 'DELETE', [], 'Delete', 'btn-danger', true)
+        // Sub-items with messages and actions
+        ->subItem(11, 'Push-ups', '3 sets × 15 reps', 'Tap to log')
+            ->message('info', '45 total reps last time', 'History:')
+            ->linkAction('fa-play', route('log', 11), 'Log now', 'btn-log-now')
+            ->add()
+        ->subItem(12, 'Pull-ups', '3 sets × 8 reps', 'Tap to log')
+            ->message('tip', 'Try to beat your record!', 'Goal:')
+            ->linkAction('fa-play', route('log', 12), 'Log now', 'btn-log-now')
+            ->add()
+        ->initialState('expanded')  // Start expanded
+        ->add()
+    ->row(2, 'Evening Workout', '2 exercises')
+        ->linkAction('fa-info', route('details', 2), 'Details', 'btn-info-circle')
+        ->formAction('fa-trash', route('delete', 2), 'DELETE', [], 'Delete', 'btn-danger', true)
+        ->compact()  // 75% button size
+        ->subItem(21, 'Squats', 'Felt strong!', null)
+            ->message('success', '225 lbs × 5 reps × 5 sets', 'Completed:')
+            ->linkAction('fa-pencil', route('edit', 21), 'Edit', 'btn-transparent')
+            ->formAction('fa-trash', route('delete', 21), 'DELETE', [], 'Delete', 'btn-danger', true)
+            ->add()
+        ->add()
+    ->row(3, 'Quick Stretches', 'Always visible')
+        ->linkAction('fa-edit', route('edit', 3), 'Edit')
+        ->subItem(31, 'Neck Rolls', '2 minutes')
+            ->linkAction('fa-play', route('log', 31), 'Log')
+            ->add()
+        ->collapsible(false)  // No expand/collapse
+        ->add()
+    ->emptyMessage('No workouts yet!')
+    ->confirmMessage('deleteItem', 'Are you sure?')
     ->ariaLabel('Workout routines')
     ->build();
 ```
+
+### Table Row Methods (v1.3)
+
+| Method | Parameters | Description |
+|--------|-----------|-------------|
+| `linkAction()` | `$icon, $url, $ariaLabel, $cssClass` | Add link button (GET) |
+| `formAction()` | `$icon, $url, $method, $params, $ariaLabel, $cssClass, $confirm` | Add form button (POST/DELETE) |
+| `subItem()` | `$id, $line1, $line2, $line3` | Add expandable sub-item |
+| `titleClass()` | `string $class` | CSS class for title ('cell-title-large' for 1.4em) |
+| `compact()` | `bool $compact` | Use 75% button size |
+| `collapsible()` | `bool $collapsible` | Enable/disable expand/collapse (default: true) |
+| `initialState()` | `string $state` | 'expanded' or 'collapsed' (default: 'collapsed') |
+
+### Table Sub-Item Methods (v1.3)
+
+| Method | Parameters | Description |
+|--------|-----------|-------------|
+| `linkAction()` | `$icon, $url, $ariaLabel, $cssClass` | Add link button |
+| `formAction()` | `$icon, $url, $method, $params, $ariaLabel, $cssClass, $confirm` | Add form button |
+| `message()` | `$type, $text, $prefix` | Add inline message |
+| `compact()` | `bool $compact` | Use 75% button size |
+
+### Button Style Classes (v1.3)
+
+| Class | Appearance | Use Case |
+|-------|-----------|----------|
+| `btn-transparent` | White icon, no background | Subtle edit actions |
+| `btn-info-circle` | Circle with border | Info/details actions |
+| `btn-log-now` | Green background | Primary workout actions |
+| `btn-danger` | Red background | Delete actions |
+
+### Message Types for Sub-Items
+
+| Type | Color | Use Case |
+|------|-------|----------|
+| `success` | Green | Completed actions |
+| `info` | Blue | Informational messages |
+| `tip` | Yellow | Suggestions/goals |
+| `warning` | Orange | Cautions |
+| `error` | Red | Errors/issues |
+| `neutral` | Gray | General notes |
+
+### Clickable Sub-Items (v1.3)
+
+Sub-items with a single link action automatically become fully clickable:
+
+```php
+// Entire row is clickable (not just the button)
+->subItem(1, 'Push-ups', '3 sets × 15 reps', 'Tap anywhere to log')
+    ->linkAction('fa-play', route('log'), 'Log now', 'btn-log-now')
+    ->add()
+```
+
+**Features:**
+- Larger touch target for mobile
+- Visual hover feedback on entire row
+- Button still functional
+- Automatic detection (no config needed)
