@@ -2082,7 +2082,7 @@ able Component - Tabular CRUD list optimized for narrow screens */
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: var(--spacing-sm) var(--spacing-md);
+    padding: var(--spacing-md) var(--spacing-md);
     padding-left: var(--spacing-lg);
     background-color: rgba(0, 0, 0, 0.15);
     gap: var(--spacing-md);
@@ -2291,7 +2291,7 @@ button.btn-table-delete:disabled {
     }
 
     .component-table-subitem {
-        padding: var(--spacing-sm) 12px;
+        padding: var(--spacing-md) 12px;
         padding-left: var(--spacing-md);
     }
 
@@ -2315,7 +2315,7 @@ button.btn-table-delete:disabled {
     }
 
     .component-table-subitem {
-        padding: 6px 10px;
+        padding: var(--spacing-sm) 10px;
         padding-left: var(--spacing-sm);
     }
 
