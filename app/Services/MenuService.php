@@ -51,8 +51,8 @@ class MenuService
             $items[] = [
                 'label' => null,
                 'icon' => 'fa-flask',
-                'route' => 'flexible.with-nav',
-                'active' => Request::routeIs('flexible.*'),
+                'route' => 'labs.with-nav',
+                'active' => Request::routeIs('labs.*'),
                 'style' => 'padding: 14px 8px',
             ];
             $items[] = [
@@ -87,8 +87,8 @@ class MenuService
      */
     public function getSubMenu(): ?array
     {
-        if (Request::routeIs('flexible.*')) {
-            return $this->getFlexibleSubMenu();
+        if (Request::routeIs('labs.*')) {
+            return $this->getLabsSubMenu();
         }
 
         if (Request::routeIs(['food-logs.*', 'meals.*', 'ingredients.*', 'mobile-entry.foods'])) {
@@ -118,93 +118,93 @@ class MenuService
             'exercises.*', 'lift-logs.*', 'recommendations.*',
             'body-logs.*', 'measurement-types.*',
             'mobile-entry.lifts', 'mobile-entry.foods', 'mobile-entry.measurements',
-            'flexible.*', 'workouts.*'
+            'labs.*', 'workouts.*'
         ]);
     }
 
     /**
-     * Get flexible workflow sub-menu items
+     * Get labs sub-menu items
      *
      * @return array
      */
-    protected function getFlexibleSubMenu(): array
+    protected function getLabsSubMenu(): array
     {
         return [
             [
                 'label' => null,
                 'icon' => 'fa-plus',
-                'route' => 'flexible.with-nav',
-                'active' => Request::routeIs('flexible.with-nav'),
+                'route' => 'labs.with-nav',
+                'active' => Request::routeIs('labs.with-nav'),
                 'title' => 'With Navigation',
             ],
             [
                 'label' => null,
                 'icon' => 'fa-minus',
-                'route' => 'flexible.without-nav',
-                'active' => Request::routeIs('flexible.without-nav'),
+                'route' => 'labs.without-nav',
+                'active' => Request::routeIs('labs.without-nav'),
                 'title' => 'Without Navigation',
             ],
             [
                 'label' => null,
                 'icon' => 'fa-clone',
-                'route' => 'flexible.multiple-forms',
-                'active' => Request::routeIs('flexible.multiple-forms'),
+                'route' => 'labs.multiple-forms',
+                'active' => Request::routeIs('labs.multiple-forms'),
                 'title' => 'Multiple Forms',
             ],
             [
                 'label' => null,
                 'icon' => 'fa-sort',
-                'route' => 'flexible.custom-order',
-                'active' => Request::routeIs('flexible.custom-order'),
+                'route' => 'labs.custom-order',
+                'active' => Request::routeIs('labs.custom-order'),
                 'title' => 'Custom Order',
             ],
             [
                 'label' => null,
                 'icon' => 'fa-hand-pointer',
-                'route' => 'flexible.multiple-buttons',
-                'active' => Request::routeIs('flexible.multiple-buttons'),
+                'route' => 'labs.multiple-buttons',
+                'active' => Request::routeIs('labs.multiple-buttons'),
                 'title' => 'Multiple Buttons',
             ],
             [
                 'label' => null,
                 'icon' => 'fa-table',
-                'route' => 'flexible.table-example',
-                'active' => Request::routeIs('flexible.table-example'),
+                'route' => 'labs.table-example',
+                'active' => Request::routeIs('labs.table-example'),
                 'title' => 'Table Example',
             ],
             [
                 'label' => null,
                 'icon' => 'fa-arrows-alt-v',
-                'route' => 'flexible.table-reorder',
-                'active' => Request::routeIs('flexible.table-reorder'),
+                'route' => 'labs.table-reorder',
+                'active' => Request::routeIs('labs.table-reorder'),
                 'title' => 'Table Reorder',
             ],
             [
                 'label' => null,
                 'icon' => 'fa-list-ul',
-                'route' => 'flexible.multiple-lists',
-                'active' => Request::routeIs('flexible.multiple-lists'),
+                'route' => 'labs.multiple-lists',
+                'active' => Request::routeIs('labs.multiple-lists'),
                 'title' => 'Multiple Lists',
             ],
             [
                 'label' => null,
                 'icon' => 'fa-arrow-left',
-                'route' => 'flexible.title-back-button',
-                'active' => Request::routeIs('flexible.title-back-button'),
+                'route' => 'labs.title-back-button',
+                'active' => Request::routeIs('labs.title-back-button'),
                 'title' => 'Title Back Button',
             ],
             [
                 'label' => null,
                 'icon' => 'fa-chevron-down',
-                'route' => 'flexible.table-initial-expanded',
-                'active' => Request::routeIs('flexible.table-initial-expanded'),
+                'route' => 'labs.table-initial-expanded',
+                'active' => Request::routeIs('labs.table-initial-expanded'),
                 'title' => 'Table Initial Expanded',
             ],
             [
                 'label' => null,
                 'icon' => 'fa-expand',
-                'route' => 'flexible.expanded-list',
-                'active' => Request::routeIs('flexible.expanded-list'),
+                'route' => 'labs.expanded-list',
+                'active' => Request::routeIs('labs.expanded-list'),
                 'title' => 'Expanded List',
             ],
         ];

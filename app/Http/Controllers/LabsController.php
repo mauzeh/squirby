@@ -6,12 +6,12 @@ use Illuminate\Http\Request;
 use App\Services\ComponentBuilder as C;
 
 /**
- * Flexible Workflow Controller
+ * Labs Controller
  * 
  * Example controller showing how to use the component-based mobile entry view.
  * This demonstrates building UIs without hardcoded sections - everything is optional.
  */
-class FlexibleWorkflowController extends Controller
+class LabsController extends Controller
 {
     /**
      * Example 1: Date-based navigation (like original mobile entry)
@@ -30,9 +30,9 @@ class FlexibleWorkflowController extends Controller
             'components' => [
                 // Navigation
                 C::navigation()
-                    ->prev('← Prev', route('flexible.with-nav', ['date' => $prevDay->toDateString()]))
-                    ->center('Today', route('flexible.with-nav', ['date' => $today->toDateString()]))
-                    ->next('Next →', route('flexible.with-nav', ['date' => $nextDay->toDateString()]))
+                    ->prev('← Prev', route('labs.with-nav', ['date' => $prevDay->toDateString()]))
+                    ->center('Today', route('labs.with-nav', ['date' => $today->toDateString()]))
+                    ->next('Next →', route('labs.with-nav', ['date' => $nextDay->toDateString()]))
                     ->ariaLabel('Date navigation')
                     ->build(),
                 
@@ -273,8 +273,8 @@ class FlexibleWorkflowController extends Controller
                         '30 minutes • 3x per week',
                         'Last completed: 2 days ago'
                     )
-                    ->linkAction('fa-edit', route('flexible.table-example'), 'Edit')
-                    ->formAction('fa-trash', route('flexible.table-example'), 'DELETE', ['redirect' => 'table'], 'Delete', 'btn-danger', true)
+                    ->linkAction('fa-edit', route('labs.table-example'), 'Edit')
+                    ->formAction('fa-trash', route('labs.table-example'), 'DELETE', ['redirect' => 'table'], 'Delete', 'btn-danger', true)
                     ->subItem(
                         11,
                         'Running',
@@ -282,8 +282,8 @@ class FlexibleWorkflowController extends Controller
                         'Warm-up pace'
                     )
                     ->message('success', '3.2 miles completed!', 'Completed:')
-                    ->linkAction('fa-pencil', route('flexible.table-example'), 'Edit', 'btn-transparent')
-                    ->formAction('fa-trash', route('flexible.table-example'), 'DELETE', [], 'Delete', 'btn-danger', true)
+                    ->linkAction('fa-pencil', route('labs.table-example'), 'Edit', 'btn-transparent')
+                    ->formAction('fa-trash', route('labs.table-example'), 'DELETE', [], 'Delete', 'btn-danger', true)
                     ->add()
                     ->subItem(
                         12,
@@ -291,8 +291,8 @@ class FlexibleWorkflowController extends Controller
                         '10 minutes',
                         '3 sets of 200 jumps'
                     )
-                    ->linkAction('fa-play', route('flexible.table-example'), 'Log now', 'btn-log-now')
-                    ->formAction('fa-trash', route('flexible.table-example'), 'DELETE', [], 'Delete', 'btn-danger', true)
+                    ->linkAction('fa-play', route('labs.table-example'), 'Log now', 'btn-log-now')
+                    ->formAction('fa-trash', route('labs.table-example'), 'DELETE', [], 'Delete', 'btn-danger', true)
                     ->add()
                     ->add()
                     ->row(
@@ -301,8 +301,8 @@ class FlexibleWorkflowController extends Controller
                         'Bench Press, Rows, Shoulder Press',
                         '45 minutes • Mon, Wed, Fri'
                     )
-                    ->linkAction('fa-info', route('flexible.table-example'), 'View details', 'btn-info-circle')
-                    ->formAction('fa-trash', route('flexible.table-example'), 'DELETE', ['redirect' => 'table'], 'Delete', 'btn-danger', true)
+                    ->linkAction('fa-info', route('labs.table-example'), 'View details', 'btn-info-circle')
+                    ->formAction('fa-trash', route('labs.table-example'), 'DELETE', ['redirect' => 'table'], 'Delete', 'btn-danger', true)
                     ->subItem(
                         21,
                         'Bench Press',
@@ -310,8 +310,8 @@ class FlexibleWorkflowController extends Controller
                         null
                     )
                     ->message('success', '185 lbs × 8 reps × 4 sets', 'Completed:')
-                    ->linkAction('fa-pencil', route('flexible.table-example'), 'Edit', 'btn-transparent')
-                    ->formAction('fa-trash', route('flexible.table-example'), 'DELETE', [], 'Delete', 'btn-danger', true)
+                    ->linkAction('fa-pencil', route('labs.table-example'), 'Edit', 'btn-transparent')
+                    ->formAction('fa-trash', route('labs.table-example'), 'DELETE', [], 'Delete', 'btn-danger', true)
                     ->add()
                     ->subItem(
                         22,
@@ -320,8 +320,8 @@ class FlexibleWorkflowController extends Controller
                         null
                     )
                     ->message('info', '135 lbs × 10 reps × 4 sets', 'Last time:')
-                    ->linkAction('fa-play', route('flexible.table-example'), 'Log now', 'btn-log-now')
-                    ->formAction('fa-trash', route('flexible.table-example'), 'DELETE', [], 'Delete', 'btn-danger', true)
+                    ->linkAction('fa-play', route('labs.table-example'), 'Log now', 'btn-log-now')
+                    ->formAction('fa-trash', route('labs.table-example'), 'DELETE', [], 'Delete', 'btn-danger', true)
                     ->add()
                     ->subItem(
                         23,
@@ -330,8 +330,8 @@ class FlexibleWorkflowController extends Controller
                         null
                     )
                     ->message('tip', 'Try 100 lbs × 12 reps × 3 sets', 'Suggestion:')
-                    ->linkAction('fa-play', route('flexible.table-example'), 'Log now', 'btn-log-now')
-                    ->formAction('fa-trash', route('flexible.table-example'), 'DELETE', [], 'Delete', 'btn-danger', true)
+                    ->linkAction('fa-play', route('labs.table-example'), 'Log now', 'btn-log-now')
+                    ->formAction('fa-trash', route('labs.table-example'), 'DELETE', [], 'Delete', 'btn-danger', true)
                     ->add()
                     ->add()
                     ->row(
@@ -340,8 +340,8 @@ class FlexibleWorkflowController extends Controller
                         'Squats, Deadlifts, Lunges',
                         null
                     )
-                    ->linkAction('fa-edit', route('flexible.table-example'), 'Edit')
-                    ->formAction('fa-trash', route('flexible.table-example'), 'DELETE', ['redirect' => 'table'], 'Delete', 'btn-danger', true)
+                    ->linkAction('fa-edit', route('labs.table-example'), 'Edit')
+                    ->formAction('fa-trash', route('labs.table-example'), 'DELETE', ['redirect' => 'table'], 'Delete', 'btn-danger', true)
                     ->subItem(
                         31,
                         'Squats',
@@ -350,8 +350,8 @@ class FlexibleWorkflowController extends Controller
                     )
                     ->message('warning', '225 lbs × 5 reps × 5 sets', 'Completed:')
                     ->message('neutral', 'Consider reducing weight next time', 'Note:')
-                    ->linkAction('fa-pencil', route('flexible.table-example'), 'Edit', 'btn-transparent')
-                    ->formAction('fa-trash', route('flexible.table-example'), 'DELETE', [], 'Delete', 'btn-danger', true)
+                    ->linkAction('fa-pencil', route('labs.table-example'), 'Edit', 'btn-transparent')
+                    ->formAction('fa-trash', route('labs.table-example'), 'DELETE', [], 'Delete', 'btn-danger', true)
                     ->add()
                     ->subItem(
                         32,
@@ -361,8 +361,8 @@ class FlexibleWorkflowController extends Controller
                     )
                     ->message('error', 'Form breakdown on last set', 'Issue:')
                     ->message('tip', 'Focus on form before adding weight', 'Advice:')
-                    ->linkAction('fa-play', route('flexible.table-example'), 'Log now', 'btn-log-now')
-                    ->formAction('fa-trash', route('flexible.table-example'), 'DELETE', [], 'Delete', 'btn-danger', true)
+                    ->linkAction('fa-play', route('labs.table-example'), 'Log now', 'btn-log-now')
+                    ->formAction('fa-trash', route('labs.table-example'), 'DELETE', [], 'Delete', 'btn-danger', true)
                     ->add()
                     ->add()
                     ->row(
@@ -371,8 +371,8 @@ class FlexibleWorkflowController extends Controller
                         '20 minutes daily',
                         'Planks, stretches, yoga poses'
                     )
-                    ->linkAction('fa-edit', route('flexible.table-example'), 'Edit')
-                    ->formAction('fa-trash', route('flexible.table-example'), 'DELETE', ['redirect' => 'table'], 'Delete', 'btn-danger', true)
+                    ->linkAction('fa-edit', route('labs.table-example'), 'Edit')
+                    ->formAction('fa-trash', route('labs.table-example'), 'DELETE', ['redirect' => 'table'], 'Delete', 'btn-danger', true)
                     ->add()
                     ->row(
                         5,
@@ -381,8 +381,8 @@ class FlexibleWorkflowController extends Controller
                         'White icon with subtle hover effect'
                     )
                     ->titleClass('cell-title-large')
-                    ->linkAction('fa-pencil', route('flexible.table-example'), 'Edit', 'btn-transparent')
-                    ->formAction('fa-trash', route('flexible.table-example'), 'DELETE', ['redirect' => 'table'], 'Delete', 'btn-danger', true)
+                    ->linkAction('fa-pencil', route('labs.table-example'), 'Edit', 'btn-transparent')
+                    ->formAction('fa-trash', route('labs.table-example'), 'DELETE', ['redirect' => 'table'], 'Delete', 'btn-danger', true)
                     ->add()
                     ->row(
                         6,
@@ -390,8 +390,8 @@ class FlexibleWorkflowController extends Controller
                         'Always visible sub-items',
                         'No expand/collapse button'
                     )
-                    ->linkAction('fa-edit', route('flexible.table-example'), 'Edit')
-                    ->formAction('fa-trash', route('flexible.table-example'), 'DELETE', ['redirect' => 'table'], 'Delete', 'btn-danger', true)
+                    ->linkAction('fa-edit', route('labs.table-example'), 'Edit')
+                    ->formAction('fa-trash', route('labs.table-example'), 'DELETE', ['redirect' => 'table'], 'Delete', 'btn-danger', true)
                     ->subItem(
                         61,
                         'Neck Rolls',
@@ -399,8 +399,8 @@ class FlexibleWorkflowController extends Controller
                         null
                     )
                     ->message('success', '2 minutes completed', 'Done:')
-                    ->linkAction('fa-pencil', route('flexible.table-example'), 'Edit', 'btn-transparent')
-                    ->formAction('fa-trash', route('flexible.table-example'), 'DELETE', [], 'Delete', 'btn-danger', true)
+                    ->linkAction('fa-pencil', route('labs.table-example'), 'Edit', 'btn-transparent')
+                    ->formAction('fa-trash', route('labs.table-example'), 'DELETE', [], 'Delete', 'btn-danger', true)
                     ->add()
                     ->subItem(
                         62,
@@ -409,8 +409,8 @@ class FlexibleWorkflowController extends Controller
                         null
                     )
                     ->message('info', '10 reps recommended', 'Target:')
-                    ->linkAction('fa-play', route('flexible.table-example'), 'Log now', 'btn-log-now')
-                    ->formAction('fa-trash', route('flexible.table-example'), 'DELETE', [], 'Delete', 'btn-danger', true)
+                    ->linkAction('fa-play', route('labs.table-example'), 'Log now', 'btn-log-now')
+                    ->formAction('fa-trash', route('labs.table-example'), 'DELETE', [], 'Delete', 'btn-danger', true)
                     ->add()
                     ->collapsible(false)
                     ->add()
@@ -446,19 +446,19 @@ class FlexibleWorkflowController extends Controller
                 // Table with custom actions
                 C::table()
                     ->row(1, 'First Exercise', 'Bench Press')
-                        ->linkAction('fa-arrow-up', route('flexible.table-example'), 'Move up', 'btn-disabled')
-                        ->linkAction('fa-arrow-down', route('flexible.table-example'), 'Move down')
-                        ->formAction('fa-trash', route('flexible.table-example'), 'DELETE', [], 'Delete', 'btn-danger', true)
+                        ->linkAction('fa-arrow-up', route('labs.table-example'), 'Move up', 'btn-disabled')
+                        ->linkAction('fa-arrow-down', route('labs.table-example'), 'Move down')
+                        ->formAction('fa-trash', route('labs.table-example'), 'DELETE', [], 'Delete', 'btn-danger', true)
                         ->add()
                     ->row(2, 'Second Exercise', 'Squat')
-                        ->linkAction('fa-arrow-up', route('flexible.table-example'), 'Move up')
-                        ->linkAction('fa-arrow-down', route('flexible.table-example'), 'Move down')
-                        ->formAction('fa-trash', route('flexible.table-example'), 'DELETE', [], 'Delete', 'btn-danger', true)
+                        ->linkAction('fa-arrow-up', route('labs.table-example'), 'Move up')
+                        ->linkAction('fa-arrow-down', route('labs.table-example'), 'Move down')
+                        ->formAction('fa-trash', route('labs.table-example'), 'DELETE', [], 'Delete', 'btn-danger', true)
                         ->add()
                     ->row(3, 'Third Exercise', 'Deadlift')
-                        ->linkAction('fa-arrow-up', route('flexible.table-example'), 'Move up')
-                        ->linkAction('fa-arrow-down', route('flexible.table-example'), 'Move down', 'btn-disabled')
-                        ->formAction('fa-trash', route('flexible.table-example'), 'DELETE', [], 'Delete', 'btn-danger', true)
+                        ->linkAction('fa-arrow-up', route('labs.table-example'), 'Move up')
+                        ->linkAction('fa-arrow-down', route('labs.table-example'), 'Move down', 'btn-disabled')
+                        ->formAction('fa-trash', route('labs.table-example'), 'DELETE', [], 'Delete', 'btn-danger', true)
                         ->add()
                     ->confirmMessage('deleteItem', 'Are you sure you want to delete this exercise?')
                     ->build(),
@@ -532,7 +532,7 @@ class FlexibleWorkflowController extends Controller
         $data = [
             'components' => [
                 C::title('Exercise Details', 'View and edit exercise information')
-                    ->backButton('fa-arrow-left', route('flexible.with-nav'), 'Back to main page')
+                    ->backButton('fa-arrow-left', route('labs.with-nav'), 'Back to main page')
                     ->build(),
                 
                 C::messages()
@@ -615,35 +615,35 @@ class FlexibleWorkflowController extends Controller
                 
                 C::table()
                     ->row(1, 'First Template', '2 exercises: Squat, Press')
-                        ->linkAction('fa-edit', route('flexible.table-example'), 'Edit')
-                        ->formAction('fa-trash', route('flexible.table-example'), 'DELETE', [], 'Delete', 'btn-danger', true)
+                        ->linkAction('fa-edit', route('labs.table-example'), 'Edit')
+                        ->formAction('fa-trash', route('labs.table-example'), 'DELETE', [], 'Delete', 'btn-danger', true)
                         ->subItem(11, 'Squat', '3 sets × 5 reps', '225 lbs')
-                            ->linkAction('fa-play', route('flexible.table-example'), 'Log', 'btn-log-now')
+                            ->linkAction('fa-play', route('labs.table-example'), 'Log', 'btn-log-now')
                             ->add()
                         ->subItem(12, 'Press', '3 sets × 5 reps', '135 lbs')
-                            ->linkAction('fa-play', route('flexible.table-example'), 'Log', 'btn-log-now')
+                            ->linkAction('fa-play', route('labs.table-example'), 'Log', 'btn-log-now')
                             ->add()
                         ->initialState($expandId == 1 ? 'expanded' : 'collapsed')
                         ->add()
                     ->row(2, 'Second Template', '3 exercises: Bench, Row, Deadlift')
-                        ->linkAction('fa-edit', route('flexible.table-example'), 'Edit')
-                        ->formAction('fa-trash', route('flexible.table-example'), 'DELETE', [], 'Delete', 'btn-danger', true)
+                        ->linkAction('fa-edit', route('labs.table-example'), 'Edit')
+                        ->formAction('fa-trash', route('labs.table-example'), 'DELETE', [], 'Delete', 'btn-danger', true)
                         ->subItem(21, 'Bench Press', '4 sets × 8 reps', '185 lbs')
-                            ->linkAction('fa-play', route('flexible.table-example'), 'Log', 'btn-log-now')
+                            ->linkAction('fa-play', route('labs.table-example'), 'Log', 'btn-log-now')
                             ->add()
                         ->subItem(22, 'Barbell Row', '4 sets × 10 reps', '135 lbs')
-                            ->linkAction('fa-play', route('flexible.table-example'), 'Log', 'btn-log-now')
+                            ->linkAction('fa-play', route('labs.table-example'), 'Log', 'btn-log-now')
                             ->add()
                         ->subItem(23, 'Deadlift', '3 sets × 5 reps', '275 lbs')
-                            ->linkAction('fa-play', route('flexible.table-example'), 'Log', 'btn-log-now')
+                            ->linkAction('fa-play', route('labs.table-example'), 'Log', 'btn-log-now')
                             ->add()
                         ->initialState($expandId == 2 ? 'expanded' : ($expandId ? 'collapsed' : 'expanded'))
                         ->add()
                     ->row(3, 'Third Template', '1 exercise: Cardio')
-                        ->linkAction('fa-edit', route('flexible.table-example'), 'Edit')
-                        ->formAction('fa-trash', route('flexible.table-example'), 'DELETE', [], 'Delete', 'btn-danger', true)
+                        ->linkAction('fa-edit', route('labs.table-example'), 'Edit')
+                        ->formAction('fa-trash', route('labs.table-example'), 'DELETE', [], 'Delete', 'btn-danger', true)
                         ->subItem(31, 'Running', '30 minutes', 'Moderate pace')
-                            ->linkAction('fa-play', route('flexible.table-example'), 'Log', 'btn-log-now')
+                            ->linkAction('fa-play', route('labs.table-example'), 'Log', 'btn-log-now')
                             ->add()
                         ->initialState($expandId == 3 ? 'expanded' : 'collapsed')
                         ->add()

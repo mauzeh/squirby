@@ -16,7 +16,7 @@ use App\Http\Controllers\LiftLogController;
 use App\Http\Controllers\BodyLogController;
 use App\Http\Controllers\MeasurementTypeController;
 use App\Http\Controllers\RecommendationController;
-use App\Http\Controllers\FlexibleWorkflowController;
+use App\Http\Controllers\LabsController;
 use App\Http\Controllers\WorkoutController;
 
 // Breeze Routes
@@ -99,18 +99,18 @@ Route::middleware('auth')->group(function () {
     Route::get('mobile-entry/add-food-form/{type}/{id}', [MobileEntryController::class, 'addFoodForm'])->name('mobile-entry.add-food-form');
     Route::delete('mobile-entry/remove-food-form/{id}', [MobileEntryController::class, 'removeFoodForm'])->name('mobile-entry.remove-food-form');
 
-    // Flexible Workflow Examples (New Component-Based Architecture)
-    Route::get('flexible/with-nav', [FlexibleWorkflowController::class, 'withDateNavigation'])->name('flexible.with-nav');
-    Route::get('flexible/without-nav', [FlexibleWorkflowController::class, 'withoutNavigation'])->name('flexible.without-nav');
-    Route::get('flexible/multiple-forms', [FlexibleWorkflowController::class, 'multipleForms'])->name('flexible.multiple-forms');
-    Route::get('flexible/custom-order', [FlexibleWorkflowController::class, 'customOrder'])->name('flexible.custom-order');
-    Route::get('flexible/multiple-buttons', [FlexibleWorkflowController::class, 'multipleButtons'])->name('flexible.multiple-buttons');
-    Route::get('flexible/table-example', [FlexibleWorkflowController::class, 'tableExample'])->name('flexible.table-example');
-    Route::get('flexible/table-reorder', [FlexibleWorkflowController::class, 'tableWithReorder'])->name('flexible.table-reorder');
-    Route::get('flexible/multiple-lists', [FlexibleWorkflowController::class, 'multipleItemLists'])->name('flexible.multiple-lists');
-    Route::get('flexible/title-back-button', [FlexibleWorkflowController::class, 'titleWithBackButton'])->name('flexible.title-back-button');
-    Route::get('flexible/table-initial-expanded', [FlexibleWorkflowController::class, 'tableInitialExpanded'])->name('flexible.table-initial-expanded');
-    Route::get('flexible/expanded-list', [FlexibleWorkflowController::class, 'expandedList'])->name('flexible.expanded-list');
+    // Labs - Component-Based Architecture Examples
+    Route::get('labs/with-nav', [LabsController::class, 'withDateNavigation'])->name('labs.with-nav');
+    Route::get('labs/without-nav', [LabsController::class, 'withoutNavigation'])->name('labs.without-nav');
+    Route::get('labs/multiple-forms', [LabsController::class, 'multipleForms'])->name('labs.multiple-forms');
+    Route::get('labs/custom-order', [LabsController::class, 'customOrder'])->name('labs.custom-order');
+    Route::get('labs/multiple-buttons', [LabsController::class, 'multipleButtons'])->name('labs.multiple-buttons');
+    Route::get('labs/table-example', [LabsController::class, 'tableExample'])->name('labs.table-example');
+    Route::get('labs/table-reorder', [LabsController::class, 'tableWithReorder'])->name('labs.table-reorder');
+    Route::get('labs/multiple-lists', [LabsController::class, 'multipleItemLists'])->name('labs.multiple-lists');
+    Route::get('labs/title-back-button', [LabsController::class, 'titleWithBackButton'])->name('labs.title-back-button');
+    Route::get('labs/table-initial-expanded', [LabsController::class, 'tableInitialExpanded'])->name('labs.table-initial-expanded');
+    Route::get('labs/expanded-list', [LabsController::class, 'expandedList'])->name('labs.expanded-list');
 
     Route::post('lift-logs/destroy-selected', [LiftLogController::class, 'destroySelected'])->name('lift-logs.destroy-selected');
 
