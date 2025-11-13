@@ -406,4 +406,160 @@ class WorkoutTest extends TestCase
         $this->assertEquals(2, $workoutEx1->order);
         $this->assertEquals(1, $workoutEx2->order);
     }
+
+    /** @test */
+    public function single_workout_is_expanded_by_default()
+    {
+        $user = User::factory()->create();
+        $workout = Workout::factory()->create(['user_id' => $user->id, 'name' => 'Only Workout']);
+        $exercise = Exercise::factory()->create(['user_id' => null]);
+        
+        WorkoutExercise::create([
+            'workout_id' => $workout->id,
+            'exercise_id' => $exercise->id,
+            'order' => 1,
+        ]);
+
+        $response = $this->actingAs($user)->get(route('workouts.index'));
+
+        $response->assertOk();
+        
+        // Check that the workout row has expanded class
+        $response->assertSee('is-collapsible expanded', false);
+    }
+
+    /** @test */
+    public function multiple_workouts_are_collapsed_by_default()
+    {
+        $user = User::factory()->create();
+        $workout1 = Workout::factory()->create(['user_id' => $user->id, 'name' => 'Workout 1']);
+        $workout2 = Workout::factory()->create(['user_id' => $user->id, 'name' => 'Workout 2']);
+        
+        $exercise = Exercise::factory()->create(['user_id' => null]);
+        
+        WorkoutExercise::create([
+            'workout_id' => $workout1->id,
+            'exercise_id' => $exercise->id,
+            'order' => 1,
+        ]);
+        
+        WorkoutExercise::create([
+            'workout_id' => $workout2->id,
+            'exercise_id' => $exercise->id,
+            'order' => 1,
+        ]);
+
+        $response = $this->actingAs($user)->get(route('workouts.index'));
+
+        $response->assertOk();
+        
+        // Both workouts should be collapsible but not expanded
+        $response->assertSee('is-collapsible', false);
+        $response->assertDontSee('is-collapsible expanded', false);
+    }
+
+    /** @test */
+    public function workout_with_logged_exercise_today_is_expanded()
+    {
+        $user = User::factory()->create();
+        $workout = Workout::factory()->create(['user_id' => $user->id, 'name' => 'Active Workout']);
+        $exercise = Exercise::factory()->create(['user_id' => null]);
+        
+        WorkoutExercise::create([
+            'workout_id' => $workout->id,
+            'exercise_id' => $exercise->id,
+            'order' => 1,
+        ]);
+
+        // Create a lift log for today
+        $liftLog = \App\Models\LiftLog::create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => now(),
+        ]);
+
+        $response = $this->actingAs($user)->get(route('workouts.index'));
+
+        $response->assertOk();
+        
+        // Check that the workout row has expanded class
+        $response->assertSee('is-collapsible expanded', false);
+    }
+
+    /** @test */
+    public function workout_is_expanded_when_workout_id_in_query_string()
+    {
+        $user = User::factory()->create();
+        $workout1 = Workout::factory()->create(['user_id' => $user->id, 'name' => 'Workout 1']);
+        $workout2 = Workout::factory()->create(['user_id' => $user->id, 'name' => 'Workout 2']);
+        
+        $exercise = Exercise::factory()->create(['user_id' => null]);
+        
+        WorkoutExercise::create([
+            'workout_id' => $workout1->id,
+            'exercise_id' => $exercise->id,
+            'order' => 1,
+        ]);
+        
+        WorkoutExercise::create([
+            'workout_id' => $workout2->id,
+            'exercise_id' => $exercise->id,
+            'order' => 1,
+        ]);
+
+        // Request with workout_id query parameter (e.g., after deleting a lift log)
+        $response = $this->actingAs($user)->get(route('workouts.index', ['workout_id' => $workout2->id]));
+
+        $response->assertOk();
+        
+        // The specified workout should be expanded
+        $response->assertSee('is-collapsible expanded', false);
+    }
+
+    /** @test */
+    public function workout_without_logged_exercises_shows_log_now_buttons()
+    {
+        $user = User::factory()->create();
+        $workout = Workout::factory()->create(['user_id' => $user->id]);
+        $exercise = Exercise::factory()->create(['user_id' => null, 'title' => 'Bench Press']);
+        
+        WorkoutExercise::create([
+            'workout_id' => $workout->id,
+            'exercise_id' => $exercise->id,
+            'order' => 1,
+        ]);
+
+        $response = $this->actingAs($user)->get(route('workouts.index'));
+
+        $response->assertOk();
+        $response->assertSee('Log now');
+        $response->assertSee('btn-log-now');
+    }
+
+    /** @test */
+    public function workout_with_logged_exercises_shows_edit_and_delete_buttons()
+    {
+        $user = User::factory()->create();
+        $workout = Workout::factory()->create(['user_id' => $user->id]);
+        $exercise = Exercise::factory()->create(['user_id' => null]);
+        
+        WorkoutExercise::create([
+            'workout_id' => $workout->id,
+            'exercise_id' => $exercise->id,
+            'order' => 1,
+        ]);
+
+        // Create a lift log for today
+        $liftLog = \App\Models\LiftLog::create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => now(),
+        ]);
+
+        $response = $this->actingAs($user)->get(route('workouts.index'));
+
+        $response->assertOk();
+        $response->assertSee('Edit lift log');
+        $response->assertSee('Delete lift log');
+    }
 }

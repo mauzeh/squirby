@@ -593,15 +593,21 @@ document.addEventListener('DOMContentLoaded', function() {
      * Table Row Expand/Collapse
      * 
      * Handles expanding and collapsing sub-items in table rows.
-     * Uses minimal JavaScript with simple toggle functionality.
+     * The entire row is clickable for better UX and mobile accessibility.
+     * Clicks on action buttons are ignored to prevent conflicts.
      */
     const setupTableExpand = () => {
-        const expandButtons = document.querySelectorAll('.btn-table-expand');
+        const collapsibleRows = document.querySelectorAll('.component-table-row.is-collapsible');
         
-        expandButtons.forEach(button => {
-            button.addEventListener('click', function(event) {
-                event.preventDefault();
-                event.stopPropagation();
+        collapsibleRows.forEach(row => {
+            row.addEventListener('click', function(event) {
+                // Ignore clicks on action buttons, links, or forms
+                if (event.target.closest('.component-table-actions') || 
+                    event.target.closest('a') || 
+                    event.target.closest('button') || 
+                    event.target.closest('form')) {
+                    return;
+                }
                 
                 const rowId = this.dataset.toggleSubitems;
                 const subitemsContainer = document.querySelector(`[data-subitems="${rowId}"]`);
@@ -609,16 +615,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (subitemsContainer) {
                     // Toggle visibility
                     if (subitemsContainer.style.display === 'none') {
+                        // Expand
                         subitemsContainer.style.display = '';
                         this.classList.add('expanded');
-                        this.setAttribute('aria-label', 'Collapse row');
                     } else {
+                        // Collapse
                         subitemsContainer.style.display = 'none';
                         this.classList.remove('expanded');
-                        this.setAttribute('aria-label', 'Expand row');
                     }
                 }
             });
+            
+            // Add visual feedback for clickable rows
+            row.style.cursor = 'pointer';
         });
     };
     

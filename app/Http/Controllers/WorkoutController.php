@@ -177,7 +177,8 @@ class WorkoutController extends Controller
 
                 // Auto-expand workouts that have any exercises logged today
                 // OR if this workout was explicitly requested (e.g., after deletion)
-                if ($hasLoggedExercisesToday || ($expandWorkoutId && $workout->id == $expandWorkoutId)) {
+                // OR if there's only one workout (always show it expanded)
+                if ($hasLoggedExercisesToday || ($expandWorkoutId && $workout->id == $expandWorkoutId) || $workouts->count() === 1) {
                     $rowBuilder->initialState('expanded');
                 }
                 

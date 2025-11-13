@@ -2025,54 +2025,46 @@ able Component - Tabular CRUD list optimized for narrow screens */
     gap: var(--spacing-md);
     min-height: var(--touch-target-min);
     transition: background-color var(--transition-fast);
+    position: relative;
 }
 
 .component-table-row:last-child {
     border-bottom: none;
 }
 
-.btn-table-expand {
-    background: none;
-    border: none;
-    color: var(--text-secondary);
-    font-size: 1.1em;
+/* Collapsible rows are clickable */
+.component-table-row.is-collapsible {
     cursor: pointer;
-    padding: 5px 2px;
-    margin-right: 2px;
-    min-width: var(--touch-target-min);
-    min-height: var(--touch-target-min);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all var(--transition-fast);
-    touch-action: manipulation;
     user-select: none;
-    flex-shrink: 0;
 }
 
-.btn-table-expand i {
+@media (hover: hover) {
+    .component-table-row.is-collapsible:hover {
+        background-color: var(--input-bg);
+    }
+}
+
+.component-table-row.is-collapsible:active {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Chevron icon indicator */
+.table-expand-icon {
+    color: var(--text-secondary);
+    font-size: 0.9em;
+    margin-right: var(--spacing-xs);
+    flex-shrink: 0;
     transition: transform var(--transition-fast);
 }
 
-.btn-table-expand.expanded i {
+.component-table-row.expanded .table-expand-icon {
     transform: rotate(90deg);
 }
 
 @media (hover: hover) {
-    .btn-table-expand:hover {
+    .component-table-row.is-collapsible:hover .table-expand-icon {
         color: var(--text-primary);
-        background-color: rgba(255, 255, 255, 0.1);
-        border-radius: var(--border-radius-sm);
     }
-}
-
-.btn-table-expand:active {
-    transform: scale(0.95);
-}
-
-.btn-table-expand:focus {
-    outline: 2px solid var(--color-primary);
-    outline-offset: 2px;
 }
 
 @media (hover: hover) {
