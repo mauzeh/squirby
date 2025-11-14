@@ -15,7 +15,7 @@ class CreateSampleFoodData extends Command
      *
      * @var string
      */
-    protected $signature = 'food:create-samples {user_id : The user ID to create samples for}';
+    protected $signature = 'food:create-samples {user_id? : The user ID to create samples for}';
 
     /**
      * The console command description.
@@ -30,6 +30,23 @@ class CreateSampleFoodData extends Command
     public function handle()
     {
         $userId = $this->argument('user_id');
+
+        if (!$userId) {
+            $users = User::withCount('ingredients')->get();
+            
+            if ($users->isEmpty()) {
+                $this->error('No users found in the database.');
+                return 1;
+            }
+
+            $this->info('Available users:');
+            $this->table(
+                ['ID', 'Name', 'Email', 'Existing Ingredients'],
+                $users->map(fn ($user) => [$user->id, $user->name, $user->email, $user->ingredients_count])
+            );
+
+            $userId = $this->ask('Please enter the ID of the user to create samples for');
+        }
         
         $user = User::find($userId);
         if (!$user) {
