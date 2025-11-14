@@ -220,7 +220,7 @@ class MenuService
         return [
             [
                 'label' => null,
-                'icon' => 'fa-mobile-alt',
+                'icon' => 'fa-calendar-day',
                 'route' => 'mobile-entry.foods',
                 'active' => Request::routeIs(['mobile-entry.foods']),
             ],
@@ -252,7 +252,7 @@ class MenuService
         $items = [
             [
                 'label' => null,
-                'icon' => 'fa-mobile-alt',
+                'icon' => 'fa-calendar-day',
                 'route' => 'mobile-entry.measurements',
                 'active' => Request::routeIs(['mobile-entry.measurements']),
             ],
@@ -294,7 +294,7 @@ class MenuService
 
         $items[] = [
             'label' => null,
-            'icon' => 'fa-mobile-alt',
+            'icon' => 'fa-calendar-day',
             'route' => 'mobile-entry.lifts',
             'active' => Request::routeIs(['mobile-entry.lifts']),
             'title' => 'Direct Entry'
