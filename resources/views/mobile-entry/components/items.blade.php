@@ -34,7 +34,7 @@
         @if(isset($item['message']))
         <div class="component-message component-message--{{ $item['message']['type'] }}">
             @if(isset($item['message']['prefix']))
-            <span class="message-prefix">{{ $item['message']['prefix'] }}}</span>
+            <span class="message-prefix">{{ $item['message']['prefix'] }}</span>
             @endif
             {{ $item['message']['text'] }}
         </div>
