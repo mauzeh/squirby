@@ -60,6 +60,7 @@ class LiftLogController extends Controller
 
         // Build table using component system
         $tableBuilder = \App\Services\ComponentBuilder::table();
+        $isAdmin = auth()->user()->hasRole('Admin');
         
         foreach ($liftLogs as $liftLog) {
             $strategy = $liftLog->exercise->getTypeStrategy();
@@ -75,7 +76,7 @@ class LiftLogController extends Controller
                 $liftLog->comments,
                 null
             )
-            ->checkbox(true)
+            ->checkbox($isAdmin)
             ->badge($dateBadge['text'], $dateBadge['color'])
             ->badge($displayData['repsSets'], 'neutral');
             
@@ -99,24 +100,25 @@ class LiftLogController extends Controller
             ->ariaLabel('Lift logs')
             ->spacedRows();
 
-        $data = [
-            'components' => [
-                \App\Services\ComponentBuilder::selectAllControl('select-all-lift-logs', 'Select All')->build(),
-                
-                $tableBuilder->build(),
-                
-                \App\Services\ComponentBuilder::bulkActionForm(
-                    'bulk-delete-lift-logs',
-                    route('lift-logs.destroy-selected'),
-                    'Delete Selected'
-                )
-                ->confirmMessage('Are you sure you want to delete :count lift log(s)?')
-                ->checkboxSelector('.template-checkbox')
-                ->inputName('lift_log_ids')
-                ->ariaLabel('Delete selected lift logs')
-                ->build(),
-            ]
-        ];
+        $components = [$tableBuilder->build()];
+        
+        // Only add bulk selection controls for admins
+        if ($isAdmin) {
+            array_unshift($components, \App\Services\ComponentBuilder::selectAllControl('select-all-lift-logs', 'Select All')->build());
+            
+            $components[] = \App\Services\ComponentBuilder::bulkActionForm(
+                'bulk-delete-lift-logs',
+                route('lift-logs.destroy-selected'),
+                'Delete Selected'
+            )
+            ->confirmMessage('Are you sure you want to delete :count lift log(s)?')
+            ->checkboxSelector('.template-checkbox')
+            ->inputName('lift_log_ids')
+            ->ariaLabel('Delete selected lift logs')
+            ->build();
+        }
+
+        $data = ['components' => $components];
 
         return view('lift-logs.index-flexible', compact('displayExercises', 'exercises', 'data'));
     }
@@ -383,6 +385,11 @@ class LiftLogController extends Controller
 
     public function destroySelected(Request $request)
     {
+        // Only admins can bulk delete
+        if (!auth()->user()->hasRole('Admin')) {
+            abort(403, 'Unauthorized action.');
+        }
+
         $validated = $request->validate([
             'lift_log_ids' => 'required|array',
             'lift_log_ids.*' => 'exists:lift_logs,id',
