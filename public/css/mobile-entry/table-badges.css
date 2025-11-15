@@ -5,6 +5,7 @@
 
 .table-badges {
     margin-top: auto;
+    padding-top: var(--spacing-sm);
 }
 
 .table-badge {
