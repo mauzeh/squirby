@@ -97,12 +97,36 @@ class LiftLogController extends Controller
             ->ariaLabel('Lift logs')
             ->spacedRows();
 
-        $components = [$tableBuilder->build()];
+        // Build components array
+        $components = [
+            \App\Services\ComponentBuilder::title('Workout History', 'Observe what you did and <strong>be proud</strong> of it!')->build(),
+        ];
+        
+        // Add success/error messages if present
+        $messagesBuilder = \App\Services\ComponentBuilder::messages();
+        $hasMessages = false;
+        
+        if (session('success')) {
+            $messagesBuilder->success(session('success'));
+            $hasMessages = true;
+        }
+        if (session('error')) {
+            $messagesBuilder->error(session('error'));
+            $hasMessages = true;
+        }
+        
+        if ($hasMessages) {
+            $components[] = $messagesBuilder->build();
+        }
         
         // Only add bulk selection controls for admins
         if ($isAdmin) {
-            array_unshift($components, \App\Services\ComponentBuilder::selectAllControl('select-all-lift-logs', 'Select All')->build());
-            
+            $components[] = \App\Services\ComponentBuilder::selectAllControl('select-all-lift-logs', 'Select All')->build();
+        }
+        
+        $components[] = $tableBuilder->build();
+        
+        if ($isAdmin) {
             $components[] = \App\Services\ComponentBuilder::bulkActionForm(
                 'bulk-delete-lift-logs',
                 route('lift-logs.destroy-selected'),
