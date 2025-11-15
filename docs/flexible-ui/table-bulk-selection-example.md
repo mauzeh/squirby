@@ -43,129 +43,38 @@ C::table()
 
 ### 2. Add "Select All" Control
 
-Use a raw HTML component before the table:
+Use the select all control component before the table:
 
 ```php
-[
-    'type' => 'raw_html',
-    'html' => '
-        <div class="container" style="margin-bottom: 15px;">
-            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                <input type="checkbox" id="select-all-templates" style="width: 20px; height: 20px;">
-                <span>Select All</span>
-            </label>
-        </div>
-    '
-]
+C::selectAllControl('select-all-templates', 'Select All')->build()
 ```
 
 ### 3. Add Bulk Action Form
 
-The JavaScript file (`public/js/table-bulk-selection.js`) is **automatically included** when the Table Component detects that any row has a checkbox enabled. You don't need to manually reference it in your controller.
-
-Use a raw HTML component after the table for the bulk action form:
+Use the bulk action form component after the table:
 
 ```php
-[
-    'type' => 'raw_html',
-    'data' => [
-        'html' => '
-            <div class="container" style="margin-top: 20px;">
-                <form action="' . route('items.bulk-delete') . '" method="POST" id="bulk-delete-form" onsubmit="return confirmBulkDelete();">
-                    ' . csrf_field() . '
-                    <button type="submit" class="button delete" style="width: 100%;">
-                        <i class="fa-solid fa-trash"></i> Delete Selected
-                    </button>
-                </form>
-            </div>
-        '
-    ]
-]
+C::bulkActionForm('bulk-delete-form', route('items.bulk-delete'), 'Delete Selected')
+    ->confirmMessage('Are you sure you want to delete :count item(s)?')
+    ->ariaLabel('Delete selected items')
+    ->build()
 ```
 
-**JavaScript file** (`public/js/table-bulk-selection.js`):
-
-```javascript
-document.addEventListener('DOMContentLoaded', function () {
-    const selectAll = document.getElementById('select-all-templates');
-    const checkboxes = document.querySelectorAll('.template-checkbox');
-    const bulkForm = document.getElementById('bulk-delete-form');
-
-    // Select all functionality
-    if (selectAll) {
-        selectAll.addEventListener('change', function (e) {
-            checkboxes.forEach(function (checkbox) {
-                checkbox.checked = e.target.checked;
-            });
-        });
-    }
-
-    // Update select-all state when individual checkboxes change
-    checkboxes.forEach(function (checkbox) {
-        checkbox.addEventListener('change', function () {
-            const allChecked = Array.from(checkboxes).every((cb) => cb.checked);
-            const someChecked = Array.from(checkboxes).some((cb) => cb.checked);
-            if (selectAll) {
-                selectAll.checked = allChecked;
-                selectAll.indeterminate = someChecked && !allChecked;
-            }
-        });
-    });
-
-    // Make rows clickable to toggle checkbox
-    const rows = document.querySelectorAll('.component-table-row.has-checkbox');
-    rows.forEach(function (row) {
-        row.style.cursor = 'pointer';
-
-        row.addEventListener('click', function (e) {
-            // Don't toggle if clicking on interactive elements
-            if (e.target.closest('a, button, form, input, .table-expand-icon')) {
-                return;
-            }
-
-            // Find the checkbox in this row
-            const checkbox = row.querySelector('.template-checkbox');
-            if (checkbox) {
-                checkbox.checked = !checkbox.checked;
-                checkbox.dispatchEvent(new Event('change'));
-            }
-        });
-    });
-
-    // Bulk delete form submission
-    if (bulkForm) {
-        bulkForm.addEventListener('submit', function (e) {
-            e.preventDefault();
-
-            const checkedBoxes = document.querySelectorAll('.template-checkbox:checked');
-
-            if (checkedBoxes.length === 0) {
-                alert('Please select at least one template to delete.');
-                return false;
-            }
-
-            checkedBoxes.forEach(function (checkbox) {
-                const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = 'selected_ids[]';
-                input.value = checkbox.value;
-                bulkForm.appendChild(input);
-            });
-
-            bulkForm.submit();
-        });
-    }
-});
-
-function confirmBulkDelete() {
-    const count = document.querySelectorAll('.template-checkbox:checked').length;
-    if (count === 0) {
-        alert('Please select at least one template to delete.');
-        return false;
-    }
-    return confirm('Are you sure you want to delete ' + count + ' template(s)?');
-}
+**Optional configuration:**
+```php
+C::bulkActionForm('bulk-update-form', route('items.bulk-update'), 'Update Selected')
+    ->method('PATCH')  // Change HTTP method
+    ->buttonClass('btn-primary')  // Change button style
+    ->icon('fa-check')  // Change icon
+    ->inputName('item_ids')  // Change input name
+    ->checkboxSelector('.item-checkbox')  // Change checkbox selector
+    ->emptyMessage('Please select items first.')  // Custom empty message
+    ->build()
 ```
+
+The JavaScript file (`public/js/table-bulk-selection.js`) is **automatically included** when components require it. No manual setup needed.
+
+
 
 ### 4. Handle Bulk Action in Controller
 
@@ -245,11 +154,11 @@ Badges use CSS classes from `public/css/mobile-entry/table-badges.css` which is 
 
 ## Notes
 
-1. **Automatic script loading**: The `table-bulk-selection.js` file is automatically included when the Table Component detects checkboxes. No manual script references needed.
+1. **Automatic script loading**: The `table-bulk-selection.js` file is automatically included when components require it (checkboxes, select all control, or bulk action forms).
 
-2. **Pattern-based**: While checkboxes are supported via the `->checkbox()` method, the bulk action form and "Select All" control are custom HTML that you add as needed.
+2. **Component-based**: All bulk selection features use proper components - no raw HTML needed.
 
-3. **Customizable**: Change the checkbox class name, form ID, and JavaScript selectors to match your needs.
+3. **Customizable**: All components have fluent configuration methods for customization.
 
 3. **Works with sub-items**: Checkboxes work alongside expandable sub-items.
 

@@ -81,6 +81,22 @@ class ComponentBuilder
     {
         return new TableComponentBuilder();
     }
+    
+    /**
+     * Create a bulk action form component
+     */
+    public static function bulkActionForm(string $formId, string $action, string $buttonText): BulkActionFormComponentBuilder
+    {
+        return new BulkActionFormComponentBuilder($formId, $action, $buttonText);
+    }
+    
+    /**
+     * Create a select all control component
+     */
+    public static function selectAllControl(string $checkboxId, string $label = 'Select All'): SelectAllControlComponentBuilder
+    {
+        return new SelectAllControlComponentBuilder($checkboxId, $label);
+    }
 }
 
 /**
@@ -1093,5 +1109,154 @@ class TableSubItemBuilder
     {
         $this->parent->addSubItem($this->data);
         return $this->parent;
+    }
+}
+
+/**
+ * Bulk Action Form Component Builder
+ * For forms that submit multiple selected items (bulk delete, bulk update, etc.)
+ */
+class BulkActionFormComponentBuilder
+{
+    protected array $data;
+    
+    public function __construct(string $formId, string $action, string $buttonText)
+    {
+        $this->data = [
+            'formId' => $formId,
+            'action' => $action,
+            'buttonText' => $buttonText,
+            'method' => 'POST',
+            'buttonClass' => 'btn-danger',
+            'icon' => 'fa-trash',
+            'inputName' => 'selected_ids',
+            'checkboxSelector' => '.template-checkbox',
+            'confirmMessage' => null,
+            'emptyMessage' => 'Please select at least one item.',
+            'ariaLabel' => null
+        ];
+    }
+    
+    /**
+     * Set HTTP method (default: POST)
+     */
+    public function method(string $method): self
+    {
+        $this->data['method'] = $method;
+        return $this;
+    }
+    
+    /**
+     * Set button CSS class (default: btn-danger)
+     */
+    public function buttonClass(string $class): self
+    {
+        $this->data['buttonClass'] = $class;
+        return $this;
+    }
+    
+    /**
+     * Set button icon (default: fa-trash)
+     */
+    public function icon(string $icon): self
+    {
+        $this->data['icon'] = $icon;
+        return $this;
+    }
+    
+    /**
+     * Set the input name for selected IDs (default: selected_ids)
+     */
+    public function inputName(string $name): self
+    {
+        $this->data['inputName'] = $name;
+        return $this;
+    }
+    
+    /**
+     * Set the checkbox selector (default: .template-checkbox)
+     */
+    public function checkboxSelector(string $selector): self
+    {
+        $this->data['checkboxSelector'] = $selector;
+        return $this;
+    }
+    
+    /**
+     * Set confirmation message (null = no confirmation)
+     */
+    public function confirmMessage(?string $message): self
+    {
+        $this->data['confirmMessage'] = $message;
+        return $this;
+    }
+    
+    /**
+     * Set empty selection message
+     */
+    public function emptyMessage(string $message): self
+    {
+        $this->data['emptyMessage'] = $message;
+        return $this;
+    }
+    
+    /**
+     * Set aria label for accessibility
+     */
+    public function ariaLabel(string $label): self
+    {
+        $this->data['ariaLabel'] = $label;
+        return $this;
+    }
+    
+    /**
+     * Build the component
+     */
+    public function build(): array
+    {
+        return [
+            'type' => 'bulk_action_form',
+            'data' => $this->data,
+            'requiresScript' => 'table-bulk-selection'
+        ];
+    }
+}
+
+/**
+ * Select All Control Component Builder
+ * For bulk selection "Select All" checkbox
+ */
+class SelectAllControlComponentBuilder
+{
+    protected array $data;
+    
+    public function __construct(string $checkboxId, string $label)
+    {
+        $this->data = [
+            'checkboxId' => $checkboxId,
+            'label' => $label,
+            'checkboxSelector' => '.template-checkbox'
+        ];
+    }
+    
+    /**
+     * Set the checkbox selector to target (default: .template-checkbox)
+     */
+    public function checkboxSelector(string $selector): self
+    {
+        $this->data['checkboxSelector'] = $selector;
+        return $this;
+    }
+    
+    /**
+     * Build the component
+     */
+    public function build(): array
+    {
+        return [
+            'type' => 'select_all_control',
+            'data' => $this->data,
+            'requiresScript' => 'table-bulk-selection'
+        ];
     }
 }

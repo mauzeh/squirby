@@ -738,20 +738,8 @@ class LabsController extends Controller
                 
                 $messagesBuilder->build(),
                 
-                // Custom HTML for bulk selection controls (before table)
-                [
-                    'type' => 'raw_html',
-                    'data' => [
-                        'html' => '
-                            <div class="container" style="margin-bottom: 15px;">
-                                <label style="display: flex; align-items: center; gap: 8px; font-size: 1em; cursor: pointer;">
-                                    <input type="checkbox" id="select-all-templates" style="width: 20px; height: 20px; cursor: pointer;">
-                                    <span>Select All</span>
-                                </label>
-                            </div>
-                        '
-                    ]
-                ],
+                // Select all control
+                C::selectAllControl('select-all-templates', 'Select All')->build(),
                 
                 // Table with checkboxes and badges
                 C::table()
@@ -819,24 +807,11 @@ class LabsController extends Controller
                     ->ariaLabel('Workout templates')
                     ->build(),
                 
-                // Bulk action form (using raw HTML for custom form submission)
-                [
-                    'type' => 'raw_html',
-                    'data' => [
-                        'html' => '
-                        <section class="component-button-section" style="margin-top: 20px; margin-bottom: 20px;">
-                            <div class="container">
-                                <form action="' . route('labs.table-bulk-selection') . '" method="POST" id="bulk-delete-form" onsubmit="return confirmBulkDelete();">
-                                    ' . csrf_field() . '
-                                    <button type="submit" class="btn-primary btn-danger" aria-label="Delete selected templates">
-                                        <i class="fa-solid fa-trash"></i> Delete Selected
-                                    </button>
-                                </form>
-                            </div>
-                        </section>
-                        '
-                    ]
-                ],
+                // Bulk action form
+                C::bulkActionForm('bulk-delete-form', route('labs.table-bulk-selection'), 'Delete Selected')
+                    ->confirmMessage('Are you sure you want to delete :count template(s)?')
+                    ->ariaLabel('Delete selected templates')
+                    ->build(),
                 
                 C::button('Add New Template')
                     ->ariaLabel('Create a new workout template')
