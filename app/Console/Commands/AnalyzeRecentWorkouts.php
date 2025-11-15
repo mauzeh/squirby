@@ -8,6 +8,8 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Http;
 
+use App\Presenters\LiftLogTablePresenter;
+
 class AnalyzeRecentWorkouts extends Command
 {
     /**
@@ -15,7 +17,7 @@ class AnalyzeRecentWorkouts extends Command
      *
      * @var string
      */
-    protected $signature = 'workouts:analyze-recent {user_id?} {--days=14 : Number of days to look back for workout data (max 365)}';
+    protected $signature = 'workouts:analyze-recent {user_id?} {--days=14 : Number of days to look back for workout data (max 365)} {--dry-run : Run the command without actually calling the Gemini API}';
 
     /**
      * The console command description.
@@ -23,6 +25,24 @@ class AnalyzeRecentWorkouts extends Command
      * @var string
      */
     protected $description = 'Analyzes the lift-log data from a configurable lookback window using Gemini AI.';
+
+    /**
+     * The presenter for formatting lift log data.
+     *
+     * @var LiftLogTablePresenter
+     */
+    private $presenter;
+
+    /**
+     * Create a new command instance.
+     *
+     * @param LiftLogTablePresenter $presenter
+     */
+    public function __construct(LiftLogTablePresenter $presenter)
+    {
+        parent::__construct();
+        $this->presenter = $presenter;
+    }
 
     /**
      * Execute the console command.
@@ -33,6 +53,7 @@ class AnalyzeRecentWorkouts extends Command
     {
         $userId = $this->argument('user_id');
         $lookbackDays = (int) $this->option('days');
+        $dryRun = $this->option('dry-run');
 
         if ($lookbackDays < 1 || $lookbackDays > 365) {
             $this->error('The --days option must be an integer between 1 and 365.');
@@ -70,6 +91,12 @@ class AnalyzeRecentWorkouts extends Command
 
         $prompt = $this->buildPrompt($liftLogs, $lookbackDays);
         $this->info("Workout data sent to Gemini:\n" . $prompt);
+
+        if ($dryRun) {
+            $this->info('Dry run mode enabled. Skipping Gemini API call.');
+            return 0;
+        }
+
         $apiKey = env('GEMINI_API_KEY');
 
         if (!$apiKey) {
@@ -113,16 +140,18 @@ class AnalyzeRecentWorkouts extends Command
     {
         $prompt = "Analyze the following workout data for an athlete. The data is from the last {$lookbackDays} days. The most recent workout should be analyzed against the backdrop of the workouts before that. If the same exercise is performed then it should analyze how well the athlete did last time against the rest of the exercise's history for that athlete.\n\n";
 
-        $workouts = $liftLogs->groupBy(function ($log) {
-            return $log->created_at->format('Y-m-d H:i:s');
+        $formattedLiftLogs = $this->presenter->formatForTable($liftLogs)['liftLogs'];
+
+        $workouts = $formattedLiftLogs->groupBy(function ($log) {
+            return Carbon::parse($log['raw_lift_log']->created_at)->format('Y-m-d H:i:s');
         });
 
         foreach ($workouts as $date => $logs) {
             $prompt .= "Workout on " . Carbon::parse($date)->format('F jS, Y') . ":\n";
             foreach ($logs as $log) {
-                $prompt .= "- {$log->exercise->title}: {$log->display_rounds} sets of {$log->display_reps} reps at {$log->display_weight} lbs";
-                if (!empty($log->comments)) {
-                    $prompt .= " (Comments: {$log->comments})";
+                $prompt .= "- {$log['exercise_title']}: {$log['formatted_reps_sets']} at {$log['formatted_weight']}";
+                if (!empty($log['full_comments'])) {
+                    $prompt .= " (Comments: {$log['full_comments']})";
                 }
                 $prompt .= "\n";
             }
