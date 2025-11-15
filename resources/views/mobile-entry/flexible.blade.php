@@ -11,6 +11,20 @@
         };
     </script>
     <script src="{{ asset('js/mobile-entry.js') }}"></script>
+    @php
+        // Automatically collect required scripts from components
+        $requiredScripts = [];
+        if (isset($data['components'])) {
+            foreach ($data['components'] as $component) {
+                if (isset($component['requiresScript'])) {
+                    $requiredScripts[$component['requiresScript']] = true;
+                }
+            }
+        }
+    @endphp
+    @foreach(array_keys($requiredScripts) as $scriptName)
+        <script src="{{ asset('js/' . $scriptName . '.js') }}"></script>
+    @endforeach
 @endsection
 
 @section('content')

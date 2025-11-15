@@ -207,6 +207,13 @@ class MenuService
                 'active' => Request::routeIs('labs.expanded-list'),
                 'title' => 'Expanded List',
             ],
+            [
+                'label' => null,
+                'icon' => 'fa-check-square',
+                'route' => 'labs.table-bulk-selection',
+                'active' => Request::routeIs('labs.table-bulk-selection'),
+                'title' => 'Table Bulk Selection',
+            ],
         ];
     }
 

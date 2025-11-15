@@ -701,4 +701,133 @@ class LabsController extends Controller
         
         return view('mobile-entry.flexible', compact('data'));
     }
+    
+    /**
+     * Example: Table with checkbox and bulk selection support
+     * Demonstrates how to implement bulk selection for table rows
+     */
+    public function tableBulkSelection(Request $request)
+    {
+        // Handle bulk delete action
+        if ($request->isMethod('post') && $request->has('selected_ids')) {
+            $selectedIds = $request->input('selected_ids', []);
+            $count = count($selectedIds);
+            
+            // In a real app, you'd delete the items here
+            // WorkoutTemplate::whereIn('id', $selectedIds)->delete();
+            
+            $message = $count === 1 
+                ? 'Successfully deleted 1 workout template.'
+                : "Successfully deleted {$count} workout templates.";
+            
+            return redirect()->route('labs.table-bulk-selection')->with('success', $message);
+        }
+        
+        $messagesBuilder = C::messages()
+            ->info('Select multiple items using checkboxes, then use "Delete Selected" button.')
+            ->tip('This demonstrates bulk selection pattern for table component', 'Demo:');
+        
+        if (session('success')) {
+            $messagesBuilder->success(session('success'), 'Success:');
+        }
+        
+        $data = [
+            'components' => [
+                C::title('Workout Templates', 'Manage your workout templates with bulk actions')->build(),
+                
+                $messagesBuilder->build(),
+                
+                // Custom HTML for bulk selection controls (before table)
+                [
+                    'type' => 'raw_html',
+                    'data' => [
+                        'html' => '
+                            <div class="container" style="margin-bottom: 15px;">
+                                <label style="display: flex; align-items: center; gap: 8px; font-size: 1em; cursor: pointer;">
+                                    <input type="checkbox" id="select-all-templates" style="width: 20px; height: 20px; cursor: pointer;">
+                                    <span>Select All</span>
+                                </label>
+                            </div>
+                        '
+                    ]
+                ],
+                
+                // Table with checkboxes
+                C::table()
+                    ->row(1, '5x5 Strength Program', 'Squat, Bench, Deadlift, Row, Press', '3 days per week')
+                        ->checkbox(true)
+                        ->linkAction('fa-edit', route('labs.table-bulk-selection'), 'Edit')
+                        ->formAction('fa-trash', route('labs.table-bulk-selection'), 'DELETE', [], 'Delete', 'btn-danger', true)
+                        ->subItem(11, 'Squat', '5 sets × 5 reps', 'Progressive overload')
+                            ->linkAction('fa-play', route('labs.table-bulk-selection'), 'Log now', 'btn-log-now')
+                            ->add()
+                        ->subItem(12, 'Bench Press', '5 sets × 5 reps', 'Progressive overload')
+                            ->linkAction('fa-play', route('labs.table-bulk-selection'), 'Log now', 'btn-log-now')
+                            ->add()
+                        ->subItem(13, 'Barbell Row', '5 sets × 5 reps', 'Progressive overload')
+                            ->linkAction('fa-play', route('labs.table-bulk-selection'), 'Log now', 'btn-log-now')
+                            ->add()
+                        ->add()
+                    ->row(2, 'Upper Body Hypertrophy', 'Bench, Rows, Shoulder Press, Curls', '2 days per week')
+                        ->checkbox(true)
+                        ->linkAction('fa-edit', route('labs.table-bulk-selection'), 'Edit')
+                        ->formAction('fa-trash', route('labs.table-bulk-selection'), 'DELETE', [], 'Delete', 'btn-danger', true)
+                        ->subItem(21, 'Bench Press', '4 sets × 8-12 reps', 'Hypertrophy range')
+                            ->linkAction('fa-play', route('labs.table-bulk-selection'), 'Log now', 'btn-log-now')
+                            ->add()
+                        ->subItem(22, 'Dumbbell Rows', '4 sets × 10-15 reps', 'Each arm')
+                            ->linkAction('fa-play', route('labs.table-bulk-selection'), 'Log now', 'btn-log-now')
+                            ->add()
+                        ->add()
+                    ->row(3, 'Lower Body Power', 'Squat, Deadlift, Lunges', '2 days per week')
+                        ->checkbox(true)
+                        ->linkAction('fa-edit', route('labs.table-bulk-selection'), 'Edit')
+                        ->formAction('fa-trash', route('labs.table-bulk-selection'), 'DELETE', [], 'Delete', 'btn-danger', true)
+                        ->subItem(31, 'Back Squat', '5 sets × 3 reps', 'Heavy weight')
+                            ->linkAction('fa-play', route('labs.table-bulk-selection'), 'Log now', 'btn-log-now')
+                            ->add()
+                        ->subItem(32, 'Deadlift', '5 sets × 3 reps', 'Heavy weight')
+                            ->linkAction('fa-play', route('labs.table-bulk-selection'), 'Log now', 'btn-log-now')
+                            ->add()
+                        ->add()
+                    ->row(4, 'Cardio & Conditioning', 'Running, Jump Rope, Burpees', 'Daily')
+                        ->checkbox(true)
+                        ->linkAction('fa-edit', route('labs.table-bulk-selection'), 'Edit')
+                        ->formAction('fa-trash', route('labs.table-bulk-selection'), 'DELETE', [], 'Delete', 'btn-danger', true)
+                        ->add()
+                    ->row(5, 'Core & Flexibility', 'Planks, Stretches, Yoga', 'Daily')
+                        ->checkbox(true)
+                        ->linkAction('fa-edit', route('labs.table-bulk-selection'), 'Edit')
+                        ->formAction('fa-trash', route('labs.table-bulk-selection'), 'DELETE', [], 'Delete', 'btn-danger', true)
+                        ->add()
+                    ->emptyMessage('No workout templates yet. Create your first one!')
+                    ->confirmMessage('deleteItem', 'Are you sure you want to delete this template?')
+                    ->ariaLabel('Workout templates')
+                    ->build(),
+                
+                // Bulk action form
+                [
+                    'type' => 'raw_html',
+                    'data' => [
+                        'html' => '
+                        <div class="container" style="margin-top: 20px;">
+                            <form action="' . route('labs.table-bulk-selection') . '" method="POST" id="bulk-delete-form" onsubmit="return confirmBulkDelete();">
+                                ' . csrf_field() . '
+                                <button type="submit" class="button delete" style="width: 100%;">
+                                    <i class="fa-solid fa-trash"></i> Delete Selected
+                                </button>
+                            </form>
+                        </div>
+                        '
+                    ]
+                ],
+                
+                C::button('Add New Template')
+                    ->ariaLabel('Create a new workout template')
+                    ->build(),
+            ],
+        ];
+        
+        return view('mobile-entry.flexible', compact('data'));
+    }
 }

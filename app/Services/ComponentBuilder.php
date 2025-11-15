@@ -756,14 +756,34 @@ class TableComponentBuilder
     }
     
     /**
+     * Check if any row has a checkbox enabled
+     */
+    protected function hasCheckboxes(): bool
+    {
+        foreach ($this->data['rows'] as $row) {
+            if (isset($row['checkbox']) && $row['checkbox']) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    /**
      * Build the component
      */
     public function build(): array
     {
-        return [
+        $component = [
             'type' => 'table',
             'data' => $this->data
         ];
+        
+        // Automatically include bulk selection script if any row has checkboxes
+        if ($this->hasCheckboxes()) {
+            $component['requiresScript'] = 'table-bulk-selection';
+        }
+        
+        return $component;
     }
 }
 
@@ -815,6 +835,15 @@ class TableRowBuilder
     public function compact(bool $compact = true): self
     {
         $this->data['compact'] = $compact;
+        return $this;
+    }
+    
+    /**
+     * Add a checkbox for bulk selection
+     */
+    public function checkbox(bool $enabled = true): self
+    {
+        $this->data['checkbox'] = $enabled;
         return $this;
     }
     

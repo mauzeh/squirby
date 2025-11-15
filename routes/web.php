@@ -111,6 +111,7 @@ Route::middleware('auth')->group(function () {
     Route::get('labs/title-back-button', [LabsController::class, 'titleWithBackButton'])->name('labs.title-back-button');
     Route::get('labs/table-initial-expanded', [LabsController::class, 'tableInitialExpanded'])->name('labs.table-initial-expanded');
     Route::get('labs/expanded-list', [LabsController::class, 'expandedList'])->name('labs.expanded-list');
+    Route::match(['get', 'post'], 'labs/table-bulk-selection', [LabsController::class, 'tableBulkSelection'])->name('labs.table-bulk-selection');
 
     Route::post('lift-logs/destroy-selected', [LiftLogController::class, 'destroySelected'])->name('lift-logs.destroy-selected');
 
