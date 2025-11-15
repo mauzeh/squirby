@@ -45,7 +45,7 @@
                 <div class="cell-detail">{{ $row['line3'] }}</div>
                 @endif
             </div>
-            <div class="component-table-actions{{ isset($row['compact']) && $row['compact'] ? ' actions-compact' : '' }}">
+            <div class="component-table-actions{{ isset($row['compact']) && $row['compact'] ? ' actions-compact' : '' }}{{ isset($row['wrapActions']) && $row['wrapActions'] ? ' actions-wrap' : '' }}">
                 @if(isset($row['actions']) && !empty($row['actions']))
                     {{-- New format: custom actions --}}
                     @foreach($row['actions'] as $action)

@@ -86,8 +86,10 @@ class LiftLogController extends Controller
             
             $rowBuilder
                 ->linkAction('fa-chart-line', route('exercises.show-logs', $liftLog->exercise), 'View logs', 'btn-info-circle')
-                ->linkAction('fa-edit', route('lift-logs.edit', $liftLog), 'Edit')
-                ->formAction('fa-trash', route('lift-logs.destroy', $liftLog), 'DELETE', [], 'Delete', 'btn-danger', true)
+                ->linkAction('fa-pencil', route('lift-logs.edit', $liftLog), 'Edit', 'btn-transparent')
+                ->formAction('fa-trash', route('lift-logs.destroy', $liftLog), 'DELETE', [], 'Delete', 'btn-transparent', true)
+                ->compact()
+                ->wrapActions()
                 ->add();
         }
         

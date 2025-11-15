@@ -2163,6 +2163,22 @@ able Component - Tabular CRUD list optimized for narrow screens */
     flex-shrink: 0;
 }
 
+.component-table-actions.actions-wrap {
+    flex-wrap: wrap;
+    flex-shrink: 1;
+    justify-content: flex-end;
+}
+
+/* Compact wrapped actions use compact touch target width */
+.component-table-actions.actions-compact.actions-wrap {
+    max-width: var(--touch-target-compact);
+}
+
+/* Non-compact wrapped actions use regular touch target width */
+.component-table-actions.actions-wrap:not(.actions-compact) {
+    max-width: var(--touch-target-min);
+}
+
 .btn-table-edit,
 .btn-table-delete {
     border: none;

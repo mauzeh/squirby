@@ -882,6 +882,15 @@ class TableRowBuilder
     }
     
     /**
+     * Allow action buttons to wrap to multiple lines
+     */
+    public function wrapActions(bool $wrap = true): self
+    {
+        $this->data['wrapActions'] = $wrap;
+        return $this;
+    }
+    
+    /**
      * Add a badge/bubble to display metadata (mobile-friendly)
      * 
      * @param string $text Badge text
