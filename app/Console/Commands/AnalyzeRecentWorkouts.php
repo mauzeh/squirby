@@ -15,14 +15,14 @@ class AnalyzeRecentWorkouts extends Command
      *
      * @var string
      */
-    protected $signature = 'workouts:analyze-recent {user_id}';
+    protected $signature = 'workouts:analyze-recent {user_id} {--days=14 : Number of days to look back for workout data (max 365)}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Analyzes the lift-log data from the last 14 days using Gemini AI.';
+    protected $description = 'Analyzes the lift-log data from a configurable lookback window using Gemini AI.';
 
     /**
      * Execute the console command.
@@ -32,6 +32,13 @@ class AnalyzeRecentWorkouts extends Command
     public function handle()
     {
         $userId = $this->argument('user_id');
+        $lookbackDays = (int) $this->option('days');
+
+        if ($lookbackDays < 1 || $lookbackDays > 365) {
+            $this->error('The --days option must be an integer between 1 and 365.');
+            return 1;
+        }
+
         $user = User::find($userId);
 
         if (!$user) {
@@ -39,19 +46,20 @@ class AnalyzeRecentWorkouts extends Command
             return 1;
         }
 
-        $this->info("Analyzing recent workouts for {$user->name}...");
+        $this->info("Analyzing recent workouts for {$user->name} for the last {$lookbackDays} days...");
 
         $liftLogs = LiftLog::with('exercise')->where('user_id', $userId)
-            ->where('created_at', '>=', Carbon::now()->subDays(14))
+            ->where('created_at', '>=', Carbon::now()->subDays($lookbackDays))
             ->orderBy('created_at', 'asc')
             ->get();
 
         if ($liftLogs->isEmpty()) {
-            $this->info('No lift logs found in the last 14 days.');
+            $this->info("No lift logs found in the last {$lookbackDays} days.");
             return 0;
         }
 
-        $prompt = $this->buildPrompt($liftLogs);
+        $prompt = $this->buildPrompt($liftLogs, $lookbackDays);
+        $this->info("Workout data sent to Gemini:\n" . $prompt);
         $apiKey = env('GEMINI_API_KEY');
 
         if (!$apiKey) {
@@ -70,9 +78,9 @@ class AnalyzeRecentWorkouts extends Command
         return 0;
     }
 
-    private function buildPrompt($liftLogs)
+    private function buildPrompt($liftLogs, int $lookbackDays)
     {
-        $prompt = "Analyze the following workout data for an athlete. The data is from the last 14 days. The most recent workout should be analyzed in the context of the workouts that came before it. If the same exercise is performed multiple times, analyze the athlete's performance in the most recent session against their historical performance for that exercise.\n\n";
+        $prompt = "Analyze the following workout data for an athlete. The data is from the last {$lookbackDays} days. The most recent workout should be analyzed against the backdrop of the workouts before that. If the same exercise is performed then it should analyze how well the athlete did last time against the rest of the exercise's history for that athlete.\n\n";
 
         $workouts = $liftLogs->groupBy(function ($log) {
             return $log->created_at->format('Y-m-d H:i:s');
