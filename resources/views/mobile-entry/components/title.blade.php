@@ -9,7 +9,7 @@
         <div class="component-title-content">
             <h1 class="component-title">{{ $data['main'] }}</h1>
             @if($data['subtitle'])
-                <div class="component-subtitle">{{ $data['subtitle'] }}</div>
+                <div class="component-subtitle">{!! $data['subtitle'] !!}</div>
             @endif
         </div>
     </div>
