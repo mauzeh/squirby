@@ -2019,7 +2019,7 @@ able Component - Tabular CRUD list optimized for narrow screens */
 
 .component-table-row {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
     padding: var(--spacing-md);
     background-color: var(--tertiary-bg);
@@ -2032,6 +2032,10 @@ able Component - Tabular CRUD list optimized for narrow screens */
 
 .component-table-row:last-child {
     border-bottom: none;
+}
+
+.component-table-row .template-checkbox {
+    align-self: center;
 }
 
 /* Spaced rows - add margin between rows */
@@ -2092,6 +2096,7 @@ able Component - Tabular CRUD list optimized for narrow screens */
     font-size: 0.9em;
     margin-right: var(--spacing-xs);
     flex-shrink: 0;
+    align-self: center;
     transition: transform var(--transition-fast);
 }
 
@@ -2160,6 +2165,7 @@ able Component - Tabular CRUD list optimized for narrow screens */
     min-width: 0;
     display: flex;
     flex-direction: column;
+    align-self: stretch;
     gap: 4px;
 }
 
@@ -2203,6 +2209,7 @@ able Component - Tabular CRUD list optimized for narrow screens */
     display: flex;
     gap: var(--spacing-sm);
     align-items: center;
+    align-self: center;
     flex-shrink: 0;
 }
 
