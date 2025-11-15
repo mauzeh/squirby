@@ -52,16 +52,70 @@ class LiftLogController extends Controller
         ])
         ->select('id', 'exercise_id', 'user_id', 'logged_at', 'comments')
         ->where('user_id', $userId)
-        ->orderBy('logged_at', 'asc')
+        ->orderBy('logged_at', 'desc') // Most recent first
         ->get();
 
         $exercises = $this->exerciseService->getExercisesWithLogs();
         $displayExercises = $this->exerciseService->getDisplayExercises(5);
 
-        // Format data using presenter
-        $tableData = $this->liftLogTablePresenter->formatForTable($liftLogs, false);
+        // Build table using component system
+        $tableBuilder = \App\Services\ComponentBuilder::table();
+        
+        foreach ($liftLogs as $liftLog) {
+            $strategy = $liftLog->exercise->getTypeStrategy();
+            $displayData = $strategy->formatMobileSummaryDisplay($liftLog);
+            $dateBadge = $this->liftLogTablePresenter->getDateBadge($liftLog);
+            $displayName = $liftLog->exercise->aliases->isNotEmpty() 
+                ? $liftLog->exercise->aliases->first()->alias_name 
+                : $liftLog->exercise->title;
+            
+            $rowBuilder = $tableBuilder->row(
+                $liftLog->id,
+                $displayName,
+                $liftLog->comments,
+                null
+            )
+            ->checkbox(true)
+            ->badge($dateBadge['text'], $dateBadge['color'])
+            ->badge($displayData['repsSets'], 'neutral');
+            
+            // Add weight badge if applicable
+            if ($displayData['showWeight']) {
+                $rowBuilder->badge($displayData['weight'], 'dark', true);
+            }
+            
+            $rowBuilder
+                ->linkAction('fa-chart-line', route('exercises.show-logs', $liftLog->exercise), 'View logs', 'btn-info-circle')
+                ->linkAction('fa-edit', route('lift-logs.edit', $liftLog), 'Edit')
+                ->formAction('fa-trash', route('lift-logs.destroy', $liftLog), 'DELETE', [], 'Delete', 'btn-danger', true)
+                ->add();
+        }
+        
+        $tableBuilder
+            ->emptyMessage('No lift logs found. Add one to get started!')
+            ->confirmMessage('deleteItem', 'Are you sure you want to delete this lift log?')
+            ->ariaLabel('Lift logs');
 
-        return view('lift-logs.index', compact('displayExercises', 'exercises') + $tableData);
+        $data = [
+            'components' => [
+                \App\Services\ComponentBuilder::selectAllControl('select-all-lift-logs', 'Select All')->build(),
+                
+                $tableBuilder->build(),
+                
+                \App\Services\ComponentBuilder::bulkActionForm(
+                    'bulk-delete-lift-logs',
+                    route('lift-logs.destroy-selected'),
+                    'Delete Selected'
+                )
+                ->confirmMessage('Are you sure you want to delete :count lift log(s)?')
+                ->checkboxSelector('.template-checkbox')
+                ->inputName('lift_log_ids')
+                ->ariaLabel('Delete selected lift logs')
+                ->build(),
+            ]
+        ];
+
+        return view('lift-logs.index-flexible', compact('displayExercises', 'exercises', 'data'));
     }
     
     /**

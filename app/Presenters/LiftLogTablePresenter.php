@@ -23,6 +23,26 @@ class LiftLogTablePresenter
             'config' => $this->buildTableConfig($hideExerciseColumn)
         ];
     }
+    
+    /**
+     * Get date badge data for a lift log
+     */
+    public function getDateBadge(LiftLog $liftLog): array
+    {
+        $now = now();
+        $loggedDate = $liftLog->logged_at;
+        $daysDiff = abs($now->diffInDays($loggedDate));
+        
+        if ($loggedDate->isToday()) {
+            return ['text' => 'Today', 'color' => 'success'];
+        } elseif ($loggedDate->isYesterday()) {
+            return ['text' => 'Yesterday', 'color' => 'warning'];
+        } elseif ($daysDiff <= 7) {
+            return ['text' => (int) $daysDiff . ' days ago', 'color' => 'info'];
+        } else {
+            return ['text' => $loggedDate->format('n/j'), 'color' => 'neutral'];
+        }
+    }
 
     /**
      * Format individual lift log for display
