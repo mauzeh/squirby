@@ -2042,12 +2042,30 @@ able Component - Tabular CRUD list optimized for narrow screens */
 
 .component-table.table-spaced-rows .component-table-row {
     border-radius: var(--border-radius-md);
-    margin-bottom: var(--spacing-md);
     border-bottom: none;
     box-shadow: var(--shadow-light);
+    margin-bottom: var(--spacing-md);
 }
 
-.component-table.table-spaced-rows .component-table-row:last-child {
+/* Rows with sub-items that are expanded: rounded top only, no margin on row */
+.component-table.table-spaced-rows .component-table-row.has-subitems.expanded {
+    border-radius: var(--border-radius-md) var(--border-radius-md) 0 0;
+    margin-bottom: 0;
+}
+
+/* Sub-items container: rounded bottom, provides margin when visible */
+.component-table.table-spaced-rows .component-table-subitems {
+    border-radius: 0 0 var(--border-radius-md) var(--border-radius-md);
+    box-shadow: var(--shadow-light);
+    margin-bottom: var(--spacing-md);
+}
+
+/* Remove margin from last elements */
+.component-table.table-spaced-rows .component-table-row:last-of-type:not(.expanded) {
+    margin-bottom: 0;
+}
+
+.component-table.table-spaced-rows .component-table-subitems:last-of-type {
     margin-bottom: 0;
 }
 
