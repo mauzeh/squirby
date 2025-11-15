@@ -26,6 +26,9 @@
                 @if(isset($row['line1']) && !empty($row['line1']))
                 <div class="{{ $row['titleClass'] ?? 'cell-title' }}">{{ $row['line1'] }}</div>
                 @endif
+                @if(isset($row['line2']) && !empty($row['line2']))
+                <div class="cell-content">{{ $row['line2'] }}</div>
+                @endif
                 @if(isset($row['badges']) && !empty($row['badges']))
                 <div class="table-badges">
                     @foreach($row['badges'] as $badge)
@@ -37,9 +40,6 @@
                         <span class="table-badge {{ $colorClass }} {{ $emphasizedClass }}" @if($customStyle) style="{{ $customStyle }}" @endif>{{ $badge['text'] }}</span>
                     @endforeach
                 </div>
-                @endif
-                @if(isset($row['line2']) && !empty($row['line2']))
-                <div class="cell-content">{{ $row['line2'] }}</div>
                 @endif
                 @if(isset($row['line3']) && !empty($row['line3']))
                 <div class="cell-detail">{{ $row['line3'] }}</div>
