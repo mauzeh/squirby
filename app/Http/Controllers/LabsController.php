@@ -725,7 +725,8 @@ class LabsController extends Controller
         
         $messagesBuilder = C::messages()
             ->info('Select multiple items using checkboxes, then use "Delete Selected" button.')
-            ->tip('This demonstrates bulk selection pattern for table component', 'Demo:');
+            ->tip('This demonstrates bulk selection with mobile-friendly badges', 'Demo:')
+            ->tip('Badges show metadata like dates, frequency, and status', 'Note:');
         
         if (session('success')) {
             $messagesBuilder->success(session('success'), 'Success:');
@@ -752,10 +753,13 @@ class LabsController extends Controller
                     ]
                 ],
                 
-                // Table with checkboxes
+                // Table with checkboxes and badges
                 C::table()
-                    ->row(1, '5x5 Strength Program', 'Squat, Bench, Deadlift, Row, Press', '3 days per week')
+                    ->row(1, '5x5 Strength Program', 'Last workout: Squat day', null)
                         ->checkbox(true)
+                        ->badge('Today', 'success')
+                        ->badge('5 x 5', 'neutral')
+                        ->badge('225 lbs', 'dark', true)  // Large badge for weight
                         ->linkAction('fa-edit', route('labs.table-bulk-selection'), 'Edit')
                         ->formAction('fa-trash', route('labs.table-bulk-selection'), 'DELETE', [], 'Delete', 'btn-danger', true)
                         ->subItem(11, 'Squat', '5 sets × 5 reps', 'Progressive overload')
@@ -768,8 +772,11 @@ class LabsController extends Controller
                             ->linkAction('fa-play', route('labs.table-bulk-selection'), 'Log now', 'btn-log-now')
                             ->add()
                         ->add()
-                    ->row(2, 'Upper Body Hypertrophy', 'Bench, Rows, Shoulder Press, Curls', '2 days per week')
+                    ->row(2, 'Upper Body Hypertrophy', 'Last workout: Bench press', null)
                         ->checkbox(true)
+                        ->badge('Yesterday', 'warning')
+                        ->badge('4 x 10', 'neutral')
+                        ->badge('185 lbs', 'dark', true)  // Large badge for weight
                         ->linkAction('fa-edit', route('labs.table-bulk-selection'), 'Edit')
                         ->formAction('fa-trash', route('labs.table-bulk-selection'), 'DELETE', [], 'Delete', 'btn-danger', true)
                         ->subItem(21, 'Bench Press', '4 sets × 8-12 reps', 'Hypertrophy range')
@@ -779,8 +786,11 @@ class LabsController extends Controller
                             ->linkAction('fa-play', route('labs.table-bulk-selection'), 'Log now', 'btn-log-now')
                             ->add()
                         ->add()
-                    ->row(3, 'Lower Body Power', 'Squat, Deadlift, Lunges', '2 days per week')
+                    ->row(3, 'Lower Body Power', 'Squat, Deadlift, Lunges', null)
                         ->checkbox(true)
+                        ->badge('3 days ago', 'info')
+                        ->badge('3 exercises', 'neutral')
+                        ->badge('Heavy', 'danger')
                         ->linkAction('fa-edit', route('labs.table-bulk-selection'), 'Edit')
                         ->formAction('fa-trash', route('labs.table-bulk-selection'), 'DELETE', [], 'Delete', 'btn-danger', true)
                         ->subItem(31, 'Back Squat', '5 sets × 3 reps', 'Heavy weight')
@@ -790,13 +800,17 @@ class LabsController extends Controller
                             ->linkAction('fa-play', route('labs.table-bulk-selection'), 'Log now', 'btn-log-now')
                             ->add()
                         ->add()
-                    ->row(4, 'Cardio & Conditioning', 'Running, Jump Rope, Burpees', 'Daily')
+                    ->row(4, 'Cardio & Conditioning', 'Running, Jump Rope, Burpees', null)
                         ->checkbox(true)
+                        ->badge('11/10', 'neutral')
+                        ->badge('Daily', 'success')
                         ->linkAction('fa-edit', route('labs.table-bulk-selection'), 'Edit')
                         ->formAction('fa-trash', route('labs.table-bulk-selection'), 'DELETE', [], 'Delete', 'btn-danger', true)
                         ->add()
-                    ->row(5, 'Core & Flexibility', 'Planks, Stretches, Yoga', 'Daily')
+                    ->row(5, 'Core & Flexibility', 'Planks, Stretches, Yoga', null)
                         ->checkbox(true)
+                        ->badge('11/8', 'neutral')
+                        ->badge('Daily', 'success')
                         ->linkAction('fa-edit', route('labs.table-bulk-selection'), 'Edit')
                         ->formAction('fa-trash', route('labs.table-bulk-selection'), 'DELETE', [], 'Delete', 'btn-danger', true)
                         ->add()
@@ -805,19 +819,21 @@ class LabsController extends Controller
                     ->ariaLabel('Workout templates')
                     ->build(),
                 
-                // Bulk action form
+                // Bulk action form (using raw HTML for custom form submission)
                 [
                     'type' => 'raw_html',
                     'data' => [
                         'html' => '
-                        <div class="container" style="margin-top: 20px;">
-                            <form action="' . route('labs.table-bulk-selection') . '" method="POST" id="bulk-delete-form" onsubmit="return confirmBulkDelete();">
-                                ' . csrf_field() . '
-                                <button type="submit" class="button delete" style="width: 100%;">
-                                    <i class="fa-solid fa-trash"></i> Delete Selected
-                                </button>
-                            </form>
-                        </div>
+                        <section class="component-button-section" style="margin-top: 20px; margin-bottom: 20px;">
+                            <div class="container">
+                                <form action="' . route('labs.table-bulk-selection') . '" method="POST" id="bulk-delete-form" onsubmit="return confirmBulkDelete();">
+                                    ' . csrf_field() . '
+                                    <button type="submit" class="btn-primary btn-danger" aria-label="Delete selected templates">
+                                        <i class="fa-solid fa-trash"></i> Delete Selected
+                                    </button>
+                                </form>
+                            </div>
+                        </section>
                         '
                     ]
                 ],

@@ -10,19 +10,36 @@ Visit `/labs/table-bulk-selection` to see it in action!
 
 ## Implementation Pattern
 
-### 1. Add Checkbox Support to Rows
+### 1. Add Checkbox Support and Badges to Rows
 
-Use the `->checkbox(true)` method on table rows:
+Use the `->checkbox(true)` method on table rows, and optionally add badges for metadata:
 
 ```php
 C::table()
-    ->row(1, 'Item Name', 'Description', 'Details')
+    ->row(1, 'Item Name', 'Description', null)
         ->checkbox(true)  // Enable checkbox for this row
+        ->badge('Today', 'success')  // Green badge
+        ->badge('5 x 8', 'neutral')  // Gray badge for sets/reps
+        ->badge('225 lbs', 'dark', true)  // Large, bold badge for weight
         ->linkAction('fa-edit', route('items.edit', 1), 'Edit')
         ->formAction('fa-trash', route('items.destroy', 1), 'DELETE', [], 'Delete', 'btn-danger', true)
         ->add()
     ->build()
 ```
+
+**Badge Colors:**
+- `success` - Green (#28a745) - for "Today", "Active", "Complete"
+- `info` - Blue (#007bff) - for dates within 7 days, general info
+- `warning` - Orange (#e67e22) - for "Yesterday", warnings, attention items
+- `danger` - Red (#dc3545) - for errors, urgent items
+- `neutral` - Gray (#4a5568) - for counts, neutral info
+- `dark` - Dark gray (#2d3748) - for weights, measurements
+- Or use any custom hex color like `#ff5733`
+
+**Badge Sizes:**
+- Regular: `->badge('Text', 'color')` - Standard size (0.85em, 4px/8px padding)
+- Large: `->badge('Text', 'color', true)` - Prominent size (1.1em, 8px/12px padding, bold)
+  - Use for important values like weights, distances, or key metrics
 
 ### 2. Add "Select All" Control
 
@@ -182,15 +199,49 @@ public function bulkDelete(Request $request)
 - **Individual row checkboxes** that update the Select All state
 - **Clickable rows** - Click anywhere on a row to toggle its checkbox
 - **Smart click detection** - Buttons, links, and expand icons still work normally
+- **Mobile-friendly badges** - Display metadata like dates, counts, and status
+- **Color-coded badges** - Visual indicators for different types of information
 - **Bulk delete confirmation** before submission
 - **Dynamic form submission** that collects selected IDs
 - **Success messages** showing count of deleted items
+
+## Badge Usage Examples
+
+Badges are perfect for displaying metadata in a mobile-friendly way:
+
+```php
+// Date-based badges (like lift-logs)
+->badge('Today', 'success')
+->badge('Yesterday', 'warning')
+->badge('3 days ago', 'info')
+->badge('11/10', 'neutral')
+
+// Count/quantity badges
+->badge('5 exercises', 'neutral')
+->badge('3x per week', 'info')
+->badge('4 x 8', 'neutral')  // Sets x reps
+
+// Status badges
+->badge('Active', 'success')
+->badge('Pending', 'warning')
+->badge('Archived', 'neutral')
+
+// Weight/measurement badges (larger, darker, bold)
+->badge('225 lbs', 'dark', true)  // Large badge
+->badge('Bodyweight', 'dark', true)  // Large badge
+->badge('3.5 miles', 'dark', true)  // Large badge for distance
+
+// Custom color
+->badge('Custom', '#9b59b6')  // Purple
+```
 
 ## CSS Classes
 
 The checkbox implementation uses these CSS classes:
 - `.template-checkbox` - Individual row checkboxes (you can customize this class name)
 - `.has-checkbox` - Added to rows with checkboxes for styling
+
+Badges use CSS classes from `public/css/mobile-entry/table-badges.css` which is automatically included when badges are detected.
 
 ## Notes
 
@@ -208,12 +259,19 @@ The checkbox implementation uses these CSS classes:
 
 ## How It Works
 
-The Table Component automatically detects when any row has `->checkbox(true)` and:
-1. Sets a `requiresScript` flag on the component
-2. The flexible view collects all required scripts from components
-3. Automatically includes `public/js/table-bulk-selection.js`
+The Table Component automatically detects component features and includes required assets:
 
-This means you never have to manually manage script includes - just use `->checkbox(true)` and the rest happens automatically.
+**Checkboxes:**
+1. Detects when any row has `->checkbox(true)`
+2. Sets a `requiresScript` flag on the component
+3. Flexible view automatically includes `public/js/table-bulk-selection.js`
+
+**Badges:**
+1. Detects when any row has `->badge()`
+2. Sets a `requiresStyle` flag on the component
+3. Flexible view automatically includes `public/css/mobile-entry/table-badges.css`
+
+This means you never have to manually manage asset includes - just use the methods and the rest happens automatically.
 
 ## When to Use
 

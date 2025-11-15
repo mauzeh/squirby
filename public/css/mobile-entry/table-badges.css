@@ -1,0 +1,51 @@
+/**
+ * Table Badge Styles
+ * Mobile-friendly badges for displaying metadata in table components
+ */
+
+.table-badges {
+    margin-top: 7px;
+    margin-bottom: 8px;
+}
+
+.table-badge {
+    display: inline-block;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.85em;
+    margin-right: 8px;
+    margin-bottom: 4px;
+}
+
+.table-badge--large {
+    padding: 8px 12px;
+    border-radius: 16px;
+    font-weight: bold;
+    font-size: 1.1em;
+}
+
+/* Badge color variants */
+.table-badge--success {
+    background-color: #28a745;
+}
+
+.table-badge--info {
+    background-color: #007bff;
+}
+
+.table-badge--warning {
+    background-color: #e67e22;
+}
+
+.table-badge--danger {
+    background-color: #dc3545;
+}
+
+.table-badge--neutral {
+    background-color: #4a5568;
+}
+
+.table-badge--dark {
+    background-color: #2d3748;
+}

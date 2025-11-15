@@ -769,6 +769,19 @@ class TableComponentBuilder
     }
     
     /**
+     * Check if any row has badges
+     */
+    protected function hasBadges(): bool
+    {
+        foreach ($this->data['rows'] as $row) {
+            if (isset($row['badges']) && !empty($row['badges'])) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    /**
      * Build the component
      */
     public function build(): array
@@ -781,6 +794,11 @@ class TableComponentBuilder
         // Automatically include bulk selection script if any row has checkboxes
         if ($this->hasCheckboxes()) {
             $component['requiresScript'] = 'table-bulk-selection';
+        }
+        
+        // Automatically include badge styles if any row has badges
+        if ($this->hasBadges()) {
+            $component['requiresStyle'] = 'table-badges';
         }
         
         return $component;
@@ -844,6 +862,41 @@ class TableRowBuilder
     public function checkbox(bool $enabled = true): self
     {
         $this->data['checkbox'] = $enabled;
+        return $this;
+    }
+    
+    /**
+     * Add a badge/bubble to display metadata (mobile-friendly)
+     * 
+     * @param string $text Badge text
+     * @param string $color Badge color (success, info, warning, danger, neutral, dark, or hex color)
+     * @param bool $large Whether to use large badge style (for weights, important values)
+     * @return self
+     */
+    public function badge(string $text, string $color = 'neutral', bool $large = false): self
+    {
+        if (!isset($this->data['badges'])) {
+            $this->data['badges'] = [];
+        }
+        
+        // Predefined color classes
+        $colorClasses = ['success', 'info', 'warning', 'danger', 'neutral', 'dark'];
+        
+        $badge = [
+            'text' => $text,
+            'large' => $large
+        ];
+        
+        // Use CSS class for predefined colors, inline style for custom hex colors
+        if (in_array($color, $colorClasses)) {
+            $badge['colorClass'] = $color;
+        } else {
+            // Custom hex color
+            $badge['customColor'] = $color;
+        }
+        
+        $this->data['badges'][] = $badge;
+        
         return $this;
     }
     

@@ -2,6 +2,20 @@
 
 @section('styles')
     <link rel="stylesheet" href="{{ asset('css/mobile-entry.css') }}">
+    @php
+        // Automatically collect required styles from components
+        $requiredStyles = [];
+        if (isset($data['components'])) {
+            foreach ($data['components'] as $component) {
+                if (isset($component['requiresStyle'])) {
+                    $requiredStyles[$component['requiresStyle']] = true;
+                }
+            }
+        }
+    @endphp
+    @foreach(array_keys($requiredStyles) as $styleName)
+        <link rel="stylesheet" href="{{ asset('css/mobile-entry/' . $styleName . '.css') }}">
+    @endforeach
 @endsection
 
 @section('scripts')

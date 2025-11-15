@@ -26,6 +26,18 @@
                 @if(isset($row['line1']) && !empty($row['line1']))
                 <div class="{{ $row['titleClass'] ?? 'cell-title' }}">{{ $row['line1'] }}</div>
                 @endif
+                @if(isset($row['badges']) && !empty($row['badges']))
+                <div class="table-badges">
+                    @foreach($row['badges'] as $badge)
+                        @php
+                            $colorClass = isset($badge['colorClass']) ? 'table-badge--' . $badge['colorClass'] : '';
+                            $sizeClass = (isset($badge['large']) && $badge['large']) ? 'table-badge--large' : '';
+                            $customStyle = isset($badge['customColor']) ? 'background-color: ' . $badge['customColor'] . ';' : '';
+                        @endphp
+                        <span class="table-badge {{ $colorClass }} {{ $sizeClass }}" @if($customStyle) style="{{ $customStyle }}" @endif>{{ $badge['text'] }}</span>
+                    @endforeach
+                </div>
+                @endif
                 @if(isset($row['line2']) && !empty($row['line2']))
                 <div class="cell-content">{{ $row['line2'] }}</div>
                 @endif
