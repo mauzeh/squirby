@@ -37,8 +37,6 @@
 
 @section('content')
 
-<x-top-exercises-buttons :exercises="$displayExercises" :allExercises="$exercises" /> 
-
 @if (session('success'))
     <div class="container success-message-box">
         {!! session('success') !!}

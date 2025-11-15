@@ -55,9 +55,6 @@ class LiftLogController extends Controller
         ->orderBy('logged_at', 'desc') // Most recent first
         ->get();
 
-        $exercises = $this->exerciseService->getExercisesWithLogs();
-        $displayExercises = $this->exerciseService->getDisplayExercises(5);
-
         // Build table using component system
         $tableBuilder = \App\Services\ComponentBuilder::table();
         $isAdmin = auth()->user()->hasRole('Admin');
@@ -120,7 +117,7 @@ class LiftLogController extends Controller
 
         $data = ['components' => $components];
 
-        return view('lift-logs.index-flexible', compact('displayExercises', 'exercises', 'data'));
+        return view('lift-logs.index-flexible', compact('data'));
     }
     
     /**
