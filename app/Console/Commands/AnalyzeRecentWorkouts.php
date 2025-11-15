@@ -142,14 +142,13 @@ class AnalyzeRecentWorkouts extends Command
 
         $formattedLiftLogs = $this->presenter->formatForTable($liftLogs)['liftLogs'];
 
-        $workouts = $formattedLiftLogs->groupBy(function ($log) {
-            return Carbon::parse($log['raw_lift_log']->created_at)->format('Y-m-d H:i:s');
-        });
+        $exercises = $formattedLiftLogs->groupBy('exercise_title');
 
-        foreach ($workouts as $date => $logs) {
-            $prompt .= "Workout on " . Carbon::parse($date)->format('F jS, Y') . ":\n";
+        foreach ($exercises as $exerciseTitle => $logs) {
+            $prompt .= "Exercise: {$exerciseTitle}\n";
             foreach ($logs as $log) {
-                $prompt .= "- {$log['exercise_title']}: {$log['formatted_reps_sets']} at {$log['formatted_weight']}";
+                $date = Carbon::parse($log['raw_lift_log']->created_at)->format('F jS, Y');
+                $prompt .= "- On {$date}: {$log['formatted_reps_sets']} at {$log['formatted_weight']}";
                 if (!empty($log['full_comments'])) {
                     $prompt .= " (Comments: {$log['full_comments']})";
                 }
