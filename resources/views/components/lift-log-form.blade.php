@@ -93,20 +93,19 @@
         </div>
     @endif
 
-    <div style="display: flex; gap: 10px; align-items: center;">
-        <button type="submit" class="button">
-            {{ $liftLog->exists ? 'Update Lift Log' : 'Add Lift Log' }}
-        </button>
-        
-        @if($liftLog->exists)
-            <form action="{{ route('lift-logs.destroy', $liftLog->id) }}" method="POST" style="display: inline;" 
-                  onsubmit="return confirm('Are you sure you want to delete this lift log?');">
-                @csrf
-                @method('DELETE')
-                <button type="submit" class="button" style="background-color: #dc3545;">
-                    <i class="fa-solid fa-trash"></i> Delete
-                </button>
-            </form>
-        @endif
-    </div>
+    <button type="submit" class="button">
+        {{ $liftLog->exists ? 'Update Lift Log' : 'Add Lift Log' }}
+    </button>
 </form>
+
+@if($liftLog->exists)
+    <div style="margin-top: 10px;">
+        <form action="{{ route('lift-logs.destroy', $liftLog->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this lift log?');">
+            @csrf
+            @method('DELETE')
+            <button type="submit" class="button" style="background-color: #dc3545;">
+                <i class="fa-solid fa-trash"></i> Delete
+            </button>
+        </form>
+    </div>
+@endif
