@@ -15,7 +15,7 @@ class AnalyzeRecentWorkouts extends Command
      *
      * @var string
      */
-    protected $signature = 'workouts:analyze-recent {user_id} {--days=14 : Number of days to look back for workout data (max 365)}';
+    protected $signature = 'workouts:analyze-recent {user_id?} {--days=14 : Number of days to look back for workout data (max 365)}';
 
     /**
      * The console command description.
@@ -37,6 +37,16 @@ class AnalyzeRecentWorkouts extends Command
         if ($lookbackDays < 1 || $lookbackDays > 365) {
             $this->error('The --days option must be an integer between 1 and 365.');
             return 1;
+        }
+
+        if (!$userId) {
+            $users = User::all();
+            $this->info('Please select a user to analyze:');
+            $users->each(function ($user) {
+                $this->line("  ID: {$user->id} - {$user->name}");
+            });
+
+            $userId = $this->ask('Enter the user ID');
         }
 
         $user = User::find($userId);
