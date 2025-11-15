@@ -1,5 +1,5 @@
 {{-- Bulk Action Form Component - For submitting multiple selected items --}}
-<section class="component-button-section" style="margin-top: 20px; margin-bottom: 20px;">
+<section class="component-button-section">
     <div class="container">
         <form action="{{ $data['action'] }}" 
               method="POST" 
