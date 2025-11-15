@@ -2,7 +2,7 @@
 
 @section('content')
 
-<x-top-exercises-buttons :exercises="$displayExercises" :allExercises="$exercises" /> 
+
 
 
     @if (session('success'))
