@@ -99,7 +99,7 @@ class LiftLogController extends Controller
 
         // Build components array
         $components = [
-            \App\Services\ComponentBuilder::title('Workout History', 'Observe what you did and <strong>be proud</strong> of it!')->build(),
+            \App\Services\ComponentBuilder::title('Workout History', 'Observe what you did and ...<br /><strong>be proud</strong> of it!')->build(),
         ];
         
         // Add success/error messages if present

@@ -217,6 +217,7 @@ Navigation Component */
     font-weight: normal;
     margin-top: var(--spacing-xs);
     opacity: 0.8;
+    line-height: 1.5;
 }
 
 /* Responsive adjustments for navigation */
