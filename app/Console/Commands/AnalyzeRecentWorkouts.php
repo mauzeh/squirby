@@ -77,12 +77,33 @@ class AnalyzeRecentWorkouts extends Command
             return 1;
         }
 
-        $response = $this->callGemini($prompt, $apiKey);
+        $conversation = [['role' => 'user', 'parts' => [['text' => $prompt]]]];
+        $response = $this->callGemini($conversation, $apiKey);
 
         if ($response) {
             $this->line($response);
+            $conversation[] = ['role' => 'model', 'parts' => [['text' => $response]]];
         } else {
             $this->error('Failed to get analysis from Gemini AI.');
+            return 1;
+        }
+
+        while (true) {
+            $question = $this->ask('Ask a follow-up question (or type "exit" to quit)');
+
+            if (in_array(strtolower($question), ['exit', 'quit'])) {
+                break;
+            }
+
+            $conversation[] = ['role' => 'user', 'parts' => [['text' => $question]]];
+            $response = $this->callGemini($conversation, $apiKey);
+
+            if ($response) {
+                $this->line($response);
+                $conversation[] = ['role' => 'model', 'parts' => [['text' => $response]]];
+            } else {
+                $this->error('Failed to get analysis from Gemini AI.');
+            }
         }
 
         return 0;
@@ -111,34 +132,15 @@ class AnalyzeRecentWorkouts extends Command
         return $prompt;
     }
 
-    private function callGemini(string $prompt, string $apiKey): ?string
+    private function callGemini(array $conversation, string $apiKey): ?string
     {
         $model = 'gemini-2.0-flash-001';
         $url = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}";
 
         $this->info("Gemini API URL: {$url}");
-        $this->info("Gemini API Request Body: " . json_encode([
-            'contents' => [
-                [
-                    'parts' => [
-                        [
-                            'text' => $prompt
-                        ]
-                    ]
-                ]
-            ]
-        ]));
 
         $response = Http::post($url, [
-            'contents' => [
-                [
-                    'parts' => [
-                        [
-                            'text' => $prompt
-                        ]
-                    ]
-                ]
-            ]
+            'contents' => $conversation
         ]);
 
         if ($response->successful()) {
