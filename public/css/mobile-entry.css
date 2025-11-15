@@ -2033,6 +2033,24 @@ able Component - Tabular CRUD list optimized for narrow screens */
     border-bottom: none;
 }
 
+/* Spaced rows - add margin between rows */
+.component-table.table-spaced-rows {
+    background-color: transparent;
+    box-shadow: none;
+    overflow: visible;
+}
+
+.component-table.table-spaced-rows .component-table-row {
+    border-radius: var(--border-radius-md);
+    margin-bottom: var(--spacing-md);
+    border-bottom: none;
+    box-shadow: var(--shadow-light);
+}
+
+.component-table.table-spaced-rows .component-table-row:last-child {
+    margin-bottom: 0;
+}
+
 /* Collapsible rows are clickable */
 .component-table-row.is-collapsible {
     cursor: pointer;
@@ -2131,6 +2149,12 @@ able Component - Tabular CRUD list optimized for narrow screens */
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+.component-table-cell.cell-wrap-text > div {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
 }
 
 .cell-title {

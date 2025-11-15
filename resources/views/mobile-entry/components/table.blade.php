@@ -7,7 +7,7 @@
     @endif
     
     @if(!empty($data['rows']))
-    <div class="component-table">
+    <div class="component-table{{ isset($data['spacedRows']) && $data['spacedRows'] ? ' table-spaced-rows' : '' }}">
         @foreach($data['rows'] as $row)
         @php
             $hasSubitems = isset($row['subItems']) && !empty($row['subItems']);
@@ -22,7 +22,7 @@
             @if($isCollapsible)
             <i class="fas fa-chevron-right table-expand-icon"></i>
             @endif
-            <div class="component-table-cell">
+            <div class="component-table-cell{{ isset($row['wrapText']) && $row['wrapText'] ? ' cell-wrap-text' : '' }}">
                 @if(isset($row['line1']) && !empty($row['line1']))
                 <div class="{{ $row['titleClass'] ?? 'cell-title' }}">{{ $row['line1'] }}</div>
                 @endif
@@ -31,10 +31,10 @@
                     @foreach($row['badges'] as $badge)
                         @php
                             $colorClass = isset($badge['colorClass']) ? 'table-badge--' . $badge['colorClass'] : '';
-                            $sizeClass = (isset($badge['large']) && $badge['large']) ? 'table-badge--large' : '';
+                            $emphasizedClass = (isset($badge['emphasized']) && $badge['emphasized']) ? 'table-badge--emphasized' : '';
                             $customStyle = isset($badge['customColor']) ? 'background-color: ' . $badge['customColor'] . ';' : '';
                         @endphp
-                        <span class="table-badge {{ $colorClass }} {{ $sizeClass }}" @if($customStyle) style="{{ $customStyle }}" @endif>{{ $badge['text'] }}</span>
+                        <span class="table-badge {{ $colorClass }} {{ $emphasizedClass }}" @if($customStyle) style="{{ $customStyle }}" @endif>{{ $badge['text'] }}</span>
                     @endforeach
                 </div>
                 @endif

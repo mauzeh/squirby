@@ -726,7 +726,9 @@ class LabsController extends Controller
         $messagesBuilder = C::messages()
             ->info('Select multiple items using checkboxes, then use "Delete Selected" button.')
             ->tip('This demonstrates bulk selection with mobile-friendly badges', 'Demo:')
-            ->tip('Badges show metadata like dates, frequency, and status', 'Note:');
+            ->tip('Badges show metadata like dates, frequency, and status', 'Note:')
+            ->tip('Row 6 shows text wrapping - long content wraps instead of truncating', 'New:')
+            ->tip('Rows have spacing between them for a card-like appearance', 'Layout:');
         
         if (session('success')) {
             $messagesBuilder->success(session('success'), 'Success:');
@@ -747,7 +749,7 @@ class LabsController extends Controller
                         ->checkbox(true)
                         ->badge('Today', 'success')
                         ->badge('5 x 5', 'neutral')
-                        ->badge('225 lbs', 'dark', true)  // Large badge for weight
+                        ->badge('225 lbs', 'dark', true)  // Emphasized badge for weight
                         ->linkAction('fa-edit', route('labs.table-bulk-selection'), 'Edit')
                         ->formAction('fa-trash', route('labs.table-bulk-selection'), 'DELETE', [], 'Delete', 'btn-danger', true)
                         ->subItem(11, 'Squat', '5 sets × 5 reps', 'Progressive overload')
@@ -764,7 +766,7 @@ class LabsController extends Controller
                         ->checkbox(true)
                         ->badge('Yesterday', 'warning')
                         ->badge('4 x 10', 'neutral')
-                        ->badge('185 lbs', 'dark', true)  // Large badge for weight
+                        ->badge('185 lbs', 'dark', true)  // Emphasized badge for weight
                         ->linkAction('fa-edit', route('labs.table-bulk-selection'), 'Edit')
                         ->formAction('fa-trash', route('labs.table-bulk-selection'), 'DELETE', [], 'Delete', 'btn-danger', true)
                         ->subItem(21, 'Bench Press', '4 sets × 8-12 reps', 'Hypertrophy range')
@@ -802,9 +804,17 @@ class LabsController extends Controller
                         ->linkAction('fa-edit', route('labs.table-bulk-selection'), 'Edit')
                         ->formAction('fa-trash', route('labs.table-bulk-selection'), 'DELETE', [], 'Delete', 'btn-danger', true)
                         ->add()
+                    ->row(6, 'Text Wrapping Demo', 'This row demonstrates the wrapText() feature which allows longer text content to wrap to multiple lines instead of being truncated with an ellipsis. This is useful for notes, comments, or descriptions that need to be fully visible.', 'Notice how this text wraps naturally')
+                        ->checkbox(true)
+                        ->badge('Demo', 'info')
+                        ->linkAction('fa-edit', route('labs.table-bulk-selection'), 'Edit')
+                        ->formAction('fa-trash', route('labs.table-bulk-selection'), 'DELETE', [], 'Delete', 'btn-danger', true)
+                        ->wrapText()
+                        ->add()
                     ->emptyMessage('No workout templates yet. Create your first one!')
                     ->confirmMessage('deleteItem', 'Are you sure you want to delete this template?')
                     ->ariaLabel('Workout templates')
+                    ->spacedRows()
                     ->build(),
                 
                 // Bulk action form

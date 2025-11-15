@@ -90,13 +90,15 @@ class LiftLogController extends Controller
                 ->formAction('fa-trash', route('lift-logs.destroy', $liftLog), 'DELETE', [], 'Delete', 'btn-transparent', true)
                 ->compact()
                 ->wrapActions()
+                ->wrapText()
                 ->add();
         }
         
         $tableBuilder
             ->emptyMessage('No lift logs found. Add one to get started!')
             ->confirmMessage('deleteItem', 'Are you sure you want to delete this lift log?')
-            ->ariaLabel('Lift logs');
+            ->ariaLabel('Lift logs')
+            ->spacedRows();
 
         $data = [
             'components' => [

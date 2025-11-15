@@ -18,11 +18,9 @@
     margin-bottom: 4px;
 }
 
-.table-badge--large {
-    padding: 8px 12px;
-    border-radius: 16px;
+.table-badge--emphasized {
     font-weight: bold;
-    font-size: 1.1em;
+    background-color: #2d3748; /* Darker background for emphasis */
 }
 
 /* Badge color variants */

@@ -772,6 +772,15 @@ class TableComponentBuilder
     }
     
     /**
+     * Add spacing between rows
+     */
+    public function spacedRows(bool $spaced = true): self
+    {
+        $this->data['spacedRows'] = $spaced;
+        return $this;
+    }
+    
+    /**
      * Check if any row has a checkbox enabled
      */
     protected function hasCheckboxes(): bool
@@ -891,14 +900,23 @@ class TableRowBuilder
     }
     
     /**
+     * Allow text content to wrap to multiple lines
+     */
+    public function wrapText(bool $wrap = true): self
+    {
+        $this->data['wrapText'] = $wrap;
+        return $this;
+    }
+    
+    /**
      * Add a badge/bubble to display metadata (mobile-friendly)
      * 
      * @param string $text Badge text
      * @param string $color Badge color (success, info, warning, danger, neutral, dark, or hex color)
-     * @param bool $large Whether to use large badge style (for weights, important values)
+     * @param bool $emphasized Whether to use emphasized badge style (darker, bold for important values)
      * @return self
      */
-    public function badge(string $text, string $color = 'neutral', bool $large = false): self
+    public function badge(string $text, string $color = 'neutral', bool $emphasized = false): self
     {
         if (!isset($this->data['badges'])) {
             $this->data['badges'] = [];
@@ -909,7 +927,7 @@ class TableRowBuilder
         
         $badge = [
             'text' => $text,
-            'large' => $large
+            'emphasized' => $emphasized
         ];
         
         // Use CSS class for predefined colors, inline style for custom hex colors

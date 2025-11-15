@@ -20,7 +20,7 @@ C::table()
         ->checkbox(true)  // Enable checkbox for this row
         ->badge('Today', 'success')  // Green badge
         ->badge('5 x 8', 'neutral')  // Gray badge for sets/reps
-        ->badge('225 lbs', 'dark', true)  // Large, bold badge for weight
+        ->badge('225 lbs', 'dark', true)  // Emphasized badge for weight (bold, darker)
         ->linkAction('fa-edit', route('items.edit', 1), 'Edit')
         ->formAction('fa-trash', route('items.destroy', 1), 'DELETE', [], 'Delete', 'btn-danger', true)
         ->add()
@@ -36,10 +36,11 @@ C::table()
 - `dark` - Dark gray (#2d3748) - for weights, measurements
 - Or use any custom hex color like `#ff5733`
 
-**Badge Sizes:**
-- Regular: `->badge('Text', 'color')` - Standard size (0.85em, 4px/8px padding)
-- Large: `->badge('Text', 'color', true)` - Prominent size (1.1em, 8px/12px padding, bold)
+**Badge Emphasis:**
+- Regular: `->badge('Text', 'color')` - Standard badge
+- Emphasized: `->badge('Text', 'color', true)` - Bold text with darker background (#2d3748)
   - Use for important values like weights, distances, or key metrics
+  - Same size as regular badges but stands out more
 
 ### 2. Add "Select All" Control
 
@@ -135,10 +136,10 @@ Badges are perfect for displaying metadata in a mobile-friendly way:
 ->badge('Pending', 'warning')
 ->badge('Archived', 'neutral')
 
-// Weight/measurement badges (larger, darker, bold)
-->badge('225 lbs', 'dark', true)  // Large badge
-->badge('Bodyweight', 'dark', true)  // Large badge
-->badge('3.5 miles', 'dark', true)  // Large badge for distance
+// Weight/measurement badges (emphasized - bold, darker)
+->badge('225 lbs', 'dark', true)  // Emphasized badge
+->badge('Bodyweight', 'dark', true)  // Emphasized badge
+->badge('3.5 miles', 'dark', true)  // Emphasized badge for distance
 
 // Custom color
 ->badge('Custom', '#9b59b6')  // Purple
