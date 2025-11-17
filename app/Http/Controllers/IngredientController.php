@@ -4,11 +4,18 @@ namespace App\Http\Controllers;
 
 use App\Models\Ingredient;
 use App\Models\Unit;
+use App\Services\IngredientService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class IngredientController extends Controller
 {
+    protected IngredientService $ingredientService;
+    
+    public function __construct(IngredientService $ingredientService)
+    {
+        $this->ingredientService = $ingredientService;
+    }
     /**
      * Display a listing of the resource.
      */
@@ -23,9 +30,19 @@ class IngredientController extends Controller
      */
     public function create(Request $request)
     {
-        $units = Unit::all();
         $prefilledName = $request->query('name', '');
-        return view('ingredients.create', compact('units', 'prefilledName'));
+        
+        $units = Unit::all();
+        $unitOptions = $this->ingredientService->buildUnitOptions($units);
+        
+        $data = [
+            'components' => [
+                $this->ingredientService->generateCreateFormComponent($prefilledName),
+                $this->ingredientService->buildFormComponent($unitOptions, null, $prefilledName),
+            ],
+        ];
+        
+        return view('mobile-entry.flexible', compact('data'));
     }
 
     /**
@@ -65,8 +82,18 @@ class IngredientController extends Controller
         if ($ingredient->user_id !== auth()->id()) {
             abort(403, 'Unauthorized action.');
         }
+        
         $units = Unit::all();
-        return view('ingredients.edit', compact('ingredient', 'units'));
+        $unitOptions = $this->ingredientService->buildUnitOptions($units);
+        
+        $data = [
+            'components' => [
+                $this->ingredientService->generateEditFormComponent($ingredient),
+                $this->ingredientService->buildFormComponent($unitOptions, $ingredient),
+            ],
+        ];
+        
+        return view('mobile-entry.flexible', compact('data'));
     }
 
     /**

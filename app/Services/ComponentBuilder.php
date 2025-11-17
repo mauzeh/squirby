@@ -518,7 +518,13 @@ class FormComponentBuilder
         // Add to current section if one is active, otherwise to form messages
         if ($this->currentSection !== null && !empty($this->data['sections'])) {
             $lastSectionIndex = count($this->data['sections']) - 1;
-            $this->data['sections'][$lastSectionIndex]['messages'][] = $message;
+            // Add as a special field type so it renders inline
+            $this->data['sections'][$lastSectionIndex]['fields'][] = [
+                'type' => 'message',
+                'messageType' => $type,
+                'text' => $text,
+                'prefix' => $prefix
+            ];
         } else {
             $this->data['messages'][] = $message;
         }

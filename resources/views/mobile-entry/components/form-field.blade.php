@@ -1,4 +1,13 @@
 {{-- Form Field Partial --}}
+@if(isset($field['type']) && $field['type'] === 'message')
+    {{-- Inline message field --}}
+    <div class="component-message component-message--{{ $field['messageType'] }}" style="margin-bottom: var(--spacing-md);">
+        @if(isset($field['prefix']) && $field['prefix'])
+        <span class="message-prefix">{{ $field['prefix'] }}</span>
+        @endif
+        {{ $field['text'] }}
+    </div>
+@else
 <div class="form-mobile-group">
     <label for="{{ $field['id'] }}" class="form-mobile-label">{{ $field['label'] }}</label>
     @if(isset($field['type']) && $field['type'] === 'select')
@@ -24,3 +33,4 @@
         </div>
     @endif
 </div>
+@endif

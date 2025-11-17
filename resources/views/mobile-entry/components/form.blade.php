@@ -50,19 +50,6 @@
                         <h3 class="form-section-title">{{ $section['title'] }}</h3>
                     </div>
                     
-                    @if(!empty($section['messages']))
-                    <div class="form-section-messages">
-                        @foreach($section['messages'] as $message)
-                        <div class="component-message component-message--{{ $message['type'] }}">
-                            @if(isset($message['prefix']))
-                            <span class="message-prefix">{{ $message['prefix'] }}</span>
-                            @endif
-                            {{ $message['text'] }}
-                        </div>
-                        @endforeach
-                    </div>
-                    @endif
-                    
                     <div class="form-section-content">
                         @foreach($section['fields'] as $field)
                             @include('mobile-entry.components.form-field', ['field' => $field, 'data' => $data])
