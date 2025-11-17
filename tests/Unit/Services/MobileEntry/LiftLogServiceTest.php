@@ -13,6 +13,7 @@ use App\Services\MobileEntry\LiftDataCacheService;
 use App\Services\ExerciseAliasService;
 use App\Services\RecommendationEngine;
 use App\Services\Factories\LiftLogFormFactory;
+use App\Services\LiftLogTableRowBuilder;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Mockery;
@@ -27,6 +28,7 @@ class LiftLogServiceTest extends TestCase
     protected $aliasService;
     protected $recommendationEngine;
     protected $liftLogFormFactory;
+    protected $tableRowBuilder;
 
     protected function setUp(): void
     {
@@ -38,13 +40,15 @@ class LiftLogServiceTest extends TestCase
         $this->aliasService = Mockery::mock(ExerciseAliasService::class);
         $this->recommendationEngine = Mockery::mock(RecommendationEngine::class);
         $this->liftLogFormFactory = Mockery::mock(LiftLogFormFactory::class);
+        $this->tableRowBuilder = Mockery::mock(LiftLogTableRowBuilder::class);
         
         $this->service = new LiftLogService(
             $this->trainingProgressionService,
             $this->cacheService,
             $this->aliasService,
             $this->recommendationEngine,
-            $this->liftLogFormFactory
+            $this->liftLogFormFactory,
+            $this->tableRowBuilder
         );
     }
 
