@@ -302,4 +302,60 @@ class LiftLogEditTest extends TestCase
         $response->assertSee('My Custom Name');
         $response->assertDontSee($this->exercise->title);
     }
+
+    /** @test */
+    public function edit_page_shows_friendly_date_message()
+    {
+        // Test with today's date
+        $todayLog = LiftLog::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $this->exercise->id,
+            'logged_at' => now(),
+        ]);
+        $todayLog->liftSets()->create(['weight' => 100, 'reps' => 5]);
+
+        $response = $this->actingAs($this->user)
+            ->get(route('lift-logs.edit', $todayLog));
+
+        $response->assertStatus(200);
+        $response->assertSee('Date:');
+        $response->assertSee('Today');
+
+        // Test with yesterday's date
+        $yesterdayLog = LiftLog::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $this->exercise->id,
+            'logged_at' => now()->subDay(),
+        ]);
+        $yesterdayLog->liftSets()->create(['weight' => 100, 'reps' => 5]);
+
+        $response = $this->actingAs($this->user)
+            ->get(route('lift-logs.edit', $yesterdayLog));
+
+        $response->assertStatus(200);
+        $response->assertSee('Date:');
+        $response->assertSee('Yesterday');
+
+        // Test with a date 3 days ago
+        $threeDaysAgoLog = LiftLog::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $this->exercise->id,
+            'logged_at' => now()->subDays(3),
+        ]);
+        $threeDaysAgoLog->liftSets()->create(['weight' => 100, 'reps' => 5]);
+
+        $response = $this->actingAs($this->user)
+            ->get(route('lift-logs.edit', $threeDaysAgoLog));
+
+        $response->assertStatus(200);
+        
+        $data = $response->viewData('data');
+        $formData = $data['components'][0]['data'];
+        
+        // Check that the date message exists
+        $this->assertNotEmpty($formData['messages']);
+        $this->assertEquals('info', $formData['messages'][0]['type']);
+        $this->assertEquals('Date:', $formData['messages'][0]['prefix']);
+        $this->assertStringContainsString('3 days ago', $formData['messages'][0]['text']);
+    }
 }

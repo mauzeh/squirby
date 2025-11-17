@@ -178,8 +178,17 @@ class LiftLogService extends MobileEntryBaseService
         $mockForm->user_id = $userId;
         $mockForm->exercise_id = $liftLog->exercise_id;
         
-        // No messages for edit forms (user is editing existing data)
-        $messages = [];
+        // Add friendly date message for edit forms
+        $loggedDate = Carbon::parse($liftLog->logged_at);
+        $dateMessage = $this->generateFriendlyDateMessage($loggedDate);
+        
+        $messages = [
+            [
+                'type' => 'info',
+                'prefix' => 'Date:',
+                'text' => $dateMessage
+            ]
+        ];
         
         // Build the form using the factory, but override some settings for edit mode
         $formData = $this->liftLogFormFactory->buildForm(
@@ -876,5 +885,41 @@ class LiftLogService extends MobileEntryBaseService
         }
         
         return $messages;
+    }
+    
+    /**
+     * Generate a friendly date message for display
+     * 
+     * @param Carbon $date
+     * @return string
+     */
+    private function generateFriendlyDateMessage(Carbon $date): string
+    {
+        $now = Carbon::now();
+        
+        if ($date->isToday()) {
+            return 'Today';
+        }
+        
+        if ($date->isYesterday()) {
+            return 'Yesterday';
+        }
+        
+        if ($date->isTomorrow()) {
+            return 'Tomorrow';
+        }
+        
+        $daysDiff = (int) abs($now->diffInDays($date));
+        
+        if ($daysDiff <= 7 && $date->isPast()) {
+            return $daysDiff . ' days ago (' . $date->format('l, M j') . ')';
+        }
+        
+        if ($daysDiff <= 7 && $date->isFuture()) {
+            return 'In ' . $daysDiff . ' days (' . $date->format('l, M j') . ')';
+        }
+        
+        // For dates more than a week away
+        return $date->format('l, F j, Y');
     }
 }
