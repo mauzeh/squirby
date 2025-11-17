@@ -313,8 +313,32 @@ class ExerciseController extends Controller
 
         $chartData = $this->chartService->generateProgressChart($liftLogs, $exercise);
 
+        // Get display name (alias if exists, otherwise title)
+        $aliasService = app(\App\Services\ExerciseAliasService::class);
+        $displayName = $aliasService->getDisplayName($exercise, auth()->user());
+
         // Build components
         $components = [];
+        
+        // Title
+        $components[] = \App\Services\ComponentBuilder::title($displayName)->build();
+        
+        // Messages
+        $messagesBuilder = \App\Services\ComponentBuilder::messages();
+        $hasMessages = false;
+        
+        if (session('success')) {
+            $messagesBuilder->success(session('success'));
+            $hasMessages = true;
+        }
+        if (session('error')) {
+            $messagesBuilder->error(session('error'));
+            $hasMessages = true;
+        }
+        
+        if ($hasMessages) {
+            $components[] = $messagesBuilder->build();
+        }
         
         // Add chart if we have data
         if (!empty($chartData['datasets'])) {
@@ -332,25 +356,31 @@ class ExerciseController extends Controller
         }
         
         // Build table using shared service
-        $liftLogTableRowBuilder = app(\App\Services\LiftLogTableRowBuilder::class);
-        
-        $rows = $liftLogTableRowBuilder->buildRows($liftLogs, [
-            'showDateBadge' => true,
-            'showCheckbox' => false,
-            'showViewLogsAction' => false, // Don't show "view logs" when already viewing logs
-            'showDeleteAction' => false,
-        ]);
-        
-        $tableBuilder = \App\Services\ComponentBuilder::table()
-            ->rows($rows)
-            ->ariaLabel('Exercise logs')
-            ->spacedRows();
+        if ($liftLogs->isNotEmpty()) {
+            $liftLogTableRowBuilder = app(\App\Services\LiftLogTableRowBuilder::class);
+            
+            $rows = $liftLogTableRowBuilder->buildRows($liftLogs, [
+                'showDateBadge' => true,
+                'showCheckbox' => false,
+                'showViewLogsAction' => false, // Don't show "view logs" when already viewing logs
+                'showDeleteAction' => false,
+            ]);
+            
+            $tableBuilder = \App\Services\ComponentBuilder::table()
+                ->rows($rows)
+                ->emptyMessage('No lift logs found for this exercise.')
+                ->ariaLabel('Exercise logs')
+                ->spacedRows();
 
-        $components[] = $tableBuilder->build();
+            $components[] = $tableBuilder->build();
+        } else {
+            // Show empty message
+            $components[] = \App\Services\ComponentBuilder::rawHtml('<p>No lift logs found for this exercise.</p>');
+        }
         
         $data = ['components' => $components];
 
-        return view('exercises.logs-flexible', compact('exercise', 'liftLogs', 'data'));
+        return view('mobile-entry.flexible', compact('data'));
     }
 
     /**
