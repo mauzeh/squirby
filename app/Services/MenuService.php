@@ -214,6 +214,13 @@ class MenuService
                 'active' => Request::routeIs('labs.table-bulk-selection'),
                 'title' => 'Table Bulk Selection',
             ],
+            [
+                'label' => null,
+                'icon' => 'fa-apple-alt',
+                'route' => 'labs.ingredient-entry',
+                'active' => Request::routeIs('labs.ingredient-entry'),
+                'title' => 'Ingredient Entry',
+            ],
         ];
     }
 
