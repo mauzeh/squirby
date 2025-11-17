@@ -196,7 +196,8 @@ class LiftLogService extends MobileEntryBaseService
         $formData['id'] = 'edit-lift-' . $liftLog->id;
         $formData['formAction'] = route('lift-logs.update', $liftLog->id);
         $formData['method'] = 'PUT';
-        $formData['deleteAction'] = null; // No delete button in edit form
+        $formData['deleteAction'] = route('lift-logs.destroy', $liftLog->id);
+        $formData['deleteParams'] = $redirectParams; // Pass redirect params to delete action
         
         // Update hidden fields for edit mode
         $formData['hiddenFields'] = [

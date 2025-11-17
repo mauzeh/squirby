@@ -147,7 +147,7 @@ class LiftLogEditTest extends TestCase
     }
 
     /** @test */
-    public function edit_form_does_not_have_delete_button()
+    public function edit_form_has_delete_button()
     {
         $response = $this->actingAs($this->user)
             ->get(route('lift-logs.edit', $this->liftLog));
@@ -157,7 +157,8 @@ class LiftLogEditTest extends TestCase
         $data = $response->viewData('data');
         $formData = $data['components'][0]['data'];
         
-        $this->assertNull($formData['deleteAction']);
+        $this->assertNotNull($formData['deleteAction']);
+        $this->assertEquals(route('lift-logs.destroy', $this->liftLog), $formData['deleteAction']);
     }
 
     /** @test */
