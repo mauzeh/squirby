@@ -69,7 +69,7 @@ class LabsController extends Controller
                     ->item('ex-2', 'Squats', '#', 'Recent', 'recent', 1)
                     ->item('ex-3', 'Deadlift', '#', 'Available', 'regular', 3)
                     ->filterPlaceholder('Search exercises...')
-                    ->createForm('#', 'exercise_name', ['date' => $selectedDate->toDateString()])
+                    ->createForm('#', 'exercise_name', ['date' => $selectedDate->toDateString()], 'Create "{term}"')
                     ->build(),
                 
                 // Form (using 'primary' type for blue border)
@@ -541,7 +541,7 @@ class LabsController extends Controller
                     ->item('ex-2', 'Squats', '#', 'Recent', 'recent', 1)
                     ->item('ex-3', 'Deadlift', '#', 'Available', 'regular', 3)
                     ->filterPlaceholder('Search exercises...')
-                    ->createForm('#', 'exercise_name')
+                    ->createForm('#', 'exercise_name', [], 'Create "{term}"')
                     ->build(),
                 
                 // Separator
@@ -561,7 +561,7 @@ class LabsController extends Controller
                     ->item('meal-2', 'Protein Shake', '#', 'Recent', 'recent', 1)
                     ->item('meal-3', 'Oatmeal', '#', 'Available', 'regular', 3)
                     ->filterPlaceholder('Search meals...')
-                    ->createForm('#', 'meal_name')
+                    ->createForm('#', 'meal_name', [], 'Create "{term}"')
                     ->initialState('expanded')
                     ->build(),
             ],
@@ -632,7 +632,7 @@ class LabsController extends Controller
                     ->item('ex-4', 'Overhead Press', '#', 'Available', 'regular', 3)
                     ->item('ex-5', 'Barbell Row', '#', 'Recent', 'recent', 1)
                     ->filterPlaceholder('Search exercises...')
-                    ->createForm('#', 'exercise_name')
+                    ->createForm('#', 'exercise_name', [], 'Create "{term}"')
                     ->initialState('expanded')
                     ->build(),
             ],

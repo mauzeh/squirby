@@ -613,6 +613,7 @@ class LiftLogService extends MobileEntryBaseService
                 'method' => 'POST',
                 'inputName' => 'exercise_name',
                 'submitText' => '+',
+                'buttonTextTemplate' => 'Create "{term}"',
                 'ariaLabel' => 'Create new exercise',
                 'hiddenFields' => [
                     'date' => $selectedDate->toDateString()

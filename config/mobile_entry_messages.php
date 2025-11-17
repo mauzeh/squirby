@@ -74,13 +74,13 @@ return [
 
     'empty_states' => [
         'no_workouts_logged' => 'No workouts logged yet! Add exercises above to get started.',
-        'no_exercises_found' => 'No exercises found. Type a name and hit "+" to create a new exercise.',
+        'no_exercises_found' => 'No exercises found',
         'no_measurements_logged' => 'No measurements logged yet today!',
         'no_measurement_types_found' => 'No measurement types found. Create measurement types first.',
         
         // Food-specific empty states
         'no_food_logged' => 'No food logged yet today! Add ingredients or meals above to get started.',
-        'no_food_items_found' => 'No food items found. Type a name and hit "+" to create a new ingredient.',
+        'no_food_items_found' => 'No food items found',
     ],
 
     'form_guidance' => [

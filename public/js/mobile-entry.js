@@ -9,6 +9,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const clearButton = document.querySelector('.btn-clear-filter');
     const hiddenInput = document.querySelector('.component-create-input');
     const itemList = document.querySelector('.component-list');
+    const createForm = document.querySelector('.component-create-form');
+    const createButton = createForm ? createForm.querySelector('.btn-create') : null;
+    const createButtonText = createButton ? createButton.querySelector('.btn-create-text') : null;
     
     // Only set up filtering if filter input and item list exist
     if (filterInput && itemList) {
@@ -17,8 +20,42 @@ document.addEventListener('DOMContentLoaded', function() {
             return Array.from(itemList.querySelectorAll('.component-list-item:not(.component-list-item--no-results)'));
         };
         
-        // Get the no results item
+        // Get the no results item and its text elements
         const noResultsItem = itemList.querySelector('.no-results-item');
+        const noResultsNameElement = noResultsItem ? noResultsItem.querySelector('.component-list-item-name') : null;
+        const noResultsTypeElement = noResultsItem ? noResultsItem.querySelector('.component-list-item-type') : null;
+        
+        // Store original no results message
+        const originalNoResultsMessage = noResultsNameElement ? noResultsNameElement.textContent : '';
+        
+        // Get the button text template
+        const buttonTextTemplate = createButton ? createButton.dataset.textTemplate || 'Create "{term}"' : 'Create "{term}"';
+        
+        // Update create button text and visibility
+        const updateCreateButton = (searchTerm, hasResults) => {
+            if (!createForm || !createButton || !createButtonText) return;
+            
+            const normalizedSearch = searchTerm.trim();
+            
+            // Show button only when: has search term AND no results
+            if (normalizedSearch !== '' && !hasResults) {
+                // Truncate search term if too long (max 30 chars)
+                const displayTerm = normalizedSearch.length > 30 
+                    ? normalizedSearch.substring(0, 30) + '...' 
+                    : normalizedSearch;
+                
+                // Replace {term} placeholder with actual search term
+                const buttonText = buttonTextTemplate.replace('{term}', displayTerm);
+                createButtonText.textContent = buttonText;
+                
+                // Update aria-label for accessibility
+                createButton.setAttribute('aria-label', `Create new item: ${normalizedSearch}`);
+                
+                createForm.style.display = '';
+            } else {
+                createForm.style.display = 'none';
+            }
+        };
         
         // Filter function
         const filterItems = (searchTerm) => {
@@ -43,9 +80,24 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         
-        // Show/hide no results item based on whether we have visible items and a search term
+        const hasResults = visibleCount > 0;
+        
+        // Show/hide no results item and update message based on whether we have visible items and a search term
         if (noResultsItem) {
-            if (normalizedSearch !== '' && visibleCount === 0) {
+            if (normalizedSearch !== '' && !hasResults) {
+                // Update the no results message to be more helpful
+                if (noResultsNameElement) {
+                    if (createForm) {
+                        // If create form exists, show helpful message about creating
+                        noResultsNameElement.textContent = `No matches found for "${normalizedSearch}"`;
+                    } else {
+                        // If no create form, show original message
+                        noResultsNameElement.textContent = originalNoResultsMessage;
+                    }
+                }
+                if (noResultsTypeElement && createForm) {
+                    noResultsTypeElement.textContent = 'Click above to create';
+                }
                 noResultsItem.style.display = '';
             } else {
                 noResultsItem.style.display = 'none';
@@ -60,6 +112,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 clearButton.style.display = 'none';
             }
         }
+        
+        // Update create button visibility and text
+        updateCreateButton(searchTerm, hasResults);
         
         // Sync the filter input value with the hidden form input (if it exists)
         if (hiddenInput) {

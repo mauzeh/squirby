@@ -411,13 +411,14 @@ class ItemListComponentBuilder
         return $this;
     }
     
-    public function createForm(string $action, string $inputName, array $hiddenFields = []): self
+    public function createForm(string $action, string $inputName, array $hiddenFields = [], string $buttonTextTemplate = 'Create "{term}"'): self
     {
         $this->data['createForm'] = [
             'action' => $action,
             'method' => 'POST',
             'inputName' => $inputName,
             'submitText' => '+',
+            'buttonTextTemplate' => $buttonTextTemplate,
             'ariaLabel' => 'Create new item',
             'hiddenFields' => $hiddenFields
         ];

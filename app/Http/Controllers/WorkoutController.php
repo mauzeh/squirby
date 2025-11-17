@@ -316,7 +316,8 @@ class WorkoutController extends Controller
             $itemListBuilder->createForm(
                 $itemSelectionList['createForm']['action'],
                 $itemSelectionList['createForm']['inputName'],
-                $itemSelectionList['createForm']['hiddenFields']
+                $itemSelectionList['createForm']['hiddenFields'],
+                $itemSelectionList['createForm']['buttonTextTemplate'] ?? 'Create "{term}"'
             );
         }
 
@@ -723,6 +724,7 @@ class WorkoutController extends Controller
             'createForm' => [
                 'action' => route('workouts.create-exercise', $workout->id),
                 'inputName' => 'exercise_name',
+                'buttonTextTemplate' => 'Create "{term}"',
                 'hiddenFields' => []
             ],
             'items' => $items,

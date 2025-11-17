@@ -151,7 +151,8 @@ class MobileEntryController extends Controller
             $itemListBuilder->createForm(
                 $itemSelectionList['createForm']['action'],
                 $itemSelectionList['createForm']['inputName'],
-                $itemSelectionList['createForm']['hiddenFields']
+                $itemSelectionList['createForm']['hiddenFields'],
+                $itemSelectionList['createForm']['buttonTextTemplate'] ?? 'Create "{term}"'
             );
         }
         
@@ -385,7 +386,8 @@ class MobileEntryController extends Controller
             $itemListBuilder->createForm(
                 $itemSelectionList['createForm']['action'],
                 $itemSelectionList['createForm']['inputName'],
-                $itemSelectionList['createForm']['hiddenFields']
+                $itemSelectionList['createForm']['hiddenFields'],
+                $itemSelectionList['createForm']['buttonTextTemplate'] ?? 'Create "{term}"'
             );
         }
         

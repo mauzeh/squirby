@@ -9,14 +9,14 @@
                         <button type="button" class="btn-clear-filter" aria-label="Clear filter" style="display: none;">×</button>
                     </div>
                     @if($data['createForm'])
-                    <form method="{{ $data['createForm']['method'] }}" action="{{ $data['createForm']['action'] }}" class="component-create-form">
+                    <form method="{{ $data['createForm']['method'] }}" action="{{ $data['createForm']['action'] }}" class="component-create-form" style="display: none;">
                         @csrf
                         <input type="hidden" name="{{ $data['createForm']['inputName'] }}" class="component-create-input" value="">
                         @foreach($data['createForm']['hiddenFields'] as $name => $value)
                             <input type="hidden" name="{{ $name }}" value="{{ $value }}">
                         @endforeach
-                        <button type="submit" class="btn-secondary btn-create btn-add-item" aria-label="{{ $data['createForm']['ariaLabel'] }}">
-                            <span class="plus-icon">{{ $data['createForm']['submitText'] }}</span>
+                        <button type="submit" class="btn-secondary btn-create btn-add-item" aria-label="{{ $data['createForm']['ariaLabel'] }}" data-text-template="{{ $data['createForm']['buttonTextTemplate'] ?? 'Create "{term}"' }}">
+                            <span class="btn-create-text">{{ $data['createForm']['submitText'] }}</span>
                         </button>
                     </form>
                     @endif
@@ -38,7 +38,7 @@
         <li class="no-results-item" style="display: none;">
             <div class="component-list-item component-list-item--no-results">
                 <span class="component-list-item-name">{{ $data['noResultsMessage'] }}</span>
-                <span class="component-list-item-type">No matches</span>
+                <span class="component-list-item-type">Click above to create</span>
             </div>
         </li>
     </ul>

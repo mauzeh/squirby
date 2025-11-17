@@ -226,6 +226,7 @@ class FoodLogService extends MobileEntryBaseService
                 'method' => 'POST',
                 'inputName' => 'ingredient_name',
                 'submitText' => '+',
+                'buttonTextTemplate' => 'Create "{term}"',
                 'ariaLabel' => 'Create new ingredient',
                 'hiddenFields' => [
                     'date' => $selectedDate->toDateString()
