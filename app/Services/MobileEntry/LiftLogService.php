@@ -432,7 +432,7 @@ class LiftLogService extends MobileEntryBaseService
         $rows = $this->tableRowBuilder->buildRows($logs, [
             'showDateBadge' => false, // Don't show date badge on mobile-entry (same day)
             'showCheckbox' => false,
-            'showViewLogsAction' => false, // Don't show view logs action on mobile
+            'showViewLogsAction' => true, // Show view logs action (same as full history)
             'includeEncouragingMessage' => true, // Show encouraging messages
             'redirectContext' => 'mobile-entry-lifts',
             'selectedDate' => $selectedDate->toDateString(),
