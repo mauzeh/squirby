@@ -7,6 +7,7 @@ use App\Models\LiftLog;
 use App\Models\Exercise;
 use App\Services\TrainingProgressionService;
 use App\Services\ExerciseAliasService;
+use App\Services\Factories\LiftLogFormFactory;
 use App\Services\RecommendationEngine;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
@@ -19,17 +20,20 @@ class LiftLogService extends MobileEntryBaseService
     protected LiftDataCacheService $cacheService;
     protected ExerciseAliasService $aliasService;
     protected RecommendationEngine $recommendationEngine;
+    protected LiftLogFormFactory $liftLogFormFactory;
 
     public function __construct(
         TrainingProgressionService $trainingProgressionService,
         LiftDataCacheService $cacheService,
         ExerciseAliasService $aliasService,
-        RecommendationEngine $recommendationEngine
+        RecommendationEngine $recommendationEngine,
+        LiftLogFormFactory $liftLogFormFactory
     ) {
         $this->trainingProgressionService = $trainingProgressionService;
         $this->cacheService = $cacheService;
         $this->aliasService = $aliasService;
         $this->recommendationEngine = $recommendationEngine;
+        $this->liftLogFormFactory = $liftLogFormFactory;
     }
 
     /**
@@ -108,74 +112,18 @@ class LiftLogService extends MobileEntryBaseService
             // Generate messages based on last session
             $messages = $this->generateFormMessagesForMobileForms($form, $lastSession, $userId);
             
-            // Build numeric fields using exercise type strategy
-            $strategy = $exercise->getTypeStrategy();
-            $labels = $strategy->getFieldLabels();
-            
-            // Prepare default values for strategy
-            $strategyDefaults = [
+            // Prepare default values for the factory
+            $defaults = [
                 'weight' => $defaultWeight,
                 'reps' => $defaultReps,
                 'sets' => $defaultSets,
                 'band_color' => $lastSession['band_color'] ?? 'red',
+                'comments' => '',
+                'context' => 'mobile-form', // Specify context for the factory
             ];
-            
-            // Get field definitions from strategy
-            $fieldDefinitions = $strategy->getFormFieldDefinitions($strategyDefaults, $user);
-            
-            $numericFields = [];
-            
-            // Convert strategy field definitions to mobile entry format
-            foreach ($fieldDefinitions as $definition) {
-                $field = [
-                    'id' => $formId . '-' . $definition['name'],
-                    'name' => $definition['name'],
-                    'label' => $definition['label'],
-                    'type' => $definition['type'],
-                    'defaultValue' => $definition['defaultValue'],
-                ];
-                
-                // Add type-specific properties
-                if ($definition['type'] === 'numeric') {
-                    $field['increment'] = $definition['increment'];
-                    $field['min'] = $definition['min'];
-                    $field['max'] = $definition['max'] ?? 1000;
-                    
-                    // Generate aria labels from field name, not label (to match existing behavior)
-                    $fieldNameForAria = $definition['name'] === 'reps' && $strategy->getTypeName() === 'cardio' ? 'distance' : $definition['name'];
-                    $field['ariaLabels'] = [
-                        'decrease' => 'Decrease ' . $fieldNameForAria,
-                        'increase' => 'Increase ' . $fieldNameForAria
-                    ];
-                } elseif ($definition['type'] === 'select') {
-                    $field['options'] = $definition['options'];
-                    $field['ariaLabels'] = [
-                        'field' => 'Select ' . strtolower(trim($definition['label'], ':'))
-                    ];
-                }
-                
-                // Remove type property for numeric fields to maintain backward compatibility
-                if ($definition['type'] === 'numeric') {
-                    unset($field['type']);
-                }
-                
-                $numericFields[] = $field;
-            }
-            
-            // Always add sets/rounds field (not handled by strategy field definitions)
-            $setsLabel = $labels['sets'] ?? 'Sets:';
-            $numericFields[] = [
-                'id' => $formId . '-rounds',
-                'name' => 'rounds',
-                'label' => $setsLabel,
-                'defaultValue' => $defaultSets,
-                'increment' => 1,
-                'min' => 1,
-                'ariaLabels' => [
-                    'decrease' => 'Decrease ' . strtolower(trim($setsLabel, ':')),
-                    'increase' => 'Increase ' . strtolower(trim($setsLabel, ':'))
-                ]
-            ];
+
+            // Use the factory to build the fields
+            $numericFields = $this->liftLogFormFactory->buildFields($exercise, $user, $defaults, $formId);
             
             // Build form using ComponentBuilder
             $formBuilder = C::form($formId, $exercise->title)
@@ -187,19 +135,6 @@ class LiftLogService extends MobileEntryBaseService
             foreach ($messages as $message) {
                 $formBuilder->message($message['type'], $message['text'], $message['prefix'] ?? null);
             }
-            
-            // Add notes field as a textarea
-            $numericFields[] = [
-                'id' => $formId . '-comment',
-                'name' => 'comments',
-                'label' => 'Notes:',
-                'type' => 'textarea',
-                'placeholder' => config('mobile_entry_messages.placeholders.workout_notes'),
-                'defaultValue' => '',
-                'ariaLabels' => [
-                    'field' => 'Notes'
-                ]
-            ];
             
             // Add numeric fields (keeping the old numericFields structure for compatibility)
             // Note: We're not using the builder's numericField method here because we need

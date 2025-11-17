@@ -23,7 +23,7 @@ Unify the lift logs editing interface (`lift-logs/id/edit`) with your generic co
 - `edit()` method loads `$liftLog`, `$exercises`, then returns a Blade view with `<x-lift-log-form-component ... />`.
 
 **After:**
-- Refactor `edit()` to use a service (`LiftLogService`) to build an edit form component.
+- Refactor `edit()` to use a service (`MobileEntry\LiftLogService`) to build an edit form component.
 - Pass `data['components']` to the generic flexible view for rendering.
 - Example:
     ```php
@@ -34,7 +34,7 @@ Unify the lift logs editing interface (`lift-logs/id/edit`) with your generic co
         }
         $user = auth()->user();
         $exercises = Exercise::with('aliases')->get();
-        $formComponent = app(LiftLogService::class)->generateEditFormComponent($liftLog, $exercises, $user->id);
+        $formComponent = app(MobileEntry\LiftLogService::class)->generateEditFormComponent($liftLog, $exercises, $user->id);
         $data = [
             'components' => [$formComponent],
             'autoscroll' => true
@@ -44,12 +44,20 @@ Unify the lift logs editing interface (`lift-logs/id/edit`) with your generic co
     ```
 ---
 
-### 2. Service: `LiftLogService.php`
+### 2. Service: `MobileEntry\LiftLogService.php`
 
 **Add a method:**
 - `generateEditFormComponent($liftLog, $exercises, $userId)`  
   - Composes a form using the same component & field structure as MobileEntry.
   - All form logic, fields, validations, and UI configuration live here.
+
+---
+
+### 2.5. Factory: `LiftLogFormFactory.php`
+
+**Role:**
+- This new factory is responsible for building the specific form fields required for lift log entry, abstracting the logic from `MobileEntry\LiftLogService`.
+- It encapsulates the creation of numeric fields, select fields, and other input types based on exercise type strategies and default values.
 
 ---
 
@@ -109,7 +117,8 @@ Unify the lift logs editing interface (`lift-logs/id/edit`) with your generic co
 | File                                       | Action                                  |
 |---------------------------------------------|-----------------------------------------|
 | `LiftLogController.php`                     | Refactor edit() to use flexible system  |
-| `LiftLogService.php`                        | Add edit form builder method            |
+| `MobileEntry/LiftLogService.php`                        | Add edit form builder method            |
+| `Services/Factories/LiftLogFormFactory.php` | New factory for building form fields    |
 | `lift-logs/edit.blade.php`                  | Replace with flexible layout            |
 | `components/flexible.blade.php`             | Ensure supports all needed types        |
 | `components/lift-log-form.blade.php`        | Remove/deprecate                        |
@@ -123,7 +132,7 @@ Unify the lift logs editing interface (`lift-logs/id/edit`) with your generic co
 ## Example References
 
 - MobileEntry migration: `mobile-entry.flexible.blade.php`
-- Flexible component builder: `LiftLogService::generateForms`
+- Flexible component builder: `MobileEntry\LiftLogService::generateForms`
 - Docs: See `docs/flexible-ui/migration-guide.md`
 
 ---
