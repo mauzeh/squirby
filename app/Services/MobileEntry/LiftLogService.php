@@ -445,7 +445,7 @@ class LiftLogService extends MobileEntryBaseService
             ->ariaLabel('Logged workouts')
             ->spacedRows();
 
-        return $tableBuilder->build()['data'];
+        return $tableBuilder->build();
     }  
   /**
      * Generate item selection list based on user's accessible exercises

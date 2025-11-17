@@ -162,8 +162,8 @@ class MobileEntryController extends Controller
             $components[] = ['type' => 'form', 'data' => $form];
         }
         
-        // Logged items (now using table component)
-        $components[] = ['type' => 'table', 'data' => $loggedItems];
+        // Logged items (now using table component with full component data)
+        $components[] = $loggedItems;
         
         $data = [
             'components' => $components,
