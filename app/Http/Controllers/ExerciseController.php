@@ -352,6 +352,7 @@ class ExerciseController extends Controller
                 'showCheckbox' => false,
                 'showViewLogsAction' => false, // Don't show "view logs" when already viewing logs
                 'showDeleteAction' => false,
+                'redirectContext' => 'exercises-logs', // For edit/delete redirects
             ]);
             
             $tableBuilder = \App\Services\ComponentBuilder::table()
