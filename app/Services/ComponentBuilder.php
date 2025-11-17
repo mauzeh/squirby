@@ -97,6 +97,17 @@ class ComponentBuilder
     {
         return new SelectAllControlComponentBuilder($checkboxId, $label);
     }
+    
+    /**
+     * Create a raw HTML component
+     */
+    public static function rawHtml(string $html): array
+    {
+        return [
+            'type' => 'raw_html',
+            'data' => ['html' => $html]
+        ];
+    }
 }
 
 /**

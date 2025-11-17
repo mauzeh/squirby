@@ -908,4 +908,145 @@ class LabsController extends Controller
         
         return view('mobile-entry.flexible', compact('data'));
     }
+    
+    /**
+     * Example: Chart component integration
+     * Demonstrates how to incorporate Chart.js charts into the flexible component system
+     */
+    public function chartExample(Request $request)
+    {
+        // Generate sample chart data
+        $chartData = [
+            'datasets' => [
+                [
+                    'label' => 'Weight (lbs)',
+                    'data' => [
+                        ['x' => '2024-11-01', 'y' => 135],
+                        ['x' => '2024-11-03', 'y' => 140],
+                        ['x' => '2024-11-05', 'y' => 145],
+                        ['x' => '2024-11-08', 'y' => 145],
+                        ['x' => '2024-11-10', 'y' => 150],
+                        ['x' => '2024-11-12', 'y' => 155],
+                        ['x' => '2024-11-15', 'y' => 155],
+                        ['x' => '2024-11-17', 'y' => 160],
+                    ],
+                    'borderColor' => 'rgb(75, 192, 192)',
+                    'backgroundColor' => 'rgba(75, 192, 192, 0.2)',
+                    'tension' => 0.1,
+                    'fill' => true,
+                ],
+                [
+                    'label' => '1RM Estimate (lbs)',
+                    'data' => [
+                        ['x' => '2024-11-01', 'y' => 180],
+                        ['x' => '2024-11-03', 'y' => 187],
+                        ['x' => '2024-11-05', 'y' => 193],
+                        ['x' => '2024-11-08', 'y' => 193],
+                        ['x' => '2024-11-10', 'y' => 200],
+                        ['x' => '2024-11-12', 'y' => 207],
+                        ['x' => '2024-11-15', 'y' => 207],
+                        ['x' => '2024-11-17', 'y' => 213],
+                    ],
+                    'borderColor' => 'rgb(255, 99, 132)',
+                    'backgroundColor' => 'rgba(255, 99, 132, 0.2)',
+                    'tension' => 0.1,
+                    'fill' => true,
+                ]
+            ]
+        ];
+        
+        $data = [
+            'components' => [
+                C::title('Bench Press Progress', 'Your strength gains over time')
+                    ->backButton('fa-arrow-left', route('labs.with-nav'), 'Back to examples')
+                    ->build(),
+                
+                C::messages()
+                    ->success('Great progress! You\'ve increased your bench press by 25 lbs this month.')
+                    ->info('This chart shows your working weight and estimated 1RM over time.')
+                    ->tip('Chart is rendered using raw HTML component - see implementation below', 'Implementation:')
+                    ->build(),
+                
+                // Chart using raw HTML (current approach)
+                C::rawHtml('
+                    <div class="form-container">
+                        <h3>Weight & 1RM Progress</h3>
+                        <canvas id="progressChart"></canvas>
+                    </div>
+                    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+                    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+                    <script>
+                        document.addEventListener("DOMContentLoaded", function() {
+                            var ctx = document.getElementById("progressChart").getContext("2d");
+                            new Chart(ctx, {
+                                type: "line",
+                                data: {
+                                    datasets: ' . json_encode($chartData['datasets']) . '
+                                },
+                                options: {
+                                    scales: {
+                                        x: {
+                                            type: "time",
+                                            time: {
+                                                unit: "day"
+                                            }
+                                        },
+                                        y: {
+                                            beginAtZero: true
+                                        }
+                                    },
+                                    plugins: {
+                                        legend: {
+                                            display: true
+                                        }
+                                    }
+                                }
+                            });
+                        });
+                    </script>
+                '),
+                
+                // Summary stats
+                C::summary()
+                    ->item('current', '160 lbs', 'Current Weight')
+                    ->item('start', '135 lbs', 'Starting Weight')
+                    ->item('gain', '+25 lbs', 'Total Gain')
+                    ->item('1rm', '213 lbs', 'Est. 1RM')
+                    ->build(),
+                
+                // Table of recent workouts
+                C::table()
+                    ->row(1, 'Nov 17, 2024', '160 lbs × 5 reps × 3 sets', '1RM: 213 lbs')
+                        ->badge('Today', 'success')
+                        ->badge('160 lbs', 'dark', true)
+                        ->linkAction('fa-edit', route('labs.chart-example'), 'Edit')
+                        ->add()
+                    ->row(2, 'Nov 15, 2024', '155 lbs × 5 reps × 3 sets', '1RM: 207 lbs')
+                        ->badge('2 days ago', 'info')
+                        ->badge('155 lbs', 'dark', true)
+                        ->linkAction('fa-edit', route('labs.chart-example'), 'Edit')
+                        ->add()
+                    ->row(3, 'Nov 12, 2024', '155 lbs × 5 reps × 3 sets', '1RM: 207 lbs')
+                        ->badge('5 days ago', 'info')
+                        ->badge('155 lbs', 'dark', true)
+                        ->linkAction('fa-edit', route('labs.chart-example'), 'Edit')
+                        ->add()
+                    ->row(4, 'Nov 10, 2024', '150 lbs × 5 reps × 3 sets', '1RM: 200 lbs')
+                        ->badge('11/10', 'neutral')
+                        ->badge('150 lbs', 'dark', true)
+                        ->linkAction('fa-edit', route('labs.chart-example'), 'Edit')
+                        ->add()
+                    ->ariaLabel('Recent workouts')
+                    ->spacedRows()
+                    ->build(),
+                
+                C::messages()
+                    ->tip('To create a dedicated chart component, see labs/chart-component-example.md', 'Future Enhancement:')
+                    ->info('A ChartComponentBuilder would provide a cleaner API: ComponentBuilder::chart("id", "title")->type("line")->datasets($data)->build()', 'Proposed API:')
+                    ->build(),
+            ],
+        ];
+        
+        return view('mobile-entry.flexible', compact('data'));
+    }
 }

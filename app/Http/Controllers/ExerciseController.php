@@ -303,20 +303,36 @@ class ExerciseController extends Controller
             $query->where('user_id', auth()->id());
         }]);
         
-        $liftLogsQuery = $exercise->liftLogs()->with('liftSets')->where('user_id', auth()->id())->orderBy('logged_at', 'asc')->get();
+        $liftLogs = $exercise->liftLogs()
+            ->with(['liftSets', 'exercise.aliases' => function ($query) {
+                $query->where('user_id', auth()->id());
+            }])
+            ->where('user_id', auth()->id())
+            ->orderBy('logged_at', 'desc') // Most recent first
+            ->get();
 
-        $displayExercises = $this->exerciseService->getDisplayExercises(5);
+        $chartData = $this->chartService->generateProgressChart($liftLogs, $exercise);
 
-        $chartData = $this->chartService->generateProgressChart($liftLogsQuery, $exercise);
+        // Build table using shared service
+        $liftLogTableRowBuilder = app(\App\Services\LiftLogTableRowBuilder::class);
+        
+        $rows = $liftLogTableRowBuilder->buildRows($liftLogs, [
+            'showDateBadge' => true,
+            'showCheckbox' => false,
+            'showViewLogsAction' => false, // Don't show "view logs" when already viewing logs
+            'showDeleteAction' => false,
+        ]);
+        
+        $tableBuilder = \App\Services\ComponentBuilder::table()
+            ->rows($rows)
+            ->ariaLabel('Exercise logs')
+            ->spacedRows();
 
-        $liftLogsReversed = $liftLogsQuery->reverse();
+        $components = [$tableBuilder->build()];
+        
+        $data = ['components' => $components];
 
-        // Format data using presenter - hide exercise column since we're showing logs for a specific exercise
-        $tableData = $this->liftLogTablePresenter->formatForTable($liftLogsReversed, true);
-
-        $exercises = $this->exerciseService->getExercisesWithLogs();
-
-        return view('exercises.logs', compact('exercise', 'chartData', 'displayExercises', 'exercises') + $tableData);
+        return view('exercises.logs-flexible', compact('exercise', 'liftLogs', 'chartData', 'data'));
     }
 
     /**
