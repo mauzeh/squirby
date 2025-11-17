@@ -7,6 +7,7 @@ use App\Models\LiftLog;
 use App\Models\Exercise;
 use App\Services\TrainingProgressionService;
 use App\Services\ExerciseAliasService;
+use App\Services\Factories\LiftLogFormFactory;
 use App\Services\RecommendationEngine;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
@@ -19,17 +20,23 @@ class LiftLogService extends MobileEntryBaseService
     protected LiftDataCacheService $cacheService;
     protected ExerciseAliasService $aliasService;
     protected RecommendationEngine $recommendationEngine;
+    protected LiftLogFormFactory $liftLogFormFactory;
+    protected \App\Services\LiftLogTableRowBuilder $tableRowBuilder;
 
     public function __construct(
         TrainingProgressionService $trainingProgressionService,
         LiftDataCacheService $cacheService,
         ExerciseAliasService $aliasService,
-        RecommendationEngine $recommendationEngine
+        RecommendationEngine $recommendationEngine,
+        LiftLogFormFactory $liftLogFormFactory,
+        \App\Services\LiftLogTableRowBuilder $tableRowBuilder
     ) {
         $this->trainingProgressionService = $trainingProgressionService;
         $this->cacheService = $cacheService;
         $this->aliasService = $aliasService;
         $this->recommendationEngine = $recommendationEngine;
+        $this->liftLogFormFactory = $liftLogFormFactory;
+        $this->tableRowBuilder = $tableRowBuilder;
     }
 
     /**
@@ -92,9 +99,6 @@ class LiftLogService extends MobileEntryBaseService
             // Get last session data from cached results
             $lastSession = $lastSessionsData[$exercise->id] ?? null;
             
-            // Generate form ID
-            $formId = 'lift-' . $form->id;
-            
             // Get progression suggestions from batch results
             $progressionSuggestion = $progressionSuggestions[$exercise->id] ?? null;
             
@@ -108,146 +112,111 @@ class LiftLogService extends MobileEntryBaseService
             // Generate messages based on last session
             $messages = $this->generateFormMessagesForMobileForms($form, $lastSession, $userId);
             
-            // Build numeric fields using exercise type strategy
-            $strategy = $exercise->getTypeStrategy();
-            $labels = $strategy->getFieldLabels();
-            
-            // Prepare default values for strategy
-            $strategyDefaults = [
+            // Prepare default values for the factory
+            $defaults = [
                 'weight' => $defaultWeight,
                 'reps' => $defaultReps,
                 'sets' => $defaultSets,
                 'band_color' => $lastSession['band_color'] ?? 'red',
+                'comments' => '',
             ];
+
+            // Use the factory to build the complete form
+            $formData = $this->liftLogFormFactory->buildForm(
+                $form,
+                $exercise,
+                $user,
+                $defaults,
+                $messages,
+                $selectedDate,
+                $redirectParams
+            );
             
-            // Get field definitions from strategy
-            $fieldDefinitions = $strategy->getFormFieldDefinitions($strategyDefaults, $user);
-            
-            $numericFields = [];
-            
-            // Convert strategy field definitions to mobile entry format
-            foreach ($fieldDefinitions as $definition) {
-                $field = [
-                    'id' => $formId . '-' . $definition['name'],
-                    'name' => $definition['name'],
-                    'label' => $definition['label'],
-                    'type' => $definition['type'],
-                    'defaultValue' => $definition['defaultValue'],
-                ];
-                
-                // Add type-specific properties
-                if ($definition['type'] === 'numeric') {
-                    $field['increment'] = $definition['increment'];
-                    $field['min'] = $definition['min'];
-                    $field['max'] = $definition['max'] ?? 1000;
-                    
-                    // Generate aria labels from field name, not label (to match existing behavior)
-                    $fieldNameForAria = $definition['name'] === 'reps' && $strategy->getTypeName() === 'cardio' ? 'distance' : $definition['name'];
-                    $field['ariaLabels'] = [
-                        'decrease' => 'Decrease ' . $fieldNameForAria,
-                        'increase' => 'Increase ' . $fieldNameForAria
-                    ];
-                } elseif ($definition['type'] === 'select') {
-                    $field['options'] = $definition['options'];
-                    $field['ariaLabels'] = [
-                        'field' => 'Select ' . strtolower(trim($definition['label'], ':'))
-                    ];
-                }
-                
-                // Remove type property for numeric fields to maintain backward compatibility
-                if ($definition['type'] === 'numeric') {
-                    unset($field['type']);
-                }
-                
-                $numericFields[] = $field;
-            }
-            
-            // Always add sets/rounds field (not handled by strategy field definitions)
-            $setsLabel = $labels['sets'] ?? 'Sets:';
-            $numericFields[] = [
-                'id' => $formId . '-rounds',
-                'name' => 'rounds',
-                'label' => $setsLabel,
-                'defaultValue' => $defaultSets,
-                'increment' => 1,
-                'min' => 1,
-                'ariaLabels' => [
-                    'decrease' => 'Decrease ' . strtolower(trim($setsLabel, ':')),
-                    'increase' => 'Increase ' . strtolower(trim($setsLabel, ':'))
-                ]
-            ];
-            
-            // Build form using ComponentBuilder
-            $formBuilder = C::form($formId, $exercise->title)
-                ->type('primary')
-                ->formAction(route('lift-logs.store'))
-                ->deleteAction(route('mobile-entry.remove-form', ['id' => $formId]));
-            
-            // Add messages
-            foreach ($messages as $message) {
-                $formBuilder->message($message['type'], $message['text'], $message['prefix'] ?? null);
-            }
-            
-            // Add notes field as a textarea
-            $numericFields[] = [
-                'id' => $formId . '-comment',
-                'name' => 'comments',
-                'label' => 'Notes:',
-                'type' => 'textarea',
-                'placeholder' => config('mobile_entry_messages.placeholders.workout_notes'),
-                'defaultValue' => '',
-                'ariaLabels' => [
-                    'field' => 'Notes'
-                ]
-            ];
-            
-            // Add numeric fields (keeping the old numericFields structure for compatibility)
-            // Note: We're not using the builder's numericField method here because we need
-            // to preserve the exact structure including select fields and custom properties
-            $formData = $formBuilder->build();
-            $formData['data']['numericFields'] = $numericFields;
-            $formData['data']['buttons'] = [
-                'decrement' => '-',
-                'increment' => '+',
-                'submit' => 'Log ' . $exercise->title
-            ];
-            $formData['data']['ariaLabels'] = [
-                'section' => $exercise->title . ' entry',
-                'deleteForm' => 'Remove this exercise form'
-            ];
-            // Build hidden fields with redirect params if provided
-            $hiddenFields = [
-                'exercise_id' => $exercise->id,
-                'date' => $selectedDate->toDateString(),
-                'mobile_lift_form_id' => $form->id
-            ];
-            
-            // Add redirect parameters if they exist, otherwise default to mobile-entry-lifts
-            if (!empty($redirectParams['redirect_to'])) {
-                $hiddenFields['redirect_to'] = $redirectParams['redirect_to'];
-                
-                // Add template_id if it exists
-                if (!empty($redirectParams['template_id'])) {
-                    $hiddenFields['template_id'] = $redirectParams['template_id'];
-                }
-                
-                // Add workout_id if it exists
-                if (!empty($redirectParams['workout_id'])) {
-                    $hiddenFields['workout_id'] = $redirectParams['workout_id'];
-                }
-            } else {
-                $hiddenFields['redirect_to'] = 'mobile-entry-lifts';
-            }
-            
-            $formData['data']['hiddenFields'] = $hiddenFields;
-            $formData['data']['deleteParams'] = [
-                'date' => $selectedDate->toDateString()
-            ];
-            
-            $forms[] = $formData['data'];
+            $forms[] = $formData;
         }
         
         return $forms;
+    }
+
+    /**
+     * Generate an edit form component for an existing lift log
+     * 
+     * @param LiftLog $liftLog The lift log to edit
+     * @param int $userId The user ID
+     * @param array $redirectParams Optional redirect parameters (redirect_to, date, etc.)
+     * @return array Form component data
+     */
+    public function generateEditFormComponent(LiftLog $liftLog, $userId, array $redirectParams = [])
+    {
+        // Load necessary relationships
+        $liftLog->load(['exercise', 'liftSets']);
+        
+        // Get user
+        $user = \App\Models\User::find($userId);
+        
+        // Apply alias to exercise title
+        if ($liftLog->exercise) {
+            $displayName = $this->aliasService->getDisplayName($liftLog->exercise, $user);
+            $liftLog->exercise->title = $displayName;
+        }
+        
+        // Extract data from the lift log
+        $firstSet = $liftLog->liftSets->first();
+        
+        // Prepare defaults from existing lift log data
+        $defaults = [
+            'weight' => $firstSet->weight ?? 0,
+            'reps' => $firstSet->reps ?? 0,
+            'sets' => $liftLog->liftSets->count(),
+            'band_color' => $firstSet->band_color ?? 'red',
+            'comments' => $liftLog->comments ?? '',
+        ];
+        
+        // Create a mock MobileLiftForm for the factory (it needs this for form ID generation)
+        $mockForm = new MobileLiftForm();
+        $mockForm->id = 'edit-' . $liftLog->id;
+        $mockForm->user_id = $userId;
+        $mockForm->exercise_id = $liftLog->exercise_id;
+        
+        // No messages for edit forms (user is editing existing data)
+        $messages = [];
+        
+        // Build the form using the factory, but override some settings for edit mode
+        $formData = $this->liftLogFormFactory->buildForm(
+            $mockForm,
+            $liftLog->exercise,
+            $user,
+            $defaults,
+            $messages,
+            Carbon::parse($liftLog->logged_at),
+            []
+        );
+        
+        // Override form settings for edit mode
+        $formData['id'] = 'edit-lift-' . $liftLog->id;
+        $formData['formAction'] = route('lift-logs.update', $liftLog->id);
+        $formData['method'] = 'PUT';
+        $formData['deleteAction'] = null; // No delete button in edit form
+        
+        // Update hidden fields for edit mode
+        $formData['hiddenFields'] = [
+            '_method' => 'PUT',
+            'exercise_id' => $liftLog->exercise_id,
+            'date' => $liftLog->logged_at->toDateString(),
+            'logged_at' => $liftLog->logged_at->format('H:i'),
+        ];
+        
+        // Add redirect parameters if provided
+        if (!empty($redirectParams['redirect_to'])) {
+            $formData['hiddenFields']['redirect_to'] = $redirectParams['redirect_to'];
+            // The 'date' field from the lift log will be used for the redirect
+        }
+        
+        // Update button text
+        $formData['buttons']['submit'] = 'Update ' . $liftLog->exercise->title;
+        
+        // Return in the component structure expected by flexible view
+        return ['type' => 'form', 'data' => $formData];
     }
 
     /**
@@ -449,8 +418,6 @@ class LiftLogService extends MobileEntryBaseService
      */
     public function generateLoggedItems($userId, Carbon $selectedDate)
     {
-        $user = \App\Models\User::find($userId);
-        
         $logs = LiftLog::where('user_id', $userId)
             ->whereDate('logged_at', $selectedDate->toDateString())
             ->with(['exercise' => function ($query) use ($userId) {
@@ -461,56 +428,26 @@ class LiftLogService extends MobileEntryBaseService
             ->orderBy('logged_at', 'desc')
             ->get();
 
-        // Apply aliases to exercises
-        $logs->each(function ($log) use ($user) {
-            if ($log->exercise) {
-                $displayName = $this->aliasService->getDisplayName($log->exercise, $user);
-                $log->exercise->title = $displayName;
-            }
-        });
+        // Build table rows using shared service
+        $rows = $this->tableRowBuilder->buildRows($logs, [
+            'showDateBadge' => false, // Don't show date badge on mobile-entry (same day)
+            'showCheckbox' => false,
+            'showViewLogsAction' => true, // Show view logs action
+            'showDeleteAction' => true, // Show delete button on mobile-entry
+            'wrapActions' => false, // Keep all 3 buttons on same line
+            'includeEncouragingMessage' => true, // Show encouraging messages
+            'redirectContext' => 'mobile-entry-lifts',
+            'selectedDate' => $selectedDate->toDateString(),
+        ]);
 
-        $itemsBuilder = C::items()
+        $tableBuilder = C::table()
+            ->rows($rows)
+            ->emptyMessage(config('mobile_entry_messages.empty_states.no_workouts_logged'))
             ->confirmMessage('deleteItem', 'Are you sure you want to delete this lift log entry? This action cannot be undone.')
-            ->confirmMessage('removeForm', 'Are you sure you want to remove this exercise from today\'s program?');
-        
-        $hasItems = false;
-        foreach ($logs as $log) {
-            if ($log->liftSets->isEmpty()) {
-                continue;
-            }
+            ->ariaLabel('Logged workouts')
+            ->spacedRows();
 
-            // Get first set data directly from loaded relationship to avoid additional queries
-            $firstSet = $log->liftSets->first();
-            $setCount = $log->liftSets->count();
-            
-            // Generate display text using exercise type strategy
-            $strategy = $log->exercise->getTypeStrategy();
-            $formattedMessage = $strategy->formatLoggedItemDisplay($log);
-
-            $itemsBuilder->item(
-                $log->id,
-                $log->exercise->title,
-                null,
-                route('lift-logs.edit', ['lift_log' => $log->id]),
-                route('lift-logs.destroy', ['lift_log' => $log->id])
-            )
-            ->message('success', $formattedMessage, 'Completed!')
-            ->freeformText($log->comments ?? '')
-            ->deleteParams([
-                'redirect_to' => 'mobile-entry-lifts',
-                'date' => $selectedDate->toDateString()
-            ])
-            ->add();
-            
-            $hasItems = true;
-        }
-
-        // Only include empty message when there are no items
-        if (!$hasItems) {
-            $itemsBuilder->emptyMessage(config('mobile_entry_messages.empty_states.no_workouts_logged'));
-        }
-
-        return $itemsBuilder->build()['data'];
+        return $tableBuilder->build();
     }  
   /**
      * Generate item selection list based on user's accessible exercises

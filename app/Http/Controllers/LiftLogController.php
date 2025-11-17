@@ -25,15 +25,18 @@ class LiftLogController extends Controller
     protected $exerciseService;
     protected $liftLogTablePresenter;
     protected $redirectService;
+    protected $liftLogTableRowBuilder;
 
     public function __construct(
         ExerciseService $exerciseService,
         LiftLogTablePresenter $liftLogTablePresenter,
-        RedirectService $redirectService
+        RedirectService $redirectService,
+        \App\Services\LiftLogTableRowBuilder $liftLogTableRowBuilder
     ) {
         $this->exerciseService = $exerciseService;
         $this->liftLogTablePresenter = $liftLogTablePresenter;
         $this->redirectService = $redirectService;
+        $this->liftLogTableRowBuilder = $liftLogTableRowBuilder;
     }
     /**
      * Display a listing of the resource.
@@ -55,43 +58,19 @@ class LiftLogController extends Controller
         ->orderBy('logged_at', 'desc') // Most recent first
         ->get();
 
-        // Build table using component system
-        $tableBuilder = \App\Services\ComponentBuilder::table();
+        // Build table using shared service
         $isAdmin = auth()->user()->hasRole('Admin');
         
-        foreach ($liftLogs as $liftLog) {
-            $strategy = $liftLog->exercise->getTypeStrategy();
-            $displayData = $strategy->formatMobileSummaryDisplay($liftLog);
-            $dateBadge = $this->liftLogTablePresenter->getDateBadge($liftLog);
-            $displayName = $liftLog->exercise->aliases->isNotEmpty() 
-                ? $liftLog->exercise->aliases->first()->alias_name 
-                : $liftLog->exercise->title;
-            
-            $rowBuilder = $tableBuilder->row(
-                $liftLog->id,
-                $displayName,
-                $liftLog->comments,
-                null
-            )
-            ->checkbox($isAdmin)
-            ->badge($dateBadge['text'], $dateBadge['color'])
-            ->badge($displayData['repsSets'], 'neutral');
-            
-            // Add weight badge if applicable
-            if ($displayData['showWeight']) {
-                $rowBuilder->badge($displayData['weight'], 'dark', true);
-            }
-            
-            $rowBuilder
-                ->linkAction('fa-chart-line', route('exercises.show-logs', $liftLog->exercise), 'View logs', 'btn-info-circle')
-                ->linkAction('fa-pencil', route('lift-logs.edit', $liftLog), 'Edit', 'btn-transparent')
-                ->compact()
-                ->wrapActions()
-                ->wrapText()
-                ->add();
-        }
+        $rows = $this->liftLogTableRowBuilder->buildRows($liftLogs, [
+            'showDateBadge' => true,
+            'showCheckbox' => $isAdmin,
+            'showViewLogsAction' => true,
+            'showDeleteAction' => false, // No delete button on full history (use bulk delete instead)
+            'includeEncouragingMessage' => false,
+        ]);
         
-        $tableBuilder
+        $tableBuilder = \App\Services\ComponentBuilder::table()
+            ->rows($rows)
             ->emptyMessage('No lift logs found. Add one to get started!')
             ->confirmMessage('deleteItem', 'Are you sure you want to delete this lift log?')
             ->ariaLabel('Lift logs')
@@ -262,24 +241,28 @@ class LiftLogController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(LiftLog $liftLog)
+    public function edit(LiftLog $liftLog, Request $request)
     {
         if ($liftLog->user_id !== auth()->id()) {
             abort(403, 'Unauthorized action.');
         }
         
-        // Load aliases for the lift log's exercise
-        $liftLog->load(['exercise.aliases' => function ($query) {
-            $query->where('user_id', auth()->id());
-        }]);
+        // Capture redirect parameters from the request
+        $redirectParams = [];
+        if ($request->has('redirect_to')) {
+            $redirectParams['redirect_to'] = $request->input('redirect_to');
+        }
         
-        $exercises = Exercise::availableToUser()
-            ->with(['aliases' => function ($query) {
-                $query->where('user_id', auth()->id());
-            }])
-            ->orderBy('title', 'asc')
-            ->get();
-        return view('lift-logs.edit', compact('liftLog', 'exercises'));
+        // Generate edit form component using the service
+        $liftLogService = app(\App\Services\MobileEntry\LiftLogService::class);
+        $formComponent = $liftLogService->generateEditFormComponent($liftLog, auth()->id(), $redirectParams);
+        
+        $data = [
+            'components' => [$formComponent],
+            'autoscroll' => false
+        ];
+        
+        return view('mobile-entry.flexible', compact('data'));
     }
 
     /**

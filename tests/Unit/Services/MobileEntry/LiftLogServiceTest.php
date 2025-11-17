@@ -12,6 +12,8 @@ use App\Services\TrainingProgressionService;
 use App\Services\MobileEntry\LiftDataCacheService;
 use App\Services\ExerciseAliasService;
 use App\Services\RecommendationEngine;
+use App\Services\Factories\LiftLogFormFactory;
+use App\Services\LiftLogTableRowBuilder;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Mockery;
@@ -25,6 +27,8 @@ class LiftLogServiceTest extends TestCase
     protected $cacheService;
     protected $aliasService;
     protected $recommendationEngine;
+    protected $liftLogFormFactory;
+    protected $tableRowBuilder;
 
     protected function setUp(): void
     {
@@ -35,12 +39,16 @@ class LiftLogServiceTest extends TestCase
         $this->cacheService = Mockery::mock(LiftDataCacheService::class);
         $this->aliasService = Mockery::mock(ExerciseAliasService::class);
         $this->recommendationEngine = Mockery::mock(RecommendationEngine::class);
+        $this->liftLogFormFactory = Mockery::mock(LiftLogFormFactory::class);
+        $this->tableRowBuilder = Mockery::mock(LiftLogTableRowBuilder::class);
         
         $this->service = new LiftLogService(
             $this->trainingProgressionService,
             $this->cacheService,
             $this->aliasService,
-            $this->recommendationEngine
+            $this->recommendationEngine,
+            $this->liftLogFormFactory,
+            $this->tableRowBuilder
         );
     }
 
@@ -83,6 +91,18 @@ class LiftLogServiceTest extends TestCase
         $this->cacheService->shouldReceive('getAllCachedData')
             ->once()
             ->andReturn(['lastSessionData' => []]);
+        
+        $this->liftLogFormFactory->shouldReceive('buildForm')
+            ->once()
+            ->andReturn([
+                'type' => 'primary',
+                'title' => 'Bench Press',
+                'numericFields' => [
+                    ['id' => 'test-reps', 'name' => 'reps', 'label' => 'Reps:', 'defaultValue' => 5],
+                    ['id' => 'test-rounds', 'name' => 'rounds', 'label' => 'Sets:', 'defaultValue' => 3],
+                    ['id' => 'test-comments', 'name' => 'comments', 'label' => 'Notes:', 'type' => 'textarea', 'defaultValue' => ''],
+                ],
+            ]);
         
         $forms = $this->service->generateForms($user->id, $date);
         
@@ -310,6 +330,18 @@ class LiftLogServiceTest extends TestCase
                 'suggestedWeight' => 140,
             ]);
         
+        $this->liftLogFormFactory->shouldReceive('buildForm')
+            ->once()
+            ->andReturn([
+                'type' => 'primary',
+                'title' => 'Squat',
+                'numericFields' => [
+                    ['id' => 'test-reps', 'name' => 'reps', 'label' => 'Reps:', 'defaultValue' => 10],
+                    ['id' => 'test-rounds', 'name' => 'rounds', 'label' => 'Sets:', 'defaultValue' => 4],
+                    ['id' => 'test-comments', 'name' => 'comments', 'label' => 'Notes:', 'type' => 'textarea', 'defaultValue' => ''],
+                ],
+            ]);
+        
         $forms = $this->service->generateForms($user->id, $date);
         
         $this->assertCount(1, $forms);
@@ -344,6 +376,18 @@ class LiftLogServiceTest extends TestCase
         $this->cacheService->shouldReceive('getAllCachedData')
             ->once()
             ->andReturn(['lastSessionData' => []]);
+        
+        $this->liftLogFormFactory->shouldReceive('buildForm')
+            ->once()
+            ->andReturn([
+                'type' => 'primary',
+                'title' => 'Deadlift',
+                'numericFields' => [
+                    ['id' => 'test-reps', 'name' => 'reps', 'label' => 'Reps:', 'defaultValue' => 5],
+                    ['id' => 'test-rounds', 'name' => 'rounds', 'label' => 'Sets:', 'defaultValue' => 3],
+                    ['id' => 'test-comments', 'name' => 'comments', 'label' => 'Notes:', 'type' => 'textarea', 'defaultValue' => ''],
+                ],
+            ]);
         
         $forms = $this->service->generateForms($user->id, $date);
         

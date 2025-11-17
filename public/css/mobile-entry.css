@@ -2182,6 +2182,14 @@ able Component - Tabular CRUD list optimized for narrow screens */
     text-overflow: clip;
 }
 
+/* Allow messages in table cells to wrap */
+.component-table-cell .component-message {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    word-wrap: break-word;
+}
+
 .cell-title {
     font-size: 1em;
     font-weight: bold;
@@ -2267,28 +2275,6 @@ able Component - Tabular CRUD list optimized for narrow screens */
     outline-offset: 2px;
 }
 
-/* Transparent button variant - for specific use cases */
-.btn-transparent {
-    background-color: transparent;
-    color: white;
-}
-
-@media (hover: hover) {
-    .btn-transparent:hover {
-        background-color: rgba(255, 255, 255, 0.1);
-        transform: scale(1.08);
-    }
-}
-
-.btn-transparent:active {
-    transform: scale(0.95);
-}
-
-.btn-transparent:focus {
-    outline: 2px solid white;
-    outline-offset: 2px;
-}
-
 /* Info circle button - small circle with border */
 .btn-info-circle {
     background-color: transparent;
@@ -2332,6 +2318,29 @@ able Component - Tabular CRUD list optimized for narrow screens */
 
 .btn-table-delete:focus {
     outline: 2px solid var(--color-danger);
+    outline-offset: 2px;
+}
+
+/* Transparent button variant - for specific use cases */
+/* Placed after .btn-table-delete to override its background color */
+.btn-transparent {
+    background-color: transparent;
+    color: white;
+}
+
+@media (hover: hover) {
+    .btn-transparent:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+        transform: scale(1.08);
+    }
+}
+
+.btn-transparent:active {
+    transform: scale(0.95);
+}
+
+.btn-transparent:focus {
+    outline: 2px solid white;
     outline-offset: 2px;
 }
 

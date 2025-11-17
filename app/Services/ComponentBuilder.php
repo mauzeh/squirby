@@ -745,6 +745,15 @@ class TableComponentBuilder
     }
     
     /**
+     * Set multiple rows at once
+     */
+    public function rows(array $rows): self
+    {
+        $this->data['rows'] = $rows;
+        return $this;
+    }
+    
+    /**
      * Set empty message when no rows exist
      */
     public function emptyMessage(string $message): self
