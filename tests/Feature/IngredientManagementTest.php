@@ -181,4 +181,67 @@ class IngredientManagementTest extends TestCase
             $ingredientC->name,
         ]);
     }
+
+    /** @test */
+    public function ingredient_create_form_prefills_name_from_query_parameter()
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $prefilledName = 'Protein Shake';
+
+        $response = $this->get(route('ingredients.create', ['name' => $prefilledName]));
+
+        $response->assertOk();
+        $response->assertSee('value="' . $prefilledName . '"', false);
+        $response->assertSee('name="name"', false);
+    }
+
+    /** @test */
+    public function ingredient_create_form_loads_without_prefilled_name()
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $response = $this->get(route('ingredients.create'));
+
+        $response->assertOk();
+        $response->assertSee('name="name"', false);
+        $response->assertSee('Create New Ingredient');
+    }
+
+    /** @test */
+    public function mobile_entry_foods_create_button_redirects_to_ingredient_create_with_name()
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        // Simulate what happens when user types "Protein Shake" and clicks create button
+        $searchTerm = 'Protein Shake';
+
+        // The form should submit as GET to ingredients/create with name parameter
+        $response = $this->get(route('ingredients.create', ['name' => $searchTerm]));
+
+        $response->assertOk();
+        $response->assertSee('value="' . $searchTerm . '"', false);
+        $response->assertSee('Create New Ingredient');
+    }
+
+    /** @test */
+    public function mobile_entry_foods_create_form_uses_get_method()
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $response = $this->get(route('mobile-entry.foods'));
+
+        $response->assertOk();
+        
+        // Verify the create form uses GET method (not POST)
+        $response->assertSee('method="GET"', false);
+        $response->assertSee('action="' . route('ingredients.create') . '"', false);
+        
+        // Verify it doesn't use POST method
+        $response->assertDontSee('<form method="POST" action="' . route('ingredients.create') . '"', false);
+    }
 }

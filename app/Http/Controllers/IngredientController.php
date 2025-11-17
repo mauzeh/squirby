@@ -21,10 +21,11 @@ class IngredientController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(Request $request)
     {
         $units = Unit::all();
-        return view('ingredients.create', compact('units'));
+        $prefilledName = $request->query('name', '');
+        return view('ingredients.create', compact('units', 'prefilledName'));
     }
 
     /**

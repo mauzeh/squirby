@@ -21,7 +21,7 @@
                 <h2>General Information</h2>
                 <div class="form-group">
                     <label for="name">Name:</label>
-                    <input type="text" name="name" id="name" value="{{ old('name') }}" required>
+                    <input type="text" name="name" id="name" value="{{ old('name', $prefilledName ?? '') }}" required>
                 </div>
                 <div class="form-group">
                     <label for="base_quantity">Base Quantity:</label>

@@ -30,7 +30,9 @@
             </div>
             @if($data['createForm'])
             <form method="{{ $data['createForm']['method'] }}" action="{{ $data['createForm']['action'] }}" class="component-create-form">
-                @csrf
+                @if(strtoupper($data['createForm']['method']) !== 'GET')
+                    @csrf
+                @endif
                 <input type="hidden" name="{{ $data['createForm']['inputName'] }}" class="component-create-input" value="">
                 @foreach($data['createForm']['hiddenFields'] as $name => $value)
                     <input type="hidden" name="{{ $name }}" value="{{ $value }}">

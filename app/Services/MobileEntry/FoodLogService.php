@@ -222,15 +222,13 @@ class FoodLogService extends MobileEntryBaseService
         return [
             'noResultsMessage' => config('mobile_entry_messages.empty_states.no_food_items_found'),
             'createForm' => [
-                'action' => route('mobile-entry.create-ingredient'),
-                'method' => 'POST',
-                'inputName' => 'ingredient_name',
+                'action' => route('ingredients.create'),
+                'method' => 'GET',
+                'inputName' => 'name',
                 'submitText' => '+',
                 'buttonTextTemplate' => 'Create "{term}"',
                 'ariaLabel' => 'Create new ingredient',
-                'hiddenFields' => [
-                    'date' => $selectedDate->toDateString()
-                ]
+                'hiddenFields' => []
             ],
             'items' => $items,
             'ariaLabels' => [

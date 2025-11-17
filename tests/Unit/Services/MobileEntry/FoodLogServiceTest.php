@@ -303,6 +303,27 @@ class FoodLogServiceTest extends TestCase
     }
 
     #[Test]
+    public function it_redirects_to_ingredient_create_form_with_prefilled_name()
+    {
+        $user = User::factory()->create();
+        
+        $itemSelectionList = $this->service->generateItemSelectionList($user->id, $this->testDate);
+        
+        // Verify create form redirects to ingredients.create (GET request)
+        $this->assertEquals(route('ingredients.create'), $itemSelectionList['createForm']['action']);
+        $this->assertEquals('GET', $itemSelectionList['createForm']['method']);
+        
+        // Verify input name is 'name' (query parameter for prefilling)
+        $this->assertEquals('name', $itemSelectionList['createForm']['inputName']);
+        
+        // Verify no hidden fields (not needed for GET redirect)
+        $this->assertEmpty($itemSelectionList['createForm']['hiddenFields']);
+        
+        // Verify button text template is present
+        $this->assertEquals('Create "{term}"', $itemSelectionList['createForm']['buttonTextTemplate']);
+    }
+
+    #[Test]
     public function it_excludes_ingredients_without_valid_units()
     {
         $user = User::factory()->create();
