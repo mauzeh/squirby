@@ -272,11 +272,9 @@ class WorkoutController extends Controller
             ->backButton('fa-arrow-left', route('workouts.index'), 'Back to workouts')
             ->build();
 
-        // Messages
-        if (session('success')) {
-            $components[] = C::messages()
-                ->success(session('success'))
-                ->build();
+        // Messages from session
+        if ($sessionMessages = C::messagesFromSession()) {
+            $components[] = $sessionMessages;
         }
 
         // Add Exercise button - hidden if list should be expanded

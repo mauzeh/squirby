@@ -323,21 +323,9 @@ class ExerciseController extends Controller
         // Title
         $components[] = \App\Services\ComponentBuilder::title($displayName)->build();
         
-        // Messages
-        $messagesBuilder = \App\Services\ComponentBuilder::messages();
-        $hasMessages = false;
-        
-        if (session('success')) {
-            $messagesBuilder->success(session('success'));
-            $hasMessages = true;
-        }
-        if (session('error')) {
-            $messagesBuilder->error(session('error'));
-            $hasMessages = true;
-        }
-        
-        if ($hasMessages) {
-            $components[] = $messagesBuilder->build();
+        // Messages from session
+        if ($sessionMessages = \App\Services\ComponentBuilder::messagesFromSession()) {
+            $components[] = $sessionMessages;
         }
         
         // Add chart if we have data

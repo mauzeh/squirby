@@ -35,6 +35,38 @@ class ComponentBuilder
     }
     
     /**
+     * Create a messages component from session flash data
+     * Returns null if no session messages exist
+     */
+    public static function messagesFromSession(): ?array
+    {
+        $builder = new MessagesComponentBuilder();
+        $hasMessages = false;
+        
+        if (session('success')) {
+            $builder->success(session('success'));
+            $hasMessages = true;
+        }
+        
+        if (session('error')) {
+            $builder->error(session('error'));
+            $hasMessages = true;
+        }
+        
+        if (session('warning')) {
+            $builder->warning(session('warning'));
+            $hasMessages = true;
+        }
+        
+        if (session('info')) {
+            $builder->info(session('info'));
+            $hasMessages = true;
+        }
+        
+        return $hasMessages ? $builder->build() : null;
+    }
+    
+    /**
      * Create a summary component
      */
     public static function summary(): SummaryComponentBuilder
