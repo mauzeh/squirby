@@ -140,9 +140,10 @@ class LiftLogService extends MobileEntryBaseService
      * 
      * @param LiftLog $liftLog The lift log to edit
      * @param int $userId The user ID
+     * @param array $redirectParams Optional redirect parameters (redirect_to, date, etc.)
      * @return array Form component data
      */
-    public function generateEditFormComponent(LiftLog $liftLog, $userId)
+    public function generateEditFormComponent(LiftLog $liftLog, $userId, array $redirectParams = [])
     {
         // Load necessary relationships
         $liftLog->load(['exercise', 'liftSets']);
@@ -201,6 +202,12 @@ class LiftLogService extends MobileEntryBaseService
             'date' => $liftLog->logged_at->toDateString(),
             'logged_at' => $liftLog->logged_at->format('H:i'),
         ];
+        
+        // Add redirect parameters if provided
+        if (!empty($redirectParams['redirect_to'])) {
+            $formData['hiddenFields']['redirect_to'] = $redirectParams['redirect_to'];
+            // The 'date' field from the lift log will be used for the redirect
+        }
         
         // Update button text
         $formData['buttons']['submit'] = 'Update ' . $liftLog->exercise->title;
@@ -450,7 +457,11 @@ class LiftLogService extends MobileEntryBaseService
                 $log->id,
                 $log->exercise->title,
                 null,
-                route('lift-logs.edit', ['lift_log' => $log->id]),
+                route('lift-logs.edit', [
+                    'lift_log' => $log->id,
+                    'redirect_to' => 'mobile-entry-lifts',
+                    'date' => $selectedDate->toDateString()
+                ]),
                 route('lift-logs.destroy', ['lift_log' => $log->id])
             )
             ->message('success', $formattedMessage, 'Completed!')

@@ -262,15 +262,21 @@ class LiftLogController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(LiftLog $liftLog)
+    public function edit(LiftLog $liftLog, Request $request)
     {
         if ($liftLog->user_id !== auth()->id()) {
             abort(403, 'Unauthorized action.');
         }
         
+        // Capture redirect parameters from the request
+        $redirectParams = [];
+        if ($request->has('redirect_to')) {
+            $redirectParams['redirect_to'] = $request->input('redirect_to');
+        }
+        
         // Generate edit form component using the service
         $liftLogService = app(\App\Services\MobileEntry\LiftLogService::class);
-        $formComponent = $liftLogService->generateEditFormComponent($liftLog, auth()->id());
+        $formComponent = $liftLogService->generateEditFormComponent($liftLog, auth()->id(), $redirectParams);
         
         $data = [
             'components' => [$formComponent],
