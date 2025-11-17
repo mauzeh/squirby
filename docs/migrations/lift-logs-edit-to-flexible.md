@@ -5,6 +5,25 @@ Unify the lift logs editing interface (`lift-logs/id/edit`) with your generic co
 
 ---
 
+## Progress Summary
+
+**Completed:**
+- ✅ Created `LiftLogFormFactory` to encapsulate form building logic
+- ✅ Refactored factory to build complete form components (not just fields)
+- ✅ Updated `LiftLogService::generateForms()` to use factory pattern
+- ✅ Updated unit tests for the refactored service
+- ✅ All tests passing (14/14)
+
+**Remaining:**
+- ⏳ Add `generateEditFormComponent()` method to `LiftLogService`
+- ⏳ Refactor `LiftLogController::edit()` to use flexible system
+- ⏳ Update `lift-logs/edit.blade.php` view
+- ⏳ Remove legacy `LiftLogFormComponent` class and Blade component
+- ⏳ Update feature tests for edit functionality
+- ⏳ Final documentation update
+
+---
+
 ## Overview
 
 - Replace legacy Blade logic and component with a service-driven, flexible component system for editing lift logs.
@@ -53,11 +72,25 @@ Unify the lift logs editing interface (`lift-logs/id/edit`) with your generic co
 
 ---
 
-### 2.5. Factory: `LiftLogFormFactory.php`
+### 2.5. Factory: `LiftLogFormFactory.php` ✅ COMPLETED
 
-**Role:**
-- This new factory is responsible for building the specific form fields required for lift log entry, abstracting the logic from `MobileEntry\LiftLogService`.
-- It encapsulates the creation of numeric fields, select fields, and other input types based on exercise type strategies and default values.
+**Status:** ✅ **COMPLETED**
+
+**What was done:**
+- Created `LiftLogFormFactory` class in `app/Services/Factories/`
+- Implemented `buildForm()` method that creates complete form components
+- Factory handles all ComponentBuilder logic, hidden fields, buttons, aria labels
+- Moved form construction logic out of service layer
+- Made `buildFields()` private as internal implementation detail
+- Updated `LiftLogService::generateForms()` to use factory
+- Updated all unit tests to mock `buildForm()` instead of `buildFields()`
+- All 14 tests passing
+
+**Benefits achieved:**
+- Service layer now focuses on business logic (data, defaults, messages)
+- Factory handles all form construction details
+- Reduced `generateForms()` method from ~120 lines to ~20 lines
+- Better separation of concerns and single responsibility principle
 
 ---
 
@@ -114,18 +147,20 @@ Unify the lift logs editing interface (`lift-logs/id/edit`) with your generic co
 
 ## Summary Table
 
-| File                                       | Action                                  |
-|---------------------------------------------|-----------------------------------------|
-| `LiftLogController.php`                     | Refactor edit() to use flexible system  |
-| `MobileEntry/LiftLogService.php`                        | Add edit form builder method            |
-| `Services/Factories/LiftLogFormFactory.php` | New factory for building form fields    |
-| `lift-logs/edit.blade.php`                  | Replace with flexible layout            |
-| `components/flexible.blade.php`             | Ensure supports all needed types        |
-| `components/lift-log-form.blade.php`        | Remove/deprecate                        |
-| `View/Components/LiftLogFormComponent.php`  | Remove/deprecate                        |
-| Other UI partials/helpers                   | Remove/migrate as needed                |
-| Tests                                      | Update for new flexible rendering       |
-| Docs                                       | Update migration and usage instructions |
+| File                                       | Status | Action                                  |
+|---------------------------------------------|--------|----------------------------------------|
+| `Services/Factories/LiftLogFormFactory.php` | ✅ DONE | Created factory for building complete forms |
+| `MobileEntry/LiftLogService.php`            | ✅ DONE | Refactored generateForms() to use factory |
+| `tests/Unit/.../LiftLogServiceTest.php`     | ✅ DONE | Updated tests to mock buildForm() |
+| `MobileEntry/LiftLogService.php`            | ⏳ TODO | Add generateEditFormComponent() method |
+| `LiftLogController.php`                     | ⏳ TODO | Refactor edit() to use flexible system |
+| `lift-logs/edit.blade.php`                  | ⏳ TODO | Replace with flexible layout |
+| `components/flexible.blade.php`             | ⏳ TODO | Ensure supports all needed types |
+| `components/lift-log-form.blade.php`        | ⏳ TODO | Remove/deprecate |
+| `View/Components/LiftLogFormComponent.php`  | ⏳ TODO | Remove/deprecate |
+| Other UI partials/helpers                   | ⏳ TODO | Remove/migrate as needed |
+| Feature tests                               | ⏳ TODO | Update for new flexible rendering |
+| Docs                                        | ⏳ TODO | Final update after completion |
 
 ---
 
@@ -134,6 +169,73 @@ Unify the lift logs editing interface (`lift-logs/id/edit`) with your generic co
 - MobileEntry migration: `mobile-entry.flexible.blade.php`
 - Flexible component builder: `MobileEntry\LiftLogService::generateForms`
 - Docs: See `docs/flexible-ui/migration-guide.md`
+
+---
+
+## Remaining Tasks (In Order)
+
+### Task 1: Add Edit Form Method to Service
+**File:** `app/Services/MobileEntry/LiftLogService.php`
+
+Add a new method `generateEditFormComponent()` that:
+- Takes a `LiftLog` model, exercises collection, and user ID
+- Extracts existing lift log data (exercise, sets, reps, weight, comments)
+- Uses the existing `LiftLogFormFactory` to build the form
+- Returns a form component pre-populated with the lift log's data
+- Form should submit to `lift-logs.update` route with PUT method
+
+### Task 2: Update Controller
+**File:** `app/Http/Controllers/LiftLogController.php`
+
+Refactor the `edit()` method to:
+- Keep authorization check
+- Call `LiftLogService::generateEditFormComponent()`
+- Pass form component to flexible view
+- Return `view('components.flexible', compact('data'))`
+
+### Task 3: Update Edit View
+**File:** `resources/views/lift-logs/edit.blade.php`
+
+Replace current implementation with:
+- Simple wrapper that extends 'app' layout
+- Uses `@include('components.flexible', ['data' => $data])`
+- Or delete entirely if controller returns flexible view directly
+
+### Task 4: Verify Flexible View Support
+**File:** `resources/views/components/flexible.blade.php`
+
+Ensure the flexible view:
+- Supports all form field types needed for lift log editing
+- Handles PUT method forms correctly
+- Renders validation errors appropriately
+
+### Task 5: Remove Legacy Components
+**Files to remove:**
+- `resources/views/components/lift-log-form.blade.php`
+- `app/View/Components/LiftLogFormComponent.php`
+
+After confirming edit functionality works:
+- Delete these legacy files
+- Search codebase for any remaining references
+- Remove any related imports or dependencies
+
+### Task 6: Update Feature Tests
+**Files:** `tests/Feature/*LiftLog*.php`
+
+Update tests that cover edit functionality:
+- Test that edit page loads with flexible layout
+- Test that form is pre-populated with existing data
+- Test that updates work correctly
+- Test authorization (users can only edit their own logs)
+- Test validation errors display properly
+
+### Task 7: Final Documentation
+**File:** `docs/migrations/lift-logs-edit-to-flexible.md`
+
+- Mark all tasks as completed
+- Document any gotchas or lessons learned
+- Update example code if needed
+- Add "Migration Complete" status
 
 ---
 
