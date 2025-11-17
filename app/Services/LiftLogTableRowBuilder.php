@@ -122,7 +122,7 @@ class LiftLogTableRowBuilder
         $row = [
             'id' => $liftLog->id,
             'line1' => $displayName,
-            'line2' => $liftLog->comments,
+            'line2' => $config['includeEncouragingMessage'] ? null : $liftLog->comments, // Show comments in line2 only if not showing messages
             'badges' => $badges,
             'actions' => $actions,
             'checkbox' => $config['showCheckbox'],
@@ -133,13 +133,27 @@ class LiftLogTableRowBuilder
         
         // Add encouraging message for mobile-entry context
         if ($config['includeEncouragingMessage']) {
+            $messages = [];
+            
+            // Add comments as neutral message if they exist
+            if (!empty($liftLog->comments)) {
+                $messages[] = [
+                    'type' => 'neutral',
+                    'prefix' => 'Your notes:',
+                    'text' => $liftLog->comments
+                ];
+            }
+            
+            // Add encouraging message
+            $messages[] = [
+                'type' => 'success',
+                'prefix' => $this->getEncouragingPrefix(),
+                'text' => $this->getEncouragingMessage($liftLog, $displayData)
+            ];
+            
             $row['subItems'] = [[
                 'line1' => null,
-                'messages' => [[
-                    'type' => 'success',
-                    'prefix' => $this->getEncouragingPrefix(),
-                    'text' => $this->getEncouragingMessage($liftLog, $displayData)
-                ]],
+                'messages' => $messages,
                 'actions' => []
             ]];
             $row['collapsible'] = false; // Always show the message
