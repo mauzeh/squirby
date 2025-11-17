@@ -31,14 +31,13 @@ document.addEventListener('DOMContentLoaded', function() {
         // Get the button text template
         const buttonTextTemplate = createButton ? createButton.dataset.textTemplate || 'Create "{term}"' : 'Create "{term}"';
         
-        // Update create button text and visibility
-        const updateCreateButton = (searchTerm, hasResults) => {
-            if (!createForm || !createButton || !createButtonText) return;
+        // Update create button text
+        const updateCreateButton = (searchTerm) => {
+            if (!createButton || !createButtonText) return;
             
             const normalizedSearch = searchTerm.trim();
             
-            // Show button only when: has search term AND no results
-            if (normalizedSearch !== '' && !hasResults) {
+            if (normalizedSearch !== '') {
                 // Truncate search term if too long (max 30 chars)
                 const displayTerm = normalizedSearch.length > 30 
                     ? normalizedSearch.substring(0, 30) + '...' 
@@ -50,10 +49,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Update aria-label for accessibility
                 createButton.setAttribute('aria-label', `Create new item: ${normalizedSearch}`);
-                
-                createForm.style.display = '';
-            } else {
-                createForm.style.display = 'none';
             }
         };
         
@@ -95,8 +90,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         noResultsNameElement.textContent = originalNoResultsMessage;
                     }
                 }
-                if (noResultsTypeElement && createForm) {
-                    noResultsTypeElement.textContent = 'Click above to create';
+                if (noResultsTypeElement) {
+                    noResultsTypeElement.textContent = 'No matches';
                 }
                 noResultsItem.style.display = '';
             } else {
@@ -113,8 +108,8 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         
-        // Update create button visibility and text
-        updateCreateButton(searchTerm, hasResults);
+        // Update create button text
+        updateCreateButton(searchTerm);
         
         // Sync the filter input value with the hidden form input (if it exists)
         if (hiddenInput) {

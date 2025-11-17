@@ -298,8 +298,8 @@ class FoodLogServiceTest extends TestCase
         $this->assertArrayHasKey('ariaLabels', $itemSelectionList);
         $this->assertArrayHasKey('filterPlaceholder', $itemSelectionList);
         
-        // Verify no results message mentions creating items
-        $this->assertEquals('No food items found. Type a name and hit "+" to create a new ingredient.', $itemSelectionList['noResultsMessage']);
+        // Verify no results message is simple (JS adds context dynamically)
+        $this->assertEquals('No food items found', $itemSelectionList['noResultsMessage']);
     }
 
     #[Test]

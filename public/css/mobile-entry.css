@@ -770,6 +770,13 @@ Navigation Component */
 }
 
 /* No results styling */
+.no-results-item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+    padding: 0;
+}
+
 .component-list-item--no-results {
     background-color: rgba(108, 117, 125, 0.1);
     cursor: default;
@@ -792,6 +799,19 @@ Navigation Component */
 .component-list-item--no-results .component-list-item-type {
     color: var(--text-muted);
     font-style: italic;
+}
+
+/* Create button in no-results container */
+.no-results-item .component-create-form {
+    padding: var(--spacing-md);
+    margin: 0;
+}
+
+.no-results-item .btn-create {
+    width: 100%;
+    min-height: var(--touch-target-min);
+    font-size: 1.1em;
+    font-weight: bold;
 }
 
 /* Responsive adjustments for item selection */
