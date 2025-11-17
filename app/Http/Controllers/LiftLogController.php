@@ -268,18 +268,16 @@ class LiftLogController extends Controller
             abort(403, 'Unauthorized action.');
         }
         
-        // Load aliases for the lift log's exercise
-        $liftLog->load(['exercise.aliases' => function ($query) {
-            $query->where('user_id', auth()->id());
-        }]);
+        // Generate edit form component using the service
+        $liftLogService = app(\App\Services\MobileEntry\LiftLogService::class);
+        $formComponent = $liftLogService->generateEditFormComponent($liftLog, auth()->id());
         
-        $exercises = Exercise::availableToUser()
-            ->with(['aliases' => function ($query) {
-                $query->where('user_id', auth()->id());
-            }])
-            ->orderBy('title', 'asc')
-            ->get();
-        return view('lift-logs.edit', compact('liftLog', 'exercises'));
+        $data = [
+            'components' => [$formComponent],
+            'autoscroll' => false
+        ];
+        
+        return view('mobile-entry.flexible', compact('data'));
     }
 
     /**

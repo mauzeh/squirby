@@ -136,6 +136,80 @@ class LiftLogService extends MobileEntryBaseService
     }
 
     /**
+     * Generate an edit form component for an existing lift log
+     * 
+     * @param LiftLog $liftLog The lift log to edit
+     * @param int $userId The user ID
+     * @return array Form component data
+     */
+    public function generateEditFormComponent(LiftLog $liftLog, $userId)
+    {
+        // Load necessary relationships
+        $liftLog->load(['exercise', 'liftSets']);
+        
+        // Get user
+        $user = \App\Models\User::find($userId);
+        
+        // Apply alias to exercise title
+        if ($liftLog->exercise) {
+            $displayName = $this->aliasService->getDisplayName($liftLog->exercise, $user);
+            $liftLog->exercise->title = $displayName;
+        }
+        
+        // Extract data from the lift log
+        $firstSet = $liftLog->liftSets->first();
+        
+        // Prepare defaults from existing lift log data
+        $defaults = [
+            'weight' => $firstSet->weight ?? 0,
+            'reps' => $firstSet->reps ?? 0,
+            'sets' => $liftLog->liftSets->count(),
+            'band_color' => $firstSet->band_color ?? 'red',
+            'comments' => $liftLog->comments ?? '',
+        ];
+        
+        // Create a mock MobileLiftForm for the factory (it needs this for form ID generation)
+        $mockForm = new MobileLiftForm();
+        $mockForm->id = 'edit-' . $liftLog->id;
+        $mockForm->user_id = $userId;
+        $mockForm->exercise_id = $liftLog->exercise_id;
+        
+        // No messages for edit forms (user is editing existing data)
+        $messages = [];
+        
+        // Build the form using the factory, but override some settings for edit mode
+        $formData = $this->liftLogFormFactory->buildForm(
+            $mockForm,
+            $liftLog->exercise,
+            $user,
+            $defaults,
+            $messages,
+            Carbon::parse($liftLog->logged_at),
+            []
+        );
+        
+        // Override form settings for edit mode
+        $formData['id'] = 'edit-lift-' . $liftLog->id;
+        $formData['formAction'] = route('lift-logs.update', $liftLog->id);
+        $formData['method'] = 'PUT';
+        $formData['deleteAction'] = null; // No delete button in edit form
+        
+        // Update hidden fields for edit mode
+        $formData['hiddenFields'] = [
+            '_method' => 'PUT',
+            'exercise_id' => $liftLog->exercise_id,
+            'date' => $liftLog->logged_at->toDateString(),
+            'logged_at' => $liftLog->logged_at->format('H:i'),
+        ];
+        
+        // Update button text
+        $formData['buttons']['submit'] = 'Update ' . $liftLog->exercise->title;
+        
+        // Return in the component structure expected by flexible view
+        return ['type' => 'form', 'data' => $formData];
+    }
+
+    /**
      * Generate messages for a form based on mobile lift form and last session
      * 
      * @param \App\Models\MobileLiftForm $form
