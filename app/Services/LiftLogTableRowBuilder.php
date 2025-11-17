@@ -144,7 +144,7 @@ class LiftLogTableRowBuilder
         $row = [
             'id' => $liftLog->id,
             'line1' => $displayName,
-            'line2' => $config['includeEncouragingMessage'] ? null : $liftLog->comments, // Show comments in line2 only if not showing messages
+            'line2' => null, // Never show comments in line2
             'badges' => $badges,
             'actions' => $actions,
             'checkbox' => $config['showCheckbox'],
@@ -153,32 +153,18 @@ class LiftLogTableRowBuilder
             'wrapText' => true,
         ];
         
-        // Add encouraging message for mobile-entry context
-        if ($config['includeEncouragingMessage']) {
-            $messages = [];
-            
-            // Add comments as neutral message if they exist
-            if (!empty($liftLog->comments)) {
-                $messages[] = [
+        // Always show comments in subitem if they exist
+        if (!empty($liftLog->comments)) {
+            $row['subItems'] = [[
+                'line1' => null,
+                'messages' => [[
                     'type' => 'neutral',
                     'prefix' => 'Your notes:',
                     'text' => $liftLog->comments
-                ];
-            }
-            
-            // Add encouraging message
-            $messages[] = [
-                'type' => 'success',
-                'prefix' => $this->getEncouragingPrefix(),
-                'text' => $this->getEncouragingMessage($liftLog, $displayData)
-            ];
-            
-            $row['subItems'] = [[
-                'line1' => null,
-                'messages' => $messages,
+                ]],
                 'actions' => []
             ]];
-            $row['collapsible'] = false; // Always show the message
+            $row['collapsible'] = false; // Always show comments
             $row['initialState'] = 'expanded';
         }
         
@@ -205,73 +191,5 @@ class LiftLogTableRowBuilder
         }
     }
 
-    /**
-     * Get a random encouraging prefix
-     */
-    protected function getEncouragingPrefix(): string
-    {
-        $prefixes = [
-            'Great work!',
-            'Nice job!',
-            'Well done!',
-            'Awesome!',
-            'Excellent!',
-            'Fantastic!',
-            'Outstanding!',
-            'Impressive!',
-            'Strong work!',
-            'Keep it up!',
-        ];
-        
-        return $prefixes[array_rand($prefixes)];
-    }
 
-    /**
-     * Generate an encouraging message based on the workout
-     */
-    protected function getEncouragingMessage(LiftLog $liftLog, array $displayData): string
-    {
-        $strategy = $liftLog->exercise->getTypeStrategy();
-        $typeName = $strategy->getTypeName();
-        
-        // Build the core message
-        $message = 'You completed ' . $displayData['repsSets'];
-        
-        if ($displayData['showWeight']) {
-            $message .= ' at ' . $displayData['weight'];
-        }
-        
-        // Add type-specific encouragement
-        $encouragements = [
-            'weighted' => [
-                'That weight is no joke!',
-                'Your strength is showing!',
-                'Building that muscle!',
-                'Getting stronger every day!',
-            ],
-            'bodyweight' => [
-                'Mastering your own bodyweight!',
-                'Control and strength combined!',
-                'Your form is getting better!',
-                'Bodyweight mastery in progress!',
-            ],
-            'banded' => [
-                'That resistance is real!',
-                'Bands don\'t lie!',
-                'Feeling the burn!',
-                'Resistance training at its finest!',
-            ],
-            'cardio' => [
-                'Your endurance is improving!',
-                'Heart and lungs getting stronger!',
-                'Cardio champion!',
-                'Building that stamina!',
-            ],
-        ];
-        
-        $typeEncouragements = $encouragements[$typeName] ?? $encouragements['weighted'];
-        $message .= ' ' . $typeEncouragements[array_rand($typeEncouragements)];
-        
-        return $message;
-    }
 }

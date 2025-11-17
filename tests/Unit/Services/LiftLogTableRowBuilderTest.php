@@ -60,10 +60,16 @@ class LiftLogTableRowBuilderTest extends TestCase
         $this->assertCount(1, $rows);
         $this->assertEquals($liftLog->id, $rows[0]['id']);
         $this->assertEquals($exercise->title, $rows[0]['line1']);
-        $this->assertEquals('Test comment', $rows[0]['line2']);
+        $this->assertNull($rows[0]['line2']); // Comments never in line2
         $this->assertTrue($rows[0]['compact']);
         $this->assertTrue($rows[0]['wrapActions']);
         $this->assertTrue($rows[0]['wrapText']);
+        
+        // Comments should be in subitem
+        $this->assertNotEmpty($rows[0]['subItems']);
+        $this->assertEquals('neutral', $rows[0]['subItems'][0]['messages'][0]['type']);
+        $this->assertEquals('Your notes:', $rows[0]['subItems'][0]['messages'][0]['prefix']);
+        $this->assertEquals('Test comment', $rows[0]['subItems'][0]['messages'][0]['text']);
     }
 
     /** @test */
@@ -206,7 +212,7 @@ class LiftLogTableRowBuilderTest extends TestCase
     }
 
     /** @test */
-    public function it_includes_encouraging_messages_when_configured()
+    public function it_shows_comments_in_subitem_when_present()
     {
         $user = User::factory()->create();
         $exercise = Exercise::factory()->create(['exercise_type' => 'weighted']);
@@ -226,32 +232,22 @@ class LiftLogTableRowBuilderTest extends TestCase
             ->andReturn($exercise->title);
 
         $this->actingAs($user);
-        $rows = $this->builder->buildRows(collect([$liftLog]), [
-            'includeEncouragingMessage' => true
-        ]);
+        $rows = $this->builder->buildRows(collect([$liftLog]));
 
         $this->assertNotEmpty($rows[0]['subItems']);
         $subItem = $rows[0]['subItems'][0];
         
-        // Should have 2 messages: comments + encouraging
-        $this->assertCount(2, $subItem['messages']);
+        // Should have 1 message: comments
+        $this->assertCount(1, $subItem['messages']);
         
-        // First message should be comments
+        // Message should be comments
         $this->assertEquals('neutral', $subItem['messages'][0]['type']);
         $this->assertEquals('Your notes:', $subItem['messages'][0]['prefix']);
         $this->assertEquals('Felt strong today', $subItem['messages'][0]['text']);
-        
-        // Second message should be encouraging
-        $this->assertEquals('success', $subItem['messages'][1]['type']);
-        $this->assertContains($subItem['messages'][1]['prefix'], [
-            'Great work!', 'Nice job!', 'Well done!', 'Awesome!', 'Excellent!',
-            'Fantastic!', 'Outstanding!', 'Impressive!', 'Strong work!', 'Keep it up!'
-        ]);
-        $this->assertStringContainsString('You completed', $subItem['messages'][1]['text']);
     }
 
     /** @test */
-    public function it_shows_only_encouraging_message_when_no_comments()
+    public function it_shows_no_subitem_when_no_comments()
     {
         $user = User::factory()->create();
         $exercise = Exercise::factory()->create(['exercise_type' => 'weighted']);
@@ -271,20 +267,14 @@ class LiftLogTableRowBuilderTest extends TestCase
             ->andReturn($exercise->title);
 
         $this->actingAs($user);
-        $rows = $this->builder->buildRows(collect([$liftLog]), [
-            'includeEncouragingMessage' => true
-        ]);
+        $rows = $this->builder->buildRows(collect([$liftLog]));
 
-        $this->assertNotEmpty($rows[0]['subItems']);
-        $subItem = $rows[0]['subItems'][0];
-        
-        // Should have only 1 message: encouraging (no comments)
-        $this->assertCount(1, $subItem['messages']);
-        $this->assertEquals('success', $subItem['messages'][0]['type']);
+        // Should have no subitems when no comments
+        $this->assertArrayNotHasKey('subItems', $rows[0]);
     }
 
     /** @test */
-    public function it_removes_comments_from_line2_when_showing_encouraging_messages()
+    public function it_never_shows_comments_in_line2()
     {
         $user = User::factory()->create();
         $exercise = Exercise::factory()->create(['exercise_type' => 'weighted']);
@@ -300,35 +290,9 @@ class LiftLogTableRowBuilderTest extends TestCase
             ->andReturn($exercise->title);
 
         $this->actingAs($user);
-        $rows = $this->builder->buildRows(collect([$liftLog]), [
-            'includeEncouragingMessage' => true
-        ]);
+        $rows = $this->builder->buildRows(collect([$liftLog]));
 
         $this->assertNull($rows[0]['line2']);
-    }
-
-    /** @test */
-    public function it_keeps_comments_in_line2_when_not_showing_encouraging_messages()
-    {
-        $user = User::factory()->create();
-        $exercise = Exercise::factory()->create(['exercise_type' => 'weighted']);
-        $liftLog = LiftLog::factory()->create([
-            'user_id' => $user->id,
-            'exercise_id' => $exercise->id,
-            'comments' => 'Test comment'
-        ]);
-        LiftSet::factory()->create(['lift_log_id' => $liftLog->id]);
-
-        $this->aliasService->shouldReceive('getDisplayName')
-            ->once()
-            ->andReturn($exercise->title);
-
-        $this->actingAs($user);
-        $rows = $this->builder->buildRows(collect([$liftLog]), [
-            'includeEncouragingMessage' => false
-        ]);
-
-        $this->assertEquals('Test comment', $rows[0]['line2']);
     }
 
     /** @test */
@@ -375,39 +339,6 @@ class LiftLogTableRowBuilderTest extends TestCase
         ]);
 
         $this->assertTrue($rows[0]['checkbox']);
-    }
-
-    /** @test */
-    public function it_generates_encouraging_prefix_from_valid_list()
-    {
-        $user = User::factory()->create();
-        $this->actingAs($user);
-        
-        $exercise = Exercise::factory()->create(['exercise_type' => 'weighted']);
-        $liftLog = LiftLog::factory()->create([
-            'user_id' => $user->id,
-            'exercise_id' => $exercise->id,
-            'comments' => null // No comments so encouraging message is first
-        ]);
-        LiftSet::factory()->create(['lift_log_id' => $liftLog->id]);
-
-        $this->aliasService->shouldReceive('getDisplayName')
-            ->once()
-            ->andReturn($exercise->title);
-
-        $rows = $this->builder->buildRows(collect([$liftLog]), [
-            'includeEncouragingMessage' => true
-        ]);
-
-        $prefix = $rows[0]['subItems'][0]['messages'][0]['prefix'];
-        
-        // Should be one of the valid prefixes
-        $validPrefixes = [
-            'Great work!', 'Nice job!', 'Well done!', 'Awesome!', 'Excellent!',
-            'Fantastic!', 'Outstanding!', 'Impressive!', 'Strong work!', 'Keep it up!'
-        ];
-        
-        $this->assertContains($prefix, $validPrefixes);
     }
 
     /** @test */
