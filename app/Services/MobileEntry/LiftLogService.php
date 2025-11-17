@@ -21,19 +21,22 @@ class LiftLogService extends MobileEntryBaseService
     protected ExerciseAliasService $aliasService;
     protected RecommendationEngine $recommendationEngine;
     protected LiftLogFormFactory $liftLogFormFactory;
+    protected \App\Services\LiftLogTableRowBuilder $tableRowBuilder;
 
     public function __construct(
         TrainingProgressionService $trainingProgressionService,
         LiftDataCacheService $cacheService,
         ExerciseAliasService $aliasService,
         RecommendationEngine $recommendationEngine,
-        LiftLogFormFactory $liftLogFormFactory
+        LiftLogFormFactory $liftLogFormFactory,
+        \App\Services\LiftLogTableRowBuilder $tableRowBuilder
     ) {
         $this->trainingProgressionService = $trainingProgressionService;
         $this->cacheService = $cacheService;
         $this->aliasService = $aliasService;
         $this->recommendationEngine = $recommendationEngine;
         $this->liftLogFormFactory = $liftLogFormFactory;
+        $this->tableRowBuilder = $tableRowBuilder;
     }
 
     /**
@@ -415,8 +418,6 @@ class LiftLogService extends MobileEntryBaseService
      */
     public function generateLoggedItems($userId, Carbon $selectedDate)
     {
-        $user = \App\Models\User::find($userId);
-        
         $logs = LiftLog::where('user_id', $userId)
             ->whereDate('logged_at', $selectedDate->toDateString())
             ->with(['exercise' => function ($query) use ($userId) {
@@ -427,60 +428,24 @@ class LiftLogService extends MobileEntryBaseService
             ->orderBy('logged_at', 'desc')
             ->get();
 
-        // Apply aliases to exercises
-        $logs->each(function ($log) use ($user) {
-            if ($log->exercise) {
-                $displayName = $this->aliasService->getDisplayName($log->exercise, $user);
-                $log->exercise->title = $displayName;
-            }
-        });
+        // Build table rows using shared service
+        $rows = $this->tableRowBuilder->buildRows($logs, [
+            'showDateBadge' => false, // Don't show date badge on mobile-entry (same day)
+            'showCheckbox' => false,
+            'showViewLogsAction' => false, // Don't show view logs action on mobile
+            'includeEncouragingMessage' => true, // Show encouraging messages
+            'redirectContext' => 'mobile-entry-lifts',
+            'selectedDate' => $selectedDate->toDateString(),
+        ]);
 
-        $itemsBuilder = C::items()
+        $tableBuilder = C::table()
+            ->rows($rows)
+            ->emptyMessage(config('mobile_entry_messages.empty_states.no_workouts_logged'))
             ->confirmMessage('deleteItem', 'Are you sure you want to delete this lift log entry? This action cannot be undone.')
-            ->confirmMessage('removeForm', 'Are you sure you want to remove this exercise from today\'s program?');
-        
-        $hasItems = false;
-        foreach ($logs as $log) {
-            if ($log->liftSets->isEmpty()) {
-                continue;
-            }
+            ->ariaLabel('Logged workouts')
+            ->spacedRows();
 
-            // Get first set data directly from loaded relationship to avoid additional queries
-            $firstSet = $log->liftSets->first();
-            $setCount = $log->liftSets->count();
-            
-            // Generate display text using exercise type strategy
-            $strategy = $log->exercise->getTypeStrategy();
-            $formattedMessage = $strategy->formatLoggedItemDisplay($log);
-
-            $itemsBuilder->item(
-                $log->id,
-                $log->exercise->title,
-                null,
-                route('lift-logs.edit', [
-                    'lift_log' => $log->id,
-                    'redirect_to' => 'mobile-entry-lifts',
-                    'date' => $selectedDate->toDateString()
-                ]),
-                route('lift-logs.destroy', ['lift_log' => $log->id])
-            )
-            ->message('success', $formattedMessage, 'Completed!')
-            ->freeformText($log->comments ?? '')
-            ->deleteParams([
-                'redirect_to' => 'mobile-entry-lifts',
-                'date' => $selectedDate->toDateString()
-            ])
-            ->add();
-            
-            $hasItems = true;
-        }
-
-        // Only include empty message when there are no items
-        if (!$hasItems) {
-            $itemsBuilder->emptyMessage(config('mobile_entry_messages.empty_states.no_workouts_logged'));
-        }
-
-        return $itemsBuilder->build()['data'];
+        return $tableBuilder->build()['data'];
     }  
   /**
      * Generate item selection list based on user's accessible exercises
