@@ -4,11 +4,18 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\SampleFoodDataService;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Socialite\Facades\Socialite;
 
 class SocialiteController extends Controller
 {
+    protected SampleFoodDataService $sampleFoodDataService;
+
+    public function __construct(SampleFoodDataService $sampleFoodDataService)
+    {
+        $this->sampleFoodDataService = $sampleFoodDataService;
+    }
     public function redirectToGoogle()
     {
         return Socialite::driver('google')
@@ -63,6 +70,14 @@ class SocialiteController extends Controller
                         'default_unit' => 'in',
                         'user_id' => $user->id,
                     ]);
+                    
+                    // Create sample food data for new users
+                    try {
+                        $this->sampleFoodDataService->createSampleData($user);
+                    } catch (\Exception $e) {
+                        \Log::warning('Failed to create sample food data for new user: ' . $e->getMessage());
+                        // Don't fail the registration if sample data creation fails
+                    }
                     
                     $isNewUser = true;
                 }

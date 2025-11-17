@@ -54,6 +54,13 @@ class GoogleOAuthTest extends TestCase
         // Create the athlete role for testing
         \App\Models\Role::create(['name' => 'Athlete']);
 
+        // Mock SampleFoodDataService
+        $sampleFoodDataService = Mockery::mock(\App\Services\SampleFoodDataService::class);
+        $sampleFoodDataService->shouldReceive('createSampleData')
+            ->once()
+            ->andReturn(['ingredients' => collect(), 'meals' => collect()]);
+        $this->app->instance(\App\Services\SampleFoodDataService::class, $sampleFoodDataService);
+
         // Mock Google user data
         $googleUser = Mockery::mock(SocialiteUser::class);
         $googleUser->shouldReceive('getId')->andReturn('google_123');
@@ -253,6 +260,13 @@ class GoogleOAuthTest extends TestCase
     /** @test */
     public function it_generates_random_password_for_new_google_users()
     {
+        // Mock SampleFoodDataService
+        $sampleFoodDataService = Mockery::mock(\App\Services\SampleFoodDataService::class);
+        $sampleFoodDataService->shouldReceive('createSampleData')
+            ->once()
+            ->andReturn(['ingredients' => collect(), 'meals' => collect()]);
+        $this->app->instance(\App\Services\SampleFoodDataService::class, $sampleFoodDataService);
+
         // Mock Google user data
         $googleUser = Mockery::mock(SocialiteUser::class);
         $googleUser->shouldReceive('getId')->andReturn('google_password_test');
@@ -288,6 +302,13 @@ class GoogleOAuthTest extends TestCase
     {
         // Create the athlete role for testing
         \App\Models\Role::create(['name' => 'Athlete']);
+
+        // Mock SampleFoodDataService
+        $sampleFoodDataService = Mockery::mock(\App\Services\SampleFoodDataService::class);
+        $sampleFoodDataService->shouldReceive('createSampleData')
+            ->once()
+            ->andReturn(['ingredients' => collect(), 'meals' => collect()]);
+        $this->app->instance(\App\Services\SampleFoodDataService::class, $sampleFoodDataService);
 
         // Mock Google user data
         $googleUser = Mockery::mock(SocialiteUser::class);
@@ -325,6 +346,13 @@ class GoogleOAuthTest extends TestCase
     {
         // Create the athlete role for testing
         \App\Models\Role::create(['name' => 'Athlete']);
+
+        // Mock SampleFoodDataService
+        $sampleFoodDataService = Mockery::mock(\App\Services\SampleFoodDataService::class);
+        $sampleFoodDataService->shouldReceive('createSampleData')
+            ->once()
+            ->andReturn(['ingredients' => collect(), 'meals' => collect()]);
+        $this->app->instance(\App\Services\SampleFoodDataService::class, $sampleFoodDataService);
 
         // Mock Google user data
         $googleUser = Mockery::mock(SocialiteUser::class);
@@ -396,5 +424,60 @@ class GoogleOAuthTest extends TestCase
 
         $response->assertRedirect('/login');
         $response->assertSessionHas('error', 'Google authentication failed.');
+    }
+
+    /** @test */
+    public function it_continues_registration_even_if_sample_data_creation_fails()
+    {
+        // Create the athlete role for testing
+        \App\Models\Role::create(['name' => 'Athlete']);
+
+        // Mock SampleFoodDataService to throw exception
+        $sampleFoodDataService = Mockery::mock(\App\Services\SampleFoodDataService::class);
+        $sampleFoodDataService->shouldReceive('createSampleData')
+            ->once()
+            ->andThrow(new \Exception('Sample data creation failed'));
+        $this->app->instance(\App\Services\SampleFoodDataService::class, $sampleFoodDataService);
+
+        // Mock logger to verify warning is logged
+        \Log::shouldReceive('warning')
+            ->once()
+            ->with(Mockery::pattern('/Failed to create sample food data/'));
+
+        // Mock Google user data
+        $googleUser = Mockery::mock(SocialiteUser::class);
+        $googleUser->shouldReceive('getId')->andReturn('google_sample_fail');
+        $googleUser->shouldReceive('getName')->andReturn('Sample Fail User');
+        $googleUser->shouldReceive('getEmail')->andReturn('samplefail@example.com');
+
+        // Mock Socialite
+        Socialite::shouldReceive('driver')
+            ->with('google')
+            ->once()
+            ->andReturnSelf();
+        
+        Socialite::shouldReceive('redirectUrl')
+            ->once()
+            ->andReturnSelf();
+        
+        Socialite::shouldReceive('user')
+            ->once()
+            ->andReturn($googleUser);
+
+        $response = $this->get(route('auth.google.callback'));
+
+        // Assert user was still created despite sample data failure
+        $this->assertDatabaseHas('users', [
+            'email' => 'samplefail@example.com',
+            'name' => 'Sample Fail User',
+            'google_id' => 'google_sample_fail',
+        ]);
+
+        // Assert user is logged in
+        $this->assertAuthenticated();
+
+        // Assert registration succeeded
+        $response->assertRedirect('/mobile-entry/lifts');
+        $response->assertSessionHas('success');
     }
 }
