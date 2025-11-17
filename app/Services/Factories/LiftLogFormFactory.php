@@ -37,8 +37,16 @@ class LiftLogFormFactory
                 $field['increment'] = $definition['increment'];
                 $field['min'] = $definition['min'];
                 $field['max'] = $definition['max'] ?? 1000;
+                $fieldNameForAria = $definition['name'] === 'reps' && $strategy->getTypeName() === 'cardio' ? 'distance' : $definition['name'];
+                $field['ariaLabels'] = [
+                    'decrease' => 'Decrease ' . $fieldNameForAria,
+                    'increase' => 'Increase ' . $fieldNameForAria,
+                ];
             } elseif ($definition['type'] === 'select') {
                 $field['options'] = $definition['options'];
+                $field['ariaLabels'] = [
+                    'field' => 'Select ' . strtolower(trim($definition['label'], ':'))
+                ];
             }
             
             $fields[] = $field;
@@ -55,33 +63,23 @@ class LiftLogFormFactory
             'defaultValue' => $defaults['sets'] ?? 3,
             'increment' => 1,
             'min' => 1,
+            'ariaLabels' => [
+                'decrease' => 'Decrease ' . strtolower(trim($setsLabel, ':')),
+                'increase' => 'Increase ' . strtolower(trim($setsLabel, ':')),
+            ],
         ];
 
-        $fields[] = [
-            'id' => $formId . '-date',
-            'name' => 'date',
-            'label' => 'Date:',
-            'type' => 'date',
-            'defaultValue' => $defaults['date'] ?? now()->format('Y-m-d'),
-        ];
-
-        $fields[] = [
-            'id' => $formId . '-logged_at',
-            'name' => 'logged_at',
-            'label' => 'Time:',
-            'type' => 'time',
-            'defaultValue' => $defaults['time'] ?? now()->format('H:i'),
-        ];
-
-        $fields[] = [
-            'id' => $formId . '-comments',
-            'name' => 'comments',
-            'label' => 'Notes:',
-            'type' => 'textarea',
-            'defaultValue' => $defaults['comments'] ?? '',
-            'placeholder' => 'Add any notes about your workout...',
-        ];
-
+                $fields[] = [
+                    'id' => $formId . '-comments',
+                    'name' => 'comments',
+                    'label' => 'Notes:',
+                    'type' => 'textarea',
+                    'defaultValue' => $defaults['comments'] ?? '',
+                    'placeholder' => 'Add any notes about your workout...', 
+                    'ariaLabels' => [
+                        'field' => 'Notes'
+                    ]
+                ];
         return $fields;
     }
 }

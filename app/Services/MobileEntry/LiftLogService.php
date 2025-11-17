@@ -129,7 +129,14 @@ class LiftLogService extends MobileEntryBaseService
             $formBuilder = C::form($formId, $exercise->title)
                 ->type('primary')
                 ->formAction(route('lift-logs.store'))
-                ->deleteAction(route('mobile-entry.remove-form', ['id' => $formId]));
+                ->deleteAction(route('mobile-entry.remove-form', ['id' => $formId]))
+                ->hiddenField('exercise_id', $exercise->id)
+                ->hiddenField('date', $selectedDate->format('Y-m-d'))
+                ->hiddenField('logged_at', now()->format('H:i'));
+
+            foreach ($redirectParams as $name => $value) {
+                $formBuilder->hiddenField($name, $value);
+            }
             
             // Add messages
             foreach ($messages as $message) {
