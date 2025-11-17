@@ -964,47 +964,18 @@ class LabsController extends Controller
                 C::messages()
                     ->success('Great progress! You\'ve increased your bench press by 25 lbs this month.')
                     ->info('This chart shows your working weight and estimated 1RM over time.')
-                    ->tip('Chart is rendered using raw HTML component - see implementation below', 'Implementation:')
+                    ->tip('Chart is rendered using the native chart component builder', 'Implementation:')
                     ->build(),
                 
-                // Chart using raw HTML (current approach)
-                C::rawHtml('
-                    <div class="form-container">
-                        <h3>Weight & 1RM Progress</h3>
-                        <canvas id="progressChart"></canvas>
-                    </div>
-                    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-                    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
-                    <script>
-                        document.addEventListener("DOMContentLoaded", function() {
-                            var ctx = document.getElementById("progressChart").getContext("2d");
-                            new Chart(ctx, {
-                                type: "line",
-                                data: {
-                                    datasets: ' . json_encode($chartData['datasets']) . '
-                                },
-                                options: {
-                                    scales: {
-                                        x: {
-                                            type: "time",
-                                            time: {
-                                                unit: "day"
-                                            }
-                                        },
-                                        y: {
-                                            beginAtZero: true
-                                        }
-                                    },
-                                    plugins: {
-                                        legend: {
-                                            display: true
-                                        }
-                                    }
-                                }
-                            });
-                        });
-                    </script>
-                '),
+                // Chart using native component builder
+                C::chart('progressChart', 'Weight & 1RM Progress')
+                    ->type('line')
+                    ->datasets($chartData['datasets'])
+                    ->timeScale('day')
+                    ->beginAtZero()
+                    ->showLegend()
+                    ->ariaLabel('Bench press progress chart showing weight and estimated 1RM over time')
+                    ->build(),
                 
                 // Summary stats
                 C::summary()
@@ -1041,8 +1012,8 @@ class LabsController extends Controller
                     ->build(),
                 
                 C::messages()
-                    ->tip('To create a dedicated chart component, see labs/chart-component-example.md', 'Future Enhancement:')
-                    ->info('A ChartComponentBuilder would provide a cleaner API: ComponentBuilder::chart("id", "title")->type("line")->datasets($data)->build()', 'Proposed API:')
+                    ->tip('The chart component automatically loads Chart.js libraries on demand', 'Performance:')
+                    ->info('Use helper methods like ->timeScale(), ->beginAtZero(), ->showLegend() for common configurations', 'API:')
                     ->build(),
             ],
         ];

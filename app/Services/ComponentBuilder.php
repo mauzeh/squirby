@@ -108,6 +108,14 @@ class ComponentBuilder
             'data' => ['html' => $html]
         ];
     }
+    
+    /**
+     * Create a chart component
+     */
+    public static function chart(string $canvasId, string $title): ChartComponentBuilder
+    {
+        return new ChartComponentBuilder($canvasId, $title);
+    }
 }
 
 /**
@@ -1402,6 +1410,208 @@ class SelectAllControlComponentBuilder
             'type' => 'select_all_control',
             'data' => $this->data,
             'requiresScript' => 'table-bulk-selection'
+        ];
+    }
+}
+
+
+/**
+ * Chart Component Builder
+ * 
+ * Builds Chart.js charts for the flexible component system
+ */
+class ChartComponentBuilder
+{
+    protected array $data;
+    
+    public function __construct(string $canvasId, string $title)
+    {
+        $this->data = [
+            'canvasId' => $canvasId,
+            'title' => $title,
+            'type' => 'line',
+            'datasets' => [],
+            'options' => [
+                'responsive' => true,
+                'maintainAspectRatio' => true,
+            ],
+            'height' => null,
+            'containerClass' => 'form-container',
+            'ariaLabel' => $title . ' chart'
+        ];
+    }
+    
+    /**
+     * Set chart type (line, bar, pie, doughnut, radar, polarArea, bubble, scatter)
+     */
+    public function type(string $type): self
+    {
+        $this->data['type'] = $type;
+        return $this;
+    }
+    
+    /**
+     * Set chart datasets
+     */
+    public function datasets(array $datasets): self
+    {
+        $this->data['datasets'] = $datasets;
+        return $this;
+    }
+    
+    /**
+     * Set chart options (full Chart.js options object)
+     */
+    public function options(array $options): self
+    {
+        $this->data['options'] = array_merge($this->data['options'], $options);
+        return $this;
+    }
+    
+    /**
+     * Set canvas height in pixels
+     */
+    public function height(int $pixels): self
+    {
+        $this->data['height'] = $pixels;
+        return $this;
+    }
+    
+    /**
+     * Set container CSS class
+     */
+    public function containerClass(string $class): self
+    {
+        $this->data['containerClass'] = $class;
+        return $this;
+    }
+    
+    /**
+     * Set aria label for accessibility
+     */
+    public function ariaLabel(string $label): self
+    {
+        $this->data['ariaLabel'] = $label;
+        return $this;
+    }
+    
+    /**
+     * Helper: Configure time scale for X-axis
+     */
+    public function timeScale(string $unit = 'day', ?string $displayFormat = null): self
+    {
+        if (!isset($this->data['options']['scales'])) {
+            $this->data['options']['scales'] = [];
+        }
+        
+        $this->data['options']['scales']['x'] = [
+            'type' => 'time',
+            'time' => ['unit' => $unit]
+        ];
+        
+        if ($displayFormat) {
+            $this->data['options']['scales']['x']['time']['displayFormats'] = [
+                $unit => $displayFormat
+            ];
+        }
+        
+        return $this;
+    }
+    
+    /**
+     * Helper: Configure Y-axis to begin at zero
+     */
+    public function beginAtZero(bool $value = true): self
+    {
+        if (!isset($this->data['options']['scales'])) {
+            $this->data['options']['scales'] = [];
+        }
+        
+        if (!isset($this->data['options']['scales']['y'])) {
+            $this->data['options']['scales']['y'] = [];
+        }
+        
+        $this->data['options']['scales']['y']['beginAtZero'] = $value;
+        return $this;
+    }
+    
+    /**
+     * Helper: Show or hide legend
+     */
+    public function showLegend(bool $value = true): self
+    {
+        if (!isset($this->data['options']['plugins'])) {
+            $this->data['options']['plugins'] = [];
+        }
+        
+        if (!isset($this->data['options']['plugins']['legend'])) {
+            $this->data['options']['plugins']['legend'] = [];
+        }
+        
+        $this->data['options']['plugins']['legend']['display'] = $value;
+        return $this;
+    }
+    
+    /**
+     * Helper: Set Y-axis label
+     */
+    public function yAxisLabel(string $label): self
+    {
+        if (!isset($this->data['options']['scales'])) {
+            $this->data['options']['scales'] = [];
+        }
+        
+        if (!isset($this->data['options']['scales']['y'])) {
+            $this->data['options']['scales']['y'] = [];
+        }
+        
+        $this->data['options']['scales']['y']['title'] = [
+            'display' => true,
+            'text' => $label
+        ];
+        
+        return $this;
+    }
+    
+    /**
+     * Helper: Set X-axis label
+     */
+    public function xAxisLabel(string $label): self
+    {
+        if (!isset($this->data['options']['scales'])) {
+            $this->data['options']['scales'] = [];
+        }
+        
+        if (!isset($this->data['options']['scales']['x'])) {
+            $this->data['options']['scales']['x'] = [];
+        }
+        
+        $this->data['options']['scales']['x']['title'] = [
+            'display' => true,
+            'text' => $label
+        ];
+        
+        return $this;
+    }
+    
+    /**
+     * Helper: Disable aspect ratio maintenance (allows custom height)
+     */
+    public function noAspectRatio(): self
+    {
+        $this->data['options']['maintainAspectRatio'] = false;
+        return $this;
+    }
+    
+    /**
+     * Build the component
+     */
+    public function build(): array
+    {
+        return [
+            'type' => 'chart',
+            'data' => $this->data,
+            'requiresScript' => 'chart-component'
         ];
     }
 }

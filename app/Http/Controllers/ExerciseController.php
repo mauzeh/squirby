@@ -313,6 +313,24 @@ class ExerciseController extends Controller
 
         $chartData = $this->chartService->generateProgressChart($liftLogs, $exercise);
 
+        // Build components
+        $components = [];
+        
+        // Add chart if we have data
+        if (!empty($chartData['datasets'])) {
+            $strategy = $exercise->getTypeStrategy();
+            $chartTitle = $strategy->getChartTitle();
+            
+            $components[] = \App\Services\ComponentBuilder::chart('progressChart', $chartTitle)
+                ->type('line')
+                ->datasets($chartData['datasets'])
+                ->timeScale('day')
+                ->beginAtZero()
+                ->showLegend()
+                ->ariaLabel($exercise->title . ' progress chart')
+                ->build();
+        }
+        
         // Build table using shared service
         $liftLogTableRowBuilder = app(\App\Services\LiftLogTableRowBuilder::class);
         
@@ -328,11 +346,11 @@ class ExerciseController extends Controller
             ->ariaLabel('Exercise logs')
             ->spacedRows();
 
-        $components = [$tableBuilder->build()];
+        $components[] = $tableBuilder->build();
         
         $data = ['components' => $components];
 
-        return view('exercises.logs-flexible', compact('exercise', 'liftLogs', 'chartData', 'data'));
+        return view('exercises.logs-flexible', compact('exercise', 'liftLogs', 'data'));
     }
 
     /**
