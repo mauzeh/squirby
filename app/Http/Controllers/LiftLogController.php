@@ -82,20 +82,8 @@ class LiftLogController extends Controller
         ];
         
         // Add success/error messages if present
-        $messagesBuilder = \App\Services\ComponentBuilder::messages();
-        $hasMessages = false;
-        
-        if (session('success')) {
-            $messagesBuilder->success(session('success'));
-            $hasMessages = true;
-        }
-        if (session('error')) {
-            $messagesBuilder->error(session('error'));
-            $hasMessages = true;
-        }
-        
-        if ($hasMessages) {
-            $components[] = $messagesBuilder->build();
+        if ($sessionMessages = \App\Services\ComponentBuilder::messagesFromSession()) {
+            $components[] = $sessionMessages;
         }
         
         // Only add bulk selection controls for admins

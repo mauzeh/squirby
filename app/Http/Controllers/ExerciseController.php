@@ -303,20 +303,72 @@ class ExerciseController extends Controller
             $query->where('user_id', auth()->id());
         }]);
         
-        $liftLogsQuery = $exercise->liftLogs()->with('liftSets')->where('user_id', auth()->id())->orderBy('logged_at', 'asc')->get();
+        $liftLogs = $exercise->liftLogs()
+            ->with(['liftSets', 'exercise.aliases' => function ($query) {
+                $query->where('user_id', auth()->id());
+            }])
+            ->where('user_id', auth()->id())
+            ->orderBy('logged_at', 'desc') // Most recent first
+            ->get();
 
-        $displayExercises = $this->exerciseService->getDisplayExercises(5);
+        $chartData = $this->chartService->generateProgressChart($liftLogs, $exercise);
 
-        $chartData = $this->chartService->generateProgressChart($liftLogsQuery, $exercise);
+        // Get display name (alias if exists, otherwise title)
+        $aliasService = app(\App\Services\ExerciseAliasService::class);
+        $displayName = $aliasService->getDisplayName($exercise, auth()->user());
 
-        $liftLogsReversed = $liftLogsQuery->reverse();
+        // Build components
+        $components = [];
+        
+        // Title
+        $components[] = \App\Services\ComponentBuilder::title($displayName)->build();
+        
+        // Messages from session
+        if ($sessionMessages = \App\Services\ComponentBuilder::messagesFromSession()) {
+            $components[] = $sessionMessages;
+        }
+        
+        // Add chart if we have data
+        if (!empty($chartData['datasets'])) {
+            $strategy = $exercise->getTypeStrategy();
+            $chartTitle = $strategy->getChartTitle();
+            
+            $components[] = \App\Services\ComponentBuilder::chart('progressChart', $chartTitle)
+                ->type('line')
+                ->datasets($chartData['datasets'])
+                ->timeScale('day')
+                ->beginAtZero()
+                ->showLegend()
+                ->ariaLabel($exercise->title . ' progress chart')
+                ->build();
+        }
+        
+        // Build table using shared service
+        if ($liftLogs->isNotEmpty()) {
+            $liftLogTableRowBuilder = app(\App\Services\LiftLogTableRowBuilder::class);
+            
+            $rows = $liftLogTableRowBuilder->buildRows($liftLogs, [
+                'showDateBadge' => true,
+                'showCheckbox' => false,
+                'showViewLogsAction' => false, // Don't show "view logs" when already viewing logs
+                'showDeleteAction' => false,
+            ]);
+            
+            $tableBuilder = \App\Services\ComponentBuilder::table()
+                ->rows($rows)
+                ->emptyMessage('No lift logs found for this exercise.')
+                ->ariaLabel('Exercise logs')
+                ->spacedRows();
 
-        // Format data using presenter - hide exercise column since we're showing logs for a specific exercise
-        $tableData = $this->liftLogTablePresenter->formatForTable($liftLogsReversed, true);
+            $components[] = $tableBuilder->build();
+        } else {
+            // Show empty message
+            $components[] = \App\Services\ComponentBuilder::rawHtml('<p>No lift logs found for this exercise.</p>');
+        }
+        
+        $data = ['components' => $components];
 
-        $exercises = $this->exerciseService->getExercisesWithLogs();
-
-        return view('exercises.logs', compact('exercise', 'chartData', 'displayExercises', 'exercises') + $tableData);
+        return view('mobile-entry.flexible', compact('data'));
     }
 
     /**

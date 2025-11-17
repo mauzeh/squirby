@@ -113,6 +113,7 @@ Route::middleware('auth')->group(function () {
     Route::get('labs/expanded-list', [LabsController::class, 'expandedList'])->name('labs.expanded-list');
     Route::match(['get', 'post'], 'labs/table-bulk-selection', [LabsController::class, 'tableBulkSelection'])->name('labs.table-bulk-selection');
     Route::match(['get', 'post'], 'labs/ingredient-entry', [LabsController::class, 'ingredientEntry'])->name('labs.ingredient-entry');
+    Route::get('labs/chart-example', [LabsController::class, 'chartExample'])->name('labs.chart-example');
 
     Route::post('lift-logs/destroy-selected', [LiftLogController::class, 'destroySelected'])->name('lift-logs.destroy-selected');
 

@@ -221,6 +221,13 @@ class MenuService
                 'active' => Request::routeIs('labs.ingredient-entry'),
                 'title' => 'Ingredient Entry',
             ],
+            [
+                'label' => null,
+                'icon' => 'fa-chart-line',
+                'route' => 'labs.chart-example',
+                'active' => Request::routeIs('labs.chart-example'),
+                'title' => 'Chart Example',
+            ],
         ];
     }
 

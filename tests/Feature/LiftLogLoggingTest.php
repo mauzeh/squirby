@@ -350,8 +350,9 @@ class LiftLogLoggingTest extends TestCase {
         $response = $this->get(route('exercises.show-logs', $exercise));
 
         $response->assertStatus(200);
-        $response->assertSee('Bodyweight');
-        $response->assertSee($liftLog->liftSets->count() . ' x 5');
+        // The flexible view uses badges for display, so check for the exercise title and reps
+        $response->assertSee($exercise->title);
+        $response->assertSee('1 x 5'); // Badge format: rounds x reps
     }
 
     /** @test */
