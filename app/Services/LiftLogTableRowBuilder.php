@@ -32,6 +32,7 @@ class LiftLogTableRowBuilder
             'showDateBadge' => true,
             'showCheckbox' => false,
             'showViewLogsAction' => true,
+            'showDeleteAction' => false,
             'includeEncouragingMessage' => false,
             'redirectContext' => null,
             'selectedDate' => null,
@@ -117,6 +118,26 @@ class LiftLogTableRowBuilder
             'ariaLabel' => 'Edit',
             'cssClass' => 'btn-transparent'
         ];
+        
+        // Delete action (optional)
+        if ($config['showDeleteAction']) {
+            $deleteParams = [];
+            if ($config['redirectContext']) {
+                $deleteParams['redirect_to'] = $config['redirectContext'];
+                $deleteParams['date'] = $config['selectedDate'] ?? now()->toDateString();
+            }
+            
+            $actions[] = [
+                'type' => 'form',
+                'url' => route('lift-logs.destroy', $liftLog),
+                'method' => 'DELETE',
+                'icon' => 'fa-trash',
+                'ariaLabel' => 'Delete',
+                'cssClass' => 'btn-transparent', // Subtle styling like edit button
+                'requiresConfirm' => true,
+                'params' => $deleteParams
+            ];
+        }
         
         // Build the row
         $row = [

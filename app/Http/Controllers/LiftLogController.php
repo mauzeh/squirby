@@ -65,6 +65,7 @@ class LiftLogController extends Controller
             'showDateBadge' => true,
             'showCheckbox' => $isAdmin,
             'showViewLogsAction' => true,
+            'showDeleteAction' => false, // No delete button on full history (use bulk delete instead)
             'includeEncouragingMessage' => false,
         ]);
         
