@@ -434,6 +434,7 @@ class LiftLogService extends MobileEntryBaseService
             'showCheckbox' => false,
             'showViewLogsAction' => true, // Show view logs action
             'showDeleteAction' => true, // Show delete button on mobile-entry
+            'wrapActions' => false, // Keep all 3 buttons on same line
             'includeEncouragingMessage' => true, // Show encouraging messages
             'redirectContext' => 'mobile-entry-lifts',
             'selectedDate' => $selectedDate->toDateString(),

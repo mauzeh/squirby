@@ -33,6 +33,7 @@ class LiftLogTableRowBuilder
             'showCheckbox' => false,
             'showViewLogsAction' => true,
             'showDeleteAction' => false,
+            'wrapActions' => true,
             'includeEncouragingMessage' => false,
             'redirectContext' => null,
             'selectedDate' => null,
@@ -148,7 +149,7 @@ class LiftLogTableRowBuilder
             'actions' => $actions,
             'checkbox' => $config['showCheckbox'],
             'compact' => true,
-            'wrapActions' => true,
+            'wrapActions' => $config['wrapActions'],
             'wrapText' => true,
         ];
         
