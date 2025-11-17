@@ -2182,6 +2182,14 @@ able Component - Tabular CRUD list optimized for narrow screens */
     text-overflow: clip;
 }
 
+/* Allow messages in table cells to wrap */
+.component-table-cell .component-message {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    word-wrap: break-word;
+}
+
 .cell-title {
     font-size: 1em;
     font-weight: bold;
