@@ -448,6 +448,8 @@ class FormComponentBuilder
 {
     protected array $data;
     
+    protected ?string $currentSection = null;
+    
     public function __construct(string $id, string $title)
     {
         $this->data = [
@@ -459,6 +461,7 @@ class FormComponentBuilder
             'deleteAction' => null,
             'confirmMessage' => null,
             'messages' => [],
+            'sections' => [],
             'numericFields' => [],
             'hiddenFields' => [],
             'buttons' => [
@@ -471,6 +474,19 @@ class FormComponentBuilder
                 'deleteForm' => 'Remove this form'
             ]
         ];
+    }
+    
+    public function section(string $title, bool $collapsible = false, string $initialState = 'expanded'): self
+    {
+        $this->currentSection = $title;
+        $this->data['sections'][] = [
+            'title' => $title,
+            'collapsible' => $collapsible,
+            'initialState' => $initialState,
+            'fields' => [],
+            'messages' => []
+        ];
+        return $this;
     }
     
     public function type(string $type): self
@@ -499,13 +515,20 @@ class FormComponentBuilder
             $message['prefix'] = $prefix;
         }
         
-        $this->data['messages'][] = $message;
+        // Add to current section if one is active, otherwise to form messages
+        if ($this->currentSection !== null && !empty($this->data['sections'])) {
+            $lastSectionIndex = count($this->data['sections']) - 1;
+            $this->data['sections'][$lastSectionIndex]['messages'][] = $message;
+        } else {
+            $this->data['messages'][] = $message;
+        }
+        
         return $this;
     }
     
     public function numericField(string $name, string $label, $defaultValue, float $increment = 1, float $min = 0, ?float $max = null): self
     {
-        $this->data['numericFields'][] = [
+        $field = [
             'id' => $this->data['id'] . '-' . $name,
             'name' => $name,
             'label' => $label,
@@ -520,12 +543,20 @@ class FormComponentBuilder
             ]
         ];
         
+        // Add to current section if one is active, otherwise to form fields
+        if ($this->currentSection !== null && !empty($this->data['sections'])) {
+            $lastSectionIndex = count($this->data['sections']) - 1;
+            $this->data['sections'][$lastSectionIndex]['fields'][] = $field;
+        } else {
+            $this->data['numericFields'][] = $field;
+        }
+        
         return $this;
     }
     
     public function selectField(string $name, string $label, array $options, $defaultValue): self
     {
-        $this->data['numericFields'][] = [
+        $field = [
             'id' => $this->data['id'] . '-' . $name,
             'name' => $name,
             'label' => $label,
@@ -537,12 +568,20 @@ class FormComponentBuilder
             ]
         ];
         
+        // Add to current section if one is active, otherwise to form fields
+        if ($this->currentSection !== null && !empty($this->data['sections'])) {
+            $lastSectionIndex = count($this->data['sections']) - 1;
+            $this->data['sections'][$lastSectionIndex]['fields'][] = $field;
+        } else {
+            $this->data['numericFields'][] = $field;
+        }
+        
         return $this;
     }
     
     public function textField(string $name, string $label, string $defaultValue = '', string $placeholder = ''): self
     {
-        $this->data['numericFields'][] = [
+        $field = [
             'id' => $this->data['id'] . '-' . $name,
             'name' => $name,
             'label' => $label,
@@ -554,12 +593,20 @@ class FormComponentBuilder
             ]
         ];
         
+        // Add to current section if one is active, otherwise to form fields
+        if ($this->currentSection !== null && !empty($this->data['sections'])) {
+            $lastSectionIndex = count($this->data['sections']) - 1;
+            $this->data['sections'][$lastSectionIndex]['fields'][] = $field;
+        } else {
+            $this->data['numericFields'][] = $field;
+        }
+        
         return $this;
     }
     
     public function textareaField(string $name, string $label, string $defaultValue = '', string $placeholder = ''): self
     {
-        $this->data['numericFields'][] = [
+        $field = [
             'id' => $this->data['id'] . '-' . $name,
             'name' => $name,
             'label' => $label,
@@ -570,6 +617,14 @@ class FormComponentBuilder
                 'field' => $label
             ]
         ];
+        
+        // Add to current section if one is active, otherwise to form fields
+        if ($this->currentSection !== null && !empty($this->data['sections'])) {
+            $lastSectionIndex = count($this->data['sections']) - 1;
+            $this->data['sections'][$lastSectionIndex]['fields'][] = $field;
+        } else {
+            $this->data['numericFields'][] = $field;
+        }
         
         return $this;
     }
@@ -586,18 +641,54 @@ class FormComponentBuilder
         return $this;
     }
     
+    public function hideSubmitButton(): self
+    {
+        $this->data['hideSubmitButton'] = true;
+        return $this;
+    }
+    
     public function confirmMessage(string $message): self
     {
         $this->data['confirmMessage'] = $message;
         return $this;
     }
     
+    public function cssClass(string $class): self
+    {
+        $this->data['cssClass'] = $class;
+        return $this;
+    }
+    
+    public function initialState(string $state): self
+    {
+        $this->data['initialState'] = $state;
+        return $this;
+    }
+    
     public function build(): array
     {
-        return [
+        $component = [
             'type' => 'form',
             'data' => $this->data
         ];
+        
+        // Add required styles/scripts if using sections or collapsible
+        $hasCollapsibleSections = false;
+        if (!empty($this->data['sections'])) {
+            foreach ($this->data['sections'] as $section) {
+                if ($section['collapsible']) {
+                    $hasCollapsibleSections = true;
+                    break;
+                }
+            }
+        }
+        
+        if ($hasCollapsibleSections || (isset($this->data['cssClass']) && strpos($this->data['cssClass'], 'collapsible-form') !== false)) {
+            $component['requiresStyle'] = 'collapsible-form';
+            $component['requiresScript'] = 'mobile-entry/collapsible-form';
+        }
+        
+        return $component;
     }
 }
 

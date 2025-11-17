@@ -703,6 +703,83 @@ class LabsController extends Controller
     }
     
     /**
+     * Example: Ingredient entry form with three sections
+     * Demonstrates a multi-section form similar to ingredients/create
+     * The third section (micronutrients) is optional and starts collapsed
+     */
+    public function ingredientEntry(Request $request)
+    {
+        // Mock units data (in real app, this would come from database)
+        $units = [
+            ['id' => 1, 'name' => 'gram', 'abbreviation' => 'g'],
+            ['id' => 2, 'name' => 'ounce', 'abbreviation' => 'oz'],
+            ['id' => 3, 'name' => 'cup', 'abbreviation' => 'cup'],
+            ['id' => 4, 'name' => 'tablespoon', 'abbreviation' => 'tbsp'],
+            ['id' => 5, 'name' => 'teaspoon', 'abbreviation' => 'tsp'],
+        ];
+        
+        $unitOptions = [];
+        foreach ($units as $unit) {
+            $unitOptions[] = [
+                'value' => $unit['id'],
+                'label' => $unit['name'] . ' (' . $unit['abbreviation'] . ')'
+            ];
+        }
+        
+        $data = [
+            'components' => [
+                C::title('Create New Ingredient', 'Enter ingredient information')
+                    ->backButton('fa-arrow-left', route('labs.with-nav'), 'Back to examples')
+                    ->build(),
+                
+                C::messages()
+                    ->info('This demo shows ONE form with three collapsible sections')
+                    ->tip('Sections 1 & 2 have required fields, Section 3 is optional', 'Structure:')
+                    ->tip('Click section headers with chevrons to expand/collapse', 'Interaction:')
+                    ->build(),
+                
+                // Single form with three sections
+                C::form('ingredient-form', 'Create New Ingredient')
+                    ->type('primary')
+                    ->formAction(route('labs.ingredient-entry'))
+                    
+                    // Section 1: General Information (required, always expanded)
+                    ->section('1. General Information', false, 'expanded')
+                    ->message('info', 'All fields in this section are required', 'Required:')
+                    ->textField('name', 'Ingredient Name:', '', 'e.g., Chicken Breast')
+                    ->numericField('base_quantity', 'Base Quantity:', 1, 0.01, 0.01, 9999)
+                    ->selectField('base_unit_id', 'Base Unit:', $unitOptions, 1)
+                    ->numericField('cost_per_unit', 'Cost Per Unit ($):', 0, 0.01, 0, 9999)
+                    
+                    // Section 2: Nutritional Information (required, always expanded)
+                    ->section('2. Nutritional Information', false, 'expanded')
+                    ->message('info', 'Macronutrients are required', 'Required:')
+                    ->numericField('protein', 'Protein (g):', 0, 0.1, 0, 999)
+                    ->numericField('carbs', 'Carbohydrates (g):', 0, 0.1, 0, 999)
+                    ->numericField('fats', 'Fats (g):', 0, 0.1, 0, 999)
+                    ->message('tip', 'These fields are optional', 'Optional:')
+                    ->numericField('sodium', 'Sodium (mg):', 0, 1, 0, 9999)
+                    ->numericField('fiber', 'Fiber (g):', 0, 0.1, 0, 999)
+                    ->numericField('added_sugars', 'Added Sugars (g):', 0, 0.1, 0, 999)
+                    
+                    // Section 3: Micronutrients (optional, starts collapsed)
+                    ->section('3. Micronutrients (Optional)', true, 'collapsed')
+                    ->message('tip', 'All fields in this section are optional', 'Optional:')
+                    ->message('info', 'These help track detailed nutrition information', 'Purpose:')
+                    ->numericField('calcium', 'Calcium (mg):', 0, 1, 0, 9999)
+                    ->numericField('iron', 'Iron (mg):', 0, 0.1, 0, 999)
+                    ->numericField('potassium', 'Potassium (mg):', 0, 1, 0, 9999)
+                    ->numericField('caffeine', 'Caffeine (mg):', 0, 1, 0, 9999)
+                    
+                    ->submitButton('Save Ingredient')
+                    ->build(),
+            ],
+        ];
+        
+        return view('mobile-entry.flexible', compact('data'));
+    }
+    
+    /**
      * Example: Table with checkbox and bulk selection support
      * Demonstrates how to implement bulk selection for table rows
      */

@@ -39,6 +39,11 @@
     @foreach(array_keys($requiredScripts) as $scriptName)
         <script src="{{ asset('js/' . $scriptName . '.js') }}"></script>
     @endforeach
+    @if(isset($data['customScripts']))
+        @foreach($data['customScripts'] as $scriptName)
+            <script src="{{ asset('js/' . $scriptName . '.js') }}"></script>
+        @endforeach
+    @endif
 @endsection
 
 @section('content')

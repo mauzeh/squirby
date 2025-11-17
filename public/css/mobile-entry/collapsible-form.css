@@ -1,0 +1,112 @@
+/**
+ * Collapsible Form Styles
+ * Styles for forms that can be collapsed/expanded with a chevron icon
+ */
+
+/* Make form headers clickable */
+.component-form-section.collapsible-form .component-header {
+    cursor: pointer;
+    user-select: none;
+    margin-bottom: 0;
+}
+
+/* Add margin to the bottom if expanded */
+.component-form-section.collapsible-form.expanded .component-header {
+    margin-bottom: var(--spacing-md);
+}
+
+/* Chevron icon styling - positioned at the start */
+.component-form-section.collapsible-form .form-expand-icon {
+    margin-right: 10px;
+    transition: transform 0.2s ease;
+    cursor: pointer;
+    flex-shrink: 0;
+    order: -1; /* Place chevron before heading */
+}
+
+/* Heading should take available space */
+.component-form-section.collapsible-form .component-heading {
+    flex: 1;
+    margin: var(--spacing-sm) 0;
+}
+
+/* Rotate chevron when expanded */
+.component-form-section.collapsible-form.expanded .form-expand-icon {
+    transform: rotate(90deg);
+}
+
+/* Smooth transition for form content */
+.component-form-section.collapsible-form .component-form-element,
+.component-form-section.collapsible-form .component-messages {
+    transition: opacity 0.2s ease;
+}
+
+/* Hidden state for collapsed forms */
+.component-form-section.collapsible-form.collapsed .component-form-element,
+.component-form-section.collapsible-form.collapsed .component-messages {
+    display: none;
+}
+
+/**
+ * Form Section Styles
+ * Styles for collapsible sections within a single form
+ */
+
+/* Form section container */
+.form-section {
+    margin-bottom: var(--spacing-lg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: var(--spacing-md);
+    background: var(--bg-secondary);
+}
+
+/* Form section header */
+.form-section-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: var(--spacing-md);
+}
+
+/* Collapsible section header is clickable */
+.form-section-collapsible .form-section-header {
+    cursor: pointer;
+    user-select: none;
+}
+
+/* Section title */
+.form-section-title {
+    font-size: 1.1em;
+    font-weight: bold;
+    color: var(--text-primary);
+    margin: 0;
+    flex: 1;
+}
+
+/* Chevron icon for collapsible sections */
+.form-section-icon {
+    margin-right: 10px;
+    transition: transform 0.2s ease;
+    flex-shrink: 0;
+}
+
+/* Rotate chevron when expanded */
+.form-section.expanded .form-section-icon {
+    transform: rotate(90deg);
+}
+
+/* Section messages */
+.form-section-messages {
+    margin-bottom: var(--spacing-md);
+}
+
+/* Section content */
+.form-section-content {
+    transition: opacity 0.2s ease;
+}
+
+/* Hide content when collapsed */
+.form-section.collapsed .form-section-content,
+.form-section.collapsed .form-section-messages {
+    display: none;
+}
