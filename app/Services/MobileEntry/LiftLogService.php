@@ -96,9 +96,6 @@ class LiftLogService extends MobileEntryBaseService
             // Get last session data from cached results
             $lastSession = $lastSessionsData[$exercise->id] ?? null;
             
-            // Generate form ID
-            $formId = 'lift-' . $form->id;
-            
             // Get progression suggestions from batch results
             $progressionSuggestion = $progressionSuggestions[$exercise->id] ?? null;
             
@@ -119,74 +116,20 @@ class LiftLogService extends MobileEntryBaseService
                 'sets' => $defaultSets,
                 'band_color' => $lastSession['band_color'] ?? 'red',
                 'comments' => '',
-                'context' => 'mobile-form', // Specify context for the factory
             ];
 
-            // Use the factory to build the fields
-            $numericFields = $this->liftLogFormFactory->buildFields($exercise, $user, $defaults, $formId);
+            // Use the factory to build the complete form
+            $formData = $this->liftLogFormFactory->buildForm(
+                $form,
+                $exercise,
+                $user,
+                $defaults,
+                $messages,
+                $selectedDate,
+                $redirectParams
+            );
             
-            // Build form using ComponentBuilder
-            $formBuilder = C::form($formId, $exercise->title)
-                ->type('primary')
-                ->formAction(route('lift-logs.store'))
-                ->deleteAction(route('mobile-entry.remove-form', ['id' => $formId]))
-                ->hiddenField('exercise_id', $exercise->id)
-                ->hiddenField('date', $selectedDate->format('Y-m-d'))
-                ->hiddenField('logged_at', now()->format('H:i'));
-
-            foreach ($redirectParams as $name => $value) {
-                $formBuilder->hiddenField($name, $value);
-            }
-            
-            // Add messages
-            foreach ($messages as $message) {
-                $formBuilder->message($message['type'], $message['text'], $message['prefix'] ?? null);
-            }
-            
-            // Add numeric fields (keeping the old numericFields structure for compatibility)
-            // Note: We're not using the builder's numericField method here because we need
-            // to preserve the exact structure including select fields and custom properties
-            $formData = $formBuilder->build();
-            $formData['data']['numericFields'] = $numericFields;
-            $formData['data']['buttons'] = [
-                'decrement' => '-',
-                'increment' => '+',
-                'submit' => 'Log ' . $exercise->title
-            ];
-            $formData['data']['ariaLabels'] = [
-                'section' => $exercise->title . ' entry',
-                'deleteForm' => 'Remove this exercise form'
-            ];
-            // Build hidden fields with redirect params if provided
-            $hiddenFields = [
-                'exercise_id' => $exercise->id,
-                'date' => $selectedDate->toDateString(),
-                'mobile_lift_form_id' => $form->id
-            ];
-            
-            // Add redirect parameters if they exist, otherwise default to mobile-entry-lifts
-            if (!empty($redirectParams['redirect_to'])) {
-                $hiddenFields['redirect_to'] = $redirectParams['redirect_to'];
-                
-                // Add template_id if it exists
-                if (!empty($redirectParams['template_id'])) {
-                    $hiddenFields['template_id'] = $redirectParams['template_id'];
-                }
-                
-                // Add workout_id if it exists
-                if (!empty($redirectParams['workout_id'])) {
-                    $hiddenFields['workout_id'] = $redirectParams['workout_id'];
-                }
-            } else {
-                $hiddenFields['redirect_to'] = 'mobile-entry-lifts';
-            }
-            
-            $formData['data']['hiddenFields'] = $hiddenFields;
-            $formData['data']['deleteParams'] = [
-                'date' => $selectedDate->toDateString()
-            ];
-            
-            $forms[] = $formData['data'];
+            $forms[] = $formData;
         }
         
         return $forms;

@@ -88,12 +88,16 @@ class LiftLogServiceTest extends TestCase
             ->once()
             ->andReturn(['lastSessionData' => []]);
         
-        $this->liftLogFormFactory->shouldReceive('buildFields')
+        $this->liftLogFormFactory->shouldReceive('buildForm')
             ->once()
             ->andReturn([
-                ['id' => 'test-reps', 'name' => 'reps', 'label' => 'Reps:', 'defaultValue' => 5],
-                ['id' => 'test-rounds', 'name' => 'rounds', 'label' => 'Sets:', 'defaultValue' => 3],
-                ['id' => 'test-comments', 'name' => 'comments', 'label' => 'Notes:', 'type' => 'textarea', 'defaultValue' => ''],
+                'type' => 'primary',
+                'title' => 'Bench Press',
+                'numericFields' => [
+                    ['id' => 'test-reps', 'name' => 'reps', 'label' => 'Reps:', 'defaultValue' => 5],
+                    ['id' => 'test-rounds', 'name' => 'rounds', 'label' => 'Sets:', 'defaultValue' => 3],
+                    ['id' => 'test-comments', 'name' => 'comments', 'label' => 'Notes:', 'type' => 'textarea', 'defaultValue' => ''],
+                ],
             ]);
         
         $forms = $this->service->generateForms($user->id, $date);
@@ -322,12 +326,16 @@ class LiftLogServiceTest extends TestCase
                 'suggestedWeight' => 140,
             ]);
         
-        $this->liftLogFormFactory->shouldReceive('buildFields')
+        $this->liftLogFormFactory->shouldReceive('buildForm')
             ->once()
             ->andReturn([
-                ['id' => 'test-reps', 'name' => 'reps', 'label' => 'Reps:', 'defaultValue' => 10],
-                ['id' => 'test-rounds', 'name' => 'rounds', 'label' => 'Sets:', 'defaultValue' => 4],
-                ['id' => 'test-comments', 'name' => 'comments', 'label' => 'Notes:', 'type' => 'textarea', 'defaultValue' => ''],
+                'type' => 'primary',
+                'title' => 'Squat',
+                'numericFields' => [
+                    ['id' => 'test-reps', 'name' => 'reps', 'label' => 'Reps:', 'defaultValue' => 10],
+                    ['id' => 'test-rounds', 'name' => 'rounds', 'label' => 'Sets:', 'defaultValue' => 4],
+                    ['id' => 'test-comments', 'name' => 'comments', 'label' => 'Notes:', 'type' => 'textarea', 'defaultValue' => ''],
+                ],
             ]);
         
         $forms = $this->service->generateForms($user->id, $date);
@@ -365,12 +373,16 @@ class LiftLogServiceTest extends TestCase
             ->once()
             ->andReturn(['lastSessionData' => []]);
         
-        $this->liftLogFormFactory->shouldReceive('buildFields')
+        $this->liftLogFormFactory->shouldReceive('buildForm')
             ->once()
             ->andReturn([
-                ['id' => 'test-reps', 'name' => 'reps', 'label' => 'Reps:', 'defaultValue' => 5],
-                ['id' => 'test-rounds', 'name' => 'rounds', 'label' => 'Sets:', 'defaultValue' => 3],
-                ['id' => 'test-comments', 'name' => 'comments', 'label' => 'Notes:', 'type' => 'textarea', 'defaultValue' => ''],
+                'type' => 'primary',
+                'title' => 'Deadlift',
+                'numericFields' => [
+                    ['id' => 'test-reps', 'name' => 'reps', 'label' => 'Reps:', 'defaultValue' => 5],
+                    ['id' => 'test-rounds', 'name' => 'rounds', 'label' => 'Sets:', 'defaultValue' => 3],
+                    ['id' => 'test-comments', 'name' => 'comments', 'label' => 'Notes:', 'type' => 'textarea', 'defaultValue' => ''],
+                ],
             ]);
         
         $forms = $this->service->generateForms($user->id, $date);
