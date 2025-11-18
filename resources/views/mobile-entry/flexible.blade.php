@@ -8,7 +8,13 @@
         if (isset($data['components'])) {
             foreach ($data['components'] as $component) {
                 if (isset($component['requiresStyle'])) {
-                    $requiredStyles[$component['requiresStyle']] = true;
+                    if (is_array($component['requiresStyle'])) {
+                        foreach ($component['requiresStyle'] as $style) {
+                            $requiredStyles[$style] = true;
+                        }
+                    } else {
+                        $requiredStyles[$component['requiresStyle']] = true;
+                    }
                 }
             }
         }

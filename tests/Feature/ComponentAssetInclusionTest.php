@@ -18,7 +18,7 @@ class ComponentAssetInclusionTest extends TestCase
         $response = $this->actingAs($user)->get(route('mobile-entry.lifts'));
 
         $response->assertStatus(200);
-        $response->assertSee('create-item.css', false);
+        $response->assertSee('component-list.css', false);
     }
 
     /** @test */
@@ -29,7 +29,7 @@ class ComponentAssetInclusionTest extends TestCase
         $response = $this->actingAs($user)->get(route('mobile-entry.measurements'));
 
         $response->assertStatus(200);
-        $response->assertDontSee('create-item.css', false);
+        $response->assertDontSee('component-list.css', false);
     }
 
     /** @test */

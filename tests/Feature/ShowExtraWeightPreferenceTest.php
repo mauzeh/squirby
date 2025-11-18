@@ -58,12 +58,12 @@ class ShowExtraWeightPreferenceTest extends TestCase
         $this->assertCount(1, $forms);
         
         // Check that weight field is NOT present
-        $weightField = collect($forms[0]['numericFields'])->firstWhere('name', 'weight');
+        $weightField = collect($forms[0]['data']['numericFields'])->firstWhere('name', 'weight');
         $this->assertNull($weightField, 'Weight field should be hidden when show_extra_weight is false for bodyweight exercises');
         
         // But reps and rounds fields should still be present
-        $repsField = collect($forms[0]['numericFields'])->firstWhere('name', 'reps');
-        $roundsField = collect($forms[0]['numericFields'])->firstWhere('name', 'rounds');
+        $repsField = collect($forms[0]['data']['numericFields'])->firstWhere('name', 'reps');
+        $roundsField = collect($forms[0]['data']['numericFields'])->firstWhere('name', 'rounds');
         $this->assertNotNull($repsField);
         $this->assertNotNull($roundsField);
     }
@@ -85,7 +85,7 @@ class ShowExtraWeightPreferenceTest extends TestCase
         $this->assertCount(1, $forms);
         
         // Check that weight field is present
-        $weightField = collect($forms[0]['numericFields'])->firstWhere('name', 'weight');
+        $weightField = collect($forms[0]['data']['numericFields'])->firstWhere('name', 'weight');
         $this->assertNotNull($weightField, 'Weight field should be present when show_extra_weight is true');
         $this->assertEquals('Added Weight (lbs):', $weightField['label']);
     }
@@ -107,7 +107,7 @@ class ShowExtraWeightPreferenceTest extends TestCase
         $this->assertCount(1, $forms);
         
         // Check that weight field is present even with preference disabled
-        $weightField = collect($forms[0]['numericFields'])->firstWhere('name', 'weight');
+        $weightField = collect($forms[0]['data']['numericFields'])->firstWhere('name', 'weight');
         $this->assertNotNull($weightField, 'Weight field should always be present for weighted exercises');
         $this->assertEquals('Weight (lbs):', $weightField['label']);
     }

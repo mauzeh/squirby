@@ -488,7 +488,7 @@ class ItemListComponentBuilder
         return [
             'type' => 'item-list',
             'data' => $this->data,
-            'requiresStyle' => 'create-item'
+            'requiresStyle' => ['component-list']
         ];
     }
 }
@@ -727,7 +727,8 @@ class FormComponentBuilder
     {
         $component = [
             'type' => 'form',
-            'data' => $this->data
+            'data' => $this->data,
+            'requiresStyle' => ['component-form']
         ];
         
         // Add required styles/scripts if using sections or collapsible
@@ -742,7 +743,7 @@ class FormComponentBuilder
         }
         
         if ($hasCollapsibleSections || (isset($this->data['cssClass']) && strpos($this->data['cssClass'], 'collapsible-form') !== false)) {
-            $component['requiresStyle'] = 'collapsible-form';
+            $component['requiresStyle'][] = 'collapsible-form';
             $component['requiresScript'] = 'mobile-entry/collapsible-form';
         }
         
@@ -972,7 +973,8 @@ class TableComponentBuilder
     {
         $component = [
             'type' => 'table',
-            'data' => $this->data
+            'data' => $this->data,
+            'requiresStyle' => []
         ];
         
         // Automatically include bulk selection script if any row has checkboxes
@@ -982,7 +984,7 @@ class TableComponentBuilder
         
         // Automatically include badge styles if any row has badges
         if ($this->hasBadges()) {
-            $component['requiresStyle'] = 'table-badges';
+            $component['requiresStyle'][] = 'table-badges';
         }
         
         return $component;

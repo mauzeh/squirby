@@ -1,0 +1,382 @@
+.create-item-li .component-create-form .btn-create {
+    margin: var(--spacing-md);
+}
+
+/* Item Selection List */
+.component-list-section {
+    margin-bottom: var(--spacing-xl);
+    display: none;
+    /* Hidden by default */
+}
+
+.component-list-section.active {
+    display: block;
+    /* Show when active */
+}
+
+.selection-title {
+    color: var(--text-primary);
+    font-size: 1.2em;
+    font-weight: bold;
+    margin: 0 0 var(--spacing-md) 0;
+    text-align: center;
+}
+
+.component-filter-container {
+    padding: var(--spacing-sm);
+    border-bottom: 2px solid var(--color-primary);
+    background-color: rgba(0, 123, 255, 0.15);
+}
+
+.component-filter-group {
+    display: flex;
+    gap: var(--spacing-sm);
+}
+
+.component-create-form {
+    margin: 0;
+    display: flex;
+}
+
+.component-filter-input-wrapper {
+    flex: 1;
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-height: var(--touch-target-min);
+}
+
+.component-filter-input {
+    flex: 1;
+    width: 100%;
+    padding: 10px 40px 10px var(--spacing-md);
+    background-color: rgba(0, 123, 255, 0.1);
+    border: 1px solid var(--color-primary);
+    border-radius: var(--border-radius-sm);
+    color: #e3f2fd;
+    font-size: 1.1em;
+    height: var(--touch-target-min);
+    box-sizing: border-box;
+}
+
+.component-filter-input:focus {
+    background-color: var(--input-focus-bg);
+    border-color: var(--color-primary);
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.component-filter-input::placeholder {
+    color: rgba(227, 242, 253, 0.7);
+    opacity: 1;
+}
+
+.btn-clear-filter {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: rgba(227, 242, 253, 0.7);
+    font-size: 1.5em;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: 50%;
+    line-height: 1;
+    transition: all var(--transition-fast);
+    touch-action: manipulation;
+    user-select: none;
+    z-index: 1;
+}
+
+@media (hover: hover) {
+    .btn-clear-filter:hover {
+        background-color: rgba(227, 242, 253, 0.1);
+        color: #e3f2fd;
+        transform: translateY(-50%) scale(1.1);
+    }
+}
+
+.btn-clear-filter:active {
+    transform: translateY(-50%) scale(0.95);
+}
+
+.btn-clear-filter:focus {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
+.component-list {
+    display: grid;
+    gap: 0;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    background-color: var(--secondary-bg);
+    border-radius: var(--border-radius-md);
+    overflow-y: auto;
+    overflow-x: hidden;
+    box-shadow: var(--shadow-light);
+    /* Fixed height to prevent reflow when filtering - doubled from original */
+    height: 120vh;
+    min-height: 600px;
+    max-height: 1000px;
+    /* Align content to top instead of center */
+    align-content: start;
+}
+
+.component-list li {
+    margin: 0;
+    padding: 0;
+}
+
+.component-list-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-md);
+    background-color: var(--tertiary-bg);
+    text-decoration: none;
+    width: 100%;
+    min-height: var(--touch-target-min);
+    transition: all var(--transition-fast);
+    touch-action: manipulation;
+    user-select: none;
+}
+
+.component-list li:not(:first-child) .component-list-item {
+    border-top: 1px solid var(--secondary-bg);
+}
+
+@media (hover: hover) {
+    .component-list-item:hover {
+        background-color: var(--input-bg);
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-light);
+    }
+}
+
+.component-list-item:active {
+    transform: translateY(0);
+    box-shadow: none;
+}
+
+.component-list-item:focus {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
+.component-list-item-name {
+    color: var(--text-primary);
+    font-weight: bold;
+    font-size: 1em;
+    line-height: 1.2;
+    flex: 1;
+}
+
+.component-list-item-type {
+    color: var(--text-muted);
+    font-size: 0.9em;
+    font-style: italic;
+    font-weight: normal;
+    margin-left: var(--spacing-md);
+}
+
+/* Category-specific styling */
+
+/* In Program - Highest priority, most prominent styling */
+.component-list-item--in-program {
+    background-color: rgba(40, 167, 69, 0.12);
+    border-left: 3px solid #28a745;
+}
+
+@media (hover: hover) {
+    .component-list-item--in-program:hover {
+        background-color: rgba(40, 167, 69, 0.18);
+    }
+}
+
+.component-list-item--in-program .component-list-item-name {
+    color: #d4edda;
+    font-weight: 600;
+}
+
+.component-list-item--in-program .component-list-item-type {
+    color: rgba(212, 237, 218, 0.8);
+    font-weight: 500;
+}
+
+/* Recent - Second priority, green accent */
+.component-list-item--recent {
+    background-color: rgba(40, 167, 69, 0.08);
+    border-left: 2px solid #28a745;
+}
+
+@media (hover: hover) {
+    .component-list-item--recent:hover {
+        background-color: rgba(40, 167, 69, 0.12);
+    }
+}
+
+.component-list-item--recent .component-list-item-name {
+    color: #d4edda;
+}
+
+.component-list-item--recent .component-list-item-type {
+    color: rgba(212, 237, 218, 0.7);
+}
+
+/* Custom - Third priority, purple accent */
+.component-list-item--custom {
+    background-color: rgba(102, 16, 242, 0.08);
+    border-left: 2px solid #6610f2;
+}
+
+@media (hover: hover) {
+    .component-list-item--custom:hover {
+        background-color: rgba(102, 16, 242, 0.12);
+    }
+}
+
+.component-list-item--custom .component-list-item-name {
+    color: #e2d9f3;
+}
+
+.component-list-item--custom .component-list-item-type {
+    color: rgba(226, 217, 243, 0.7);
+}
+
+/* Regular - Default styling, lowest priority */
+.component-list-item--regular {
+    background-color: rgba(108, 117, 125, 0.05);
+}
+
+@media (hover: hover) {
+    .component-list-item--regular:hover {
+        background-color: rgba(108, 117, 125, 0.08);
+    }
+}
+
+.component-list-item--regular .component-list-item-name {
+    color: var(--text-primary);
+}
+
+.component-list-item--regular .component-list-item-type {
+    color: var(--text-muted);
+}
+
+/* Legacy support - map old 'highlighted' class to 'recent' */
+.component-list-item--highlighted {
+    background-color: rgba(40, 167, 69, 0.08);
+    border-left: 2px solid #28a745;
+}
+
+@media (hover: hover) {
+    .component-list-item--highlighted:hover {
+        background-color: rgba(40, 167, 69, 0.12);
+    }
+}
+
+.component-list-item--highlighted .component-list-item-name {
+    color: #d4edda;
+}
+
+.component-list-item--highlighted .component-list-item-type {
+    color: rgba(212, 237, 218, 0.7);
+}
+
+/* No results styling */
+.no-results-item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+    padding: 0;
+}
+
+.component-list-item--no-results {
+    background-color: rgba(108, 117, 125, 0.1);
+    cursor: default;
+    pointer-events: none;
+}
+
+@media (hover: hover) {
+    .component-list-item--no-results:hover {
+        background-color: rgba(108, 117, 125, 0.1);
+        transform: none;
+        box-shadow: none;
+    }
+}
+
+.component-list-item--no-results .component-list-item-name {
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+.component-list-item--no-results .component-list-item-type {
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+/* Create button in no-results container */
+.no-results-item .component-create-form {
+    padding: var(--spacing-md);
+    margin: 0;
+}
+
+.no-results-item .btn-create {
+    width: 100%;
+    min-height: var(--touch-target-min);
+    font-size: 1.1em;
+    font-weight: bold;
+}
+
+/* Responsive adjustments for item selection */
+@media (max-width: 768px) {
+    .component-list-section {
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .selection-title {
+        font-size: 1.1em;
+        margin-bottom: 12px;
+    }
+
+    .component-list-item {
+        padding: 12px;
+        min-height: var(--touch-target-min);
+    }
+
+    .component-list-item-name {
+        font-size: 0.95em;
+    }
+
+    .component-list {
+        height: 100vh;
+        min-height: 500px;
+        max-height: 800px;
+    }
+}
+
+@media (max-width: 480px) {
+    .selection-title {
+        font-size: 1em;
+        margin-bottom: 10px;
+    }
+
+    .component-list-item {
+        padding: 10px;
+        min-height: 40px;
+    }
+
+    .component-list-item-name {
+        font-size: 0.9em;
+    }
+
+    .component-list {
+        height: 90vh;
+        min-height: 400px;
+        max-height: 600px;
+    }
+}

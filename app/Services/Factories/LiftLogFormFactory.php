@@ -96,7 +96,7 @@ class LiftLogFormFactory
             'date' => $selectedDate->toDateString()
         ];
         
-        return $formData['data'];
+        return $formData;
     }
 
     /**

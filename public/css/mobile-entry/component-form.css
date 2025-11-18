@@ -1,0 +1,549 @@
+/* Form Components */
+.component-form-section {
+    margin-bottom: var(--spacing-xl);
+    padding: var(--spacing-md);
+    background-color: var(--secondary-bg);
+    border-radius: var(--border-radius-md);
+    box-shadow: var(--shadow-light);
+    position: relative;
+}
+
+/* Form Type Variants - Visual distinction for different form types */
+/* Primary (blue) - for main/important forms */
+.component-form-section[data-form-type="primary"] {
+    border-left: 4px solid var(--color-primary);
+}
+
+/* Success (green) - for positive/completion forms */
+.component-form-section[data-form-type="success"] {
+    border-left: 4px solid var(--color-success);
+}
+
+/* Warning (yellow/orange) - for attention forms */
+.component-form-section[data-form-type="warning"] {
+    border-left: 4px solid var(--color-warning);
+}
+
+/* Secondary (gray) - for general/default forms */
+.component-form-section[data-form-type="secondary"] {
+    border-left: 4px solid var(--color-secondary);
+}
+
+/* Danger (red) - for error/critical forms */
+.component-form-section[data-form-type="danger"] {
+    border-left: 4px solid var(--color-danger);
+}
+
+/* Info (light blue) - for informational forms */
+.component-form-section[data-form-type="info"] {
+    border-left: 4px solid #17a2b8;
+}
+
+/* Optional: Color the heading to match form type */
+.section-type-primary .component-heading {
+    color: var(--color-primary);
+}
+
+.section-type-success .component-heading {
+    color: var(--color-success);
+}
+
+.section-type-warning .component-heading {
+    color: var(--color-warning);
+}
+
+/* Multiple forms responsive adjustments */
+@media (max-width: 768px) {
+    .component-form-section {
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .component-form-section+.component-form-section {
+        margin-top: var(--spacing-lg);
+    }
+}
+
+@media (max-width: 480px) {
+    .component-form-section {
+        margin-bottom: var(--spacing-md);
+    }
+
+    .component-form-section+.component-form-section {
+        margin-top: var(--spacing-md);
+    }
+}
+
+.component-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-md);
+}
+
+.component-heading {
+    color: var(--text-primary);
+    font-size: 1.2em;
+    font-weight: bold;
+    margin: var(--spacing-sm) 0;
+}
+
+/* Item Messages */
+.component-messages {
+    margin-bottom: var(--spacing-md);
+}
+
+.component-message {
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-radius: var(--border-radius-sm);
+    font-size: 1em;
+    line-height: 1.4;
+    margin-bottom: var(--spacing-xs);
+    border-left: 3px solid;
+}
+
+.component-message:last-child {
+    margin-bottom: 0;
+}
+
+.component-message--info {
+    background-color: rgba(0, 123, 255, 0.1);
+    border-left-color: var(--color-primary);
+    color: var(--text-secondary);
+}
+
+.component-message--tip {
+    background-color: rgba(255, 193, 7, 0.1);
+    border-left-color: var(--color-warning);
+    color: var(--text-secondary);
+}
+
+.component-message--success {
+    background-color: rgba(40, 167, 69, 0.1);
+    border-left-color: var(--color-success);
+    color: var(--text-secondary);
+}
+
+.component-message--error {
+    background-color: rgba(220, 53, 69, 0.1);
+    border-left-color: var(--color-danger);
+    color: var(--text-secondary);
+}
+
+.component-message--warning {
+    background-color: rgba(255, 193, 7, 0.1);
+    border-left-color: var(--color-warning);
+    color: var(--text-secondary);
+}
+
+.component-message--neutral {
+    background-color: transparent;
+    border-left-color: var(--text-muted);
+    color: var(--text-secondary);
+}
+
+.message-prefix {
+    font-weight: bold;
+}
+
+/* Freeform Text Display */
+.component-freeform-text {
+    margin-top: var(--spacing-sm);
+    padding: var(--spacing-sm) var(--spacing-md);
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: var(--border-radius-sm);
+    color: var(--text-secondary);
+    font-size: 0.95em;
+    line-height: 1.4;
+    border-left: 3px solid var(--text-muted);
+    font-style: italic;
+}
+
+.component-form-element {
+    width: 100%;
+}
+
+.form-mobile-group {
+    margin-bottom: var(--spacing-lg);
+    width: 100%;
+}
+
+.form-mobile-label {
+    display: block;
+    margin-bottom: var(--spacing-sm);
+    color: var(--text-primary);
+    font-weight: bold;
+    font-size: 1.1em;
+    line-height: 1.2;
+}
+
+/* Number Input Group with Increment/Decrement Buttons */
+.number-input-group {
+    display: flex;
+    align-items: stretch;
+    width: 100%;
+    max-width: 100%;
+    border-radius: var(--border-radius-sm);
+    overflow: hidden;
+    box-shadow: var(--shadow-light);
+    box-sizing: border-box;
+}
+
+.number-input {
+    flex: 1;
+    min-width: 0;
+    text-align: center;
+    font-size: 2.2em;
+    font-weight: bold;
+    border: none;
+    padding: var(--spacing-md) 10px;
+    background-color: var(--input-bg);
+    color: var(--text-primary);
+    min-height: var(--touch-target-min);
+    transition: all var(--transition-fast);
+    outline: none;
+    box-sizing: border-box;
+}
+
+.number-input:focus {
+    background-color: var(--input-focus-bg);
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.decrement-button,
+.increment-button {
+    background-color: var(--color-secondary);
+    color: white;
+    border: none;
+    padding: var(--spacing-md) var(--spacing-lg);
+    cursor: pointer;
+    font-size: 1.5em;
+    font-weight: bold;
+    min-width: var(--touch-target-min);
+    max-width: var(--touch-target-min);
+    min-height: var(--touch-target-min);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-fast);
+    touch-action: manipulation;
+    user-select: none;
+    box-sizing: border-box;
+}
+
+@media (hover: hover) {
+
+    .decrement-button:hover,
+    .increment-button:hover {
+        background-color: var(--color-secondary-hover);
+    }
+}
+
+.decrement-button:active,
+.increment-button:active {
+    background-color: #495057;
+    transform: scale(0.98);
+}
+
+.decrement-button:disabled,
+.increment-button:disabled {
+    background-color: #495057;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.decrement-button:focus,
+.increment-button:focus {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+    z-index: 1;
+}
+
+/* Select Field Styling */
+.form-select {
+    width: 100%;
+    font-size: 2.2em;
+    font-weight: bold;
+    border: none;
+    padding: var(--spacing-md) 10px;
+    background-color: var(--input-bg);
+    color: var(--text-primary);
+    min-height: var(--touch-target-min);
+    border-radius: var(--border-radius-sm);
+    box-shadow: var(--shadow-light);
+    transition: all var(--transition-fast);
+    outline: none;
+    box-sizing: border-box;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23f2f2f2' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 20px;
+    padding-right: 40px;
+}
+
+.form-select:focus {
+    background-color: var(--input-focus-bg);
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.form-select option {
+    background-color: var(--input-bg);
+    color: var(--text-primary);
+    padding: var(--spacing-sm);
+}
+
+/* Text Input */
+.text-input {
+    width: 100%;
+    background-color: var(--input-bg);
+    border: 1px solid #555;
+    border-radius: var(--border-radius-sm);
+    color: var(--text-primary);
+    font-size: 1.5em;
+    font-weight: bold;
+    padding: var(--spacing-md);
+    transition: all var(--transition-fast);
+    font-family: inherit;
+    min-height: var(--touch-target-min);
+    box-sizing: border-box;
+}
+
+.text-input:focus {
+    background-color: var(--input-focus-bg);
+    border-color: var(--color-primary);
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.text-input::placeholder {
+    color: var(--text-placeholder);
+    opacity: 1;
+    font-weight: normal;
+}
+
+.text-input:focus::placeholder {
+    color: #666;
+}
+
+/* Comment Textarea */
+.comment-textarea {
+    width: 100%;
+    background-color: var(--input-bg);
+    border: 1px solid #555;
+    border-radius: var(--border-radius-sm);
+    color: var(--text-primary);
+    font-size: 1.1em;
+    padding: var(--spacing-md);
+    resize: vertical;
+    min-height: 80px;
+    transition: all var(--transition-fast);
+    font-family: inherit;
+    line-height: 1.4;
+}
+
+.comment-textarea:focus {
+    background-color: var(--input-focus-bg);
+    border-color: var(--color-primary);
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.comment-textarea::placeholder {
+    color: var(--text-placeholder);
+    opacity: 1;
+}
+
+.comment-textarea:focus::placeholder {
+    color: #666;
+}
+
+/* Form Actions */
+.form-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: var(--spacing-xl);
+    width: 100%;
+}
+
+/* Form Validation States */
+.number-input.input-error,
+.comment-textarea.input-error {
+    border: 2px solid var(--color-danger) !important;
+    background-color: #2a1f1f !important;
+    box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.25) !important;
+}
+
+.number-input.input-error:focus,
+.comment-textarea.input-error:focus {
+    border-color: var(--color-danger) !important;
+    background-color: var(--input-focus-bg) !important;
+    box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.4) !important;
+}
+
+.number-input.input-success,
+.comment-textarea.input-success {
+    border: 2px solid var(--color-success) !important;
+    background-color: #1f2a1f !important;
+    box-shadow: 0 0 0 2px rgba(40, 167, 69, 0.25) !important;
+}
+
+.number-input.input-success:focus,
+.comment-textarea.input-success:focus {
+    border-color: var(--color-success) !important;
+    background-color: var(--input-focus-bg) !important;
+    box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.4) !important;
+}
+
+.field-error {
+    color: var(--color-danger);
+    font-size: 0.9em;
+    margin-top: var(--spacing-xs);
+    display: block;
+}
+
+.field-success {
+    color: var(--color-success);
+    font-size: 0.9em;
+    margin-top: var(--spacing-xs);
+    display: block;
+}
+
+.form-mobile-group.has-error .form-mobile-label {
+    color: var(--color-danger);
+}
+
+.form-mobile-group.has-success .form-mobile-label {
+    color: var(--color-success);
+}
+
+.form-mobile-group .form-mobile-label.required::after {
+    content: " *";
+    color: var(--color-danger);
+}
+
+/* Responsive adjustments for form components */
+@media (max-width: 768px) {
+    .component-form-section {
+        padding: var(--spacing-md);
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .form-mobile-group {
+        margin-bottom: var(--spacing-md);
+    }
+
+    .form-mobile-label {
+        font-size: 1em;
+        margin-bottom: 6px;
+    }
+
+    .text-input {
+        font-size: 1.3em;
+        padding: 12px;
+    }
+
+    .number-input {
+        font-size: 2em;
+        min-height: var(--touch-target-min);
+        padding: 12px 8px;
+    }
+
+    .decrement-button,
+    .increment-button {
+        min-width: var(--touch-target-min);
+        max-width: var(--touch-target-min);
+        min-height: var(--touch-target-min);
+        padding: 12px 16px;
+    }
+
+    .comment-textarea {
+        font-size: 1em;
+        min-height: 80px;
+    }
+
+    .form-actions {
+        gap: var(--spacing-sm);
+        margin-top: var(--spacing-lg);
+    }
+
+    .component-messages {
+        margin-bottom: 12px;
+    }
+
+    .component-message {
+        padding: 8px 12px;
+        font-size: 0.95em;
+        margin-bottom: 4px;
+    }
+
+    .component-freeform-text {
+        margin-top: 8px;
+        padding: 8px 12px;
+        font-size: 0.9em;
+    }
+
+    .field-error,
+    .field-success {
+        font-size: 0.85em;
+        margin-top: 3px;
+    }
+}
+
+@media (max-width: 480px) {
+    .component-form-section {
+        padding: 10px;
+    }
+
+    .form-mobile-group {
+        margin-bottom: 12px;
+    }
+
+    .form-mobile-label {
+        font-size: 0.95em;
+        margin-bottom: 6px;
+    }
+
+    .text-input {
+        font-size: 1.2em;
+        padding: 12px;
+    }
+
+    .number-input {
+        font-size: 1.8em;
+        padding: 12px 6px;
+        min-height: 40px;
+    }
+
+    .decrement-button,
+    .increment-button {
+        min-width: 40px;
+        max-width: 40px;
+        min-height: 40px;
+        padding: 10px 12px;
+        font-size: 1.3em;
+    }
+
+    .comment-textarea {
+        font-size: 0.95em;
+        padding: 12px;
+        min-height: 70px;
+    }
+
+    .component-messages {
+        margin-bottom: 10px;
+    }
+
+    .component-message {
+        padding: 6px 10px;
+        font-size: 0.9em;
+        margin-bottom: 3px;
+    }
+
+    .component-freeform-text {
+        margin-top: 6px;
+        padding: 6px 10px;
+        font-size: 0.85em;
+    }
+}

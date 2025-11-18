@@ -191,7 +191,7 @@ class LiftLogService extends MobileEntryBaseService
         ];
         
         // Build the form using the factory, but override some settings for edit mode
-        $formData = $this->liftLogFormFactory->buildForm(
+        $formComponent = $this->liftLogFormFactory->buildForm(
             $mockForm,
             $liftLog->exercise,
             $user,
@@ -202,15 +202,15 @@ class LiftLogService extends MobileEntryBaseService
         );
         
         // Override form settings for edit mode
-        $formData['id'] = 'edit-lift-' . $liftLog->id;
-        $formData['formAction'] = route('lift-logs.update', $liftLog->id);
-        $formData['method'] = 'PUT';
-        $formData['deleteAction'] = route('lift-logs.destroy', $liftLog->id);
+        $formComponent['data']['id'] = 'edit-lift-' . $liftLog->id;
+        $formComponent['data']['formAction'] = route('lift-logs.update', $liftLog->id);
+        $formComponent['data']['method'] = 'PUT';
+        $formComponent['data']['deleteAction'] = route('lift-logs.destroy', $liftLog->id);
         // Pass redirect params and exercise_id to delete action
-        $formData['deleteParams'] = array_merge($redirectParams, ['exercise_id' => $liftLog->exercise_id]);
+        $formComponent['data']['deleteParams'] = array_merge($redirectParams, ['exercise_id' => $liftLog->exercise_id]);
         
         // Update hidden fields for edit mode
-        $formData['hiddenFields'] = [
+        $formComponent['data']['hiddenFields'] = [
             '_method' => 'PUT',
             'exercise_id' => $liftLog->exercise_id,
             'date' => $liftLog->logged_at->toDateString(),
@@ -219,15 +219,15 @@ class LiftLogService extends MobileEntryBaseService
         
         // Add redirect parameters if provided
         if (!empty($redirectParams['redirect_to'])) {
-            $formData['hiddenFields']['redirect_to'] = $redirectParams['redirect_to'];
+            $formComponent['data']['hiddenFields']['redirect_to'] = $redirectParams['redirect_to'];
             // The 'date' field from the lift log will be used for the redirect
         }
         
         // Update button text
-        $formData['buttons']['submit'] = 'Update ' . $liftLog->exercise->title;
+        $formComponent['data']['buttons']['submit'] = 'Update ' . $liftLog->exercise->title;
         
         // Return in the component structure expected by flexible view
-        return ['type' => 'form', 'data' => $formData];
+        return $formComponent;
     }
 
     /**
