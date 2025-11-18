@@ -108,7 +108,7 @@ class LiftLogController extends Controller
 
         $data = ['components' => $components];
 
-        return view('lift-logs.index-flexible', compact('data'));
+        return view('mobile-entry.flexible', compact('data'));
     }
     
     /**

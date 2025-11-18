@@ -22,7 +22,70 @@ class IngredientController extends Controller
     public function index()
     {
         $ingredients = Ingredient::with('baseUnit')->where('user_id', auth()->id())->orderBy('name')->get();
-        return view('ingredients.index', compact('ingredients'));
+        
+        // Build table rows
+        $rows = [];
+        foreach ($ingredients as $ingredient) {
+            $rows[] = [
+                'id' => $ingredient->id,
+                'line1' => $ingredient->name,
+                'line2' => sprintf(
+                    '%s%s • %d cal • P:%sg C:%sg F:%sg',
+                    $ingredient->base_quantity,
+                    $ingredient->baseUnit->abbreviation,
+                    round($ingredient->calories),
+                    $ingredient->protein,
+                    $ingredient->carbs,
+                    $ingredient->fats
+                ),
+                'line3' => sprintf('Cost: $%s per unit', number_format($ingredient->cost_per_unit, 2)),
+                'actions' => [
+                    [
+                        'type' => 'link',
+                        'icon' => 'fa-edit',
+                        'url' => route('ingredients.edit', $ingredient->id),
+                        'ariaLabel' => 'Edit ' . $ingredient->name
+                    ],
+                    [
+                        'type' => 'form',
+                        'icon' => 'fa-trash',
+                        'url' => route('ingredients.destroy', $ingredient->id),
+                        'method' => 'DELETE',
+                        'ariaLabel' => 'Delete ' . $ingredient->name,
+                        'requiresConfirm' => true
+                    ]
+                ]
+            ];
+        }
+        
+        // Build table component
+        $tableBuilder = \App\Services\ComponentBuilder::table()
+            ->rows($rows)
+            ->emptyMessage('No ingredients found. Please add some!')
+            ->confirmMessage('deleteItem', 'Are you sure you want to delete this ingredient?')
+            ->ariaLabel('Ingredients list');
+        
+        // Build components array
+        $components = [
+            \App\Services\ComponentBuilder::title('Ingredients List')->build(),
+        ];
+        
+        // Add success/error messages if present
+        if ($sessionMessages = \App\Services\ComponentBuilder::messagesFromSession()) {
+            $components[] = $sessionMessages;
+        }
+        
+        // Add button to create new ingredient
+        $components[] = \App\Services\ComponentBuilder::button('Add New Ingredient')
+            ->asLink(route('ingredients.create'))
+            ->cssClass('btn-primary')
+            ->build();
+        
+        $components[] = $tableBuilder->build();
+        
+        $data = ['components' => $components];
+        
+        return view('mobile-entry.flexible', compact('data'));
     }
 
     /**
