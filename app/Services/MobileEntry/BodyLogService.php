@@ -196,7 +196,7 @@ class BodyLogService extends MobileEntryBaseService
         $formData['data']['isCompleted'] = false;
         $formData['data']['completionStatus'] = 'pending';
         
-        return $formData['data'];
+        return $formData;
     }
 
     /**

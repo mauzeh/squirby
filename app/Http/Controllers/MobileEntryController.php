@@ -583,9 +583,7 @@ class MobileEntryController extends Controller
         // No add button needed - all measurement types show as forms automatically
         
         // Forms
-        foreach ($forms as $form) {
-            $components[] = ['type' => 'form', 'data' => $form];
-        }
+        $components = array_merge($components, $forms);
         
         // Logged items
         $components[] = ['type' => 'items', 'data' => $loggedItems];
