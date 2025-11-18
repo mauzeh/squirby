@@ -58,11 +58,12 @@ class IngredientService
         
         if ($isEdit) {
             $formBuilder->hiddenField('_method', 'PUT');
+            $formBuilder->deleteAction(route('ingredients.destroy', $ingredient));
+            $formBuilder->confirmMessage('Are you sure you want to delete this ingredient?');
         }
         
         // Section 1: General Information (required)
         $formBuilder->section('General Information', false, 'expanded')
-            ->message('info', 'All fields in this section are required', 'Required:')
             ->textField('name', 'Ingredient Name:', $isEdit ? $ingredient->name : $prefilledName, 'e.g., Chicken Breast')
             ->numericField('base_quantity', 'Base Quantity:', $isEdit ? $ingredient->base_quantity : 1, 0.01, 0.01, 9999)
             ->selectField('base_unit_id', 'Base Unit:', $unitOptions, $isEdit ? $ingredient->base_unit_id : ($unitOptions[0]['value'] ?? 1))
@@ -70,7 +71,6 @@ class IngredientService
         
         // Section 2: Nutritional Information (required macros)
         $formBuilder->section('Nutritional Information', false, 'expanded')
-            ->message('info', 'All fields in this section are required', 'Required:')
             ->numericField('protein', 'Protein (g):', $isEdit ? $ingredient->protein : 0, 0.1, 0, 999)
             ->numericField('carbs', 'Carbohydrates (g):', $isEdit ? $ingredient->carbs : 0, 0.1, 0, 999)
             ->numericField('fats', 'Fats (g):', $isEdit ? $ingredient->fats : 0, 0.1, 0, 999);

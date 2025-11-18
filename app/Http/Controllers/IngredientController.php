@@ -39,20 +39,14 @@ class IngredientController extends Controller
                     $ingredient->fats
                 ),
                 'line3' => sprintf('Cost: $%s per unit', number_format($ingredient->cost_per_unit, 2)),
+                'compact' => true,
                 'actions' => [
                     [
                         'type' => 'link',
-                        'icon' => 'fa-edit',
+                        'icon' => 'fa-pencil',
                         'url' => route('ingredients.edit', $ingredient->id),
-                        'ariaLabel' => 'Edit ' . $ingredient->name
-                    ],
-                    [
-                        'type' => 'form',
-                        'icon' => 'fa-trash',
-                        'url' => route('ingredients.destroy', $ingredient->id),
-                        'method' => 'DELETE',
-                        'ariaLabel' => 'Delete ' . $ingredient->name,
-                        'requiresConfirm' => true
+                        'ariaLabel' => 'Edit ' . $ingredient->name,
+                        'cssClass' => 'btn-transparent'
                     ]
                 ]
             ];
