@@ -413,7 +413,7 @@ class FoodLogService extends MobileEntryBaseService
             'date' => $selectedDate->toDateString()
         ];
         
-        return $formData['data'];
+        return $formData;
     }
 
     /**
@@ -529,7 +529,7 @@ class FoodLogService extends MobileEntryBaseService
             'date' => $selectedDate->toDateString()
         ];
         
-        return $formData['data'];
+        return $formData;
     }
 
 

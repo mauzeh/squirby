@@ -478,7 +478,9 @@ class FoodLogServiceTest extends TestCase
         
         $this->assertCount(1, $forms);
         
-        $form = $forms[0];
+        $formComponent = $forms[0];
+        $this->assertEquals('form', $formComponent['type']);
+        $form = $formComponent['data'];
         $this->assertEquals('ingredient-' . $ingredient->id, $form['id']);
         $this->assertEquals('success', $form['type']);
         $this->assertEquals('Olive Oil', $form['title']);
@@ -553,7 +555,9 @@ class FoodLogServiceTest extends TestCase
         
         $this->assertCount(1, $forms);
         
-        $form = $forms[0];
+        $formComponent = $forms[0];
+        $this->assertEquals('form', $formComponent['type']);
+        $form = $formComponent['data'];
         $this->assertEquals('meal-' . $meal->id, $form['id']);
         $this->assertEquals('Protein Bowl (Meal)', $form['title']);
         

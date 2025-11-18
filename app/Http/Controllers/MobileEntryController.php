@@ -394,9 +394,7 @@ class MobileEntryController extends Controller
         $components[] = $itemListBuilder->build();
         
         // Forms
-        foreach ($forms as $form) {
-            $components[] = ['type' => 'form', 'data' => $form];
-        }
+        $components = array_merge($components, $forms);
         
         // Logged items
         $components[] = ['type' => 'items', 'data' => $loggedItems];
