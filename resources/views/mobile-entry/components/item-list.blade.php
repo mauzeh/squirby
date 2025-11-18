@@ -28,7 +28,9 @@
                 <span class="component-list-item-name">{{ $data['noResultsMessage'] }}</span>
                 <span class="component-list-item-type">No matches</span>
             </div>
-            @if($data['createForm'])
+        </li>
+        @if($data['createForm'])
+        <li class="create-item-li" style="display: none;">
             <form method="{{ $data['createForm']['method'] }}" action="{{ $data['createForm']['action'] }}" class="component-create-form">
                 @if(strtoupper($data['createForm']['method']) !== 'GET')
                     @csrf
@@ -41,7 +43,7 @@
                     <span class="btn-create-text">{{ $data['createForm']['submitText'] }}</span>
                 </button>
             </form>
-            @endif
         </li>
+        @endif
     </ul>
 </section>

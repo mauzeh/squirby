@@ -487,7 +487,8 @@ class ItemListComponentBuilder
     {
         return [
             'type' => 'item-list',
-            'data' => $this->data
+            'data' => $this->data,
+            'requiresStyle' => 'create-item'
         ];
     }
 }

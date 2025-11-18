@@ -12,12 +12,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const createForm = document.querySelector('.component-create-form');
     const createButton = createForm ? createForm.querySelector('.btn-create') : null;
     const createButtonText = createButton ? createButton.querySelector('.btn-create-text') : null;
+    const createItemLi = document.querySelector('.create-item-li'); // New: Get reference to the create item li
     
     // Only set up filtering if filter input and item list exist
     if (filterInput && itemList) {
-        // Get all item cards (excluding the filter container and no-results item)
+        // Get all item cards (excluding the filter container, no-results item, and create-item-li)
         const getAllItemCards = () => {
-            return Array.from(itemList.querySelectorAll('.component-list-item:not(.component-list-item--no-results)'));
+            return Array.from(itemList.querySelectorAll('.component-list-item:not(.component-list-item--no-results):not(.create-item-li)'));
         };
         
         // Get the no results item and its text elements
@@ -54,68 +55,72 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Filter function
         const filterItems = (searchTerm) => {
-        const itemCards = getAllItemCards();
-        const normalizedSearch = searchTerm.toLowerCase().trim();
-        let visibleCount = 0;
-        
-        itemCards.forEach(card => {
-            const itemNameElement = card.querySelector('.component-list-item-name');
-            if (!itemNameElement) return;
+            const itemCards = getAllItemCards();
+            const normalizedSearch = searchTerm.toLowerCase().trim();
+            let visibleCount = 0;
+            let exactMatchFound = false; // New flag to track exact matches
             
-            const itemName = itemNameElement.textContent.toLowerCase();
-            const listItem = card.closest('li');
+            itemCards.forEach(card => {
+                const itemNameElement = card.querySelector('.component-list-item-name');
+                if (!itemNameElement) return;
+                
+                const itemName = itemNameElement.textContent.toLowerCase();
+                const listItem = card.closest('li');
+                
+                if (normalizedSearch === '' || itemName.includes(normalizedSearch)) {
+                    // Show the item
+                    listItem.style.display = '';
+                    visibleCount++;
+                    if (itemName === normalizedSearch) { // Check for exact match
+                        exactMatchFound = true;
+                    }
+                } else {
+                    // Hide the item
+                    listItem.style.display = 'none';
+                }
+            });
             
-            if (normalizedSearch === '' || itemName.includes(normalizedSearch)) {
-                // Show the item
-                listItem.style.display = '';
-                visibleCount++;
-            } else {
-                // Hide the item
-                listItem.style.display = 'none';
-            }
-        });
-        
-        const hasResults = visibleCount > 0;
-        
-        // Show/hide no results item and update message based on whether we have visible items and a search term
-        if (noResultsItem) {
-            if (normalizedSearch !== '' && !hasResults) {
-                // Update the no results message to be more helpful
-                if (noResultsNameElement) {
-                    if (createForm) {
-                        // If create form exists, show helpful message about creating
-                        noResultsNameElement.textContent = `No matches found for "${normalizedSearch}"`;
-                    } else {
-                        // If no create form, show original message
+            // Show/hide no results item (only if no items are visible)
+            if (noResultsItem) {
+                if (normalizedSearch !== '' && visibleCount === 0) {
+                    if (noResultsNameElement) {
                         noResultsNameElement.textContent = originalNoResultsMessage;
                     }
+                    if (noResultsTypeElement) {
+                        noResultsTypeElement.textContent = 'No matches';
+                    }
+                    noResultsItem.style.display = '';
+                } else {
+                    noResultsItem.style.display = 'none';
                 }
-                if (noResultsTypeElement) {
-                    noResultsTypeElement.textContent = 'No matches';
+            }
+            
+            // Show/hide create item li (if search term is not empty and no exact match found)
+            if (createItemLi) {
+                if (normalizedSearch !== '' && !exactMatchFound) {
+                    createItemLi.style.display = '';
+                } else {
+                    createItemLi.style.display = 'none';
                 }
-                noResultsItem.style.display = '';
-            } else {
-                noResultsItem.style.display = 'none';
             }
-        }
-        
-        // Show/hide clear button based on whether there's text in the input
-        if (clearButton) {
-            if (normalizedSearch !== '') {
-                clearButton.style.display = '';
-            } else {
-                clearButton.style.display = 'none';
+            
+            // Show/hide clear button based on whether there's text in the input
+            if (clearButton) {
+                if (normalizedSearch !== '') {
+                    clearButton.style.display = '';
+                } else {
+                    clearButton.style.display = 'none';
+                }
             }
-        }
-        
-        // Update create button text
-        updateCreateButton(searchTerm);
-        
-        // Sync the filter input value with the hidden form input (if it exists)
-        if (hiddenInput) {
-            hiddenInput.value = searchTerm;
-        }
-    };
+            
+            // Update create button text
+            updateCreateButton(searchTerm);
+            
+            // Sync the filter input value with the hidden form input (if it exists)
+            if (hiddenInput) {
+                hiddenInput.value = searchTerm;
+            }
+        };
     
     // Clear filter function
     const clearFilter = () => {
