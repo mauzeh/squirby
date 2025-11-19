@@ -1,0 +1,117 @@
+/* Summary Component */
+.summary {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-xl);
+}
+
+.summary-item {
+    background-color: var(--tertiary-bg);
+    border-radius: var(--border-radius-sm);
+    padding: var(--spacing-md);
+    text-align: center;
+    transition: all var(--transition-fast);
+    position: relative;
+    overflow: hidden;
+}
+
+@media (hover: hover) {
+    .summary-item:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-light);
+    }
+}
+
+.summary-item:focus {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
+.summary-value {
+    display: block;
+    font-size: 1.8em;
+    font-weight: bold;
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-xs);
+    line-height: 1.1;
+}
+
+.summary-label {
+    display: block;
+    font-size: 0.9em;
+    color: var(--text-muted);
+    letter-spacing: 0.5px;
+    font-weight: 500;
+}
+
+/* Color coding for different number types */
+.summary-item:nth-child(1) {
+    border-left: 4px solid var(--summary-total);
+}
+
+.summary-item:nth-child(1) .summary-value {
+    color: var(--summary-total);
+}
+
+.summary-item:nth-child(2) {
+    border-left: 4px solid var(--summary-completed);
+}
+
+.summary-item:nth-child(2) .summary-value {
+    color: var(--summary-completed);
+}
+
+.summary-item:nth-child(3) {
+    border-left: 4px solid var(--summary-average);
+}
+
+.summary-item:nth-child(3) .summary-value {
+    color: var(--summary-average);
+}
+
+.summary-item:nth-child(4) {
+    border-left: 4px solid var(--summary-today);
+}
+
+.summary-item:nth-child(4) .summary-value {
+    color: var(--summary-today);
+}
+
+/* Responsive adjustments for summary */
+@media (max-width: 768px) {
+    .summary {
+        gap: 6px;
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .summary-item {
+        padding: 12px;
+    }
+
+    .summary-value {
+        font-size: 1.5em;
+    }
+
+    .summary-label {
+        font-size: 0.8em;
+    }
+}
+
+@media (max-width: 480px) {
+    .summary {
+        gap: var(--spacing-xs);
+    }
+
+    .summary-item {
+        padding: 10px;
+    }
+
+    .summary-value {
+        font-size: 1.3em;
+    }
+
+    .summary-label {
+        font-size: 0.75em;
+    }
+}

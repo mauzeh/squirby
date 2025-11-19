@@ -72,8 +72,7 @@ class ItemListComponentBuilder
     {
         return [
             'type' => 'item-list',
-            'data' => $this->data,
-            'requiresStyle' => ['component-list']
+            'data' => $this->data
         ];
     }
 }

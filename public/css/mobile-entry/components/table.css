@@ -1,0 +1,436 @@
+/* T
+able Component - Tabular CRUD list optimized for narrow screens */
+.component-table-section {
+    margin-bottom: var(--spacing-xl);
+}
+
+.component-table {
+    background-color: var(--secondary-bg);
+    border-radius: var(--border-radius-md);
+    overflow: hidden;
+    box-shadow: var(--shadow-light);
+}
+
+.component-table-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: var(--spacing-md);
+    background-color: var(--tertiary-bg);
+    border-bottom: 1px solid var(--secondary-bg);
+    gap: var(--spacing-md);
+    min-height: var(--touch-target-min);
+    transition: background-color var(--transition-fast);
+    position: relative;
+}
+
+.component-table-row:last-child {
+    border-bottom: none;
+}
+
+.component-table-row .template-checkbox {
+    align-self: center;
+}
+
+/* Spaced rows - add margin between rows */
+.component-table.table-spaced-rows {
+    background-color: transparent;
+    box-shadow: none;
+    overflow: visible;
+}
+
+.component-table.table-spaced-rows .component-table-row {
+    border-radius: var(--border-radius-md);
+    border-bottom: none;
+    box-shadow: var(--shadow-light);
+    margin-bottom: var(--spacing-md);
+}
+
+/* Rows with sub-items that are expanded: rounded top only, no margin on row */
+.component-table.table-spaced-rows .component-table-row.has-subitems.expanded {
+    border-radius: var(--border-radius-md) var(--border-radius-md) 0 0;
+    margin-bottom: 0;
+}
+
+/* Sub-items container: rounded bottom, provides margin when visible */
+.component-table.table-spaced-rows .component-table-subitems {
+    border-radius: 0 0 var(--border-radius-md) var(--border-radius-md);
+    box-shadow: var(--shadow-light);
+    margin-bottom: var(--spacing-md);
+}
+
+/* Remove margin from last elements */
+.component-table.table-spaced-rows .component-table-row:last-of-type:not(.expanded) {
+    margin-bottom: 0;
+}
+
+.component-table.table-spaced-rows .component-table-subitems:last-of-type {
+    margin-bottom: 0;
+}
+
+/* Collapsible rows are clickable */
+.component-table-row.is-collapsible {
+    cursor: pointer;
+    user-select: none;
+}
+
+@media (hover: hover) {
+    .component-table-row.is-collapsible:hover {
+        background-color: var(--input-bg);
+    }
+}
+
+.component-table-row.is-collapsible:active {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Chevron icon indicator */
+.table-expand-icon {
+    color: var(--text-secondary);
+    font-size: 0.9em;
+    margin-right: var(--spacing-xs);
+    flex-shrink: 0;
+    align-self: center;
+    transition: transform var(--transition-fast);
+}
+
+.component-table-row.expanded .table-expand-icon {
+    transform: rotate(90deg);
+}
+
+@media (hover: hover) {
+    .component-table-row.is-collapsible:hover .table-expand-icon {
+        color: var(--text-primary);
+    }
+}
+
+@media (hover: hover) {
+    .component-table-row:hover {
+        background-color: var(--input-bg);
+    }
+}
+
+/* Sub-items styling */
+.component-table-subitems {
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
+.component-table-subitem {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-xl) var(--spacing-md);
+    padding-left: var(--spacing-lg);
+    background-color: rgba(0, 0, 0, 0.1);
+    gap: var(--spacing-md);
+    min-height: var(--touch-target-min);
+    transition: background-color var(--transition-fast);
+}
+
+/* Alternating background for visual distinction */
+.component-table-subitem:nth-child(even) {
+    background-color: rgba(0, 0, 0, 0.35);
+}
+
+@media (hover: hover) {
+    .component-table-subitem:hover {
+        background-color: rgba(0, 0, 0, 0.25);
+    }
+}
+
+/* Clickable sub-items (single action) */
+.component-table-subitem.subitem-clickable {
+    cursor: pointer;
+    user-select: none;
+}
+
+@media (hover: hover) {
+    .component-table-subitem.subitem-clickable:hover {
+        background-color: rgba(0, 123, 255, 0.15);
+    }
+}
+
+.component-table-subitem.subitem-clickable:active {
+    background-color: rgba(0, 123, 255, 0.25);
+}
+
+.component-table-cell {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-self: stretch;
+    gap: 4px;
+}
+
+.component-table-cell > div {
+    line-height: 1.3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.component-table-cell.cell-wrap-text > div {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+}
+
+/* Allow messages in table cells to wrap */
+.component-table-cell .component-message {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    word-wrap: break-word;
+}
+
+.cell-title {
+    font-size: 1em;
+    font-weight: bold;
+    color: var(--text-primary);
+}
+
+.cell-title-large {
+    font-size: 1.4em;
+    font-weight: bold;
+    color: var(--text-primary);
+}
+
+.cell-content {
+    font-size: 0.9em;
+    color: var(--text-secondary);
+}
+
+.cell-detail {
+    font-size: 0.85em;
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+.component-table-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+    align-items: center;
+    align-self: center;
+    flex-shrink: 0;
+}
+
+.component-table-actions.actions-wrap {
+    flex-wrap: wrap;
+    flex-shrink: 1;
+    justify-content: flex-end;
+}
+
+/* Compact wrapped actions use compact touch target width */
+.component-table-actions.actions-compact.actions-wrap {
+    max-width: var(--touch-target-compact);
+}
+
+/* Non-compact wrapped actions use regular touch target width */
+.component-table-actions.actions-wrap:not(.actions-compact) {
+    max-width: var(--touch-target-min);
+}
+
+.btn-table-edit,
+.btn-table-delete {
+    border: none;
+    border-radius: 50%;
+    width: var(--touch-target-min);
+    height: var(--touch-target-min);
+    cursor: pointer;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-fast);
+    touch-action: manipulation;
+    user-select: none;
+    text-decoration: none;
+    color: white;
+}
+
+.btn-table-edit {
+    background-color: var(--color-edit);
+}
+
+@media (hover: hover) {
+    .btn-table-edit:hover {
+        background-color: var(--color-edit-hover);
+        transform: scale(1.08);
+    }
+}
+
+.btn-table-edit:active {
+    transform: scale(0.95);
+}
+
+.btn-table-edit:focus {
+    outline: 2px solid var(--color-edit);
+    outline-offset: 2px;
+}
+
+/* Info circle button - small circle with border */
+.btn-info-circle {
+    background-color: transparent;
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 50%;
+    padding: 8px;
+}
+
+@media (hover: hover) {
+    .btn-info-circle:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.8);
+        transform: scale(1.08);
+    }
+}
+
+.btn-info-circle:active {
+    transform: scale(0.95);
+}
+
+.btn-info-circle:focus {
+    outline: 2px solid white;
+    outline-offset: 2px;
+}
+
+.btn-table-delete {
+    background-color: var(--color-danger);
+}
+
+@media (hover: hover) {
+    .btn-table-delete:hover {
+        background-color: var(--color-danger-hover);
+        transform: scale(1.08);
+    }
+}
+
+.btn-table-delete:active {
+    transform: scale(0.95);
+}
+
+.btn-table-delete:focus {
+    outline: 2px solid var(--color-danger);
+    outline-offset: 2px;
+}
+
+/* Transparent button variant - for specific use cases */
+/* Placed after .btn-table-delete to override its background color */
+.btn-transparent {
+    background-color: transparent;
+    color: white;
+}
+
+@media (hover: hover) {
+    .btn-transparent:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+        transform: scale(1.08);
+    }
+}
+
+.btn-transparent:active {
+    transform: scale(0.95);
+}
+
+.btn-transparent:focus {
+    outline: 2px solid white;
+    outline-offset: 2px;
+}
+
+/* Log now button - green variant for sub-items */
+.btn-log-now {
+    background-color: var(--color-success) !important;
+}
+
+@media (hover: hover) {
+    .btn-log-now:hover {
+        background-color: var(--color-success-hover) !important;
+    }
+}
+
+.btn-log-now:focus {
+    outline: 2px solid var(--color-success);
+    outline-offset: 2px;
+}
+
+/* Compact actions container - makes all buttons 75% size */
+.component-table-actions.actions-compact .btn-table-edit,
+.component-table-actions.actions-compact .btn-table-delete {
+    width: var(--touch-target-compact);
+    height: var(--touch-target-compact);
+    font-size: 15px;
+}
+
+/* Disabled state for table buttons */
+.btn-table-edit.btn-disabled,
+.btn-table-delete.btn-disabled,
+a.btn-table-edit[href="#"],
+button.btn-table-delete:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.component-table-empty {
+    text-align: center;
+    padding: 40px var(--spacing-lg);
+    color: var(--text-muted);
+    font-style: italic;
+    background-color: var(--secondary-bg);
+    border-radius: var(--border-radius-md);
+    border: 2px dashed #555;
+}
+
+/* Responsive adjustments for table */
+@media (max-width: 768px) {
+    .component-table-row {
+        padding: 12px;
+        gap: 12px;
+    }
+
+    .component-table-subitem {
+        padding: var(--spacing-lg) 12px;
+        padding-left: var(--spacing-md);
+    }
+
+    .cell-title {
+        font-size: 0.95em;
+    }
+
+    .cell-content {
+        font-size: 0.85em;
+    }
+
+    .cell-detail {
+        font-size: 0.8em;
+    }
+}
+
+@media (max-width: 480px) {
+    .component-table-row {
+        padding: 10px;
+        gap: 10px;
+    }
+
+    .component-table-subitem {
+        padding: var(--spacing-md) 10px;
+        padding-left: var(--spacing-sm);
+    }
+
+    .cell-title {
+        font-size: 0.9em;
+    }
+
+    .cell-content {
+        font-size: 0.8em;
+    }
+
+    .cell-detail {
+        font-size: 0.75em;
+    }
+
+    .component-table-actions {
+        gap: 8px;
+    }
+}

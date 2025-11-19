@@ -230,10 +230,9 @@ class FormComponentBuilder
     {
         $component = [
             'type' => 'form',
-            'data' => $this->data,
-            'requiresStyle' => ['component-form']
+            'data' => $this->data
         ];
-        
+
         $hasCollapsibleSections = false;
         if (!empty($this->data['sections'])) {
             foreach ($this->data['sections'] as $section) {
@@ -243,9 +242,8 @@ class FormComponentBuilder
                 }
             }
         }
-        
+
         if ($hasCollapsibleSections || (isset($this->data['cssClass']) && strpos($this->data['cssClass'], 'collapsible-form') !== false)) {
-            $component['requiresStyle'][] = 'collapsible-form';
             $component['requiresScript'] = 'mobile-entry/collapsible-form';
         }
         

@@ -2,26 +2,17 @@
 
 @section('styles')
     <link rel="stylesheet" href="{{ asset('css/mobile-entry.css') }}">
-    @php
-        // Automatically collect required styles from components
-        $requiredStyles = [];
-        if (isset($data['components'])) {
-            foreach ($data['components'] as $component) {
-                if (isset($component['requiresStyle'])) {
-                    if (is_array($component['requiresStyle'])) {
-                        foreach ($component['requiresStyle'] as $style) {
-                            $requiredStyles[$style] = true;
-                        }
-                    } else {
-                        $requiredStyles[$component['requiresStyle']] = true;
-                    }
-                }
-            }
-        }
-    @endphp
-    @foreach(array_keys($requiredStyles) as $styleName)
-        <link rel="stylesheet" href="{{ asset('css/mobile-entry/' . $styleName . '.css') }}">
-    @endforeach
+    <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/navigation.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/title.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/messages.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/summary.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/button.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/items.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/table.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/form.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/list.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/badges.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/collapsible.css') }}">
 @endsection
 
 @section('scripts')

@@ -1,0 +1,68 @@
+/* 
+Navigation Component */
+.component-navigation {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-lg);
+    gap: var(--spacing-sm);
+}
+
+.nav-button {
+    background-color: var(--color-primary);
+    color: white;
+    padding: 10px var(--spacing-md);
+    border: none;
+    border-radius: var(--border-radius-sm);
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 1em;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: var(--touch-target-min);
+    min-width: var(--touch-target-min);
+    transition: all var(--transition-fast);
+    touch-action: manipulation;
+    user-select: none;
+}
+
+@media (hover: hover) {
+    .nav-button:hover {
+        background-color: var(--color-primary-hover);
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-light);
+    }
+}
+
+.nav-button:active {
+    transform: translateY(0);
+    box-shadow: none;
+}
+
+.nav-button:focus {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
+/* Responsive adjustments for navigation */
+@media (max-width: 768px) {
+    .component-navigation {
+        margin-bottom: var(--spacing-md);
+    }
+
+    .nav-button {
+        padding: var(--spacing-sm) 12px;
+        min-height: var(--touch-target-min);
+        min-width: var(--touch-target-min);
+    }
+}
+
+@media (max-width: 480px) {
+    .nav-button {
+        padding: 6px 10px;
+        min-width: 40px;
+        min-height: 40px;
+    }
+}

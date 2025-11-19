@@ -1,0 +1,103 @@
+/* Title Container */
+.component-title-container {
+    text-align: center;
+    margin-bottom: var(--spacing-xl);
+}
+
+/* Add top padding when title is first component (no navigation above) */
+.mobile-entry-container > .component-title-container:first-child {
+    padding-top: var(--spacing-lg);
+    padding-bottom: var(--spacing-sm);
+}
+
+/* Title Row - relative positioning for back button + centered title */
+.component-title-row {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+}
+
+/* Back Button - positioned absolutely on the left */
+.component-title-back-button {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: var(--touch-target-min);
+    height: var(--touch-target-min);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--secondary-bg);
+    color: var(--text-primary);
+    border-radius: var(--border-radius-sm);
+    text-decoration: none;
+    transition: background-color var(--transition-fast);
+    font-size: 1.2em;
+    z-index: 1;
+}
+
+.component-title-back-button:hover {
+    background-color: var(--tertiary-bg);
+    color: var(--color-primary);
+}
+
+.component-title-back-button:active {
+    background-color: var(--input-bg);
+}
+
+/* Title Content - always centered */
+.component-title-content {
+    flex: 1;
+    text-align: center;
+    padding: 0 calc(var(--touch-target-min) + var(--spacing-md));
+}
+
+/* Main Title */
+.component-title {
+    color: var(--color-primary);
+    margin: 0;
+    font-size: 2em;
+    font-weight: bold;
+    line-height: 1.2;
+}
+
+/* Subtitle */
+.component-subtitle {
+    color: var(--text-muted);
+    font-size: 1em;
+    font-weight: normal;
+    margin-top: var(--spacing-xs);
+    opacity: 0.8;
+    line-height: 1.5;
+}
+
+@media (max-width: 768px) {
+    .component-title-container {
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .component-title {
+        font-size: 1.8em;
+    }
+
+    .component-subtitle {
+        font-size: 0.9em;
+        margin-top: 3px;
+    }
+}
+
+@media (max-width: 480px) {
+    .component-title-container {
+        margin-bottom: var(--spacing-md);
+    }
+
+    .component-title {
+        font-size: 1.6em;
+    }
+
+    .component-subtitle {
+        font-size: 0.85em;
+        margin-top: 2px;
+    }
+}

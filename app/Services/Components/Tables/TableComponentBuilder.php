@@ -86,16 +86,11 @@ class TableComponentBuilder
     {
         $component = [
             'type' => 'table',
-            'data' => $this->data,
-            'requiresStyle' => []
+            'data' => $this->data
         ];
         
         if ($this->hasCheckboxes()) {
             $component['requiresScript'] = 'table-bulk-selection';
-        }
-        
-        if ($this->hasBadges()) {
-            $component['requiresStyle'][] = 'table-badges';
         }
         
         return $component;

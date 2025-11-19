@@ -1,0 +1,353 @@
+/* Button Component */
+.component-button-section {
+    display: flex;
+    margin-bottom: var(--spacing-lg);
+    width: 100%;
+}
+
+.component-button-section.hidden {
+    display: none;
+}
+
+/* Responsive adjustments for button section */
+@media (max-width: 768px) {
+    .component-button-section {
+        margin-bottom: var(--spacing-lg);
+    }
+}
+
+/* Button System */
+.btn-primary {
+    background-color: var(--color-primary);
+    color: white;
+    border: none;
+    border-radius: var(--border-radius-sm);
+    padding: var(--spacing-md) var(--spacing-xl);
+    cursor: pointer;
+    font-size: 1.5em;
+    font-weight: bold;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: var(--touch-target-min);
+    flex: 1;
+    transition: all var(--transition-fast);
+    touch-action: manipulation;
+    user-select: none;
+}
+
+@media (hover: hover) {
+    .btn-primary:hover {
+        background-color: var(--color-primary-hover);
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-light);
+    }
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+    box-shadow: none;
+}
+
+.btn-primary:focus {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
+.btn-primary:disabled {
+    background-color: var(--color-secondary);
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+    opacity: 0.6;
+}
+
+.btn-secondary {
+    background-color: var(--color-secondary);
+    color: white;
+    border: none;
+    border-radius: var(--border-radius-sm);
+    padding: 10px var(--spacing-md);
+    cursor: pointer;
+    font-size: 1em;
+    font-weight: bold;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: var(--touch-target-min);
+    min-width: var(--touch-target-min);
+    transition: all var(--transition-fast);
+    touch-action: manipulation;
+    user-select: none;
+}
+
+@media (hover: hover) {
+    .btn-secondary:hover {
+        background-color: var(--color-secondary-hover);
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-light);
+    }
+}
+
+.btn-secondary:active {
+    transform: translateY(0);
+    box-shadow: none;
+}
+
+.btn-secondary:focus {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
+.btn-secondary:disabled {
+    background-color: #495057;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+    opacity: 0.6;
+}
+
+.plus-icon {
+    font-weight: bold;
+    font-size: 1.5em;
+}
+
+.btn-create {
+    background-color: var(--color-primary);
+    color: white;
+}
+
+@media (hover: hover) {
+    .btn-create:hover {
+        background-color: var(--color-primary-hover);
+    }
+}
+
+.btn-create:focus {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
+.btn-cancel {
+    background-color: var(--color-danger);
+    color: white;
+}
+
+@media (hover: hover) {
+    .btn-cancel:hover {
+        background-color: var(--color-danger-hover);
+    }
+}
+
+.btn-cancel:focus {
+    outline: 2px solid var(--color-danger);
+    outline-offset: 2px;
+}
+
+.cancel-icon {
+    font-weight: bold;
+    font-size: 1.5em;
+}
+
+
+.btn-delete {
+    background-color: var(--color-danger);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: var(--touch-target-small);
+    height: var(--touch-target-small);
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: normal;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    transition: all var(--transition-fast);
+    touch-action: manipulation;
+    user-select: none;
+}
+
+@media (hover: hover) {
+    .btn-delete:hover {
+        background-color: var(--color-danger-hover);
+        transform: scale(1.05);
+    }
+}
+
+.btn-delete:active {
+    transform: scale(0.95);
+}
+
+.btn-delete:focus {
+    outline: 2px solid var(--color-danger);
+    outline-offset: 2px;
+}
+
+.btn-delete:disabled {
+    background-color: var(--color-secondary);
+    cursor: not-allowed;
+    transform: none;
+    opacity: 0.6;
+}
+
+/* Action Buttons - Edit and Delete */
+.component-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+    align-items: center;
+}
+
+.btn-edit {
+    background-color: var(--color-edit);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: var(--touch-target-small);
+    height: var(--touch-target-small);
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: normal;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    transition: all var(--transition-fast);
+    touch-action: manipulation;
+    user-select: none;
+    text-decoration: none;
+}
+
+@media (hover: hover) {
+    .btn-edit:hover {
+        background-color: var(--color-edit-hover);
+        transform: scale(1.05);
+        text-decoration: none;
+    }
+}
+
+.btn-edit:active {
+    transform: scale(0.95);
+}
+
+.btn-edit:focus {
+    outline: 2px solid var(--color-edit);
+    outline-offset: 2px;
+}
+
+.btn-edit:disabled {
+    background-color: var(--color-secondary);
+    cursor: not-allowed;
+    transform: none;
+    opacity: 0.6;
+}
+
+/* Button State Classes */
+.btn-loading {
+    position: relative;
+    color: transparent;
+    pointer-events: none;
+}
+
+.btn-loading::after {
+    content: "⏳";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* Responsive adjustments for buttons */
+@media (max-width: 768px) {
+    .btn-primary {
+        font-size: 1.3em;
+        padding: 12px var(--spacing-lg);
+        min-height: var(--touch-target-min);
+    }
+
+    .btn-secondary {
+        padding: var(--spacing-sm) 12px;
+        font-size: 0.9em;
+        min-height: var(--touch-target-min);
+        min-width: var(--touch-target-min);
+    }
+
+    .btn-delete {
+        width: var(--touch-target-small);
+        height: var(--touch-target-small);
+        font-size: 21px;
+    }
+
+    .btn-edit {
+        width: var(--touch-target-small);
+        height: var(--touch-target-small);
+        font-size: 21px;
+    }
+}
+
+@media (max-width: 480px) {
+    .btn-primary {
+        font-size: 1.2em;
+        padding: 10px 16px;
+        min-height: 40px;
+    }
+
+    .btn-secondary {
+        padding: 6px 10px;
+        font-size: 0.85em;
+        min-height: 40px;
+        min-width: 40px;
+    }
+
+    .btn-delete {
+        width: 28px;
+        height: 28px;
+        font-size: 18px;
+    }
+
+    .btn-edit {
+        width: 28px;
+        height: 28px;
+        font-size: 18px;
+    }
+}
+
+/* Button Success Variant - placed after button system to override colors */
+.btn-success {
+    background-color: var(--color-success);
+}
+
+@media (hover: hover) {
+    .btn-success:hover {
+        background-color: var(--color-success-hover);
+    }
+}
+
+.btn-success:focus {
+    outline: 2px solid var(--color-success);
+    outline-offset: 2px;
+}
+
+/* Button Component Styles */
+.component-button.btn-primary {
+    background-color: var(--color-success);
+    color: var(--text-primary);
+}
+
+.component-button.btn-primary:hover {
+    background-color: var(--color-success-hover);
+}
+
+.component-button.btn-secondary {
+    background-color: var(--color-secondary);
+    color: var(--text-primary);
+}
+
+.component-button.btn-secondary:hover {
+    background-color: var(--color-secondary-hover);
+}
