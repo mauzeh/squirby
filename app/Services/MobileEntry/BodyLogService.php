@@ -28,11 +28,11 @@ class BodyLogService extends MobileEntryBaseService
             ->orderBy('logged_at', 'desc')
             ->get();
 
-        $itemsBuilder = C::items()
+        $tableBuilder = C::table()
             ->confirmMessage('deleteItem', 'Are you sure you want to delete this measurement? This action cannot be undone.')
-            ->confirmMessage('removeForm', 'Are you sure you want to remove this measurement from today\'s tracking?');
+            ->ariaLabel('Logged measurements')
+            ->spacedRows();
         
-        $hasItems = false;
         foreach ($logs as $log) {
             if (!$log->measurementType) {
                 continue;
@@ -40,30 +40,19 @@ class BodyLogService extends MobileEntryBaseService
 
             $valueText = $log->value . ' ' . $log->measurementType->default_unit;
 
-            $itemsBuilder->item(
-                $log->id,
-                $log->measurementType->name,
-                null,
-                route('body-logs.edit', ['body_log' => $log->id]),
-                route('body-logs.destroy', ['body_log' => $log->id])
-            )
-            ->message('success', $valueText, 'Logged:')
-            ->freeformText($log->comments ?? '')
-            ->deleteParams([
-                'redirect_to' => 'mobile-entry-measurements',
-                'date' => $selectedDate->toDateString()
-            ])
-            ->add();
-            
-            $hasItems = true;
+            $tableBuilder->row($log->id, $log->measurementType->name, $valueText, $log->comments)
+                ->formAction('fa-trash', route('body-logs.destroy', $log->id), 'DELETE', [
+                    'redirect_to' => 'mobile-entry-measurements',
+                    'date' => $selectedDate->toDateString()
+                ], 'Delete', 'btn-danger', true)
+                ->add();
         }
 
-        // Only include empty message when there are no items
-        if (!$hasItems) {
-            $itemsBuilder->emptyMessage(config('mobile_entry_messages.empty_states.no_measurements_logged', 'No measurements logged yet today!'));
+        if ($logs->isEmpty()) {
+            $tableBuilder->emptyMessage(config('mobile_entry_messages.empty_states.no_measurements_logged', 'No measurements logged yet today!'));
         }
 
-        return $itemsBuilder->build()['data'];
+        return $tableBuilder->build();
     }
 
 

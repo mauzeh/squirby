@@ -78,10 +78,10 @@ class BodyLogServiceTest extends TestCase
         $this->assertCount(0, $forms);
         
         // But should show the logged item
-        $loggedItems = $this->service->generateLoggedItems($this->user->id, $selectedDate);
-        $this->assertCount(1, $loggedItems['items']);
-        $this->assertEquals('Weight', $loggedItems['items'][0]['title']);
-        $this->assertEquals('185.5 lbs', $loggedItems['items'][0]['message']['text']);
+        $component = $this->service->generateLoggedItems($this->user->id, $selectedDate);
+        $this->assertCount(1, $component['data']['rows']);
+        $this->assertEquals('Weight', $component['data']['rows'][0]['line1']);
+        $this->assertEquals('185.5 lbs', $component['data']['rows'][0]['line2']);
     }
 
 
@@ -105,14 +105,14 @@ class BodyLogServiceTest extends TestCase
             'comments' => 'Morning weigh-in'
         ]);
 
-        $loggedItems = $this->service->generateLoggedItems($this->user->id, $selectedDate);
+        $component = $this->service->generateLoggedItems($this->user->id, $selectedDate);
 
-        $this->assertCount(1, $loggedItems['items']);
-        $item = $loggedItems['items'][0];
+        $this->assertCount(1, $component['data']['rows']);
+        $item = $component['data']['rows'][0];
         
-        $this->assertEquals('Weight', $item['title']);
-        $this->assertEquals('185.5 lbs', $item['message']['text']);
-        $this->assertEquals('Morning weigh-in', $item['freeformText']);
+        $this->assertEquals('Weight', $item['line1']);
+        $this->assertEquals('185.5 lbs', $item['line2']);
+        $this->assertEquals('Morning weigh-in', $item['line3']);
     }
 
 
