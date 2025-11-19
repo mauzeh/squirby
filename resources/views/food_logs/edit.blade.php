@@ -20,16 +20,10 @@
                 @method('PUT')
                 <div class="form-group">
                     <label for="ingredient_id">Ingredient:</label>
-                    <x-ingredient-select name="ingredient_id" id="ingredient_id" :ingredients="$ingredients" :selected="old('ingredient_id', $foodLog->ingredient_id)" required />
+                    <x-ingredient-select name="ingredient_id" id="ingredient_id" :ingredients="$ingredients"
+                        :selected="old('ingredient_id', $foodLog->ingredient_id)" required />
                 </div>
-                <div class="form-group">
-                    <label for="date">Date:</label>
-                    <x-date-select name="date" id="date" :selectedDate="$foodLog->logged_at->format('Y-m-d')" required />
-                </div>
-                <div class="form-group">
-                    <label for="logged_at">Time:</label>
-                    <x-time-select name="logged_at" id="logged_at" :selectedTime="$foodLog->logged_at->format('H:i')" required />
-                </div>
+
                 <div class="form-group">
                     <label for="quantity">Quantity:</label>
                     <x-quantity-input name="quantity" id="quantity" :value="old('quantity', $foodLog->quantity)" required />
