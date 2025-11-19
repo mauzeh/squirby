@@ -128,10 +128,12 @@ class FoodLogService extends MobileEntryBaseService
             $line2 = $quantityText . ' • ' . $nutritionText;
 
             $tableBuilder->row($log->id, $log->ingredient->name, $line2, $log->notes)
+                ->linkAction('fa-pencil', route('food-logs.edit', $log->id), 'Edit', 'btn-transparent')
                 ->formAction('fa-trash', route('food-logs.destroy', $log->id), 'DELETE', [
                     'redirect_to' => 'mobile-entry.foods',
                     'date' => $selectedDate->toDateString()
-                ], 'Delete', 'btn-danger', true)
+                ], 'Delete', 'btn-transparent', true)
+                ->compact()
                 ->add();
         }
 

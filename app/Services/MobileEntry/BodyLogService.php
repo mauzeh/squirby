@@ -41,10 +41,12 @@ class BodyLogService extends MobileEntryBaseService
             $valueText = $log->value . ' ' . $log->measurementType->default_unit;
 
             $tableBuilder->row($log->id, $log->measurementType->name, $valueText, $log->comments)
+                ->linkAction('fa-pencil', route('body-logs.edit', $log->id), 'Edit', 'btn-transparent')
                 ->formAction('fa-trash', route('body-logs.destroy', $log->id), 'DELETE', [
                     'redirect_to' => 'mobile-entry-measurements',
                     'date' => $selectedDate->toDateString()
-                ], 'Delete', 'btn-danger', true)
+                ], 'Delete', 'btn-transparent', true)
+                ->compact()
                 ->add();
         }
 
