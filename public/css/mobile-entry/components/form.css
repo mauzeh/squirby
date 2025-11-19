@@ -547,3 +547,16 @@
         font-size: 0.85em;
     }
 }
+
+.decrement-button.active,
+.increment-button.active {
+    background-color: #495057;
+    transform: scale(0.98);
+}
+
+
+.decrement-button.holding,
+.increment-button.holding {
+    background-color: var(--color-warning); /* A nice orange color */
+}
+

@@ -309,21 +309,46 @@ document.addEventListener('DOMContentLoaded', function() {
             
             /**
              * Event Listener Setup
-             * Connects the button functions to click events and sets up input monitoring
+             * Connects the button functions to mousedown/mouseup events for hold-to-repeat functionality
              */
+            let timer;
+            let interval;
+            
+            const startAction = (action, button) => {
+                button.classList.add('active');
+                action(); // Perform action immediately
+                timer = setTimeout(() => {
+                    button.classList.add('holding');
+                    interval = setInterval(action, 100); // Then repeat every 100ms
+                }, 400); // Initial delay of 400ms
+            };
+            
+            const stopAction = (button) => {
+                button.classList.remove('active');
+                button.classList.remove('holding');
+                clearTimeout(timer);
+                clearInterval(interval);
+            };
             
             // Connect decrement button to its function
-            decrementBtn.addEventListener('click', decrementValue);
+            decrementBtn.addEventListener('mousedown', () => startAction(decrementValue, decrementBtn));
+            decrementBtn.addEventListener('touchstart', (e) => { e.preventDefault(); startAction(decrementValue, decrementBtn); });
             
             // Connect increment button to its function
-            incrementBtn.addEventListener('click', incrementValue);
+            incrementBtn.addEventListener('mousedown', () => startAction(incrementValue, incrementBtn));
+            incrementBtn.addEventListener('touchstart', (e) => { e.preventDefault(); startAction(incrementValue, incrementBtn); });
+            
+            // Stop action on mouseup, mouseleave, or touchend
+            [decrementBtn, incrementBtn].forEach(btn => {
+                btn.addEventListener('mouseup', () => stopAction(btn));
+                btn.addEventListener('mouseleave', () => stopAction(btn));
+                btn.addEventListener('touchend', () => stopAction(btn));
+            });
             
             // Monitor manual input changes (when user types directly)
-            // This ensures button states update even when users don't use the buttons
             input.addEventListener('input', updateButtonStates);
             
             // Set initial button states when the page loads
-            // This handles cases where inputs have default values
             updateButtonStates();
         });
     };
