@@ -128,13 +128,24 @@ class FoodLogServiceTest extends TestCase
         $this->assertEquals('Chicken Breast', $row['line1']);
         $this->assertStringContainsString('150 g • 100 cal, 100g protein', $row['line2']);
         $this->assertEquals('Grilled with herbs', $row['line3']);
+        $this->assertTrue($row['compact']);
+
+        // Check actions
+        $this->assertCount(2, $row['actions']);
         
-        // Check delete action
-        $this->assertCount(1, $row['actions']);
-        $deleteAction = $row['actions'][0];
+        // Edit Action
+        $editAction = $row['actions'][0];
+        $this->assertEquals('link', $editAction['type']);
+        $this->assertEquals('fa-pencil', $editAction['icon']);
+        $this->assertEquals('btn-transparent', $editAction['cssClass']);
+        $this->assertStringContainsString('food-logs/' . $foodLog->id . '/edit', $editAction['url']);
+
+        // Delete Action
+        $deleteAction = $row['actions'][1];
         $this->assertEquals('form', $deleteAction['type']);
         $this->assertEquals('fa-trash', $deleteAction['icon']);
         $this->assertTrue($deleteAction['requiresConfirm']);
+        $this->assertEquals('btn-transparent', $deleteAction['cssClass']);
         $this->assertStringContainsString('food-logs/' . $foodLog->id, $deleteAction['url']);
         $this->assertEquals('mobile-entry.foods', $deleteAction['params']['redirect_to']);
     }

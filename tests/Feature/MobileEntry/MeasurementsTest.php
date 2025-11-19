@@ -147,10 +147,11 @@ class MeasurementsTest extends TestCase
         $this->assertCount(1, $formComponents);
         $this->assertEquals('Body Fat', $formComponents[0]['data']['title']);
         
-        // Should show the logged measurement in logged items
-        $itemsComponent = collect($data['components'])->firstWhere('type', 'items');
-        $this->assertCount(1, $itemsComponent['data']['items']);
-        $this->assertEquals('Weight', $itemsComponent['data']['items'][0]['title']);
+        // Should show the logged measurement in logged items table
+        $tableComponent = collect($data['components'])->firstWhere('type', 'table');
+        $this->assertNotNull($tableComponent, "The 'table' component for logged items is missing.");
+        $this->assertCount(1, $tableComponent['data']['rows']);
+        $this->assertEquals('Weight', $tableComponent['data']['rows'][0]['line1']);
     }
 
     /** @test */
@@ -178,13 +179,14 @@ class MeasurementsTest extends TestCase
         $response->assertStatus(200);
         
         $data = $response->viewData('data');
-        $itemsComponent = collect($data['components'])->firstWhere('type', 'items');
-        $this->assertCount(1, $itemsComponent['data']['items']);
+        $tableComponent = collect($data['components'])->firstWhere('type', 'table');
+        $this->assertNotNull($tableComponent, "The 'table' component for logged items is missing.");
+        $this->assertCount(1, $tableComponent['data']['rows']);
         
-        $loggedItem = $itemsComponent['data']['items'][0];
-        $this->assertEquals('Weight', $loggedItem['title']);
-        $this->assertEquals('185.5 lbs', $loggedItem['message']['text']);
-        $this->assertEquals('Morning weigh-in', $loggedItem['freeformText']);
+        $loggedItem = $tableComponent['data']['rows'][0];
+        $this->assertEquals('Weight', $loggedItem['line1']);
+        $this->assertEquals('185.5 lbs', $loggedItem['line2']);
+        $this->assertEquals('Morning weigh-in', $loggedItem['line3']);
     }
 
     /** @test */
