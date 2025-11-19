@@ -11,7 +11,6 @@ use App\Services\Components\Interactive\FormComponentBuilder;
 use App\Services\Components\Interactive\BulkActionFormComponentBuilder;
 use App\Services\Components\Interactive\SelectAllControlComponentBuilder;
 use App\Services\Components\Lists\ItemListComponentBuilder;
-use App\Services\Components\Lists\ItemsComponentBuilder;
 use App\Services\Components\Tables\TableComponentBuilder;
 use App\Services\Components\Charts\ChartComponentBuilder;
 
@@ -109,14 +108,6 @@ class ComponentBuilder
     public static function form(string $id, string $title): FormComponentBuilder
     {
         return new FormComponentBuilder($id, $title);
-    }
-    
-    /**
-     * Create an items component
-     */
-    public static function items(): ItemsComponentBuilder
-    {
-        return new ItemsComponentBuilder();
     }
     
     /**

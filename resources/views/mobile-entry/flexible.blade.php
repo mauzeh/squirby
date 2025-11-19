@@ -7,7 +7,6 @@
     <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/messages.css') }}">
     <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/summary.css') }}">
     <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/button.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/items.css') }}">
     <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/table.css') }}">
     <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/form.css') }}">
     <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/list.css') }}">

@@ -87,16 +87,20 @@ class LabsController extends Controller
                     ->submitButton('Log Bench Press')
                     ->build(),
                 
-                // Items (previously logged items)
-                C::items()
-                    ->item(1, 'Morning Workout', 25, '#', '#')
-                        ->message('neutral', 'Great session!', 'Comment:')
-                        ->freeformText('Felt great today! Energy levels were high.')
+                // Items (previously logged items - now a table)
+                C::table()
+                    ->row(1, 'Morning Workout', 'Completed')
+                        ->subItem(11, 'Great session!', 'Comment:')
+                            ->add()
+                        ->subItem(12, 'Felt great today! Energy levels were high.', 'Notes:')
+                            ->add()
                         ->add()
-                    ->item(2, 'Afternoon Session', 15, '#', '#')
-                        ->message('neutral', 'Quick session', 'Comment:')
+                    ->row(2, 'Afternoon Session', 'Completed')
+                        ->subItem(21, 'Quick session', 'Comment:')
+                            ->add()
                         ->add()
                     ->emptyMessage('No items yet.')
+                    ->spacedRows()
                     ->build(),
             ],
         ];
