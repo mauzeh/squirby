@@ -134,12 +134,22 @@ class FoodLogController extends Controller
 
 
 
-    public function edit(FoodLog $foodLog)
+    public function edit(FoodLog $foodLog, FoodLogService $foodLogService)
     {
         if ($foodLog->user_id !== auth()->id()) {
             abort(403, 'Unauthorized action.');
         }
-        return view('food_logs.edit', compact('foodLog'));
+
+        $form = $foodLogService->generateEditForm($foodLog);
+
+        // Add a title component
+        $title = \App\Services\ComponentBuilder::title('Edit Food Log', $foodLog->logged_at->format('M d, Y - H:i'))->build();
+
+        return view('mobile-entry.flexible', [
+            'data' => [
+                'components' => [$title, $form]
+            ]
+        ]);
     }
 
     public function update(Request $request, FoodLog $foodLog)

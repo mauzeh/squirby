@@ -1008,6 +1008,32 @@ class FoodLogService extends MobileEntryBaseService
         }
         return $now->format('H:i');
     }
+    /**
+     * Generate an edit form for a food log entry
+     *
+     * @param FoodLog $foodLog
+     * @return array
+     */
+    public function generateEditForm(FoodLog $foodLog)
+    {
+        $formId = 'edit-food-log-' . $foodLog->id;
+
+        // Determine increment based on unit
+        $increment = 1;
+        if ($foodLog->ingredient && $foodLog->ingredient->baseUnit) {
+            $increment = $this->getQuantityIncrement($foodLog->ingredient->baseUnit->name, $foodLog->quantity);
+        }
+
+        $builder = C::form($formId, $foodLog->ingredient->name)
+            ->formAction(route('food-logs.update', $foodLog->id))
+            ->hiddenField('_method', 'PUT')
+            ->hiddenField('redirect_to', 'mobile-entry.foods')
+            ->numericField('quantity', 'Quantity', $foodLog->quantity, $increment, 0.01, null, 'any')
+            ->textareaField('notes', 'Notes', $foodLog->notes ?? '')
+            ->submitButton('Update Entry');
+
+        return $builder->build();
+    }
 
 
 

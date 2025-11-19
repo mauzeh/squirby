@@ -91,8 +91,12 @@ class FormComponentBuilder
         return $this;
     }
     
-    public function numericField(string $name, string $label, $defaultValue, float $increment = 1, float $min = 0, ?float $max = null): self
+    public function numericField(string $name, string $label, $defaultValue, float $increment = 1, float $min = 0, ?float $max = null, $step = null): self
     {
+        if ($step === null) {
+            $step = $increment;
+        }
+
         $field = [
             'id' => $this->data['id'] . '-' . $name,
             'name' => $name,
@@ -101,7 +105,7 @@ class FormComponentBuilder
             'increment' => $increment,
             'min' => $min,
             'max' => $max,
-            'step' => $increment,
+            'step' => $step,
             'ariaLabels' => [
                 'decrease' => 'Decrease ' . strtolower($label),
                 'increase' => 'Increase ' . strtolower($label)
