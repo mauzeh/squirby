@@ -118,30 +118,25 @@ class FoodLogServiceTest extends TestCase
             'notes' => 'Grilled with herbs'
         ]);
         
-        $loggedItems = $this->service->generateLoggedItems($user->id, $this->testDate);
+        $component = $this->service->generateLoggedItems($user->id, $this->testDate);
         
-        $this->assertCount(1, $loggedItems['items']);
-        $this->assertArrayHasKey('emptyMessage', $loggedItems);
-        $this->assertEquals('', $loggedItems['emptyMessage']); // Should be empty string when there are items
+        $this->assertEquals('table', $component['type']);
+        $this->assertCount(1, $component['data']['rows']);
         
-        $item = $loggedItems['items'][0];
-        $this->assertEquals($foodLog->id, $item['id']);
-        $this->assertEquals('Chicken Breast', $item['title']);
-        $this->assertStringContainsString('food-logs/' . $foodLog->id . '/edit', $item['editAction']);
-        $this->assertStringContainsString('food-logs/' . $foodLog->id, $item['deleteAction']);
+        $row = $component['data']['rows'][0];
+        $this->assertEquals($foodLog->id, $row['id']);
+        $this->assertEquals('Chicken Breast', $row['line1']);
+        $this->assertStringContainsString('150 g • 100 cal, 100g protein', $row['line2']);
+        $this->assertEquals('Grilled with herbs', $row['line3']);
         
-        // Check message format
-        $this->assertEquals('success', $item['message']['type']);
-        $this->assertEquals('Completed!', $item['message']['prefix']);
-        $this->assertStringContainsString('150 g • 100 cal, 100g protein', $item['message']['text']);
-        
-        // Check notes
-        $this->assertEquals('Grilled with herbs', $item['freeformText']);
-        
-        // Check delete parameters
-        $this->assertArrayHasKey('deleteParams', $item);
-        $this->assertEquals('mobile-entry.foods', $item['deleteParams']['redirect_to']);
-        $this->assertEquals($this->testDate->toDateString(), $item['deleteParams']['date']);
+        // Check delete action
+        $this->assertCount(1, $row['actions']);
+        $deleteAction = $row['actions'][0];
+        $this->assertEquals('form', $deleteAction['type']);
+        $this->assertEquals('fa-trash', $deleteAction['icon']);
+        $this->assertTrue($deleteAction['requiresConfirm']);
+        $this->assertStringContainsString('food-logs/' . $foodLog->id, $deleteAction['url']);
+        $this->assertEquals('mobile-entry.foods', $deleteAction['params']['redirect_to']);
     }
 
     #[Test]
@@ -171,10 +166,10 @@ class FoodLogServiceTest extends TestCase
         // Delete the ingredient to simulate missing relationship
         $tempIngredient->delete();
         
-        $loggedItems = $this->service->generateLoggedItems($user->id, $this->testDate);
+        $component = $this->service->generateLoggedItems($user->id, $this->testDate);
         
         // Should only include the valid log
-        $this->assertCount(1, $loggedItems['items']);
+        $this->assertCount(1, $component['data']['rows']);
     }
 
     #[Test]
@@ -182,15 +177,15 @@ class FoodLogServiceTest extends TestCase
     {
         $user = User::factory()->create();
         
-        $loggedItems = $this->service->generateLoggedItems($user->id, $this->testDate);
+        $component = $this->service->generateLoggedItems($user->id, $this->testDate);
         
-        $this->assertEmpty($loggedItems['items']);
-        $this->assertArrayHasKey('emptyMessage', $loggedItems);
-        $this->assertEquals('No food logged yet today! Add ingredients or meals above to get started.', $loggedItems['emptyMessage']);
+        $this->assertEmpty($component['data']['rows']);
+        $this->assertArrayHasKey('emptyMessage', $component['data']);
+        $this->assertEquals('No food logged yet today! Add ingredients or meals above to get started.', $component['data']['emptyMessage']);
         
         // Check confirmation messages and aria labels are still present
-        $this->assertArrayHasKey('confirmMessages', $loggedItems);
-        $this->assertArrayHasKey('ariaLabels', $loggedItems);
+        $this->assertArrayHasKey('confirmMessages', $component['data']);
+        $this->assertArrayHasKey('ariaLabels', $component['data']);
     }
 
     #[Test]
@@ -216,12 +211,12 @@ class FoodLogServiceTest extends TestCase
             'logged_at' => $this->testDate->copy()->setTime(14, 0) // Later
         ]);
         
-        $loggedItems = $this->service->generateLoggedItems($user->id, $this->testDate);
+        $component = $this->service->generateLoggedItems($user->id, $this->testDate);
         
-        $this->assertCount(2, $loggedItems['items']);
+        $this->assertCount(2, $component['data']['rows']);
         // Should be ordered by logged_at desc (most recent first)
-        $this->assertEquals('Second Food', $loggedItems['items'][0]['title']); // 14:00
-        $this->assertEquals('First Food', $loggedItems['items'][1]['title']);  // 10:00
+        $this->assertEquals('Second Food', $component['data']['rows'][0]['line1']); // 14:00
+        $this->assertEquals('First Food', $component['data']['rows'][1]['line1']);  // 10:00
     }
 
     #[Test]

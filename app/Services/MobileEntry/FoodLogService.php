@@ -108,11 +108,11 @@ class FoodLogService extends MobileEntryBaseService
             ->orderBy('logged_at', 'desc')
             ->get();
 
-        $itemsBuilder = C::items()
+        $tableBuilder = C::table()
             ->confirmMessage('deleteItem', 'Are you sure you want to delete this food log entry? This action cannot be undone.')
-            ->confirmMessage('removeForm', 'Are you sure you want to remove this food item from today\'s quick entry?');
+            ->ariaLabel('Logged food items')
+            ->spacedRows();
         
-        $hasItems = false;
         foreach ($logs as $log) {
             if (!$log->ingredient || !$log->unit) {
                 continue;
@@ -124,31 +124,22 @@ class FoodLogService extends MobileEntryBaseService
             
             $quantityText = $log->quantity . ' ' . $log->unit->name;
             $nutritionText = $calories . ' cal, ' . $protein . 'g protein';
-
-            $itemsBuilder->item(
-                $log->id,
-                $log->ingredient->name,
-                null,
-                route('food-logs.edit', ['food_log' => $log->id]),
-                route('food-logs.destroy', ['food_log' => $log->id])
-            )
-            ->message('success', $quantityText . ' • ' . $nutritionText, 'Completed!')
-            ->freeformText($log->notes ?? '')
-            ->deleteParams([
-                'redirect_to' => 'mobile-entry.foods',
-                'date' => $selectedDate->toDateString()
-            ])
-            ->add();
             
-            $hasItems = true;
+            $line2 = $quantityText . ' • ' . $nutritionText;
+
+            $tableBuilder->row($log->id, $log->ingredient->name, $line2, $log->notes)
+                ->formAction('fa-trash', route('food-logs.destroy', $log->id), 'DELETE', [
+                    'redirect_to' => 'mobile-entry.foods',
+                    'date' => $selectedDate->toDateString()
+                ], 'Delete', 'btn-danger', true)
+                ->add();
         }
 
-        // Only include empty message when there are no items
-        if (!$hasItems) {
-            $itemsBuilder->emptyMessage(config('mobile_entry_messages.empty_states.no_food_logged'));
+        if ($logs->isEmpty()) {
+            $tableBuilder->emptyMessage(config('mobile_entry_messages.empty_states.no_food_logged'));
         }
 
-        return $itemsBuilder->build()['data'];
+        return $tableBuilder->build();
     }
 
     /**

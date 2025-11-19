@@ -397,7 +397,7 @@ class MobileEntryController extends Controller
         $components = array_merge($components, $forms);
         
         // Logged items
-        $components[] = ['type' => 'items', 'data' => $loggedItems];
+        $components[] = $loggedItems;
         
         $data = [
             'components' => $components,

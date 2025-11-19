@@ -11,25 +11,16 @@ class ComponentAssetInclusionTest extends TestCase
     use RefreshDatabase;
 
     /** @test */
-    public function it_dynamically_includes_required_styles()
+    public function it_statically_includes_all_component_styles()
     {
         $user = User::factory()->create();
 
         $response = $this->actingAs($user)->get(route('mobile-entry.lifts'));
 
         $response->assertStatus(200);
-        $response->assertSee('component-list.css', false);
-    }
-
-    /** @test */
-    public function it_does_not_include_styles_if_component_is_not_present()
-    {
-        $user = User::factory()->create();
-
-        $response = $this->actingAs($user)->get(route('mobile-entry.measurements'));
-
-        $response->assertStatus(200);
-        $response->assertDontSee('component-list.css', false);
+        $response->assertSee('components/list.css', false);
+        $response->assertSee('components/table.css', false);
+        $response->assertSee('components/form.css', false);
     }
 
     /** @test */
