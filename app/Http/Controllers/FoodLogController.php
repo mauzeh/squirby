@@ -139,8 +139,7 @@ class FoodLogController extends Controller
         if ($foodLog->user_id !== auth()->id()) {
             abort(403, 'Unauthorized action.');
         }
-        $ingredients = Ingredient::with('baseUnit')->orderBy('name')->get();
-        return view('food_logs.edit', compact('foodLog', 'ingredients'));
+        return view('food_logs.edit', compact('foodLog'));
     }
 
     public function update(Request $request, FoodLog $foodLog)
@@ -149,15 +148,12 @@ class FoodLogController extends Controller
             abort(403, 'Unauthorized action.');
         }
         $validated = $request->validate([
-            'ingredient_id' => 'required|exists:ingredients,id',
+            'ingredient_id' => 'sometimes|exists:ingredients,id',
             'quantity' => 'required|numeric|min:0.01',
             'logged_at' => 'sometimes|date_format:H:i',
             'date' => 'sometimes|date',
             'notes' => 'nullable|string',
         ]);
-
-        $ingredient = Ingredient::find($validated['ingredient_id']);
-        $validated['unit_id'] = $ingredient->base_unit_id;
 
         if (isset($validated['date']) && isset($validated['logged_at'])) {
             $loggedAtDate = Carbon::parse($validated['date']);

@@ -18,11 +18,7 @@
             <form action="{{ route('food-logs.update', $foodLog->id) }}" method="POST">
                 @csrf
                 @method('PUT')
-                <div class="form-group">
-                    <label for="ingredient_id">Ingredient:</label>
-                    <x-ingredient-select name="ingredient_id" id="ingredient_id" :ingredients="$ingredients"
-                        :selected="old('ingredient_id', $foodLog->ingredient_id)" required />
-                </div>
+
 
                 <div class="form-group">
                     <label for="quantity">Quantity:</label>
