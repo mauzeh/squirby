@@ -135,6 +135,16 @@ return [
                 'params' => ['date'],
             ],
         ],
+        'update' => [
+            'mobile-entry.foods' => [
+                'route' => 'mobile-entry.foods',
+                'params' => ['date'],
+            ],
+            'default' => [
+                'route' => 'food-logs.index',
+                'params' => ['date'],
+            ],
+        ],
         'destroy' => [
             // Special case: accepts any route name directly
             'dynamic' => true,

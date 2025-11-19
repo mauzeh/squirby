@@ -14,7 +14,7 @@ class FoodLogEditTest extends TestCase
     use RefreshDatabase;
 
     /** @test */
-    public function it_should_not_require_ingredient_id_when_updating_a_food_log()
+    public function it_can_update_a_food_log_and_redirect_correctly()
     {
         $user = User::factory()->create();
         $this->actingAs($user);
@@ -25,18 +25,33 @@ class FoodLogEditTest extends TestCase
             'ingredient_id' => $ingredient->id,
         ]);
 
+        // Test redirect to mobile entry
         $response = $this->put(route('food-logs.update', $foodLog->id), [
             'quantity' => 100,
             'notes' => 'Updated notes',
+            'redirect_to' => 'mobile-entry.foods',
         ]);
 
         $response->assertSessionHasNoErrors();
-        $response->assertRedirect(route('food-logs.index', ['date' => $foodLog->logged_at->format('Y-m-d')]));
-
+        $response->assertRedirect(route('mobile-entry.foods', ['date' => $foodLog->logged_at->format('Y-m-d')]));
         $this->assertDatabaseHas('food_logs', [
             'id' => $foodLog->id,
             'quantity' => 100,
             'notes' => 'Updated notes',
+        ]);
+
+        // Test redirect to index
+        $response = $this->put(route('food-logs.update', $foodLog->id), [
+            'quantity' => 150,
+            'notes' => 'Updated notes again',
+        ]);
+
+        $response->assertSessionHasNoErrors();
+        $response->assertRedirect(route('food-logs.index', ['date' => $foodLog->logged_at->format('Y-m-d')]));
+        $this->assertDatabaseHas('food_logs', [
+            'id' => $foodLog->id,
+            'quantity' => 150,
+            'notes' => 'Updated notes again',
         ]);
     }
 

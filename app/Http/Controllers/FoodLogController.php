@@ -134,13 +134,13 @@ class FoodLogController extends Controller
 
 
 
-    public function edit(FoodLog $foodLog, FoodLogService $foodLogService)
+    public function edit(Request $request, FoodLog $foodLog, FoodLogService $foodLogService)
     {
         if ($foodLog->user_id !== auth()->id()) {
             abort(403, 'Unauthorized action.');
         }
 
-        $form = $foodLogService->generateEditForm($foodLog);
+        $form = $foodLogService->generateEditForm($foodLog, $request->input('redirect_to'));
 
         // Add a title component
         $title = \App\Services\ComponentBuilder::title('Edit Food Log', $foodLog->logged_at->format('M d, Y - H:i'))->build();
@@ -172,9 +172,13 @@ class FoodLogController extends Controller
 
         $foodLog->update($validated);
 
-        $redirectDate = $validated['date'] ?? $foodLog->logged_at->format('Y-m-d');
-
-        return redirect()->route('food-logs.index', ['date' => $redirectDate])->with('success', 'Log entry updated successfully!');
+        return $this->redirectService->getRedirect(
+            'food_logs',
+            'update',
+            $request,
+            ['date' => $foodLog->logged_at->format('Y-m-d')],
+            'Log entry updated successfully!'
+        );
     }
 
     public function destroy(FoodLog $foodLog, Request $request)

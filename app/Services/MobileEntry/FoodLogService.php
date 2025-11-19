@@ -128,7 +128,7 @@ class FoodLogService extends MobileEntryBaseService
             $line2 = $quantityText . ' • ' . $nutritionText;
 
             $tableBuilder->row($log->id, $log->ingredient->name, $line2, $log->notes)
-                ->linkAction('fa-pencil', route('food-logs.edit', $log->id), 'Edit', 'btn-transparent')
+                ->linkAction('fa-pencil', route('food-logs.edit', ['food_log' => $log->id, 'redirect_to' => 'mobile-entry.foods']), 'Edit', 'btn-transparent')
                 ->formAction('fa-trash', route('food-logs.destroy', $log->id), 'DELETE', [
                     'redirect_to' => 'mobile-entry.foods',
                     'date' => $selectedDate->toDateString()
@@ -1014,7 +1014,7 @@ class FoodLogService extends MobileEntryBaseService
      * @param FoodLog $foodLog
      * @return array
      */
-    public function generateEditForm(FoodLog $foodLog)
+    public function generateEditForm(FoodLog $foodLog, ?string $redirectTo = null)
     {
         $formId = 'edit-food-log-' . $foodLog->id;
 
@@ -1027,10 +1027,13 @@ class FoodLogService extends MobileEntryBaseService
         $builder = C::form($formId, $foodLog->ingredient->name)
             ->formAction(route('food-logs.update', $foodLog->id))
             ->hiddenField('_method', 'PUT')
-            ->hiddenField('redirect_to', 'mobile-entry.foods')
             ->numericField('quantity', 'Quantity', $foodLog->quantity, $increment, 0.01, null, 'any')
             ->textareaField('notes', 'Notes', $foodLog->notes ?? '')
             ->submitButton('Update Entry');
+
+        if ($redirectTo) {
+            $builder->hiddenField('redirect_to', $redirectTo);
+        }
 
         return $builder->build();
     }

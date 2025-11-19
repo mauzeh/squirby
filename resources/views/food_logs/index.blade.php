@@ -148,7 +148,7 @@
                             <td class="hide-on-mobile">{{ number_format($nutritionService->calculateCostForQuantity($log->ingredient, (float)$log->quantity), 2) }}</td>
                             <td class="actions-column">
                                 <div style="display: flex; gap: 5px;">
-                                    <a href="{{ route('food-logs.edit', $log->id) }}" class="button edit"><i class="fa-solid fa-pencil"></i></a>
+                                    <a href="{{ route('food-logs.edit', ['food_log' => $log, 'redirect_to' => 'food-logs.index']) }}" class="button edit"><i class="fa-solid fa-pencil"></i></a>
                                     <form action="{{ route('food-logs.destroy', $log->id) }}" method="POST" style="display:inline;">
                                         @csrf
                                         @method('DELETE')
