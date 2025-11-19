@@ -126,7 +126,15 @@ class FoodLogServiceTest extends TestCase
         $row = $component['data']['rows'][0];
         $this->assertEquals($foodLog->id, $row['id']);
         $this->assertEquals('Chicken Breast', $row['line1']);
-        $this->assertStringContainsString('150 g • 100 cal, 100g protein', $row['line2']);
+        $this->assertArrayNotHasKey('line2', $row);
+        $this->assertCount(3, $row['badges']);
+        $this->assertEquals('150 g', $row['badges'][0]['text']);
+        $this->assertEquals('neutral', $row['badges'][0]['colorClass']);
+        $this->assertEquals('100 cal', $row['badges'][1]['text']);
+        $this->assertEquals('warning', $row['badges'][1]['colorClass']);
+        $this->assertTrue($row['badges'][1]['emphasized']);
+        $this->assertEquals('100g protein', $row['badges'][2]['text']);
+        $this->assertEquals('success', $row['badges'][2]['colorClass']);
         $this->assertEquals('Grilled with herbs', $row['line3']);
         $this->assertTrue($row['compact']);
 

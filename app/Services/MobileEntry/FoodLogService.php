@@ -123,11 +123,13 @@ class FoodLogService extends MobileEntryBaseService
             $protein = round($this->nutritionService->calculateTotalMacro($log->ingredient, 'protein', (float)$log->quantity), 1);
             
             $quantityText = $log->quantity . ' ' . $log->unit->name;
-            $nutritionText = $calories . ' cal, ' . $protein . 'g protein';
-            
-            $line2 = $quantityText . ' • ' . $nutritionText;
+            $caloriesText = $calories . ' cal';
+            $proteinText = $protein . 'g protein';
 
-            $tableBuilder->row($log->id, $log->ingredient->name, $line2, $log->notes)
+            $tableBuilder->row($log->id, $log->ingredient->name, null, $log->notes)
+                ->badge($quantityText, 'neutral')
+                ->badge($caloriesText, 'warning', true)
+                ->badge($proteinText, 'success')
                 ->linkAction('fa-pencil', route('food-logs.edit', ['food_log' => $log->id, 'redirect_to' => 'mobile-entry.foods']), 'Edit', 'btn-transparent')
                 ->formAction('fa-trash', route('food-logs.destroy', $log->id), 'DELETE', [
                     'redirect_to' => 'mobile-entry.foods',

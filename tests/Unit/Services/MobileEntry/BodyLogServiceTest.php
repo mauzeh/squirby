@@ -81,7 +81,10 @@ class BodyLogServiceTest extends TestCase
         $component = $this->service->generateLoggedItems($this->user->id, $selectedDate);
         $this->assertCount(1, $component['data']['rows']);
         $this->assertEquals('Weight', $component['data']['rows'][0]['line1']);
-        $this->assertEquals('185.5 lbs', $component['data']['rows'][0]['line2']);
+        $this->assertArrayNotHasKey('line2', $component['data']['rows'][0]);
+        $this->assertCount(1, $component['data']['rows'][0]['badges']);
+        $this->assertEquals('185.5 lbs', $component['data']['rows'][0]['badges'][0]['text']);
+        $this->assertEquals('info', $component['data']['rows'][0]['badges'][0]['colorClass']);
     }
 
 
@@ -111,7 +114,11 @@ class BodyLogServiceTest extends TestCase
         $item = $component['data']['rows'][0];
         
         $this->assertEquals('Weight', $item['line1']);
-        $this->assertEquals('185.5 lbs', $item['line2']);
+        $this->assertArrayNotHasKey('line2', $item);
+        $this->assertCount(1, $item['badges']);
+        $this->assertEquals('185.5 lbs', $item['badges'][0]['text']);
+        $this->assertEquals('info', $item['badges'][0]['colorClass']);
+        $this->assertTrue($item['badges'][0]['emphasized']);
         $this->assertEquals('Morning weigh-in', $item['line3']);
     }
 
