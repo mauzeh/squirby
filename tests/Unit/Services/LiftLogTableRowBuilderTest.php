@@ -111,9 +111,9 @@ class LiftLogTableRowBuilderTest extends TestCase
         return [
             'Today' => [fn() => now(), 'Today', 'success'],
             'Yesterday' => [fn() => now()->subDay(), 'Yesterday', 'warning'],
-            '2 days ago' => [fn() => now()->subDays(2), '2 days ago', 'info'],
-            'Almost 2 days (now should be 2 days ago)' => [fn() => now()->subHours(47), '2 days ago', 'info'],
-            'Within 7 days' => [fn() => now()->subDays(5), '5 days ago', 'info'],
+            '2 days ago' => [fn() => now()->subDays(2), '2 days ago', 'neutral'],
+            'Almost 2 days (now should be 2 days ago)' => [fn() => now()->subHours(47), '2 days ago', 'neutral'],
+            'Within 7 days' => [fn() => now()->subDays(5), '5 days ago', 'neutral'],
             'More than 7 days ago' => [fn() => now()->subDays(10), '5/16', 'neutral'],
         ];
     }

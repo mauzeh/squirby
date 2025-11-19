@@ -38,7 +38,7 @@ class LiftLogTablePresenter
         } elseif ($loggedDate->isYesterday()) {
             return ['text' => 'Yesterday', 'color' => 'warning'];
         } elseif ($daysDiff <= 7) {
-            return ['text' => (int) $daysDiff . ' days ago', 'color' => 'info'];
+            return ['text' => (int) $daysDiff . ' days ago', 'color' => 'neutral'];
         } else {
             return ['text' => $loggedDate->format('n/j'), 'color' => 'neutral'];
         }

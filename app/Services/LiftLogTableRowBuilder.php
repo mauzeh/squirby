@@ -193,7 +193,7 @@ class LiftLogTableRowBuilder
             $daysDiff = $loggedDate->copy()->startOfDay()->diffInDays($now->copy()->startOfDay());
 
             if ($daysDiff <= 7) {
-                return ['text' => $daysDiff . ' days ago', 'color' => 'info'];
+                return ['text' => $daysDiff . ' days ago', 'color' => 'neutral'];
             } else {
                 return ['text' => $loggedDate->format('n/j'), 'color' => 'neutral'];
             }
