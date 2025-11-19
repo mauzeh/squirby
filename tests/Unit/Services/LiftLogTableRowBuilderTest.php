@@ -72,15 +72,20 @@ class LiftLogTableRowBuilderTest extends TestCase
         $this->assertEquals('Test comment', $rows[0]['subItems'][0]['messages'][0]['text']);
     }
 
-    /** @test */
-    public function it_includes_date_badge_when_configured()
+    /**
+     * @test
+     * @dataProvider dateBadgeProvider
+     */
+    public function it_displays_correct_date_badge_based_on_logged_date($dateCallback, $expectedText, $expectedColor)
     {
+        Carbon::setTestNow(Carbon::create(2024, 5, 26, 12, 0, 0));
+
         $user = User::factory()->create();
         $exercise = Exercise::factory()->create(['exercise_type' => 'weighted']);
         $liftLog = LiftLog::factory()->create([
             'user_id' => $user->id,
             'exercise_id' => $exercise->id,
-            'logged_at' => now()
+            'logged_at' => $dateCallback()
         ]);
         LiftSet::factory()->create(['lift_log_id' => $liftLog->id]);
 
@@ -94,8 +99,23 @@ class LiftLogTableRowBuilderTest extends TestCase
         ]);
 
         $this->assertNotEmpty($rows[0]['badges']);
-        $this->assertEquals('Today', $rows[0]['badges'][0]['text']);
-        $this->assertEquals('success', $rows[0]['badges'][0]['colorClass']);
+        $dateBadge = $rows[0]['badges'][0];
+        $this->assertEquals($expectedText, $dateBadge['text']);
+        $this->assertEquals($expectedColor, $dateBadge['colorClass']);
+
+        Carbon::setTestNow(); // Clear the mocked time
+    }
+
+    public static function dateBadgeProvider()
+    {
+        return [
+            'Today' => [fn() => now(), 'Today', 'success'],
+            'Yesterday' => [fn() => now()->subDay(), 'Yesterday', 'warning'],
+            '2 days ago' => [fn() => now()->subDays(2), '2 days ago', 'info'],
+            'Almost 2 days (now should be 2 days ago)' => [fn() => now()->subHours(47), '2 days ago', 'info'],
+            'Within 7 days' => [fn() => now()->subDays(5), '5 days ago', 'info'],
+            'More than 7 days ago' => [fn() => now()->subDays(10), '5/16', 'neutral'],
+        ];
     }
 
     /** @test */
@@ -342,7 +362,7 @@ class LiftLogTableRowBuilderTest extends TestCase
     }
 
     /** @test */
-    public function it_includes_weight_badge_for_weighted_exercises()
+    public function it_styles_badges_with_correct_colors()
     {
         $user = User::factory()->create();
         $exercise = Exercise::factory()->create(['exercise_type' => 'weighted']);
@@ -361,12 +381,21 @@ class LiftLogTableRowBuilderTest extends TestCase
             ->andReturn($exercise->title);
 
         $this->actingAs($user);
-        $rows = $this->builder->buildRows(collect([$liftLog]));
+        $rows = $this->builder->buildRows(collect([$liftLog]), [
+            'showDateBadge' => false,
+        ]);
 
         $badges = $rows[0]['badges'];
-        $weightBadge = collect($badges)->firstWhere('colorClass', 'dark');
-        
-        $this->assertNotNull($weightBadge);
+
+        // Reps/sets badge should be 'info'
+        $repsSetsBadge = collect($badges)->firstWhere('text', '1 x 5');
+        $this->assertNotNull($repsSetsBadge, "Reps/sets badge with text '1 x 5' not found.");
+        $this->assertEquals('info', $repsSetsBadge['colorClass']);
+
+        // Weight badge should be 'success'
+        $weightBadge = collect($badges)->firstWhere('text', '135 lbs');
+        $this->assertNotNull($weightBadge, "Weight badge with text '135 lbs' not found.");
+        $this->assertEquals('success', $weightBadge['colorClass']);
         $this->assertTrue($weightBadge['emphasized']);
     }
 

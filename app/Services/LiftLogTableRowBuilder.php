@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\LiftLog;
 use App\Services\ExerciseAliasService;
 use Illuminate\Support\Collection;
+use Carbon\Carbon;
 
 /**
  * Shared service for building lift log table rows
@@ -77,16 +78,15 @@ class LiftLogTableRowBuilder
         // Reps/sets badge
         $badges[] = [
             'text' => $displayData['repsSets'],
-            'colorClass' => 'neutral'
+            'colorClass' => 'info'
         ];
         
         // Weight badge (if applicable)
         if ($displayData['showWeight']) {
             $badges[] = [
-                'text' => $displayData['weight'],
-                'colorClass' => 'dark',
-                'emphasized' => true
-            ];
+                            'text' => $displayData['weight'],
+                            'colorClass' => 'success',
+                            'emphasized' => true            ];
         }
         
         // Build actions
@@ -176,18 +176,27 @@ class LiftLogTableRowBuilder
      */
     protected function getDateBadge(LiftLog $liftLog): array
     {
-        $now = now();
-        $loggedDate = $liftLog->logged_at;
-        $daysDiff = abs($now->diffInDays($loggedDate));
+        $appTz = config('app.timezone');
+        $loggedDate = $liftLog->logged_at->copy()->setTimezone($appTz);
         
         if ($loggedDate->isToday()) {
             return ['text' => 'Today', 'color' => 'success'];
         } elseif ($loggedDate->isYesterday()) {
             return ['text' => 'Yesterday', 'color' => 'warning'];
-        } elseif ($daysDiff <= 7) {
-            return ['text' => (int) $daysDiff . ' days ago', 'color' => 'info'];
-        } else {
+        } elseif ($loggedDate->isFuture()) {
+            // Also format future dates as a standard date
             return ['text' => $loggedDate->format('n/j'), 'color' => 'neutral'];
+        } else {
+            // It's in the past, but not yesterday. Calculate the difference.
+            $now = now($appTz);
+            // Ensure we get a positive number for past dates: past->diff(now)
+            $daysDiff = $loggedDate->copy()->startOfDay()->diffInDays($now->copy()->startOfDay());
+
+            if ($daysDiff <= 7) {
+                return ['text' => $daysDiff . ' days ago', 'color' => 'info'];
+            } else {
+                return ['text' => $loggedDate->format('n/j'), 'color' => 'neutral'];
+            }
         }
     }
 
