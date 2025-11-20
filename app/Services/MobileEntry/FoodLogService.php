@@ -130,11 +130,8 @@ class FoodLogService extends MobileEntryBaseService
                 ->badge($quantityText, 'neutral')
                 ->badge($caloriesText, 'warning', true)
                 ->badge($proteinText, 'success')
-                ->linkAction('fa-pencil', route('food-logs.edit', ['food_log' => $log->id, 'redirect_to' => 'mobile-entry.foods']), 'Edit', 'btn-transparent')
-                ->formAction('fa-trash', route('food-logs.destroy', $log->id), 'DELETE', [
-                    'redirect_to' => 'mobile-entry.foods',
-                    'date' => $selectedDate->toDateString()
-                ], 'Delete', 'btn-transparent', true)
+
+
                 ->compact()
                 ->add();
         }
@@ -1010,35 +1007,7 @@ class FoodLogService extends MobileEntryBaseService
         }
         return $now->format('H:i');
     }
-    /**
-     * Generate an edit form for a food log entry
-     *
-     * @param FoodLog $foodLog
-     * @return array
-     */
-    public function generateEditForm(FoodLog $foodLog, ?string $redirectTo = null)
-    {
-        $formId = 'edit-food-log-' . $foodLog->id;
 
-        // Determine increment based on unit
-        $increment = 1;
-        if ($foodLog->ingredient && $foodLog->ingredient->baseUnit) {
-            $increment = $this->getQuantityIncrement($foodLog->ingredient->baseUnit->name, $foodLog->quantity);
-        }
-
-        $builder = C::form($formId, $foodLog->ingredient->name)
-            ->formAction(route('food-logs.update', $foodLog->id))
-            ->hiddenField('_method', 'PUT')
-            ->numericField('quantity', 'Quantity', $foodLog->quantity, $increment, 0.01, null, 'any')
-            ->textareaField('notes', 'Notes', $foodLog->notes ?? '')
-            ->submitButton('Update Entry');
-
-        if ($redirectTo) {
-            $builder->hiddenField('redirect_to', $redirectTo);
-        }
-
-        return $builder->build();
-    }
 
 
 

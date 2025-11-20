@@ -24,6 +24,6 @@ class ExampleTest extends TestCase
         // Test authenticated redirection
         $user = User::factory()->create();
         $response = $this->actingAs($user)->get('/');
-        $response->assertRedirect(route('food-logs.index'));
+        $response->assertRedirect(route('mobile-entry.lifts'));
     }
 }

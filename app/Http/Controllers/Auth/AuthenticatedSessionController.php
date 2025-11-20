@@ -43,7 +43,7 @@ class AuthenticatedSessionController extends Controller
             return redirect()->intended(route('mobile-entry.lifts', absolute: false));
         }
 
-        return redirect()->intended(route('food-logs.index', absolute: false));
+        return redirect()->intended(route('mobile-entry.lifts', absolute: false));
     }
 
     /**

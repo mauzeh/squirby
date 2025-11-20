@@ -26,6 +26,6 @@ class RegistrationTest extends TestCase
         ]);
 
         $this->assertAuthenticated();
-        $response->assertRedirect(route('food-logs.index', absolute: false));
+        $response->assertRedirect(route('mobile-entry.lifts', absolute: false));
     }
 }

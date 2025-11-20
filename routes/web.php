@@ -22,7 +22,7 @@ use App\Http\Controllers\WorkoutController;
 // Breeze Routes
 Route::get('/', function () {
     if (Auth::check()) {
-        return redirect()->route('food-logs.index');
+        return redirect()->route('mobile-entry.lifts');
     }
     return redirect()->route('login');
 });
@@ -37,10 +37,14 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     // Custom Application Routes (Protected by 'auth' middleware)
-    Route::resource('food-logs', FoodLogController::class)->except(['show']);
+
 
     Route::post('food-logs/add-meal', [FoodLogController::class, 'addMealToLog'])->name('food-logs.add-meal');
     Route::post('food-logs/destroy-selected', [FoodLogController::class, 'destroySelected'])->name('food-logs.destroy-selected');
+
+    Route::post('food-logs', [FoodLogController::class, 'store'])->name('food-logs.store');
+    Route::put('food-logs/{food_log}', [FoodLogController::class, 'update'])->name('food-logs.update');
+    Route::delete('food-logs/{food_log}', [FoodLogController::class, 'destroy'])->name('food-logs.destroy');
 
 
     

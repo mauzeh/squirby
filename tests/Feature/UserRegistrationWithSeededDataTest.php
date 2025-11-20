@@ -27,7 +27,7 @@ class UserRegistrationWithSeededDataTest extends TestCase
         ]);
 
         // Verify registration was successful
-        $response->assertRedirect(route('food-logs.index', absolute: false));
+        $response->assertRedirect(route('mobile-entry.lifts', absolute: false));
         $this->assertAuthenticated();
 
         // Get the created user
@@ -125,7 +125,7 @@ class UserRegistrationWithSeededDataTest extends TestCase
             'password' => 'password',
             'password_confirmation' => 'password',
         ]);
-        $response1->assertRedirect();
+        $response1->assertRedirect(route('mobile-entry.lifts', absolute: false));
 
         // Logout first user
         auth()->logout();

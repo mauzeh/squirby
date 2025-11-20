@@ -34,43 +34,7 @@ class FoodLogController extends Controller
         $this->redirectService = $redirectService;
     }
 
-    /**
-     * Display a listing of the resource.
-     */
-    public function index(Request $request)
-    {
-        // Needed for the compact function
-        $ingredients = Ingredient::where('user_id', auth()->id())->with('baseUnit')->orderBy('name')->get();
-        $units = Unit::all();
 
-        $meals = Meal::where('user_id', auth()->id())->get();
-
-
-        $selectedDate = $this->dateNavigationService->parseSelectedDate($request->input('date'));
-
-        $foodLogs = FoodLog::with(['ingredient', 'unit'])
-            ->where('food_logs.user_id', auth()->id())
-            ->join('ingredients', 'food_logs.ingredient_id', '=', 'ingredients.id')
-            ->whereDate('logged_at', $selectedDate->toDateString())
-            ->orderBy('logged_at', 'desc')
-            ->orderBy('ingredients.name', 'asc')
-            ->select('food_logs.*')
-            ->get();
-
-
-
-
-
-        // Get date navigation data
-        $navigationData = $this->dateNavigationService->getNavigationData(
-            $selectedDate,
-            FoodLog::class,
-            auth()->id(),
-            'food-logs.index'
-        );
-
-        return view('food_logs.index', compact('foodLogs', 'ingredients', 'units', 'meals', 'selectedDate', 'navigationData'));
-    }
 
     /**
      * Store a newly created resource in storage.
@@ -122,7 +86,7 @@ class FoodLogController extends Controller
         }
 
         return $this->redirectService->getRedirect(
-            'food_logs',
+            'mobile-entry-foods',
             'store',
             $request,
             [],
@@ -132,23 +96,7 @@ class FoodLogController extends Controller
 
 
 
-    public function edit(Request $request, FoodLog $foodLog, FoodLogService $foodLogService)
-    {
-        if ($foodLog->user_id !== auth()->id()) {
-            abort(403, 'Unauthorized action.');
-        }
 
-        $form = $foodLogService->generateEditForm($foodLog, $request->input('redirect_to'));
-
-        // Add a title component
-        $title = \App\Services\ComponentBuilder::title('Edit Food Log', $foodLog->logged_at->format('M d, Y - H:i'))->build();
-
-        return view('mobile-entry.flexible', [
-            'data' => [
-                'components' => [$title, $form]
-            ]
-        ]);
-    }
 
     public function update(Request $request, FoodLog $foodLog)
     {
@@ -171,7 +119,7 @@ class FoodLogController extends Controller
         $foodLog->update($validated);
 
         return $this->redirectService->getRedirect(
-            'food_logs',
+            'mobile-entry-foods',
             'update',
             $request,
             ['date' => $foodLog->logged_at->format('Y-m-d')],
@@ -188,7 +136,7 @@ class FoodLogController extends Controller
         $foodLog->delete();
 
         return $this->redirectService->getRedirect(
-            'food_logs',
+            'mobile-entry-foods',
             'destroy',
             $request,
             ['date' => $date],
@@ -215,7 +163,7 @@ class FoodLogController extends Controller
 
         FoodLog::destroy($validated['food_log_ids']);
 
-        return redirect()->route('food-logs.index', ['date' => $date])->with('success', 'Selected log entries deleted successfully!');
+        return redirect()->route('mobile-entry.foods', ['date' => $date])->with('success', 'Selected log entries deleted successfully!');
     }
 
     public function addMealToLog(Request $request)
@@ -270,7 +218,7 @@ class FoodLogController extends Controller
             $celebratoryMessage = $this->generateMealCelebratoryMessage($meal, $validated['portion']);
 
             return $this->redirectService->getRedirect(
-                'food_logs',
+                'mobile-entry-foods',
                 'add_meal',
                 $request,
                 ['date' => $validated['meal_date']],
@@ -279,7 +227,7 @@ class FoodLogController extends Controller
         }
 
         return $this->redirectService->getRedirect(
-            'food_logs',
+            'mobile-entry-foods',
             'add_meal',
             $request,
             ['date' => $validated['meal_date']],

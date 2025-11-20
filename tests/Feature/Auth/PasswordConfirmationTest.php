@@ -27,7 +27,7 @@ class PasswordConfirmationTest extends TestCase
             'password' => 'password',
         ]);
 
-        $response->assertRedirect(route('food-logs.index'));
+        $response->assertRedirect(route('mobile-entry.lifts'));
         $response->assertSessionHasNoErrors();
     }
 

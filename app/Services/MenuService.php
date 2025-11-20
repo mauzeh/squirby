@@ -27,7 +27,7 @@ class MenuService
                 'label' => 'Food',
                 'icon' => 'fa-utensils',
                 'route' => 'mobile-entry.foods',
-                'active' => Request::routeIs(['food-logs.*', 'meals.*', 'ingredients.*', 'mobile-entry.foods']),
+                'active' => Request::routeIs(['meals.*', 'ingredients.*', 'mobile-entry.foods']),
             ],
             [
                 'label' => 'Body',
@@ -91,7 +91,7 @@ class MenuService
             return $this->getLabsSubMenu();
         }
 
-        if (Request::routeIs(['food-logs.*', 'meals.*', 'ingredients.*', 'mobile-entry.foods'])) {
+        if (Request::routeIs(['meals.*', 'ingredients.*', 'mobile-entry.foods'])) {
             return $this->getFoodSubMenu();
         }
 
@@ -114,7 +114,7 @@ class MenuService
     public function shouldShowSubMenu(): bool
     {
         return Request::routeIs([
-            'food-logs.*', 'meals.*', 'ingredients.*',
+            'meals.*', 'ingredients.*',
             'exercises.*', 'lift-logs.*', 'recommendations.*',
             'body-logs.*', 'measurement-types.*',
             'mobile-entry.lifts', 'mobile-entry.foods', 'mobile-entry.measurements',
@@ -245,11 +245,7 @@ class MenuService
                 'route' => 'mobile-entry.foods',
                 'active' => Request::routeIs(['mobile-entry.foods']),
             ],
-            [
-                'label' => 'History',
-                'route' => 'food-logs.index',
-                'active' => Request::routeIs(['food-logs.index', 'food-logs.edit', 'food-logs.destroy-selected', 'food-logs.export', 'food-logs.export-all']),
-            ],
+
             [
                 'label' => 'Meals',
                 'route' => 'meals.index',

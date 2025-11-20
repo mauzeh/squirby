@@ -49,6 +49,6 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
-        return redirect(route('food-logs.index', absolute: false));
+        return redirect(route('mobile-entry.lifts', absolute: false));
     }
 }
