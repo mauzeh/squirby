@@ -53,7 +53,7 @@ Route::middleware('auth')->group(function () {
         'show'
     ]);
 
-    Route::post('meals/create-from-logs', [MealController::class, 'createFromLogs'])->name('meals.create-from-logs');
+
 
     Route::resource('body-logs', BodyLogController::class)->except(['show']);
     Route::post('body-logs/destroy-selected', [BodyLogController::class, 'destroySelected'])->name('body-logs.destroy-selected');

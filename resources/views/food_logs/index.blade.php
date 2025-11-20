@@ -93,17 +93,7 @@
                 </tfoot>
             </table>
 
-            <div class="form-container">
-                <h3>Create Meal from Selection</h3>
-                <form action="{{ route('meals.create-from-logs') }}" method="POST" id="create-meal-form">
-                    @csrf
-                    <div class="form-group">
-                        <label for="meal_name">Meal Name:</label>
-                        <input type="text" name="meal_name" id="meal_name" placeholder="Enter meal name" required>
-                    </div>
-                    <button type="submit" class="button">Create Meal</button>
-                </form>
-            </div>
+
 
             <script>
                 document.getElementById('select-all-logs').addEventListener('change', function(e) {
@@ -112,27 +102,7 @@
                     });
                 });
 
-                document.getElementById('create-meal-form').addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    
-                    var form = e.target;
-                    var checkedLogs = document.querySelectorAll('.log-checkbox:checked');
 
-                    if (checkedLogs.length === 0) {
-                        alert('Please select at least one food log entry to create a meal.');
-                        return;
-                    }
-
-                    checkedLogs.forEach(function(checkbox) {
-                        var input = document.createElement('input');
-                        input.type = 'hidden';
-                        input.name = 'food_log_ids[]';
-                        input.value = checkbox.value;
-                        form.appendChild(input);
-                    });
-
-                    form.submit();
-                });
 
                 document.getElementById('delete-selected-form').addEventListener('submit', function(e) {
                     e.preventDefault();

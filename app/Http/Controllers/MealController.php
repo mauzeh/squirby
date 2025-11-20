@@ -136,22 +136,5 @@ class MealController extends Controller
         return redirect()->route('meals.index')->with('success', 'Meal deleted successfully.');
     }
 
-    public function createFromLogs(Request $request)
-    {
-        $request->validate([
-            'food_log_ids' => 'required|array',
-            'food_log_ids.*' => 'exists:food_logs,id',
-            'meal_name' => 'required|string|max:255|unique:meals,name',
-        ]);
 
-        $meal = Meal::create(array_merge(['name' => $request->meal_name], ['user_id' => auth()->id()]));
-
-        $foodLogs = FoodLog::whereIn('id', $request->food_log_ids)->where('user_id', auth()->id())->get();
-
-        foreach ($foodLogs as $log) {
-            $meal->ingredients()->attach($log->ingredient_id, ['quantity' => $log->quantity]);
-        }
-
-        return redirect()->route('meals.index')->with('success', 'Meal created successfully from log entries.');
-    }
 }
