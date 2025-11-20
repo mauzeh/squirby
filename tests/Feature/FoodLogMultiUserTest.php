@@ -36,8 +36,8 @@ class FoodLogMultiUserTest extends TestCase
     /** @test */
     public function authenticated_user_can_view_their_food_logs()
     {
-        FoodLogFactory::new()->create(['user_id' => $this->user1->id, 'ingredient_id' => $this->ingredient1->id]);
-        FoodLogFactory::new()->create(['user_id' => $this->user2->id, 'ingredient_id' => $this->ingredient2->id]);
+        FoodLogFactory::new()->create(['user_id' => $this->user1->id, 'ingredient_id' => $this->ingredient1->id, 'logged_at' => Carbon::today()]);
+        FoodLogFactory::new()->create(['user_id' => $this->user2->id, 'ingredient_id' => $this->ingredient2->id, 'logged_at' => Carbon::today()]);
 
         $response = $this->actingAs($this->user1)->get(route('food-logs.index'));
 

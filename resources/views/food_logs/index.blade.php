@@ -13,72 +13,7 @@
         </div>
     @endif
     <div class="container forms-container-wrapper">
-        <div class="form-container">
-            <h3>Add New Entry</h3>
-            <form action="{{ route('food-logs.store') }}" method="POST">
-                @csrf
-                <div class="form-row">
-                    <label for="date">Date:</label>
-                    <x-date-select name="date" id="date" :selectedDate="$selectedDate->format('Y-m-d')" required />
-                </div>
-                <div class="form-row">
-                    <label for="logged_at">Time:</label>
-                    <x-time-select name="logged_at" id="logged_at" required />
-                </div>
-                <div class="form-row">
-                    <label for="ingredient_id">Ingredient:</label>
-                    <x-ingredient-select name="ingredient_id" id="ingredient_id" :ingredients="$ingredients" :selected="old('ingredient_id')" required />
-                </div>
-                <div class="form-row">
-                    <label for="quantity">Quantity:</label>
-                    <x-quantity-input name="quantity" id="quantity" :value="old('quantity', 1)" required />
-                    @error('quantity')
-                        <span class="error-message">{{ $message }}</span>
-                    @enderror
-                </div>
-                <div class="form-row">
-                    <label for="notes">Notes:</label>
-                    <input type="text" name="notes" id="notes" value="{{ old('notes') }}">
-                    @error('notes')
-                        <span class="error-message">{{ $message }}</span>
-                    @enderror
-                </div>
-                <button type="submit" class="button create">Add Food Log Entry</button>
-            </form>
-        </div>
 
-        <div class="form-container">
-            <h3>Add Meal to Log</h3>
-            <form action="{{ route('food-logs.add-meal') }}" method="POST">
-                @csrf
-                <div class="form-row">
-                    <label for="meal_date">Date:</label>
-                    <x-date-select name="meal_date" id="meal_date" :selectedDate="$selectedDate->format('Y-m-d')" required />
-                </div>
-                <div class="form-row">
-                    <label for="logged_at_meal">Time:</label>
-                    <x-time-select name="logged_at_meal" id="logged_at_meal" required />
-                </div>
-                <div class="form-row">
-                    <label for="meal_id">Meal:</label>
-                    <select name="meal_id" id="meal_id" required>
-                        <option value="">Select a Meal</option>
-                        @foreach ($meals as $meal)
-                            <option value="{{ $meal->id }}">{{ $meal->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="form-row">
-                    <label for="portion">Portion:</label>
-                    <input type="text" name="portion" id="portion" value="1.0" required inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*">
-                </div>
-                <div class="form-row">
-                    <label for="notes_meal">Notes:</label>
-                    <input type="text" name="notes" id="notes_meal" value="{{ old('notes') }}">
-                </div>
-                <button type="submit" class="button create">Add Meal to Food Log</button>
-            </form>
-        </div>
 
         <div class="form-container">
             <h3>Export Options</h3>
@@ -313,26 +248,5 @@
         <x-nutrition-facts-label :totals="$dailyTotals" title="Today's Totals:" class="main-totals" />
     </div>
 
-<script>
-    /**
-     * This script addresses an issue on mobile devices where the numeric keyboard
-     * may only provide a comma for decimal separation, while the input field
-     * expects a period. To ensure a smooth user experience and prevent
-     * validation errors, this script dynamically replaces commas with periods
-     * in the quantity and portion input fields as the user types.
-     */
-    document.addEventListener('DOMContentLoaded', function() {
-        // Select both the quantity input for single entries and the portion input for meals.
-        const quantityInputs = document.querySelectorAll('#quantity, #portion');
 
-        // Add an event listener to each input field.
-        quantityInputs.forEach(function(input) {
-            // When the user types in the input field...
-            input.addEventListener('input', function(e) {
-                // ...replace any comma with a period.
-                e.target.value = e.target.value.replace(',', '.');
-            });
-        });
-    });
-</script>
 @endsection
