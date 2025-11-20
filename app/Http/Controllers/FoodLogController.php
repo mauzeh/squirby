@@ -239,7 +239,7 @@ class FoodLogController extends Controller
             $celebratoryMessage = $this->generateMealCelebratoryMessage($meal, $validated['portion']);
 
             return $this->redirectService->getRedirect(
-                'mobile-entry-foods',
+                'food_logs',
                 'add_meal',
                 $request,
                 ['date' => $validated['meal_date']],
@@ -248,7 +248,7 @@ class FoodLogController extends Controller
         }
 
         return $this->redirectService->getRedirect(
-            'mobile-entry-foods',
+            'food_logs',
             'add_meal',
             $request,
             ['date' => $validated['meal_date']],
