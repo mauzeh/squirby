@@ -9,6 +9,8 @@ use App\Services\NutritionService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 
+use App\Services\ComponentBuilder as C;
+
 class MealController extends Controller
 {
     protected $nutritionService;
@@ -29,16 +31,53 @@ class MealController extends Controller
             $meal->total_macros = $this->nutritionService->calculateFoodLogTotals($meal->ingredients);
         }
 
-        $seederOutput = '';
-        foreach ($meals as $meal) {
-            $seederOutput .= '$meal = Meal::create([\'name\' => \''. addslashes($meal->name) . '\', \'user_id\' => $adminUser->id]);' . "\n";
-            foreach ($meal->ingredients as $ingredient) {
-                $seederOutput .= '$meal->ingredients()->attach($ingredients[\''. addslashes($ingredient->name) . '\']->id, [\'quantity\' => ' . $ingredient->pivot->quantity . ']);' . "\n";
-            }
-            $seederOutput .= "\n";
-        }
+        $components = [
+            C::title('Meals List')->build(),
+            C::button('Add New Meal')
+                ->ariaLabel('Add new meal')
+                ->addClass('btn-add-item')
+                ->asLink(route('meals.create'))
+                ->build(),
+        ];
 
-        return view('meals.index', compact('meals', 'seederOutput'));
+        $tableBuilder = C::table()
+            ->emptyMessage('No meals found. Please add some!')
+            ->ariaLabel('List of meals')
+            ->spacedRows()
+            ->confirmMessage('deleteItem', 'Are you sure you want to delete this meal?');
+
+        if ($meals->isNotEmpty()) {
+            foreach ($meals as $meal) {
+                $summary = '';
+                foreach ($meal->ingredients as $ingredient) {
+                    $summary .= $ingredient->pivot->quantity . ' ' . $ingredient->baseUnit->abbreviation . ' ' . $ingredient->name . '<br>';
+                }
+
+                $tableBuilder->row(
+                    $meal->id,
+                    $meal->name,
+                    $meal->comments ? '<small>' . $meal->comments . '</small>' : null
+                )
+                ->badge(round($meal->total_macros['calories']) . ' cal', 'info')
+                ->badge(round($meal->total_macros['protein']) . 'g P', 'neutral')
+                ->badge(round($meal->total_macros['carbs']) . 'g C', 'neutral')
+                ->badge(round($meal->total_macros['fats']) . 'g F', 'neutral')
+                ->badge('$' . number_format($meal->total_macros['cost'], 2), 'success')
+                ->subItem($meal->id, 'Summary:', $summary)
+                    ->add()
+                ->linkAction('fa-pencil', route('meals.edit', $meal->id), 'Edit', 'btn-transparent')
+                ->formAction('fa-trash', route('meals.destroy', $meal->id), 'DELETE', ['redirect' => 'meals.index'], 'Delete', 'btn-danger btn-transparent', true)
+                ->compact()
+                ->add();
+            }
+        }
+        $components[] = $tableBuilder->build(); // Add the built table to the components array
+
+        $data = [
+            'components' => $components,
+        ];
+
+        return view('mobile-entry.flexible', compact('data'));
     }
 
     /**
