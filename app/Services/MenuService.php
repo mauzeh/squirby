@@ -8,6 +8,51 @@ use Illuminate\Support\Facades\Request;
 class MenuService
 {
     /**
+     * Get all route patterns related to food.
+     *
+     * @return array
+     */
+    private function getFoodRoutePatterns(): array
+    {
+        return [
+            'meals.*',
+            'ingredients.*',
+            'mobile-entry.foods',
+            'food-logs.*',
+        ];
+    }
+
+    /**
+     * Get all route patterns related to body measurements.
+     *
+     * @return array
+     */
+    private function getBodyRoutePatterns(): array
+    {
+        return [
+            'body-logs.*',
+            'measurement-types.*',
+            'mobile-entry.measurements',
+        ];
+    }
+
+    /**
+     * Get all route patterns related to lifts.
+     *
+     * @return array
+     */
+    private function getLiftsRoutePatterns(): array
+    {
+        return [
+            'exercises.*',
+            'lift-logs.*',
+            'recommendations.*',
+            'mobile-entry.lifts',
+            'workouts.*',
+        ];
+    }
+
+    /**
      * Get the main navigation menu items
      *
      * @return array
@@ -20,20 +65,20 @@ class MenuService
                 'label' => 'Lifts',
                 'icon' => 'fa-dumbbell',
                 'route' => 'mobile-entry.lifts',
-                'active' => Request::routeIs(['exercises.*', 'lift-logs.*', 'recommendations.*', 'mobile-entry.lifts', 'workouts.*']),
+                'active' => Request::routeIs($this->getLiftsRoutePatterns()),
             ],
             [
                 'id' => 'food-nav-link',
                 'label' => 'Food',
                 'icon' => 'fa-utensils',
                 'route' => 'mobile-entry.foods',
-                'active' => Request::routeIs(['meals.*', 'ingredients.*', 'mobile-entry.foods']),
+                'active' => Request::routeIs($this->getFoodRoutePatterns()),
             ],
             [
                 'label' => 'Body',
                 'icon' => 'fa-heartbeat',
                 'route' => 'mobile-entry.measurements',
-                'active' => Request::routeIs(['body-logs.*', 'measurement-types.*', 'mobile-entry.measurements']),
+                'active' => Request::routeIs($this->getBodyRoutePatterns()),
             ],
         ];
     }
@@ -91,15 +136,15 @@ class MenuService
             return $this->getLabsSubMenu();
         }
 
-        if (Request::routeIs(['meals.*', 'ingredients.*', 'mobile-entry.foods'])) {
+        if (Request::routeIs($this->getFoodRoutePatterns())) {
             return $this->getFoodSubMenu();
         }
 
-        if (Request::routeIs(['body-logs.*', 'measurement-types.*', 'mobile-entry.measurements'])) {
+        if (Request::routeIs($this->getBodyRoutePatterns())) {
             return $this->getBodySubMenu();
         }
 
-        if (Request::routeIs(['exercises.*', 'lift-logs.*', 'recommendations.*', 'mobile-entry.lifts', 'workouts.*'])) {
+        if (Request::routeIs($this->getLiftsRoutePatterns())) {
             return $this->getLiftsSubMenu();
         }
 
@@ -113,13 +158,10 @@ class MenuService
      */
     public function shouldShowSubMenu(): bool
     {
-        return Request::routeIs([
-            'meals.*', 'ingredients.*',
-            'exercises.*', 'lift-logs.*', 'recommendations.*',
-            'body-logs.*', 'measurement-types.*',
-            'mobile-entry.lifts', 'mobile-entry.foods', 'mobile-entry.measurements',
-            'labs.*', 'workouts.*'
-        ]);
+        return Request::routeIs($this->getFoodRoutePatterns()) ||
+               Request::routeIs($this->getBodyRoutePatterns()) ||
+               Request::routeIs($this->getLiftsRoutePatterns()) ||
+               Request::routeIs('labs.*');
     }
 
     /**
@@ -243,7 +285,7 @@ class MenuService
                 'label' => null,
                 'icon' => 'fa-calendar-day',
                 'route' => 'mobile-entry.foods',
-                'active' => Request::routeIs(['mobile-entry.foods']),
+                'active' => Request::routeIs($this->getFoodRoutePatterns()),
             ],
 
             [
@@ -271,7 +313,7 @@ class MenuService
                 'label' => null,
                 'icon' => 'fa-calendar-day',
                 'route' => 'mobile-entry.measurements',
-                'active' => Request::routeIs(['mobile-entry.measurements']),
+                'active' => Request::routeIs($this->getBodyRoutePatterns()),
             ],
         ];
 
@@ -279,7 +321,7 @@ class MenuService
             $items[] = [
                 'label' => 'History',
                 'route' => 'body-logs.index',
-                'active' => Request::routeIs(['body-logs.index', 'body-logs.edit', 'body-logs.destroy-selected']),
+                'active' => Request::routeIs('body-logs.*'),
             ];
         }
 
@@ -326,7 +368,7 @@ class MenuService
         $items[] = [
             'label' => 'History',
             'route' => 'lift-logs.index',
-            'active' => Request::routeIs(['lift-logs.index', 'lift-logs.edit', 'lift-logs.destroy-selected', 'exercises.show-logs']),
+            'active' => Request::routeIs(['lift-logs.*', 'exercises.show-logs']),
         ];
 
         if (Auth::user() && (Auth::user()->hasRole('Admin') || session()->has('impersonator_id'))) {
@@ -344,7 +386,7 @@ class MenuService
             $items[] = [
                 'label' => 'Exercises',
                 'route' => 'exercises.index',
-                'active' => Request::routeIs(['exercises.index', 'exercises.create', 'exercises.edit', 'exercises.store', 'exercises.update', 'exercises.destroy']),
+                'active' => Request::routeIs('exercises.*'),
             ];
         }
 
