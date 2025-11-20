@@ -322,4 +322,98 @@ class BodyLogControllerMobileEntryTest extends TestCase
             'value' => 185.5,
         ]);
     }
+
+    /** @test */
+    public function show_by_type_renders_component_view_correctly()
+    {
+        // Arrange
+        $measurementType = $this->measurementType;
+        
+        // Create multiple body logs for the user
+        $log1 = BodyLog::factory()->create([
+            'user_id' => $this->user->id,
+            'measurement_type_id' => $measurementType->id,
+            'value' => 180.5,
+            'logged_at' => Carbon::now()->subDays(2)->setTime(10, 0),
+            'comments' => 'Morning weigh-in',
+        ]);
+        $log2 = BodyLog::factory()->create([
+            'user_id' => $this->user->id,
+            'measurement_type_id' => $measurementType->id,
+            'value' => 179.8,
+            'logged_at' => Carbon::now()->subDay()->setTime(11, 30),
+            'comments' => 'After workout',
+        ]);
+        $log3 = BodyLog::factory()->create([
+            'user_id' => $this->user->id,
+            'measurement_type_id' => $measurementType->id,
+            'value' => 179.5,
+            'logged_at' => Carbon::now()->setTime(9, 0),
+            'comments' => null, // Test without comments
+        ]);
+
+        $bodyLogs = collect([$log1, $log2, $log3]);
+
+        // Act
+        $response = $this->get(route('body-logs.show-by-type', $measurementType));
+
+        // Assert
+        $response->assertOk();
+        $response->assertViewIs('mobile-entry.flexible');
+        $response->assertViewHas('data.components');
+
+        $components = $response->viewData('data')['components'];
+
+        // Assert Title component
+        $this->assertCount(3, $components); // Title, Chart, Table
+        $this->assertEquals('title', $components[0]['type']);
+        $this->assertEquals($measurementType->name, $components[0]['data']['main']);
+
+        // Assert Chart component (if enough data)
+        if (count($bodyLogs) > 1) {
+            $this->assertEquals('chart', $components[1]['type']);
+            $this->assertEquals('bodyLogChart', $components[1]['data']['canvasId']);
+            $this->assertEquals('', $components[1]['data']['title']); // No title
+            $this->assertArrayNotHasKey('yAxisLabel', $components[1]['data']['options']['scales']['y'] ?? []); // No yAxisLabel
+        }
+
+        // Assert Table component
+        $tableComponent = $components[2]; // Index depends on whether chart is present                  
+        $this->assertEquals('table', $tableComponent['type']);                                           
+        $this->assertEquals('Logged body logs', $tableComponent['data']['ariaLabels']['section']);                  
+        $this->assertCount(3, $tableComponent['data']['rows']); // 3 logs created                       
+                
+        // Assert individual rows
+        // Log 3 (latest)
+        $this->assertEquals($log3->id, $tableComponent['data']['rows'][0]['id']);
+        $this->assertEquals($measurementType->name, $tableComponent['data']['rows'][0]['line1']);
+        $this->assertArrayNotHasKey('line2', $tableComponent['data']['rows'][0]); // No date in line2, so key should not exist
+        $this->assertArrayNotHasKey('line3', $tableComponent['data']['rows'][0]); // Comments are null for log3, so line3 should not exist
+        $this->assertStringContainsString($log3->value . ' ' . $measurementType->default_unit, $tableComponent['data']['rows'][0]['badges'][0]['text']);
+        $this->assertStringContainsString($log3->logged_at->format('m/d'), $tableComponent['data']['rows'][0]['badges'][1]['text']);
+
+        // Log 2
+        $this->assertEquals($log2->id, $tableComponent['data']['rows'][1]['id']);
+        $this->assertEquals($measurementType->name, $tableComponent['data']['rows'][1]['line1']);
+        $this->assertArrayNotHasKey('line2', $tableComponent['data']['rows'][1]); // No date in line2, so key should not exist
+        $this->assertEquals($log2->comments, $tableComponent['data']['rows'][1]['line3']); // Comments here
+        $this->assertStringContainsString($log2->value . ' ' . $measurementType->default_unit, $tableComponent['data']['rows'][1]['badges'][0]['text']);
+        $this->assertStringContainsString($log2->logged_at->format('m/d'), $tableComponent['data']['rows'][1]['badges'][1]['text']);
+
+        // Log 1
+        $this->assertEquals($log1->id, $tableComponent['data']['rows'][2]['id']);
+        $this->assertEquals($measurementType->name, $tableComponent['data']['rows'][2]['line1']);
+        $this->assertArrayNotHasKey('line2', $tableComponent['data']['rows'][2]); // No date in line2, so key should not exist
+        $this->assertEquals($log1->comments, $tableComponent['data']['rows'][2]['line3']); // Comments here
+        $this->assertStringContainsString($log1->value . ' ' . $measurementType->default_unit, $tableComponent['data']['rows'][2]['badges'][0]['text']);
+        $this->assertStringContainsString($log1->logged_at->format('m/d'), $tableComponent['data']['rows'][2]['badges'][1]['text']);
+
+
+        // Assert absence of removed features
+        foreach ($components as $component) {
+            $this->assertNotEquals('button', $component['type'], 'Add Body Log button should not be present');
+            $this->assertNotEquals('selectAllControl', $component['type'], 'Select All checkbox should not be present');
+            $this->assertNotEquals('bulkActionForm', $component['type'], 'Bulk action form should not be present');
+        }
+    }
 }

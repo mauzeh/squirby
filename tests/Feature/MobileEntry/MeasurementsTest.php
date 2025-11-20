@@ -183,11 +183,11 @@ class MeasurementsTest extends TestCase
         $this->assertNotNull($tableComponent, "The 'table' component for logged items is missing.");
         $this->assertCount(1, $tableComponent['data']['rows']);
         
-        $loggedItem = $tableComponent['data']['rows'][0];
-        $this->assertEquals('Weight', $loggedItem['line1']);
-        $this->assertEquals('185.5 lbs', $loggedItem['line2']);
-        $this->assertEquals('Morning weigh-in', $loggedItem['line3']);
-    }
+        $loggedItem = $tableComponent['data']['rows'][0];                                               
+        $this->assertEquals('Weight', $loggedItem['line1']);                                            
+        $this->assertArrayNotHasKey('line2', $loggedItem);
+        $this->assertEquals('185.5 lbs', $loggedItem['badges'][0]['text']); // Assert value in badge
+        $this->assertEquals('Morning weigh-in', $loggedItem['line3']);    }
 
     /** @test */
     public function measurement_forms_do_not_have_delete_buttons()
