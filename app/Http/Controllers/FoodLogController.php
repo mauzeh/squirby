@@ -37,6 +37,27 @@ class FoodLogController extends Controller
 
 
     /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit(Request $request, FoodLog $foodLog)
+    {
+        if ($foodLog->user_id !== auth()->id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $form = $this->foodLogService->generateEditForm($foodLog, $request->input('redirect_to'));
+        
+        // Add a title component
+        $title = \App\Services\ComponentBuilder::title('Edit Food Log', $foodLog->logged_at->format('M d, Y - H:i'))->build();
+        
+        return view('mobile-entry.flexible', [
+            'data' => [
+                'components' => [$title, $form]
+            ]
+        ]);
+    }
+
+    /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
@@ -119,7 +140,7 @@ class FoodLogController extends Controller
         $foodLog->update($validated);
 
         return $this->redirectService->getRedirect(
-            'mobile-entry-foods',
+            'food_logs',
             'update',
             $request,
             ['date' => $foodLog->logged_at->format('Y-m-d')],
@@ -136,7 +157,7 @@ class FoodLogController extends Controller
         $foodLog->delete();
 
         return $this->redirectService->getRedirect(
-            'mobile-entry-foods',
+            'food_logs',
             'destroy',
             $request,
             ['date' => $date],
