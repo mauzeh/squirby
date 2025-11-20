@@ -170,4 +170,140 @@ class FoodLogEditTest extends TestCase
 
         $response->assertForbidden();
     }
+
+    /** @test */
+    public function user_can_log_a_meal_and_redirect_correctly()
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $ingredient = Ingredient::factory()->create(['user_id' => $user->id]);
+        $meal = \App\Models\Meal::factory()->create([
+            'user_id' => $user->id,
+            'name' => 'Test Meal'
+        ]);
+        $meal->ingredients()->attach($ingredient->id, ['quantity' => 100]);
+
+        $today = \Carbon\Carbon::today();
+
+        $response = $this->post(route('food-logs.add-meal'), [
+            'meal_id' => $meal->id,
+            'portion' => 1.0,
+            'logged_at_meal' => '12:00',
+            'meal_date' => $today->toDateString(),
+            'notes' => 'Lunch',
+            'redirect_to' => 'mobile-entry.foods'
+        ]);
+
+        $response->assertSessionHasNoErrors();
+        $response->assertRedirect(route('mobile-entry.foods', ['date' => $today->toDateString()]));
+        
+        // Verify food log was created
+        $this->assertDatabaseHas('food_logs', [
+            'user_id' => $user->id,
+            'ingredient_id' => $ingredient->id,
+        ]);
+    }
+
+    /** @test */
+    public function logging_meal_creates_entries_for_all_ingredients()
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $ingredient1 = Ingredient::factory()->create(['user_id' => $user->id, 'name' => 'Chicken']);
+        $ingredient2 = Ingredient::factory()->create(['user_id' => $user->id, 'name' => 'Rice']);
+        
+        $meal = \App\Models\Meal::factory()->create([
+            'user_id' => $user->id,
+            'name' => 'Chicken and Rice'
+        ]);
+        $meal->ingredients()->attach($ingredient1->id, ['quantity' => 150]);
+        $meal->ingredients()->attach($ingredient2->id, ['quantity' => 200]);
+
+        $today = \Carbon\Carbon::today();
+
+        $response = $this->post(route('food-logs.add-meal'), [
+            'meal_id' => $meal->id,
+            'portion' => 1.0,
+            'logged_at_meal' => '12:00',
+            'meal_date' => $today->toDateString(),
+            'redirect_to' => 'mobile-entry.foods'
+        ]);
+
+        $response->assertSessionHasNoErrors();
+        
+        // Verify both ingredients were logged
+        $this->assertDatabaseHas('food_logs', [
+            'user_id' => $user->id,
+            'ingredient_id' => $ingredient1->id,
+            'quantity' => 150,
+        ]);
+        
+        $this->assertDatabaseHas('food_logs', [
+            'user_id' => $user->id,
+            'ingredient_id' => $ingredient2->id,
+            'quantity' => 200,
+        ]);
+    }
+
+    /** @test */
+    public function logging_meal_with_portion_multiplies_quantities()
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $ingredient = Ingredient::factory()->create(['user_id' => $user->id]);
+        $meal = \App\Models\Meal::factory()->create([
+            'user_id' => $user->id,
+            'name' => 'Test Meal'
+        ]);
+        $meal->ingredients()->attach($ingredient->id, ['quantity' => 100]);
+
+        $today = \Carbon\Carbon::today();
+
+        $response = $this->post(route('food-logs.add-meal'), [
+            'meal_id' => $meal->id,
+            'portion' => 1.5,
+            'logged_at_meal' => '12:00',
+            'meal_date' => $today->toDateString(),
+            'redirect_to' => 'mobile-entry.foods'
+        ]);
+
+        $response->assertSessionHasNoErrors();
+        
+        // Verify quantity was multiplied by portion
+        $this->assertDatabaseHas('food_logs', [
+            'user_id' => $user->id,
+            'ingredient_id' => $ingredient->id,
+            'quantity' => 150, // 100 * 1.5
+        ]);
+    }
+
+    /** @test */
+    public function user_cannot_log_another_users_meal()
+    {
+        $user1 = User::factory()->create();
+        $user2 = User::factory()->create();
+
+        $ingredient = Ingredient::factory()->create(['user_id' => $user1->id]);
+        $meal = \App\Models\Meal::factory()->create([
+            'user_id' => $user1->id,
+            'name' => 'User 1 Meal'
+        ]);
+        $meal->ingredients()->attach($ingredient->id, ['quantity' => 100]);
+
+        $this->actingAs($user2);
+        
+        $today = \Carbon\Carbon::today();
+
+        $response = $this->post(route('food-logs.add-meal'), [
+            'meal_id' => $meal->id,
+            'portion' => 1.0,
+            'logged_at_meal' => '12:00',
+            'meal_date' => $today->toDateString(),
+        ]);
+
+        $response->assertForbidden();
+    }
 }

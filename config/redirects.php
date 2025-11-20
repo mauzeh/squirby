@@ -117,7 +117,7 @@ return [
                 'params' => ['date'],
             ],
             'default' => [
-                'route' => 'food-logs.index',
+                'route' => 'mobile-entry.foods',
                 'params' => ['date'],
             ],
         ],
@@ -131,25 +131,39 @@ return [
                 'params' => ['date'],
             ],
             'default' => [
-                'route' => 'food-logs.index',
+                'route' => 'mobile-entry.foods',
                 'params' => ['date'],
             ],
         ],
         'update' => [
+            'mobile-entry' => [
+                'route' => 'mobile-entry.foods',
+                'params' => ['date'],
+            ],
+            'mobile-entry-foods' => [
+                'route' => 'mobile-entry.foods',
+                'params' => ['date'],
+            ],
             'mobile-entry.foods' => [
                 'route' => 'mobile-entry.foods',
                 'params' => ['date'],
             ],
             'default' => [
-                'route' => 'food-logs.index',
+                'route' => 'mobile-entry.foods',
                 'params' => ['date'],
             ],
         ],
         'destroy' => [
-            // Special case: accepts any route name directly
-            'dynamic' => true,
+            'mobile-entry' => [
+                'route' => 'mobile-entry.foods',
+                'params' => ['date'],
+            ],
+            'mobile-entry-foods' => [
+                'route' => 'mobile-entry.foods',
+                'params' => ['date'],
+            ],
             'default' => [
-                'route' => 'food-logs.index',
+                'route' => 'mobile-entry.foods',
                 'params' => ['date'],
             ],
         ],
