@@ -54,13 +54,6 @@ class GoogleOAuthTest extends TestCase
         // Create the athlete role for testing
         \App\Models\Role::create(['name' => 'Athlete']);
 
-        // Mock SampleFoodDataService
-        $sampleFoodDataService = Mockery::mock(\App\Services\SampleFoodDataService::class);
-        $sampleFoodDataService->shouldReceive('createSampleData')
-            ->once()
-            ->andReturn(['ingredients' => collect(), 'meals' => collect()]);
-        $this->app->instance(\App\Services\SampleFoodDataService::class, $sampleFoodDataService);
-
         // Mock Google user data
         $googleUser = Mockery::mock(SocialiteUser::class);
         $googleUser->shouldReceive('getId')->andReturn('google_123');
@@ -260,12 +253,6 @@ class GoogleOAuthTest extends TestCase
     /** @test */
     public function it_generates_random_password_for_new_google_users()
     {
-        // Mock SampleFoodDataService
-        $sampleFoodDataService = Mockery::mock(\App\Services\SampleFoodDataService::class);
-        $sampleFoodDataService->shouldReceive('createSampleData')
-            ->once()
-            ->andReturn(['ingredients' => collect(), 'meals' => collect()]);
-        $this->app->instance(\App\Services\SampleFoodDataService::class, $sampleFoodDataService);
 
         // Mock Google user data
         $googleUser = Mockery::mock(SocialiteUser::class);
@@ -303,13 +290,6 @@ class GoogleOAuthTest extends TestCase
         // Create the athlete role for testing
         \App\Models\Role::create(['name' => 'Athlete']);
 
-        // Mock SampleFoodDataService
-        $sampleFoodDataService = Mockery::mock(\App\Services\SampleFoodDataService::class);
-        $sampleFoodDataService->shouldReceive('createSampleData')
-            ->once()
-            ->andReturn(['ingredients' => collect(), 'meals' => collect()]);
-        $this->app->instance(\App\Services\SampleFoodDataService::class, $sampleFoodDataService);
-
         // Mock Google user data
         $googleUser = Mockery::mock(SocialiteUser::class);
         $googleUser->shouldReceive('getId')->andReturn('google_role_test');
@@ -346,13 +326,6 @@ class GoogleOAuthTest extends TestCase
     {
         // Create the athlete role for testing
         \App\Models\Role::create(['name' => 'Athlete']);
-
-        // Mock SampleFoodDataService
-        $sampleFoodDataService = Mockery::mock(\App\Services\SampleFoodDataService::class);
-        $sampleFoodDataService->shouldReceive('createSampleData')
-            ->once()
-            ->andReturn(['ingredients' => collect(), 'meals' => collect()]);
-        $this->app->instance(\App\Services\SampleFoodDataService::class, $sampleFoodDataService);
 
         // Mock Google user data
         $googleUser = Mockery::mock(SocialiteUser::class);
@@ -393,6 +366,51 @@ class GoogleOAuthTest extends TestCase
         $this->assertEquals('in', $waistSize->default_unit);
 
         $response->assertRedirect('/mobile-entry/lifts');
+    }
+
+    /** @test */
+    public function it_calls_sample_food_data_service_for_new_users()
+    {
+        // Create the athlete role for testing (required for user creation)
+        \App\Models\Role::create(['name' => 'Athlete']);
+
+        // Mock SampleFoodDataService and assert createSampleData is called once
+        $sampleFoodDataService = Mockery::mock(\App\Services\SampleFoodDataService::class);
+        $sampleFoodDataService->shouldReceive('createSampleData')
+            ->once()
+            ->andReturn(['ingredients' => collect(), 'meals' => collect()]);
+        $this->app->instance(\App\Services\SampleFoodDataService::class, $sampleFoodDataService);
+
+        // Mock Google user data
+        $googleUser = Mockery::mock(SocialiteUser::class);
+        $googleUser->shouldReceive('getId')->andReturn('google_sample_data_call_test');
+        $googleUser->shouldReceive('getName')->andReturn('Sample Data Caller');
+        $googleUser->shouldReceive('getEmail')->andReturn('sampledatacaller@example.com');
+
+        // Mock Socialite
+        Socialite::shouldReceive('driver')
+            ->with('google')
+            ->once()
+            ->andReturnSelf();
+        
+        Socialite::shouldReceive('redirectUrl')
+            ->once()
+            ->andReturnSelf();
+        
+        Socialite::shouldReceive('user')
+            ->once()
+            ->andReturn($googleUser);
+
+        // Trigger the Google OAuth callback
+        $response = $this->get(route('auth.google.callback'));
+
+        // Assert user was created (optional, but good for context)
+        $this->assertDatabaseHas('users', [
+            'email' => 'sampledatacaller@example.com',
+        ]);
+
+        $response->assertRedirect('/mobile-entry/lifts');
+        $response->assertSessionHas('success');
     }
 
     /** @test */
