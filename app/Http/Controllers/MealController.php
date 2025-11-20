@@ -33,12 +33,19 @@ class MealController extends Controller
 
         $components = [
             C::title('Meals List')->build(),
-            C::button('Add New Meal')
-                ->ariaLabel('Add new meal')
-                ->addClass('btn-add-item')
-                ->asLink(route('meals.create'))
-                ->build(),
         ];
+
+        // Add session messages if they exist
+        $messagesComponent = C::messagesFromSession();
+        if ($messagesComponent) {
+            $components[] = $messagesComponent;
+        }
+
+        $components[] = C::button('Add New Meal')
+            ->ariaLabel('Add new meal')
+            ->addClass('btn-add-item')
+            ->asLink(route('meals.create'))
+            ->build();
 
         $tableBuilder = C::table()
             ->emptyMessage('No meals found. Please add some!')
