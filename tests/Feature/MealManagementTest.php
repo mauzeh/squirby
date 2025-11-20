@@ -96,4 +96,293 @@ class MealManagementTest extends TestCase
         $this->actingAs($adminUser);
         $this->assertAuthenticatedAs($adminUser);
     }
+
+    /** @test */
+    public function meals_index_uses_component_based_architecture()
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $response = $this->get(route('meals.index'));
+
+        $response->assertOk();
+        $response->assertViewIs('mobile-entry.flexible');
+        $response->assertViewHas('data');
+        
+        $data = $response->viewData('data');
+        $this->assertArrayHasKey('components', $data);
+        $this->assertIsArray($data['components']);
+    }
+
+    /** @test */
+    public function meals_index_displays_title_component()
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $response = $this->get(route('meals.index'));
+
+        $data = $response->viewData('data');
+        $titleComponent = collect($data['components'])->firstWhere('type', 'title');
+        
+        $this->assertNotNull($titleComponent);
+        $this->assertEquals('Meals List', $titleComponent['data']['main']);
+    }
+
+    /** @test */
+    public function meals_index_displays_add_new_meal_button()
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $response = $this->get(route('meals.index'));
+
+        $data = $response->viewData('data');
+        $buttonComponent = collect($data['components'])->firstWhere('type', 'button');
+        
+        $this->assertNotNull($buttonComponent);
+        $this->assertEquals('Add New Meal', $buttonComponent['data']['text']);
+        $this->assertEquals(route('meals.create'), $buttonComponent['data']['url']);
+    }
+
+    /** @test */
+    public function meals_index_displays_session_success_message()
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $response = $this->withSession(['success' => 'Meal created successfully.'])
+            ->get(route('meals.index'));
+
+        $data = $response->viewData('data');
+        $messagesComponent = collect($data['components'])->firstWhere('type', 'messages');
+        
+        $this->assertNotNull($messagesComponent);
+        $this->assertCount(1, $messagesComponent['data']['messages']);
+        $this->assertEquals('success', $messagesComponent['data']['messages'][0]['type']);
+        $this->assertEquals('Meal created successfully.', $messagesComponent['data']['messages'][0]['text']);
+    }
+
+    /** @test */
+    public function meals_index_displays_table_with_meals()
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $ingredient = Ingredient::factory()->create([
+            'user_id' => $user->id,
+            'base_unit_id' => $this->unit->id,
+            'protein' => 25,
+            'carbs' => 30,
+            'fats' => 10,
+            'base_quantity' => 100
+        ]);
+
+        $meal = Meal::factory()->create([
+            'user_id' => $user->id,
+            'name' => 'Test Meal',
+            'comments' => 'Test comments'
+        ]);
+        $meal->ingredients()->attach($ingredient->id, ['quantity' => 150]);
+
+        $response = $this->get(route('meals.index'));
+
+        $data = $response->viewData('data');
+        $tableComponent = collect($data['components'])->firstWhere('type', 'table');
+        
+        $this->assertNotNull($tableComponent);
+        $this->assertCount(1, $tableComponent['data']['rows']);
+        $this->assertEquals('Test Meal', $tableComponent['data']['rows'][0]['line1']);
+    }
+
+    /** @test */
+    public function meals_index_displays_macro_badges_for_each_meal()
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $ingredient = Ingredient::factory()->create([
+            'user_id' => $user->id,
+            'base_unit_id' => $this->unit->id,
+            'protein' => 20,
+            'carbs' => 30,
+            'fats' => 10,
+            'base_quantity' => 100
+        ]);
+
+        $meal = Meal::factory()->create([
+            'user_id' => $user->id,
+            'name' => 'Macro Test Meal'
+        ]);
+        $meal->ingredients()->attach($ingredient->id, ['quantity' => 100]);
+
+        $response = $this->get(route('meals.index'));
+
+        $data = $response->viewData('data');
+        $tableComponent = collect($data['components'])->firstWhere('type', 'table');
+        $row = $tableComponent['data']['rows'][0];
+        
+        $this->assertArrayHasKey('badges', $row);
+        $this->assertCount(5, $row['badges']); // calories, protein, carbs, fats, cost
+        
+        // Check badge content
+        $badgeTexts = collect($row['badges'])->pluck('text')->toArray();
+        $this->assertStringContainsString('cal', $badgeTexts[0]);
+        $this->assertStringContainsString('g P', $badgeTexts[1]);
+        $this->assertStringContainsString('g C', $badgeTexts[2]);
+        $this->assertStringContainsString('g F', $badgeTexts[3]);
+        $this->assertStringContainsString('$', $badgeTexts[4]);
+    }
+
+    /** @test */
+    public function meals_index_displays_ingredient_summary_as_subitem()
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $ingredient1 = Ingredient::factory()->create([
+            'user_id' => $user->id,
+            'name' => 'Chicken',
+            'base_unit_id' => $this->unit->id
+        ]);
+
+        $ingredient2 = Ingredient::factory()->create([
+            'user_id' => $user->id,
+            'name' => 'Rice',
+            'base_unit_id' => $this->unit->id
+        ]);
+
+        $meal = Meal::factory()->create([
+            'user_id' => $user->id,
+            'name' => 'Chicken and Rice'
+        ]);
+        $meal->ingredients()->attach($ingredient1->id, ['quantity' => 150]);
+        $meal->ingredients()->attach($ingredient2->id, ['quantity' => 200]);
+
+        $response = $this->get(route('meals.index'));
+
+        $data = $response->viewData('data');
+        $tableComponent = collect($data['components'])->firstWhere('type', 'table');
+        $row = $tableComponent['data']['rows'][0];
+        
+        $this->assertArrayHasKey('subItems', $row);
+        $this->assertCount(1, $row['subItems']);
+        $this->assertEquals('Ingredients:', $row['subItems'][0]['line1']);
+        $this->assertArrayHasKey('messages', $row['subItems'][0]);
+    }
+
+    /** @test */
+    public function meals_index_shows_empty_message_when_no_meals()
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $response = $this->get(route('meals.index'));
+
+        $data = $response->viewData('data');
+        $tableComponent = collect($data['components'])->firstWhere('type', 'table');
+        
+        $this->assertNotNull($tableComponent);
+        $this->assertEquals('No meals found. Please add some!', $tableComponent['data']['emptyMessage']);
+        $this->assertEmpty($tableComponent['data']['rows']);
+    }
+
+    /** @test */
+    public function meals_index_only_shows_users_own_meals()
+    {
+        $user1 = User::factory()->create();
+        $user2 = User::factory()->create();
+
+        $ingredient = Ingredient::factory()->create([
+            'user_id' => $user1->id,
+            'base_unit_id' => $this->unit->id
+        ]);
+
+        $meal1 = Meal::factory()->create([
+            'user_id' => $user1->id,
+            'name' => 'User 1 Meal'
+        ]);
+        $meal1->ingredients()->attach($ingredient->id, ['quantity' => 100]);
+
+        $meal2 = Meal::factory()->create([
+            'user_id' => $user2->id,
+            'name' => 'User 2 Meal'
+        ]);
+
+        $this->actingAs($user1);
+        $response = $this->get(route('meals.index'));
+
+        $data = $response->viewData('data');
+        $tableComponent = collect($data['components'])->firstWhere('type', 'table');
+        
+        $this->assertCount(1, $tableComponent['data']['rows']);
+        $this->assertEquals('User 1 Meal', $tableComponent['data']['rows'][0]['line1']);
+    }
+
+    /** @test */
+    public function meals_index_table_has_edit_and_delete_actions()
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $ingredient = Ingredient::factory()->create([
+            'user_id' => $user->id,
+            'base_unit_id' => $this->unit->id
+        ]);
+
+        $meal = Meal::factory()->create([
+            'user_id' => $user->id,
+            'name' => 'Action Test Meal'
+        ]);
+        $meal->ingredients()->attach($ingredient->id, ['quantity' => 100]);
+
+        $response = $this->get(route('meals.index'));
+
+        $data = $response->viewData('data');
+        $tableComponent = collect($data['components'])->firstWhere('type', 'table');
+        $row = $tableComponent['data']['rows'][0];
+        
+        $this->assertArrayHasKey('actions', $row);
+        $this->assertCount(2, $row['actions']); // edit and delete
+        
+        // Check edit action
+        $editAction = collect($row['actions'])->firstWhere('type', 'link');
+        $this->assertNotNull($editAction);
+        $this->assertEquals('fa-pencil', $editAction['icon']);
+        $this->assertEquals(route('meals.edit', $meal->id), $editAction['url']);
+        
+        // Check delete action
+        $deleteAction = collect($row['actions'])->firstWhere('type', 'form');
+        $this->assertNotNull($deleteAction);
+        $this->assertEquals('fa-trash', $deleteAction['icon']);
+        $this->assertEquals(route('meals.destroy', $meal->id), $deleteAction['url']);
+        $this->assertEquals('DELETE', $deleteAction['method']);
+        $this->assertTrue($deleteAction['requiresConfirm']);
+    }
+
+    /** @test */
+    public function meals_index_actions_are_compact()
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $ingredient = Ingredient::factory()->create([
+            'user_id' => $user->id,
+            'base_unit_id' => $this->unit->id
+        ]);
+
+        $meal = Meal::factory()->create([
+            'user_id' => $user->id,
+            'name' => 'Compact Test Meal'
+        ]);
+        $meal->ingredients()->attach($ingredient->id, ['quantity' => 100]);
+
+        $response = $this->get(route('meals.index'));
+
+        $data = $response->viewData('data');
+        $tableComponent = collect($data['components'])->firstWhere('type', 'table');
+        $row = $tableComponent['data']['rows'][0];
+        
+        $this->assertTrue($row['compact']);
+    }
 }
