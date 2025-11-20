@@ -76,7 +76,7 @@ class MenuService
      */
     public function getUtilityMenu(): array
     {
-        $config = $this->getMenuConfig();
+        $config = config('menu');
         return $this->processMenuItems($config['utility']);
     }
 
