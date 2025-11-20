@@ -41,8 +41,7 @@ Route::middleware('auth')->group(function () {
 
     Route::post('food-logs/add-meal', [FoodLogController::class, 'addMealToLog'])->name('food-logs.add-meal');
     Route::post('food-logs/destroy-selected', [FoodLogController::class, 'destroySelected'])->name('food-logs.destroy-selected');
-    Route::post('food-logs/export', [FoodLogController::class, 'export'])->name('food-logs.export');
-    Route::post('food-logs/export-all', [FoodLogController::class, 'exportAll'])->name('food-logs.export-all');
+
 
     
 
