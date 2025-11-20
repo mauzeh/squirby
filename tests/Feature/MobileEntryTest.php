@@ -109,25 +109,72 @@ class MobileEntryTest extends TestCase
         $response->assertSee('Log Push-ups');
     }
 
-    /** @test */
-    public function mobile_entry_page_renders_band_exercise_forms()
-    {
-        $user = User::factory()->create();
-        $exercise = Exercise::factory()->create([
-            'title' => 'Band Pull-aparts',
-            'exercise_type' => 'banded_resistance'
-        ]);
-        
-        MobileLiftForm::factory()->create([
-            'user_id' => $user->id,
-            'exercise_id' => $exercise->id,
-            'date' => now(),
-        ]);
-        
-        $response = $this->actingAs($user)->get(route('mobile-entry.lifts'));
-        
-        $response->assertStatus(200);
-        $response->assertSee('Band Pull-aparts');
-        $response->assertSee('Band Color:');
+        /** @test */
+
+        public function mobile_entry_page_renders_band_exercise_forms()
+
+        {
+
+            $user = User::factory()->create();
+
+            $exercise = Exercise::factory()->create([
+
+                'title' => 'Band Pull-aparts',
+
+                'exercise_type' => 'banded_resistance'
+
+            ]);
+
+            
+
+            MobileLiftForm::factory()->create([
+
+                'user_id' => $user->id,
+
+                'exercise_id' => $exercise->id,
+
+                'date' => now(),
+
+            ]);
+
+            
+
+            $response = $this->actingAs($user)->get(route('mobile-entry.lifts'));
+
+            
+
+            $response->assertStatus(200);
+
+            $response->assertSee('Band Pull-aparts');
+
+            $response->assertSee('Band Color:');
+
+        }
+
+    
+
+        /** @test */
+
+        public function button_label_is_add_lift_on_mobile_entry_lifts_page()
+
+        {
+
+            $user = User::factory()->create();
+
+            
+
+            $response = $this->actingAs($user)->get(route('mobile-entry.lifts'));
+
+            
+
+            $response->assertStatus(200);
+
+            $response->assertSee('Add Lift');
+
+            $response->assertDontSee('Add Exercise');
+
+        }
+
     }
-}
+
+    

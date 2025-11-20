@@ -125,8 +125,8 @@ class MobileEntryController extends Controller
             $components[] = $summaryBuilder->build();
         }
         
-        // Add Exercise button
-        $components[] = \App\Services\ComponentBuilder::button('Add Exercise')
+        // Add Lift button
+        $components[] = \App\Services\ComponentBuilder::button('Add Lift')
             ->ariaLabel('Add new exercise')
             ->addClass('btn-add-item')
             ->build();

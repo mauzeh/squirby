@@ -15,7 +15,7 @@ return [
     'success' => [
         'exercise_added' => ':exercise added! Now scroll down to log your workout - adjust the weight/reps and tap \'Log :exercise\' when ready.',
         'exercise_created' => 'Created \':exercise\'! Now scroll down to log your first set - the form is ready with default values you can adjust.',
-        'form_removed' => 'Removed :exercise. You can add it back anytime using \'Add Exercise\' below.',
+        'form_removed' => 'Removed :exercise. You can add it back anytime using \'Add Lift\' below.',
         
         'lift_logged' => [
             'Nice work! :exercise: :details logged!',
@@ -73,7 +73,7 @@ return [
     ],
 
     'empty_states' => [
-        'no_workouts_logged' => 'No workouts logged yet! Add exercises above to get started.',
+        'no_workouts_logged' => 'No workouts logged yet! Add lifts above to get started.',
         'no_exercises_found' => 'No exercises found',
         'no_measurements_logged' => 'No measurements logged yet today!',
         'no_measurement_types_found' => 'No measurement types found. Create measurement types first.',
@@ -99,10 +99,10 @@ return [
     ],
 
     'contextual_help' => [
-        'getting_started' => 'Tap "Add Exercise" below to choose what you want to work out today.',
+        'getting_started' => 'Tap "Add Lift" below to choose what you want to work out today.',
         'ready_to_log' => 'You have :count exercise:plural ready to log below.',
         'keep_going' => 'Great progress! You have :count more exercise:plural to log.',
-        'workout_complete' => 'All exercises completed! Tap "Add Exercise" below if you want to keep going.',
+        'workout_complete' => 'All lifts completed! Tap "Add Lift" below if you want to keep going.',
         
         // Food-specific contextual help
         'getting_started_food' => 'Tap "Add Food" below to choose what you want to log today.',
