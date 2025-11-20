@@ -44,7 +44,7 @@ class FoodLogController extends Controller
         $units = Unit::all();
 
         $meals = Meal::where('user_id', auth()->id())->get();
-        $nutritionService = $this->nutritionService;
+
 
         $selectedDate = $this->dateNavigationService->parseSelectedDate($request->input('date'));
 
@@ -57,11 +57,9 @@ class FoodLogController extends Controller
             ->select('food_logs.*')
             ->get();
 
-        $groupedLogs = $foodLogs->groupBy(function ($log) {
-            return $log->logged_at->format('Y-m-d H:i:s');
-        });
 
-        $dailyTotals = $nutritionService->calculateFoodLogTotals($foodLogs);
+
+
 
         // Get date navigation data
         $navigationData = $this->dateNavigationService->getNavigationData(
@@ -71,7 +69,7 @@ class FoodLogController extends Controller
             'food-logs.index'
         );
 
-        return view('food_logs.index', compact('foodLogs', 'groupedLogs', 'dailyTotals', 'ingredients', 'units', 'meals', 'selectedDate', 'nutritionService', 'navigationData'));
+        return view('food_logs.index', compact('foodLogs', 'ingredients', 'units', 'meals', 'selectedDate', 'navigationData'));
     }
 
     /**

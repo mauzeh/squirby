@@ -30,12 +30,7 @@
                         <th class="hide-on-mobile">Time</th>
                         <th>Ingredient</th>
                         <th class="hide-on-mobile">Quantity</th>
-                        <th class="hide-on-mobile">Calories</th>
-                        <th class="hide-on-mobile">Fats (g)</th>
-                        <th class="hide-on-mobile">Carbs (g)</th>
-                        <th class="hide-on-mobile">Protein (g)</th>
-                        <th class="hide-on-mobile">Sodium (mg)</th>
-                        <th class="hide-on-mobile">Cost</th>
+
                         <th class="actions-column">Actions</th>
                     </tr>
                 </thead>
@@ -54,12 +49,7 @@
                                 </div>
                             </td>
                             <td class="hide-on-mobile">{{ $log->quantity }} {{ $log->unit->abbreviation }}</td>
-                            <td class="hide-on-mobile">{{ round($nutritionService->calculateTotalMacro($log->ingredient, 'calories', (float)$log->quantity)) }}</td>
-                            <td class="hide-on-mobile">{{ round($nutritionService->calculateTotalMacro($log->ingredient, 'fats', (float)$log->quantity), 1) }}</td>
-                            <td class="hide-on-mobile">{{ round($nutritionService->calculateTotalMacro($log->ingredient, 'carbs', (float)$log->quantity), 1) }}</td>
-                            <td class="hide-on-mobile">{{ round($nutritionService->calculateTotalMacro($log->ingredient, 'protein', (float)$log->quantity), 1) }}</td>
-                            <td class="hide-on-mobile">{{ round($nutritionService->calculateTotalMacro($log->ingredient, 'sodium', (float)$log->quantity), 1) }}</td>
-                            <td class="hide-on-mobile">{{ number_format($nutritionService->calculateCostForQuantity($log->ingredient, (float)$log->quantity), 2) }}</td>
+
                             <td class="actions-column">
                                 <div style="display: flex; gap: 5px;">
                                     <a href="{{ route('food-logs.edit', ['food_log' => $log, 'redirect_to' => 'food-logs.index']) }}" class="button edit"><i class="fa-solid fa-pencil"></i></a>
@@ -73,24 +63,7 @@
                         </tr>
                     @endforeach
                 </tbody>
-                <tfoot>
-                    <tr>
-                        <th colspan="2" style="text-align:left; font-weight:normal;">
-                            <form action="{{ route('food-logs.destroy-selected') }}" method="POST" id="delete-selected-form" onsubmit="return confirm('Are you sure you want to delete the selected food log entries?');" style="display:inline;">
-                                @csrf
-                                <button type="submit" class="button delete"><i class="fa-solid fa-trash"></i> Delete Selected</button>
-                            </form>
-                        </th>
-                        <th class="hide-on-mobile"></th> {{-- Empty header for the hidden Quantity column --}}
-                        <th colspan="2" style="text-align:right; font-weight:bold;">Total: {{ round($dailyTotals['calories']) }}</th>
-                        <td class="hide-on-mobile" style="font-weight:bold;">{{ round($dailyTotals['fats']) }}</td>
-                        <td class="hide-on-mobile" style="font-weight:bold;">{{ round($dailyTotals['carbs']) }}</td>
-                        <td class="hide-on-mobile" style="font-weight:bold;">{{ round($dailyTotals['protein']) }}</td>
-                        <td class="hide-on-mobile" style="font-weight:bold;">{{ round($dailyTotals['sodium']) }}</td>
-                        <td class="hide-on-mobile" style-="font-weight:bold;">{{ number_format($dailyTotals['cost'], 2) }}</td>
-                        <td class="hide-on-mobile"></td>
-                    </tr>
-                </tfoot>
+
             </table>
 
 
@@ -134,20 +107,9 @@
 
 
 
-    <div class="container meal-groups-container">
-        @foreach($groupedLogs->sortKeys() as $time => $logs)
-                <div class="meal-group">
-                    @php
-                        $mealTotals = $nutritionService->calculateFoodLogTotals($logs);
-                    @endphp
-                    <x-nutrition-facts-label :totals="$mealTotals" :title="\Carbon\Carbon::parse($time)->format('H:i')" />
-                </div>
-            @endforeach
-    </div>
 
-    <div class="container">
-        <x-nutrition-facts-label :totals="$dailyTotals" title="Today's Totals:" class="main-totals" />
-    </div>
+
+
 
 
 @endsection
