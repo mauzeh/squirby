@@ -8,48 +8,54 @@ use Illuminate\Support\Facades\Request;
 class MenuService
 {
     /**
-     * Get all route patterns related to food.
+     * Processes an array of menu items, setting active states and handling roles.
      *
+     * @param array $menuItems
+     * @param ?string $currentRoute
      * @return array
      */
-    private function getFoodRoutePatterns(): array
+    private function processMenuItems(array $menuItems, ?string $currentRoute = null): array
     {
-        return [
-            'meals.*',
-            'ingredients.*',
-            'mobile-entry.foods',
-            'food-logs.*',
-        ];
-    }
+        if (is_null($currentRoute)) {
+            $currentRoute = Request::route() ? Request::route()->getName() : null;
+        }
 
-    /**
-     * Get all route patterns related to body measurements.
-     *
-     * @return array
-     */
-    private function getBodyRoutePatterns(): array
-    {
-        return [
-            'body-logs.*',
-            'measurement-types.*',
-            'mobile-entry.measurements',
-        ];
-    }
+        $processedItems = [];
+        foreach ($menuItems as $item) {
+            // Check roles
+            if (isset($item['roles'])) {
+                $hasRole = false;
+                foreach ($item['roles'] as $role) {
+                    if ($role === 'Impersonator') {
+                        if (session()->has('impersonator_id')) {
+                            $hasRole = true;
+                            break;
+                        }
+                    } elseif (Auth::user() && Auth::user()->hasRole($role)) {
+                        $hasRole = true;
+                        break;
+                    }
+                }
+                if (!$hasRole) {
+                    continue; // Skip this item if user doesn't have required roles
+                }
+            }
 
-    /**
-     * Get all route patterns related to lifts.
-     *
-     * @return array
-     */
-    private function getLiftsRoutePatterns(): array
-    {
-        return [
-            'exercises.*',
-            'lift-logs.*',
-            'recommendations.*',
-            'mobile-entry.lifts',
-            'workouts.*',
-        ];
+            // Determine active state
+            if (isset($item['patterns']) && $currentRoute) {
+                $item['active'] = Request::routeIs($item['patterns']);
+            } else {
+                $item['active'] = false;
+            }
+
+            // Recursively process children
+            if (isset($item['children'])) {
+                $item['children'] = $this->processMenuItems($item['children'], $currentRoute);
+            }
+
+            $processedItems[] = $item;
+        }
+        return $processedItems;
     }
 
     /**
@@ -59,28 +65,8 @@ class MenuService
      */
     public function getMainMenu(): array
     {
-        return [
-            [
-                'id' => 'lifts-nav-link',
-                'label' => 'Lifts',
-                'icon' => 'fa-dumbbell',
-                'route' => 'mobile-entry.lifts',
-                'active' => Request::routeIs($this->getLiftsRoutePatterns()),
-            ],
-            [
-                'id' => 'food-nav-link',
-                'label' => 'Food',
-                'icon' => 'fa-utensils',
-                'route' => 'mobile-entry.foods',
-                'active' => Request::routeIs($this->getFoodRoutePatterns()),
-            ],
-            [
-                'label' => 'Body',
-                'icon' => 'fa-heartbeat',
-                'route' => 'mobile-entry.measurements',
-                'active' => Request::routeIs($this->getBodyRoutePatterns()),
-            ],
-        ];
+        $config = config('menu');
+        return $this->processMenuItems($config['main']);
     }
 
     /**
@@ -90,39 +76,8 @@ class MenuService
      */
     public function getUtilityMenu(): array
     {
-        $items = [];
-
-        if (Auth::user()->hasRole('Admin')) {
-            $items[] = [
-                'label' => null,
-                'icon' => 'fa-flask',
-                'route' => 'labs.with-nav',
-                'active' => Request::routeIs('labs.*'),
-                'style' => 'padding: 14px 8px',
-            ];
-            $items[] = [
-                'label' => null,
-                'icon' => 'fa-cog',
-                'route' => 'users.index',
-                'active' => Request::routeIs('users.*'),
-                'style' => 'padding: 14px 8px',
-            ];
-        }
-
-        $items[] = [
-            'label' => null,
-            'icon' => 'fa-user',
-            'route' => 'profile.edit',
-            'active' => Request::routeIs('profile.edit'),
-            'style' => 'padding: 14px 8px',
-        ];
-
-        $items[] = [
-            'type' => 'logout',
-            'icon' => 'fa-sign-out-alt',
-        ];
-
-        return $items;
+        $config = $this->getMenuConfig();
+        return $this->processMenuItems($config['utility']);
     }
 
     /**
@@ -132,23 +87,54 @@ class MenuService
      */
     public function getSubMenu(): ?array
     {
-        if (Request::routeIs('labs.*')) {
-            return $this->getLabsSubMenu();
+        $mainMenuItems = $this->getMainMenu();
+        $utilityMenuItems = $this->getUtilityMenu(); // Get utility menu items as well
+        $subMenuItems = [];
+
+        // Check main menu items for active status and children
+        foreach ($mainMenuItems as $mainItem) {
+            if (isset($mainItem['active']) && $mainItem['active'] && isset($mainItem['children'])) {
+                $subMenuItems = $mainItem['children'];
+                break;
+            }
         }
 
-        if (Request::routeIs($this->getFoodRoutePatterns())) {
-            return $this->getFoodSubMenu();
+        // If no active main menu item with children, check utility menu items
+        if (empty($subMenuItems)) {
+            foreach ($utilityMenuItems as $utilityItem) {
+                if (isset($utilityItem['active']) && $utilityItem['active'] && isset($utilityItem['children'])) {
+                    $subMenuItems = $utilityItem['children'];
+                    break;
+                }
+            }
         }
 
-        if (Request::routeIs($this->getBodyRoutePatterns())) {
-            return $this->getBodySubMenu();
+        if (empty($subMenuItems)) {
+            return null;
         }
 
-        if (Request::routeIs($this->getLiftsRoutePatterns())) {
-            return $this->getLiftsSubMenu();
+        $finalSubMenuItems = [];
+        foreach ($subMenuItems as $subItem) {
+            if (isset($subItem['type']) && $subItem['type'] === 'dynamic-measurement-types') {
+                // Handle dynamic measurement types for Body
+                $measurementTypes = \App\Models\MeasurementType::where('user_id', Auth::id())
+                    ->orderBy('name')
+                    ->get();
+
+                foreach ($measurementTypes as $measurementType) {
+                    $finalSubMenuItems[] = [
+                        'label' => $measurementType->name,
+                        'route' => 'body-logs.show-by-type',
+                        'routeParams' => [$measurementType],
+                        'active' => Request::is('body-logs/type/' . $measurementType->id),
+                    ];
+                }
+            } else {
+                $finalSubMenuItems[] = $subItem;
+            }
         }
 
-        return null;
+        return $finalSubMenuItems;
     }
 
     /**
@@ -158,238 +144,6 @@ class MenuService
      */
     public function shouldShowSubMenu(): bool
     {
-        return Request::routeIs($this->getFoodRoutePatterns()) ||
-               Request::routeIs($this->getBodyRoutePatterns()) ||
-               Request::routeIs($this->getLiftsRoutePatterns()) ||
-               Request::routeIs('labs.*');
-    }
-
-    /**
-     * Get labs sub-menu items
-     *
-     * @return array
-     */
-    protected function getLabsSubMenu(): array
-    {
-        return [
-            [
-                'label' => null,
-                'icon' => 'fa-plus',
-                'route' => 'labs.with-nav',
-                'active' => Request::routeIs('labs.with-nav'),
-                'title' => 'With Navigation',
-            ],
-            [
-                'label' => null,
-                'icon' => 'fa-minus',
-                'route' => 'labs.without-nav',
-                'active' => Request::routeIs('labs.without-nav'),
-                'title' => 'Without Navigation',
-            ],
-            [
-                'label' => null,
-                'icon' => 'fa-clone',
-                'route' => 'labs.multiple-forms',
-                'active' => Request::routeIs('labs.multiple-forms'),
-                'title' => 'Multiple Forms',
-            ],
-            [
-                'label' => null,
-                'icon' => 'fa-sort',
-                'route' => 'labs.custom-order',
-                'active' => Request::routeIs('labs.custom-order'),
-                'title' => 'Custom Order',
-            ],
-            [
-                'label' => null,
-                'icon' => 'fa-hand-pointer',
-                'route' => 'labs.multiple-buttons',
-                'active' => Request::routeIs('labs.multiple-buttons'),
-                'title' => 'Multiple Buttons',
-            ],
-            [
-                'label' => null,
-                'icon' => 'fa-table',
-                'route' => 'labs.table-example',
-                'active' => Request::routeIs('labs.table-example'),
-                'title' => 'Table Example',
-            ],
-            [
-                'label' => null,
-                'icon' => 'fa-arrows-alt-v',
-                'route' => 'labs.table-reorder',
-                'active' => Request::routeIs('labs.table-reorder'),
-                'title' => 'Table Reorder',
-            ],
-            [
-                'label' => null,
-                'icon' => 'fa-list-ul',
-                'route' => 'labs.multiple-lists',
-                'active' => Request::routeIs('labs.multiple-lists'),
-                'title' => 'Multiple Lists',
-            ],
-            [
-                'label' => null,
-                'icon' => 'fa-arrow-left',
-                'route' => 'labs.title-back-button',
-                'active' => Request::routeIs('labs.title-back-button'),
-                'title' => 'Title Back Button',
-            ],
-            [
-                'label' => null,
-                'icon' => 'fa-chevron-down',
-                'route' => 'labs.table-initial-expanded',
-                'active' => Request::routeIs('labs.table-initial-expanded'),
-                'title' => 'Table Initial Expanded',
-            ],
-            [
-                'label' => null,
-                'icon' => 'fa-expand',
-                'route' => 'labs.expanded-list',
-                'active' => Request::routeIs('labs.expanded-list'),
-                'title' => 'Expanded List',
-            ],
-            [
-                'label' => null,
-                'icon' => 'fa-check-square',
-                'route' => 'labs.table-bulk-selection',
-                'active' => Request::routeIs('labs.table-bulk-selection'),
-                'title' => 'Table Bulk Selection',
-            ],
-            [
-                'label' => null,
-                'icon' => 'fa-apple-alt',
-                'route' => 'labs.ingredient-entry',
-                'active' => Request::routeIs('labs.ingredient-entry'),
-                'title' => 'Ingredient Entry',
-            ],
-            [
-                'label' => null,
-                'icon' => 'fa-chart-line',
-                'route' => 'labs.chart-example',
-                'active' => Request::routeIs('labs.chart-example'),
-                'title' => 'Chart Example',
-            ],
-        ];
-    }
-
-    /**
-     * Get food sub-menu items
-     *
-     * @return array
-     */
-    protected function getFoodSubMenu(): array
-    {
-        return [
-            [
-                'label' => null,
-                'icon' => 'fa-calendar-day',
-                'route' => 'mobile-entry.foods',
-                'active' => Request::routeIs($this->getFoodRoutePatterns()),
-            ],
-
-            [
-                'label' => 'Meals',
-                'route' => 'meals.index',
-                'active' => Request::routeIs('meals.*'),
-            ],
-            [
-                'label' => 'Ingredients',
-                'route' => 'ingredients.index',
-                'active' => Request::routeIs('ingredients.*'),
-            ],
-        ];
-    }
-
-    /**
-     * Get body/measurements sub-menu items
-     *
-     * @return array
-     */
-    protected function getBodySubMenu(): array
-    {
-        $items = [
-            [
-                'label' => null,
-                'icon' => 'fa-calendar-day',
-                'route' => 'mobile-entry.measurements',
-                'active' => Request::routeIs($this->getBodyRoutePatterns()),
-            ],
-        ];
-
-        if (Auth::user() && Auth::user()->hasRole('Admin')) {
-            $items[] = [
-                'label' => 'History',
-                'route' => 'body-logs.index',
-                'active' => Request::routeIs('body-logs.*'),
-            ];
-        }
-
-        // Add measurement type links
-        $measurementTypes = \App\Models\MeasurementType::where('user_id', Auth::id())
-            ->orderBy('name')
-            ->get();
-
-        foreach ($measurementTypes as $measurementType) {
-            $items[] = [
-                'label' => $measurementType->name,
-                'route' => 'body-logs.show-by-type',
-                'routeParams' => [$measurementType],
-                'active' => Request::is('body-logs/type/' . $measurementType->id),
-            ];
-        }
-
-        return $items;
-    }
-
-    /**
-     * Get lifts sub-menu items
-     *
-     * @return array
-     */
-    protected function getLiftsSubMenu(): array
-    {
-        $items = [];
-
-        $items[] = [
-            'label' => null,
-            'icon' => 'fa-calendar-day',
-            'route' => 'mobile-entry.lifts',
-            'active' => Request::routeIs(['mobile-entry.lifts']),
-            'title' => 'Direct Entry'
-        ];
-
-        $items[] = [
-            'label' => 'Workouts',
-            'route' => 'workouts.index',
-            'active' => Request::routeIs(['workouts.*']),
-        ];
-
-        $items[] = [
-            'label' => 'History',
-            'route' => 'lift-logs.index',
-            'active' => Request::routeIs(['lift-logs.*', 'exercises.show-logs']),
-        ];
-
-        if (Auth::user() && (Auth::user()->hasRole('Admin') || session()->has('impersonator_id'))) {
-            $items[] = [
-                'label' => null,
-                'icon' => 'fa-star',
-                'route' => 'recommendations.index',
-                'active' => Request::routeIs('recommendations.*'),
-                'title' => 'Recommendations',
-            ];
-        }
-
-        // Only show Exercises to admins
-        if (Auth::user() && Auth::user()->hasRole('Admin')) {
-            $items[] = [
-                'label' => 'Exercises',
-                'route' => 'exercises.index',
-                'active' => Request::routeIs('exercises.*'),
-            ];
-        }
-
-        return $items;
+        return !empty($this->getSubMenu());
     }
 }
