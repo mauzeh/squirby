@@ -95,9 +95,6 @@ class ApplicationHealthTest extends TestCase
             // Impersonation leave (requires active impersonation)
             'users.leave-impersonate',
             
-            // Labs/experimental routes (component examples, not production)
-            'labs.*',
-            
             // API/utility routes
             'sanctum.csrf-cookie',
             '_ignition.*',

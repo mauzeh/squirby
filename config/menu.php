@@ -125,7 +125,7 @@ return [
                 [ 'label' => null, 'icon' => 'fa-expand', 'route' => 'labs.expanded-list', 'title' => 'Expanded List', 'patterns' => ['labs.expanded-list'] ],
                 [ 'label' => null, 'icon' => 'fa-check-square', 'route' => 'labs.table-bulk-selection', 'title' => 'Table Bulk Selection', 'patterns' => ['labs.table-bulk-selection'] ],
                 [ 'label' => null, 'icon' => 'fa-apple-alt', 'route' => 'labs.ingredient-entry', 'title' => 'Ingredient Entry', 'patterns' => ['labs.ingredient-entry'] ],
-                [ 'label' => null, 'icon' => 'fa-chart-line', 'title' => 'Chart Example', 'patterns' => ['labs.chart-example'] ],
+                [ 'label' => null, 'icon' => 'fa-chart-line', 'route' => 'labs.chart-example', 'title' => 'Chart Example', 'patterns' => ['labs.chart-example'] ],
             ],
         ],
         [
