@@ -95,18 +95,18 @@ class ExerciseMergeIntegrationTest extends TestCase
 
         // Step 3: Verify data transfer
 
-        // Check lift logs were transferred with merge notes
+        // Check lift logs were transferred without modifying comments
         $this->assertDatabaseHas('lift_logs', [
             'id' => $liftLogWithComments->id,
             'exercise_id' => $targetExercise->id,
-            'comments' => 'Great workout today [Merged from: User Bench Press]',
+            'comments' => 'Great workout today',
             'weight' => 100
         ]);
 
         $this->assertDatabaseHas('lift_logs', [
             'id' => $liftLogWithoutComments->id,
             'exercise_id' => $targetExercise->id,
-            'comments' => '[Merged from: User Bench Press]',
+            'comments' => null,
             'weight' => 105
         ]);
 
@@ -299,7 +299,7 @@ class ExerciseMergeIntegrationTest extends TestCase
         $this->assertDatabaseHas('lift_logs', [
             'id' => $liftLog->id,
             'exercise_id' => $sourceExercise->id,
-            'comments' => 'Original comment' // Should not have merge note
+            'comments' => 'Original comment'
         ]);
     }
 
@@ -325,9 +325,16 @@ class ExerciseMergeIntegrationTest extends TestCase
         $response->assertRedirect(route('exercises.index'));
         $response->assertSessionHas('success');
 
-        // Verify merge completed successfully (logging is tested in unit tests)
+        // Verify merge completed successfully
         $this->assertDatabaseMissing('exercises', ['id' => $sourceExercise->id]);
         $this->assertDatabaseHas('exercises', ['id' => $targetExercise->id]);
+
+        // Verify database log was created
+        $this->assertDatabaseHas('exercise_merge_logs', [
+            'source_exercise_id' => $sourceExercise->id,
+            'target_exercise_id' => $targetExercise->id,
+            'admin_user_id' => $this->admin->id,
+        ]);
     }
 
     /** @test */
@@ -743,5 +750,105 @@ class ExerciseMergeIntegrationTest extends TestCase
         $response->assertSessionHas('success', function ($message) {
             return str_contains($message, "An alias has been created so the owner will continue to see 'RDL'");
         });
+    }
+
+    /** @test */
+    public function merge_creates_database_log_entry_with_all_details()
+    {
+        $this->actingAs($this->admin);
+
+        $sourceExercise = Exercise::factory()->create([
+            'user_id' => $this->regularUser->id,
+            'title' => 'User Squat',
+            'exercise_type' => 'regular'
+        ]);
+
+        $targetExercise = Exercise::factory()->create([
+            'user_id' => null,
+            'title' => 'Squat',
+            'exercise_type' => 'regular'
+        ]);
+
+        // Create lift logs to track
+        $liftLog1 = LiftLog::factory()->create([
+            'exercise_id' => $sourceExercise->id,
+            'user_id' => $this->regularUser->id,
+            'weight' => 100
+        ]);
+
+        $liftLog2 = LiftLog::factory()->create([
+            'exercise_id' => $sourceExercise->id,
+            'user_id' => $this->regularUser->id,
+            'weight' => 105
+        ]);
+
+        // Execute merge
+        $response = $this->post(route('exercises.merge', $sourceExercise), [
+            'target_exercise_id' => $targetExercise->id,
+            'create_alias' => true
+        ]);
+
+        $response->assertRedirect(route('exercises.index'));
+
+        // Verify database log entry was created
+        $this->assertDatabaseHas('exercise_merge_logs', [
+            'source_exercise_id' => $sourceExercise->id,
+            'source_exercise_title' => 'User Squat',
+            'target_exercise_id' => $targetExercise->id,
+            'target_exercise_title' => 'Squat',
+            'admin_user_id' => $this->admin->id,
+            'admin_email' => $this->admin->email,
+            'lift_log_count' => 2,
+            'alias_created' => true,
+        ]);
+
+        // Verify lift log IDs were stored correctly
+        $mergeLog = \App\Models\ExerciseMergeLog::where('source_exercise_id', $sourceExercise->id)->first();
+        $this->assertNotNull($mergeLog);
+        $this->assertIsArray($mergeLog->lift_log_ids);
+        $this->assertCount(2, $mergeLog->lift_log_ids);
+        $this->assertContains($liftLog1->id, $mergeLog->lift_log_ids);
+        $this->assertContains($liftLog2->id, $mergeLog->lift_log_ids);
+
+        // Verify relationships work
+        $this->assertEquals($this->admin->id, $mergeLog->admin->id);
+        $this->assertEquals($targetExercise->id, $mergeLog->targetExercise->id);
+    }
+
+    /** @test */
+    public function merge_log_persists_even_after_target_exercise_deleted()
+    {
+        $this->actingAs($this->admin);
+
+        $sourceExercise = Exercise::factory()->create([
+            'user_id' => $this->regularUser->id,
+            'title' => 'Temp Exercise',
+            'exercise_type' => 'regular'
+        ]);
+
+        $targetExercise = Exercise::factory()->create([
+            'user_id' => null,
+            'title' => 'Target Exercise',
+            'exercise_type' => 'regular'
+        ]);
+
+        // Execute merge
+        $this->post(route('exercises.merge', $sourceExercise), [
+            'target_exercise_id' => $targetExercise->id,
+            'create_alias' => false
+        ]);
+
+        // Verify log exists
+        $mergeLog = \App\Models\ExerciseMergeLog::where('source_exercise_id', $sourceExercise->id)->first();
+        $this->assertNotNull($mergeLog);
+
+        // Delete target exercise
+        $targetExercise->delete();
+
+        // Verify log still exists with all data intact
+        $mergeLog->refresh();
+        $this->assertEquals('Temp Exercise', $mergeLog->source_exercise_title);
+        $this->assertEquals('Target Exercise', $mergeLog->target_exercise_title);
+        $this->assertEquals($this->admin->email, $mergeLog->admin_email);
     }
 }

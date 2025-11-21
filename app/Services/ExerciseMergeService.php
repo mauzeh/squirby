@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Exercise;
+use App\Models\ExerciseMergeLog;
 use App\Models\LiftLog;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
@@ -96,6 +97,9 @@ class ExerciseMergeService
             throw new \InvalidArgumentException('Exercises are not compatible for merging: ' . implode(', ', $validation['errors']));
         }
 
+        // Collect lift log IDs before transfer
+        $liftLogIds = LiftLog::where('exercise_id', $source->id)->pluck('id')->toArray();
+
         try {
             DB::beginTransaction();
 
@@ -111,7 +115,20 @@ class ExerciseMergeService
             // Delete the source exercise
             $source->delete();
 
-            // Log the merge operation
+            // Create database log entry
+            ExerciseMergeLog::create([
+                'source_exercise_id' => $source->id,
+                'source_exercise_title' => $source->title,
+                'target_exercise_id' => $target->id,
+                'target_exercise_title' => $target->title,
+                'admin_user_id' => $admin->id,
+                'admin_email' => $admin->email,
+                'lift_log_ids' => $liftLogIds,
+                'lift_log_count' => count($liftLogIds),
+                'alias_created' => $aliasCreated,
+            ]);
+
+            // Also log to Laravel log for immediate visibility
             Log::info('Exercise merge completed', [
                 'source_exercise_id' => $source->id,
                 'source_exercise_title' => $source->title,
@@ -119,6 +136,7 @@ class ExerciseMergeService
                 'target_exercise_title' => $target->title,
                 'admin_user_id' => $admin->id,
                 'admin_email' => $admin->email,
+                'lift_log_count' => count($liftLogIds),
                 'alias_created' => $aliasCreated,
             ]);
 
@@ -145,10 +163,7 @@ class ExerciseMergeService
         $liftLogs = LiftLog::where('exercise_id', $source->id)->get();
 
         foreach ($liftLogs as $liftLog) {
-            // Append merge note to comments
-            $this->appendMergeNote($liftLog, $source->title);
-            
-            // Update exercise_id to target
+            // Update exercise_id to target without modifying comments
             $liftLog->update(['exercise_id' => $target->id]);
         }
     }
@@ -169,21 +184,7 @@ class ExerciseMergeService
         // No action needed as source intelligence will be cascade deleted
     }
 
-    /**
-     * Append merge note to lift log comments
-     */
-    public function appendMergeNote(LiftLog $liftLog, string $originalExerciseName): void
-    {
-        $mergeNote = "[Merged from: {$originalExerciseName}]";
-        
-        if (empty($liftLog->comments)) {
-            $liftLog->comments = $mergeNote;
-        } else {
-            $liftLog->comments = $liftLog->comments . ' ' . $mergeNote;
-        }
-        
-        $liftLog->save();
-    }
+
 
     /**
      * Create alias for the source exercise owner if requested

@@ -53,10 +53,11 @@ Data migration → Source exercise deletion → Redirect with success
 ### Database Operations
 
 **Data Migration Steps**:
-1. Update all `lift_logs` records: change `exercise_id` from source to target
-2. Update all `programs` records: change `exercise_id` from source to target  
-3. Append merge notes to transferred lift log comments
-4. Delete source exercise (this will cascade delete any exercise intelligence)
+1. Update all `lift_logs` records: change `exercise_id` from source to target (without modifying comments)
+2. Log the transferred lift log IDs to Laravel log
+3. Handle exercise intelligence transfer (if target has none, transfer from source)
+4. Create alias for source exercise owner (if requested)
+5. Delete source exercise (this will cascade delete any remaining exercise intelligence)
 
 **Transaction Safety**: All operations wrapped in database transaction to ensure atomicity
 
@@ -69,13 +70,12 @@ Data migration → Source exercise deletion → Redirect with success
 - `isCompatibleForMerge(Exercise $target): bool` - Check merge compatibility
 - `hasOwnerWithGlobalVisibilityDisabled(): bool` - Check if owner has global exercises disabled (for user exercises only)
 
-### LiftLog Comment Annotation
-
-**Format**: `[Merged from: {original_exercise_name}]`
+### Merge Operation Logging
 
 **Implementation**: 
-- If existing comments: `{existing_comments} [Merged from: {original_exercise_name}]`
-- If no existing comments: `[Merged from: {original_exercise_name}]`
+- Merge operations are logged to Laravel's log system instead of modifying lift log comments
+- Exercise descriptions and lift log notes remain unchanged during merge
+- Log entries include: source/target exercise IDs and titles, admin user info, transferred lift log IDs and count
 
 ## Error Handling
 
@@ -112,7 +112,8 @@ Data migration → Source exercise deletion → Redirect with success
 - **Incompatible Exercises**: Proper validation and error handling
 - **Visibility Warnings**: Correct warning display for users with global exercises disabled
 - **Data Integrity**: Verify all foreign keys updated correctly
-- **Comment Annotation**: Ensure proper formatting of merge notes
+- **Merge Logging**: Ensure merge operations are properly logged to Laravel log
+- **Comment Preservation**: Verify lift log comments remain unchanged during merge
 
 ## User Interface Design
 

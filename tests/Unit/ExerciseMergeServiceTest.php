@@ -281,16 +281,16 @@ class ExerciseMergeServiceTest extends TestCase
 
         $this->service->mergeExercises($source, $target, $this->admin);
 
-        // Check lift logs were transferred
+        // Check lift logs were transferred without modifying comments
         $this->assertDatabaseHas('lift_logs', [
             'id' => $liftLog1->id,
             'exercise_id' => $target->id,
-            'comments' => "Original comment [Merged from: {$source->title}]"
+            'comments' => 'Original comment'
         ]);
         $this->assertDatabaseHas('lift_logs', [
             'id' => $liftLog2->id,
             'exercise_id' => $target->id,
-            'comments' => "[Merged from: {$source->title}]"
+            'comments' => null
         ]);
     }
 
@@ -365,13 +365,34 @@ class ExerciseMergeServiceTest extends TestCase
             'title' => 'Target Exercise'
         ]);
 
-        // Just verify the merge completes successfully
-        // Logging verification is better done in integration tests
+        // Create lift logs to verify they're logged
+        $liftLog1 = LiftLog::factory()->create(['exercise_id' => $source->id]);
+        $liftLog2 = LiftLog::factory()->create(['exercise_id' => $source->id]);
+
         $result = $this->service->mergeExercises($source, $target, $this->admin);
 
         $this->assertTrue($result);
         $this->assertDatabaseMissing('exercises', ['id' => $source->id]);
         $this->assertDatabaseHas('exercises', ['id' => $target->id]);
+
+        // Verify database log was created
+        $this->assertDatabaseHas('exercise_merge_logs', [
+            'source_exercise_id' => $source->id,
+            'source_exercise_title' => 'Source Exercise',
+            'target_exercise_id' => $target->id,
+            'target_exercise_title' => 'Target Exercise',
+            'admin_user_id' => $this->admin->id,
+            'admin_email' => $this->admin->email,
+            'lift_log_count' => 2,
+            'alias_created' => true,
+        ]);
+
+        // Verify lift log IDs were stored
+        $mergeLog = \App\Models\ExerciseMergeLog::latest()->first();
+        $this->assertIsArray($mergeLog->lift_log_ids);
+        $this->assertCount(2, $mergeLog->lift_log_ids);
+        $this->assertContains($liftLog1->id, $mergeLog->lift_log_ids);
+        $this->assertContains($liftLog2->id, $mergeLog->lift_log_ids);
     }
 
     /** @test */
@@ -403,25 +424,7 @@ class ExerciseMergeServiceTest extends TestCase
         ]);
     }
 
-    /** @test */
-    public function append_merge_note_adds_note_to_empty_comments()
-    {
-        $liftLog = LiftLog::factory()->create(['comments' => null]);
 
-        $this->service->appendMergeNote($liftLog, 'Original Exercise');
-
-        $this->assertEquals('[Merged from: Original Exercise]', $liftLog->comments);
-    }
-
-    /** @test */
-    public function append_merge_note_appends_to_existing_comments()
-    {
-        $liftLog = LiftLog::factory()->create(['comments' => 'Existing comment']);
-
-        $this->service->appendMergeNote($liftLog, 'Original Exercise');
-
-        $this->assertEquals('Existing comment [Merged from: Original Exercise]', $liftLog->comments);
-    }
 
     /** @test */
     public function get_merge_statistics_returns_correct_counts()
