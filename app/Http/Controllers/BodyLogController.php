@@ -23,12 +23,6 @@ class BodyLogController extends Controller
         $this->redirectService = $redirectService;
     }
 
-    public function index()
-    {
-        $bodyLogs = BodyLog::with('measurementType')->where('user_id', auth()->id())->orderBy('logged_at', 'desc')->get();
-        return view('body-logs.index', compact('bodyLogs'));
-    }
-
     public function create(Request $request)
     {
         $measurementTypes = MeasurementType::where('user_id', auth()->id())->get();
@@ -138,26 +132,6 @@ class BodyLogController extends Controller
             [],
             'Measurement deleted successfully.'
         );
-    }
-
-    public function destroySelected(Request $request)
-    {
-        $validated = $request->validate([
-            'body_log_ids' => 'required|array',
-            'body_log_ids.*' => 'exists:body_logs,id',
-        ]);
-
-        $bodyLogs = BodyLog::whereIn('id', $validated['body_log_ids'])->get();
-
-        foreach ($bodyLogs as $bodyLog) {
-            if ($bodyLog->user_id !== auth()->id()) {
-                abort(403, 'Unauthorized action.');
-            }
-        }
-
-        BodyLog::destroy($validated['body_log_ids']);
-
-        return redirect()->route('body-logs.index')->with('success', 'Selected body logs deleted successfully!');
     }
 
     public function showByType(MeasurementType $measurementType)

@@ -60,10 +60,8 @@ Route::middleware('auth')->group(function () {
 
 
 
-    Route::resource('body-logs', BodyLogController::class)->except(['show']);
-    Route::post('body-logs/destroy-selected', [BodyLogController::class, 'destroySelected'])->name('body-logs.destroy-selected');
+    Route::resource('body-logs', BodyLogController::class)->except(['show', 'index']);
     Route::get('body-logs/type/{measurementType}', [BodyLogController::class, 'showByType'])->name('body-logs.show-by-type');
-
     Route::resource('measurement-types', MeasurementTypeController::class)->except(['show']);
 
     Route::resource('exercises', ExerciseController::class);

@@ -41,7 +41,7 @@ class BodyLogControllerMobileEntryTest extends TestCase
             'comments' => 'Morning weigh-in',
         ]);
 
-        $response->assertRedirect(route('body-logs.index'));
+        $response->assertRedirect(route('mobile-entry.measurements', ['date' => $today->toDateString()]));
         $response->assertSessionHas('success', 'Measurement logged successfully.');
 
         $this->assertDatabaseHas('body_logs', [
@@ -80,7 +80,7 @@ class BodyLogControllerMobileEntryTest extends TestCase
             'comments' => 'Updated measurement',
         ]);
 
-        $response->assertRedirect(route('body-logs.index'));
+        $response->assertRedirect(route('mobile-entry.measurements', ['date' => $today->toDateString()]));
         $response->assertSessionHas('success', 'Measurement updated successfully.');
 
         // Should still only have one entry (updated, not created new)
@@ -302,7 +302,7 @@ class BodyLogControllerMobileEntryTest extends TestCase
             'comments' => 'My measurement',
         ]);
 
-        $response->assertRedirect(route('body-logs.index'));
+        $response->assertRedirect(route('mobile-entry.measurements', ['date' => $today->toDateString()]));
         $response->assertSessionHas('success', 'Measurement logged successfully.');
 
         // Should have two separate entries (one for each user)

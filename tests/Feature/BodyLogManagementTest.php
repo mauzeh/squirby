@@ -34,24 +34,34 @@ class BodyLogManagementTest extends TestCase
     }
 
     /** @test */
-    public function authenticated_user_only_sees_their_body_logs()
+    public function authenticated_user_only_sees_their_body_logs_on_the_show_by_type_page()
     {
         $user1 = User::factory()->create();
         $user2 = User::factory()->create();
 
-        $this->actingAs($user1);
-        $measurementType1 = MeasurementType::factory()->create(['user_id' => $user1->id, 'name' => 'User1 Measurement Type']);
-        $bodyLog1 = BodyLog::factory()->create(['user_id' => $user1->id, 'measurement_type_id' => $measurementType1->id]);
+        // User 1's data
+        $measurementType1 = MeasurementType::factory()->create(['user_id' => $user1->id]);
+        $bodyLog1 = BodyLog::factory()->create([
+            'user_id' => $user1->id,
+            'measurement_type_id' => $measurementType1->id,
+        ]);
+
+        // User 2's data
+        $measurementType2 = MeasurementType::factory()->create(['user_id' => $user2->id]);
+        $bodyLog2 = BodyLog::factory()->create([
+            'user_id' => $user2->id,
+            'measurement_type_id' => $measurementType2->id,
+        ]);
 
         $this->actingAs($user2);
-        $measurementType2 = MeasurementType::factory()->create(['user_id' => $user2->id, 'name' => 'User2 Measurement Type']);
-        $bodyLog2 = BodyLog::factory()->create(['user_id' => $user2->id, 'measurement_type_id' => $measurementType2->id]);
 
-        $response = $this->get(route('body-logs.index'));
+        $response = $this->get(route('body-logs.show-by-type', $measurementType2));
 
         $response->assertOk();
-        $response->assertSee($measurementType2->name);
-        $response->assertDontSee($measurementType1->name);
+        // Assert we see user 2's log value
+        $response->assertSee((string)$bodyLog2->value);
+        // Assert we DON'T see user 1's log value
+        $response->assertDontSee((string)$bodyLog1->value);
     }
 
     /** @test */

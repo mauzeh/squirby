@@ -80,8 +80,8 @@ return [
                 'params' => ['date'],
             ],
             'default' => [
-                'route' => 'body-logs.index',
-                'params' => [],
+                'route' => 'mobile-entry.measurements',
+                'params' => ['date'],
             ],
         ],
         'update' => [
@@ -90,8 +90,8 @@ return [
                 'params' => ['date'],
             ],
             'default' => [
-                'route' => 'body-logs.index',
-                'params' => [],
+                'route' => 'mobile-entry.measurements',
+                'params' => ['date'],
             ],
         ],
         'destroy' => [
@@ -100,8 +100,8 @@ return [
                 'params' => ['date'],
             ],
             'default' => [
-                'route' => 'body-logs.index',
-                'params' => [],
+                'route' => 'mobile-entry.measurements',
+                'params' => ['date'],
             ],
         ],
     ],

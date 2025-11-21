@@ -90,13 +90,6 @@ return [
                     'route' => 'mobile-entry.measurements',
                     'patterns' => ['mobile-entry.measurements', 'body-logs.*', 'measurement-types.*'], // Changed from getBodyRoutePatterns to be more specific to this item
                 ],
-                // History (conditional)
-                [
-                    'label' => 'History',
-                    'route' => 'body-logs.index',
-                    'patterns' => ['body-logs.*'],
-                    'roles' => ['Admin'], // Custom property for conditional display
-                ],
                 // Measurement Types (dynamic) - This will need special handling outside the config or in a post-processing step.
                 // For now, I'll represent the dynamic nature.
                 [
