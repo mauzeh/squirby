@@ -42,6 +42,7 @@ class BodyLogService extends MobileEntryBaseService
 
             $tableBuilder->row($log->id, $log->measurementType->name, null, $log->comments)
                 ->badge($valueText, 'info', true)
+                ->linkAction('fa-chart-line', route('body-logs.show-by-type', $log->measurementType), 'View Graph', 'btn-info-circle')
                 ->linkAction('fa-pencil', route('body-logs.edit', $log->id), 'Edit', 'btn-transparent')
                 ->formAction('fa-trash', route('body-logs.destroy', $log->id), 'DELETE', [
                     'redirect_to' => 'mobile-entry-measurements',

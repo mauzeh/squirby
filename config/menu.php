@@ -88,7 +88,7 @@ return [
                     'label' => null,
                     'icon' => 'fa-calendar-day',
                     'route' => 'mobile-entry.measurements',
-                    'patterns' => ['mobile-entry.measurements', 'body-logs.*', 'measurement-types.*'], // Changed from getBodyRoutePatterns to be more specific to this item
+                    'patterns' => ['mobile-entry.measurements'],  // Changed from getBodyRoutePatterns to be more specific to this item
                 ],
                 // Measurement Types (dynamic) - This will need special handling outside the config or in a post-processing step.
                 // For now, I'll represent the dynamic nature.
