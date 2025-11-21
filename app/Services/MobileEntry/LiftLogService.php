@@ -2,9 +2,9 @@
 
 namespace App\Services\MobileEntry;
 
-use App\Models\MobileLiftForm;
 use App\Models\LiftLog;
 use App\Models\Exercise;
+use App\Models\MobileLiftForm;
 use App\Services\TrainingProgressionService;
 use App\Services\ExerciseAliasService;
 use App\Services\Factories\LiftLogFormFactory;
@@ -40,143 +40,7 @@ class LiftLogService extends MobileEntryBaseService
     }
 
     /**
-     * Generate forms based on user's mobile lift forms for the selected date
-     * 
-     * @param int $userId
-     * @param Carbon $selectedDate
-     * @param array $redirectParams Optional redirect parameters to pass through forms
-     * @return array
-     */
-    public function generateForms($userId, Carbon $selectedDate, array $redirectParams = [])
-    {
-        // Get user to check preferences
-        $user = \App\Models\User::find($userId);
-        
-        // Get mobile lift forms with exercise relationship
-        $mobileForms = MobileLiftForm::with(['exercise'])
-            ->forUserAndDate($userId, $selectedDate)
-            ->get();
-        
-        if ($mobileForms->isEmpty()) {
-            return [];
-        }
-        
-        // Apply aliases to form exercises
-        $mobileForms->each(function ($form) use ($user) {
-            if ($form->exercise) {
-                $displayName = $this->aliasService->getDisplayName($form->exercise, $user);
-                $form->exercise->title = $displayName;
-            }
-        });
-        
-        // Get all exercise IDs for batch queries
-        $exerciseIds = $mobileForms->pluck('exercise.id')->filter()->unique()->toArray();
-        
-        // Get all cached data needed for form generation
-        $cachedData = $this->cacheService->getAllCachedData($userId, $selectedDate, $exerciseIds);
-        $lastSessionsData = $cachedData['lastSessionData'];
-        
-        // Batch fetch progression suggestions for all exercises
-        $progressionSuggestions = [];
-        foreach ($exerciseIds as $exerciseId) {
-            if (isset($lastSessionsData[$exerciseId])) {
-                $progressionSuggestions[$exerciseId] = $this->trainingProgressionService->getSuggestionDetails(
-                    $userId, 
-                    $exerciseId
-                );
-            }
-        }
-        
-        $forms = [];
-        
-        foreach ($mobileForms as $form) {
-            if (!$form->exercise) {
-                continue; // Skip if exercise doesn't exist
-            }
-            
-            $formData = $this->generateSingleForm(
-                $form,
-                $user,
-                $selectedDate,
-                $lastSessionsData,
-                $progressionSuggestions,
-                $redirectParams
-            );
-            
-            $forms[] = $formData;
-        }
-        
-        return $forms;
-    }
-
-    /**
-     * Generate a single form for an exercise
-     * 
-     * @param MobileLiftForm $form The mobile lift form
-     * @param \App\Models\User $user The user
-     * @param Carbon $selectedDate The selected date
-     * @param array $lastSessionsData Cached last session data
-     * @param array $progressionSuggestions Cached progression suggestions
-     * @param array $redirectParams Optional redirect parameters
-     * @return array Form component data
-     */
-    public function generateSingleForm(
-        MobileLiftForm $form,
-        $user,
-        Carbon $selectedDate,
-        array $lastSessionsData = [],
-        array $progressionSuggestions = [],
-        array $redirectParams = []
-    ) {
-        $exercise = $form->exercise;
-        
-        // Get last session data from cached results or fetch it
-        $lastSession = $lastSessionsData[$exercise->id] ?? $this->getLastSessionData($exercise->id, $selectedDate, $user->id);
-        
-        // Get progression suggestions from batch results or fetch it
-        $progressionSuggestion = $progressionSuggestions[$exercise->id] ?? null;
-        if (!$progressionSuggestion && $lastSession) {
-            $progressionSuggestion = $this->trainingProgressionService->getSuggestionDetails(
-                $user->id, 
-                $exercise->id
-            );
-        }
-        
-        // Determine default weight based on last session or exercise type
-        $defaultWeight = $this->getDefaultWeight($exercise, $lastSession, $user->id);
-        
-        // Determine default reps and sets from progression service or fallback
-        $defaultReps = $progressionSuggestion->reps ?? ($lastSession['reps'] ?? 5);
-        $defaultSets = $progressionSuggestion->sets ?? ($lastSession['sets'] ?? 3);
-        
-        // Generate messages based on last session
-        $messages = $this->generateFormMessagesForMobileForms($form, $lastSession, $user->id);
-        
-        // Prepare default values for the factory
-        $defaults = [
-            'weight' => $defaultWeight,
-            'reps' => $defaultReps,
-            'sets' => $defaultSets,
-            'band_color' => $lastSession['band_color'] ?? 'red',
-            'comments' => '',
-        ];
-
-        // Use the factory to build the complete form
-        $formData = $this->liftLogFormFactory->buildForm(
-            $form,
-            $exercise,
-            $user,
-            $defaults,
-            $messages,
-            $selectedDate,
-            $redirectParams
-        );
-        
-        return $formData;
-    }
-
-    /**
-     * Generate a standalone form for a specific exercise (without MobileLiftForm)
+     * Generate a standalone form for a specific exercise
      * 
      * @param int $exerciseId The exercise ID
      * @param int $userId The user ID
@@ -278,28 +142,24 @@ class LiftLogService extends MobileEntryBaseService
         string $backUrl,
         array $redirectParams = []
     ) {
-        // Get the exercise
-        $exercise = Exercise::where('id', $exerciseId)
-            ->availableToUser($userId)
-            ->first();
-        
-        if (!$exercise) {
-            throw new \Exception('Exercise not found or not accessible');
-        }
-        
-        // Get user
-        $user = \App\Models\User::find($userId);
-        
-        // Apply alias to exercise title
-        $displayName = $this->aliasService->getDisplayName($exercise, $user);
-        
-        // Generate the form
+        // Generate the form (this will throw exception if exercise not found)
         $formComponent = $this->generateStandaloneForm(
             $exerciseId,
             $userId,
             $selectedDate,
             $redirectParams
         );
+        
+        // Get the exercise for the title (we know it exists now)
+        $exercise = Exercise::where('id', $exerciseId)
+            ->availableToUser($userId)
+            ->first();
+        
+        // Get user
+        $user = \App\Models\User::find($userId);
+        
+        // Apply alias to exercise title
+        $displayName = $this->aliasService->getDisplayName($exercise, $user);
         
         // Build components array with title and back button
         $components = [];
@@ -683,12 +543,6 @@ class LiftLogService extends MobileEntryBaseService
         $user = \App\Models\User::find($userId);
         $exercises = $this->aliasService->applyAliasesToExercises($exercises, $user);
 
-        // Get exercises already in today's mobile lift forms (to exclude from selection list)
-        $formExerciseIds = MobileLiftForm::where('user_id', $userId)
-            ->whereDate('date', $selectedDate->toDateString())
-            ->pluck('exercise_id')
-            ->toArray();
-
         // Get exercises already logged today (to exclude from recent list)
         $loggedTodayExerciseIds = LiftLog::where('user_id', $userId)
             ->whereDate('logged_at', $selectedDate->toDateString())
@@ -724,11 +578,6 @@ class LiftLogService extends MobileEntryBaseService
         $items = [];
         
         foreach ($exercises as $exercise) {
-            // Skip exercises that are already in today's mobile lift forms
-            if (in_array($exercise->id, $formExerciseIds)) {
-                continue;
-            }
-            
             // Calculate "X ago" label for last performed date
             $lastPerformedLabel = '';
             if (isset($lastPerformedDates[$exercise->id])) {
@@ -768,9 +617,10 @@ class LiftLogService extends MobileEntryBaseService
                 'id' => 'exercise-' . $exercise->id,
                 'name' => $exercise->title,
                 'type' => $itemType,
-                'href' => route('mobile-entry.add-lift-form', [
-                    'exercise' => $exercise->canonical_name ?? $exercise->id,
-                    'date' => $selectedDate->toDateString()
+                'href' => route('lift-logs.create', [
+                    'exercise_id' => $exercise->id,
+                    'date' => $selectedDate->toDateString(),
+                    'redirect_to' => 'mobile-entry-lifts'
                 ])
             ];
         }
@@ -833,177 +683,6 @@ class LiftLogService extends MobileEntryBaseService
      * @param Carbon $selectedDate
      * @return array Result with success/error status and message
      */
-    public function addExerciseForm($userId, $exerciseIdentifier, Carbon $selectedDate)
-    {
-        // Find the exercise by canonical name or ID
-        // Use a closure to properly scope the OR condition
-        $exercise = Exercise::where(function ($query) use ($exerciseIdentifier) {
-                $query->where('canonical_name', $exerciseIdentifier);
-                // Only check ID if the identifier is numeric to avoid type coercion issues
-                if (is_numeric($exerciseIdentifier)) {
-                    $query->orWhere('id', $exerciseIdentifier);
-                }
-            })
-            ->availableToUser($userId)
-            ->first();
-        
-        if (!$exercise) {
-            return [
-                'success' => false,
-                'message' => config('mobile_entry_messages.error.exercise_not_found')
-            ];
-        }
-        
-        // Check if mobile lift form already exists
-        $existingForm = MobileLiftForm::where('user_id', $userId)
-            ->where('exercise_id', $exercise->id)
-            ->whereDate('date', $selectedDate->toDateString())
-            ->first();
-        
-        if ($existingForm) {
-            return [
-                'success' => false,
-                'message' => str_replace(':exercise', $exercise->title, config('mobile_entry_messages.error.exercise_already_in_program'))
-            ];
-        }
-        
-        // Create a mobile lift form entry for this exercise
-        MobileLiftForm::create([
-            'user_id' => $userId,
-            'exercise_id' => $exercise->id,
-            'date' => $selectedDate
-        ]);
-        
-        return [
-            'success' => true,
-            'message' => str_replace(':exercise', $exercise->title, config('mobile_entry_messages.success.exercise_added'))
-        ];
-    }
-
-    /**
-     * Create a new exercise and add it to mobile lift forms
-     * 
-     * @param int $userId
-     * @param string $exerciseName
-     * @param Carbon $selectedDate
-     * @return array Result with success/error status and message
-     */
-    public function createExercise($userId, $exerciseName, Carbon $selectedDate)
-    {
-        // Check if exercise with similar name already exists
-        $existingExercise = Exercise::where('title', $exerciseName)
-            ->availableToUser($userId)
-            ->first();
-        
-        if ($existingExercise) {
-            return [
-                'success' => false,
-                'message' => str_replace(':exercise', $exerciseName, config('mobile_entry_messages.error.exercise_already_exists'))
-            ];
-        }
-        
-        // Generate unique canonical name
-        $canonicalName = $this->generateUniqueCanonicalName($exerciseName, $userId);
-        
-        // Create the new exercise
-        $exercise = Exercise::create([
-            'title' => $exerciseName,
-            'user_id' => $userId,
-            'exercise_type' => 'regular', // Default to regular exercise
-            'canonical_name' => $canonicalName
-        ]);
-        
-        // Create a mobile lift form entry for this exercise
-        MobileLiftForm::create([
-            'user_id' => $userId,
-            'exercise_id' => $exercise->id,
-            'date' => $selectedDate
-        ]);
-        
-        return [
-            'success' => true,
-            'message' => str_replace(':exercise', $exercise->title, config('mobile_entry_messages.success.exercise_created'))
-        ];
-    }
-
-    /**
-     * Remove a mobile lift form entry from the interface
-     * 
-     * @param int $userId
-     * @param string $formId Form ID (format: lift-{id})
-     * @return array Result with success/error status and message
-     */
-    public function removeForm($userId, $formId)
-    {
-        // Extract mobile lift form ID from form ID (format: lift-{id})
-        if (!str_starts_with($formId, 'lift-')) {
-            return [
-                'success' => false,
-                'message' => config('mobile_entry_messages.error.form_invalid_format')
-            ];
-        }
-        
-        $liftFormId = str_replace('lift-', '', $formId);
-        
-        $form = MobileLiftForm::where('id', $liftFormId)
-            ->where('user_id', $userId)
-            ->with('exercise')
-            ->first();
-        
-        if (!$form) {
-            return [
-                'success' => false,
-                'message' => config('mobile_entry_messages.error.form_not_found')
-            ];
-        }
-        
-        $exerciseTitle = $form->exercise->title ?? 'Exercise';
-        $form->delete();
-        
-        return [
-            'success' => true,
-            'message' => str_replace(':exercise', $exerciseTitle, config('mobile_entry_messages.success.form_removed'))
-        ];
-    }
-
-    /**
-     * Generate a unique canonical name for an exercise
-     * 
-     * @param string $title
-     * @param int $userId
-     * @return string
-     */
-    private function generateUniqueCanonicalName($title, $userId)
-    {
-        $baseCanonicalName = \Illuminate\Support\Str::slug($title, '_');
-        $canonicalName = $baseCanonicalName;
-        $counter = 1;
-
-        // Keep checking until we find a unique canonical name for this user
-        while ($this->canonicalNameExists($canonicalName, $userId)) {
-            $canonicalName = $baseCanonicalName . '_' . $counter;
-            $counter++;
-        }
-
-        return $canonicalName;
-    }
-
-    /**
-     * Check if a canonical name already exists for the user
-     * 
-     * @param string $canonicalName
-     * @param int $userId
-     * @return bool
-     */
-    private function canonicalNameExists($canonicalName, $userId)
-    {
-        return Exercise::where('canonical_name', $canonicalName)
-            ->availableToUser($userId)
-            ->exists();
-    }
-
-
-
     /**
      * Generate contextual help messages based on user's current state
      * 
@@ -1015,50 +694,24 @@ class LiftLogService extends MobileEntryBaseService
     {
         $messages = [];
         
-        // Check if user has any mobile lift forms for today
-        $formCount = MobileLiftForm::where('user_id', $userId)
-            ->whereDate('date', $selectedDate->toDateString())
-            ->count();
-            
         // Check if user has logged anything today
         $loggedCount = LiftLog::where('user_id', $userId)
             ->whereDate('logged_at', $selectedDate->toDateString())
             ->count();
-            
-        // Check if user has forms but hasn't logged them all yet
-        $incompleteCount = max(0, $formCount - $loggedCount);
         
-        if ($formCount === 0 && $loggedCount === 0) {
-            // First time user or no exercises added yet
+        if ($loggedCount === 0) {
+            // No exercises logged yet
             $messages[] = [
                 'type' => 'tip',
                 'prefix' => 'Getting started:',
                 'text' => config('mobile_entry_messages.contextual_help.getting_started')
             ];
-        } elseif ($incompleteCount > 0 && $loggedCount === 0) {
-            // Has exercises ready but hasn't logged anything
-            $plural = $incompleteCount > 1 ? 's' : '';
-            $text = str_replace([':count', ':plural'], [$incompleteCount, $plural], config('mobile_entry_messages.contextual_help.ready_to_log'));
-            $messages[] = [
-                'type' => 'tip',
-                'prefix' => 'Ready to log:',
-                'text' => $text
-            ];
-        } elseif ($incompleteCount > 0 && $loggedCount > 0) {
-            // Has logged some but has more to do
-            $plural = $incompleteCount > 1 ? 's' : '';
-            $text = str_replace([':count', ':plural'], [$incompleteCount, $plural], config('mobile_entry_messages.contextual_help.keep_going'));
-            $messages[] = [
-                'type' => 'info',
-                'prefix' => 'Keep going:',
-                'text' => $text
-            ];
-        } elseif ($incompleteCount === 0 && $loggedCount > 0) {
-            // All done for today
+        } else {
+            // Has logged exercises
             $messages[] = [
                 'type' => 'success',
-                'prefix' => 'Workout complete:',
-                'text' => config('mobile_entry_messages.contextual_help.workout_complete')
+                'prefix' => 'Great work:',
+                'text' => 'You\'ve logged ' . $loggedCount . ' exercise' . ($loggedCount > 1 ? 's' : '') . ' today!'
             ];
         }
         

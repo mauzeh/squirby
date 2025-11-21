@@ -25,7 +25,13 @@ class LiftLogCreateTest extends TestCase
     /** @test */
     public function user_can_view_lift_log_create_page()
     {
-        $exercise = Exercise::factory()->create(['user_id' => $this->user->id]);
+        $exercise = Exercise::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_type' => 'regular'
+        ]);
+        
+        // Refresh to ensure we have the latest data
+        $exercise->refresh();
 
         $response = $this->get(route('lift-logs.create', [
             'exercise_id' => $exercise->id,

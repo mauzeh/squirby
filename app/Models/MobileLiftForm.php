@@ -2,46 +2,39 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-use Carbon\Carbon;
-
-class MobileLiftForm extends Model
+/**
+ * MobileLiftForm Stub
+ * 
+ * This is a stub class to maintain backward compatibility with LiftLogFormFactory.
+ * The mobile_lift_forms table has been removed - users now navigate directly to lift-logs/create.
+ * 
+ * This class only exists to allow temporary object creation for form ID generation.
+ * It does not interact with the database.
+ */
+class MobileLiftForm
 {
-    use HasFactory;
+    public $id;
+    public $user_id;
+    public $exercise_id;
+    public $date;
     
-    protected $fillable = [
-        'user_id',
-        'date',
-        'exercise_id'
-    ];
+    private $relations = [];
     
-    protected $casts = [
-        'date' => 'date'
-    ];
-    
-    /**
-     * Get the user that owns the mobile lift form
-     */
-    public function user()
+    public function __construct(array $attributes = [])
     {
-        return $this->belongsTo(User::class);
+        foreach ($attributes as $key => $value) {
+            $this->$key = $value;
+        }
     }
     
-    /**
-     * Get the exercise for this form
-     */
-    public function exercise()
+    public function setRelation($name, $value)
     {
-        return $this->belongsTo(Exercise::class);
+        $this->relations[$name] = $value;
+        return $this;
     }
     
-    /**
-     * Scope to get forms for a specific user and date
-     */
-    public function scopeForUserAndDate($query, $userId, Carbon $date)
+    public function __get($name)
     {
-        return $query->where('user_id', $userId)
-                    ->whereDate('date', $date->toDateString());
+        return $this->relations[$name] ?? null;
     }
 }

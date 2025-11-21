@@ -51,25 +51,8 @@ class MobileEntryController extends Controller
             }
         }
         
-        // Capture redirect parameters from request to pass through forms
-        $redirectParams = [];
-        if ($request->has('redirect_to')) {
-            $redirectParams['redirect_to'] = $request->input('redirect_to');
-        }
-        if ($request->has('workout_id')) {
-            $redirectParams['workout_id'] = $request->input('workout_id');
-        }
-        
-        // Generate forms based on mobile lift forms using the service
-        $forms = $formService->generateForms(Auth::id(), $selectedDate, $redirectParams);
-        
         // Generate logged items using the service
         $loggedItems = $formService->generateLoggedItems(Auth::id(), $selectedDate);
-        
-        // If there are forms available to log, don't show the empty message for logged items
-        if (!empty($forms) && isset($loggedItems['emptyMessage'])) {
-            $loggedItems['emptyMessage'] = ''; // Set to empty string instead of unsetting
-        }
         
         // Generate item selection list using the service
         $itemSelectionList = $formService->generateItemSelectionList(Auth::id(), $selectedDate);
@@ -159,9 +142,6 @@ class MobileEntryController extends Controller
         
         $components[] = $itemListBuilder->build();
         
-        // Forms
-        $components = array_merge($components, $forms);
-        
         // Logged items (now using table component with full component data)
         $components[] = $loggedItems;
         
@@ -173,47 +153,15 @@ class MobileEntryController extends Controller
         return view('mobile-entry.flexible', compact('data'));
     }
 
-    /**
-     * Add a form for a specific exercise to the mobile interface
-     * 
-     * @param Request $request
-     * @param LiftLogService $formService
-     * @param string $exercise Exercise canonical name or ID
-     * @return \Illuminate\Http\RedirectResponse
-     */
-    public function addLiftForm(Request $request, LiftLogService $formService, $exercise)
-    {
-        $selectedDate = $request->input('date') 
-            ? \Carbon\Carbon::parse($request->input('date')) 
-            : \Carbon\Carbon::today();
-        
-        $result = $formService->addExerciseForm(Auth::id(), $exercise, $selectedDate);
-        
-        $messageType = $result['success'] ? 'success' : 'error';
-        
-        // Pass through redirect parameters if they exist
-        $redirectParams = ['date' => $selectedDate->toDateString()];
-        
-        if ($request->has('redirect_to')) {
-            $redirectParams['redirect_to'] = $request->input('redirect_to');
-        }
-        
-        if ($request->has('workout_id')) {
-            $redirectParams['workout_id'] = $request->input('workout_id');
-        }
-        
-        return redirect()->route('mobile-entry.lifts', $redirectParams)
-            ->with($messageType, $result['message']);
-    }
+
 
     /**
-     * Create a new exercise from the mobile interface
+     * Create a new exercise from the mobile interface and redirect to lift log creation
      * 
      * @param Request $request
-     * @param LiftLogService $formService
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function createExercise(Request $request, LiftLogService $formService)
+    public function createExercise(Request $request)
     {
         $request->validate([
             'exercise_name' => 'required|string|max:255',
@@ -224,35 +172,75 @@ class MobileEntryController extends Controller
             ? \Carbon\Carbon::parse($request->input('date')) 
             : \Carbon\Carbon::today();
         
-        $result = $formService->createExercise(Auth::id(), $request->input('exercise_name'), $selectedDate);
+        // Check if exercise with similar name already exists
+        $existingExercise = \App\Models\Exercise::where('title', $request->input('exercise_name'))
+            ->availableToUser(Auth::id())
+            ->first();
         
-        $messageType = $result['success'] ? 'success' : 'error';
+        if ($existingExercise) {
+            // Exercise exists, redirect to create lift log for it
+            return redirect()->route('lift-logs.create', [
+                'exercise_id' => $existingExercise->id,
+                'date' => $selectedDate->toDateString(),
+                'redirect_to' => 'mobile-entry-lifts'
+            ]);
+        }
         
-        return redirect()->route('mobile-entry.lifts', ['date' => $selectedDate->toDateString()])
-            ->with($messageType, $result['message']);
+        // Generate unique canonical name
+        $canonicalName = $this->generateUniqueCanonicalName($request->input('exercise_name'), Auth::id());
+        
+        // Create the new exercise
+        $exercise = \App\Models\Exercise::create([
+            'title' => $request->input('exercise_name'),
+            'user_id' => Auth::id(),
+            'exercise_type' => 'regular',
+            'canonical_name' => $canonicalName
+        ]);
+        
+        // Redirect to lift log creation page
+        return redirect()->route('lift-logs.create', [
+            'exercise_id' => $exercise->id,
+            'date' => $selectedDate->toDateString(),
+            'redirect_to' => 'mobile-entry-lifts'
+        ])->with('success', 'Exercise "' . $exercise->title . '" created! Now log your first set.');
+    }
+    
+    /**
+     * Generate a unique canonical name for an exercise
+     * 
+     * @param string $title
+     * @param int $userId
+     * @return string
+     */
+    private function generateUniqueCanonicalName($title, $userId)
+    {
+        $baseCanonicalName = \Illuminate\Support\Str::slug($title, '_');
+        $canonicalName = $baseCanonicalName;
+        $counter = 1;
+
+        while ($this->canonicalNameExists($canonicalName, $userId)) {
+            $canonicalName = $baseCanonicalName . '_' . $counter;
+            $counter++;
+        }
+
+        return $canonicalName;
     }
 
     /**
-     * Remove a form from the mobile interface
+     * Check if a canonical name already exists for the user
      * 
-     * @param Request $request
-     * @param LiftLogService $formService
-     * @param string $id Form ID
-     * @return \Illuminate\Http\RedirectResponse
+     * @param string $canonicalName
+     * @param int $userId
+     * @return bool
      */
-    public function removeForm(Request $request, LiftLogService $formService, $id)
+    private function canonicalNameExists($canonicalName, $userId)
     {
-        $selectedDate = $request->input('date') 
-            ? \Carbon\Carbon::parse($request->input('date')) 
-            : \Carbon\Carbon::today();
-        
-        $result = $formService->removeForm(Auth::id(), $id);
-        
-        $messageType = $result['success'] ? 'success' : 'error';
-        
-        return redirect()->route('mobile-entry.lifts', ['date' => $selectedDate->toDateString()])
-            ->with($messageType, $result['message']);
+        return \App\Models\Exercise::where('canonical_name', $canonicalName)
+            ->availableToUser($userId)
+            ->exists();
     }
+
+
 
     /**
      * Display the food logging interface

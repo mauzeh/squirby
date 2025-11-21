@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Exercise;
 use App\Models\LiftLog;
 use App\Models\LiftSet;
-use App\Models\MobileLiftForm;
 
 use App\Services\ExerciseService;
 use App\Services\ExerciseTypes\ExerciseTypeFactory;
@@ -67,6 +66,8 @@ class LiftLogController extends Controller
         if ($redirectTo === 'workouts') {
             $workoutId = $request->input('workout_id');
             $backUrl = route('workouts.index', $workoutId ? ['workout_id' => $workoutId] : []);
+        } elseif ($redirectTo === 'mobile-entry-lifts') {
+            $backUrl = route('mobile-entry.lifts', ['date' => $date->toDateString()]);
         } else {
             // Default to mobile-entry lifts
             $backUrl = route('mobile-entry.lifts', ['date' => $date->toDateString()]);
@@ -262,12 +263,7 @@ class LiftLogController extends Controller
             ]);
         }
 
-        // Delete the corresponding MobileLiftForm if it exists
-        if ($request->has('mobile_lift_form_id')) {
-            MobileLiftForm::where('id', $request->input('mobile_lift_form_id'))
-                ->where('user_id', auth()->id())
-                ->delete();
-        }
+        // Note: MobileLiftForm is deprecated - we now use direct lift-logs/create flow
 
         // Generate a celebratory success message with workout details
         $successMessage = $this->generateSuccessMessage($exercise, $request->input('weight'), $reps, $rounds, $request->input('band_color'));

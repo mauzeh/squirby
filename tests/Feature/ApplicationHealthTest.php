@@ -95,6 +95,9 @@ class ApplicationHealthTest extends TestCase
             // Impersonation leave (requires active impersonation)
             'users.leave-impersonate',
             
+            // Routes that require query parameters
+            'lift-logs.create', // Requires exercise_id query parameter
+            
             // API/utility routes
             'sanctum.csrf-cookie',
             '_ignition.*',

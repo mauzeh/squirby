@@ -93,8 +93,6 @@ Route::middleware('auth')->group(function () {
     
     // Mobile Entry Helper Routes
     Route::post('mobile-entry/create-exercise', [MobileEntryController::class, 'createExercise'])->name('mobile-entry.create-exercise');
-    Route::get('mobile-entry/add-lift-form/{exercise}', [MobileEntryController::class, 'addLiftForm'])->name('mobile-entry.add-lift-form');
-    Route::delete('mobile-entry/remove-form/{id}', [MobileEntryController::class, 'removeForm'])->name('mobile-entry.remove-form');
     
     // Food Entry Helper Routes
     Route::post('mobile-entry/create-ingredient', [MobileEntryController::class, 'createIngredient'])->name('mobile-entry.create-ingredient');

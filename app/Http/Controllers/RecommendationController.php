@@ -7,7 +7,6 @@ use App\Services\ActivityAnalysisService;
 use App\Services\ExerciseAliasService;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
-use App\Models\MobileLiftForm;
 
 class RecommendationController extends Controller
 {
@@ -84,12 +83,9 @@ class RecommendationController extends Controller
         $movementArchetypes = ['push', 'pull', 'squat', 'hinge', 'carry', 'core'];
         $difficultyLevels = [1, 2, 3, 4, 5];
 
-        // Get exercises already in today's mobile lift forms, mapped by exercise_id to form_id
-        $todayProgramExercises = MobileLiftForm::where('user_id', auth()->id())
-            ->whereDate('date', \Carbon\Carbon::today())
-            ->get()
-            ->keyBy('exercise_id')
-            ->map(fn($form) => $form->id); // Map exercise_id to form_id
+        // Note: MobileLiftForm is deprecated - exercises are now logged directly via lift-logs/create
+        // No need to track which exercises are "in today's program" anymore
+        $todayProgramExercises = collect(); // Empty collection for backward compatibility
 
         return view('recommendations.index', compact(
             'recommendations',
@@ -98,7 +94,7 @@ class RecommendationController extends Controller
             'movementArchetype',
             'difficultyLevel',
             'showLoggedOnly',
-            'todayProgramExercises' // Changed variable name
+            'todayProgramExercises'
         ));
     }
 

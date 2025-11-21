@@ -36,14 +36,30 @@ class LiftLogFormFactory
         // Build the fields
         $numericFields = $this->buildFields($exercise, $user, $defaults, $formId);
         
+        // Determine delete action - only for MobileLiftForm-based forms
+        $deleteAction = null;
+        if (!str_starts_with((string)$mobileLiftForm->id, 'standalone-') && !str_starts_with((string)$mobileLiftForm->id, 'edit-')) {
+            // Only add delete action for actual MobileLiftForm records (not standalone or edit forms)
+            // Check if the route exists before trying to use it
+            try {
+                $deleteAction = route('mobile-entry.remove-form', ['id' => $formId]);
+            } catch (\Exception $e) {
+                // Route doesn't exist, leave deleteAction as null
+                $deleteAction = null;
+            }
+        }
+        
         // Build form using ComponentBuilder
         $formBuilder = C::form($formId, $exercise->title)
             ->type('primary')
             ->formAction(route('lift-logs.store'))
-            ->deleteAction(route('mobile-entry.remove-form', ['id' => $formId]))
             ->hiddenField('exercise_id', $exercise->id)
             ->hiddenField('date', $selectedDate->format('Y-m-d'))
             ->hiddenField('logged_at', now()->format('H:i'));
+        
+        if ($deleteAction) {
+            $formBuilder->deleteAction($deleteAction);
+        }
 
         foreach ($redirectParams as $name => $value) {
             $formBuilder->hiddenField($name, $value);

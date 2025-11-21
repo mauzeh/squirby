@@ -4,9 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use App\Models\Exercise;
-use App\Models\MobileLiftForm;
 use App\Services\MobileEntry\LiftLogService;
-use App\Services\TrainingProgressionService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 use Carbon\Carbon;
@@ -46,24 +44,21 @@ class ShowExtraWeightPreferenceTest extends TestCase
 
     public function test_bodyweight_exercise_hides_weight_field_when_preference_disabled()
     {
-        // Create a mobile lift form with bodyweight exercise (user has show_extra_weight = false by default)
-        $mobileLiftForm = MobileLiftForm::factory()->create([
-            'user_id' => $this->user->id,
-            'exercise_id' => $this->bodyweightExercise->id,
-            'date' => Carbon::today(),
-        ]);
-
-        $forms = $this->service->generateForms($this->user->id, Carbon::today());
-
-        $this->assertCount(1, $forms);
+        // Generate a standalone form for bodyweight exercise (user has show_extra_weight = false by default)
+        $form = $this->service->generateStandaloneForm(
+            $this->bodyweightExercise->id,
+            $this->user->id,
+            Carbon::today(),
+            []
+        );
         
         // Check that weight field is NOT present
-        $weightField = collect($forms[0]['data']['numericFields'])->firstWhere('name', 'weight');
+        $weightField = collect($form['data']['numericFields'])->firstWhere('name', 'weight');
         $this->assertNull($weightField, 'Weight field should be hidden when show_extra_weight is false for bodyweight exercises');
         
         // But reps and rounds fields should still be present
-        $repsField = collect($forms[0]['data']['numericFields'])->firstWhere('name', 'reps');
-        $roundsField = collect($forms[0]['data']['numericFields'])->firstWhere('name', 'rounds');
+        $repsField = collect($form['data']['numericFields'])->firstWhere('name', 'reps');
+        $roundsField = collect($form['data']['numericFields'])->firstWhere('name', 'rounds');
         $this->assertNotNull($repsField);
         $this->assertNotNull($roundsField);
     }
@@ -73,19 +68,16 @@ class ShowExtraWeightPreferenceTest extends TestCase
         // Enable show extra weight preference
         $this->user->update(['show_extra_weight' => true]);
         
-        // Create a mobile lift form with bodyweight exercise
-        $mobileLiftForm = MobileLiftForm::factory()->create([
-            'user_id' => $this->user->id,
-            'exercise_id' => $this->bodyweightExercise->id,
-            'date' => Carbon::today(),
-        ]);
-
-        $forms = $this->service->generateForms($this->user->id, Carbon::today());
-
-        $this->assertCount(1, $forms);
+        // Generate a standalone form for bodyweight exercise
+        $form = $this->service->generateStandaloneForm(
+            $this->bodyweightExercise->id,
+            $this->user->id,
+            Carbon::today(),
+            []
+        );
         
         // Check that weight field is present
-        $weightField = collect($forms[0]['data']['numericFields'])->firstWhere('name', 'weight');
+        $weightField = collect($form['data']['numericFields'])->firstWhere('name', 'weight');
         $this->assertNotNull($weightField, 'Weight field should be present when show_extra_weight is true');
         $this->assertEquals('Added Weight (lbs):', $weightField['label']);
     }
@@ -95,19 +87,16 @@ class ShowExtraWeightPreferenceTest extends TestCase
         // Disable show extra weight preference
         $this->user->update(['show_extra_weight' => false]);
         
-        // Create a mobile lift form with weighted exercise
-        $mobileLiftForm = MobileLiftForm::factory()->create([
-            'user_id' => $this->user->id,
-            'exercise_id' => $this->weightedExercise->id,
-            'date' => Carbon::today(),
-        ]);
-
-        $forms = $this->service->generateForms($this->user->id, Carbon::today());
-
-        $this->assertCount(1, $forms);
+        // Generate a standalone form for weighted exercise
+        $form = $this->service->generateStandaloneForm(
+            $this->weightedExercise->id,
+            $this->user->id,
+            Carbon::today(),
+            []
+        );
         
         // Check that weight field is present even with preference disabled
-        $weightField = collect($forms[0]['data']['numericFields'])->firstWhere('name', 'weight');
+        $weightField = collect($form['data']['numericFields'])->firstWhere('name', 'weight');
         $this->assertNotNull($weightField, 'Weight field should always be present for weighted exercises');
         $this->assertEquals('Weight (lbs):', $weightField['label']);
     }
