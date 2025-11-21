@@ -28,7 +28,7 @@
              data-min="{{ $field['min'] }}" 
              data-max="{{ $field['max'] ?? '' }}">
             <button type="button" class="decrement-button" aria-label="{{ $field['ariaLabels']['decrease'] }}">{{ $data['buttons']['decrement'] }}</button>
-            <input type="text" id="{{ $field['id'] }}" name="{{ $field['name'] }}" class="number-input" value="{{ old($field['name'], $field['defaultValue']) }}">
+            <input type="text" id="{{ $field['id'] }}" name="{{ $field['name'] }}" class="number-input" value="{{ old($field['name'], $field['defaultValue']) }}" inputmode="numeric">
             <button type="button" class="increment-button" aria-label="{{ $field['ariaLabels']['increase'] }}">{{ $data['buttons']['increment'] }}</button>
         </div>
     @endif
