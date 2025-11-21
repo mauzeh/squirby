@@ -378,4 +378,210 @@ class LiftLogCreateTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('Log ' . $exercise->title);
     }
+
+    /** @test */
+    public function submitting_lift_log_creates_multiple_sets_based_on_rounds()
+    {
+        $exercise = Exercise::factory()->create(['user_id' => $this->user->id]);
+        $date = Carbon::today();
+
+        $liftLogData = [
+            'exercise_id' => $exercise->id,
+            'weight' => 100,
+            'reps' => 5,
+            'rounds' => 4, // Should create 4 sets
+            'date' => $date->toDateString(),
+            'logged_at' => '14:30',
+        ];
+
+        $this->post(route('lift-logs.store'), $liftLogData);
+
+        // Should have created exactly 4 sets
+        $this->assertDatabaseCount('lift_sets', 4);
+        
+        // All sets should have the same weight and reps
+        $sets = \App\Models\LiftSet::all();
+        foreach ($sets as $set) {
+            $this->assertEquals(100, $set->weight);
+            $this->assertEquals(5, $set->reps);
+        }
+    }
+
+    /** @test */
+    public function submitting_lift_log_validates_required_fields()
+    {
+        $exercise = Exercise::factory()->create(['user_id' => $this->user->id]);
+
+        $response = $this->post(route('lift-logs.store'), [
+            'exercise_id' => $exercise->id,
+            // Missing required fields: date, reps, rounds
+        ]);
+
+        $response->assertSessionHasErrors(['date', 'reps', 'rounds']);
+    }
+
+    /** @test */
+    public function submitting_lift_log_validates_minimum_values()
+    {
+        $exercise = Exercise::factory()->create(['user_id' => $this->user->id]);
+
+        $response = $this->post(route('lift-logs.store'), [
+            'exercise_id' => $exercise->id,
+            'weight' => 100,
+            'reps' => 0, // Invalid: must be at least 1
+            'rounds' => 0, // Invalid: must be at least 1
+            'date' => Carbon::today()->toDateString(),
+        ]);
+
+        $response->assertSessionHasErrors(['reps', 'rounds']);
+    }
+
+    /** @test */
+    public function submitting_lift_log_rounds_time_to_nearest_15_minutes()
+    {
+        $exercise = Exercise::factory()->create(['user_id' => $this->user->id]);
+        $date = Carbon::today();
+
+        $liftLogData = [
+            'exercise_id' => $exercise->id,
+            'weight' => 100,
+            'reps' => 5,
+            'rounds' => 1,
+            'date' => $date->toDateString(),
+            'logged_at' => '14:37', // Should round to 14:45
+        ];
+
+        $this->post(route('lift-logs.store'), $liftLogData);
+
+        $liftLog = LiftLog::first();
+        $this->assertEquals('14:45', $liftLog->logged_at->format('H:i'));
+    }
+
+    /** @test */
+    public function submitting_lift_log_uses_current_time_when_not_provided()
+    {
+        $exercise = Exercise::factory()->create(['user_id' => $this->user->id]);
+        $date = Carbon::today();
+
+        $liftLogData = [
+            'exercise_id' => $exercise->id,
+            'weight' => 100,
+            'reps' => 5,
+            'rounds' => 1,
+            'date' => $date->toDateString(),
+            // No logged_at provided
+        ];
+
+        $this->post(route('lift-logs.store'), $liftLogData);
+
+        $liftLog = LiftLog::first();
+        
+        // Should have a logged_at time on today's date
+        $this->assertEquals($date->toDateString(), $liftLog->logged_at->toDateString());
+        $this->assertNotNull($liftLog->logged_at);
+    }
+
+    /** @test */
+    public function submitting_banded_exercise_stores_band_color()
+    {
+        $exercise = Exercise::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_type' => 'banded'
+        ]);
+        $date = Carbon::today();
+
+        $liftLogData = [
+            'exercise_id' => $exercise->id,
+            'band_color' => 'blue',
+            'reps' => 10,
+            'rounds' => 3,
+            'date' => $date->toDateString(),
+            'logged_at' => '14:30',
+        ];
+
+        $this->post(route('lift-logs.store'), $liftLogData);
+
+        $this->assertDatabaseHas('lift_sets', [
+            'band_color' => 'blue',
+            'reps' => 10,
+        ]);
+    }
+
+    /** @test */
+    public function submitting_lift_log_displays_success_message()
+    {
+        $exercise = Exercise::factory()->create([
+            'user_id' => $this->user->id,
+            'title' => 'Bench Press'
+        ]);
+        $date = Carbon::today();
+
+        $liftLogData = [
+            'exercise_id' => $exercise->id,
+            'weight' => 135,
+            'reps' => 8,
+            'rounds' => 3,
+            'date' => $date->toDateString(),
+            'logged_at' => '14:30',
+        ];
+
+        $response = $this->post(route('lift-logs.store'), $liftLogData);
+
+        // Should have a success message mentioning the exercise
+        $response->assertSessionHas('success');
+        $successMessage = session('success');
+        $this->assertStringContainsString('Bench Press', $successMessage);
+    }
+
+    /** @test */
+    public function create_page_shows_progression_suggestion_when_available()
+    {
+        $exercise = Exercise::factory()->create(['user_id' => $this->user->id]);
+        
+        // Create multiple previous logs to establish a pattern
+        for ($i = 3; $i > 0; $i--) {
+            $previousLog = LiftLog::factory()->create([
+                'user_id' => $this->user->id,
+                'exercise_id' => $exercise->id,
+                'logged_at' => Carbon::today()->subDays($i * 7)
+            ]);
+            $previousLog->liftSets()->create([
+                'weight' => 100,
+                'reps' => 5,
+            ]);
+        }
+
+        $response = $this->get(route('lift-logs.create', [
+            'exercise_id' => $exercise->id,
+            'date' => Carbon::today()->toDateString()
+        ]));
+
+        $response->assertStatus(200);
+        // Should show some kind of suggestion (the exact text depends on TrainingProgressionService)
+        $response->assertSee('Try this');
+    }
+
+    /** @test */
+    public function submitting_lift_log_for_past_date_uses_safe_default_time()
+    {
+        $exercise = Exercise::factory()->create(['user_id' => $this->user->id]);
+        $pastDate = Carbon::yesterday();
+
+        $liftLogData = [
+            'exercise_id' => $exercise->id,
+            'weight' => 100,
+            'reps' => 5,
+            'rounds' => 1,
+            'date' => $pastDate->toDateString(),
+            // No logged_at provided
+        ];
+
+        $this->post(route('lift-logs.store'), $liftLogData);
+
+        $liftLog = LiftLog::first();
+        
+        // Should use 12:00 PM as safe default for past dates
+        $this->assertEquals($pastDate->toDateString(), $liftLog->logged_at->toDateString());
+        $this->assertEquals('12:00', $liftLog->logged_at->format('H:i'));
+    }
 }
