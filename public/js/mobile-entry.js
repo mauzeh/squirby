@@ -223,6 +223,11 @@ document.addEventListener('DOMContentLoaded', function() {
             // Skip this group if any required elements are missing
             if (!input || !decrementBtn || !incrementBtn) return;
             
+            // Select all text on focus for easy overwriting
+            input.addEventListener('focus', function() {
+                this.select();
+            });
+            
             // Extract configuration from data attributes set by the Blade template
             // These values come from the Laravel controller configuration
             const increment = parseFloat(group.dataset.increment) || 1;  // Default to 1 if not set
