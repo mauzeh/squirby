@@ -94,41 +94,12 @@ class LiftLogService extends MobileEntryBaseService
                 continue; // Skip if exercise doesn't exist
             }
             
-            $exercise = $form->exercise;
-            
-            // Get last session data from cached results
-            $lastSession = $lastSessionsData[$exercise->id] ?? null;
-            
-            // Get progression suggestions from batch results
-            $progressionSuggestion = $progressionSuggestions[$exercise->id] ?? null;
-            
-            // Determine default weight based on last session or exercise type
-            $defaultWeight = $this->getDefaultWeight($exercise, $lastSession, $userId);
-            
-            // Determine default reps and sets from progression service or fallback
-            $defaultReps = $progressionSuggestion->reps ?? ($lastSession['reps'] ?? 5);
-            $defaultSets = $progressionSuggestion->sets ?? ($lastSession['sets'] ?? 3);
-            
-            // Generate messages based on last session
-            $messages = $this->generateFormMessagesForMobileForms($form, $lastSession, $userId);
-            
-            // Prepare default values for the factory
-            $defaults = [
-                'weight' => $defaultWeight,
-                'reps' => $defaultReps,
-                'sets' => $defaultSets,
-                'band_color' => $lastSession['band_color'] ?? 'red',
-                'comments' => '',
-            ];
-
-            // Use the factory to build the complete form
-            $formData = $this->liftLogFormFactory->buildForm(
+            $formData = $this->generateSingleForm(
                 $form,
-                $exercise,
                 $user,
-                $defaults,
-                $messages,
                 $selectedDate,
+                $lastSessionsData,
+                $progressionSuggestions,
                 $redirectParams
             );
             
@@ -136,6 +107,213 @@ class LiftLogService extends MobileEntryBaseService
         }
         
         return $forms;
+    }
+
+    /**
+     * Generate a single form for an exercise
+     * 
+     * @param MobileLiftForm $form The mobile lift form
+     * @param \App\Models\User $user The user
+     * @param Carbon $selectedDate The selected date
+     * @param array $lastSessionsData Cached last session data
+     * @param array $progressionSuggestions Cached progression suggestions
+     * @param array $redirectParams Optional redirect parameters
+     * @return array Form component data
+     */
+    public function generateSingleForm(
+        MobileLiftForm $form,
+        $user,
+        Carbon $selectedDate,
+        array $lastSessionsData = [],
+        array $progressionSuggestions = [],
+        array $redirectParams = []
+    ) {
+        $exercise = $form->exercise;
+        
+        // Get last session data from cached results or fetch it
+        $lastSession = $lastSessionsData[$exercise->id] ?? $this->getLastSessionData($exercise->id, $selectedDate, $user->id);
+        
+        // Get progression suggestions from batch results or fetch it
+        $progressionSuggestion = $progressionSuggestions[$exercise->id] ?? null;
+        if (!$progressionSuggestion && $lastSession) {
+            $progressionSuggestion = $this->trainingProgressionService->getSuggestionDetails(
+                $user->id, 
+                $exercise->id
+            );
+        }
+        
+        // Determine default weight based on last session or exercise type
+        $defaultWeight = $this->getDefaultWeight($exercise, $lastSession, $user->id);
+        
+        // Determine default reps and sets from progression service or fallback
+        $defaultReps = $progressionSuggestion->reps ?? ($lastSession['reps'] ?? 5);
+        $defaultSets = $progressionSuggestion->sets ?? ($lastSession['sets'] ?? 3);
+        
+        // Generate messages based on last session
+        $messages = $this->generateFormMessagesForMobileForms($form, $lastSession, $user->id);
+        
+        // Prepare default values for the factory
+        $defaults = [
+            'weight' => $defaultWeight,
+            'reps' => $defaultReps,
+            'sets' => $defaultSets,
+            'band_color' => $lastSession['band_color'] ?? 'red',
+            'comments' => '',
+        ];
+
+        // Use the factory to build the complete form
+        $formData = $this->liftLogFormFactory->buildForm(
+            $form,
+            $exercise,
+            $user,
+            $defaults,
+            $messages,
+            $selectedDate,
+            $redirectParams
+        );
+        
+        return $formData;
+    }
+
+    /**
+     * Generate a standalone form for a specific exercise (without MobileLiftForm)
+     * 
+     * @param int $exerciseId The exercise ID
+     * @param int $userId The user ID
+     * @param Carbon $selectedDate The selected date
+     * @param array $redirectParams Optional redirect parameters
+     * @return array Form component data
+     */
+    public function generateStandaloneForm(
+        int $exerciseId,
+        int $userId,
+        Carbon $selectedDate,
+        array $redirectParams = []
+    ) {
+        // Get the exercise
+        $exercise = Exercise::where('id', $exerciseId)
+            ->availableToUser($userId)
+            ->first();
+        
+        if (!$exercise) {
+            throw new \Exception('Exercise not found or not accessible');
+        }
+        
+        // Get user
+        $user = \App\Models\User::find($userId);
+        
+        // Apply alias to exercise title
+        $displayName = $this->aliasService->getDisplayName($exercise, $user);
+        $exercise->title = $displayName;
+        
+        // Get last session data
+        $lastSession = $this->getLastSessionData($exercise->id, $selectedDate, $userId);
+        
+        // Get progression suggestion
+        $progressionSuggestion = null;
+        if ($lastSession) {
+            $progressionSuggestion = $this->trainingProgressionService->getSuggestionDetails(
+                $userId, 
+                $exercise->id
+            );
+        }
+        
+        // Determine default weight based on last session or exercise type
+        $defaultWeight = $this->getDefaultWeight($exercise, $lastSession, $userId);
+        
+        // Determine default reps and sets from progression service or fallback
+        $defaultReps = $progressionSuggestion->reps ?? ($lastSession['reps'] ?? 5);
+        $defaultSets = $progressionSuggestion->sets ?? ($lastSession['sets'] ?? 3);
+        
+        // Create a temporary MobileLiftForm for message generation
+        $tempForm = new MobileLiftForm();
+        $tempForm->id = 'standalone-' . $exerciseId;
+        $tempForm->user_id = $userId;
+        $tempForm->exercise_id = $exerciseId;
+        $tempForm->setRelation('exercise', $exercise);
+        
+        // Generate messages based on last session
+        $messages = $this->generateFormMessagesForMobileForms($tempForm, $lastSession, $userId);
+        
+        // Prepare default values for the factory
+        $defaults = [
+            'weight' => $defaultWeight,
+            'reps' => $defaultReps,
+            'sets' => $defaultSets,
+            'band_color' => $lastSession['band_color'] ?? 'red',
+            'comments' => '',
+        ];
+
+        // Use the factory to build the complete form
+        $formData = $this->liftLogFormFactory->buildForm(
+            $tempForm,
+            $exercise,
+            $user,
+            $defaults,
+            $messages,
+            $selectedDate,
+            $redirectParams
+        );
+        
+        // Override the delete action since this is a standalone form (no MobileLiftForm to delete)
+        $formData['data']['deleteAction'] = null;
+        
+        return $formData;
+    }
+
+    /**
+     * Generate a complete page with title and form for creating a lift log
+     * 
+     * @param int $exerciseId The exercise ID
+     * @param int $userId The user ID
+     * @param Carbon $selectedDate The selected date
+     * @param string $backUrl The URL to return to
+     * @param array $redirectParams Optional redirect parameters
+     * @return array Components array for the page
+     */
+    public function generateCreatePage(
+        int $exerciseId,
+        int $userId,
+        Carbon $selectedDate,
+        string $backUrl,
+        array $redirectParams = []
+    ) {
+        // Get the exercise
+        $exercise = Exercise::where('id', $exerciseId)
+            ->availableToUser($userId)
+            ->first();
+        
+        if (!$exercise) {
+            throw new \Exception('Exercise not found or not accessible');
+        }
+        
+        // Get user
+        $user = \App\Models\User::find($userId);
+        
+        // Apply alias to exercise title
+        $displayName = $this->aliasService->getDisplayName($exercise, $user);
+        
+        // Generate the form
+        $formComponent = $this->generateStandaloneForm(
+            $exerciseId,
+            $userId,
+            $selectedDate,
+            $redirectParams
+        );
+        
+        // Build components array with title and back button
+        $components = [];
+        
+        // Add title with back button
+        $components[] = \App\Services\ComponentBuilder::title('Log ' . $displayName)
+            ->subtitle($selectedDate->format('l, F j, Y'))
+            ->backButton('fa-arrow-left', $backUrl, 'Back')
+            ->build();
+        
+        // Add the form
+        $components[] = $formComponent;
+        
+        return $components;
     }
 
     /**

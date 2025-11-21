@@ -39,6 +39,64 @@ class LiftLogController extends Controller
         $this->liftLogTableRowBuilder = $liftLogTableRowBuilder;
     }
     /**
+     * Show the form for creating a new lift log entry
+     */
+    public function create(Request $request)
+    {
+        $exerciseId = $request->input('exercise_id');
+        $date = $request->input('date') 
+            ? \Carbon\Carbon::parse($request->input('date'))
+            : \Carbon\Carbon::today();
+        
+        if (!$exerciseId) {
+            return redirect()->route('mobile-entry.lifts')
+                ->with('error', 'No exercise specified.');
+        }
+        
+        // Capture redirect parameters
+        $redirectParams = [];
+        if ($request->has('redirect_to')) {
+            $redirectParams['redirect_to'] = $request->input('redirect_to');
+        }
+        if ($request->has('workout_id')) {
+            $redirectParams['workout_id'] = $request->input('workout_id');
+        }
+        
+        // Determine back URL based on redirect parameters
+        $redirectTo = $request->input('redirect_to');
+        if ($redirectTo === 'workouts') {
+            $workoutId = $request->input('workout_id');
+            $backUrl = route('workouts.index', $workoutId ? ['workout_id' => $workoutId] : []);
+        } else {
+            // Default to mobile-entry lifts
+            $backUrl = route('mobile-entry.lifts', ['date' => $date->toDateString()]);
+        }
+        
+        // Generate the page using the service
+        $liftLogService = app(\App\Services\MobileEntry\LiftLogService::class);
+        
+        try {
+            $components = $liftLogService->generateCreatePage(
+                $exerciseId,
+                auth()->id(),
+                $date,
+                $backUrl,
+                $redirectParams
+            );
+            
+            $data = [
+                'components' => $components,
+                'autoscroll' => false
+            ];
+            
+            return view('mobile-entry.flexible', compact('data'));
+        } catch (\Exception $e) {
+            return redirect()->route('mobile-entry.lifts')
+                ->with('error', 'Exercise not found or not accessible.');
+        }
+    }
+
+    /**
      * Display a listing of the resource.
      */
     public function index()

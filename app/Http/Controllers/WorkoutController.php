@@ -160,11 +160,12 @@ class WorkoutController extends Controller
                                 null
                             );
                             
-                            // Show log now button
-                            $logUrl = route('mobile-entry.add-lift-form', [
-                                'exercise' => $exercise->exercise_id,
+                            // Show log now button - link to lift-logs/create
+                            $logUrl = route('lift-logs.create', [
+                                'exercise_id' => $exercise->exercise_id,
                                 'date' => $today->toDateString(),
-                                'redirect_to' => 'workouts'
+                                'redirect_to' => 'workouts',
+                                'workout_id' => $workout->id
                             ]);
                             $subItemBuilder->linkAction('fa-play', $logUrl, 'Log now', 'btn-log-now')
                                 ->compact();
