@@ -400,26 +400,22 @@ class ExerciseMergeServiceTest extends TestCase
         // Create lift log to transfer
         $liftLog = LiftLog::factory()->create(['exercise_id' => $source->id]);
 
-        // Mock the update method on LiftLog to throw an exception
-        $this->mock(LiftLog::class, function ($mock) {
-            $mock->shouldReceive('update')->andThrow(new \Exception('Forced exception for rollback test'));
-        });
-        
-        $this->expectException(\Exception::class);
-        $this->expectExceptionMessage('Forced exception for rollback test');
+        // Temporarily delete the target exercise to cause a foreign key constraint violation
+        // when trying to update lift logs to point to a non-existent exercise
+        $targetId = $target->id;
+        $target->forceDelete(); // Force delete to actually remove it from database
 
-        // Since the exception will bubble up, we don't need to assert rollback explicitly,
-        // but we can verify the state of the database after the exception is caught.
+        $this->expectException(\Exception::class);
+
         try {
             $this->service->mergeExercises($source, $target, $this->admin);
         } catch (\Exception $e) {
             // Verify rollback occurred - source should still exist and not be soft deleted
-            $this->assertDatabaseHas('exercises', ['id' => $source->id, 'deleted_at' => null]);
-            $this->assertDatabaseHas('lift_logs', [
-                'id' => $liftLog->id,
-                'exercise_id' => $source->id, // Should not be changed
-                'deleted_at' => null
-            ]);
+            $source->refresh();
+            $liftLog->refresh();
+            
+            $this->assertNull($source->deleted_at);
+            $this->assertEquals($source->id, $liftLog->exercise_id);
             throw $e;
         }
     }
