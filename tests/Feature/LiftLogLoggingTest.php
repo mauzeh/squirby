@@ -111,7 +111,9 @@ class LiftLogLoggingTest extends TestCase {
             'comments' => 'Updated comments',
         ]);
 
-        $this->assertDatabaseCount('lift_sets', 4);
+        $this->assertCount(4, $liftLog->liftSets()->get());
+        $this->assertCount(5, $liftLog->liftSets()->withTrashed()->get());
+
         $this->assertDatabaseHas('lift_sets', [
             'lift_log_id' => $liftLog->id,
             'weight' => 120,
@@ -317,7 +319,9 @@ class LiftLogLoggingTest extends TestCase {
             'comments' => 'Updated bodyweight comments',
         ]);
 
-        $this->assertDatabaseCount('lift_sets', 4);
+        $this->assertCount(4, $liftLog->liftSets()->get());
+        $this->assertCount(5, $liftLog->liftSets()->withTrashed()->get());
+
         $this->assertDatabaseHas('lift_sets', [
             'lift_log_id' => $liftLog->id,
             'weight' => 0,

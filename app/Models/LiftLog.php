@@ -24,6 +24,18 @@ class LiftLog extends Model
         'logged_at' => 'datetime',
     ];
 
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::deleting(function ($liftLog) {
+            // Soft delete all associated LiftSet records
+            $liftLog->liftSets()->each(function ($liftSet) {
+                $liftSet->delete();
+            });
+        });
+    }
+
     public function exercise()
     {
         return $this->belongsTo(Exercise::class);

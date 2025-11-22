@@ -129,10 +129,10 @@ class ImportJsonLiftLogUserExerciseDuplicateTest extends TestCase
             ])
             ->assertExitCode(Command::SUCCESS);
             
-            // Verify first import
-            $this->assertDatabaseCount('exercises', 1);
-            $this->assertDatabaseCount('lift_logs', 1);
-            $this->assertDatabaseCount('lift_sets', 1);
+            // Verify first import (1 non-deleted, 1 soft-deleted if overwritten, so 2 total)
+            $this->assertCount(1, Exercise::all());
+            $this->assertCount(1, LiftLog::all());
+            $this->assertCount(1, LiftSet::all());
             
             $exercise = Exercise::first();
             $this->assertEquals('new_custom_exercise', $exercise->canonical_name);
@@ -148,10 +148,14 @@ class ImportJsonLiftLogUserExerciseDuplicateTest extends TestCase
             ])
             ->assertExitCode(Command::SUCCESS);
             
-            // Should still have only 1 exercise, 1 lift log, and 1 lift set (no duplicates)
-            $this->assertDatabaseCount('exercises', 1);
-            $this->assertDatabaseCount('lift_logs', 1);
-            $this->assertDatabaseCount('lift_sets', 1);
+            // Should have 1 non-deleted exercise, 1 non-deleted lift log, and 1 non-deleted lift set
+            // With overwrite, total count should be 2 for logs/sets (one soft-deleted, one new)
+            $this->assertCount(1, Exercise::all());
+            $this->assertCount(1, Exercise::withTrashed()->get());
+            $this->assertCount(1, LiftLog::all());
+            $this->assertCount(2, LiftLog::withTrashed()->get());
+            $this->assertCount(1, LiftSet::all());
+            $this->assertCount(2, LiftSet::withTrashed()->get());
             
             // Third run - should still prevent duplicates
             $this->artisan('lift-log:import-json', [
@@ -163,10 +167,14 @@ class ImportJsonLiftLogUserExerciseDuplicateTest extends TestCase
             ])
             ->assertExitCode(Command::SUCCESS);
             
-            // Should still have only 1 exercise, 1 lift log, and 1 lift set (no duplicates)
-            $this->assertDatabaseCount('exercises', 1);
-            $this->assertDatabaseCount('lift_logs', 1);
-            $this->assertDatabaseCount('lift_sets', 1);
+            // Should still have only 1 exercise, 1 lift log, and 1 lift set (non-deleted)
+            // Total should be 3 for logs/sets
+            $this->assertCount(1, Exercise::all());
+            $this->assertCount(1, Exercise::withTrashed()->get());
+            $this->assertCount(1, LiftLog::all());
+            $this->assertCount(3, LiftLog::withTrashed()->get());
+            $this->assertCount(1, LiftSet::all());
+            $this->assertCount(3, LiftSet::withTrashed()->get());
             
         } finally {
             unlink($tempFile);

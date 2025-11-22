@@ -94,7 +94,7 @@ class ExerciseManagementWorkflowTest extends TestCase
         $deleteResponse->assertRedirect(route('exercises.index'));
         $deleteResponse->assertSessionHas('success', 'Exercise deleted successfully.');
         
-        $this->assertDatabaseMissing('exercises', ['id' => $globalExercise->id]);
+        $this->assertSoftDeleted($globalExercise);
     }
 
     /** @test */
@@ -132,6 +132,7 @@ class ExerciseManagementWorkflowTest extends TestCase
         $this->assertDatabaseMissing('exercises', [
             'title' => 'Squat',
             'user_id' => $user->id,
+            'deleted_at' => null // Ensure it was never created (no soft delete involved here)
         ]);
 
         // 3. User creates personal exercise with unique name
@@ -148,6 +149,7 @@ class ExerciseManagementWorkflowTest extends TestCase
         $this->assertDatabaseHas('exercises', [
             'title' => 'My Custom Deadlift',
             'user_id' => $user->id,
+            'deleted_at' => null
         ]);
 
         $personalExercise = Exercise::where('title', 'My Custom Deadlift')->first();
@@ -172,6 +174,7 @@ class ExerciseManagementWorkflowTest extends TestCase
             'title' => 'Updated Custom Deadlift',
             'user_id' => $user->id,
             'exercise_type' => 'bodyweight',
+            'deleted_at' => null
         ]);
 
         // 5. User can delete their own exercise (when no lift logs exist)
@@ -179,7 +182,7 @@ class ExerciseManagementWorkflowTest extends TestCase
         $deleteResponse->assertRedirect(route('exercises.index'));
         $deleteResponse->assertSessionHas('success', 'Exercise deleted successfully.');
         
-        $this->assertDatabaseMissing('exercises', ['id' => $personalExercise->id]);
+        $this->assertSoftDeleted($personalExercise);
     }
 
     /** @test */
@@ -294,6 +297,7 @@ class ExerciseManagementWorkflowTest extends TestCase
         $this->assertDatabaseMissing('exercises', [
             'title' => 'Attempted Global Exercise',
             'user_id' => null,
+            'deleted_at' => null // Ensure it was never created
         ]);
 
         // 2. User cannot edit global exercise
@@ -308,12 +312,13 @@ class ExerciseManagementWorkflowTest extends TestCase
         $this->assertDatabaseHas('exercises', [
             'id' => $globalExercise->id,
             'title' => 'Global Exercise', // Should remain unchanged
+            'deleted_at' => null
         ]);
 
         // 3. User cannot delete global exercise
         $deleteGlobalResponse = $this->delete(route('exercises.destroy', $globalExercise));
         $deleteGlobalResponse->assertStatus(403);
-        $this->assertDatabaseHas('exercises', ['id' => $globalExercise->id]);
+        $this->assertDatabaseHas('exercises', ['id' => $globalExercise->id, 'deleted_at' => null]);
 
         // 4. User cannot edit other user's exercise
         $editOtherResponse = $this->get(route('exercises.edit', $otherUserExercise));
@@ -327,12 +332,13 @@ class ExerciseManagementWorkflowTest extends TestCase
         $this->assertDatabaseHas('exercises', [
             'id' => $otherUserExercise->id,
             'title' => 'Other User Exercise', // Should remain unchanged
+            'deleted_at' => null
         ]);
 
         // 5. User cannot delete other user's exercise
         $deleteOtherResponse = $this->delete(route('exercises.destroy', $otherUserExercise));
         $deleteOtherResponse->assertStatus(403);
-        $this->assertDatabaseHas('exercises', ['id' => $otherUserExercise->id]);
+        $this->assertDatabaseHas('exercises', ['id' => $otherUserExercise->id, 'deleted_at' => null]);
 
         // 6. Verify user can only see edit/delete buttons for their own exercises
         $userExercise = Exercise::factory()->create([
@@ -399,26 +405,26 @@ class ExerciseManagementWorkflowTest extends TestCase
         $deleteGlobalWithLogsResponse = $this->delete(route('exercises.destroy', $globalExerciseWithLogs));
         $deleteGlobalWithLogsResponse->assertRedirect();
         $deleteGlobalWithLogsResponse->assertSessionHasErrors('error');
-        $this->assertDatabaseHas('exercises', ['id' => $globalExerciseWithLogs->id]);
+        $this->assertDatabaseHas('exercises', ['id' => $globalExerciseWithLogs->id, 'deleted_at' => null]);
 
         // Test admin CAN delete global exercise without lift logs
         $deleteGlobalWithoutLogsResponse = $this->delete(route('exercises.destroy', $globalExerciseWithoutLogs));
         $deleteGlobalWithoutLogsResponse->assertRedirect(route('exercises.index'));
         $deleteGlobalWithoutLogsResponse->assertSessionHas('success', 'Exercise deleted successfully.');
-        $this->assertDatabaseMissing('exercises', ['id' => $globalExerciseWithoutLogs->id]);
+        $this->assertSoftDeleted($globalExerciseWithoutLogs);
 
         // Test user cannot delete their exercise with lift logs
         $this->actingAs($user);
         $deleteUserWithLogsResponse = $this->delete(route('exercises.destroy', $userExerciseWithLogs));
         $deleteUserWithLogsResponse->assertRedirect();
         $deleteUserWithLogsResponse->assertSessionHasErrors('error');
-        $this->assertDatabaseHas('exercises', ['id' => $userExerciseWithLogs->id]);
+        $this->assertDatabaseHas('exercises', ['id' => $userExerciseWithLogs->id, 'deleted_at' => null]);
 
         // Test user CAN delete their exercise without lift logs
         $deleteUserWithoutLogsResponse = $this->delete(route('exercises.destroy', $userExerciseWithoutLogs));
         $deleteUserWithoutLogsResponse->assertRedirect(route('exercises.index'));
         $deleteUserWithoutLogsResponse->assertSessionHas('success', 'Exercise deleted successfully.');
-        $this->assertDatabaseMissing('exercises', ['id' => $userExerciseWithoutLogs->id]);
+        $this->assertSoftDeleted($userExerciseWithoutLogs);
 
         // Test that exercises with lift logs show disabled delete buttons in UI
         $indexResponse = $this->get(route('exercises.index'));
@@ -494,21 +500,25 @@ class ExerciseManagementWorkflowTest extends TestCase
         $this->assertDatabaseHas('exercises', [
             'title' => 'Bench Press',
             'user_id' => null, // Global
+            'deleted_at' => null
         ]);
         
         $this->assertDatabaseHas('exercises', [
             'title' => 'Squat',
             'user_id' => null, // Global
+            'deleted_at' => null
         ]);
         
         $this->assertDatabaseHas('exercises', [
             'title' => 'Incline Bench Press',
             'user_id' => $user1->id,
+            'deleted_at' => null
         ]);
         
         $this->assertDatabaseHas('exercises', [
             'title' => 'Incline Bench Press',
             'user_id' => $user2->id,
+            'deleted_at' => null
         ]);
 
         // Verify each user sees correct exercises
@@ -553,7 +563,7 @@ class ExerciseManagementWorkflowTest extends TestCase
         $conflictResponse->assertSessionHasErrors('title');
         
         // Verify only one global deadlift exists
-        $deadliftCount = Exercise::where('title', 'Deadlift')->whereNull('user_id')->count();
+        $deadliftCount = Exercise::where('title', 'Deadlift')->whereNull('user_id')->whereNull('deleted_at')->count();
         $this->assertEquals(1, $deadliftCount);
 
         // Admin can create personal exercise with different name
@@ -568,6 +578,7 @@ class ExerciseManagementWorkflowTest extends TestCase
         $this->assertDatabaseHas('exercises', [
             'title' => 'Romanian Deadlift',
             'user_id' => $admin->id,
+            'deleted_at' => null
         ]);
     }
 }

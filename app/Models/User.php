@@ -50,7 +50,20 @@ class User extends Authenticatable
             'password' => 'hashed',
             'show_global_exercises' => 'boolean',
             'show_extra_weight' => 'boolean',
+            'deleted_at' => 'datetime',
         ];
+    }
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::deleting(function ($user) {
+            // Soft delete all associated ExerciseAlias records
+            $user->exerciseAliases()->each(function ($alias) {
+                $alias->delete();
+            });
+        });
     }
 
     public function roles(): BelongsToMany
@@ -82,6 +95,12 @@ class User extends Authenticatable
     {
         return $this->hasMany(Exercise::class);
     }
+
+    public function exerciseAliases()
+    {
+        return $this->hasMany(ExerciseAlias::class);
+    }
+
 
 
 

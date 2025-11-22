@@ -24,6 +24,7 @@ class Exercise extends Model
 
     protected $casts = [
         'exercise_type' => 'string',
+        'deleted_at' => 'datetime',
     ];
 
     protected static function boot()
@@ -38,6 +39,18 @@ class Exercise extends Model
             // Set default exercise_type if not provided
             if (empty($exercise->exercise_type)) {
                 $exercise->exercise_type = 'regular';
+            }
+        });
+
+        static::deleting(function ($exercise) {
+            // Soft delete all associated ExerciseAlias records
+            $exercise->aliases()->each(function ($alias) {
+                $alias->delete();
+            });
+
+            // Soft delete associated ExerciseIntelligence record
+            if ($exercise->intelligence) {
+                $exercise->intelligence->delete();
             }
         });
     }

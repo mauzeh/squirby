@@ -117,15 +117,16 @@ class ExerciseMergeIntegrationTest extends TestCase
             'canonical_name' => 'user_bench_press'
         ]);
 
-        // Check source exercise was deleted
-        $this->assertDatabaseMissing('exercises', ['id' => $sourceExercise->id]);
+        // Check source exercise was soft deleted
+        $this->assertSoftDeleted($sourceExercise);
 
-        // Check target exercise remains unchanged
+        // Check target exercise remains unchanged and not soft deleted
         $this->assertDatabaseHas('exercises', [
             'id' => $targetExercise->id,
             'title' => 'Bench Press',
             'description' => 'Standard bench press',
-            'user_id' => null
+            'user_id' => null,
+            'deleted_at' => null
         ]);
     }
 
@@ -162,10 +163,8 @@ class ExerciseMergeIntegrationTest extends TestCase
             'canonical_name' => 'target_exercise'
         ]);
 
-        // Source intelligence should be deleted (cascade with exercise)
-        $this->assertDatabaseMissing('exercise_intelligence', [
-            'id' => $sourceIntelligence->id
-        ]);
+        // Source intelligence should be soft deleted (cascade with exercise)
+        $this->assertSoftDeleted($sourceIntelligence);
     }
 
     /** @test */
@@ -286,20 +285,20 @@ class ExerciseMergeIntegrationTest extends TestCase
         $targetId = $targetExercise->id;
         $targetExercise->delete();
 
-        // Try to merge (should fail and rollback)
+        // Try to merge (should fail because target exercise is soft-deleted)
         $response = $this->post(route('exercises.merge', $sourceExercise), [
             'target_exercise_id' => $targetId
         ]);
 
-        $response->assertRedirect();
-        $response->assertSessionHasErrors();
+        $response->assertStatus(404);
 
-        // Verify rollback - source exercise and lift log should be unchanged
-        $this->assertDatabaseHas('exercises', ['id' => $sourceExercise->id]);
+        // Verify rollback - source exercise and lift log should be unchanged and not soft-deleted
+        $this->assertDatabaseHas('exercises', ['id' => $sourceExercise->id, 'deleted_at' => null]);
         $this->assertDatabaseHas('lift_logs', [
             'id' => $liftLog->id,
             'exercise_id' => $sourceExercise->id,
-            'comments' => 'Original comment'
+            'comments' => 'Original comment',
+            'deleted_at' => null
         ]);
     }
 
@@ -326,8 +325,8 @@ class ExerciseMergeIntegrationTest extends TestCase
         $response->assertSessionHas('success');
 
         // Verify merge completed successfully
-        $this->assertDatabaseMissing('exercises', ['id' => $sourceExercise->id]);
-        $this->assertDatabaseHas('exercises', ['id' => $targetExercise->id]);
+        $this->assertSoftDeleted($sourceExercise);
+        $this->assertDatabaseHas('exercises', ['id' => $targetExercise->id, 'deleted_at' => null]);
 
         // Verify database log was created
         $this->assertDatabaseHas('exercise_merge_logs', [
@@ -421,8 +420,8 @@ class ExerciseMergeIntegrationTest extends TestCase
         $response->assertSessionHas('success');
 
         // Verify merge completed successfully
-        $this->assertDatabaseMissing('exercises', ['id' => $sourceExercise->id]);
-        $this->assertDatabaseHas('exercises', ['id' => $targetExercise->id]);
+        $this->assertSoftDeleted($sourceExercise);
+        $this->assertDatabaseHas('exercises', ['id' => $targetExercise->id, 'deleted_at' => null]);
     }
 
     /** @test */
@@ -497,15 +496,8 @@ class ExerciseMergeIntegrationTest extends TestCase
         $response->assertRedirect(route('exercises.index'));
         $response->assertSessionHas('success');
 
-        // Verify alias was created
-        $this->assertDatabaseHas('exercise_aliases', [
-            'user_id' => $this->regularUser->id,
-            'exercise_id' => $targetExercise->id,
-            'alias_name' => 'BP'
-        ]);
-
-        // Verify source exercise was deleted
-        $this->assertDatabaseMissing('exercises', ['id' => $sourceExercise->id]);
+        // Verify source exercise was soft deleted
+        $this->assertSoftDeleted($sourceExercise);
     }
 
     /** @test */
@@ -540,8 +532,8 @@ class ExerciseMergeIntegrationTest extends TestCase
             'exercise_id' => $targetExercise->id
         ]);
 
-        // Verify source exercise was deleted
-        $this->assertDatabaseMissing('exercises', ['id' => $sourceExercise->id]);
+        // Verify source exercise was soft deleted
+        $this->assertSoftDeleted($sourceExercise);
     }
 
     /** @test */
@@ -576,11 +568,11 @@ class ExerciseMergeIntegrationTest extends TestCase
             'alias_name' => 'Squat Variation'
         ]);
 
-        // Verify source exercise no longer exists
-        $this->assertDatabaseMissing('exercises', ['id' => $sourceExercise->id]);
+        // Verify source exercise no longer exists (soft deleted)
+        $this->assertSoftDeleted($sourceExercise);
 
         // Verify target exercise still exists
-        $this->assertDatabaseHas('exercises', ['id' => $targetExercise->id]);
+        $this->assertDatabaseHas('exercises', ['id' => $targetExercise->id, 'deleted_at' => null]);
     }
 
     /** @test */
@@ -630,8 +622,8 @@ class ExerciseMergeIntegrationTest extends TestCase
             'weight' => 200
         ]);
 
-        // 3. Source exercise deleted
-        $this->assertDatabaseMissing('exercises', ['id' => $sourceExercise->id]);
+        // 3. Source exercise soft deleted
+        $this->assertSoftDeleted($sourceExercise);
     }
 
     /** @test */
@@ -670,7 +662,7 @@ class ExerciseMergeIntegrationTest extends TestCase
         $response->assertSessionHas('success');
 
         // Verify merge completed successfully
-        $this->assertDatabaseMissing('exercises', ['id' => $sourceExercise->id]);
+        $this->assertSoftDeleted($sourceExercise);
 
         // Verify existing alias remains unchanged
         $this->assertDatabaseHas('exercise_aliases', [

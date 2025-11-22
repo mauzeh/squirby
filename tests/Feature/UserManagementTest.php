@@ -106,7 +106,7 @@ class UserManagementTest extends TestCase
         $response = $this->actingAs($this->admin)->delete(route('users.destroy', $userToDelete));
 
         $response->assertRedirect(route('users.index'));
-        $this->assertDatabaseMissing('users', ['id' => $userToDelete->id]);
+        $this->assertSoftDeleted($userToDelete);
     }
 
     public function test_admin_can_update_a_users_name_email_and_password()

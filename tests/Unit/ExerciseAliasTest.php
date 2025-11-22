@@ -249,9 +249,14 @@ class ExerciseAliasTest extends TestCase
         // Delete user
         $user->delete();
 
-        // Aliases should be deleted
-        $this->assertDatabaseMissing('exercise_aliases', ['id' => $alias1->id]);
-        $this->assertDatabaseMissing('exercise_aliases', ['id' => $alias2->id]);
+        // Refresh aliases to get the deleted_at timestamp
+        $alias1->refresh();
+        $alias2->refresh();
+
+        // Aliases should be soft deleted
+        $this->assertSoftDeleted($alias1);
+        $this->assertSoftDeleted($alias2);
+        $this->assertCount(2, ExerciseAlias::withTrashed()->get());
         $this->assertCount(0, ExerciseAlias::all());
     }
 
@@ -280,9 +285,14 @@ class ExerciseAliasTest extends TestCase
         // Delete exercise
         $exercise->delete();
 
-        // Aliases should be deleted
-        $this->assertDatabaseMissing('exercise_aliases', ['id' => $alias1->id]);
-        $this->assertDatabaseMissing('exercise_aliases', ['id' => $alias2->id]);
+        // Refresh aliases to get the deleted_at timestamp
+        $alias1->refresh();
+        $alias2->refresh();
+
+        // Aliases should be soft deleted
+        $this->assertSoftDeleted($alias1);
+        $this->assertSoftDeleted($alias2);
+        $this->assertCount(2, ExerciseAlias::withTrashed()->get());
         $this->assertCount(0, ExerciseAlias::all());
     }
 
@@ -308,9 +318,13 @@ class ExerciseAliasTest extends TestCase
         // Delete user1
         $user1->delete();
 
-        // Only user1's alias should be deleted
-        $this->assertDatabaseMissing('exercise_aliases', ['id' => $alias1->id]);
-        $this->assertDatabaseHas('exercise_aliases', ['id' => $alias2->id]);
+        // Refresh alias to get the deleted_at timestamp
+        $alias1->refresh();
+
+        // Only user1's alias should be soft deleted
+        $this->assertSoftDeleted($alias1);
+        $this->assertDatabaseHas('exercise_aliases', ['id' => $alias2->id, 'deleted_at' => null]);
+        $this->assertCount(2, ExerciseAlias::withTrashed()->get());
         $this->assertCount(1, ExerciseAlias::all());
     }
 
@@ -336,9 +350,13 @@ class ExerciseAliasTest extends TestCase
         // Delete exercise1
         $exercise1->delete();
 
-        // Only exercise1's alias should be deleted
-        $this->assertDatabaseMissing('exercise_aliases', ['id' => $alias1->id]);
-        $this->assertDatabaseHas('exercise_aliases', ['id' => $alias2->id]);
+        // Refresh alias to get the deleted_at timestamp
+        $alias1->refresh();
+
+        // Only exercise1's alias should be soft deleted
+        $this->assertSoftDeleted($alias1);
+        $this->assertDatabaseHas('exercise_aliases', ['id' => $alias2->id, 'deleted_at' => null]);
+        $this->assertCount(2, ExerciseAlias::withTrashed()->get());
         $this->assertCount(1, ExerciseAlias::all());
     }
 }

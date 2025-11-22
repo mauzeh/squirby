@@ -274,9 +274,7 @@ class BodyLogControllerMobileEntryTest extends TestCase
         $response->assertRedirect(route('mobile-entry.measurements', ['date' => $today->toDateString()]));
         $response->assertSessionHas('success', 'Measurement deleted successfully.');
         
-        $this->assertDatabaseMissing('body_logs', [
-            'id' => $bodyLog->id
-        ]);
+        $this->assertSoftDeleted($bodyLog);
     }
 
     /** @test */

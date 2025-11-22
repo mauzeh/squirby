@@ -330,10 +330,8 @@ class ExerciseMergeServiceTest extends TestCase
             'exercise_id' => $target->id
         ]);
 
-        // Source intelligence should be deleted (cascade delete with exercise)
-        $this->assertDatabaseMissing('exercise_intelligence', [
-            'id' => $sourceIntelligence->id
-        ]);
+        // Source intelligence should be soft deleted (cascade delete with exercise)
+        $this->assertSoftDeleted($sourceIntelligence);
     }
 
     /** @test */
@@ -342,15 +340,13 @@ class ExerciseMergeServiceTest extends TestCase
         $source = Exercise::factory()->create(['user_id' => $this->regularUser->id]);
         $target = Exercise::factory()->create(['user_id' => null]);
 
-        $sourceId = $source->id;
-
         $this->service->mergeExercises($source, $target, $this->admin);
 
-        // Source exercise should be deleted
-        $this->assertDatabaseMissing('exercises', ['id' => $sourceId]);
+        // Source exercise should be soft deleted
+        $this->assertSoftDeleted($source);
         
         // Target exercise should remain
-        $this->assertDatabaseHas('exercises', ['id' => $target->id]);
+        $this->assertDatabaseHas('exercises', ['id' => $target->id, 'deleted_at' => null]);
     }
 
     /** @test */
@@ -372,8 +368,8 @@ class ExerciseMergeServiceTest extends TestCase
         $result = $this->service->mergeExercises($source, $target, $this->admin);
 
         $this->assertTrue($result);
-        $this->assertDatabaseMissing('exercises', ['id' => $source->id]);
-        $this->assertDatabaseHas('exercises', ['id' => $target->id]);
+        $this->assertSoftDeleted($source);
+        $this->assertDatabaseHas('exercises', ['id' => $target->id, 'deleted_at' => null]);
 
         // Verify database log was created
         $this->assertDatabaseHas('exercise_merge_logs', [
@@ -404,24 +400,28 @@ class ExerciseMergeServiceTest extends TestCase
         // Create lift log to transfer
         $liftLog = LiftLog::factory()->create(['exercise_id' => $source->id]);
 
-        // Mock DB to throw exception during transaction
-        DB::shouldReceive('beginTransaction')->once();
-        DB::shouldReceive('rollBack')->once();
-        DB::shouldReceive('commit')->never();
-
-        // Force an exception by making the target exercise invalid
-        $target->delete();
-
+        // Mock the update method on LiftLog to throw an exception
+        $this->mock(LiftLog::class, function ($mock) {
+            $mock->shouldReceive('update')->andThrow(new \Exception('Forced exception for rollback test'));
+        });
+        
         $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('Forced exception for rollback test');
 
-        $this->service->mergeExercises($source, $target, $this->admin);
-
-        // Verify rollback occurred - source should still exist
-        $this->assertDatabaseHas('exercises', ['id' => $source->id]);
-        $this->assertDatabaseHas('lift_logs', [
-            'id' => $liftLog->id,
-            'exercise_id' => $source->id // Should not be changed
-        ]);
+        // Since the exception will bubble up, we don't need to assert rollback explicitly,
+        // but we can verify the state of the database after the exception is caught.
+        try {
+            $this->service->mergeExercises($source, $target, $this->admin);
+        } catch (\Exception $e) {
+            // Verify rollback occurred - source should still exist and not be soft deleted
+            $this->assertDatabaseHas('exercises', ['id' => $source->id, 'deleted_at' => null]);
+            $this->assertDatabaseHas('lift_logs', [
+                'id' => $liftLog->id,
+                'exercise_id' => $source->id, // Should not be changed
+                'deleted_at' => null
+            ]);
+            throw $e;
+        }
     }
 
 

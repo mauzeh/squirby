@@ -406,12 +406,9 @@ class AdminExerciseVisibilityTest extends TestCase
         $response->assertRedirect(route('exercises.index'));
         $response->assertSessionHas('success');
 
-        $this->assertDatabaseMissing('exercises', [
-            'id' => $userExercise->id,
-        ]);
+        $this->assertSoftDeleted($userExercise);
     }
 
-    /** @test */
     public function regular_user_cannot_delete_other_users_exercises()
     {
         // Create regular user
@@ -419,8 +416,7 @@ class AdminExerciseVisibilityTest extends TestCase
         $this->actingAs($user);
 
         // Create another user and their exercise
-        $otherUser = User::factory()->create();
-        $otherUserExercise = Exercise::factory()->create([
+        $otherUser = Exercise::factory()->create([
             'title' => 'Other User Exercise',
             'user_id' => $otherUser->id,
         ]);
@@ -429,9 +425,10 @@ class AdminExerciseVisibilityTest extends TestCase
         $response = $this->delete(route('exercises.destroy', $otherUserExercise));
         $response->assertStatus(403);
 
-        // Exercise should still exist
+        // Exercise should still exist and not be soft deleted
         $this->assertDatabaseHas('exercises', [
             'id' => $otherUserExercise->id,
+            'deleted_at' => null
         ]);
     }
 
@@ -548,12 +545,12 @@ class AdminExerciseVisibilityTest extends TestCase
         $response->assertRedirect(route('exercises.index'));
         $response->assertSessionHas('success');
 
-        // Exercises should be deleted
-        $this->assertDatabaseMissing('exercises', ['id' => $user1Exercise->id]);
-        $this->assertDatabaseMissing('exercises', ['id' => $user2Exercise->id]);
-        $this->assertDatabaseMissing('exercises', ['id' => $adminExercise->id]);
+        // Exercises should be soft deleted
+        $this->assertSoftDeleted($user1Exercise);
+        $this->assertSoftDeleted($user2Exercise);
+        $this->assertSoftDeleted($adminExercise);
         
-        // Global exercise should still exist
-        $this->assertDatabaseHas('exercises', ['id' => $globalExercise->id]);
+        // Global exercise should still exist and not be soft deleted
+        $this->assertDatabaseHas('exercises', ['id' => $globalExercise->id, 'deleted_at' => null]);
     }
 }

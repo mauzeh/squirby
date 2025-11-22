@@ -292,9 +292,7 @@ class ExerciseAliasServiceTest extends TestCase
         $result = $this->service->deleteAlias($alias);
         
         $this->assertTrue($result);
-        $this->assertDatabaseMissing('exercise_aliases', [
-            'id' => $alias->id
-        ]);
+        $this->assertSoftDeleted($alias);
     }
 
     /** @test */

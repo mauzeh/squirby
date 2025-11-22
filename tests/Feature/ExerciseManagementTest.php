@@ -405,7 +405,7 @@ class ExerciseManagementTest extends TestCase
 
         $response->assertRedirect();
         $response->assertSessionHasErrors('error');
-        $this->assertDatabaseHas('exercises', ['id' => $exercise->id]);
+        $this->assertDatabaseHas('exercises', ['id' => $exercise->id, 'deleted_at' => null]);
     }
 
     /** @test */
@@ -420,7 +420,7 @@ class ExerciseManagementTest extends TestCase
 
         $response->assertRedirect(route('exercises.index'));
         $response->assertSessionHas('success', 'Exercise deleted successfully.');
-        $this->assertDatabaseMissing('exercises', ['id' => $exercise->id]);
+        $this->assertSoftDeleted($exercise);
     }
 
     /** @test */
@@ -437,7 +437,7 @@ class ExerciseManagementTest extends TestCase
 
         $response->assertRedirect(route('exercises.index'));
         $response->assertSessionHas('success', 'Exercise deleted successfully.');
-        $this->assertDatabaseMissing('exercises', ['id' => $globalExercise->id]);
+        $this->assertSoftDeleted($globalExercise);
     }
 
     /** @test */
@@ -455,7 +455,7 @@ class ExerciseManagementTest extends TestCase
 
         $response->assertRedirect();
         $response->assertSessionHasErrors('error');
-        $this->assertDatabaseHas('exercises', ['id' => $globalExercise->id]);
+        $this->assertDatabaseHas('exercises', ['id' => $globalExercise->id, 'deleted_at' => null]);
     }
 
     /** @test */
@@ -518,11 +518,9 @@ class ExerciseManagementTest extends TestCase
 
         $response->assertRedirect();
         $response->assertSessionHasErrors('error');
-        $this->assertDatabaseHas('exercises', ['id' => $exercise1->id]);
-        $this->assertDatabaseHas('exercises', ['id' => $exercise2->id]);
+        $this->assertDatabaseHas('exercises', ['id' => $exercise1->id, 'deleted_at' => null]);
+        $this->assertDatabaseHas('exercises', ['id' => $exercise2->id, 'deleted_at' => null]);
     }
-
-    /** @test */
     public function index_view_displays_global_badge_for_global_exercises()
     {
         $user = User::factory()->create();

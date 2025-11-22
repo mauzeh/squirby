@@ -582,9 +582,11 @@ class ImportJsonLiftLogTest extends TestCase
                 '--overwrite' => true
             ])->assertExitCode(Command::SUCCESS);
             
-            // Should still have only 1 lift log (old deleted, new created)
-            $this->assertDatabaseCount('lift_logs', 1);
-            $this->assertDatabaseCount('lift_sets', 1);
+            // Should have 1 non-deleted lift log and 2 total (1 soft-deleted + 1 new)
+            $this->assertCount(1, LiftLog::all());
+            $this->assertCount(2, LiftLog::withTrashed()->get());
+            $this->assertCount(1, LiftSet::all());
+            $this->assertCount(2, LiftSet::withTrashed()->get());
             
             // Verify the lift log has no comments (no notes provided in JSON)
             $liftLog = LiftLog::first();
@@ -624,8 +626,8 @@ class ImportJsonLiftLogTest extends TestCase
                 '--overwrite' => true  // Use overwrite to avoid prompts
             ])->assertExitCode(Command::SUCCESS);
             
-            // Verify exercise count
-            $exerciseCount = Exercise::where('canonical_name', 'new_exercise')->count();
+            // Verify exercise count (including soft-deleted if overwrite happened)
+            $exerciseCount = Exercise::where('canonical_name', 'new_exercise')->withTrashed()->count();
             $this->assertEquals(1, $exerciseCount);
             
             // Run the command second time with overwrite
@@ -635,9 +637,9 @@ class ImportJsonLiftLogTest extends TestCase
                 '--overwrite' => true  // Use overwrite to avoid prompts
             ])->assertExitCode(Command::SUCCESS);
             
-            // Verify no duplicate exercises were created
-            $exerciseCount = Exercise::where('canonical_name', 'new_exercise')->count();
-            $this->assertEquals(1, $exerciseCount);
+            // Verify no duplicate exercises were created (only one non-deleted)
+            $this->assertCount(1, Exercise::where('canonical_name', 'new_exercise')->get());
+            $this->assertCount(1, Exercise::where('canonical_name', 'new_exercise')->withTrashed()->get());
             
         } finally {
             unlink($tempFile);
@@ -690,7 +692,7 @@ class ImportJsonLiftLogTest extends TestCase
             )
             ->assertExitCode(Command::SUCCESS);
             
-            // Should still have only the original lift log
+            // Should still have only the original lift log (not soft deleted as we cancelled)
             $this->assertDatabaseCount('lift_logs', 1);
             $this->assertDatabaseCount('lift_sets', 1);
             
@@ -739,9 +741,11 @@ class ImportJsonLiftLogTest extends TestCase
                 '--overwrite' => true
             ])->assertExitCode(Command::SUCCESS);
             
-            // Should have new lift log (old one deleted, new one created)
-            $this->assertDatabaseCount('lift_logs', 1);
-            $this->assertDatabaseCount('lift_sets', 1);
+            // The old log should be soft deleted, and a new one created
+            $this->assertCount(1, LiftLog::all()); // Only one non-deleted log
+            $this->assertCount(2, LiftLog::withTrashed()->get()); // Two logs total (one deleted, one new)
+            $this->assertCount(1, LiftSet::all()); // Only one non-deleted set
+            $this->assertCount(2, LiftSet::withTrashed()->get()); // Two sets total (one deleted, one new)
             
             // Verify the new lift log has no comments (no notes provided in JSON)
             $newLiftLog = LiftLog::first();

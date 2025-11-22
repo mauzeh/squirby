@@ -24,7 +24,7 @@ class ExerciseBulkDeleteTest extends TestCase
         $response->assertSessionHas('success', 'Selected exercises deleted successfully!');
         
         foreach ($exercises as $exercise) {
-            $this->assertDatabaseMissing('exercises', ['id' => $exercise->id]);
+            $this->assertSoftDeleted($exercise);
         }
     }
 
@@ -41,9 +41,9 @@ class ExerciseBulkDeleteTest extends TestCase
 
         $response->assertStatus(403);
         
-        // Both exercises should still exist
-        $this->assertDatabaseHas('exercises', ['id' => $exercise1->id]);
-        $this->assertDatabaseHas('exercises', ['id' => $exercise2->id]);
+        // Both exercises should still exist and not be soft deleted
+        $this->assertDatabaseHas('exercises', ['id' => $exercise1->id, 'deleted_at' => null]);
+        $this->assertDatabaseHas('exercises', ['id' => $exercise2->id, 'deleted_at' => null]);
     }
 
     public function test_bulk_delete_requires_exercise_ids_array()

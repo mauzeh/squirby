@@ -410,11 +410,11 @@ class ImportJsonLiftLogDuplicateTest extends TestCase
         
         $this->callPrivateMethod($command, 'deleteDuplicateLiftLogs', [$duplicates, $user, $loggedAt]);
         
-        // Should have deleted liftLog1 and liftSet1, but kept liftLog2 and liftSet2
-        $this->assertDatabaseMissing('lift_logs', ['id' => $liftLog1->id]);
-        $this->assertDatabaseMissing('lift_sets', ['id' => $liftSet1->id]);
-        $this->assertDatabaseHas('lift_logs', ['id' => $liftLog2->id]);
-        $this->assertDatabaseHas('lift_sets', ['id' => $liftSet2->id]);
+        // Should have soft-deleted liftLog1 and liftSet1, but kept liftLog2 and liftSet2
+        $this->assertSoftDeleted($liftLog1);
+        $this->assertSoftDeleted($liftSet1);
+        $this->assertDatabaseHas('lift_logs', ['id' => $liftLog2->id, 'deleted_at' => null]);
+        $this->assertDatabaseHas('lift_sets', ['id' => $liftSet2->id, 'deleted_at' => null]);
     }
 
     public function test_overwrite_choice_deletes_and_imports_new_data()
@@ -468,9 +468,11 @@ class ImportJsonLiftLogDuplicateTest extends TestCase
             )
             ->assertExitCode(Command::SUCCESS);
             
-            // Should have 1 lift log with new comment
-            $this->assertDatabaseCount('lift_logs', 1);
-            $this->assertDatabaseCount('lift_sets', 1);
+            // The old log should be soft deleted, and a new one created
+            $this->assertCount(1, LiftLog::all()); // Only one non-deleted log
+            $this->assertCount(2, LiftLog::withTrashed()->get()); // Two logs total (one deleted, one new)
+            $this->assertCount(1, LiftSet::all()); // Only one non-deleted set
+            $this->assertCount(2, LiftSet::withTrashed()->get()); // Two sets total (one deleted, one new)
             
             $newLiftLog = LiftLog::first();
             $this->assertNull($newLiftLog->comments);
