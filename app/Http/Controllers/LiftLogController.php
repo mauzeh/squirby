@@ -87,7 +87,7 @@ class LiftLogController extends Controller
             
             $data = [
                 'components' => $components,
-                'autoscroll' => false
+                'autoscroll' => true
             ];
             
             return view('mobile-entry.flexible', compact('data'));
