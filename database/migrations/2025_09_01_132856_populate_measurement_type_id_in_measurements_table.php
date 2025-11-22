@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         if (Schema::hasTable('measurements')) {
-            $measurementTypes = \App\Models\MeasurementType::all()->keyBy(function ($type) {
+            $measurementTypes = DB::table('measurement_types')->get()->keyBy(function ($type) {
                 return $type->name . '_' . $type->default_unit;
             });
 

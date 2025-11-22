@@ -8,6 +8,7 @@ use App\Models\FoodLog;
 use App\Models\Ingredient;
 use App\Models\LiftLog;
 use App\Models\Meal;
+use App\Models\MeasurementType;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -63,5 +64,12 @@ class SoftDeletesTest extends TestCase
         $ingredient = Ingredient::factory()->create();
         $ingredient->delete();
         $this->assertSoftDeleted($ingredient);
+    }
+
+    public function test_measurement_type_can_be_soft_deleted(): void
+    {
+        $measurementType = MeasurementType::factory()->create();
+        $measurementType->delete();
+        $this->assertSoftDeleted($measurementType);
     }
 }
