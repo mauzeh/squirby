@@ -17,7 +17,7 @@ return [
                     'icon' => 'fa-calendar-day',
                     'route' => 'mobile-entry.lifts',
                     'title' => 'Direct Entry',
-                    'patterns' => ['mobile-entry.lifts'],
+                    'patterns' => ['mobile-entry.lifts', 'lift-logs.create'],
                 ],
                 [
                     'label' => 'Workouts',
@@ -27,7 +27,7 @@ return [
                 [
                     'label' => 'History',
                     'route' => 'lift-logs.index',
-                    'patterns' => ['lift-logs.*', 'exercises.show-logs'],
+                    'patterns' => ['lift-logs.index', 'lift-logs.edit', 'exercises.show-logs'],
                 ],
                 // Recommendations (conditional)
                 [
