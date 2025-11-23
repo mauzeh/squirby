@@ -49,12 +49,12 @@
   - [x] Style individual cards (background, border, padding)
   - [x] Style labels, values, and units
   - [x] Add mobile responsive styles
-- [ ] Create `public/css/mobile-entry/components/calculator-grid.css`
-  - [ ] Style table layout
-  - [ ] Style headers and data cells
-  - [ ] Add alternating row colors
-  - [ ] Style percentage labels and weight values
-  - [ ] Add mobile responsive styles (scrollable)
+- [x] Create `public/css/mobile-entry/components/calculator-grid.css`
+  - [x] Style table layout
+  - [x] Style headers and data cells
+  - [x] Add alternating row colors
+  - [x] Style percentage labels and weight values
+  - [x] Add mobile responsive styles (scrollable)
 
 ## Phase 6: Controller Integration
 - [ ] Update `app/Http/Controllers/ExerciseController.php`
