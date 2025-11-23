@@ -381,20 +381,24 @@ class ExerciseController extends Controller
                         ? '1-Rep Max Percentages (Estimated)' 
                         : '1-Rep Max Percentages';
                     
-                    $gridNote = $calculatorGrid['is_estimated']
-                        ? 'For more accurate data, perform a 1, 2, or 3 rep max test.'
-                        : null;
-                    
-                    $gridBuilder = \App\Services\ComponentBuilder::calculatorGrid($gridTitle)
-                        ->columns($calculatorGrid['columns'])
-                        ->percentages([100, 95, 90, 85, 80, 75, 70, 65, 60, 55, 50, 45])
-                        ->rows($calculatorGrid['rows']);
-                    
-                    if ($gridNote) {
-                        $gridBuilder->note($gridNote);
+                    // Add info message if data is estimated
+                    if ($calculatorGrid['is_estimated']) {
+                        $components[] = \App\Services\ComponentBuilder::messages()
+                            ->info('This 1-rep max is estimated based on your previous lifts using a standard formula. For more accurate training percentages, test your actual 1, 2, or 3 rep max.')
+                            ->build();
+                    }
+                    // Add warning if PR data is stale (older than 3 months)
+                    elseif ($prData && $this->exercisePRService->isPRDataStale($prData)) {
+                        $components[] = \App\Services\ComponentBuilder::messages()
+                            ->warning('Your max lift data is over 3 months old. Consider retesting your 1, 2, or 3 rep max to ensure accurate training percentages.')
+                            ->build();
                     }
                     
-                    $components[] = $gridBuilder->build();
+                    $components[] = \App\Services\ComponentBuilder::calculatorGrid($gridTitle)
+                        ->columns($calculatorGrid['columns'])
+                        ->percentages([100, 95, 90, 85, 80, 75, 70, 65, 60, 55, 50, 45])
+                        ->rows($calculatorGrid['rows'])
+                        ->build();
                 }
             }
         }

@@ -242,7 +242,6 @@ class ExercisePRCardsIntegrationTest extends TestCase
 
         return $liftLog;
     }
-}
 
     /** @test */
     public function exercise_logs_page_shows_estimated_calculator_grid_when_no_low_rep_tests()
@@ -272,7 +271,8 @@ class ExercisePRCardsIntegrationTest extends TestCase
         $response->assertSee('Est. 1RM');
         
         // Should show helpful note about performing low rep tests
-        $response->assertSee('For more accurate data, perform a 1, 2, or 3 rep max test.');
+        $response->assertSee('This 1-rep max is estimated based on your previous lifts');
+        $response->assertSee('test your actual 1, 2, or 3 rep max');
         
         // Should NOT show PR cards since there are no 1-3 rep tests
         $response->assertDontSee('Heaviest Lifts');
@@ -305,6 +305,70 @@ class ExercisePRCardsIntegrationTest extends TestCase
         // Should show non-estimated calculator grid without the note
         $response->assertSee('1-Rep Max Percentages');
         $response->assertDontSee('1-Rep Max Percentages (Estimated)');
-        $response->assertDontSee('For more accurate data, perform a 1, 2, or 3 rep max test.');
+        $response->assertDontSee('This 1-rep max is estimated based on your previous lifts');
+    }
+
+    /** @test */
+    public function exercise_logs_page_shows_warning_when_pr_data_is_stale()
+    {
+        $exercise = Exercise::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_type' => 'regular',
+            'title' => 'Overhead Press',
+        ]);
+
+        // Create a PR that's 4 months old (stale)
+        $this->createLiftLogWithDate($exercise, 1, 185, Carbon::now()->subMonths(4));
+
+        $response = $this->get(route('exercises.show-logs', $exercise));
+
+        $response->assertStatus(200);
+        // Should show PR cards with the old data
+        $response->assertSee('Heaviest Lifts');
+        $response->assertSee('185');
+        
+        // Should show warning about stale data
+        $response->assertSee('Your max lift data is over 3 months old');
+        $response->assertSee('Consider retesting your 1, 2, or 3 rep max');
+    }
+
+    /** @test */
+    public function exercise_logs_page_does_not_show_warning_when_pr_data_is_recent()
+    {
+        $exercise = Exercise::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_type' => 'regular',
+            'title' => 'Front Squat',
+        ]);
+
+        // Create a PR that's 2 months old (recent)
+        $this->createLiftLogWithDate($exercise, 1, 225, Carbon::now()->subMonths(2));
+
+        $response = $this->get(route('exercises.show-logs', $exercise));
+
+        $response->assertStatus(200);
+        // Should show PR cards
+        $response->assertSee('Heaviest Lifts');
+        $response->assertSee('225');
+        
+        // Should NOT show warning about stale data
+        $response->assertDontSee('Your max lift data is over 3 months old');
+    }
+
+    protected function createLiftLogWithDate(Exercise $exercise, int $reps, float $weight, Carbon $date): LiftLog
+    {
+        $liftLog = LiftLog::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => $date,
+        ]);
+
+        LiftSet::factory()->create([
+            'lift_log_id' => $liftLog->id,
+            'reps' => $reps,
+            'weight' => $weight,
+        ]);
+
+        return $liftLog;
     }
 }

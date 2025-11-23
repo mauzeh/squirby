@@ -19,8 +19,7 @@ class CalculatorGridComponentBuilder
             'columns' => [],
             'percentages' => [],
             'rows' => [],
-            'ariaLabel' => $title,
-            'note' => null
+            'ariaLabel' => $title
         ];
     }
     
@@ -70,18 +69,6 @@ class CalculatorGridComponentBuilder
     public function ariaLabel(string $label): self
     {
         $this->data['ariaLabel'] = $label;
-        return $this;
-    }
-    
-    /**
-     * Set an informational note to display below the title
-     * 
-     * @param string|null $note
-     * @return self
-     */
-    public function note(?string $note): self
-    {
-        $this->data['note'] = $note;
         return $this;
     }
     

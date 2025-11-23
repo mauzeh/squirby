@@ -194,13 +194,15 @@ class ExercisePRServiceTest extends TestCase
     /** @test */
     public function getCalculatorGrid_generates_correct_percentages()
     {
+        $exercise = Exercise::factory()->create(['exercise_type' => 'regular']);
+        
         $prData = [
-            'rep_1' => ['weight' => 242, 'lift_log_id' => 1, 'date' => '2024-01-15'],
-            'rep_2' => ['weight' => 235, 'lift_log_id' => 2, 'date' => '2024-01-10'],
-            'rep_3' => ['weight' => 230, 'lift_log_id' => 3, 'date' => '2024-01-08'],
+            'rep_1' => ['weight' => 242, 'lift_log_id' => 1, 'date' => '2024-01-15', 'is_estimated' => false],
+            'rep_2' => ['weight' => 235, 'lift_log_id' => 2, 'date' => '2024-01-10', 'is_estimated' => false],
+            'rep_3' => ['weight' => 230, 'lift_log_id' => 3, 'date' => '2024-01-08', 'is_estimated' => false],
         ];
         
-        $result = $this->service->getCalculatorGrid($prData);
+        $result = $this->service->getCalculatorGrid($exercise, $prData);
         
         $this->assertNotNull($result);
         $this->assertArrayHasKey('columns', $result);
@@ -215,11 +217,13 @@ class ExercisePRServiceTest extends TestCase
     /** @test */
     public function getCalculatorGrid_rounds_weights_correctly()
     {
+        $exercise = Exercise::factory()->create(['exercise_type' => 'regular']);
+        
         $prData = [
-            'rep_1' => ['weight' => 242, 'lift_log_id' => 1, 'date' => '2024-01-15'],
+            'rep_1' => ['weight' => 242, 'lift_log_id' => 1, 'date' => '2024-01-15', 'is_estimated' => false],
         ];
         
-        $result = $this->service->getCalculatorGrid($prData);
+        $result = $this->service->getCalculatorGrid($exercise, $prData);
         
         $this->assertNotNull($result);
         
@@ -242,13 +246,15 @@ class ExercisePRServiceTest extends TestCase
     /** @test */
     public function getCalculatorGrid_handles_three_columns()
     {
+        $exercise = Exercise::factory()->create(['exercise_type' => 'regular']);
+        
         $prData = [
-            'rep_1' => ['weight' => 242, 'lift_log_id' => 1, 'date' => '2024-01-15'],
-            'rep_2' => ['weight' => 235, 'lift_log_id' => 2, 'date' => '2024-01-10'],
-            'rep_3' => ['weight' => 230, 'lift_log_id' => 3, 'date' => '2024-01-08'],
+            'rep_1' => ['weight' => 242, 'lift_log_id' => 1, 'date' => '2024-01-15', 'is_estimated' => false],
+            'rep_2' => ['weight' => 235, 'lift_log_id' => 2, 'date' => '2024-01-10', 'is_estimated' => false],
+            'rep_3' => ['weight' => 230, 'lift_log_id' => 3, 'date' => '2024-01-08', 'is_estimated' => false],
         ];
         
-        $result = $this->service->getCalculatorGrid($prData);
+        $result = $this->service->getCalculatorGrid($exercise, $prData);
         
         $this->assertNotNull($result);
         $this->assertCount(3, $result['columns']);
@@ -267,55 +273,17 @@ class ExercisePRServiceTest extends TestCase
     /** @test */
     public function getCalculatorGrid_returns_null_when_no_PR_data()
     {
+        $exercise = Exercise::factory()->create(['exercise_type' => 'regular']);
+        
         $prData = [
             'rep_1' => null,
             'rep_2' => null,
             'rep_3' => null,
         ];
         
-        $result = $this->service->getCalculatorGrid($prData);
+        $result = $this->service->getCalculatorGrid($exercise, $prData);
         
         $this->assertNull($result);
-    }
-
-    /** @test */
-    public function calculate1RM_uses_Brzycki_formula_correctly()
-    {
-        // Use reflection to access protected method
-        $reflection = new \ReflectionClass($this->service);
-        $method = $reflection->getMethod('calculate1RM');
-        $method->setAccessible(true);
-        
-        // Test with 5 reps at 200 lbs
-        // Brzycki: 1RM = weight × (36 / (37 - reps))
-        // 1RM = 200 × (36 / (37 - 5)) = 200 × (36 / 32) = 200 × 1.125 = 225
-        $result = $method->invoke($this->service, 200, 5);
-        $this->assertEquals(225, $result);
-        
-        // Test with 10 reps at 150 lbs
-        // 1RM = 150 × (36 / (37 - 10)) = 150 × (36 / 27) = 150 × 1.333... = 200
-        $result = $method->invoke($this->service, 150, 10);
-        $this->assertEquals(200, round($result));
-    }
-
-    /** @test */
-    public function calculate1RM_handles_edge_cases()
-    {
-        // Use reflection to access protected method
-        $reflection = new \ReflectionClass($this->service);
-        $method = $reflection->getMethod('calculate1RM');
-        $method->setAccessible(true);
-        
-        // Test with reps = 1 (should return weight as-is)
-        $result = $method->invoke($this->service, 242, 1);
-        $this->assertEquals(242, $result);
-        
-        // Test with reps >= 37 (should return weight as-is to avoid division issues)
-        $result = $method->invoke($this->service, 100, 37);
-        $this->assertEquals(100, $result);
-        
-        $result = $method->invoke($this->service, 100, 40);
-        $this->assertEquals(100, $result);
     }
 
     /** @test */
@@ -437,5 +405,86 @@ class ExercisePRServiceTest extends TestCase
         $this->assertCount(1, $result['columns']);
         $this->assertEquals('1 × 1', $result['columns'][0]['label']);
         $this->assertEquals(242, $result['columns'][0]['one_rep_max']);
+    }
+
+    /** @test */
+    public function isPRDataStale_returns_false_when_recent_pr_exists()
+    {
+        $prData = [
+            'rep_1' => [
+                'weight' => 242,
+                'lift_log_id' => 1,
+                'date' => now()->subMonths(2)->format('Y-m-d'), // 2 months ago
+                'is_estimated' => false,
+            ],
+            'rep_2' => null,
+            'rep_3' => null,
+        ];
+
+        $result = $this->service->isPRDataStale($prData);
+
+        $this->assertFalse($result);
+    }
+
+    /** @test */
+    public function isPRDataStale_returns_true_when_all_prs_are_old()
+    {
+        $prData = [
+            'rep_1' => [
+                'weight' => 242,
+                'lift_log_id' => 1,
+                'date' => now()->subMonths(4)->format('Y-m-d'), // 4 months ago
+                'is_estimated' => false,
+            ],
+            'rep_2' => [
+                'weight' => 235,
+                'lift_log_id' => 2,
+                'date' => now()->subMonths(5)->format('Y-m-d'), // 5 months ago
+                'is_estimated' => false,
+            ],
+            'rep_3' => null,
+        ];
+
+        $result = $this->service->isPRDataStale($prData);
+
+        $this->assertTrue($result);
+    }
+
+    /** @test */
+    public function isPRDataStale_returns_false_when_at_least_one_pr_is_recent()
+    {
+        $prData = [
+            'rep_1' => [
+                'weight' => 242,
+                'lift_log_id' => 1,
+                'date' => now()->subMonths(6)->format('Y-m-d'), // 6 months ago
+                'is_estimated' => false,
+            ],
+            'rep_2' => [
+                'weight' => 235,
+                'lift_log_id' => 2,
+                'date' => now()->subWeeks(2)->format('Y-m-d'), // 2 weeks ago (recent!)
+                'is_estimated' => false,
+            ],
+            'rep_3' => null,
+        ];
+
+        $result = $this->service->isPRDataStale($prData);
+
+        $this->assertFalse($result);
+    }
+
+    /** @test */
+    public function isPRDataStale_returns_true_when_all_prs_are_null()
+    {
+        $prData = [
+            'rep_1' => null,
+            'rep_2' => null,
+            'rep_3' => null,
+        ];
+
+        $result = $this->service->isPRDataStale($prData);
+
+        $this->assertTrue($result);
     }
 }

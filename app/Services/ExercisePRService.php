@@ -92,6 +92,33 @@ class ExercisePRService
     }
 
     /**
+     * Check if PR data is stale (older than 3 months)
+     * 
+     * @param array $prData PR data from getPRData()
+     * @return bool
+     */
+    public function isPRDataStale(array $prData): bool
+    {
+        $threeMonthsAgo = now()->subMonths(3);
+        
+        // Check each rep range for recent data
+        foreach ([1, 2, 3] as $reps) {
+            $key = "rep_{$reps}";
+            if (isset($prData[$key]) && $prData[$key] !== null) {
+                $prDate = \Carbon\Carbon::parse($prData[$key]['date']);
+                
+                // If any PR is recent (within 3 months), data is not stale
+                if ($prDate->isAfter($threeMonthsAgo)) {
+                    return false;
+                }
+            }
+        }
+        
+        // All PRs are older than 3 months (or no PRs exist)
+        return true;
+    }
+
+    /**
      * Get estimated 1RM based on best lift across all rep ranges
      * Used when athlete hasn't performed 1-3 rep tests
      * 
