@@ -42,6 +42,10 @@ class LiftLogTableRowBuilder
         
         $config = array_merge($defaults, $options);
         
+        // Calculate PRs once upfront for all logs
+        $prLogIds = $this->calculatePRLogIds($liftLogs);
+        $config['prLogIds'] = $prLogIds;
+        
         return $liftLogs->map(function ($liftLog) use ($config) {
             return $this->buildRow($liftLog, $config);
         })->toArray();
@@ -63,6 +67,9 @@ class LiftLogTableRowBuilder
         // Get display name with alias
         $displayName = $this->aliasService->getDisplayName($liftLog->exercise, $user);
         
+        // Check if this lift log is a PR (using pre-calculated list)
+        $isPR = in_array($liftLog->id, $config['prLogIds'] ?? []);
+        
         // Build badges
         $badges = [];
         
@@ -72,6 +79,14 @@ class LiftLogTableRowBuilder
             $badges[] = [
                 'text' => $dateBadge['text'],
                 'colorClass' => $dateBadge['color']
+            ];
+        }
+        
+        // PR badge (if this is a PR)
+        if ($isPR) {
+            $badges[] = [
+                'text' => '🏆 PR',
+                'colorClass' => 'pr'
             ];
         }
         
@@ -151,6 +166,7 @@ class LiftLogTableRowBuilder
             'compact' => true,
             'wrapActions' => $config['wrapActions'],
             'wrapText' => true,
+            'cssClass' => $isPR ? 'row-pr' : null,
         ];
         
         // Always show comments in subitem if they exist
@@ -169,6 +185,57 @@ class LiftLogTableRowBuilder
         }
         
         return $row;
+    }
+
+    /**
+     * Calculate which lift logs contain PRs (for 1, 2, or 3 rep ranges)
+     * This is done once upfront to avoid N+1 queries
+     * 
+     * @param Collection $liftLogs
+     * @return array Array of lift log IDs that contain PRs
+     */
+    protected function calculatePRLogIds(Collection $liftLogs): array
+    {
+        if ($liftLogs->isEmpty()) {
+            return [];
+        }
+
+        // Only process if this is a regular (weighted) exercise
+        $firstLog = $liftLogs->first();
+        if ($firstLog->exercise->exercise_type !== 'regular') {
+            return [];
+        }
+
+        $prLogIds = [];
+        
+        // Track the max weight for each rep range (1, 2, 3)
+        $maxWeights = [1 => 0, 2 => 0, 3 => 0];
+        
+        // First pass: find the maximum weight for each rep range
+        foreach ($liftLogs as $log) {
+            foreach ($log->liftSets as $set) {
+                if (in_array($set->reps, [1, 2, 3]) && $set->weight > 0) {
+                    if ($set->weight > $maxWeights[$set->reps]) {
+                        $maxWeights[$set->reps] = $set->weight;
+                    }
+                }
+            }
+        }
+        
+        // Second pass: mark logs that contain a PR
+        foreach ($liftLogs as $log) {
+            foreach ($log->liftSets as $set) {
+                if (in_array($set->reps, [1, 2, 3]) && $set->weight > 0) {
+                    // If this set matches the max weight for its rep range, it's a PR
+                    if ($set->weight === $maxWeights[$set->reps]) {
+                        $prLogIds[] = $log->id;
+                        break; // Only need to mark the log once
+                    }
+                }
+            }
+        }
+        
+        return array_unique($prLogIds);
     }
 
     /**

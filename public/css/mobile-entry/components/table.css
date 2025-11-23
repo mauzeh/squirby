@@ -372,6 +372,69 @@ button.btn-table-delete:disabled {
     pointer-events: none;
 }
 
+/* PR Row Styling - Orange shade with visual emphasis */
+.component-table-row.row-pr {
+    background: linear-gradient(135deg, rgba(249, 115, 22, 0.15) 0%, rgba(234, 88, 12, 0.1) 100%);
+    border-left: 4px solid #f97316;
+    position: relative;
+}
+
+.component-table-row.row-pr::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at top right, rgba(249, 115, 22, 0.08) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+@media (hover: hover) {
+    .component-table-row.row-pr:hover {
+        background: linear-gradient(135deg, rgba(249, 115, 22, 0.2) 0%, rgba(234, 88, 12, 0.15) 100%);
+    }
+}
+
+/* PR Subitems (notes) Styling */
+.component-table-row.row-pr + .component-table-subitems {
+    background-color: rgba(249, 115, 22, 0.08);
+    border-left: 4px solid #f97316;
+}
+
+.component-table-row.row-pr + .component-table-subitems .component-table-subitem {
+    background-color: rgba(249, 115, 22, 0.12);
+    border-left: none;
+}
+
+.component-table-row.row-pr + .component-table-subitems .component-table-subitem:nth-child(even) {
+    background-color: rgba(249, 115, 22, 0.18);
+}
+
+@media (hover: hover) {
+    .component-table-row.row-pr + .component-table-subitems .component-table-subitem:hover {
+        background-color: rgba(249, 115, 22, 0.22);
+    }
+}
+
+/* PR Badge Styling */
+.table-badge--pr {
+    background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+    color: white;
+    font-weight: 700;
+    box-shadow: 0 2px 8px rgba(249, 115, 22, 0.3);
+    animation: pr-pulse 2s ease-in-out infinite;
+}
+
+@keyframes pr-pulse {
+    0%, 100% {
+        box-shadow: 0 2px 8px rgba(249, 115, 22, 0.3);
+    }
+    50% {
+        box-shadow: 0 2px 12px rgba(249, 115, 22, 0.5);
+    }
+}
+
 .component-table-empty {
     text-align: center;
     padding: var(--spacing-xxl) var(--spacing-lg);

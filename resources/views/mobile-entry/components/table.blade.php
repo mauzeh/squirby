@@ -15,7 +15,7 @@
             $initialState = $row['initialState'] ?? 'collapsed';
             $expandedClass = $initialState === 'expanded' ? ' expanded' : '';
         @endphp
-        <div class="component-table-row {{ $hasSubitems ? 'has-subitems' : '' }} {{ $isCollapsible ? 'is-collapsible' : '' }}{{ $expandedClass }}{{ isset($row['checkbox']) && $row['checkbox'] ? ' has-checkbox' : '' }}" data-row-id="{{ $row['id'] }}" @if($isCollapsible) data-toggle-subitems="{{ $row['id'] }}" @endif>
+        <div class="component-table-row {{ $hasSubitems ? 'has-subitems' : '' }} {{ $isCollapsible ? 'is-collapsible' : '' }}{{ $expandedClass }}{{ isset($row['checkbox']) && $row['checkbox'] ? ' has-checkbox' : '' }}{{ isset($row['cssClass']) && $row['cssClass'] ? ' ' . $row['cssClass'] : '' }}" data-row-id="{{ $row['id'] }}" @if($isCollapsible) data-toggle-subitems="{{ $row['id'] }}" @endif>
             @if(isset($row['checkbox']) && $row['checkbox'])
             <input type="checkbox" class="template-checkbox" value="{{ $row['id'] }}" style="width: 20px; height: 20px; margin-right: 10px; cursor: pointer; flex-shrink: 0;">
             @endif
