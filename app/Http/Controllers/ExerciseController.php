@@ -339,30 +339,62 @@ class ExerciseController extends Controller
         // PR Cards and Calculator Grid (if exercise supports it)
         if ($this->exercisePRService->supportsPRTracking($exercise)) {
             $prData = $this->exercisePRService->getPRData($exercise, auth()->user());
+            $estimated1RM = null;
             
-            if ($prData) {
-                // Build PR Cards component
-                $prCardsBuilder = \App\Services\ComponentBuilder::prCards('Heaviest Lifts');
-                
-                foreach (['rep_1' => '1 × 1', 'rep_2' => '1 × 2', 'rep_3' => '1 × 3'] as $key => $label) {
-                    if (isset($prData[$key])) {
-                        $prCardsBuilder->card($label, $prData[$key]['weight'], 'lbs');
-                    } else {
-                        $prCardsBuilder->card($label, null, 'lbs');
+            // Check if we have any actual 1-3 rep PRs
+            $hasActualPRs = $prData && (
+                ($prData['rep_1'] ?? null) !== null ||
+                ($prData['rep_2'] ?? null) !== null ||
+                ($prData['rep_3'] ?? null) !== null
+            );
+            
+            // If no actual PRs, get estimated 1RM from best lift
+            if (!$hasActualPRs) {
+                $estimated1RM = $this->exercisePRService->getEstimated1RM($exercise, auth()->user());
+            }
+            
+            if ($prData || $estimated1RM) {
+                // Build PR Cards component only if we have actual PR data
+                if ($prData) {
+                    $prCardsBuilder = \App\Services\ComponentBuilder::prCards('Heaviest Lifts');
+                    
+                    foreach (['rep_1' => '1 × 1', 'rep_2' => '1 × 2', 'rep_3' => '1 × 3'] as $key => $label) {
+                        if (isset($prData[$key])) {
+                            $prCardsBuilder->card($label, $prData[$key]['weight'], 'lbs');
+                        } else {
+                            $prCardsBuilder->card($label, null, 'lbs');
+                        }
                     }
+                    
+                    $components[] = $prCardsBuilder->build();
                 }
                 
-                $components[] = $prCardsBuilder->build();
-                
                 // Build Calculator Grid component
-                $calculatorGrid = $this->exercisePRService->getCalculatorGrid($prData);
+                $calculatorGrid = $this->exercisePRService->getCalculatorGrid(
+                    $exercise,
+                    $prData ?? [],
+                    $estimated1RM
+                );
                 
                 if ($calculatorGrid) {
-                    $components[] = \App\Services\ComponentBuilder::calculatorGrid('1-Rep Max Percentages')
+                    $gridTitle = $calculatorGrid['is_estimated'] 
+                        ? '1-Rep Max Percentages (Estimated)' 
+                        : '1-Rep Max Percentages';
+                    
+                    $gridNote = $calculatorGrid['is_estimated']
+                        ? 'For more accurate data, perform a 1, 2, or 3 rep max test.'
+                        : null;
+                    
+                    $gridBuilder = \App\Services\ComponentBuilder::calculatorGrid($gridTitle)
                         ->columns($calculatorGrid['columns'])
                         ->percentages([100, 95, 90, 85, 80, 75, 70, 65, 60, 55, 50, 45])
-                        ->rows($calculatorGrid['rows'])
-                        ->build();
+                        ->rows($calculatorGrid['rows']);
+                    
+                    if ($gridNote) {
+                        $gridBuilder->note($gridNote);
+                    }
+                    
+                    $components[] = $gridBuilder->build();
                 }
             }
         }

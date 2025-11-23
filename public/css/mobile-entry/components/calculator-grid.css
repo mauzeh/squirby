@@ -13,6 +13,34 @@
     text-align: left;
 }
 
+.component-calculator-grid-note {
+    padding: var(--spacing-md);
+    margin-top: calc(var(--spacing-md) * -0.5);
+    margin-bottom: var(--spacing-md);
+    border-radius: var(--border-radius-sm);
+    border-left: 4px solid;
+    background-color: rgba(0, 123, 255, 0.1);
+    border-left-color: var(--color-primary);
+    color: var(--text-primary);
+    font-size: 0.95em;
+    line-height: 1.4;
+}
+
+/* Responsive adjustments for calculator grid note */
+@media (max-width: 768px) {
+    .component-calculator-grid-note {
+        padding: var(--spacing-sm) var(--spacing-md);
+        font-size: 0.9em;
+    }
+}
+
+@media (max-width: 480px) {
+    .component-calculator-grid-note {
+        padding: var(--spacing-sm);
+        font-size: 0.85em;
+    }
+}
+
 /* Grid Container - Scrollable wrapper */
 .calculator-grid {
     overflow-x: auto;

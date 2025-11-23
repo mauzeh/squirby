@@ -243,3 +243,68 @@ class ExercisePRCardsIntegrationTest extends TestCase
         return $liftLog;
     }
 }
+
+    /** @test */
+    public function exercise_logs_page_shows_estimated_calculator_grid_when_no_low_rep_tests()
+    {
+        $exercise = Exercise::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_type' => 'regular',
+            'title' => 'Deadlift',
+        ]);
+
+        // Create lift logs with only higher rep ranges (no 1-3 rep tests)
+        $log = LiftLog::factory()->create([
+            'exercise_id' => $exercise->id,
+            'user_id' => $this->user->id,
+        ]);
+        LiftSet::factory()->create([
+            'lift_log_id' => $log->id,
+            'weight' => 315,
+            'reps' => 5,
+        ]);
+
+        $response = $this->get(route('exercises.show-logs', $exercise));
+
+        $response->assertStatus(200);
+        // Should show estimated calculator grid
+        $response->assertSee('1-Rep Max Percentages (Estimated)');
+        $response->assertSee('Est. 1RM');
+        
+        // Should show helpful note about performing low rep tests
+        $response->assertSee('For more accurate data, perform a 1, 2, or 3 rep max test.');
+        
+        // Should NOT show PR cards since there are no 1-3 rep tests
+        $response->assertDontSee('Heaviest Lifts');
+        $response->assertDontSee('1 × 1');
+        $response->assertDontSee('1 × 2');
+        $response->assertDontSee('1 × 3');
+    }
+
+    /** @test */
+    public function exercise_logs_page_shows_actual_pr_cards_when_low_rep_tests_exist()
+    {
+        $exercise = Exercise::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_type' => 'regular',
+            'title' => 'Squat',
+        ]);
+
+        // Create both low rep tests and higher rep sets
+        $this->createLiftLog($exercise, 1, 405);
+        $this->createLiftLog($exercise, 5, 365);
+
+        $response = $this->get(route('exercises.show-logs', $exercise));
+
+        $response->assertStatus(200);
+        // Should show actual PR cards
+        $response->assertSee('Heaviest Lifts');
+        $response->assertSee('1 × 1');
+        $response->assertSee('405');
+        
+        // Should show non-estimated calculator grid without the note
+        $response->assertSee('1-Rep Max Percentages');
+        $response->assertDontSee('1-Rep Max Percentages (Estimated)');
+        $response->assertDontSee('For more accurate data, perform a 1, 2, or 3 rep max test.');
+    }
+}

@@ -4,6 +4,10 @@
     <h2 class="component-calculator-grid-title">{{ $data['title'] }}</h2>
     @endif
     
+    @if(isset($data['note']) && !empty($data['note']))
+    <p class="component-calculator-grid-note">{{ $data['note'] }}</p>
+    @endif
+    
     <div class="calculator-grid">
         <table class="calculator-table">
             <thead>

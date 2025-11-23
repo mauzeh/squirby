@@ -21,7 +21,8 @@ class ExercisePRServiceTest extends TestCase
     {
         parent::setUp();
         
-        $this->service = new ExercisePRService();
+        $oneRepMaxService = app(\App\Services\OneRepMaxCalculatorService::class);
+        $this->service = new ExercisePRService($oneRepMaxService);
         $this->user = User::factory()->create();
     }
 
@@ -315,5 +316,126 @@ class ExercisePRServiceTest extends TestCase
         
         $result = $method->invoke($this->service, 100, 40);
         $this->assertEquals(100, $result);
+    }
+
+    /** @test */
+    public function getEstimated1RM_returns_null_when_no_lift_logs_exist()
+    {
+        $exercise = Exercise::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_type' => 'regular',
+        ]);
+
+        $result = $this->service->getEstimated1RM($exercise, $this->user);
+
+        $this->assertNull($result);
+    }
+
+    /** @test */
+    public function getEstimated1RM_calculates_from_best_lift()
+    {
+        $exercise = Exercise::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_type' => 'regular',
+        ]);
+
+        // Create lift logs with various rep ranges (no 1-3 rep tests)
+        $log1 = LiftLog::factory()->create([
+            'exercise_id' => $exercise->id,
+            'user_id' => $this->user->id,
+        ]);
+        LiftSet::factory()->create([
+            'lift_log_id' => $log1->id,
+            'weight' => 200,
+            'reps' => 5,
+        ]);
+
+        $log2 = LiftLog::factory()->create([
+            'exercise_id' => $exercise->id,
+            'user_id' => $this->user->id,
+        ]);
+        LiftSet::factory()->create([
+            'lift_log_id' => $log2->id,
+            'weight' => 180,
+            'reps' => 8,
+        ]);
+
+        $result = $this->service->getEstimated1RM($exercise, $this->user);
+
+        $this->assertNotNull($result);
+        $this->assertTrue($result['is_estimated']);
+        $this->assertArrayHasKey('weight', $result);
+        $this->assertArrayHasKey('based_on_reps', $result);
+        $this->assertArrayHasKey('based_on_weight', $result);
+        
+        // 200 lbs × 5 reps should give higher estimated 1RM than 180 × 8
+        // Using Epley: 200 * (1 + 0.0333 * 5) = 233.3
+        $this->assertEquals(233, $result['weight']);
+        $this->assertEquals(5, $result['based_on_reps']);
+        $this->assertEquals(200, $result['based_on_weight']);
+    }
+
+    /** @test */
+    public function getCalculatorGrid_uses_estimated_1RM_when_no_actual_PRs()
+    {
+        $exercise = Exercise::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_type' => 'regular',
+        ]);
+
+        $estimated1RM = [
+            'weight' => 225,
+            'is_estimated' => true,
+            'based_on_reps' => 5,
+            'based_on_weight' => 200,
+        ];
+
+        $result = $this->service->getCalculatorGrid($exercise, [], $estimated1RM);
+
+        $this->assertNotNull($result);
+        $this->assertTrue($result['is_estimated']);
+        $this->assertCount(1, $result['columns']);
+        $this->assertEquals('Est. 1RM', $result['columns'][0]['label']);
+        $this->assertEquals(225, $result['columns'][0]['one_rep_max']);
+        $this->assertTrue($result['columns'][0]['is_estimated']);
+        
+        // Check that percentages are calculated correctly
+        $this->assertCount(12, $result['rows']);
+        $this->assertEquals(225, $result['rows'][0]['weights'][0]); // 100%
+        $this->assertEquals(214, $result['rows'][1]['weights'][0]); // 95%
+        $this->assertEquals(203, $result['rows'][2]['weights'][0]); // 90%
+    }
+
+    /** @test */
+    public function getCalculatorGrid_prefers_actual_PRs_over_estimated()
+    {
+        $exercise = Exercise::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_type' => 'regular',
+        ]);
+
+        $prData = [
+            'rep_1' => [
+                'weight' => 242,
+                'lift_log_id' => 1,
+                'date' => '2025-11-20',
+                'is_estimated' => false,
+            ],
+            'rep_2' => null,
+            'rep_3' => null,
+        ];
+
+        $estimated1RM = [
+            'weight' => 225,
+            'is_estimated' => true,
+        ];
+
+        $result = $this->service->getCalculatorGrid($exercise, $prData, $estimated1RM);
+
+        $this->assertNotNull($result);
+        $this->assertFalse($result['is_estimated']); // Should use actual PR, not estimated
+        $this->assertCount(1, $result['columns']);
+        $this->assertEquals('1 × 1', $result['columns'][0]['label']);
+        $this->assertEquals(242, $result['columns'][0]['one_rep_max']);
     }
 }
