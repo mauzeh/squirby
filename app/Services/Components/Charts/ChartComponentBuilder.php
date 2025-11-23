@@ -165,7 +165,10 @@ class ChartComponentBuilder
             $this->data['options']['scales']['x'] = [];
         }
         $this->data['options']['scales']['x']['ticks'] = [
-            'color' => $color
+            'color' => $color,
+            'font' => [
+                'size' => 14
+            ]
         ];
         $this->data['options']['scales']['x']['grid'] = [
             'color' => 'rgba(255, 255, 255, 0.1)'
@@ -176,7 +179,10 @@ class ChartComponentBuilder
             $this->data['options']['scales']['y'] = [];
         }
         $this->data['options']['scales']['y']['ticks'] = [
-            'color' => $color
+            'color' => $color,
+            'font' => [
+                'size' => 14
+            ]
         ];
         $this->data['options']['scales']['y']['grid'] = [
             'color' => 'rgba(255, 255, 255, 0.1)'
@@ -190,7 +196,10 @@ class ChartComponentBuilder
             $this->data['options']['plugins']['legend'] = [];
         }
         $this->data['options']['plugins']['legend']['labels'] = [
-            'color' => $color
+            'color' => $color,
+            'font' => [
+                'size' => 14
+            ]
         ];
         
         return $this;
