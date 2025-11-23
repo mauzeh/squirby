@@ -429,4 +429,268 @@ class LiftLogTableRowBuilderTest extends TestCase
         $this->assertEquals($liftLog1->id, $rows[0]['id']);
         $this->assertEquals($liftLog2->id, $rows[1]['id']);
     }
+
+    /** @test */
+    public function it_identifies_pr_logs_correctly()
+    {
+        $user = User::factory()->create();
+        $exercise = Exercise::factory()->create(['exercise_type' => 'regular']);
+        
+        // Create lift logs with different weights for 1 rep
+        $log1 = LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => now()->subDays(3)
+        ]);
+        LiftSet::factory()->create([
+            'lift_log_id' => $log1->id,
+            'weight' => 250,
+            'reps' => 1
+        ]);
+
+        $log2 = LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => now()->subDays(2)
+        ]);
+        LiftSet::factory()->create([
+            'lift_log_id' => $log2->id,
+            'weight' => 275, // PR for 1 rep
+            'reps' => 1
+        ]);
+
+        $log3 = LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => now()->subDays(1)
+        ]);
+        LiftSet::factory()->create([
+            'lift_log_id' => $log3->id,
+            'weight' => 260,
+            'reps' => 1
+        ]);
+
+        $this->aliasService->shouldReceive('getDisplayName')
+            ->times(3)
+            ->andReturn($exercise->title);
+
+        $this->actingAs($user);
+        $rows = $this->builder->buildRows(collect([$log1, $log2, $log3]));
+
+        // Only log2 should be marked as PR
+        $this->assertNull($rows[0]['cssClass']); // log1 - not PR
+        $this->assertEquals('row-pr', $rows[1]['cssClass']); // log2 - PR
+        $this->assertNull($rows[2]['cssClass']); // log3 - not PR
+
+        // log2 should have PR badge
+        $prBadge = collect($rows[1]['badges'])->firstWhere('colorClass', 'pr');
+        $this->assertNotNull($prBadge);
+        $this->assertEquals('🏆 PR', $prBadge['text']);
+    }
+
+    /** @test */
+    public function it_identifies_multiple_pr_logs_for_different_rep_ranges()
+    {
+        $user = User::factory()->create();
+        $exercise = Exercise::factory()->create(['exercise_type' => 'regular']);
+        
+        // PR for 1 rep
+        $log1 = LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id
+        ]);
+        LiftSet::factory()->create([
+            'lift_log_id' => $log1->id,
+            'weight' => 275,
+            'reps' => 1
+        ]);
+
+        // PR for 2 reps
+        $log2 = LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id
+        ]);
+        LiftSet::factory()->create([
+            'lift_log_id' => $log2->id,
+            'weight' => 260,
+            'reps' => 2
+        ]);
+
+        // PR for 3 reps
+        $log3 = LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id
+        ]);
+        LiftSet::factory()->create([
+            'lift_log_id' => $log3->id,
+            'weight' => 255,
+            'reps' => 3
+        ]);
+
+        $this->aliasService->shouldReceive('getDisplayName')
+            ->times(3)
+            ->andReturn($exercise->title);
+
+        $this->actingAs($user);
+        $rows = $this->builder->buildRows(collect([$log1, $log2, $log3]));
+
+        // All should be marked as PRs
+        $this->assertEquals('row-pr', $rows[0]['cssClass']);
+        $this->assertEquals('row-pr', $rows[1]['cssClass']);
+        $this->assertEquals('row-pr', $rows[2]['cssClass']);
+    }
+
+    /** @test */
+    public function it_does_not_mark_non_regular_exercises_as_pr()
+    {
+        $user = User::factory()->create();
+        $exercise = Exercise::factory()->create(['exercise_type' => 'bodyweight']);
+        
+        $log = LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id
+        ]);
+        LiftSet::factory()->create([
+            'lift_log_id' => $log->id,
+            'weight' => 0,
+            'reps' => 10
+        ]);
+
+        $this->aliasService->shouldReceive('getDisplayName')
+            ->once()
+            ->andReturn($exercise->title);
+
+        $this->actingAs($user);
+        $rows = $this->builder->buildRows(collect([$log]));
+
+        // Should not be marked as PR
+        $this->assertNull($rows[0]['cssClass']);
+        
+        // Should not have PR badge
+        $prBadge = collect($rows[0]['badges'])->firstWhere('colorClass', 'pr');
+        $this->assertNull($prBadge);
+    }
+
+    /** @test */
+    public function it_ignores_reps_outside_1_2_3_range_for_pr_calculation()
+    {
+        $user = User::factory()->create();
+        $exercise = Exercise::factory()->create(['exercise_type' => 'regular']);
+        
+        // High rep set - should not be considered for PR
+        $log1 = LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id
+        ]);
+        LiftSet::factory()->create([
+            'lift_log_id' => $log1->id,
+            'weight' => 300, // Higher weight but 5 reps
+            'reps' => 5
+        ]);
+
+        // Lower weight but in PR range
+        $log2 = LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id
+        ]);
+        LiftSet::factory()->create([
+            'lift_log_id' => $log2->id,
+            'weight' => 250,
+            'reps' => 1
+        ]);
+
+        $this->aliasService->shouldReceive('getDisplayName')
+            ->times(2)
+            ->andReturn($exercise->title);
+
+        $this->actingAs($user);
+        $rows = $this->builder->buildRows(collect([$log1, $log2]));
+
+        // log1 should not be PR (5 reps not tracked)
+        $this->assertNull($rows[0]['cssClass']);
+        
+        // log2 should be PR (1 rep is tracked)
+        $this->assertEquals('row-pr', $rows[1]['cssClass']);
+    }
+
+    /** @test */
+    public function it_handles_tied_prs_correctly()
+    {
+        $user = User::factory()->create();
+        $exercise = Exercise::factory()->create(['exercise_type' => 'regular']);
+        
+        // First PR
+        $log1 = LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => now()->subDays(2)
+        ]);
+        LiftSet::factory()->create([
+            'lift_log_id' => $log1->id,
+            'weight' => 275,
+            'reps' => 1
+        ]);
+
+        // Tied PR
+        $log2 = LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => now()->subDays(1)
+        ]);
+        LiftSet::factory()->create([
+            'lift_log_id' => $log2->id,
+            'weight' => 275, // Same weight
+            'reps' => 1
+        ]);
+
+        $this->aliasService->shouldReceive('getDisplayName')
+            ->times(2)
+            ->andReturn($exercise->title);
+
+        $this->actingAs($user);
+        $rows = $this->builder->buildRows(collect([$log1, $log2]));
+
+        // Both should be marked as PRs (tied)
+        $this->assertEquals('row-pr', $rows[0]['cssClass']);
+        $this->assertEquals('row-pr', $rows[1]['cssClass']);
+    }
+
+    /** @test */
+    public function it_handles_log_with_multiple_sets_where_one_is_pr()
+    {
+        $user = User::factory()->create();
+        $exercise = Exercise::factory()->create(['exercise_type' => 'regular']);
+        
+        $log = LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id
+        ]);
+        
+        // Multiple sets, one is a PR
+        LiftSet::factory()->create([
+            'lift_log_id' => $log->id,
+            'weight' => 250,
+            'reps' => 1
+        ]);
+        LiftSet::factory()->create([
+            'lift_log_id' => $log->id,
+            'weight' => 275, // PR
+            'reps' => 1
+        ]);
+        LiftSet::factory()->create([
+            'lift_log_id' => $log->id,
+            'weight' => 260,
+            'reps' => 1
+        ]);
+
+        $this->aliasService->shouldReceive('getDisplayName')
+            ->once()
+            ->andReturn($exercise->title);
+
+        $this->actingAs($user);
+        $rows = $this->builder->buildRows(collect([$log]));
+
+        // Should be marked as PR because one set is a PR
+        $this->assertEquals('row-pr', $rows[0]['cssClass']);
+    }
 }

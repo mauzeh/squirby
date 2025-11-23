@@ -219,8 +219,8 @@ class ExercisePRCardsIntegrationTest extends TestCase
         // Should not show PR features when no data exists
         $response->assertDontSee('Heaviest Lifts');
         $response->assertDontSee('1-Rep Max Percentages');
-        // Should show empty message
-        $response->assertSee('No lift logs found for this exercise.');
+        // Should not show table when no logs exist
+        $response->assertDontSee('component-table');
     }
 
     /**
