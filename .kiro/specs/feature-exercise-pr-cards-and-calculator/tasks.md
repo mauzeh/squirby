@@ -25,12 +25,12 @@
   - [x] Test `calculate1RM()` handles edge cases (reps = 1, reps >= 37)
 
 ## Phase 3: ComponentBuilder Extensions
-- [ ] Update `app/Services/ComponentBuilder.php`
-  - [ ] Add `prCards()` static method
-  - [ ] Add `card()` method for adding individual cards
-  - [ ] Add `calculatorGrid()` static method
-  - [ ] Add `columns()` method for setting grid columns
-  - [ ] Add `percentages()` method for setting percentage rows
+- [x] Update `app/Services/ComponentBuilder.php`
+  - [x] Add `prCards()` static method
+  - [x] Add `card()` method for adding individual cards
+  - [x] Add `calculatorGrid()` static method
+  - [x] Add `columns()` method for setting grid columns
+  - [x] Add `percentages()` method for setting percentage rows
 
 ## Phase 4: Blade Templates
 - [ ] Create `resources/views/mobile-entry/components/pr-cards.blade.php`

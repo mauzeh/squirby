@@ -6,6 +6,8 @@ use App\Services\Components\Navigation\NavigationComponentBuilder;
 use App\Services\Components\Display\TitleComponentBuilder;
 use App\Services\Components\Display\MessagesComponentBuilder;
 use App\Services\Components\Display\SummaryComponentBuilder;
+use App\Services\Components\Display\PRCardsComponentBuilder;
+use App\Services\Components\Display\CalculatorGridComponentBuilder;
 use App\Services\Components\Interactive\ButtonComponentBuilder;
 use App\Services\Components\Interactive\FormComponentBuilder;
 use App\Services\Components\Interactive\BulkActionFormComponentBuilder;
@@ -151,5 +153,21 @@ class ComponentBuilder
     public static function chart(string $canvasId, string $title): ChartComponentBuilder
     {
         return new ChartComponentBuilder($canvasId, $title);
+    }
+    
+    /**
+     * Create a PR cards component
+     */
+    public static function prCards(string $title): PRCardsComponentBuilder
+    {
+        return new PRCardsComponentBuilder($title);
+    }
+    
+    /**
+     * Create a calculator grid component
+     */
+    public static function calculatorGrid(string $title): CalculatorGridComponentBuilder
+    {
+        return new CalculatorGridComponentBuilder($title);
     }
 }
