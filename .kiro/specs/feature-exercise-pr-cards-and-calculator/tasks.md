@@ -72,15 +72,15 @@
   - [x] Add CSS import for `calculator-grid.css`
 
 ## Phase 8: Integration Tests
-- [ ] Create `tests/Feature/ExercisePRCardsIntegrationTest.php`
-  - [ ] Test exercise logs page shows PR cards for barbell exercise
-  - [ ] Test exercise logs page shows calculator grid
-  - [ ] Test exercise logs page does not show PR features for dumbbell
-  - [ ] Test exercise logs page does not show PR features for cardio
-  - [ ] Test PR cards display correct weights from database
-  - [ ] Test calculator grid shows accurate percentages
-  - [ ] Test PR cards handle missing rep ranges gracefully
-  - [ ] Test page works normally when no lift logs exist
+- [x] Create `tests/Feature/ExercisePRCardsIntegrationTest.php`
+  - [x] Test exercise logs page shows PR cards for barbell exercise
+  - [x] Test exercise logs page shows calculator grid
+  - [x] Test exercise logs page does not show PR features for dumbbell
+  - [x] Test exercise logs page does not show PR features for cardio
+  - [x] Test PR cards display correct weights from database
+  - [x] Test calculator grid shows accurate percentages
+  - [x] Test PR cards handle missing rep ranges gracefully
+  - [x] Test page works normally when no lift logs exist
 
 ## Phase 9: Manual Testing & Polish
 - [ ] Create test barbell exercise (e.g., Back Squat)
