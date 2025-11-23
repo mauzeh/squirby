@@ -33,6 +33,11 @@
     gap: var(--spacing-sm);
 }
 
+.component-filter-group--no-cancel .component-filter-input-wrapper {
+    flex: 1;
+    width: 100%;
+}
+
 .component-create-form {
     margin: 0;
     display: flex;
@@ -379,4 +384,12 @@
         min-height: 400px;
         max-height: 600px;
     }
+}
+
+/* No height restriction variant - must be after all other .component-list rules */
+.component-list--no-height-restriction {
+    height: auto !important;
+    min-height: auto !important;
+    max-height: none !important;
+    overflow-y: visible !important;
 }

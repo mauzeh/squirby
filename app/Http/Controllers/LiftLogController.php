@@ -106,40 +106,22 @@ class LiftLogController extends Controller
     {
         $userId = auth()->id();
         
-        // Eager load all necessary relationships with selective fields to prevent N+1 queries
-        $liftLogs = LiftLog::with([
-            'exercise:id,title,exercise_type',
-            'exercise.aliases' => function ($query) use ($userId) {
+        // Get all exercises that the user has logged, with their aliases
+        $exercises = Exercise::whereHas('liftLogs', function ($query) use ($userId) {
+            $query->where('user_id', $userId);
+        })
+        ->with([
+            'aliases' => function ($query) use ($userId) {
                 $query->where('user_id', $userId);
             },
-            'liftSets:id,lift_log_id,weight,reps,band_color'
+            'user' // Load user relationship for badge display
         ])
-        ->select('id', 'exercise_id', 'user_id', 'logged_at', 'comments')
-        ->where('user_id', $userId)
-        ->orderBy('logged_at', 'desc') // Most recent first
+        ->orderBy('title', 'asc')
         ->get();
-
-        // Build table using shared service
-        $isAdmin = auth()->user()->hasRole('Admin');
-        
-        $rows = $this->liftLogTableRowBuilder->buildRows($liftLogs, [
-            'showDateBadge' => true,
-            'showCheckbox' => false,
-            'showViewLogsAction' => true,
-            'showDeleteAction' => false, // No delete button on full history (use bulk delete instead)
-            'includeEncouragingMessage' => false,
-        ]);
-        
-        $tableBuilder = \App\Services\ComponentBuilder::table()
-            ->rows($rows)
-            ->emptyMessage('No lift logs found. Add one to get started!')
-            ->confirmMessage('deleteItem', 'Are you sure you want to delete this lift log?')
-            ->ariaLabel('Lift logs')
-            ->spacedRows();
 
         // Build components array
         $components = [
-            \App\Services\ComponentBuilder::title('Workout History', 'Observe what you did and ...<br /><strong>be proud</strong> of it!')->build(),
+            \App\Services\ComponentBuilder::title('History')->build(),
         ];
         
         // Add success/error messages if present
@@ -147,7 +129,42 @@ class LiftLogController extends Controller
             $components[] = $sessionMessages;
         }
         
-        $components[] = $tableBuilder->build();
+        // Build exercise list
+        if ($exercises->isEmpty()) {
+            $components[] = \App\Services\ComponentBuilder::rawHtml('<p>No exercises found.</p>');
+        } else {
+            $aliasService = app(\App\Services\ExerciseAliasService::class);
+            $listBuilder = \App\Services\ComponentBuilder::itemList();
+            
+            // Get lift log counts for each exercise
+            $exerciseLogCounts = \App\Models\LiftLog::where('user_id', $userId)
+                ->whereIn('exercise_id', $exercises->pluck('id'))
+                ->select('exercise_id', \DB::raw('count(*) as log_count'))
+                ->groupBy('exercise_id')
+                ->pluck('log_count', 'exercise_id');
+            
+            foreach ($exercises as $exercise) {
+                $displayName = $aliasService->getDisplayName($exercise, auth()->user());
+                $logCount = $exerciseLogCounts[$exercise->id] ?? 0;
+                $typeLabel = $logCount . ' ' . ($logCount === 1 ? 'result' : 'results');
+                
+                $listBuilder->item(
+                    (string) $exercise->id,
+                    $displayName,
+                    route('exercises.show-logs', $exercise),
+                    $typeLabel,
+                    'exercise-history'
+                );
+            }
+            
+            $components[] = $listBuilder
+                ->filterPlaceholder('Search exercises...')
+                ->noResultsMessage('No exercises found.')
+                ->initialState('expanded')
+                ->showCancelButton(false)
+                ->restrictHeight(false)
+                ->build();
+        }
 
         $data = ['components' => $components];
 

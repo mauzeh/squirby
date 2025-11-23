@@ -125,60 +125,6 @@ class LiftLogLoggingTest extends TestCase {
     }
 
     /** @test */
-    public function a_user_can_view_lift_logs_on_index_page()
-    {
-        $backSquat = \App\Models\Exercise::factory()->create(['user_id' => $this->user->id, 'title' => 'Back Squat']);
-        $deadlift = \App\Models\Exercise::factory()->create(['user_id' => $this->user->id, 'title' => 'Deadlift']);
-
-        $liftLog1 = \App\Models\LiftLog::factory()->create([
-            'user_id' => $this->user->id,
-            'exercise_id' => $backSquat->id,
-            'comments' => 'Squat comments',
-        ]);
-        $liftLog1->liftSets()->create([
-            'weight' => 200,
-            'reps' => 5,
-            'notes' => 'Squat comments',
-        ]);
-        $liftLog1->liftSets()->create([
-            'weight' => 200,
-            'reps' => 5,
-            'notes' => 'Squat comments',
-        ]);
-        $liftLog1->liftSets()->create([
-            'weight' => 200,
-            'reps' => 5,
-            'notes' => 'Squat comments',
-        ]);
-
-        $liftLog2 = \App\Models\LiftLog::factory()->create([
-            'user_id' => $this->user->id,
-            'exercise_id' => $deadlift->id,
-            'comments' => 'Deadlift comments',
-        ]);
-        $liftLog2->liftSets()->create([
-            'weight' => 300,
-            'reps' => 3,
-            'notes' => 'Deadlift comments',
-        ]);
-
-        $response = $this->get(route('lift-logs.index'));
-        $response->assertStatus(200);
-
-        // Assert Back Squat lift log details
-        $response->assertSee($backSquat->title);
-        $response->assertSee($liftLog1->display_weight . ' lbs');
-        $response->assertSee($liftLog1->display_rounds . ' x ' . $liftLog1->display_reps);
-        $response->assertSee($liftLog1->comments);
-
-        // Assert Deadlift lift log details
-        $response->assertSee($deadlift->title);
-        $response->assertSee($liftLog2->display_weight . ' lbs');
-        $response->assertSee($liftLog2->display_rounds . ' x ' . $liftLog2->display_reps);
-        $response->assertSee($liftLog2->comments);
-    }
-
-    /** @test */
     public function a_user_can_view_exercise_logs_page(): void
     {
         $exercise = \App\Models\Exercise::factory()->create(['user_id' => $this->user->id]);

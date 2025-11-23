@@ -1,16 +1,18 @@
 {{-- Item List Component --}}
 <section class="component-list-section{{ ($data['initialState'] ?? 'collapsed') === 'expanded' ? ' active' : '' }}" aria-label="{{ $data['ariaLabels']['section'] }}" data-initial-state="{{ $data['initialState'] ?? 'collapsed' }}">
-    <ul class="component-list">
+    <ul class="component-list{{ ($data['restrictHeight'] ?? true) ? '' : ' component-list--no-height-restriction' }}">
         <li>
             <div class="component-filter-container">
-                <div class="component-filter-group">
+                <div class="component-filter-group{{ ($data['showCancelButton'] ?? true) ? '' : ' component-filter-group--no-cancel' }}">
                     <div class="component-filter-input-wrapper">
                         <input type="text" class="component-filter-input" placeholder="{{ $data['filterPlaceholder'] }}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
                         <button type="button" class="btn-clear-filter" aria-label="Clear filter" style="display: none;">×</button>
                     </div>
+                    @if($data['showCancelButton'] ?? true)
                     <button type="button" class="btn-secondary btn-cancel" aria-label="Cancel and go back">
                         <span class="cancel-icon">×</span>
                     </button>
+                    @endif
                 </div>
             </div>
         </li>

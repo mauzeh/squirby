@@ -13,6 +13,8 @@ class ItemListComponentBuilder
         'noResultsMessage' => 'No items found.',
         'createForm' => null,
         'initialState' => 'collapsed',
+        'showCancelButton' => true,
+        'restrictHeight' => true,
         'ariaLabels' => [
             'section' => 'Item selection list',
             'selectItem' => 'Select this item'
@@ -65,6 +67,18 @@ class ItemListComponentBuilder
     public function initialState(string $state): self
     {
         $this->data['initialState'] = $state;
+        return $this;
+    }
+    
+    public function showCancelButton(bool $show = true): self
+    {
+        $this->data['showCancelButton'] = $show;
+        return $this;
+    }
+    
+    public function restrictHeight(bool $restrict = true): self
+    {
+        $this->data['restrictHeight'] = $restrict;
         return $this;
     }
     

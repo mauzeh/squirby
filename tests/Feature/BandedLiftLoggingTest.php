@@ -189,32 +189,6 @@ class BandedLiftLoggingTest extends TestCase
     }
 
     /** @test */
-    public function lift_log_index_displays_band_color_for_banded_exercises()
-    {
-        $this->actingAs($this->user);
-        $exercise = Exercise::factory()->create([
-            'user_id' => $this->user->id,
-            'exercise_type' => 'banded_resistance'
-        ]);
-        $liftLog = LiftLog::factory()->create([
-            'user_id' => $this->user->id,
-            'exercise_id' => $exercise->id,
-            'logged_at' => Carbon::today(),
-        ]);
-        LiftSet::factory()->create([
-            'lift_log_id' => $liftLog->id,
-            'reps' => 10,
-            'weight' => 0,
-            'band_color' => 'red',
-        ]);
-
-        $response = $this->get(route('lift-logs.index'));
-
-        $response->assertSee('Band: Red');
-        $response->assertDontSee('0 lbs'); // Should not show 0 lbs for banded exercises
-    }
-
-    /** @test */
     public function exercise_logs_page_displays_band_color_and_no_1rm_chart_for_banded_exercises()
     {
         $this->actingAs($this->user);
