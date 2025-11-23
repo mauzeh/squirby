@@ -67,9 +67,9 @@
   - [x] Add components before chart in component array
 
 ## Phase 7: View Integration
-- [ ] Update `resources/views/mobile-entry/flexible.blade.php`
-  - [ ] Add CSS import for `pr-cards.css`
-  - [ ] Add CSS import for `calculator-grid.css`
+- [x] Update `resources/views/mobile-entry/flexible.blade.php`
+  - [x] Add CSS import for `pr-cards.css`
+  - [x] Add CSS import for `calculator-grid.css`
 
 ## Phase 8: Integration Tests
 - [ ] Create `tests/Feature/ExercisePRCardsIntegrationTest.php`
