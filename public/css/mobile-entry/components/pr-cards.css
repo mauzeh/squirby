@@ -1,0 +1,158 @@
+/* PR Cards Component - Personal Records Display */
+
+/* Section Container */
+.component-pr-cards-section {
+    margin-bottom: var(--spacing-xl);
+}
+
+.component-pr-cards-title {
+    font-size: 1.2em;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-md);
+    text-align: left;
+}
+
+/* Card Container - 3-column grid */
+.pr-cards-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--spacing-md);
+}
+
+/* Individual Card Styling */
+.pr-card {
+    background-color: var(--tertiary-bg);
+    border-radius: var(--border-radius-md);
+    padding: var(--spacing-lg);
+    text-align: center;
+    transition: all var(--transition-fast);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: var(--shadow-light);
+}
+
+@media (hover: hover) {
+    .pr-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-medium);
+        border-color: rgba(255, 255, 255, 0.2);
+    }
+}
+
+/* Card Label Styling */
+.pr-card-label {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin-bottom: var(--spacing-sm);
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+/* Card Value Styling */
+.pr-card-value {
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--text-primary);
+    line-height: 1.2;
+}
+
+/* Card Unit Styling */
+.pr-card-unit {
+    font-size: 0.875rem;
+    font-weight: normal;
+    color: var(--text-secondary);
+    margin-left: 0.25rem;
+}
+
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+    .pr-cards-container {
+        gap: var(--spacing-sm);
+    }
+
+    .pr-card {
+        padding: var(--spacing-md);
+    }
+
+    .pr-card-label {
+        font-size: 0.75rem;
+        margin-bottom: 6px;
+    }
+
+    .pr-card-value {
+        font-size: 1.5rem;
+    }
+
+    .pr-card-unit {
+        font-size: 0.75rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .component-pr-cards-section {
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .component-pr-cards-title {
+        font-size: 1.1em;
+        margin-bottom: var(--spacing-sm);
+    }
+
+    .pr-cards-container {
+        gap: 6px;
+    }
+
+    .pr-card {
+        padding: 10px;
+        border-radius: var(--border-radius-sm);
+    }
+
+    .pr-card-label {
+        font-size: 0.7rem;
+        margin-bottom: var(--spacing-xs);
+    }
+
+    .pr-card-value {
+        font-size: 1.3rem;
+    }
+
+    .pr-card-unit {
+        font-size: 0.7rem;
+    }
+}
+
+/* Landscape Orientation Adjustments */
+@media (max-width: 768px) and (orientation: landscape) {
+    .component-pr-cards-section {
+        margin-bottom: var(--spacing-md);
+    }
+
+    .pr-card {
+        padding: 12px;
+    }
+
+    .pr-card-value {
+        font-size: 1.4rem;
+    }
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+    .pr-card {
+        border: 2px solid var(--text-primary);
+        background-color: var(--primary-bg);
+    }
+
+    .pr-card-label,
+    .pr-card-value,
+    .pr-card-unit {
+        color: var(--text-primary);
+    }
+}
+
+/* Focus State for Accessibility */
+.pr-card:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}

@@ -44,11 +44,11 @@
   - [x] Handle null values (show "—")
 
 ## Phase 5: CSS Styling
-- [ ] Create `public/css/mobile-entry/components/pr-cards.css`
-  - [ ] Style card container (3-column grid)
-  - [ ] Style individual cards (background, border, padding)
-  - [ ] Style labels, values, and units
-  - [ ] Add mobile responsive styles
+- [x] Create `public/css/mobile-entry/components/pr-cards.css`
+  - [x] Style card container (3-column grid)
+  - [x] Style individual cards (background, border, padding)
+  - [x] Style labels, values, and units
+  - [x] Add mobile responsive styles
 - [ ] Create `public/css/mobile-entry/components/calculator-grid.css`
   - [ ] Style table layout
   - [ ] Style headers and data cells
