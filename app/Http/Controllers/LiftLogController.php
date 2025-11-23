@@ -68,6 +68,8 @@ class LiftLogController extends Controller
             $backUrl = route('workouts.index', $workoutId ? ['workout_id' => $workoutId] : []);
         } elseif ($redirectTo === 'mobile-entry-lifts') {
             $backUrl = route('mobile-entry.lifts', ['date' => $date->toDateString()]);
+        } elseif ($redirectTo === 'exercises-logs') {
+            $backUrl = route('exercises.show-logs', ['exercise' => $exerciseId]);
         } else {
             // Default to mobile-entry lifts
             $backUrl = route('mobile-entry.lifts', ['date' => $date->toDateString()]);
