@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Services\ExerciseService;
 use App\Services\ExerciseMergeService;
 use App\Services\ChartService;
+use App\Services\ExercisePRService;
 use App\Services\ExerciseTypes\ExerciseTypeFactory;
 use App\Presenters\LiftLogTablePresenter;
 use Illuminate\Http\Request;
@@ -21,13 +22,15 @@ class ExerciseController extends Controller
     protected $exerciseMergeService;
     protected $chartService;
     protected $liftLogTablePresenter;
+    protected $exercisePRService;
 
-    public function __construct(ExerciseService $exerciseService, ExerciseMergeService $exerciseMergeService, \App\Services\ChartService $chartService, LiftLogTablePresenter $liftLogTablePresenter)
+    public function __construct(ExerciseService $exerciseService, ExerciseMergeService $exerciseMergeService, \App\Services\ChartService $chartService, LiftLogTablePresenter $liftLogTablePresenter, ExercisePRService $exercisePRService)
     {
         $this->exerciseService = $exerciseService;
         $this->exerciseMergeService = $exerciseMergeService;
         $this->chartService = $chartService;
         $this->liftLogTablePresenter = $liftLogTablePresenter;
+        $this->exercisePRService = $exercisePRService;
     }
 
     /**
@@ -326,6 +329,36 @@ class ExerciseController extends Controller
         // Messages from session
         if ($sessionMessages = \App\Services\ComponentBuilder::messagesFromSession()) {
             $components[] = $sessionMessages;
+        }
+        
+        // PR Cards and Calculator Grid (if exercise supports it)
+        if ($this->exercisePRService->supportsPRTracking($exercise)) {
+            $prData = $this->exercisePRService->getPRData($exercise, auth()->user());
+            
+            if ($prData) {
+                // Build PR Cards component
+                $prCardsBuilder = \App\Services\ComponentBuilder::prCards('Heaviest Lifts');
+                
+                foreach (['rep_1' => '1x1', 'rep_2' => '1x2', 'rep_3' => '1x3'] as $key => $label) {
+                    if (isset($prData[$key])) {
+                        $prCardsBuilder->card($label, $prData[$key]['weight'], 'lbs');
+                    } else {
+                        $prCardsBuilder->card($label, null, 'lbs');
+                    }
+                }
+                
+                $components[] = $prCardsBuilder->build();
+                
+                // Build Calculator Grid component
+                $calculatorGrid = $this->exercisePRService->getCalculatorGrid($prData);
+                
+                if ($calculatorGrid) {
+                    $components[] = \App\Services\ComponentBuilder::calculatorGrid('1-Rep Max Percentages')
+                        ->columns($calculatorGrid['columns'])
+                        ->percentages([100, 95, 90, 85, 80, 75, 70, 65, 60, 55, 50, 45])
+                        ->build();
+                }
+            }
         }
         
         // Add chart if we have data

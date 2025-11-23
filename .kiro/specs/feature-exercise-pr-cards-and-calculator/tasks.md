@@ -57,14 +57,14 @@
   - [x] Add mobile responsive styles (scrollable)
 
 ## Phase 6: Controller Integration
-- [ ] Update `app/Http/Controllers/ExerciseController.php`
-  - [ ] Inject ExercisePRService in `showLogs()` method
-  - [ ] Check if exercise supports PR tracking
-  - [ ] Get PR data from service
-  - [ ] Get calculator grid from service
-  - [ ] Build PR cards component
-  - [ ] Build calculator grid component
-  - [ ] Add components before chart in component array
+- [x] Update `app/Http/Controllers/ExerciseController.php`
+  - [x] Inject ExercisePRService in `showLogs()` method
+  - [x] Check if exercise supports PR tracking
+  - [x] Get PR data from service
+  - [x] Get calculator grid from service
+  - [x] Build PR cards component
+  - [x] Build calculator grid component
+  - [x] Add components before chart in component array
 
 ## Phase 7: View Integration
 - [ ] Update `resources/views/mobile-entry/flexible.blade.php`
