@@ -1,28 +1,28 @@
 # Task List
 
 ## Phase 1: Service Layer
-- [ ] Create `app/Services/ExercisePRService.php`
-  - [ ] Implement `supportsPRTracking()` method (barbell only)
-  - [ ] Implement `getPRData()` method (find max weight for 1, 2, 3 reps)
-  - [ ] Implement `getCalculatorGrid()` method (generate percentage grid)
-  - [ ] Add `calculate1RM()` helper method (Brzycki formula)
+- [x] Create `app/Services/ExercisePRService.php`
+  - [x] Implement `supportsPRTracking()` method (barbell only)
+  - [x] Implement `getPRData()` method (find max weight for 1, 2, 3 reps)
+  - [x] Implement `getCalculatorGrid()` method (generate percentage grid)
+  - [x] Add `calculate1RM()` helper method (Brzycki formula)
 
 ## Phase 2: Unit Tests
-- [ ] Create `tests/Unit/ExercisePRServiceTest.php`
-  - [ ] Test `supportsPRTracking()` returns true for barbell
-  - [ ] Test `supportsPRTracking()` returns false for dumbbell
-  - [ ] Test `supportsPRTracking()` returns false for cardio
-  - [ ] Test `getPRData()` returns null for unsupported exercise
-  - [ ] Test `getPRData()` returns correct PRs for each rep range
-  - [ ] Test `getPRData()` handles no lift logs
-  - [ ] Test `getPRData()` handles partial data (missing rep ranges)
-  - [ ] Test `getPRData()` selects highest weight when multiple logs exist
-  - [ ] Test `getCalculatorGrid()` generates correct percentages
-  - [ ] Test `getCalculatorGrid()` rounds weights correctly
-  - [ ] Test `getCalculatorGrid()` handles three columns
-  - [ ] Test `getCalculatorGrid()` returns null when no PR data
-  - [ ] Test `calculate1RM()` uses Brzycki formula correctly
-  - [ ] Test `calculate1RM()` handles edge cases (reps = 1, reps >= 37)
+- [x] Create `tests/Unit/ExercisePRServiceTest.php`
+  - [x] Test `supportsPRTracking()` returns true for barbell
+  - [x] Test `supportsPRTracking()` returns false for dumbbell
+  - [x] Test `supportsPRTracking()` returns false for cardio
+  - [x] Test `getPRData()` returns null for unsupported exercise
+  - [x] Test `getPRData()` returns correct PRs for each rep range
+  - [x] Test `getPRData()` handles no lift logs
+  - [x] Test `getPRData()` handles partial data (missing rep ranges)
+  - [x] Test `getPRData()` selects highest weight when multiple logs exist
+  - [x] Test `getCalculatorGrid()` generates correct percentages
+  - [x] Test `getCalculatorGrid()` rounds weights correctly
+  - [x] Test `getCalculatorGrid()` handles three columns
+  - [x] Test `getCalculatorGrid()` returns null when no PR data
+  - [x] Test `calculate1RM()` uses Brzycki formula correctly
+  - [x] Test `calculate1RM()` handles edge cases (reps = 1, reps >= 37)
 
 ## Phase 3: ComponentBuilder Extensions
 - [ ] Update `app/Services/ComponentBuilder.php`
