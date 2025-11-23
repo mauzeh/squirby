@@ -331,6 +331,13 @@ class ExerciseController extends Controller
             $components[] = $sessionMessages;
         }
         
+        // Show friendly tip if no lift logs exist
+        if ($liftLogs->isEmpty()) {
+            $components[] = \App\Services\ComponentBuilder::messages()
+                ->tip('No training data yet. Click "Log now" to record your first workout for this exercise.')
+                ->build();
+        }
+        
         // Log now button
         $components[] = \App\Services\ComponentBuilder::button('Log now')
             ->asLink(route('lift-logs.create', ['exercise_id' => $exercise->id, 'redirect_to' => 'exercises-logs']))
@@ -403,8 +410,8 @@ class ExerciseController extends Controller
             }
         }
         
-        // Add chart if we have data
-        if (!empty($chartData['datasets'])) {
+        // Add chart if we have data (only when lift logs exist)
+        if ($liftLogs->isNotEmpty() && !empty($chartData['datasets'])) {
             $strategy = $exercise->getTypeStrategy();
             $chartTitle = $strategy->getChartTitle();
             
@@ -418,7 +425,7 @@ class ExerciseController extends Controller
                 ->build();
         }
         
-        // Build table using shared service
+        // Build table using shared service (only if we have data)
         if ($liftLogs->isNotEmpty()) {
             $liftLogTableRowBuilder = app(\App\Services\LiftLogTableRowBuilder::class);
             
@@ -437,9 +444,6 @@ class ExerciseController extends Controller
                 ->spacedRows();
 
             $components[] = $tableBuilder->build();
-        } else {
-            // Show empty message
-            $components[] = \App\Services\ComponentBuilder::rawHtml('<p>No lift logs found for this exercise.</p>');
         }
         
         $data = ['components' => $components];

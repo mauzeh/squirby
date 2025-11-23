@@ -25,7 +25,7 @@ return [
                     'patterns' => ['workouts.*'],
                 ],
                 [
-                    'label' => 'History',
+                    'label' => 'Metrics',
                     'route' => 'lift-logs.index',
                     'patterns' => ['lift-logs.index', 'lift-logs.edit', 'exercises.show-logs'],
                 ],
