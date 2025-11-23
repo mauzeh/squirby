@@ -34,7 +34,7 @@
             </div>
         @endif
         @auth
-        <div class="navbar">
+        <div class="navbar @if(!app()->environment('production')) env-navbar-non-production @endif">
             @foreach($menuService->getMainMenu() as $item)
                 <a @if(isset($item['id']))id="{{ $item['id'] }}"@endif 
                    href="{{ route($item['route']) }}" 
@@ -64,7 +64,7 @@
         </div>
 
         @if ($menuService->shouldShowSubMenu())
-        <div class="navbar sub-navbar">
+        <div class="navbar sub-navbar @if(!app()->environment('production')) env-navbar-non-production @endif">
             @foreach($menuService->getSubMenu() as $item)
                 <a href="{{ isset($item['routeParams']) ? route($item['route'], $item['routeParams']) : route($item['route']) }}" 
                    class="{{ $item['active'] ? 'active' : '' }}"

@@ -41,6 +41,22 @@ a {
     font-weight: bold;
 }
 
+.env-navbar-non-production {
+    background-color: #006400; /* Dark green for non-production environments */
+}
+
+.sub-navbar.env-navbar-non-production {
+    background-color: #004d00; /* Darker green for the sub-nav */
+}
+
+.env-navbar-non-production a.active {
+    background-color: #28a745; /* Bright green for active links */
+}
+
+.env-navbar-non-production a:hover {
+    background-color: #009900; /* Green hue for hover state in non-production environments */
+}
+
 .navbar a.top-level-nav-item i {
     margin-bottom: 5px;
 }
