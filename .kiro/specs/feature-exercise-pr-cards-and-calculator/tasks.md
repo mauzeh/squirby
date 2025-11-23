@@ -33,15 +33,15 @@
   - [x] Add `percentages()` method for setting percentage rows
 
 ## Phase 4: Blade Templates
-- [ ] Create `resources/views/mobile-entry/components/pr-cards.blade.php`
-  - [ ] Implement card grid layout
-  - [ ] Display label, value, and unit for each card
-  - [ ] Handle null values (show "—")
-- [ ] Create `resources/views/mobile-entry/components/calculator-grid.blade.php`
-  - [ ] Implement table layout with headers
-  - [ ] Display percentage labels in first column
-  - [ ] Display calculated weights in data columns
-  - [ ] Handle null values (show "—")
+- [x] Create `resources/views/mobile-entry/components/pr-cards.blade.php`
+  - [x] Implement card grid layout
+  - [x] Display label, value, and unit for each card
+  - [x] Handle null values (show "—")
+- [x] Create `resources/views/mobile-entry/components/calculator-grid.blade.php`
+  - [x] Implement table layout with headers
+  - [x] Display percentage labels in first column
+  - [x] Display calculated weights in data columns
+  - [x] Handle null values (show "—")
 
 ## Phase 5: CSS Styling
 - [ ] Create `public/css/mobile-entry/components/pr-cards.css`
