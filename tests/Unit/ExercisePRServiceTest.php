@@ -28,7 +28,7 @@ class ExercisePRServiceTest extends TestCase
     /** @test */
     public function supportsPRTracking_returns_true_for_barbell()
     {
-        $exercise = Exercise::factory()->create(['exercise_type' => 'barbell']);
+        $exercise = Exercise::factory()->create(['exercise_type' => 'regular']);
         
         $this->assertTrue($this->service->supportsPRTracking($exercise));
     }
@@ -62,7 +62,7 @@ class ExercisePRServiceTest extends TestCase
     /** @test */
     public function getPRData_returns_correct_PRs_for_each_rep_range()
     {
-        $exercise = Exercise::factory()->create(['exercise_type' => 'barbell']);
+        $exercise = Exercise::factory()->create(['exercise_type' => 'regular']);
         
         // Create lift logs with different rep ranges
         $liftLog1 = LiftLog::factory()->create([
@@ -112,7 +112,7 @@ class ExercisePRServiceTest extends TestCase
     /** @test */
     public function getPRData_handles_no_lift_logs()
     {
-        $exercise = Exercise::factory()->create(['exercise_type' => 'barbell']);
+        $exercise = Exercise::factory()->create(['exercise_type' => 'regular']);
         
         $result = $this->service->getPRData($exercise, $this->user);
         
@@ -122,7 +122,7 @@ class ExercisePRServiceTest extends TestCase
     /** @test */
     public function getPRData_handles_partial_data_missing_rep_ranges()
     {
-        $exercise = Exercise::factory()->create(['exercise_type' => 'barbell']);
+        $exercise = Exercise::factory()->create(['exercise_type' => 'regular']);
         
         // Create lift log with only 1 rep data
         $liftLog = LiftLog::factory()->create([
@@ -147,7 +147,7 @@ class ExercisePRServiceTest extends TestCase
     /** @test */
     public function getPRData_selects_highest_weight_when_multiple_logs_exist()
     {
-        $exercise = Exercise::factory()->create(['exercise_type' => 'barbell']);
+        $exercise = Exercise::factory()->create(['exercise_type' => 'regular']);
         
         // Create multiple lift logs with 1 rep sets
         $liftLog1 = LiftLog::factory()->create([
@@ -253,9 +253,9 @@ class ExercisePRServiceTest extends TestCase
         $this->assertCount(3, $result['columns']);
         
         // Check column labels
-        $this->assertEquals('1x1', $result['columns'][0]['label']);
-        $this->assertEquals('1x2', $result['columns'][1]['label']);
-        $this->assertEquals('1x3', $result['columns'][2]['label']);
+        $this->assertEquals('1 × 1', $result['columns'][0]['label']);
+        $this->assertEquals('1 × 2', $result['columns'][1]['label']);
+        $this->assertEquals('1 × 3', $result['columns'][2]['label']);
         
         // Check that each row has 3 weights
         foreach ($result['rows'] as $row) {
