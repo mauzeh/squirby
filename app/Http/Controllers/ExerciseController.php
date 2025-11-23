@@ -331,6 +331,11 @@ class ExerciseController extends Controller
             $components[] = $sessionMessages;
         }
         
+        // Log now button
+        $components[] = \App\Services\ComponentBuilder::button('Log now')
+            ->asLink(route('lift-logs.create', ['exercise_id' => $exercise->id, 'redirect_to' => 'exercises-logs']))
+            ->build();
+        
         // PR Cards and Calculator Grid (if exercise supports it)
         if ($this->exercisePRService->supportsPRTracking($exercise)) {
             $prData = $this->exercisePRService->getPRData($exercise, auth()->user());
