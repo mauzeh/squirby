@@ -5,10 +5,21 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
 
 class ExerciseMergeLog extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsActivity;
+
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['source_exercise_id', 'source_exercise_title', 'target_exercise_id', 'target_exercise_title', 'admin_user_id', 'admin_email', 'lift_log_ids', 'lift_log_count', 'alias_created'])
+            ->logOnlyDirty()
+            ->dontSubmitEmptyLogs();
+    }
+
 
     protected $fillable = [
         'source_exercise_id',

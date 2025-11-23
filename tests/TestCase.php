@@ -12,5 +12,7 @@ abstract class TestCase extends BaseTestCase
 
         // Disable CSRF protection for all tests
         $this->withoutMiddleware(\App\Http\Middleware\VerifyCsrfToken::class);
+        // Disable LogActivity middleware during tests
+        $this->withoutMiddleware(\App\Http\Middleware\LogActivity::class);
     }
 }
