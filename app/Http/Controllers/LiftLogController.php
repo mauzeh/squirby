@@ -121,7 +121,10 @@ class LiftLogController extends Controller
 
         // Build components array
         $components = [
-            \App\Services\ComponentBuilder::title('History')->build(),
+            \App\Services\ComponentBuilder::title(
+                'History',
+                'Select an exercise to view your training history, personal records, and 1RM calculator.'
+            )->build(),
         ];
         
         // Add success/error messages if present
