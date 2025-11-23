@@ -49,12 +49,12 @@ a {
     background-color: #004d00; /* Darker green for the sub-nav */
 }
 
-.env-navbar-non-production a.active {
-    background-color: #28a745; /* Bright green for active links */
+.env-navbar-non-production a.active, .env-navbar-non-production a.active:hover {
+    background-color: #28a745; /* Bright green for active links, maintained on hover */
 }
 
 .env-navbar-non-production a:hover {
-    background-color: #009900; /* Green hue for hover state in non-production environments */
+    background-color: #007a00; /* More subtle green hue for hover state in non-production environments */
 }
 
 .navbar a.top-level-nav-item i {
