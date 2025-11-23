@@ -41,7 +41,7 @@
     padding: var(--spacing-md);
     text-align: center;
     font-weight: 600;
-    font-size: 0.875rem;
+    font-size: 1.5rem;
     color: var(--text-primary);
     border-bottom: 2px solid rgba(255, 255, 255, 0.1);
     letter-spacing: 0.5px;
@@ -88,7 +88,7 @@
 .percentage-label {
     font-weight: 600;
     color: var(--text-secondary);
-    font-size: 0.875rem;
+    font-size: 1.5rem;
     background-color: var(--secondary-bg);
     position: sticky;
     left: 0;
@@ -98,8 +98,8 @@
 /* Weight Value Styling */
 .weight-value {
     font-family: 'Courier New', 'Courier', monospace;
-    font-size: 1rem;
-    font-weight: 500;
+    font-size: 1.5rem;
+    font-weight: 600;
     color: var(--text-primary);
     letter-spacing: 0.5px;
 }
@@ -113,7 +113,7 @@
 
     .calculator-table th {
         padding: var(--spacing-sm);
-        font-size: 0.75rem;
+        font-size: 1.25rem;
     }
 
     .calculator-table td {
@@ -125,11 +125,11 @@
     }
 
     .percentage-label {
-        font-size: 0.75rem;
+        font-size: 1.25rem;
     }
 
     .weight-value {
-        font-size: 0.875rem;
+        font-size: 1.25rem;
     }
 }
 
@@ -149,7 +149,7 @@
 
     .calculator-table th {
         padding: 8px 6px;
-        font-size: 0.7rem;
+        font-size: 1.125rem;
     }
 
     .calculator-table td {
@@ -161,12 +161,12 @@
     }
 
     .percentage-label {
-        font-size: 0.7rem;
+        font-size: 1.125rem;
         padding: 6px 8px;
     }
 
     .weight-value {
-        font-size: 0.8rem;
+        font-size: 1.125rem;
     }
 }
 
@@ -181,8 +181,16 @@
         padding: 6px var(--spacing-sm);
     }
 
+    .calculator-table th {
+        font-size: 1.25rem;
+    }
+
+    .percentage-label {
+        font-size: 1.25rem;
+    }
+
     .weight-value {
-        font-size: 0.875rem;
+        font-size: 1.25rem;
     }
 }
 

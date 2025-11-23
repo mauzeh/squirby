@@ -18,6 +18,7 @@ class CalculatorGridComponentBuilder
             'title' => $title,
             'columns' => [],
             'percentages' => [],
+            'rows' => [],
             'ariaLabel' => $title
         ];
     }
@@ -44,6 +45,18 @@ class CalculatorGridComponentBuilder
     public function percentages(array $percentages): self
     {
         $this->data['percentages'] = $percentages;
+        return $this;
+    }
+    
+    /**
+     * Set the calculated weight rows for the calculator grid
+     * 
+     * @param array $rows Array of rows with 'percentage' and 'weights'
+     * @return self
+     */
+    public function rows(array $rows): self
+    {
+        $this->data['rows'] = $rows;
         return $this;
     }
     

@@ -10,14 +10,14 @@ class ExercisePRService
 {
     /**
      * Check if exercise supports PR tracking
-     * Only barbell exercises are supported
+     * Only regular (weighted) exercises are supported
      * 
      * @param Exercise $exercise
      * @return bool
      */
     public function supportsPRTracking(Exercise $exercise): bool
     {
-        return $exercise->exercise_type === 'barbell';
+        return $exercise->exercise_type === 'regular';
     }
 
     /**
@@ -103,7 +103,7 @@ class ExercisePRService
                 $oneRepMax = $this->calculate1RM($weight, $reps);
                 
                 $columns[] = [
-                    'label' => "1x{$reps}",
+                    'label' => "1 × {$reps}",
                     'one_rep_max' => $oneRepMax,
                 ];
             }

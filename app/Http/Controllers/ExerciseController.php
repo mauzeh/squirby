@@ -339,7 +339,7 @@ class ExerciseController extends Controller
                 // Build PR Cards component
                 $prCardsBuilder = \App\Services\ComponentBuilder::prCards('Heaviest Lifts');
                 
-                foreach (['rep_1' => '1x1', 'rep_2' => '1x2', 'rep_3' => '1x3'] as $key => $label) {
+                foreach (['rep_1' => '1 × 1', 'rep_2' => '1 × 2', 'rep_3' => '1 × 3'] as $key => $label) {
                     if (isset($prData[$key])) {
                         $prCardsBuilder->card($label, $prData[$key]['weight'], 'lbs');
                     } else {
@@ -356,6 +356,7 @@ class ExerciseController extends Controller
                     $components[] = \App\Services\ComponentBuilder::calculatorGrid('1-Rep Max Percentages')
                         ->columns($calculatorGrid['columns'])
                         ->percentages([100, 95, 90, 85, 80, 75, 70, 65, 60, 55, 50, 45])
+                        ->rows($calculatorGrid['rows'])
                         ->build();
                 }
             }

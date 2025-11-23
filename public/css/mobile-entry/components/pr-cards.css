@@ -41,7 +41,7 @@
 
 /* Card Label Styling */
 .pr-card-label {
-    font-size: 0.875rem;
+    font-size: 1.3125rem;
     color: var(--text-muted);
     margin-bottom: var(--spacing-sm);
     font-weight: 500;
@@ -76,7 +76,7 @@
     }
 
     .pr-card-label {
-        font-size: 0.75rem;
+        font-size: 1.125rem;
         margin-bottom: 6px;
     }
 
@@ -109,7 +109,7 @@
     }
 
     .pr-card-label {
-        font-size: 0.7rem;
+        font-size: 1.05rem;
         margin-bottom: var(--spacing-xs);
     }
 
