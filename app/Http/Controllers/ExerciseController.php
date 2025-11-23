@@ -415,14 +415,22 @@ class ExerciseController extends Controller
             $strategy = $exercise->getTypeStrategy();
             $chartTitle = $strategy->getChartTitle();
             
-            $components[] = \App\Services\ComponentBuilder::chart('progressChart', $chartTitle)
+            $chartBuilder = \App\Services\ComponentBuilder::chart('progressChart', $chartTitle)
                 ->type('line')
                 ->datasets($chartData['datasets'])
                 ->timeScale('day')
-                ->beginAtZero()
                 ->showLegend()
                 ->ariaLabel($exercise->title . ' progress chart')
-                ->build();
+                ->containerClass('chart-container-styled')
+                ->height(300)
+                ->noAspectRatio();
+            
+            // Only use beginAtZero for non-1RM charts
+            if ($chartTitle !== '1RM Progress') {
+                $chartBuilder->beginAtZero();
+            }
+            
+            $components[] = $chartBuilder->build();
         }
         
         // Build table using shared service (only if we have data)

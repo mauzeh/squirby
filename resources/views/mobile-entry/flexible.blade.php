@@ -14,6 +14,7 @@
     <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/collapsible.css') }}">
     <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/pr-cards.css') }}">
     <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/calculator-grid.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/chart.css') }}">
 @endsection
 
 @section('scripts')

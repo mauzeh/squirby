@@ -108,7 +108,6 @@
 @media (max-width: 768px) {
     .calculator-grid {
         border-radius: var(--border-radius-sm);
-        margin: 0 calc(var(--spacing-sm) * -1);
     }
 
     .calculator-table th {
@@ -141,10 +140,6 @@
     .component-calculator-grid-title {
         font-size: 1.1em;
         margin-bottom: var(--spacing-sm);
-    }
-
-    .calculator-grid {
-        margin: 0 calc(var(--spacing-xs) * -1);
     }
 
     .calculator-table th {

@@ -1,0 +1,35 @@
+/* Chart Component Styling */
+
+.chart-container-styled {
+    background-color: var(--tertiary-bg);
+    border-radius: var(--border-radius-md);
+    padding: var(--spacing-md);
+    margin-bottom: var(--spacing-xl);
+    box-shadow: var(--shadow-light);
+}
+
+.chart-container-styled .cell-title {
+    margin-bottom: var(--spacing-md);
+}
+
+.chart-canvas-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.chart-container-styled canvas {
+    max-width: 100%;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .chart-container-styled {
+        margin-bottom: var(--spacing-lg);
+    }
+}
+
+@media (max-width: 480px) {
+    .chart-container-styled {
+        border-radius: var(--border-radius-sm);
+    }
+}
