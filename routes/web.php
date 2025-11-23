@@ -115,7 +115,8 @@ Route::middleware('auth')->group(function () {
     Route::match(['get', 'post'], 'labs/ingredient-entry', [LabsController::class, 'ingredientEntry'])->name('labs.ingredient-entry');
     Route::get('labs/chart-example', [LabsController::class, 'chartExample'])->name('labs.chart-example');
 
-    Route::post('lift-logs/destroy-selected', [LiftLogController::class, 'destroySelected'])->name('lift-logs.destroy-selected');
+    Route::post('workouts/apply-template', [WorkoutController::class, 'applyTemplate'])->name('workouts.apply-template');
+    Route::post('workouts/remove-exercise', [WorkoutController::class, 'removeExercise'])->name('workouts.remove-exercise');
 
 });
 

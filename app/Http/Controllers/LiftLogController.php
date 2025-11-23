@@ -122,7 +122,7 @@ class LiftLogController extends Controller
         
         $rows = $this->liftLogTableRowBuilder->buildRows($liftLogs, [
             'showDateBadge' => true,
-            'showCheckbox' => $isAdmin,
+            'showCheckbox' => false,
             'showViewLogsAction' => true,
             'showDeleteAction' => false, // No delete button on full history (use bulk delete instead)
             'includeEncouragingMessage' => false,
@@ -145,25 +145,7 @@ class LiftLogController extends Controller
             $components[] = $sessionMessages;
         }
         
-        // Only add bulk selection controls for admins
-        if ($isAdmin) {
-            $components[] = \App\Services\ComponentBuilder::selectAllControl('select-all-lift-logs', 'Select All')->build();
-        }
-        
         $components[] = $tableBuilder->build();
-        
-        if ($isAdmin) {
-            $components[] = \App\Services\ComponentBuilder::bulkActionForm(
-                'bulk-delete-lift-logs',
-                route('lift-logs.destroy-selected'),
-                'Delete Selected'
-            )
-            ->confirmMessage('Are you sure you want to delete :count lift log(s)?')
-            ->checkboxSelector('.template-checkbox')
-            ->inputName('lift_log_ids')
-            ->ariaLabel('Delete selected lift logs')
-            ->build();
-        }
 
         $data = ['components' => $components];
 
@@ -427,37 +409,6 @@ class LiftLogController extends Controller
             [],
             $deletionMessage
         );
-    }
-
-    public function destroySelected(Request $request)
-    {
-        // Only admins can bulk delete
-        if (!auth()->user()->hasRole('Admin')) {
-            abort(403, 'Unauthorized action.');
-        }
-
-        $validated = $request->validate([
-            'lift_log_ids' => 'required|array',
-            'lift_log_ids.*' => 'exists:lift_logs,id',
-        ]);
-
-        $liftLogs = LiftLog::whereIn('id', $validated['lift_log_ids'])->get();
-
-        foreach ($liftLogs as $liftLog) {
-            if ($liftLog->user_id !== auth()->id()) {
-                abort(403, 'Unauthorized action.');
-            }
-        }
-
-        $count = count($validated['lift_log_ids']);
-        
-        LiftLog::destroy($validated['lift_log_ids']);
-
-        $message = $count === 1 
-            ? config('mobile_entry_messages.success.bulk_deleted_single')
-            : str_replace(':count', $count, config('mobile_entry_messages.success.bulk_deleted_multiple'));
-
-        return redirect()->route('lift-logs.index')->with('success', $message);
     }
 
     /**
