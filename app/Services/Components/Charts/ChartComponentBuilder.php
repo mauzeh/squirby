@@ -154,6 +154,48 @@ class ChartComponentBuilder
         return $this;
     }
     
+    public function labelColors(string $color = '#e0e0e0'): self
+    {
+        if (!isset($this->data['options']['scales'])) {
+            $this->data['options']['scales'] = [];
+        }
+        
+        // X-axis labels
+        if (!isset($this->data['options']['scales']['x'])) {
+            $this->data['options']['scales']['x'] = [];
+        }
+        $this->data['options']['scales']['x']['ticks'] = [
+            'color' => $color
+        ];
+        $this->data['options']['scales']['x']['grid'] = [
+            'color' => 'rgba(255, 255, 255, 0.1)'
+        ];
+        
+        // Y-axis labels
+        if (!isset($this->data['options']['scales']['y'])) {
+            $this->data['options']['scales']['y'] = [];
+        }
+        $this->data['options']['scales']['y']['ticks'] = [
+            'color' => $color
+        ];
+        $this->data['options']['scales']['y']['grid'] = [
+            'color' => 'rgba(255, 255, 255, 0.1)'
+        ];
+        
+        // Legend labels
+        if (!isset($this->data['options']['plugins'])) {
+            $this->data['options']['plugins'] = [];
+        }
+        if (!isset($this->data['options']['plugins']['legend'])) {
+            $this->data['options']['plugins']['legend'] = [];
+        }
+        $this->data['options']['plugins']['legend']['labels'] = [
+            'color' => $color
+        ];
+        
+        return $this;
+    }
+    
     public function build(): array
     {
         return [

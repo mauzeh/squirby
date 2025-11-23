@@ -423,7 +423,8 @@ class ExerciseController extends Controller
                 ->ariaLabel($exercise->title . ' progress chart')
                 ->containerClass('chart-container-styled')
                 ->height(300)
-                ->noAspectRatio();
+                ->noAspectRatio()
+                ->labelColors();
             
             // Only use beginAtZero for non-1RM charts
             if ($chartTitle !== '1RM Progress') {
