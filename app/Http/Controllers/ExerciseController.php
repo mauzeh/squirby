@@ -323,8 +323,10 @@ class ExerciseController extends Controller
         // Build components
         $components = [];
         
-        // Title
-        $components[] = \App\Services\ComponentBuilder::title($displayName)->build();
+        // Title with back button
+        $components[] = \App\Services\ComponentBuilder::title($displayName)
+            ->backButton('fa-arrow-left', route('lift-logs.index'), 'Back to lift logs')
+            ->build();
         
         // Messages from session
         if ($sessionMessages = \App\Services\ComponentBuilder::messagesFromSession()) {
