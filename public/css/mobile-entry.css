@@ -17,8 +17,11 @@
     --text-placeholder: #888;
 
     /* Brand Colors */
-    --color-primary: #4da3ff;
-    --color-primary-hover: #007bff;
+    --color-primary: #007bff;
+    --color-primary-hover: #0056b3;
+    
+    /* Title Colors */
+    --color-title: #4da3ff;
     --color-success: #28a745;
     --color-success-hover: #218838;
     --color-danger: #dc3545;

@@ -55,7 +55,7 @@
 
 /* Main Title */
 .component-title {
-    color: var(--color-primary);
+    color: var(--color-title);
     margin: 0;
     font-size: 2em;
     font-weight: bold;
