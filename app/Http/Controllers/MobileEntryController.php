@@ -71,11 +71,11 @@ class MobileEntryController extends Controller
         // Build components array using ComponentBuilder
         $components = [];
         
-        // Navigation
+        // Navigation - disable "Next" button when viewing today or future dates
         $components[] = \App\Services\ComponentBuilder::navigation()
             ->prev('← Prev', route('mobile-entry.lifts', ['date' => $prevDay->toDateString()]))
             ->center('Today', route('mobile-entry.lifts', ['date' => $today->toDateString()]))
-            ->next('Next →', route('mobile-entry.lifts', ['date' => $nextDay->toDateString()]))
+            ->next('Next →', route('mobile-entry.lifts', ['date' => $nextDay->toDateString()]), $selectedDate->lt($today))
             ->ariaLabel('Date navigation')
             ->build();
         
@@ -316,11 +316,11 @@ class MobileEntryController extends Controller
         // Build components array using ComponentBuilder
         $components = [];
         
-        // Navigation
+        // Navigation - disable "Next" button when viewing today or future dates
         $components[] = \App\Services\ComponentBuilder::navigation()
             ->prev('← Prev', route('mobile-entry.foods', ['date' => $prevDay->toDateString()]))
             ->center('Today', route('mobile-entry.foods', ['date' => $today->toDateString()]))
-            ->next('Next →', route('mobile-entry.foods', ['date' => $nextDay->toDateString()]))
+            ->next('Next →', route('mobile-entry.foods', ['date' => $nextDay->toDateString()]), $selectedDate->lt($today))
             ->ariaLabel('Date navigation')
             ->build();
         
@@ -544,11 +544,11 @@ class MobileEntryController extends Controller
         // Build components array using ComponentBuilder
         $components = [];
         
-        // Navigation
+        // Navigation - disable "Next" button when viewing today or future dates
         $components[] = \App\Services\ComponentBuilder::navigation()
             ->prev('← Prev', route('mobile-entry.measurements', ['date' => $prevDay->toDateString()]))
             ->center('Today', route('mobile-entry.measurements', ['date' => $today->toDateString()]))
-            ->next('Next →', route('mobile-entry.measurements', ['date' => $nextDay->toDateString()]))
+            ->next('Next →', route('mobile-entry.measurements', ['date' => $nextDay->toDateString()]), $selectedDate->lt($today))
             ->ariaLabel('Date navigation')
             ->build();
         
