@@ -60,16 +60,12 @@ class MobileEntryController extends Controller
         // Generate interface messages
         $interfaceMessages = $formService->generateInterfaceMessages($sessionMessages);
         
-        // Add contextual help messages if no session messages exist
-        if (!$interfaceMessages['hasMessages']) {
-            $contextualMessages = $formService->generateContextualHelpMessages(Auth::id(), $selectedDate, $request->boolean('expand_selection'));
-            if (!empty($contextualMessages)) {
-                $interfaceMessages = [
-                    'messages' => $contextualMessages,
-                    'hasMessages' => true,
-                    'messageCount' => count($contextualMessages)
-                ];
-            }
+        // Always add contextual help messages
+        $contextualMessages = $formService->generateContextualHelpMessages(Auth::id(), $selectedDate, $request->boolean('expand_selection'));
+        if (!empty($contextualMessages)) {
+            $interfaceMessages['messages'] = array_merge($interfaceMessages['messages'] ?? [], $contextualMessages);
+            $interfaceMessages['hasMessages'] = true;
+            $interfaceMessages['messageCount'] = count($interfaceMessages['messages']);
         }
         
         // Build components array using ComponentBuilder

@@ -75,4 +75,53 @@ class LiftsRenderingTest extends TestCase
         //    This ensures the message is rendered as expected after the fix.
         $response->assertSee('<span class="message-prefix">Completed!</span>', false);
     }
+
+    #[\PHPUnit\Framework\Attributes\Test]
+    public function it_shows_expanded_list_and_correct_message_when_expand_selection_is_true()
+    {
+        $user = User::factory()->create();
+        Exercise::factory()->create(['title' => 'Bench Press']); // Need at least one exercise
+        
+        $response = $this->actingAs($user)->get(route('mobile-entry.lifts', ['expand_selection' => true]));
+        
+        $response->assertOk();
+        
+        // Assert the correct contextual message is displayed
+        $response->assertSee(config('mobile_entry_messages.contextual_help.pick_exercise'), false);
+        $response->assertDontSee(config('mobile_entry_messages.contextual_help.getting_started'), false);
+        
+        // Assert the "Log Now" button is not present
+        $response->assertDontSee('Log Now'); // The button itself
+        $response->assertDontSee('<div class="component-button-section">', false); // The button's containing section, which would be hidden
+        
+        // Assert the item list is expanded
+        // The initialState is set via a data attribute which is then picked up by JS
+        $response->assertSee('<section class="component-list-section active" aria-label="Item selection list" data-initial-state="expanded">', false);
+    }
+
+    #[\PHPUnit\Framework\Attributes\Test]
+    public function it_shows_collapsed_list_and_default_message_when_expand_selection_is_false()
+    {
+        $user = User::factory()->create();
+        Exercise::factory()->create(['title' => 'Bench Press']); // Need at least one exercise
+        
+        // Test with expand_selection explicitly false
+        $responseFalse = $this->actingAs($user)->get(route('mobile-entry.lifts', ['expand_selection' => false]));
+        $responseFalse->assertOk();
+        $responseFalse->assertSee('to choose what you want to work out today.', false);
+        $responseFalse->assertDontSee(config('mobile_entry_messages.contextual_help.pick_exercise'), false);
+        $responseFalse->assertSee('Log Now');
+        $responseFalse->assertSee('<div class="component-button-section"', false);
+        $responseFalse->assertDontSee('<div class="component-list-section" data-initial-state="expanded"', false);
+
+        // Test with expand_selection absent
+        $responseAbsent = $this->actingAs($user)->get(route('mobile-entry.lifts'));
+        $responseAbsent->assertOk();
+
+        $responseAbsent->assertSee('to choose what you want to work out today.', false);
+        $responseAbsent->assertDontSee(config('mobile_entry_messages.contextual_help.pick_exercise'), false);
+        $responseAbsent->assertSee('Log Now');
+        $responseAbsent->assertSee('<div class="component-button-section"', false);
+        $responseAbsent->assertDontSee('<div class="component-list-section" data-initial-state="expanded"', false);
+    }
 }

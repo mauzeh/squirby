@@ -100,11 +100,11 @@ return [
     ],
 
     'contextual_help' => [
-        'getting_started' => 'Tap "Add Lift" below to choose what you want to work out today.',
+        'getting_started' => 'Tap "Log Now" below to choose what you want to work out today.',
         'pick_exercise' => 'Choose an exercise from the list below to log your first set.',
         'ready_to_log' => 'You have :count exercise:plural ready to log below.',
         'keep_going' => 'Great progress! You have :count more exercise:plural to log.',
-        'workout_complete' => 'All lifts completed! Tap "Add Lift" below if you want to keep going.',
+        'workout_complete' => 'All lifts completed! Tap "Log Now" below if you want to keep going.',
         
         // Food-specific contextual help
         'getting_started_food' => 'Tap "Add Food" below to choose what you want to log today.',
