@@ -134,7 +134,12 @@ class LiftLogController extends Controller
         
         // Build exercise list
         if ($exercises->isEmpty()) {
-            $components[] = \App\Services\ComponentBuilder::rawHtml('<p>No exercises found.</p>');
+            $components[] = \App\Services\ComponentBuilder::messages()
+                ->add('info', config('mobile_entry_messages.empty_states.metrics_getting_started'))
+                ->build();
+            $components[] = \App\Services\ComponentBuilder::button('Log Now')
+                ->asLink(route('mobile-entry.lifts', ['expand_selection' => true]))
+                ->build();
         } else {
             $aliasService = app(\App\Services\ExerciseAliasService::class);
             $listBuilder = \App\Services\ComponentBuilder::itemList();

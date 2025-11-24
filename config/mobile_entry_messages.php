@@ -75,6 +75,7 @@ return [
     'empty_states' => [
         'no_workouts_logged' => 'No workouts logged yet! Add lifts above to get started.',
         'no_exercises_found' => 'No exercises found',
+        'metrics_getting_started' => 'This page will come alive with your training history, personal records, and 1RM calculations once you log your first lift. Let\'s get started!',
         'no_measurements_logged' => 'No measurements logged yet today!',
         'no_measurement_types_found' => 'No measurement types found. Create measurement types first.',
         
@@ -100,6 +101,7 @@ return [
 
     'contextual_help' => [
         'getting_started' => 'Tap "Add Lift" below to choose what you want to work out today.',
+        'pick_exercise' => 'Choose an exercise from the list below to log your first set.',
         'ready_to_log' => 'You have :count exercise:plural ready to log below.',
         'keep_going' => 'Great progress! You have :count more exercise:plural to log.',
         'workout_complete' => 'All lifts completed! Tap "Add Lift" below if you want to keep going.',

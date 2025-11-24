@@ -62,7 +62,7 @@ class MobileEntryController extends Controller
         
         // Add contextual help messages if no session messages exist
         if (!$interfaceMessages['hasMessages']) {
-            $contextualMessages = $formService->generateContextualHelpMessages(Auth::id(), $selectedDate);
+            $contextualMessages = $formService->generateContextualHelpMessages(Auth::id(), $selectedDate, $request->boolean('expand_selection'));
             if (!empty($contextualMessages)) {
                 $interfaceMessages = [
                     'messages' => $contextualMessages,
@@ -109,15 +109,21 @@ class MobileEntryController extends Controller
         }
         
         // Add Lift button
-        $components[] = \App\Services\ComponentBuilder::button('Add Lift')
-            ->ariaLabel('Add new exercise')
-            ->addClass('btn-add-item')
-            ->build();
+        if (!$request->boolean('expand_selection')) {
+            $components[] = \App\Services\ComponentBuilder::button('Log Now')
+                ->ariaLabel('Add new exercise')
+                ->addClass('btn-add-item')
+                ->build();
+        }
         
         // Item selection list
         $itemListBuilder = \App\Services\ComponentBuilder::itemList()
             ->filterPlaceholder($itemSelectionList['filterPlaceholder'])
             ->noResultsMessage($itemSelectionList['noResultsMessage']);
+
+        if ($request->boolean('expand_selection')) {
+            $itemListBuilder->initialState('expanded');
+        }
         
         foreach ($itemSelectionList['items'] as $item) {
             $itemListBuilder->item(

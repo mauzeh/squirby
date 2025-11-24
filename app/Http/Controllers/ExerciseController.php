@@ -341,7 +341,7 @@ class ExerciseController extends Controller
         }
         
         // Log now button
-        $components[] = \App\Services\ComponentBuilder::button('Log now')
+        $components[] = \App\Services\ComponentBuilder::button('Log Now')
             ->asLink(route('lift-logs.create', ['exercise_id' => $exercise->id, 'redirect_to' => 'exercises-logs']))
             ->build();
         

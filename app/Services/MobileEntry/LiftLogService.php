@@ -698,9 +698,19 @@ class LiftLogService extends MobileEntryBaseService
      * @param Carbon $selectedDate
      * @return array
      */
-    public function generateContextualHelpMessages($userId, Carbon $selectedDate)
+    public function generateContextualHelpMessages($userId, Carbon $selectedDate, $expandSelection = false)
     {
         $messages = [];
+
+        // If the selection is expanded, show a specific guiding message.
+        if ($expandSelection) {
+            $messages[] = [
+                'type' => 'info',
+                'prefix' => 'Let\'s go!',
+                'text' => config('mobile_entry_messages.contextual_help.pick_exercise')
+            ];
+            return $messages;
+        }
         
         // Check if user has logged anything today
         $loggedCount = LiftLog::where('user_id', $userId)
