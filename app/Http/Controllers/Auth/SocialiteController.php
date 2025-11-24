@@ -50,6 +50,8 @@ class SocialiteController extends Controller
                         'email' => $googleUser->getEmail(),
                         'google_id' => $googleUser->getId(),
                         'password' => bcrypt(str()->random(16)), // Random password for socialite users
+                        'prefill_suggested_values' => false,
+                        'show_recommended_exercises' => false,
                     ]);
                     
                     // Assign athlete role to new users
