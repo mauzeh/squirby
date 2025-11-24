@@ -35,10 +35,15 @@ class SocialiteController extends Controller
             $user = User::where('google_id', $googleUser->getId())->first();
 
             if (!$user) {
-                // Check if user exists with this email
-                $user = User::where('email', $googleUser->getEmail())->first();
-                
+                // Check if user exists with this email, including soft-deleted ones
+                $user = User::withTrashed()->where('email', $googleUser->getEmail())->first();
+
                 if ($user) {
+                    // If user was soft-deleted, restore them
+                    if ($user->trashed()) {
+                        $user->restore();
+                    }
+
                     // User exists with this email, update with google_id
                     $user->update([
                         'google_id' => $googleUser->getId(),
@@ -53,26 +58,26 @@ class SocialiteController extends Controller
                         'prefill_suggested_values' => false,
                         'show_recommended_exercises' => false,
                     ]);
-                    
+
                     // Assign athlete role to new users
                     $athleteRole = \App\Models\Role::where('name', 'Athlete')->first();
                     if ($athleteRole) {
                         $user->roles()->attach($athleteRole);
                     }
-                    
+
                     // Create default measurement types for new users
                     \App\Models\MeasurementType::create([
                         'name' => 'Bodyweight',
                         'default_unit' => 'lbs',
                         'user_id' => $user->id,
                     ]);
-                    
+
                     \App\Models\MeasurementType::create([
                         'name' => 'Waist Size',
                         'default_unit' => 'in',
                         'user_id' => $user->id,
                     ]);
-                    
+
                     // Create sample food data for new users
                     try {
                         $this->sampleFoodDataService->createSampleData($user);
@@ -80,7 +85,7 @@ class SocialiteController extends Controller
                         \Log::warning('Failed to create sample food data for new user: ' . $e->getMessage());
                         // Don't fail the registration if sample data creation fails
                     }
-                    
+
                     $isNewUser = true;
                 }
             }

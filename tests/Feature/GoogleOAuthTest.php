@@ -380,11 +380,11 @@ class GoogleOAuthTest extends TestCase
         \App\Models\Role::create(['name' => 'Athlete']);
 
         // Mock SampleFoodDataService and assert createSampleData is called once
-        $sampleFoodDataService = Mockery::mock(\App\Services\SampleFoodDataService::class);
+        $sampleFoodDataService = Mockery::mock("App\Services\SampleFoodDataService");
         $sampleFoodDataService->shouldReceive('createSampleData')
             ->once()
             ->andReturn(['ingredients' => collect(), 'meals' => collect()]);
-        $this->app->instance(\App\Services\SampleFoodDataService::class, $sampleFoodDataService);
+        $this->app->instance("App\Services\SampleFoodDataService", $sampleFoodDataService);
 
         // Mock Google user data
         $googleUser = Mockery::mock(SocialiteUser::class);
@@ -456,11 +456,11 @@ class GoogleOAuthTest extends TestCase
         \App\Models\Role::create(['name' => 'Athlete']);
 
         // Mock SampleFoodDataService to throw exception
-        $sampleFoodDataService = Mockery::mock(\App\Services\SampleFoodDataService::class);
+        $sampleFoodDataService = Mockery::mock("App\Services\SampleFoodDataService");
         $sampleFoodDataService->shouldReceive('createSampleData')
             ->once()
             ->andThrow(new \Exception('Sample data creation failed'));
-        $this->app->instance(\App\Services\SampleFoodDataService::class, $sampleFoodDataService);
+        $this->app->instance("App\Services\SampleFoodDataService", $sampleFoodDataService);
 
         // Mock logger to verify warning is logged
         \Log::shouldReceive('warning')
@@ -502,5 +502,49 @@ class GoogleOAuthTest extends TestCase
         // Assert registration succeeded
         $response->assertRedirect('/mobile-entry/lifts');
         $response->assertSessionHas('success');
+    }
+
+    /** @test */
+    public function it_restores_soft_deleted_user_on_google_signin()
+    {
+        // Create a user and then soft-delete them
+        $user = User::factory()->create([
+            'email' => 'softdeleted@example.com',
+            'google_id' => null,
+        ]);
+        $user->delete();
+
+        $this->assertSoftDeleted('users', [
+            'id' => $user->id,
+        ]);
+
+        // Mock Google user data with the same email
+        $googleUser = Mockery::mock(SocialiteUser::class);
+        $googleUser->shouldReceive('getId')->andReturn('new_google_id_for_restored_user');
+        $googleUser->shouldReceive('getName')->andReturn($user->name);
+        $googleUser->shouldReceive('getEmail')->andReturn($user->email);
+
+        // Mock Socialite
+        Socialite::shouldReceive('driver')->with('google')->once()->andReturnSelf();
+        Socialite::shouldReceive('redirectUrl')->once()->andReturnSelf();
+        Socialite::shouldReceive('user')->once()->andReturn($googleUser);
+
+        // Trigger the Google OAuth callback
+        $response = $this->get(route('auth.google.callback'));
+
+        // Assert user is restored (not soft-deleted)
+        $this->assertNotSoftDeleted('users', [
+            'id' => $user->id,
+        ]);
+
+        // Assert Google ID was updated
+        $user->refresh();
+        $this->assertEquals('new_google_id_for_restored_user', $user->google_id);
+
+        // Assert user is logged in
+        $this->assertAuthenticatedAs($user);
+
+        // Assert redirect
+        $response->assertRedirect('/mobile-entry/lifts');
     }
 }
