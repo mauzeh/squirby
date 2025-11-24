@@ -317,8 +317,8 @@ class ExercisePRCardsIntegrationTest extends TestCase
             'title' => 'Overhead Press',
         ]);
 
-        // Create a PR that's 4 months old (stale)
-        $this->createLiftLogWithDate($exercise, 1, 185, Carbon::now()->subMonths(4));
+        // Create a PR that's 7 months old (stale - older than 6 months)
+        $this->createLiftLogWithDate($exercise, 1, 185, Carbon::now()->subMonths(7));
 
         $response = $this->get(route('exercises.show-logs', $exercise));
 
@@ -370,5 +370,148 @@ class ExercisePRCardsIntegrationTest extends TestCase
         ]);
 
         return $liftLog;
+    }
+
+    /** @test */
+    public function pr_cards_display_time_ago_for_recent_prs()
+    {
+        $exercise = Exercise::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_type' => 'regular',
+            'title' => 'Bench Press',
+        ]);
+
+        // Create PRs with specific dates
+        $this->createLiftLogWithDate($exercise, 1, 225, Carbon::now()->subDays(3));
+        $this->createLiftLogWithDate($exercise, 2, 215, Carbon::now()->subWeeks(2));
+        $this->createLiftLogWithDate($exercise, 3, 205, Carbon::now()->subMonths(1));
+
+        $response = $this->get(route('exercises.show-logs', $exercise));
+
+        $response->assertStatus(200);
+        $response->assertSee('Heaviest Lifts');
+        
+        // Check that time ago labels are displayed
+        $response->assertSee('3 days ago');
+        $response->assertSee('2 weeks ago');
+        $response->assertSee('1 month ago');
+    }
+
+    /** @test */
+    public function pr_cards_display_time_ago_for_old_prs()
+    {
+        $exercise = Exercise::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_type' => 'regular',
+            'title' => 'Deadlift',
+        ]);
+
+        // Create PRs from several months ago
+        $this->createLiftLogWithDate($exercise, 1, 405, Carbon::now()->subMonths(8));
+        $this->createLiftLogWithDate($exercise, 2, 385, Carbon::now()->subMonths(10));
+
+        $response = $this->get(route('exercises.show-logs', $exercise));
+
+        $response->assertStatus(200);
+        $response->assertSee('Heaviest Lifts');
+        
+        // Check that time ago labels are displayed for old PRs
+        $response->assertSee('8 months ago');
+        $response->assertSee('10 months ago');
+    }
+
+    /** @test */
+    public function pr_cards_display_time_ago_for_very_recent_prs()
+    {
+        $exercise = Exercise::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_type' => 'regular',
+            'title' => 'Squat',
+        ]);
+
+        // Create a PR from today
+        $this->createLiftLogWithDate($exercise, 1, 315, Carbon::now()->subHours(2));
+
+        $response = $this->get(route('exercises.show-logs', $exercise));
+
+        $response->assertStatus(200);
+        $response->assertSee('Heaviest Lifts');
+        
+        // Check that time ago label shows hours or "just now" type message
+        // Carbon's diffForHumans() will show "2 hours ago" for this case
+        $response->assertSeeText('ago');
+    }
+
+    /** @test */
+    public function pr_cards_do_not_show_time_ago_when_no_pr_exists()
+    {
+        $exercise = Exercise::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_type' => 'regular',
+            'title' => 'Clean',
+        ]);
+
+        // Create only a 1-rep PR, leaving 2 and 3 rep empty
+        $this->createLiftLogWithDate($exercise, 1, 185, Carbon::now()->subDays(5));
+
+        $response = $this->get(route('exercises.show-logs', $exercise));
+
+        $response->assertStatus(200);
+        $response->assertSee('Heaviest Lifts');
+        $response->assertSee('185');
+        $response->assertSee('5 days ago');
+        
+        // The empty PR cards (showing "—") should not have time ago labels
+        $response->assertSee('—');
+    }
+
+    /** @test */
+    public function pr_cards_show_correct_time_ago_when_multiple_lifts_exist()
+    {
+        $exercise = Exercise::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_type' => 'regular',
+            'title' => 'Overhead Press',
+        ]);
+
+        // Create multiple lifts, but only the heaviest should be shown with its date
+        $this->createLiftLogWithDate($exercise, 1, 135, Carbon::now()->subMonths(6)); // Older, lighter
+        $this->createLiftLogWithDate($exercise, 1, 155, Carbon::now()->subMonths(2)); // Newer, heavier (this should be shown)
+        $this->createLiftLogWithDate($exercise, 1, 145, Carbon::now()->subWeeks(1)); // Newest, but lighter
+
+        $response = $this->get(route('exercises.show-logs', $exercise));
+
+        $response->assertStatus(200);
+        $response->assertSee('Heaviest Lifts');
+        $response->assertSee('155'); // Should show the heaviest weight
+        $response->assertSee('2 months ago'); // Should show the date of the heaviest lift
+        
+        // Should not show dates of the lighter lifts in the PR card
+        $response->assertDontSee('6 months ago');
+        $response->assertDontSee('1 week ago');
+    }
+
+    /** @test */
+    public function pr_cards_time_ago_uses_human_readable_format()
+    {
+        $exercise = Exercise::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_type' => 'regular',
+            'title' => 'Back Squat',
+        ]);
+
+        // Create PRs with various time periods
+        $this->createLiftLogWithDate($exercise, 1, 365, Carbon::now()->subDay());
+        $this->createLiftLogWithDate($exercise, 2, 345, Carbon::now()->subWeek());
+        $this->createLiftLogWithDate($exercise, 3, 325, Carbon::now()->subYear());
+
+        $response = $this->get(route('exercises.show-logs', $exercise));
+
+        $response->assertStatus(200);
+        
+        // Verify human-readable formats are used
+        $response->assertSee('1 day ago');
+        $response->assertSee('1 week ago');
+        $response->assertSee('1 year ago');
     }
 }

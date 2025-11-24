@@ -15,6 +15,9 @@
                     —
                 @endif
             </div>
+            @if(isset($card['date']) && $card['date'])
+            <div class="pr-card-date">{{ \Carbon\Carbon::parse($card['date'])->diffForHumans() }}</div>
+            @endif
         </div>
         @endforeach
     </div>

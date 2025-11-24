@@ -433,13 +433,13 @@ class ExercisePRServiceTest extends TestCase
             'rep_1' => [
                 'weight' => 242,
                 'lift_log_id' => 1,
-                'date' => now()->subMonths(4)->format('Y-m-d'), // 4 months ago
+                'date' => now()->subMonths(7)->format('Y-m-d'), // 7 months ago
                 'is_estimated' => false,
             ],
             'rep_2' => [
                 'weight' => 235,
                 'lift_log_id' => 2,
-                'date' => now()->subMonths(5)->format('Y-m-d'), // 5 months ago
+                'date' => now()->subMonths(8)->format('Y-m-d'), // 8 months ago
                 'is_estimated' => false,
             ],
             'rep_3' => null,

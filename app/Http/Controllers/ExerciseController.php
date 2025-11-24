@@ -369,7 +369,7 @@ class ExerciseController extends Controller
                     
                     foreach (['rep_1' => '1 × 1', 'rep_2' => '1 × 2', 'rep_3' => '1 × 3'] as $key => $label) {
                         if (isset($prData[$key])) {
-                            $prCardsBuilder->card($label, $prData[$key]['weight'], 'lbs');
+                            $prCardsBuilder->card($label, $prData[$key]['weight'], 'lbs', $prData[$key]['date']);
                         } else {
                             $prCardsBuilder->card($label, null, 'lbs');
                         }

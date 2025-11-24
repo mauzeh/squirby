@@ -65,6 +65,14 @@
     margin-left: 0.25rem;
 }
 
+/* Card Date Styling */
+.pr-card-date {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: var(--spacing-xs);
+    font-style: italic;
+}
+
 /* Mobile Responsive Styles */
 @media (max-width: 768px) {
     .pr-cards-container {
@@ -86,6 +94,11 @@
 
     .pr-card-unit {
         font-size: 0.75rem;
+    }
+
+    .pr-card-date {
+        font-size: 0.7rem;
+        margin-top: 4px;
     }
 }
 
@@ -119,6 +132,11 @@
 
     .pr-card-unit {
         font-size: 0.7rem;
+    }
+
+    .pr-card-date {
+        font-size: 0.65rem;
+        margin-top: 3px;
     }
 }
 
