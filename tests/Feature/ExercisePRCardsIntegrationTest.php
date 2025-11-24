@@ -328,7 +328,7 @@ class ExercisePRCardsIntegrationTest extends TestCase
         $response->assertSee('185');
         
         // Should show warning about stale data
-        $response->assertSee('Your max lift data is over 3 months old');
+        $response->assertSee('Your max lift data is over 6 months old');
         $response->assertSee('Consider retesting your 1, 2, or 3 rep max');
     }
 
@@ -352,7 +352,7 @@ class ExercisePRCardsIntegrationTest extends TestCase
         $response->assertSee('225');
         
         // Should NOT show warning about stale data
-        $response->assertDontSee('Your max lift data is over 3 months old');
+        $response->assertDontSee('Your max lift data is over 6 months old');
     }
 
     protected function createLiftLogWithDate(Exercise $exercise, int $reps, float $weight, Carbon $date): LiftLog

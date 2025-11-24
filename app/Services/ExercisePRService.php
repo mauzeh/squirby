@@ -92,14 +92,14 @@ class ExercisePRService
     }
 
     /**
-     * Check if PR data is stale (older than 3 months)
+     * Check if PR data is stale (older than 6 months)
      * 
      * @param array $prData PR data from getPRData()
      * @return bool
      */
     public function isPRDataStale(array $prData): bool
     {
-        $threeMonthsAgo = now()->subMonths(3);
+        $sixMonthsAgo = now()->subMonths(6);
         
         // Check each rep range for recent data
         foreach ([1, 2, 3] as $reps) {
@@ -107,14 +107,14 @@ class ExercisePRService
             if (isset($prData[$key]) && $prData[$key] !== null) {
                 $prDate = \Carbon\Carbon::parse($prData[$key]['date']);
                 
-                // If any PR is recent (within 3 months), data is not stale
-                if ($prDate->isAfter($threeMonthsAgo)) {
+                // If any PR is recent (within 6 months), data is not stale
+                if ($prDate->isAfter($sixMonthsAgo)) {
                     return false;
                 }
             }
         }
         
-        // All PRs are older than 3 months (or no PRs exist)
+        // All PRs are older than 6 months (or no PRs exist)
         return true;
     }
 

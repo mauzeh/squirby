@@ -394,10 +394,10 @@ class ExerciseController extends Controller
                             ->info('This 1-rep max is estimated based on your previous lifts using a standard formula. For more accurate training percentages, test your actual 1, 2, or 3 rep max.')
                             ->build();
                     }
-                    // Add warning if PR data is stale (older than 3 months)
+                    // Add warning if PR data is stale (older than 6 months)
                     elseif ($prData && $this->exercisePRService->isPRDataStale($prData)) {
                         $components[] = \App\Services\ComponentBuilder::messages()
-                            ->warning('Your max lift data is over 3 months old. Consider retesting your 1, 2, or 3 rep max to ensure accurate training percentages.')
+                            ->warning('Your max lift data is over 6 months old. Consider retesting your 1, 2, or 3 rep max to ensure accurate training percentages.')
                             ->build();
                     }
                     
