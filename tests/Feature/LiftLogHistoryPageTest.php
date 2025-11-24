@@ -112,7 +112,13 @@ class LiftLogHistoryPageTest extends TestCase
         $response = $this->actingAs($user)->get(route('lift-logs.index'));
         
         $response->assertStatus(200);
-        $response->assertSee('No exercises found');
+
+        // Assert parts of the message to avoid issues with special characters
+        $response->assertSee('This page will come alive with your training history', false);
+        $response->assertSee('Let&#039;s get started!', false); // Check for HTML entity of apostrophe
+
+        $response->assertSee('Log Now');
+        $response->assertSee(route('mobile-entry.lifts', ['expand_selection' => true]), false);
     }
 
     #[\PHPUnit\Framework\Attributes\Test]
