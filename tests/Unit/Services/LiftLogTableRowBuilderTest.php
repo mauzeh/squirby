@@ -477,27 +477,35 @@ class LiftLogTableRowBuilderTest extends TestCase
         $this->actingAs($user);
         $rows = $this->builder->buildRows(collect([$log1, $log2, $log3]));
 
-        // Only log2 should be marked as PR
-        $this->assertNull($rows[0]['cssClass']); // log1 - not PR
-        $this->assertEquals('row-pr', $rows[1]['cssClass']); // log2 - PR
+        // log1 and log2 should be marked as PRs (chronological PRs)
+        // log1 was a PR when it happened (first lift)
+        // log2 was a PR when it happened (beat log1)
+        // log3 was NOT a PR (didn't beat log2)
+        $this->assertEquals('row-pr', $rows[0]['cssClass']); // log1 - PR at the time
+        $this->assertEquals('row-pr', $rows[1]['cssClass']); // log2 - PR at the time
         $this->assertNull($rows[2]['cssClass']); // log3 - not PR
 
-        // log2 should have PR badge
-        $prBadge = collect($rows[1]['badges'])->firstWhere('colorClass', 'pr');
-        $this->assertNotNull($prBadge);
-        $this->assertEquals('🏆 PR', $prBadge['text']);
+        // Both log1 and log2 should have PR badges
+        $prBadge1 = collect($rows[0]['badges'])->firstWhere('colorClass', 'pr');
+        $this->assertNotNull($prBadge1);
+        $this->assertEquals('🏆 PR', $prBadge1['text']);
+        
+        $prBadge2 = collect($rows[1]['badges'])->firstWhere('colorClass', 'pr');
+        $this->assertNotNull($prBadge2);
+        $this->assertEquals('🏆 PR', $prBadge2['text']);
     }
 
     /** @test */
-    public function it_identifies_multiple_pr_logs_for_different_rep_ranges()
+    public function it_identifies_pr_based_on_highest_estimated_1rm()
     {
         $user = User::factory()->create();
         $exercise = Exercise::factory()->create(['exercise_type' => 'regular']);
         
-        // PR for 1 rep
+        // 275 lbs × 1 rep = 275 lbs estimated 1RM (PR at the time - first lift)
         $log1 = LiftLog::factory()->create([
             'user_id' => $user->id,
-            'exercise_id' => $exercise->id
+            'exercise_id' => $exercise->id,
+            'logged_at' => now()->subDays(3)
         ]);
         LiftSet::factory()->create([
             'lift_log_id' => $log1->id,
@@ -505,10 +513,11 @@ class LiftLogTableRowBuilderTest extends TestCase
             'reps' => 1
         ]);
 
-        // PR for 2 reps
+        // 260 lbs × 2 reps = 277.3 lbs estimated 1RM (PR at the time - beats log1)
         $log2 = LiftLog::factory()->create([
             'user_id' => $user->id,
-            'exercise_id' => $exercise->id
+            'exercise_id' => $exercise->id,
+            'logged_at' => now()->subDays(2)
         ]);
         LiftSet::factory()->create([
             'lift_log_id' => $log2->id,
@@ -516,10 +525,11 @@ class LiftLogTableRowBuilderTest extends TestCase
             'reps' => 2
         ]);
 
-        // PR for 3 reps
+        // 255 lbs × 3 reps = 280.5 lbs estimated 1RM (PR at the time - beats log2)
         $log3 = LiftLog::factory()->create([
             'user_id' => $user->id,
-            'exercise_id' => $exercise->id
+            'exercise_id' => $exercise->id,
+            'logged_at' => now()->subDays(1)
         ]);
         LiftSet::factory()->create([
             'lift_log_id' => $log3->id,
@@ -534,10 +544,10 @@ class LiftLogTableRowBuilderTest extends TestCase
         $this->actingAs($user);
         $rows = $this->builder->buildRows(collect([$log1, $log2, $log3]));
 
-        // All should be marked as PRs
-        $this->assertEquals('row-pr', $rows[0]['cssClass']);
-        $this->assertEquals('row-pr', $rows[1]['cssClass']);
-        $this->assertEquals('row-pr', $rows[2]['cssClass']);
+        // All three should be marked as PRs (each beat the previous best at the time)
+        $this->assertEquals('row-pr', $rows[0]['cssClass']); // log1 - PR (first lift)
+        $this->assertEquals('row-pr', $rows[1]['cssClass']); // log2 - PR (beat log1)
+        $this->assertEquals('row-pr', $rows[2]['cssClass']); // log3 - PR (beat log2)
     }
 
     /** @test */
@@ -572,26 +582,28 @@ class LiftLogTableRowBuilderTest extends TestCase
     }
 
     /** @test */
-    public function it_ignores_reps_outside_1_2_3_range_for_pr_calculation()
+    public function it_considers_all_rep_ranges_for_pr_calculation()
     {
         $user = User::factory()->create();
         $exercise = Exercise::factory()->create(['exercise_type' => 'regular']);
         
-        // High rep set - should not be considered for PR
+        // 300 lbs × 5 reps = 349.95 lbs estimated 1RM (PR at the time - first lift)
         $log1 = LiftLog::factory()->create([
             'user_id' => $user->id,
-            'exercise_id' => $exercise->id
+            'exercise_id' => $exercise->id,
+            'logged_at' => now()->subDays(2)
         ]);
         LiftSet::factory()->create([
             'lift_log_id' => $log1->id,
-            'weight' => 300, // Higher weight but 5 reps
+            'weight' => 300,
             'reps' => 5
         ]);
 
-        // Lower weight but in PR range
+        // 250 lbs × 1 rep = 250 lbs estimated 1RM (NOT a PR - doesn't beat log1's 350)
         $log2 = LiftLog::factory()->create([
             'user_id' => $user->id,
-            'exercise_id' => $exercise->id
+            'exercise_id' => $exercise->id,
+            'logged_at' => now()->subDays(1)
         ]);
         LiftSet::factory()->create([
             'lift_log_id' => $log2->id,
@@ -606,11 +618,11 @@ class LiftLogTableRowBuilderTest extends TestCase
         $this->actingAs($user);
         $rows = $this->builder->buildRows(collect([$log1, $log2]));
 
-        // log1 should not be PR (5 reps not tracked)
-        $this->assertNull($rows[0]['cssClass']);
+        // log1 should be PR (first lift, and highest estimated 1RM)
+        $this->assertEquals('row-pr', $rows[0]['cssClass']);
         
-        // log2 should be PR (1 rep is tracked)
-        $this->assertEquals('row-pr', $rows[1]['cssClass']);
+        // log2 should not be PR (doesn't beat log1's estimated 1RM)
+        $this->assertNull($rows[1]['cssClass']);
     }
 
     /** @test */

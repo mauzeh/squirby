@@ -188,7 +188,8 @@ class LiftLogTableRowBuilder
     }
 
     /**
-     * Calculate which lift logs contain PRs (for 1, 2, or 3 rep ranges)
+     * Calculate which lift logs contain PRs based on estimated 1RM
+     * A PR is determined at the time it was achieved - meaning it beat all previous lifts
      * This is done once upfront to avoid N+1 queries
      * 
      * @param Collection $liftLogs
@@ -200,42 +201,50 @@ class LiftLogTableRowBuilder
             return [];
         }
 
-        // Only process if this is a regular (weighted) exercise
+        // Only process if this is an exercise that supports 1RM calculation
         $firstLog = $liftLogs->first();
-        if ($firstLog->exercise->exercise_type !== 'regular') {
+        $strategy = $firstLog->exercise->getTypeStrategy();
+        
+        if (!$strategy->canCalculate1RM()) {
             return [];
         }
 
+        // Sort logs by date (oldest first) to process chronologically
+        $sortedLogs = $liftLogs->sortBy('logged_at');
+        
         $prLogIds = [];
+        $maxEstimated1RMSoFar = 0;
+        $tolerance = 0.1; // Small tolerance for floating point comparison
         
-        // Track the max weight for each rep range (1, 2, 3)
-        $maxWeights = [1 => 0, 2 => 0, 3 => 0];
-        
-        // First pass: find the maximum weight for each rep range
-        foreach ($liftLogs as $log) {
+        // Process each log chronologically
+        foreach ($sortedLogs as $log) {
+            $logMaxEstimated1RM = 0;
+            
+            // Find the best estimated 1RM in this log
             foreach ($log->liftSets as $set) {
-                if (in_array($set->reps, [1, 2, 3]) && $set->weight > 0) {
-                    if ($set->weight > $maxWeights[$set->reps]) {
-                        $maxWeights[$set->reps] = $set->weight;
+                if ($set->weight > 0 && $set->reps > 0) {
+                    try {
+                        $estimated1RM = $strategy->calculate1RM($set->weight, $set->reps, $log);
+                        
+                        if ($estimated1RM > $logMaxEstimated1RM) {
+                            $logMaxEstimated1RM = $estimated1RM;
+                        }
+                    } catch (\Exception $e) {
+                        // Skip sets that can't be calculated
+                        continue;
                     }
                 }
             }
-        }
-        
-        // Second pass: mark logs that contain a PR
-        foreach ($liftLogs as $log) {
-            foreach ($log->liftSets as $set) {
-                if (in_array($set->reps, [1, 2, 3]) && $set->weight > 0) {
-                    // If this set matches the max weight for its rep range, it's a PR
-                    if ($set->weight === $maxWeights[$set->reps]) {
-                        $prLogIds[] = $log->id;
-                        break; // Only need to mark the log once
-                    }
-                }
+            
+            // If this log's best 1RM beats or ties the previous best, it's a PR
+            // Use >= to include ties as PRs
+            if ($logMaxEstimated1RM >= $maxEstimated1RMSoFar - $tolerance) {
+                $prLogIds[] = $log->id;
+                $maxEstimated1RMSoFar = max($maxEstimated1RMSoFar, $logMaxEstimated1RM);
             }
         }
         
-        return array_unique($prLogIds);
+        return $prLogIds;
     }
 
     /**
