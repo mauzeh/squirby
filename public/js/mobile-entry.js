@@ -541,8 +541,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const tableScript = document.querySelector('script[data-table-confirm-messages]');
             
             let messages = {
-                deleteItem: 'Are you sure you want to delete this item? This action cannot be undone.',
-                removeForm: 'Are you sure you want to remove this item from today\'s program?'
+                deleteItem: 'Are you sure you want to delete this entry? This action cannot be undone.',
+                removeForm: 'Are you sure you want to delete this entry? This action cannot be undone.'
             };
             
             // Merge messages from items component
