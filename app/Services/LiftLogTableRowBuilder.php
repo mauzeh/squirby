@@ -261,7 +261,7 @@ class LiftLogTableRowBuilder
             return ['text' => 'Yesterday', 'color' => 'warning'];
         } elseif ($loggedDate->isFuture()) {
             // Also format future dates as a standard date
-            return ['text' => $loggedDate->format('n/j'), 'color' => 'neutral'];
+            return ['text' => $loggedDate->format('n/j/y'), 'color' => 'neutral'];
         } else {
             // It's in the past, but not yesterday. Calculate the difference.
             $now = now($appTz);
@@ -271,7 +271,7 @@ class LiftLogTableRowBuilder
             if ($daysDiff <= 7) {
                 return ['text' => $daysDiff . ' days ago', 'color' => 'neutral'];
             } else {
-                return ['text' => $loggedDate->format('n/j'), 'color' => 'neutral'];
+                return ['text' => $loggedDate->format('n/j/y'), 'color' => 'neutral'];
             }
         }
     }
