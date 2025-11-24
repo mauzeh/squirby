@@ -45,11 +45,13 @@ class ProfileController extends Controller
         $request->validate([
             'show_global_exercises' => ['nullable', 'boolean'],
             'show_extra_weight' => ['nullable', 'boolean'],
+            'prefill_suggested_values' => ['nullable', 'boolean'],
         ]);
 
         $request->user()->update([
             'show_global_exercises' => $request->boolean('show_global_exercises'),
             'show_extra_weight' => $request->boolean('show_extra_weight'),
+            'prefill_suggested_values' => $request->boolean('prefill_suggested_values'),
         ]);
 
         return Redirect::route('profile.edit')->with('status', 'preferences-updated');

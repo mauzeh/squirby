@@ -82,12 +82,18 @@ class LiftLogService extends MobileEntryBaseService
             );
         }
         
-        // Determine default weight based on last session or exercise type
-        $defaultWeight = $this->getDefaultWeight($exercise, $lastSession, $userId);
-        
-        // Determine default reps and sets from progression service or fallback
-        $defaultReps = $progressionSuggestion->reps ?? ($lastSession['reps'] ?? 5);
-        $defaultSets = $progressionSuggestion->sets ?? ($lastSession['sets'] ?? 3);
+        // Determine default weight, reps, and sets based on user preference
+        if ($user->shouldPrefillSuggestedValues()) {
+            // Use suggested values from progression service
+            $defaultWeight = $this->getDefaultWeight($exercise, $lastSession, $userId);
+            $defaultReps = $progressionSuggestion->reps ?? ($lastSession['reps'] ?? 5);
+            $defaultSets = $progressionSuggestion->sets ?? ($lastSession['sets'] ?? 3);
+        } else {
+            // Use last workout values only
+            $defaultWeight = $lastSession['weight'] ?? $exercise->getTypeStrategy()->getDefaultStartingWeight($exercise);
+            $defaultReps = $lastSession['reps'] ?? 5;
+            $defaultSets = $lastSession['sets'] ?? 3;
+        }
         
         // Create a temporary MobileLiftForm for message generation
         $tempForm = new MobileLiftForm();
@@ -97,7 +103,7 @@ class LiftLogService extends MobileEntryBaseService
         $tempForm->setRelation('exercise', $exercise);
         
         // Generate messages based on last session
-        $messages = $this->generateFormMessagesForMobileForms($tempForm, $lastSession, $userId);
+        $messages = $this->generateFormMessagesForMobileForms($tempForm, $lastSession, $user);
         
         // Prepare default values for the factory
         $defaults = [
@@ -273,10 +279,10 @@ class LiftLogService extends MobileEntryBaseService
      * 
      * @param \App\Models\MobileLiftForm $form
      * @param array|null $lastSession
-     * @param int|null $userId
+     * @param \App\Models\User|null $user
      * @return array
      */
-    private function generateFormMessagesForMobileForms($form, $lastSession, $userId = null)
+    private function generateFormMessagesForMobileForms($form, $lastSession, $user = null)
     {
         $messages = [];
         
@@ -331,10 +337,10 @@ class LiftLogService extends MobileEntryBaseService
             ];
         }
         
-        // Add progression suggestion
-        if ($lastSession && $userId) {
+        // Add progression suggestion only if user has the preference enabled
+        if ($lastSession && $user && $user->shouldPrefillSuggestedValues()) {
             $suggestion = $this->trainingProgressionService->getSuggestionDetails(
-                $userId, 
+                $user->id, 
                 $form->exercise_id
             );
             

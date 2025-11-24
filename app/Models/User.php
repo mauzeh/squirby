@@ -19,7 +19,7 @@ class User extends Authenticatable
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->logOnly(['name', 'email', 'show_global_exercises', 'show_extra_weight'])
+            ->logOnly(['name', 'email', 'show_global_exercises', 'show_extra_weight', 'prefill_suggested_values'])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }
@@ -36,6 +36,7 @@ class User extends Authenticatable
         'google_id',
         'show_global_exercises',
         'show_extra_weight',
+        'prefill_suggested_values',
     ];
 
     /**
@@ -60,6 +61,7 @@ class User extends Authenticatable
             'password' => 'hashed',
             'show_global_exercises' => 'boolean',
             'show_extra_weight' => 'boolean',
+            'prefill_suggested_values' => 'boolean',
             'deleted_at' => 'datetime',
         ];
     }
@@ -99,6 +101,11 @@ class User extends Authenticatable
     public function shouldShowExtraWeight(): bool
     {
         return $this->show_extra_weight ?? false;
+    }
+
+    public function shouldPrefillSuggestedValues(): bool
+    {
+        return $this->prefill_suggested_values ?? true;
     }
 
     public function exercises()

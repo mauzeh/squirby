@@ -61,6 +61,30 @@
             </p>
         </div>
 
+        <div class="form-group-checkbox">
+            <!-- Hidden input to ensure a value is always sent -->
+            <input type="hidden" name="prefill_suggested_values" value="0" />
+            <input 
+                id="prefill_suggested_values" 
+                name="prefill_suggested_values" 
+                type="checkbox" 
+                class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded"
+                value="1"
+                {{ old('prefill_suggested_values', $user->prefill_suggested_values ?? true) ? 'checked' : '' }}
+            />
+            <label for="prefill_suggested_values" class="font-medium text-gray-700">
+                Prefill suggested progression values
+            </label>
+            @error('prefill_suggested_values')
+                <div class="error-message">{{ $message }}</div>
+            @enderror
+        </div>
+        <div style="margin-left: 140px; margin-top: -10px; margin-bottom: 20px;">
+            <p class="text-gray-500 text-sm">
+                When enabled, the lift log form will prefill with AI-suggested weight, reps, and sets based on your training progression. When disabled, the form will prefill with values from your last workout only.
+            </p>
+        </div>
+
         <div class="flex items-center gap-4">
             <button type="submit" class="button">Save Preferences</button>
 
