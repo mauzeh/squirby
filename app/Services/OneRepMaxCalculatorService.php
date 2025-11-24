@@ -123,9 +123,22 @@ class OneRepMaxCalculatorService
             throw UnsupportedOperationException::for1RM($strategy->getTypeName());
         }
 
-        return $liftLog->liftSets->max(function ($liftSet) use ($liftLog) {
-            return $this->calculateOneRepMaxOptimized($liftSet->weight, $liftSet->reps, $liftLog);
-        });
+        $maxOneRepMax = 0;
+        
+        // Try to calculate 1RM for each set, skipping those that fail (e.g., high reps)
+        foreach ($liftLog->liftSets as $liftSet) {
+            try {
+                $oneRepMax = $this->calculateOneRepMaxOptimized($liftSet->weight, $liftSet->reps, $liftLog);
+                if ($oneRepMax > $maxOneRepMax) {
+                    $maxOneRepMax = $oneRepMax;
+                }
+            } catch (\Exception $e) {
+                // Skip sets that can't be calculated (e.g., >10 reps)
+                continue;
+            }
+        }
+        
+        return $maxOneRepMax;
     }
 
     /**
@@ -188,8 +201,21 @@ class OneRepMaxCalculatorService
             throw UnsupportedOperationException::for1RM($strategy->getTypeName());
         }
 
-        return $liftLog->liftSets->max(function ($liftSet) use ($liftLog) {
-            return $this->calculateOneRepMaxOptimized($liftSet->weight, $liftSet->reps, $liftLog);
-        });
+        $maxOneRepMax = 0;
+        
+        // Try to calculate 1RM for each set, skipping those that fail (e.g., high reps)
+        foreach ($liftLog->liftSets as $liftSet) {
+            try {
+                $oneRepMax = $this->calculateOneRepMaxOptimized($liftSet->weight, $liftSet->reps, $liftLog);
+                if ($oneRepMax > $maxOneRepMax) {
+                    $maxOneRepMax = $oneRepMax;
+                }
+            } catch (\Exception $e) {
+                // Skip sets that can't be calculated (e.g., >10 reps)
+                continue;
+            }
+        }
+        
+        return $maxOneRepMax;
     }
 }
