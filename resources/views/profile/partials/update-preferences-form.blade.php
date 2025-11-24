@@ -85,6 +85,30 @@
             </p>
         </div>
 
+        <div class="form-group-checkbox">
+            <!-- Hidden input to ensure a value is always sent -->
+            <input type="hidden" name="show_recommended_exercises" value="0" />
+            <input 
+                id="show_recommended_exercises" 
+                name="show_recommended_exercises" 
+                type="checkbox" 
+                class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded"
+                value="1"
+                {{ old('show_recommended_exercises', $user->show_recommended_exercises ?? true) ? 'checked' : '' }}
+            />
+            <label for="show_recommended_exercises" class="font-medium text-gray-700">
+                Show recommended exercises
+            </label>
+            @error('show_recommended_exercises')
+                <div class="error-message">{{ $message }}</div>
+            @enderror
+        </div>
+        <div style="margin-left: 140px; margin-top: -10px; margin-bottom: 20px;">
+            <p class="text-gray-500 text-sm">
+                When enabled, the exercise selection list will show AI-recommended exercises at the top based on muscle balance, movement diversity, and recovery. When disabled, only recent exercises and alphabetical listing will be shown.
+            </p>
+        </div>
+
         <div class="flex items-center gap-4">
             <button type="submit" class="button">Save Preferences</button>
 

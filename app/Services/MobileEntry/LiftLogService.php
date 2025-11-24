@@ -571,14 +571,16 @@ class LiftLogService extends MobileEntryBaseService
             ->groupBy('exercise_id')
             ->pluck('last_logged_at', 'exercise_id');
 
-        // Get top 10 recommended exercises using the recommendation engine
-        $recommendations = $this->recommendationEngine->getRecommendations($userId, 10);
-        
-        // Create a map of exercise IDs to their recommendation rankings
+        // Get top 10 recommended exercises using the recommendation engine (if user preference enabled)
         $recommendationMap = [];
-        foreach ($recommendations as $index => $recommendation) {
-            $exerciseId = $recommendation['exercise']->id;
-            $recommendationMap[$exerciseId] = $index + 1;  // Rank 1 is highest, rank 10 is lowest
+        if ($user->shouldShowRecommendedExercises()) {
+            $recommendations = $this->recommendationEngine->getRecommendations($userId, 10);
+            
+            // Create a map of exercise IDs to their recommendation rankings
+            foreach ($recommendations as $index => $recommendation) {
+                $exerciseId = $recommendation['exercise']->id;
+                $recommendationMap[$exerciseId] = $index + 1;  // Rank 1 is highest, rank 10 is lowest
+            }
         }
 
         $items = [];
@@ -591,9 +593,9 @@ class LiftLogService extends MobileEntryBaseService
                 $lastPerformedLabel = $lastPerformed->diffForHumans(['short' => true]);
             }
             
-            // Simplified 3-category system
+            // Simplified 3-category system (or 2-category if recommendations disabled)
             if (isset($recommendationMap[$exercise->id])) {
-                // Category 1: Recommended (Top 10 from AI)
+                // Category 1: Recommended (Top 10 from AI) - only if preference enabled
                 $rank = $recommendationMap[$exercise->id];
                 $itemType = [
                     'label' => '<i class="fas fa-star"></i> Recommended',

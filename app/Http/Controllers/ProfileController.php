@@ -46,12 +46,14 @@ class ProfileController extends Controller
             'show_global_exercises' => ['nullable', 'boolean'],
             'show_extra_weight' => ['nullable', 'boolean'],
             'prefill_suggested_values' => ['nullable', 'boolean'],
+            'show_recommended_exercises' => ['nullable', 'boolean'],
         ]);
 
         $request->user()->update([
             'show_global_exercises' => $request->boolean('show_global_exercises'),
             'show_extra_weight' => $request->boolean('show_extra_weight'),
             'prefill_suggested_values' => $request->boolean('prefill_suggested_values'),
+            'show_recommended_exercises' => $request->boolean('show_recommended_exercises'),
         ]);
 
         return Redirect::route('profile.edit')->with('status', 'preferences-updated');
