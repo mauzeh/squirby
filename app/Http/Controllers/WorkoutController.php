@@ -60,13 +60,12 @@ class WorkoutController extends Controller
             ->subtitle('Save and reuse your favorite workouts')
             ->build();
 
-        // Create button
-        $components[] = C::button('Create New Workout')
-            ->asLink(route('workouts.create'))
-            ->build();
-
         // Table of workouts with exercises as sub-items
         if ($workouts->isNotEmpty()) {
+            // Create button (shown when there are workouts)
+            $components[] = C::button('Create New Workout')
+                ->asLink(route('workouts.create'))
+                ->build();
             $tableBuilder = C::table();
 
             foreach ($workouts as $workout) {
@@ -189,8 +188,13 @@ class WorkoutController extends Controller
                 ->confirmMessage('deleteItem', 'Are you sure you want to delete this workout, exercise, or lift log? This action cannot be undone.')
                 ->build();
         } else {
+            // Empty state: show message first, then button
             $components[] = C::messages()
                 ->info('No templates yet. Create your first template to get started!')
+                ->build();
+            
+            $components[] = C::button('Create New Workout')
+                ->asLink(route('workouts.create'))
                 ->build();
         }
 
