@@ -63,8 +63,9 @@ class MealController extends Controller
                 $tableBuilder->row(
                     $meal->id,
                     $meal->name,
-                    $meal->comments ? '<small>' . $meal->comments . '</small>' : null
+                    $meal->comments
                 )
+                ->wrapText()
                 ->badge(round($meal->total_macros['calories']) . ' cal', 'info')
                 ->badge(round($meal->total_macros['protein']) . 'g P', 'neutral')
                 ->badge(round($meal->total_macros['carbs']) . 'g C', 'neutral')
