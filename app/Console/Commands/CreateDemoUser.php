@@ -14,32 +14,37 @@ use Carbon\Carbon;
 
 class CreateDemoUser extends Command
 {
-    protected $signature = 'demo:create-user {--fresh : Delete existing demo user and create fresh}';
+    protected $signature = 'demo:create-user 
+                            {--fresh : Delete existing demo user and create fresh}
+                            {--email= : Custom email for the demo user (default: demo@example.com)}
+                            {--name= : Custom name for the demo user (default: Demo User)}';
     protected $description = 'Create a demo user with sample lift logs and body measurements';
 
     public function handle()
     {
         $fresh = $this->option('fresh');
+        $email = $this->option('email') ?: 'demo@example.com';
+        $name = $this->option('name') ?: 'Demo User';
         
         // Check if demo user already exists
-        $existingUser = User::where('email', 'demo@example.com')->first();
+        $existingUser = User::where('email', $email)->first();
         
         if ($existingUser) {
             if ($fresh) {
-                $this->info('Deleting existing demo user...');
+                $this->info("Deleting existing user: {$email}...");
                 $existingUser->forceDelete();
             } else {
-                $this->error('Demo user already exists. Use --fresh flag to recreate.');
+                $this->error("User with email {$email} already exists. Use --fresh flag to recreate.");
                 return 1;
             }
         }
 
-        $this->info('Creating demo user...');
+        $this->info("Creating demo user: {$name} ({$email})...");
         
         // Create demo user
         $user = User::create([
-            'name' => 'Demo User',
-            'email' => 'demo@example.com',
+            'name' => $name,
+            'email' => $email,
             'password' => Hash::make('demo'),
             'show_global_exercises' => true,
             'show_extra_weight' => false,
@@ -86,7 +91,7 @@ class CreateDemoUser extends Command
         $this->info('🎉 Demo user setup complete!');
         $this->info('');
         $this->info('Login credentials:');
-        $this->info('  Email: demo@example.com');
+        $this->info("  Email: {$email}");
         $this->info('  Password: demo');
         
         return 0;
