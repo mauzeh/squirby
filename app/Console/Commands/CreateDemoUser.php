@@ -76,7 +76,11 @@ class CreateDemoUser extends Command
 
         // Create exercises and lift logs
         $this->info('Creating exercises and lift logs...');
-        $this->createLiftLogs($user);
+        $exerciseModels = $this->createLiftLogs($user);
+
+        // Create workouts
+        $this->info('Creating workouts...');
+        $this->createWorkouts($user, $exerciseModels);
 
         $this->info('');
         $this->info('🎉 Demo user setup complete!');
@@ -312,6 +316,9 @@ class CreateDemoUser extends Command
                 $distanceBonus = floor($progress * 500); // Improve distance over time
                 $distance = $baseDistance + $distanceBonus + rand(-100, 100);
                 
+                // Round to nearest 250m
+                $distance = round($distance / 250) * 250;
+                
                 // Time in seconds (stored as weight for cardio)
                 $timeInSeconds = 480 + rand(-60, 60); // Around 8 minutes
                 
@@ -389,5 +396,78 @@ class CreateDemoUser extends Command
         }
 
         $this->info("  Created {$totalWorkouts} lift logs across " . count($exercises) . " exercises");
+        
+        return $exerciseModels;
+    }
+
+    private function createWorkouts(User $user, array $exerciseModels)
+    {
+        // Workout 1: Strength Day
+        $strengthWorkout = \App\Models\Workout::create([
+            'user_id' => $user->id,
+            'name' => 'Strength Day',
+            'description' => 'Heavy compound lifts focusing on strength',
+            'notes' => 'Rest 3-5 minutes between sets',
+            'is_public' => false,
+            'tags' => ['strength', 'compound'],
+            'times_used' => 0,
+        ]);
+
+        $order = 1;
+        foreach (['Back Squat', 'Bench Press', 'Deadlift'] as $exerciseName) {
+            if (isset($exerciseModels[$exerciseName])) {
+                \App\Models\WorkoutExercise::create([
+                    'workout_id' => $strengthWorkout->id,
+                    'exercise_id' => $exerciseModels[$exerciseName]['model']->id,
+                    'order' => $order++,
+                ]);
+            }
+        }
+
+        // Workout 2: Olympic Lifting
+        $olympicWorkout = \App\Models\Workout::create([
+            'user_id' => $user->id,
+            'name' => 'Olympic Lifting',
+            'description' => 'Technical Olympic lifts and accessories',
+            'notes' => 'Focus on technique and speed',
+            'is_public' => false,
+            'tags' => ['olympic', 'technique'],
+            'times_used' => 0,
+        ]);
+
+        $order = 1;
+        foreach (['Snatch', 'Clean & Jerk', 'Back Squat', 'Strict Press'] as $exerciseName) {
+            if (isset($exerciseModels[$exerciseName])) {
+                \App\Models\WorkoutExercise::create([
+                    'workout_id' => $olympicWorkout->id,
+                    'exercise_id' => $exerciseModels[$exerciseName]['model']->id,
+                    'order' => $order++,
+                ]);
+            }
+        }
+
+        // Workout 3: Conditioning & Accessories
+        $conditioningWorkout = \App\Models\Workout::create([
+            'user_id' => $user->id,
+            'name' => 'Conditioning & Accessories',
+            'description' => 'Cardio, bodyweight, and accessory work',
+            'notes' => 'Keep rest periods short',
+            'is_public' => false,
+            'tags' => ['conditioning', 'accessories'],
+            'times_used' => 0,
+        ]);
+
+        $order = 1;
+        foreach (['Rowing', 'Pull-ups', 'Push-ups', 'Banded Pull-Down'] as $exerciseName) {
+            if (isset($exerciseModels[$exerciseName])) {
+                \App\Models\WorkoutExercise::create([
+                    'workout_id' => $conditioningWorkout->id,
+                    'exercise_id' => $exerciseModels[$exerciseName]['model']->id,
+                    'order' => $order++,
+                ]);
+            }
+        }
+
+        $this->info("  Created 3 workouts");
     }
 }
