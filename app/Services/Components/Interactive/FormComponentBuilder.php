@@ -253,6 +253,12 @@ class FormComponentBuilder
         return $this;
     }
     
+    public function submitButtonClass(string $class): self
+    {
+        $this->data['submitButtonClass'] = $class;
+        return $this;
+    }
+    
     public function hideSubmitButton(): self
     {
         $this->data['hideSubmitButton'] = true;

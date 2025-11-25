@@ -64,7 +64,7 @@
         @endforeach
         
         <div class="form-actions">
-            <button type="submit" class="btn-primary">{{ $data['buttons']['submit'] }}</button>
+            <button type="submit" class="{{ $data['submitButtonClass'] ?? 'btn-primary' }}">{{ $data['buttons']['submit'] }}</button>
         </div>
     </form>
 </section>

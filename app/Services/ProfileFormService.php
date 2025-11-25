@@ -114,6 +114,7 @@ class ProfileFormService
             ->message('warning', 'Once your account is deleted, all of its resources and data will be permanently deleted.')
             ->passwordField('password', 'Confirm Password')
             ->submitButton('Delete Account')
+            ->submitButtonClass('btn-danger')
             ->confirmMessage('Are you sure you want to delete your account? This action cannot be undone.');
 
         // Add error messages if validation failed

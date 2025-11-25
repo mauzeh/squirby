@@ -333,6 +333,69 @@
     outline-offset: 2px;
 }
 
+/* Button Danger Variant - matches btn-primary sizing but with danger color */
+.btn-danger {
+    background-color: var(--color-danger);
+    color: white;
+    border: none;
+    border-radius: var(--border-radius-sm);
+    padding: var(--spacing-md) var(--spacing-xl);
+    cursor: pointer;
+    font-size: 1.5em;
+    font-weight: bold;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: var(--touch-target-min);
+    flex: 1;
+    transition: all var(--transition-fast);
+    touch-action: manipulation;
+    user-select: none;
+}
+
+@media (hover: hover) {
+    .btn-danger:hover {
+        background-color: var(--color-danger-hover);
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-light);
+    }
+}
+
+.btn-danger:active {
+    transform: translateY(0);
+    box-shadow: none;
+}
+
+.btn-danger:focus {
+    outline: 2px solid var(--color-danger);
+    outline-offset: 2px;
+}
+
+.btn-danger:disabled {
+    background-color: var(--color-secondary);
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+    opacity: 0.6;
+}
+
+@media (max-width: 768px) {
+    .btn-danger {
+        font-size: 1.3em;
+        padding: 12px var(--spacing-lg);
+        min-height: var(--touch-target-min);
+    }
+}
+
+@media (max-width: 480px) {
+    .btn-danger {
+        font-size: 1.2em;
+        padding: 10px 16px;
+        min-height: 40px;
+    }
+}
+
 /* Button Component Styles */
 .component-button.btn-primary {
     background-color: var(--color-success);
