@@ -211,90 +211,129 @@ class CreateDemoUser extends Command
             ];
         }
 
-        // Create lift logs over the past 24 weeks with variable frequency
+        // Create lift logs - ensure at least 18 logs per barbell exercise
         $weeks = 24;
-        $totalWorkouts = $weeks * 3.5; // Average 3.5 workouts per week
-        $totalWorkouts = (int) $totalWorkouts;
+        $logsCreated = 0;
+        $loggedExercisesPerDay = []; // Track which exercises were logged on each day
         
-        $currentDay = 0;
-
-        for ($i = 0; $i < $totalWorkouts; $i++) {
-            $progress = $i / $totalWorkouts;
-            
-            // Variable workout frequency - simulate vacations and inconsistent periods
-            if ($progress < 0.2) {
-                // Early phase: consistent 2-3 days between workouts
-                $dayGap = rand(2, 3);
-            } elseif ($progress < 0.35) {
-                // Vacation/break: 5-10 days gap
-                $dayGap = rand(5, 10);
-            } elseif ($progress < 0.5) {
-                // Getting back: 3-4 days
-                $dayGap = rand(3, 4);
-            } elseif ($progress < 0.65) {
-                // Consistent period: 2-3 days
-                $dayGap = rand(2, 3);
-            } elseif ($progress < 0.75) {
-                // Busy period: 4-6 days
-                $dayGap = rand(4, 6);
-            } else {
-                // Recent: very consistent 2-3 days
-                $dayGap = rand(2, 3);
-            }
-            
-            $currentDay += $dayGap;
-            $daysAgo = ($weeks * 7) - $currentDay;
-            
-            // Ensure no logs for today - add at least 1 day
-            $daysAgo = max(1, $daysAgo);
-            
-            $date = Carbon::now()->subDays($daysAgo);
-
-            // Rotate through exercises
-            $exerciseNames = array_keys($exercises);
-            $exerciseName = $exerciseNames[$i % count($exerciseNames)];
-            $exerciseData = &$exerciseModels[$exerciseName];
+        // Create logs for each exercise separately to ensure minimum count
+        foreach ($exercises as $exerciseName => $exerciseConfig) {
+            $exerciseData = $exerciseModels[$exerciseName];
             $exercise = $exerciseData['model'];
-            $config = &$exerciseData['config'];
-
-            // Dynamic progression with phases
-            if ($progress < 0.25) {
-                // Beginner gains: rapid progression
-                $progressionMultiplier = 1.5;
-            } elseif ($progress < 0.5) {
-                // Stagnation: minimal progression, sometimes regression
-                $progressionMultiplier = rand(0, 10) < 7 ? 0 : 0.5;
-                if (rand(0, 10) < 2) {
-                    $progressionMultiplier = -0.5; // Occasional deload
-                }
-            } elseif ($progress < 0.75) {
-                // Acceleration: renewed focus
-                $progressionMultiplier = 1.2;
-            } else {
-                // Advanced: slower but steady gains
-                $progressionMultiplier = 0.6;
-            }
-
-            // Update weight with variation
-            $weightChange = $config['base_progression'] * $progressionMultiplier;
-            $config['current_weight'] += $weightChange;
-
-            // Round to nearest 5 lbs
-            $weight = round($config['current_weight'] / 5) * 5;
-            $weight = max($config['start_weight'] - 10, $weight); // Don't go too low
-
-            // Create lift log
-            $liftLog = LiftLog::create([
-                'user_id' => $user->id,
-                'exercise_id' => $exercise->id,
-                'logged_at' => $date,
-                'comments' => null,
-            ]);
-
-            // Check exercise type
-            $exerciseType = $exercise->exercise_type;
+            $config = $exerciseData['config'];
             
-            if ($exerciseType === 'bodyweight') {
+            // Determine how many logs to create for this exercise
+            $exerciseType = $exercise->exercise_type;
+            if ($exerciseType === 'regular') {
+                // Barbell exercises: at least 18 logs
+                $numLogs = rand(18, 22);
+            } elseif ($exerciseType === 'bodyweight') {
+                // Bodyweight: 12-15 logs
+                $numLogs = rand(12, 15);
+            } elseif ($exerciseType === 'cardio') {
+                // Cardio: 8-12 logs
+                $numLogs = rand(8, 12);
+            } else {
+                // Banded: 10-14 logs
+                $numLogs = rand(10, 14);
+            }
+            
+            $currentDay = 0;
+            
+            for ($i = 0; $i < $numLogs; $i++) {
+                $progress = $i / $numLogs;
+                
+                // Variable workout frequency - simulate vacations and inconsistent periods
+                if ($progress < 0.2) {
+                    // Early phase: consistent 3-5 days between workouts
+                    $dayGap = rand(3, 5);
+                } elseif ($progress < 0.35) {
+                    // Vacation/break: 7-14 days gap
+                    $dayGap = rand(7, 14);
+                } elseif ($progress < 0.5) {
+                    // Getting back: 4-6 days
+                    $dayGap = rand(4, 6);
+                } elseif ($progress < 0.65) {
+                    // Consistent period: 3-5 days
+                    $dayGap = rand(3, 5);
+                } elseif ($progress < 0.75) {
+                    // Busy period: 5-8 days
+                    $dayGap = rand(5, 8);
+                } else {
+                    // Recent: very consistent 3-4 days
+                    $dayGap = rand(3, 4);
+                }
+                
+                $currentDay += $dayGap;
+                $daysAgo = ($weeks * 7) - $currentDay;
+                
+                // Ensure no logs for today - add at least 1 day
+                $daysAgo = max(1, $daysAgo);
+                
+                $date = Carbon::now()->subDays($daysAgo);
+                $dateKey = $date->format('Y-m-d');
+                
+                // Initialize tracking for this day if needed
+                if (!isset($loggedExercisesPerDay[$dateKey])) {
+                    $loggedExercisesPerDay[$dateKey] = [];
+                }
+                
+                // Skip if this exercise was already logged today
+                if (in_array($exerciseName, $loggedExercisesPerDay[$dateKey])) {
+                    // Try next day
+                    $daysAgo--;
+                    $date = Carbon::now()->subDays($daysAgo);
+                    $dateKey = $date->format('Y-m-d');
+                    
+                    if (!isset($loggedExercisesPerDay[$dateKey])) {
+                        $loggedExercisesPerDay[$dateKey] = [];
+                    }
+                    
+                    // If still duplicate, skip this log
+                    if (in_array($exerciseName, $loggedExercisesPerDay[$dateKey])) {
+                        continue;
+                    }
+                }
+                
+                // Mark this exercise as logged for this day
+                $loggedExercisesPerDay[$dateKey][] = $exerciseName;
+                $logsCreated++;
+                
+                // Dynamic progression with phases
+                if ($progress < 0.25) {
+                    // Beginner gains: rapid progression
+                    $progressionMultiplier = 1.5;
+                } elseif ($progress < 0.5) {
+                    // Stagnation: minimal progression, sometimes regression
+                    $progressionMultiplier = rand(0, 10) < 7 ? 0 : 0.5;
+                    if (rand(0, 10) < 2) {
+                        $progressionMultiplier = -0.5; // Occasional deload
+                    }
+                } elseif ($progress < 0.75) {
+                    // Acceleration: renewed focus
+                    $progressionMultiplier = 1.2;
+                } else {
+                    // Advanced: slower but steady gains
+                    $progressionMultiplier = 0.6;
+                }
+
+                // Update weight with variation
+                $weightChange = $config['base_progression'] * $progressionMultiplier;
+                $config['current_weight'] += $weightChange;
+
+                // Round to nearest 5 lbs
+                $weight = round($config['current_weight'] / 5) * 5;
+                $weight = max($config['start_weight'] - 10, $weight); // Don't go too low
+
+                // Create lift log
+                $liftLog = LiftLog::create([
+                    'user_id' => $user->id,
+                    'exercise_id' => $exercise->id,
+                    'logged_at' => $date,
+                    'comments' => null,
+                ]);
+                
+                if ($exerciseType === 'bodyweight') {
                 // For bodyweight exercises: just log 5 sets with varying reps
                 $numSets = 5;
                 $baseReps = $exerciseName === 'Push-ups' ? 15 : 8;
@@ -314,7 +353,7 @@ class CreateDemoUser extends Command
                         'band_color' => null,
                     ]);
                 }
-            } elseif ($exerciseType === 'cardio') {
+                } elseif ($exerciseType === 'cardio') {
                 // For cardio (rowing): log distance in meters as reps, time as weight
                 $baseDistance = 2000; // meters
                 $distanceBonus = floor($progress * 500); // Improve distance over time
@@ -333,7 +372,7 @@ class CreateDemoUser extends Command
                     'notes' => null,
                     'band_color' => null,
                 ]);
-            } elseif ($exerciseType === 'banded_resistance') {
+                } elseif ($exerciseType === 'banded_resistance') {
                 // For banded exercises: log sets with band colors
                 $numSets = rand(3, 5);
                 $baseReps = 12;
@@ -351,7 +390,7 @@ class CreateDemoUser extends Command
                         'band_color' => $bandColor,
                     ]);
                 }
-            } else {
+                } else {
                 // For barbell exercises: working sets + max rep attempt
                 $maxRepTarget = $config['max_rep_target'];
                 
@@ -377,29 +416,11 @@ class CreateDemoUser extends Command
                         'band_color' => null,
                     ]);
                 }
-                
-                // Create a max rep attempt log (1RM, 2RM, or 3RM) for barbell exercises
-                $maxLiftLog = LiftLog::create([
-                    'user_id' => $user->id,
-                    'exercise_id' => $exercise->id,
-                    'logged_at' => $date->copy()->addMinutes(30),
-                    'comments' => "{$maxRepTarget}RM attempt",
-                ]);
-                
-                // Calculate max weight (higher than working weight)
-                $maxWeight = round(($weight * 1.15) / 5) * 5;
-                
-                LiftSet::create([
-                    'lift_log_id' => $maxLiftLog->id,
-                    'weight' => $maxWeight,
-                    'reps' => $maxRepTarget,
-                    'notes' => null,
-                    'band_color' => null,
-                ]);
+                }
             }
         }
 
-        $this->info("  Created {$totalWorkouts} lift logs across " . count($exercises) . " exercises");
+        $this->info("  Created {$logsCreated} lift logs across " . count($exercises) . " exercises");
         
         return $exerciseModels;
     }
