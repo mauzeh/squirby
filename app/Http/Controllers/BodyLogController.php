@@ -149,41 +149,20 @@ class BodyLogController extends Controller
 
         // Chart (if there's data)
         if ($bodyLogs->count() > 1) {
-            $rawChartData = $this->chartService->generateBodyLogChartData($bodyLogs, $measurementType);
+            $chartData = $this->chartService->generateBodyLogChartData($bodyLogs, $measurementType);
             
-            // Transform data for the component builder
-            $chartPoints = [];
-            foreach ($rawChartData['labels'] as $index => $label) {
-                // The label is 'm/d', we need a full date for the time scale
-                $dateParts = explode('/', $label);
-                // This is a bit of a hack; assuming current year. A better ChartService would provide full dates.
-                $year = date('Y');
-                $date = \Carbon\Carbon::createFromDate($year, $dateParts[0], $dateParts[1])->format('Y-m-d');
-                
-                $chartPoints[] = [
-                    'x' => $date,
-                    'y' => $rawChartData['datasets'][0]['data'][$index]
-                ];
-            }
-            
-            $chartDatasets = [
-                [
-                    'label' => $rawChartData['datasets'][0]['label'],
-                    'data' => $chartPoints,
-                    'borderColor' => $rawChartData['datasets'][0]['borderColor'],
-                    'backgroundColor' => $rawChartData['datasets'][0]['backgroundColor'],
-                    'fill' => false,
-                    'spanGaps' => true, // Connect lines over null points
-                ]
-            ];
+            $chartBuilder = ComponentBuilder::chart('bodyLogChart', 'History')
+                ->type('line')
+                ->datasets($chartData['datasets'])
+                ->timeScale('day')
+                ->showLegend()
+                ->ariaLabel($measurementType->name . ' history chart')
+                ->containerClass('chart-container-styled')
+                ->height(300)
+                ->noAspectRatio()
+                ->labelColors();
 
-            $components[] = ComponentBuilder::chart('bodyLogChart', '') // Removed "Progress" title
-                ->datasets($chartDatasets)
-                // Removed yAxisLabel($measurementType->default_unit) to free up horizontal space
-                ->timeScale('day', 'MMM d')
-                ->beginAtZero(false)
-                ->showLegend(false) // Remove legend
-                ->build();
+            $components[] = $chartBuilder->build();
         }
 
         // Table

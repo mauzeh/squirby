@@ -83,42 +83,44 @@ class CreateDemoUser extends Command
 
     private function createBodyMeasurements(User $user, MeasurementType $weightType, MeasurementType $waistType)
     {
-        $startWeight = 180;
+        $startWeight = 185;
         $startWaist = 36;
-        $days = 180; // 2x the data points (6 months)
-        $interval = 3; // Every 3 days instead of 7
+        $days = 180; // 6 months
+        $numDataPoints = 12;
+        $interval = $days / ($numDataPoints - 1);
 
         $currentWeight = $startWeight;
         $currentWaist = $startWaist;
 
-        for ($i = 0; $i <= $days; $i += $interval) {
-            $date = Carbon::now()->subDays($days - $i);
-            $progress = $i / $days;
+        for ($i = 0; $i < $numDataPoints; $i++) {
+            $daysAgo = $days - ($i * $interval);
+            $date = Carbon::now()->subDays($daysAgo);
+            $progress = $i / ($numDataPoints - 1);
 
-            // Create phases with different rates of change
+            // Weight loss with high variability (water weight, diet fluctuations)
             if ($progress < 0.2) {
-                // Initial phase: rapid progress
-                $weightChange = -0.15 + (rand(-10, 10) / 100);
-                $waistChange = -0.04 + (rand(-5, 5) / 100);
+                // Initial phase: some loss with high variability
+                $weightChange = -0.8 + (rand(-25, 20) / 10);
+                $waistChange = -0.3 + (rand(-10, 8) / 10);
             } elseif ($progress < 0.5) {
-                // Stagnation phase: minimal progress
-                $weightChange = -0.02 + (rand(-15, 15) / 100);
-                $waistChange = -0.005 + (rand(-8, 8) / 100);
+                // Stagnation phase: lots of ups and downs
+                $weightChange = -0.2 + (rand(-30, 30) / 10);
+                $waistChange = -0.1 + (rand(-15, 15) / 10);
             } elseif ($progress < 0.7) {
-                // Acceleration phase: renewed progress
-                $weightChange = -0.12 + (rand(-8, 8) / 100);
-                $waistChange = -0.035 + (rand(-6, 6) / 100);
+                // Acceleration phase: more consistent loss
+                $weightChange = -0.9 + (rand(-20, 15) / 10);
+                $waistChange = -0.35 + (rand(-10, 8) / 10);
             } else {
-                // Maintenance phase: slight fluctuations
-                $weightChange = rand(-20, 5) / 100;
-                $waistChange = rand(-10, 5) / 100;
+                // Maintenance phase: high fluctuations around target
+                $weightChange = -0.3 + (rand(-35, 25) / 10);
+                $waistChange = -0.15 + (rand(-12, 10) / 10);
             }
 
             $currentWeight += $weightChange;
             $currentWaist += $waistChange;
 
             // Keep values in reasonable ranges
-            $currentWeight = max(160, min(185, $currentWeight));
+            $currentWeight = max(170, min(190, $currentWeight));
             $currentWaist = max(32, min(37, $currentWaist));
 
             BodyLog::create([
@@ -138,8 +140,7 @@ class CreateDemoUser extends Command
             ]);
         }
 
-        $dataPoints = floor($days / $interval) + 1;
-        $this->info("  Created {$dataPoints} data points over {$days} days");
+        $this->info("  Created {$numDataPoints} data points over {$days} days");
     }
 
     private function createLiftLogs(User $user)
