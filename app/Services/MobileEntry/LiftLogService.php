@@ -724,13 +724,6 @@ class LiftLogService extends MobileEntryBaseService
                 'prefix' => 'Getting started:',
                 'text' => config('mobile_entry_messages.contextual_help.getting_started')
             ];
-        } else {
-            // Has logged exercises
-            $messages[] = [
-                'type' => 'success',
-                'prefix' => 'Great work:',
-                'text' => 'You\'ve logged ' . $loggedCount . ' exercise' . ($loggedCount > 1 ? 's' : '') . ' today!'
-            ];
         }
         
         return $messages;

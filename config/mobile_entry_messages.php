@@ -18,9 +18,9 @@ return [
         'form_removed' => 'Removed :exercise. You can add it back anytime using \'Add Lift\' below.',
         
         'lift_logged' => [
-            'Nice work! :exercise: :details logged!',
-            'Crushed it! :exercise: :details complete!',
-            'Great job! :exercise: :details in the books!',
+            ':exercise: :details logged!',
+            ':exercise: :details complete!',
+            ':exercise: :details in the books!',
             'Awesome! :exercise: :details logged successfully!',
             'Well done! :exercise: :details completed!'
         ],
