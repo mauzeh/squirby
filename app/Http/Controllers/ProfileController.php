@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Services\ProfileFormService;
+use App\Services\ComponentBuilder as C;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -11,13 +13,40 @@ use Illuminate\View\View;
 
 class ProfileController extends Controller
 {
+    protected ProfileFormService $profileFormService;
+
+    public function __construct(ProfileFormService $profileFormService)
+    {
+        $this->profileFormService = $profileFormService;
+    }
+
     /**
      * Display the user's profile form.
      */
     public function edit(Request $request): View
     {
-        return view('profile.edit', [
-            'user' => $request->user(),
+        $user = $request->user();
+        
+        $components = [
+            C::title('Profile', 'Manage your account settings and preferences')->build(),
+        ];
+
+        // Add session messages if any
+        $sessionMessages = C::messagesFromSession();
+        if ($sessionMessages) {
+            $components[] = $sessionMessages;
+        }
+
+        // Add form components
+        $components[] = $this->profileFormService->generateProfileInformationForm($user);
+        $components[] = $this->profileFormService->generatePreferencesForm($user);
+        $components[] = $this->profileFormService->generatePasswordForm();
+        $components[] = $this->profileFormService->generateDeleteAccountForm();
+
+        return view('mobile-entry.flexible', [
+            'data' => [
+                'components' => $components,
+            ]
         ]);
     }
 
@@ -34,7 +63,7 @@ class ProfileController extends Controller
 
         $request->user()->save();
 
-        return Redirect::route('profile.edit')->with('status', 'profile-updated');
+        return Redirect::route('profile.edit')->with('success', 'Profile information updated successfully.');
     }
 
     /**
@@ -56,7 +85,7 @@ class ProfileController extends Controller
             'show_recommended_exercises' => $request->boolean('show_recommended_exercises'),
         ]);
 
-        return Redirect::route('profile.edit')->with('status', 'preferences-updated');
+        return Redirect::route('profile.edit')->with('success', 'Preferences updated successfully.');
     }
 
     /**

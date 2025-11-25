@@ -170,6 +170,29 @@ class FormComponentBuilder
         return $this;
     }
     
+    public function passwordField(string $name, string $label, string $placeholder = ''): self
+    {
+        $field = [
+            'id' => $this->data['id'] . '-' . $name,
+            'name' => $name,
+            'label' => $label,
+            'type' => 'password',
+            'placeholder' => $placeholder,
+            'ariaLabels' => [
+                'field' => $label
+            ]
+        ];
+        
+        if ($this->currentSection !== null && !empty($this->data['sections'])) {
+            $lastSectionIndex = count($this->data['sections']) - 1;
+            $this->data['sections'][$lastSectionIndex]['fields'][] = $field;
+        } else {
+            $this->data['numericFields'][] = $field;
+        }
+        
+        return $this;
+    }
+    
     public function textareaField(string $name, string $label, string $defaultValue = '', string $placeholder = ''): self
     {
         $field = [
@@ -179,6 +202,30 @@ class FormComponentBuilder
             'type' => 'textarea',
             'defaultValue' => $defaultValue,
             'placeholder' => $placeholder,
+            'ariaLabels' => [
+                'field' => $label
+            ]
+        ];
+        
+        if ($this->currentSection !== null && !empty($this->data['sections'])) {
+            $lastSectionIndex = count($this->data['sections']) - 1;
+            $this->data['sections'][$lastSectionIndex]['fields'][] = $field;
+        } else {
+            $this->data['numericFields'][] = $field;
+        }
+        
+        return $this;
+    }
+    
+    public function checkboxField(string $name, string $label, bool $defaultValue, ?string $description = null): self
+    {
+        $field = [
+            'id' => $this->data['id'] . '-' . $name,
+            'name' => $name,
+            'label' => $label,
+            'type' => 'checkbox',
+            'defaultValue' => $defaultValue,
+            'description' => $description,
             'ariaLabels' => [
                 'field' => $label
             ]

@@ -118,7 +118,7 @@ class ProfileTest extends TestCase
 
         // Follow the redirect and assert the success message on the page
         $response = $this->actingAs($user)->get('/profile'); // Re-fetch the profile page after redirect
-        $response->assertSee('Saved.'); // Assert that the success message is visible
+        $response->assertSee('Password updated successfully.'); // Assert that the success message is visible
     }
 
     /** @test */
@@ -162,7 +162,7 @@ class ProfileTest extends TestCase
 
         // Follow the redirect and assert the success message on the page
         $response = $this->actingAs($user)->get('/profile');
-        $response->assertSee('Saved.');
+        $response->assertSee('Profile information updated successfully.');
     }
 
     /** @test */
