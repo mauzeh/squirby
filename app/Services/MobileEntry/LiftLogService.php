@@ -720,7 +720,7 @@ class LiftLogService extends MobileEntryBaseService
         if ($loggedCount === 0) {
             // No exercises logged yet
             $messages[] = [
-                'type' => 'tip',
+                'type' => 'info',
                 'prefix' => 'Getting started:',
                 'text' => config('mobile_entry_messages.contextual_help.getting_started')
             ];
