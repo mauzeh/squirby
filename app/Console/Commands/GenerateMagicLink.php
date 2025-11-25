@@ -42,7 +42,7 @@ class GenerateMagicLink extends Command
             'user_id' => $user->id,
             'token' => $token,
             'expires_at' => now()->addHours(72),
-            'uses_remaining' => 5,
+            'uses_remaining' => 25,
         ]);
 
         $magicLink = url('/magic-login/' . $token);
