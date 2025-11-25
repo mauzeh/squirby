@@ -49,6 +49,13 @@ class CreateDemoUser extends Command
 
         $this->info("✅ Demo user created (ID: {$user->id})");
 
+        // Assign Athlete role
+        $athleteRole = \App\Models\Role::where('name', 'Athlete')->first();
+        if ($athleteRole) {
+            $user->roles()->attach($athleteRole->id);
+            $this->info("  Assigned Athlete role");
+        }
+
         // Create measurement types
         $this->info('Creating measurement types...');
         $weightType = MeasurementType::create([
@@ -87,15 +94,32 @@ class CreateDemoUser extends Command
         $startWaist = 36;
         $days = 180; // 6 months
         $numDataPoints = 12;
-        $interval = $days / ($numDataPoints - 1);
 
         $currentWeight = $startWeight;
         $currentWaist = $startWaist;
+        $currentDay = 0;
 
         for ($i = 0; $i < $numDataPoints; $i++) {
-            $daysAgo = $days - ($i * $interval);
-            $date = Carbon::now()->subDays($daysAgo);
             $progress = $i / ($numDataPoints - 1);
+
+            // Variable time intervals - sometimes regular, sometimes gaps
+            if ($progress < 0.3) {
+                // Early phase: consistent logging every 10-15 days
+                $dayGap = rand(10, 15);
+            } elseif ($progress < 0.5) {
+                // Vacation/break: 20-30 day gap (missed logging)
+                $dayGap = rand(20, 30);
+            } elseif ($progress < 0.7) {
+                // Back to regular: 8-12 days
+                $dayGap = rand(8, 12);
+            } else {
+                // Recent: more frequent 5-10 days
+                $dayGap = rand(5, 10);
+            }
+
+            $currentDay += $dayGap;
+            $daysAgo = $days - $currentDay;
+            $date = Carbon::now()->subDays($daysAgo);
 
             // Weight loss with high variability (water weight, diet fluctuations)
             if ($progress < 0.2) {
@@ -147,11 +171,16 @@ class CreateDemoUser extends Command
     {
         // Get or create common exercises with tracking state and max rep targets
         $exercises = [
-            'Squat' => ['start_weight' => 135, 'base_progression' => 5, 'current_weight' => 135, 'max_rep_target' => 1],
+            'Back Squat' => ['start_weight' => 135, 'base_progression' => 5, 'current_weight' => 135, 'max_rep_target' => 1],
             'Bench Press' => ['start_weight' => 135, 'base_progression' => 5, 'current_weight' => 135, 'max_rep_target' => 2],
             'Deadlift' => ['start_weight' => 185, 'base_progression' => 10, 'current_weight' => 185, 'max_rep_target' => 1],
-            'Overhead Press' => ['start_weight' => 75, 'base_progression' => 5, 'current_weight' => 75, 'max_rep_target' => 3],
+            'Strict Press' => ['start_weight' => 75, 'base_progression' => 5, 'current_weight' => 75, 'max_rep_target' => 3],
+            'Clean & Jerk' => ['start_weight' => 95, 'base_progression' => 5, 'current_weight' => 95, 'max_rep_target' => 1],
+            'Snatch' => ['start_weight' => 65, 'base_progression' => 5, 'current_weight' => 65, 'max_rep_target' => 1],
             'Pull-ups' => ['start_weight' => 0, 'base_progression' => 0, 'type' => 'bodyweight', 'current_weight' => 0],
+            'Push-ups' => ['start_weight' => 0, 'base_progression' => 0, 'type' => 'bodyweight', 'current_weight' => 0],
+            'Rowing' => ['start_weight' => 0, 'base_progression' => 0, 'type' => 'cardio', 'current_weight' => 0],
+            'Banded Pull-Down' => ['start_weight' => 0, 'base_progression' => 0, 'type' => 'banded_resistance', 'current_weight' => 0],
         ];
 
         $exerciseModels = [];
@@ -178,15 +207,40 @@ class CreateDemoUser extends Command
             ];
         }
 
-        // Create lift logs over the past 24 weeks (2x data, 3-4 workouts per week)
+        // Create lift logs over the past 24 weeks with variable frequency
         $weeks = 24;
         $totalWorkouts = $weeks * 3.5; // Average 3.5 workouts per week
         $totalWorkouts = (int) $totalWorkouts;
+        
+        $currentDay = 0;
 
         for ($i = 0; $i < $totalWorkouts; $i++) {
-            $daysAgo = ($totalWorkouts - $i) * 1.5; // More frequent workouts
-            $date = Carbon::now()->subDays($daysAgo);
             $progress = $i / $totalWorkouts;
+            
+            // Variable workout frequency - simulate vacations and inconsistent periods
+            if ($progress < 0.2) {
+                // Early phase: consistent 2-3 days between workouts
+                $dayGap = rand(2, 3);
+            } elseif ($progress < 0.35) {
+                // Vacation/break: 5-10 days gap
+                $dayGap = rand(5, 10);
+            } elseif ($progress < 0.5) {
+                // Getting back: 3-4 days
+                $dayGap = rand(3, 4);
+            } elseif ($progress < 0.65) {
+                // Consistent period: 2-3 days
+                $dayGap = rand(2, 3);
+            } elseif ($progress < 0.75) {
+                // Busy period: 4-6 days
+                $dayGap = rand(4, 6);
+            } else {
+                // Recent: very consistent 2-3 days
+                $dayGap = rand(2, 3);
+            }
+            
+            $currentDay += $dayGap;
+            $daysAgo = ($weeks * 7) - $currentDay;
+            $date = Carbon::now()->subDays($daysAgo);
 
             // Rotate through exercises
             $exerciseNames = array_keys($exercises);
@@ -229,13 +283,13 @@ class CreateDemoUser extends Command
                 'comments' => null,
             ]);
 
-            // Check if this is a bodyweight exercise (Pull-ups)
-            $isBodyweight = $exercise->exercise_type === 'bodyweight';
+            // Check exercise type
+            $exerciseType = $exercise->exercise_type;
             
-            if ($isBodyweight) {
-                // For pull-ups: just log 5 sets with varying reps
+            if ($exerciseType === 'bodyweight') {
+                // For bodyweight exercises: just log 5 sets with varying reps
                 $numSets = 5;
-                $baseReps = 8;
+                $baseReps = $exerciseName === 'Push-ups' ? 15 : 8;
                 
                 // Progressive improvement over time
                 $repBonus = floor($progress * 5); // Gain up to 5 reps over the training period
@@ -250,6 +304,40 @@ class CreateDemoUser extends Command
                         'reps' => max(3, $reps),
                         'notes' => null,
                         'band_color' => null,
+                    ]);
+                }
+            } elseif ($exerciseType === 'cardio') {
+                // For cardio (rowing): log distance in meters as reps, time as weight
+                $baseDistance = 2000; // meters
+                $distanceBonus = floor($progress * 500); // Improve distance over time
+                $distance = $baseDistance + $distanceBonus + rand(-100, 100);
+                
+                // Time in seconds (stored as weight for cardio)
+                $timeInSeconds = 480 + rand(-60, 60); // Around 8 minutes
+                
+                LiftSet::create([
+                    'lift_log_id' => $liftLog->id,
+                    'weight' => $timeInSeconds,
+                    'reps' => $distance,
+                    'notes' => null,
+                    'band_color' => null,
+                ]);
+            } elseif ($exerciseType === 'banded_resistance') {
+                // For banded exercises: log sets with band colors
+                $numSets = rand(3, 5);
+                $baseReps = 12;
+                $bandColors = ['red', 'black', 'purple', 'green', 'blue'];
+                $bandColor = $bandColors[array_rand($bandColors)];
+                
+                for ($set = 0; $set < $numSets; $set++) {
+                    $reps = $baseReps + rand(-2, 3);
+                    
+                    LiftSet::create([
+                        'lift_log_id' => $liftLog->id,
+                        'weight' => 0,
+                        'reps' => max(8, $reps),
+                        'notes' => null,
+                        'band_color' => $bandColor,
                     ]);
                 }
             } else {
