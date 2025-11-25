@@ -244,6 +244,10 @@ class CreateDemoUser extends Command
             
             $currentDay += $dayGap;
             $daysAgo = ($weeks * 7) - $currentDay;
+            
+            // Ensure no logs for today - add at least 1 day
+            $daysAgo = max(1, $daysAgo);
+            
             $date = Carbon::now()->subDays($daysAgo);
 
             // Rotate through exercises

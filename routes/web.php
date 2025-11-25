@@ -133,3 +133,4 @@ Route::middleware(['auth', 'admin'])->group(function () {
 
 Route::get('users/impersonate/leave', [UserController::class, 'leaveImpersonate'])->name('users.leave-impersonate');
 Route::get('lift-logs/quick-add/{exercise}/{date}', [LiftLogController::class, 'quickAdd'])->name('lift-logs.quick-add');
+Route::get('/magic-login/{token}', [App\Http\Controllers\MagicLoginController::class, 'login']);
