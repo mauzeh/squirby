@@ -323,9 +323,22 @@ class ExerciseController extends Controller
         // Build components
         $components = [];
         
+        // Determine back URL based on where user came from
+        $from = $request->query('from');
+        $date = $request->query('date');
+        
+        if ($from === 'mobile-entry-lifts') {
+            $backUrl = route('mobile-entry.lifts', $date ? ['date' => $date] : []);
+        } elseif ($from === 'lift-logs-index') {
+            $backUrl = route('lift-logs.index');
+        } else {
+            // Default to lift-logs index if no 'from' parameter
+            $backUrl = route('lift-logs.index');
+        }
+        
         // Title with back button
         $components[] = \App\Services\ComponentBuilder::title($displayName)
-            ->backButton('fa-arrow-left', route('lift-logs.index'), 'Back to lift logs')
+            ->backButton('fa-arrow-left', $backUrl, 'Back')
             ->build();
         
         // Messages from session

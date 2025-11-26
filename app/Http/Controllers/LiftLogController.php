@@ -159,7 +159,7 @@ class LiftLogController extends Controller
                 $listBuilder->item(
                     (string) $exercise->id,
                     $displayName,
-                    route('exercises.show-logs', $exercise),
+                    route('exercises.show-logs', ['exercise' => $exercise, 'from' => 'lift-logs-index']),
                     $typeLabel,
                     'exercise-history'
                 );

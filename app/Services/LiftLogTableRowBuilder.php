@@ -109,9 +109,20 @@ class LiftLogTableRowBuilder
         
         // View logs action (optional)
         if ($config['showViewLogsAction']) {
+            $viewLogsUrl = route('exercises.show-logs', $liftLog->exercise);
+            
+            // Add 'from' and 'date' parameters if coming from mobile-entry-lifts
+            if ($config['redirectContext'] === 'mobile-entry-lifts') {
+                $params = ['from' => 'mobile-entry-lifts'];
+                if (isset($config['selectedDate'])) {
+                    $params['date'] = $config['selectedDate'];
+                }
+                $viewLogsUrl .= '?' . http_build_query($params);
+            }
+            
             $actions[] = [
                 'type' => 'link',
-                'url' => route('exercises.show-logs', $liftLog->exercise),
+                'url' => $viewLogsUrl,
                 'icon' => 'fa-chart-line',
                 'ariaLabel' => 'View logs',
                 'cssClass' => 'btn-info-circle'

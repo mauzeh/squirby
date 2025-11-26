@@ -705,4 +705,91 @@ class LiftLogTableRowBuilderTest extends TestCase
         // Should be marked as PR because one set is a PR
         $this->assertEquals('row-pr', $rows[0]['cssClass']);
     }
+
+    /** @test */
+    public function it_includes_from_parameter_in_view_logs_url_when_redirect_context_is_mobile_entry_lifts()
+    {
+        $user = User::factory()->create();
+        $exercise = Exercise::factory()->create(['exercise_type' => 'weighted']);
+        $liftLog = LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id
+        ]);
+        LiftSet::factory()->create(['lift_log_id' => $liftLog->id]);
+
+        $this->aliasService->shouldReceive('getDisplayName')
+            ->once()
+            ->andReturn($exercise->title);
+
+        $this->actingAs($user);
+        $rows = $this->builder->buildRows(collect([$liftLog]), [
+            'showViewLogsAction' => true,
+            'redirectContext' => 'mobile-entry-lifts'
+        ]);
+
+        $actions = $rows[0]['actions'];
+        $viewLogsAction = collect($actions)->firstWhere('icon', 'fa-chart-line');
+        
+        $this->assertNotNull($viewLogsAction);
+        $this->assertStringContainsString('from=mobile-entry-lifts', $viewLogsAction['url']);
+    }
+
+    /** @test */
+    public function it_includes_date_parameter_in_view_logs_url_when_selected_date_provided()
+    {
+        $user = User::factory()->create();
+        $exercise = Exercise::factory()->create(['exercise_type' => 'weighted']);
+        $liftLog = LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id
+        ]);
+        LiftSet::factory()->create(['lift_log_id' => $liftLog->id]);
+
+        $this->aliasService->shouldReceive('getDisplayName')
+            ->once()
+            ->andReturn($exercise->title);
+
+        $this->actingAs($user);
+        $rows = $this->builder->buildRows(collect([$liftLog]), [
+            'showViewLogsAction' => true,
+            'redirectContext' => 'mobile-entry-lifts',
+            'selectedDate' => '2025-11-26'
+        ]);
+
+        $actions = $rows[0]['actions'];
+        $viewLogsAction = collect($actions)->firstWhere('icon', 'fa-chart-line');
+        
+        $this->assertNotNull($viewLogsAction);
+        $this->assertStringContainsString('from=mobile-entry-lifts', $viewLogsAction['url']);
+        $this->assertStringContainsString('date=2025-11-26', $viewLogsAction['url']);
+    }
+
+    /** @test */
+    public function it_does_not_include_from_parameter_when_redirect_context_is_not_mobile_entry_lifts()
+    {
+        $user = User::factory()->create();
+        $exercise = Exercise::factory()->create(['exercise_type' => 'weighted']);
+        $liftLog = LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id
+        ]);
+        LiftSet::factory()->create(['lift_log_id' => $liftLog->id]);
+
+        $this->aliasService->shouldReceive('getDisplayName')
+            ->once()
+            ->andReturn($exercise->title);
+
+        $this->actingAs($user);
+        $rows = $this->builder->buildRows(collect([$liftLog]), [
+            'showViewLogsAction' => true,
+            'redirectContext' => 'exercises-logs'
+        ]);
+
+        $actions = $rows[0]['actions'];
+        $viewLogsAction = collect($actions)->firstWhere('icon', 'fa-chart-line');
+        
+        $this->assertNotNull($viewLogsAction);
+        $this->assertStringNotContainsString('from=', $viewLogsAction['url']);
+        $this->assertStringNotContainsString('date=', $viewLogsAction['url']);
+    }
 }
