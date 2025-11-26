@@ -6,6 +6,7 @@ use Illuminate\Support\Collection;
 
 class OneRepMaxChartGenerator implements ChartGeneratorInterface
 {
+    use HasTrendLine;
     public function generate(Collection $liftLogs): array
     {
         $bestLiftLogsPerDay = $liftLogs->groupBy(function ($liftLog) {
@@ -41,67 +42,12 @@ class OneRepMaxChartGenerator implements ChartGeneratorInterface
         // Add trend line if we have at least 2 data points
         if (count($dataPoints) >= 2) {
             $trendLineData = $this->calculateTrendLine($dataPoints);
-            $datasets[] = [
-                'label' => 'Trend',
-                'data' => $trendLineData,
-                'backgroundColor' => 'rgba(255, 99, 132, 0.1)',
-                'borderColor' => 'rgba(255, 99, 132, 0.8)',
-                'borderWidth' => 2,
-                'borderDash' => [5, 5],
-                'pointRadius' => 0,
-                'pointHoverRadius' => 0,
-                'fill' => false
-            ];
+            if (!empty($trendLineData)) {
+                $datasets[] = $this->createTrendLineDataset($trendLineData);
+            }
         }
 
         return ['datasets' => $datasets];
-    }
-
-    /**
-     * Calculate linear regression trend line
-     */
-    private function calculateTrendLine(array $dataPoints): array
-    {
-        if (count($dataPoints) < 2) {
-            return [];
-        }
-
-        // Convert ISO dates to timestamps for calculation
-        $points = array_map(function ($point) {
-            return [
-                'x' => strtotime($point['x']),
-                'y' => $point['y']
-            ];
-        }, $dataPoints);
-
-        $n = count($points);
-        $sumX = array_sum(array_column($points, 'x'));
-        $sumY = array_sum(array_column($points, 'y'));
-        $sumXY = array_sum(array_map(function ($p) {
-            return $p['x'] * $p['y'];
-        }, $points));
-        $sumX2 = array_sum(array_map(function ($p) {
-            return $p['x'] * $p['x'];
-        }, $points));
-
-        // Calculate slope (m) and intercept (b) for y = mx + b
-        $slope = ($n * $sumXY - $sumX * $sumY) / ($n * $sumX2 - $sumX * $sumX);
-        $intercept = ($sumY - $slope * $sumX) / $n;
-
-        // Generate trend line points at the start and end
-        $firstTimestamp = $points[0]['x'];
-        $lastTimestamp = $points[count($points) - 1]['x'];
-
-        return [
-            [
-                'x' => date('c', $firstTimestamp),
-                'y' => round($slope * $firstTimestamp + $intercept, 1)
-            ],
-            [
-                'x' => date('c', $lastTimestamp),
-                'y' => round($slope * $lastTimestamp + $intercept, 1)
-            ]
-        ];
     }
 
     public function supports(string $exerciseType): bool

@@ -177,21 +177,27 @@ class ChartServiceTest extends TestCase
 
         // Assert: Check that the chart data is in the correct format and contains the correct data.
         $this->assertIsArray($chartData);
-        $this->assertArrayHasKey('labels', $chartData);
         $this->assertArrayHasKey('datasets', $chartData);
-        $this->assertCount(1, $chartData['datasets']);
+        $this->assertCount(2, $chartData['datasets']); // Data + trend line
 
+        // Check main dataset
         $dataset = $chartData['datasets'][0];
         $this->assertEquals('Weight', $dataset['label']);
         $this->assertIsArray($dataset['data']);
         $this->assertCount(3, $dataset['data']);
 
         // Check that the data contains the correct values, with null for the missing date.
-        $this->assertEquals('01/01', $chartData['labels'][0]);
-        $this->assertEquals(150, $dataset['data'][0]);
-        $this->assertEquals('01/02', $chartData['labels'][1]);
-        $this->assertNull($dataset['data'][1]);
-        $this->assertEquals('01/03', $chartData['labels'][2]);
-        $this->assertEquals(152, $dataset['data'][2]);
+        $this->assertEquals('2025-01-01', $dataset['data'][0]['x']);
+        $this->assertEquals(150, $dataset['data'][0]['y']);
+        $this->assertEquals('2025-01-02', $dataset['data'][1]['x']);
+        $this->assertNull($dataset['data'][1]['y']);
+        $this->assertEquals('2025-01-03', $dataset['data'][2]['x']);
+        $this->assertEquals(152, $dataset['data'][2]['y']);
+
+        // Check trend line dataset
+        $trendDataset = $chartData['datasets'][1];
+        $this->assertEquals('Trend', $trendDataset['label']);
+        $this->assertIsArray($trendDataset['data']);
+        $this->assertCount(2, $trendDataset['data']); // Start and end points
     }
 }

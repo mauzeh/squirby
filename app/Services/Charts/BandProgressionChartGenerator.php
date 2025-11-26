@@ -6,6 +6,8 @@ use Illuminate\Support\Collection;
 
 class BandProgressionChartGenerator implements ChartGeneratorInterface
 {
+    use HasTrendLine;
+
     public function generate(Collection $liftLogs): array
     {
         // For banded exercises, track total reps similar to bodyweight
@@ -16,20 +18,28 @@ class BandProgressionChartGenerator implements ChartGeneratorInterface
                 'x' => $liftLog->logged_at->toIso8601String(),
                 'y' => $totalReps,
             ];
-        });
+        })->values()->toArray();
 
-        return [
-            'datasets' => [
-                [
-                    'label' => 'Total Reps',
-                    'data' => $volumeData->values()->toArray(),
-                    'backgroundColor' => 'rgba(153, 102, 255, 0.5)',
-                    'borderColor' => 'rgba(153, 102, 255, 1)',
-                    'borderWidth' => 2,
-                    'fill' => false
-                ]
+        $datasets = [
+            [
+                'label' => 'Total Reps',
+                'data' => $volumeData,
+                'backgroundColor' => 'rgba(153, 102, 255, 0.5)',
+                'borderColor' => 'rgba(153, 102, 255, 1)',
+                'borderWidth' => 2,
+                'fill' => false
             ]
         ];
+
+        // Add trend line if we have at least 2 data points
+        if (count($volumeData) >= 2) {
+            $trendLineData = $this->calculateTrendLine($volumeData);
+            if (!empty($trendLineData)) {
+                $datasets[] = $this->createTrendLineDataset($trendLineData);
+            }
+        }
+
+        return ['datasets' => $datasets];
     }
 
     public function supports(string $exerciseType): bool

@@ -9,6 +9,7 @@ use App\Services\Charts\VolumeProgressionChartGenerator;
 use App\Services\Charts\BandProgressionChartGenerator;
 use App\Services\Charts\CardioProgressionChartGenerator;
 use App\Services\Charts\HoldDurationProgressionChartGenerator;
+use App\Services\Charts\HasTrendLine;
 use App\Models\Exercise;
 
 /**
@@ -19,6 +20,8 @@ use App\Models\Exercise;
  */
 class ChartService
 {
+    use HasTrendLine;
+    
     protected array $generators;
 
     public function __construct()
@@ -94,79 +97,17 @@ class ChartService
         // Add trend line
         $trendLineData = $this->calculateTrendLine($dataPoints);
         if (!empty($trendLineData)) {
-            $datasets[] = [
-                'label' => 'Trend',
-                'data' => $trendLineData,
-                'backgroundColor' => 'rgba(255, 99, 132, 0.1)',
-                'borderColor' => 'rgba(255, 99, 132, 0.8)',
-                'borderWidth' => 2,
-                'borderDash' => [5, 5],
-                'pointRadius' => 0,
-                'pointHoverRadius' => 0,
-                'fill' => false
-            ];
+            // Convert ISO 8601 dates back to Y-m-d format for body logs
+            $trendLineData = array_map(function($point) {
+                return [
+                    'x' => date('Y-m-d', strtotime($point['x'])),
+                    'y' => $point['y']
+                ];
+            }, $trendLineData);
+            
+            $datasets[] = $this->createTrendLineDataset($trendLineData);
         }
 
         return ['datasets' => $datasets];
-    }
-
-    /**
-     * Calculate linear regression trend line
-     */
-    private function calculateTrendLine(array $dataPoints): array
-    {
-        // We need at least 2 points to calculate a trend.
-        $points = array_filter($dataPoints, function($point) {
-            return $point['y'] !== null;
-        });
-
-        if (count($points) < 2) {
-            return [];
-        }
-        
-        $points = array_values($points);
-
-        // Convert Y-m-d dates to timestamps for calculation
-        $points = array_map(function ($point) {
-            return [
-                'x' => strtotime($point['x']),
-                'y' => $point['y']
-            ];
-        }, $points);
-
-        $n = count($points);
-        $sumX = array_sum(array_column($points, 'x'));
-        $sumY = array_sum(array_column($points, 'y'));
-        $sumXY = array_sum(array_map(function ($p) {
-            return $p['x'] * $p['y'];
-        }, $points));
-        $sumX2 = array_sum(array_map(function ($p) {
-            return $p['x'] * $p['x'];
-        }, $points));
-
-        // Avoid division by zero
-        $denominator = ($n * $sumX2 - $sumX * $sumX);
-        if ($denominator == 0) {
-            return [];
-        }
-
-        // Calculate slope (m) and intercept (b) for y = mx + b
-        $slope = $denominator ? ($n * $sumXY - $sumX * $sumY) / $denominator : 0;
-        $intercept = ($sumY - $slope * $sumX) / $n;
-
-        // Generate trend line points at the start and end
-        $firstTimestamp = $points[0]['x'];
-        $lastTimestamp = $points[count($points) - 1]['x'];
-
-        return [
-            [
-                'x' => date('Y-m-d', $firstTimestamp),
-                'y' => round($slope * $firstTimestamp + $intercept, 1)
-            ],
-            [
-                'x' => date('Y-m-d', $lastTimestamp),
-                'y' => round($slope * $lastTimestamp + $intercept, 1)
-            ]
-        ];
     }
 }

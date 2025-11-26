@@ -371,7 +371,7 @@ class BodyLogControllerMobileEntryTest extends TestCase
         if (count($bodyLogs) > 1) {
             $this->assertEquals('chart', $components[1]['type']);
             $this->assertEquals('bodyLogChart', $components[1]['data']['canvasId']);
-            $this->assertEquals('', $components[1]['data']['title']); // No title
+            $this->assertEquals('History', $components[1]['data']['title']);
             $this->assertArrayNotHasKey('yAxisLabel', $components[1]['data']['options']['scales']['y'] ?? []); // No yAxisLabel
         }
 
