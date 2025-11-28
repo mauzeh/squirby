@@ -124,6 +124,10 @@ Route::middleware('auth')->group(function () {
 Route::get('auth/google', [App\Http\Controllers\Auth\SocialiteController::class, 'redirectToGoogle'])->name('auth.google');
 Route::get('auth/google/callback', [App\Http\Controllers\Auth\SocialiteController::class, 'handleGoogleCallback'])->name('auth.google.callback');
 
+use App\Http\Controllers\DebugController;
+
+Route::get('/debug/email', [DebugController::class, 'previewFirstLiftEmail']);
+
 require __DIR__.'/auth.php';
 
 Route::middleware(['auth', 'admin'])->group(function () {

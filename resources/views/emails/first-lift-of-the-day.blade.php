@@ -5,7 +5,7 @@ You've kicked off your training for the day by logging **{{ $liftLog->exercise->
 
 Keep up the great work!
 
-<x-mail::button :url="route('lift-logs.show', $liftLog)">
+<x-mail::button :url="route('exercises.show-logs', $liftLog->exercise)">
 View Your Lift
 </x-mail::button>
 
