@@ -14,6 +14,7 @@ class DebugController extends Controller
         if (!$liftLog) {
             return "No lift logs found to render the email.";
         }
-        return new FirstLiftOfTheDay($liftLog);
+        $environmentFile = app()->environmentFile();
+        return new FirstLiftOfTheDay($liftLog, $environmentFile);
     }
 }

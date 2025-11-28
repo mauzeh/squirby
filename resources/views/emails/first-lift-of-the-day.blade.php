@@ -1,5 +1,5 @@
 <x-mail::message>
-# Great job on your first lift of the day!
+# Hello, {{ $liftLog->user->name }}!
 
 You've kicked off your training for the day by logging **{{ $liftLog->exercise->getDisplayNameForUser($liftLog->user) }}**.
 
@@ -11,4 +11,7 @@ View Your Lift
 
 Thanks,<br>
 {{ config('app.name') }}
+
+<br>
+<small>Environment file: {{ $environmentFile }}</small>
 </x-mail::message>

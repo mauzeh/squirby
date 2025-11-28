@@ -15,13 +15,15 @@ class FirstLiftOfTheDay extends Mailable
     use Queueable, SerializesModels;
 
     public LiftLog $liftLog;
+    public string $environmentFile;
 
     /**
      * Create a new message instance.
      */
-    public function __construct(LiftLog $liftLog)
+    public function __construct(LiftLog $liftLog, string $environmentFile)
     {
         $this->liftLog = $liftLog;
+        $this->environmentFile = $environmentFile;
     }
 
     /**

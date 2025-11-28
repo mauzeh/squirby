@@ -8,6 +8,7 @@ use Tests\TestCase;
 use App\Models\User;
 use App\Models\Exercise;
 use App\Models\LiftLog;
+use Illuminate\Support\Facades\App;
 class EmailDebugRouteTest extends TestCase
 {
     use RefreshDatabase;
@@ -35,10 +36,11 @@ class EmailDebugRouteTest extends TestCase
         $response = $this->get('/debug/email');
 
         $response->assertStatus(200);
-        $response->assertSeeText('Great job on your first lift of the day!');
+        $response->assertSeeText('Hello ' . $user->name);
         $response->assertSeeText($exercise->getDisplayNameForUser($user));
         $response->assertSeeText('View Your Lift');
         $response->assertSee(route('exercises.show-logs', $liftLog->exercise), false); // Use false for not escaping HTML
+        $response->assertSeeText('Environment file: ' . app()->environmentFile());
     }
 
     /**
