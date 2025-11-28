@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use App\Services\TrainingProgressionService;
+use App\Events\LiftLogged;
 
 
 class LiftLogController extends Controller
@@ -243,6 +244,8 @@ class LiftLogController extends Controller
             'logged_at' => $loggedAt,
             'user_id' => auth()->id(),
         ]);
+
+        LiftLogged::dispatch($liftLog);
 
         $reps = $request->input('reps');
         $rounds = $request->input('rounds');
