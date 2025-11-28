@@ -53,7 +53,7 @@ class SendFirstLiftOfTheDayNotification implements ShouldQueue
                 
                 Log::info('Successfully sent FirstLiftOfTheDay email.');
             } catch (\Exception $e) {
-                Log::error('Failed to send FirstLiftOfTheDay email: ' . $e->getMessage(), ['exception_type' => get_class($e)]);
+                Log::error('Failed to send FirstLiftOfTheDay email. Exception: ' . get_class($e) . ', Message: ' . $e->getMessage());
             }
         }
     }
