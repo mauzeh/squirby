@@ -8,6 +8,7 @@ use Tests\TestCase;
 use App\Models\User;
 use App\Models\Exercise;
 use App\Models\LiftLog;
+use App\Models\LiftSet;
 use Illuminate\Support\Facades\App;
 class EmailDebugRouteTest extends TestCase
 {
@@ -26,18 +27,30 @@ class EmailDebugRouteTest extends TestCase
         // Create an exercise
         $exercise = Exercise::factory()->create(['user_id' => $user->id]);
 
-        // Create a lift log
-        $liftLog = LiftLog::factory()->create([
-            'user_id' => $user->id,
-            'exercise_id' => $exercise->id,
-            'logged_at' => now(),
-        ]);
+        // Create a lift log with lift sets
+        $liftLog = LiftLog::factory()
+            ->has(LiftSet::factory()->count(3), 'liftSets')
+            ->create([
+                'user_id' => $user->id,
+                'exercise_id' => $exercise->id,
+                'logged_at' => now(),
+            ]);
 
         $response = $this->get('/debug/email');
 
         $response->assertStatus(200);
-        $response->assertSeeText('Hello ' . $user->name);
+        $response->assertSee('Hello ' . $user->name);
         $response->assertSeeText($exercise->getDisplayNameForUser($user));
+
+        $firstSet = $liftLog->liftSets->first();
+        $weight = $firstSet->weight ?? 0;
+        $reps = $firstSet->reps ?? 0;
+        $bandColor = $firstSet->band_color ?? null;
+        $rounds = $liftLog->liftSets->count();
+        $strategy = $liftLog->exercise->getTypeStrategy();
+        $workoutDescription = $strategy->formatSuccessMessageDescription($weight, $reps, $rounds, $bandColor);
+
+        $response->assertSeeText($workoutDescription);
         $response->assertSeeText('View Your Lift');
         $response->assertSee(route('exercises.show-logs', $liftLog->exercise), false); // Use false for not escaping HTML
         $response->assertSeeText('Environment file: ' . app()->environmentFile());
