@@ -10,7 +10,7 @@ class DebugController extends Controller
 {
     public function previewFirstLiftEmail()
     {
-        $liftLog = LiftLog::latest()->first();
+        $liftLog = LiftLog::with('exercise')->latest()->first();
         if (!$liftLog) {
             return "No lift logs found to render the email.";
         }

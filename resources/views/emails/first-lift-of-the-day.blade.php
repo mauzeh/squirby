@@ -1,7 +1,7 @@
 <x-mail::message>
 # Great job on your first lift of the day!
 
-You've kicked off your training for the day by logging **{{ $liftLog->exercise->name }}**.
+You've kicked off your training for the day by logging **{{ $liftLog->exercise->getDisplayNameForUser($liftLog->user) }}**.
 
 Keep up the great work!
 

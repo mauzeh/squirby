@@ -36,7 +36,7 @@ class EmailDebugRouteTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertSeeText('Great job on your first lift of the day!');
-        $response->assertSeeText($exercise->name);
+        $response->assertSeeText($exercise->getDisplayNameForUser($user));
         $response->assertSeeText('View Your Lift');
         $response->assertSee(route('exercises.show-logs', $liftLog->exercise), false); // Use false for not escaping HTML
     }
