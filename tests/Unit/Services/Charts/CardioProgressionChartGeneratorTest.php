@@ -58,8 +58,9 @@ class CardioProgressionChartGeneratorTest extends TestCase
 
         $this->assertIsArray($chartData);
         $this->assertArrayHasKey('datasets', $chartData);
-        $this->assertCount(1, $chartData['datasets']);
+        $this->assertCount(2, $chartData['datasets']);
 
+        // Assert for the main dataset
         $dataset = $chartData['datasets'][0];
         $this->assertEquals('Total Distance (m)', $dataset['label']);
         $this->assertCount(2, $dataset['data']);
@@ -71,6 +72,15 @@ class CardioProgressionChartGeneratorTest extends TestCase
         // Check second data point: 1000m × 1 round = 1000m total
         $this->assertEquals($liftLog2->logged_at->toIso8601String(), $dataset['data'][1]['x']);
         $this->assertEquals(1000, $dataset['data'][1]['y']);
+
+        // Assert for the trend line dataset
+        $trendLineDataset = $chartData['datasets'][1];
+        $this->assertEquals('Trend', $trendLineDataset['label']);
+        $this->assertCount(2, $trendLineDataset['data']);
+        $this->assertArrayHasKey('x', $trendLineDataset['data'][0]);
+        $this->assertArrayHasKey('y', $trendLineDataset['data'][0]);
+        $this->assertArrayHasKey('x', $trendLineDataset['data'][1]);
+        $this->assertArrayHasKey('y', $trendLineDataset['data'][1]);
     }
 
     /** @test */
