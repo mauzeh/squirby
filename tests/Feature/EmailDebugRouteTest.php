@@ -39,7 +39,7 @@ class EmailDebugRouteTest extends TestCase
         $response = $this->get('/debug/email');
 
         $response->assertStatus(200);
-        $response->assertSee('Hello ' . $user->name);
+        $response->assertSee('Hello, ' . $user->name. '!');
         $response->assertSeeText($exercise->getDisplayNameForUser($user));
 
         $firstSet = $liftLog->liftSets->first();
