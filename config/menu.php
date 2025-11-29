@@ -40,8 +40,10 @@ return [
                 ],
                 // Exercises (conditional)
                 [
-                    'label' => 'Exercises',
+                    'label' => null,
+                    'icon' => 'fa-list',
                     'route' => 'exercises.index',
+                    'title' => 'Exercises',
                     'patterns' => ['exercises.*'],
                     'roles' => ['Admin'], // Custom property for conditional display
                 ],
