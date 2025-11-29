@@ -32,7 +32,7 @@ class FirstLiftOfTheDay extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'First Lift Of The Day',
+            subject: 'Hello ' . $this->liftLog->user->name . ', your First Lift Of The Day!',
         );
     }
 
