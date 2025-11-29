@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+  /* iOS System Fonts */
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: #000000;
+    color: #ffffff;
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .screen-container {
+    width: 100%;
+    max-width: 375px; 
+  }
+
+  /* --- HEADER: Text Only --- */
+  .header-container {
+    text-align: center;
+    margin-bottom: 24px;
+    padding-top: 10px;
+  }
+
+  h1 {
+    font-size: 28px; /* Slightly larger for emphasis */
+    font-weight: 700;
+    margin: 0;
+    letter-spacing: 0.3px;
+  }
+
+  /* --- Note Card --- */
+  .note-card {
+    background-color: #2c2c2e;
+    border-radius: 12px;
+    margin-bottom: 24px;
+    display: flex;
+    overflow: hidden;
+    animation: slideDown 0.4s ease-out;
+  }
+
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .note-accent-bar {
+    width: 6px;
+    background-color: #ffcc00;
+  }
+
+  .note-content {
+    padding: 16px;
+    flex: 1;
+  }
+
+  .note-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+
+  .note-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #ffcc00;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .note-date {
+    font-size: 13px;
+    color: #8e8e93;
+  }
+
+  .note-text {
+    font-size: 15px;
+    line-height: 1.4;
+    color: #e5e5ea;
+    font-style: italic;
+  }
+
+  /* --- Input Section --- */
+  .section-header {
+    text-transform: uppercase;
+    font-size: 13px;
+    color: #8e8e93;
+    margin-bottom: 8px;
+    padding-left: 16px;
+    display: flex;
+    justify-content: space-between;
+  }
+  
+  .smart-badge {
+    color: #0a84ff;
+    font-weight: 600;
+    font-size: 11px;
+  }
+
+  .ios-card {
+    background-color: #2c2c2e;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 8px;
+  }
+
+  .input-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    border-bottom: 1px solid #3a3a3c;
+  }
+
+  .input-row:last-child {
+    border-bottom: none;
+  }
+
+  .label-group {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .label {
+    font-size: 17px;
+    font-weight: 500;
+  }
+  
+  .sub-label {
+    font-size: 13px;
+    color: #8e8e93;
+    margin-top: 2px;
+  }
+
+  .progression-tag {
+    font-size: 12px;
+    color: #30d158; 
+    background: rgba(48, 209, 88, 0.15);
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-left: 6px;
+    font-weight: 600;
+    display: inline-block;
+  }
+
+  .stepper {
+    display: flex;
+    align-items: center;
+    background-color: #3a3a3c;
+    border-radius: 8px;
+    padding: 2px;
+  }
+
+  .step-btn {
+    width: 44px;
+    height: 32px;
+    background: transparent;
+    border: none;
+    color: #ffffff;
+    font-size: 20px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .step-value {
+    min-width: 50px;
+    text-align: center;
+    font-size: 17px;
+    font-weight: 600;
+    color: #0a84ff; 
+    border-left: 1px solid #48484a;
+    border-right: 1px solid #48484a;
+    height: 20px;
+    line-height: 20px;
+  }
+
+  .section-footer {
+    font-size: 13px;
+    color: #8e8e93;
+    padding-left: 16px;
+    padding-right: 16px;
+    margin-bottom: 24px;
+    line-height: 1.4;
+  }
+
+  .note-input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 17px;
+    padding: 16px;
+    box-sizing: border-box;
+    font-family: inherit;
+    resize: none;
+  }
+
+  .primary-btn {
+    background-color: #007bff;
+    color: white;
+    width: 100%;
+    padding: 16px;
+    border-radius: 12px;
+    border: none;
+    font-size: 17px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+</style>
+</head>
+<body>
+
+<div class="screen-container">
+
+  <div class="header-container">
+    <h1>Back Squat</h1>
+  </div>
+
+  <div class="note-card">
+    <div class="note-accent-bar"></div>
+    <div class="note-content">
+      <div class="note-header">
+        <span class="note-title">Last Session Notes</span>
+        <span class="note-date">Nov 21</span>
+      </div>
+      <div class="note-text">
+        "Felt heavy. Right knee caving in on the ascent—focus on pushing knees out next time."
+      </div>
+    </div>
+  </div>
+
+  <div class="section-header">
+    <span>Recommended Goal</span>
+    <span class="smart-badge">★ Smart Plan</span>
+  </div>
+
+  <div class="ios-card">
+    
+    <div class="input-row">
+      <div class="label-group">
+        <div>
+          <span class="label">Weight</span>
+          <span class="progression-tag">↑ 5lbs</span>
+        </div>
+        <span class="sub-label">lbs</span>
+      </div>
+      <div class="stepper">
+        <button class="step-btn">−</button>
+        <div class="step-value">135</div>
+        <button class="step-btn">+</button>
+      </div>
+    </div>
+
+    <div class="input-row">
+      <span class="label">Reps</span>
+      <div class="stepper">
+        <button class="step-btn">−</button>
+        <div class="step-value">5</div>
+        <button class="step-btn">+</button>
+      </div>
+    </div>
+
+    <div class="input-row">
+      <span class="label">Sets</span>
+      <div class="stepper">
+        <button class="step-btn">−</button>
+        <div class="step-value">3</div>
+        <button class="step-btn">+</button>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="section-footer">
+    Based on your last session on Nov 21 (130 lbs × 5).
+  </div>
+
+  <div class="section-header">
+    TODAY'S NOTES
+  </div>
+  <div class="ios-card">
+    <textarea class="note-input" rows="3" placeholder="How did it feel?"></textarea>
+  </div>
+
+  <button class="primary-btn">Log Back Squat</button>
+
+</div>
+
+</body>
+</html>
