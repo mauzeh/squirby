@@ -23,7 +23,7 @@ class LiftLogTableRowBuilder
     /**
      * Build table rows from lift logs collection
      * 
-     * @param Collection $liftLogs
+     * @param Collection $liftLogs The logs to display
      * @param array $options Configuration options
      * @return array
      */
@@ -42,8 +42,22 @@ class LiftLogTableRowBuilder
         
         $config = array_merge($defaults, $options);
         
-        // Calculate PRs once upfront for all logs
-        $prLogIds = $this->calculatePRLogIds($liftLogs);
+        // Calculate PRs once upfront
+        // Fetch all historical logs for accurate PR calculation
+        if ($liftLogs->isNotEmpty()) {
+            $userId = $liftLogs->first()->user_id;
+            $exerciseIds = $liftLogs->pluck('exercise_id')->unique();
+            
+            $logsForPRCalculation = \App\Models\LiftLog::where('user_id', $userId)
+                ->whereIn('exercise_id', $exerciseIds)
+                ->with(['exercise', 'liftSets'])
+                ->orderBy('logged_at', 'asc')
+                ->get();
+        } else {
+            $logsForPRCalculation = $liftLogs;
+        }
+        
+        $prLogIds = $this->calculatePRLogIds($logsForPRCalculation);
         $config['prLogIds'] = $prLogIds;
         
         return $liftLogs->map(function ($liftLog) use ($config) {
@@ -203,7 +217,7 @@ class LiftLogTableRowBuilder
      * A PR is determined at the time it was achieved - meaning it beat all previous lifts
      * This is done once upfront to avoid N+1 queries
      * 
-     * @param Collection $liftLogs
+     * @param Collection $liftLogs Collection of lift logs to analyze (should include ALL historical logs for accurate PR detection)
      * @return array Array of lift log IDs that contain PRs
      */
     protected function calculatePRLogIds(Collection $liftLogs): array

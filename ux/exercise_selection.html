@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+  /* iOS System Fonts */
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: #000000;
+    color: #ffffff;
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .screen-container {
+    width: 100%;
+    max-width: 375px; 
+  }
+
+  /* --- Navigation --- */
+  .nav-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  h1 {
+    font-size: 32px;
+    font-weight: 700;
+    margin: 0;
+  }
+
+  .add-custom-btn {
+    color: #0a84ff;
+    font-size: 17px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+  }
+
+  /* --- Search Bar --- */
+  .search-wrapper {
+    background-color: #1c1c1e;
+    border-radius: 10px;
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    margin-bottom: 24px;
+  }
+
+  .search-icon {
+    color: #8e8e93;
+    margin-right: 10px;
+    font-size: 14px;
+  }
+
+  .search-input {
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 17px;
+    width: 100%;
+    outline: none;
+  }
+  
+  .search-input::placeholder {
+    color: #8e8e93;
+  }
+
+  /* --- Section Title --- */
+  .section-title {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+
+  .see-all {
+    font-size: 15px;
+    color: #0a84ff;
+    font-weight: 400;
+  }
+
+  /* --- Horizontal Scroll --- */
+  .horizontal-scroll {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    padding-bottom: 24px;
+    margin-right: -20px; 
+    padding-right: 20px;
+    scrollbar-width: none;
+  }
+  .horizontal-scroll::-webkit-scrollbar { display: none; } 
+
+  .quick-card {
+    background-color: #1c1c1e;
+    min-width: 110px;
+    height: 110px;
+    border-radius: 12px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+  }
+
+  .quick-icon-wrapper {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .quick-icon-wrapper i {
+    font-size: 18px;
+    color: #ffffff;
+  }
+
+  .quick-name {
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.2;
+    margin-top: 8px;
+  }
+
+  .quick-sub {
+    font-size: 11px;
+    color: #8e8e93;
+    margin-top: 2px;
+  }
+
+  /* --- CATEGORY STYLES (Color Coding) --- */
+  
+  /* Barbell: Red */
+  .cat-barbell { background-color: rgba(255, 59, 48, 0.2); }
+  .cat-barbell i { color: #ff3b30; }
+
+  /* Dumbbell: Blue */
+  .cat-dumbbell { background-color: rgba(10, 132, 255, 0.2); }
+  .cat-dumbbell i { color: #0a84ff; }
+
+  /* Machine: Grey */
+  .cat-machine { background-color: rgba(142, 142, 147, 0.2); }
+  .cat-machine i { color: #aaaaaa; }
+
+  /* Bodyweight: Green */
+  .cat-bodyweight { background-color: rgba(48, 209, 88, 0.2); }
+  .cat-bodyweight i { color: #30d158; }
+
+
+  /* --- List View --- */
+  .list-group {
+    background-color: #1c1c1e;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 24px;
+  }
+
+  .list-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid #2c2c2e;
+    cursor: pointer;
+  }
+
+  .list-item:last-child {
+    border-bottom: none;
+  }
+
+  .list-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    margin-right: 12px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .list-avatar i {
+    font-size: 18px;
+  }
+
+  .list-content {
+    flex: 1;
+  }
+
+  .item-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 2px;
+    display: flex;
+    align-items: center;
+  }
+
+  .item-subtitle {
+    font-size: 13px;
+    color: #8e8e93;
+  }
+
+  .add-icon {
+    color: #0a84ff;
+    font-size: 20px;
+  }
+  
+  .badge-rec {
+    font-size: 10px;
+    background-color: #0a84ff;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-left: 8px;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+
+</style>
+</head>
+<body>
+
+<div class="screen-container">
+  
+  <div class="nav-header">
+    <h1>Exercises</h1>
+    <button class="add-custom-btn">Custom</button>
+  </div>
+
+  <div class="search-wrapper">
+    <i class="fa-solid fa-magnifying-glass search-icon"></i>
+    <input type="text" class="search-input" placeholder="Search movements..." />
+  </div>
+
+  <div class="section-title">
+    Suggested for Today
+  </div>
+
+  <div class="horizontal-scroll">
+    
+    <div class="quick-card">
+      <div class="quick-icon-wrapper cat-barbell">
+        <i class="fa-solid fa-weight-hanging"></i>
+      </div>
+      <div>
+        <div class="quick-name">Back Squat</div>
+        <div class="quick-sub">2 days ago</div>
+      </div>
+    </div>
+    
+    <div class="quick-card">
+      <div class="quick-icon-wrapper cat-machine">
+         <i class="fa-solid fa-gears"></i>
+      </div>
+      <div>
+        <div class="quick-name">Leg Press</div>
+        <div class="quick-sub">Last week</div>
+      </div>
+    </div>
+
+    <div class="quick-card">
+      <div class="quick-icon-wrapper cat-bodyweight">
+         <i class="fa-solid fa-person-running"></i>
+      </div>
+      <div>
+        <div class="quick-name">Lunges</div>
+        <div class="quick-sub">Never</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-title">
+    <span>Legs</span>
+    <span class="see-all">See All</span>
+  </div>
+
+  <div class="list-group">
+    
+    <div class="list-item">
+      <div class="list-avatar cat-bodyweight">
+        <i class="fa-solid fa-person-running"></i>
+      </div>
+      <div class="list-content">
+        <div class="item-title">
+          Air Squats
+          <span class="badge-rec">Rec</span>
+        </div>
+        <div class="item-subtitle">High volume target</div>
+      </div>
+      <i class="fa-solid fa-circle-plus add-icon"></i>
+    </div>
+
+    <div class="list-item">
+      <div class="list-avatar cat-barbell">
+        <i class="fa-solid fa-weight-hanging"></i>
+      </div>
+      <div class="list-content">
+        <div class="item-title">Front Squat</div>
+        <div class="item-subtitle">Last: Nov 15 (1RM: 225)</div>
+      </div>
+      <i class="fa-solid fa-circle-plus add-icon"></i>
+    </div>
+
+    <div class="list-item">
+      <div class="list-avatar cat-machine">
+        <i class="fa-solid fa-gears"></i>
+      </div>
+      <div class="list-content">
+        <div class="item-title">Leg Extension</div>
+        <div class="item-subtitle">Machine • Isolation</div>
+      </div>
+      <i class="fa-solid fa-circle-plus add-icon"></i>
+    </div>
+
+    <div class="list-item">
+      <div class="list-avatar cat-dumbbell">
+        <i class="fa-solid fa-dumbbell"></i>
+      </div>
+      <div class="list-content">
+        <div class="item-title">Goblet Squat</div>
+        <div class="item-subtitle">Use KB or DB</div>
+      </div>
+      <i class="fa-solid fa-circle-plus add-icon"></i>
+    </div>
+
+  </div>
+
+</div>
+
+</body>
+</html>
