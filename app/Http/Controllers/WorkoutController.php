@@ -21,6 +21,7 @@ class WorkoutController extends Controller
         $today = Carbon::today();
         $expandWorkoutId = $request->query('workout_id'); // For manual expansion after delete
         
+        // Get user's workouts (both templates and WODs)
         $workouts = Workout::where('user_id', Auth::id())
             ->with(['exercises.exercise.aliases'])
             ->orderBy('name')
@@ -57,31 +58,45 @@ class WorkoutController extends Controller
 
         // Title
         $components[] = C::title('Workouts')
-            ->subtitle('Save and reuse your favorite workouts')
+            ->subtitle('WODs and workout templates')
             ->build();
 
         // Table of workouts with exercises as sub-items
         if ($workouts->isNotEmpty()) {
-            // Create button (shown when there are workouts)
-            $components[] = C::button('Create New Workout')
-                ->asLink(route('workouts.create'))
+            // Create buttons (shown when there are workouts)
+            $components[] = C::button('Create WOD')
+                ->asLink(route('workouts.create', ['type' => 'wod']))
+                ->build();
+            $components[] = C::button('Create Template')
+                ->asLink(route('workouts.create', ['type' => 'template']))
                 ->build();
             $tableBuilder = C::table();
 
             foreach ($workouts as $workout) {
+                $isWod = $workout->isWod();
                 $line1 = $workout->name;
-                $exerciseCount = $workout->exercises->count();
+                $exerciseCount = $isWod ? 0 : $workout->exercises->count();
                 
-                // Build exercise list with titles
-                if ($exerciseCount > 0) {
-                    $exerciseTitles = $workout->exercises->pluck('exercise.title')->toArray();
-                    $exerciseList = implode(', ', $exerciseTitles);
-                    $line2 = $exerciseCount . ' ' . ($exerciseCount === 1 ? 'exercise' : 'exercises') . ': ' . $exerciseList;
+                // Build exercise list or WOD preview
+                if ($isWod) {
+                    $parsed = $workout->wod_parsed;
+                    if ($parsed && isset($parsed['blocks'])) {
+                        $blockCount = count($parsed['blocks']);
+                        $line2 = $blockCount . ' ' . ($blockCount === 1 ? 'block' : 'blocks');
+                    } else {
+                        $line2 = 'WOD';
+                    }
+                    $line3 = $workout->description ?: 'Workout of the Day';
                 } else {
-                    $line2 = 'No exercises';
+                    if ($exerciseCount > 0) {
+                        $exerciseTitles = $workout->exercises->pluck('exercise.title')->toArray();
+                        $exerciseList = implode(', ', $exerciseTitles);
+                        $line2 = $exerciseCount . ' ' . ($exerciseCount === 1 ? 'exercise' : 'exercises') . ': ' . $exerciseList;
+                    } else {
+                        $line2 = 'No exercises';
+                    }
+                    $line3 = $workout->description ?: null;
                 }
-                
-                $line3 = $workout->description ?: null;
 
                 $rowBuilder = $tableBuilder->row(
                     $workout->id,
@@ -95,8 +110,28 @@ class WorkoutController extends Controller
                 // Check if this workout has any exercises logged today (for auto-expand)
                 $hasLoggedExercisesToday = false;
 
-                // Add exercises as sub-items with log now button or edit button
-                if ($workout->exercises->isNotEmpty()) {
+                // For WODs, show blocks and exercises from parsed data
+                if ($isWod && $workout->wod_parsed && isset($workout->wod_parsed['blocks'])) {
+                    $subItemId = 1000; // Start with high number to avoid conflicts
+                    foreach ($workout->wod_parsed['blocks'] as $blockIndex => $block) {
+                        // Add block header as sub-item
+                        $blockSubItem = $rowBuilder->subItem(
+                            $subItemId++,
+                            '📦 ' . $block['name'],
+                            null,
+                            null
+                        );
+                        $blockSubItem->compact()->add();
+                        
+                        // Add exercises in this block
+                        foreach ($block['exercises'] as $exIndex => $exercise) {
+                            $this->addWodExerciseSubItem($rowBuilder, $exercise, $subItemId, $today, $loggedExerciseData, $hasLoggedExercisesToday, $workout);
+                            $subItemId++;
+                        }
+                    }
+                }
+                // For templates, add exercises as sub-items with log now button or edit button
+                elseif ($workout->exercises->isNotEmpty()) {
                     foreach ($workout->exercises as $index => $exercise) {
                         $exerciseLine1 = $exercise->exercise->title;
                         $exerciseLine2 = null;
@@ -203,56 +238,117 @@ class WorkoutController extends Controller
     }
 
     /**
-     * Show the form for creating a new template
+     * Show the form for creating a new template or WOD
      */
-    public function create()
+    public function create(Request $request)
     {
+        $type = $request->query('type', 'template');
+        $isWod = $type === 'wod';
+        
         $components = [];
 
         // Title
-        $components[] = C::title('Create Workout')->build();
-
-        // Form
-        $components[] = C::form('create-template', 'Workout Details')
-            ->type('primary')
-            ->formAction(route('workouts.store'))
-            ->textField('name', 'Workout Name:', '', 'e.g., Push Day')
-            ->textField('description', 'Description:', '', 'Optional')
-            ->submitButton('Create Workout')
+        $components[] = C::title($isWod ? 'Create WOD' : 'Create Template')
+            ->subtitle($isWod ? 'Workout of the Day' : 'Reusable workout template')
             ->build();
+
+        if ($isWod) {
+            // WOD creation form with syntax textarea
+            $exampleSyntax = "# Block 1: Strength\nBack Squat: 5-5-5-5-5\nBench Press: 3x8\n\n# Block 2: Conditioning\nAMRAP 12min:\n  10 Box Jumps\n  15 Push-ups\n  20 Air Squats";
+            
+            $components[] = C::form('create-wod', 'WOD Details')
+                ->type('primary')
+                ->formAction(route('workouts.store'))
+                ->textField('name', 'WOD Name:', '', 'e.g., Monday Strength')
+                ->textareaField('wod_syntax', 'WOD Syntax:', '', $exampleSyntax)
+                ->textField('description', 'Description:', '', 'Optional')
+                ->hiddenField('type', 'wod')
+                ->submitButton('Create WOD')
+                ->build();
+        } else {
+            // Template creation form
+            $components[] = C::form('create-template', 'Template Details')
+                ->type('primary')
+                ->formAction(route('workouts.store'))
+                ->textField('name', 'Template Name:', '', 'e.g., Push Day')
+                ->textField('description', 'Description:', '', 'Optional')
+                ->hiddenField('type', 'template')
+                ->submitButton('Create Template')
+                ->build();
+        }
 
         $data = ['components' => $components];
         return view('mobile-entry.flexible', compact('data'));
     }
 
     /**
-     * Store a newly created template
+     * Store a newly created template or WOD
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-        ]);
+        $type = $request->input('type', 'template');
+        $isWod = $type === 'wod';
+        
+        if ($isWod) {
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'description' => 'nullable|string',
+                'wod_syntax' => 'required|string',
+            ]);
+            
+            // Parse the WOD syntax
+            $parser = app(\App\Services\WodParser::class);
+            try {
+                $parsed = $parser->parse($validated['wod_syntax']);
+            } catch (\Exception $e) {
+                return back()
+                    ->withInput()
+                    ->with('error', 'Failed to parse WOD syntax: ' . $e->getMessage());
+            }
+            
+            $workout = Workout::create([
+                'user_id' => Auth::id(),
+                'name' => $validated['name'],
+                'description' => $validated['description'] ?? null,
+                'wod_syntax' => $validated['wod_syntax'],
+                'wod_parsed' => $parsed,
+                'is_public' => false,
+            ]);
+            
+            return redirect()
+                ->route('workouts.edit', $workout->id)
+                ->with('success', 'WOD created!');
+        } else {
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'description' => 'nullable|string',
+            ]);
 
-        $workout = Workout::create([
-            'user_id' => Auth::id(),
-            'name' => $validated['name'],
-            'description' => $validated['description'] ?? null,
-            'is_public' => false,
-        ]);
+            $workout = Workout::create([
+                'user_id' => Auth::id(),
+                'name' => $validated['name'],
+                'description' => $validated['description'] ?? null,
+                'is_public' => false,
+            ]);
 
-        return redirect()
-            ->route('workouts.edit', $workout->id)
-            ->with('success', 'Workout created! Now add exercises.');
+            return redirect()
+                ->route('workouts.edit', $workout->id)
+                ->with('success', 'Template created! Now add exercises.');
+        }
     }
 
     /**
-     * Show the form for editing the specified template
+     * Show the form for editing the specified template or WOD
      */
     public function edit(Request $request, Workout $workout)
     {
         $this->authorize('update', $workout);
+
+        $isWod = $workout->isWod();
+        
+        if ($isWod) {
+            return $this->editWod($request, $workout);
+        }
 
         $workout->load('exercises.exercise.aliases');
         
@@ -273,7 +369,7 @@ class WorkoutController extends Controller
 
         // Title with back button
         $components[] = C::title($workout->name)
-            ->subtitle('Edit workout')
+            ->subtitle('Edit template')
             ->backButton('fa-arrow-left', route('workouts.index'), 'Back to workouts')
             ->build();
 
@@ -425,23 +521,55 @@ class WorkoutController extends Controller
     }
 
     /**
-     * Update the specified template
+     * Update the specified template or WOD
      */
     public function update(Request $request, Workout $workout)
     {
         $this->authorize('update', $workout);
 
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'notes' => 'nullable|string',
-        ]);
+        $type = $request->input('type', 'template');
+        $isWod = $type === 'wod';
+        
+        if ($isWod) {
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'description' => 'nullable|string',
+                'wod_syntax' => 'required|string',
+            ]);
+            
+            // Parse the WOD syntax
+            $parser = app(\App\Services\WodParser::class);
+            try {
+                $parsed = $parser->parse($validated['wod_syntax']);
+            } catch (\Exception $e) {
+                return back()
+                    ->withInput()
+                    ->with('error', 'Failed to parse WOD syntax: ' . $e->getMessage());
+            }
+            
+            $workout->update([
+                'name' => $validated['name'],
+                'description' => $validated['description'] ?? null,
+                'wod_syntax' => $validated['wod_syntax'],
+                'wod_parsed' => $parsed,
+            ]);
+            
+            return redirect()
+                ->route('workouts.edit', $workout->id)
+                ->with('success', 'WOD updated!');
+        } else {
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'description' => 'nullable|string',
+                'notes' => 'nullable|string',
+            ]);
 
-        $workout->update($validated);
+            $workout->update($validated);
 
-        return redirect()
-            ->route('workouts.edit', $workout->id)
-            ->with('success', 'Workout updated!');
+            return redirect()
+                ->route('workouts.edit', $workout->id)
+                ->with('success', 'Template updated!');
+        }
     }
 
     /**
@@ -804,5 +932,202 @@ class WorkoutController extends Controller
 
         $data = ['components' => $components];
         return view('mobile-entry.flexible', compact('data'));
+    }
+
+    /**
+     * Edit WOD (different UI than template)
+     */
+    private function editWod(Request $request, Workout $workout)
+    {
+        $components = [];
+
+        // Title with back button
+        $components[] = C::title($workout->name)
+            ->subtitle('Edit WOD')
+            ->backButton('fa-arrow-left', route('workouts.index'), 'Back to workouts')
+            ->build();
+
+        // Messages from session
+        if ($sessionMessages = C::messagesFromSession()) {
+            $components[] = $sessionMessages;
+        }
+
+        // WOD Preview (parsed blocks)
+        if ($workout->wod_parsed && isset($workout->wod_parsed['blocks'])) {
+            $tableBuilder = C::table();
+            $rowId = 1;
+            
+            foreach ($workout->wod_parsed['blocks'] as $block) {
+                // Block header
+                $blockRow = $tableBuilder->row(
+                    $rowId++,
+                    '📦 ' . $block['name'],
+                    null,
+                    null
+                );
+                $blockRow->compact()->add();
+                
+                // Exercises in block
+                foreach ($block['exercises'] as $exercise) {
+                    $this->addWodExercisePreview($tableBuilder, $exercise, $rowId);
+                    $rowId++;
+                }
+            }
+            
+            $components[] = $tableBuilder->build();
+        }
+
+        // Edit form
+        $components[] = C::form('edit-wod', 'WOD Details')
+            ->type('info')
+            ->formAction(route('workouts.update', $workout->id))
+            ->textField('name', 'WOD Name:', $workout->name, 'e.g., Monday Strength')
+            ->textareaField('wod_syntax', 'WOD Syntax:', $workout->wod_syntax ?? '', 'Use WOD syntax')
+            ->textField('description', 'Description:', $workout->description ?? '', 'Optional')
+            ->hiddenField('_method', 'PUT')
+            ->hiddenField('type', 'wod')
+            ->submitButton('Update WOD')
+            ->build();
+
+        // Delete workout button
+        $components[] = [
+            'type' => 'delete-button',
+            'data' => [
+                'text' => 'Delete WOD',
+                'action' => route('workouts.destroy', $workout->id),
+                'method' => 'DELETE',
+                'confirmMessage' => 'Are you sure you want to delete this WOD? This action cannot be undone.'
+            ]
+        ];
+
+        $data = ['components' => $components];
+        return view('mobile-entry.flexible', compact('data'));
+    }
+
+    /**
+     * Add WOD exercise as sub-item in workout index
+     */
+    private function addWodExerciseSubItem($rowBuilder, $exercise, &$subItemId, $today, $loggedExerciseData, &$hasLoggedExercisesToday, $workout)
+    {
+        if ($exercise['type'] === 'special_format') {
+            // Special format header
+            $formatLabel = $this->formatSpecialFormatLabel($exercise);
+            $subItem = $rowBuilder->subItem(
+                $subItemId++,
+                $formatLabel,
+                null,
+                null
+            );
+            $subItem->compact()->add();
+            
+            // Nested exercises
+            if (isset($exercise['exercises'])) {
+                foreach ($exercise['exercises'] as $nestedEx) {
+                    $this->addWodExerciseSubItem($rowBuilder, $nestedEx, $subItemId, $today, $loggedExerciseData, $hasLoggedExercisesToday, $workout);
+                }
+            }
+        } else {
+            // Regular exercise
+            $exerciseName = $exercise['name'];
+            $scheme = isset($exercise['scheme']) ? $exercise['scheme']['display'] : (isset($exercise['reps']) ? $exercise['reps'] . ' reps' : '');
+            
+            $subItem = $rowBuilder->subItem(
+                $subItemId,
+                $exerciseName,
+                $scheme,
+                null
+            );
+            
+            // Try to find matching exercise in database to allow logging
+            $matchingExercise = \App\Models\Exercise::where('title', 'LIKE', '%' . $exerciseName . '%')
+                ->availableToUser(Auth::id())
+                ->first();
+            
+            if ($matchingExercise) {
+                // Check if logged today
+                if (isset($loggedExerciseData[$matchingExercise->id])) {
+                    $hasLoggedExercisesToday = true;
+                    $liftLog = $loggedExerciseData[$matchingExercise->id];
+                    $strategy = $matchingExercise->getTypeStrategy();
+                    $formattedMessage = $strategy->formatLoggedItemDisplay($liftLog);
+                    
+                    $subItem->message('success', $formattedMessage, 'Completed:');
+                    $subItem->linkAction('fa-pencil', route('lift-logs.edit', ['lift_log' => $liftLog->id]), 'Edit lift log', 'btn-transparent');
+                    $subItem->formAction('fa-trash', route('lift-logs.destroy', ['lift_log' => $liftLog->id]), 'DELETE', ['redirect_to' => 'workouts', 'workout_id' => $workout->id], 'Delete lift log', 'btn-danger', true);
+                } else {
+                    // Not logged yet
+                    $logUrl = route('lift-logs.create', [
+                        'exercise_id' => $matchingExercise->id,
+                        'date' => $today->toDateString(),
+                        'redirect_to' => 'workouts',
+                        'workout_id' => $workout->id
+                    ]);
+                    $subItem->linkAction('fa-play', $logUrl, 'Log now', 'btn-log-now');
+                }
+            }
+            
+            $subItem->compact()->add();
+        }
+    }
+
+    /**
+     * Add WOD exercise preview in edit view
+     */
+    private function addWodExercisePreview($tableBuilder, $exercise, &$rowId)
+    {
+        if ($exercise['type'] === 'special_format') {
+            $formatLabel = $this->formatSpecialFormatLabel($exercise);
+            $row = $tableBuilder->row(
+                $rowId++,
+                '  ' . $formatLabel,
+                null,
+                null
+            );
+            $row->compact()->add();
+            
+            if (isset($exercise['exercises'])) {
+                foreach ($exercise['exercises'] as $nestedEx) {
+                    $this->addWodExercisePreview($tableBuilder, $nestedEx, $rowId);
+                }
+            }
+        } else {
+            $exerciseName = $exercise['name'];
+            $scheme = isset($exercise['scheme']) ? $exercise['scheme']['display'] : (isset($exercise['reps']) ? $exercise['reps'] . ' reps' : '');
+            
+            $row = $tableBuilder->row(
+                $rowId++,
+                '  ' . $exerciseName,
+                $scheme,
+                null
+            );
+            $row->compact()->add();
+        }
+    }
+
+    /**
+     * Format special format label
+     */
+    private function formatSpecialFormatLabel($format): string
+    {
+        if ($format['format'] === 'AMRAP' && isset($format['duration'])) {
+            return '⏱️ AMRAP ' . $format['duration'] . 'min';
+        }
+        
+        if ($format['format'] === 'EMOM' && isset($format['duration'])) {
+            return '⏱️ EMOM ' . $format['duration'] . 'min';
+        }
+        
+        if ($format['format'] === 'For Time') {
+            if (isset($format['rep_scheme'])) {
+                return '⏱️ ' . $format['rep_scheme'] . ' For Time';
+            }
+            return '⏱️ For Time';
+        }
+        
+        if ($format['format'] === 'Rounds' && isset($format['rounds'])) {
+            return '🔄 ' . $format['rounds'] . ' Rounds';
+        }
+        
+        return $format['description'] ?? 'Custom Format';
     }
 }

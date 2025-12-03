@@ -217,6 +217,30 @@ class FormComponentBuilder
         return $this;
     }
     
+    public function dateField(string $name, string $label, string $defaultValue = '', string $placeholder = ''): self
+    {
+        $field = [
+            'id' => $this->data['id'] . '-' . $name,
+            'name' => $name,
+            'label' => $label,
+            'type' => 'date',
+            'defaultValue' => $defaultValue,
+            'placeholder' => $placeholder,
+            'ariaLabels' => [
+                'field' => $label
+            ]
+        ];
+        
+        if ($this->currentSection !== null && !empty($this->data['sections'])) {
+            $lastSectionIndex = count($this->data['sections']) - 1;
+            $this->data['sections'][$lastSectionIndex]['fields'][] = $field;
+        } else {
+            $this->data['numericFields'][] = $field;
+        }
+        
+        return $this;
+    }
+    
     public function checkboxField(string $name, string $label, bool $defaultValue, ?string $description = null): self
     {
         $field = [

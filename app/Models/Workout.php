@@ -31,12 +31,15 @@ class Workout extends Model
         'is_public',
         'tags',
         'times_used',
+        'wod_syntax',
+        'wod_parsed',
     ];
 
     protected $casts = [
         'is_public' => 'boolean',
         'tags' => 'array',
         'times_used' => 'integer',
+        'wod_parsed' => 'array',
     ];
 
     public function user(): BelongsTo
@@ -47,6 +50,38 @@ class Workout extends Model
     public function exercises(): HasMany
     {
         return $this->hasMany(WorkoutExercise::class)->orderBy('order');
+    }
+
+    /**
+     * Check if this is a WOD (has syntax)
+     */
+    public function isWod(): bool
+    {
+        return !empty($this->wod_syntax);
+    }
+
+    /**
+     * Check if this is a template (no syntax, has exercises)
+     */
+    public function isTemplate(): bool
+    {
+        return empty($this->wod_syntax);
+    }
+
+    /**
+     * Scope to get only WODs
+     */
+    public function scopeWods($query)
+    {
+        return $query->whereNotNull('wod_syntax');
+    }
+
+    /**
+     * Scope to get only templates
+     */
+    public function scopeTemplates($query)
+    {
+        return $query->whereNull('wod_syntax');
     }
 
     /**
