@@ -63,8 +63,8 @@ class LiftLogHistoryPageTest extends TestCase
         $response->assertStatus(200);
         
         // Should see correct counts
-        $response->assertSee('5 results');
-        $response->assertSee('1 result');
+        $response->assertSee('5 logs');
+        $response->assertSee('1 log');
     }
 
     #[\PHPUnit\Framework\Attributes\Test]

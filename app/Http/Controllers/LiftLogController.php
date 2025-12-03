@@ -155,7 +155,7 @@ class LiftLogController extends Controller
             foreach ($exercises as $exercise) {
                 $displayName = $aliasService->getDisplayName($exercise, auth()->user());
                 $logCount = $exerciseLogCounts[$exercise->id] ?? 0;
-                $typeLabel = $logCount . ' ' . ($logCount === 1 ? 'result' : 'results');
+                $typeLabel = $logCount . ' ' . ($logCount === 1 ? 'log' : 'logs');
                 
                 $listBuilder->item(
                     (string) $exercise->id,
