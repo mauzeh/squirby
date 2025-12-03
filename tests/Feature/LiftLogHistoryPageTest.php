@@ -211,7 +211,7 @@ class LiftLogHistoryPageTest extends TestCase
         $response = $this->actingAs($user)->get(route('lift-logs.index'));
         
         $response->assertStatus(200);
-        $response->assertSee('Search exercises...');
+        $response->assertSee('Tap to search...');
     }
 
     #[\PHPUnit\Framework\Attributes\Test]

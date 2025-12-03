@@ -167,7 +167,7 @@ class LiftLogController extends Controller
             }
             
             $components[] = $listBuilder
-                ->filterPlaceholder('Search exercises...')
+                ->filterPlaceholder('Tap to search...')
                 ->noResultsMessage('No exercises found.')
                 ->initialState('expanded')
                 ->showCancelButton(false)

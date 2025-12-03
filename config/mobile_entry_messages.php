@@ -114,7 +114,7 @@ return [
     ],
 
     'placeholders' => [
-        'search_exercises' => 'Search...',
+        'search_exercises' => 'Tap to search...',
         'workout_notes' => 'How did it feel? Any form notes?',
         'search_measurements' => 'Search...',
         'measurement_notes' => 'Any additional notes...',

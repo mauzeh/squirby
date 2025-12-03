@@ -5,6 +5,7 @@
             <div class="component-filter-container">
                 <div class="component-filter-group{{ ($data['showCancelButton'] ?? true) ? '' : ' component-filter-group--no-cancel' }}">
                     <div class="component-filter-input-wrapper">
+                        <i class="fas fa-search search-icon" aria-hidden="true"></i>
                         <input type="text" class="component-filter-input" placeholder="{{ $data['filterPlaceholder'] }}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
                         <button type="button" class="btn-clear-filter" aria-label="Clear filter" style="display: none;">×</button>
                     </div>
