@@ -256,10 +256,10 @@ class BandedResistanceExerciseType extends BaseExerciseType
             ];
         }
         
-        // If no harder band available, suggest same band with max reps
+        // If no harder band available, continue suggesting +1 rep
         return (object)[
             'sets' => $lastLog->liftSets->count(),
-            'reps' => $maxRepsBeforeBandChange,
+            'reps' => $lastLoggedReps + 1,
             'band_color' => $lastLoggedBandColor,
         ];
     }

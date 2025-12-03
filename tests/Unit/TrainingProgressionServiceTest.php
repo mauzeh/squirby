@@ -125,7 +125,7 @@ class TrainingProgressionServiceTest extends TestCase
         $suggestion = $this->trainingProgressionService->getSuggestionDetails($user->id, $exercise->id);
 
         $this->assertNotNull($suggestion);
-        $this->assertEquals(15, $suggestion->reps); // Reps should not reset if no harder band
+        $this->assertEquals(16, $suggestion->reps); // Continue suggesting +1 rep when at hardest band
         $this->assertEquals('green', $suggestion->band_color); // Stays on green band
     }
 
