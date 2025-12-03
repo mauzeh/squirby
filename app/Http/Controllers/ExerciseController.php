@@ -430,10 +430,30 @@ class ExerciseController extends Controller
             $strategy = $exercise->getTypeStrategy();
             $chartTitle = $strategy->getChartTitle();
             
+            // Determine appropriate time scale and format based on data range
+            $oldestLog = $liftLogs->last();
+            $newestLog = $liftLogs->first();
+            $daysDiff = $oldestLog->logged_at->diffInDays($newestLog->logged_at);
+            
+            // Choose time unit and display format based on data span
+            if ($daysDiff > 730) { // More than 2 years
+                $timeUnit = 'month';
+                $displayFormat = 'MMM yyyy'; // "Jan 2023"
+            } elseif ($daysDiff > 365) { // More than 1 year
+                $timeUnit = 'month';
+                $displayFormat = 'MMM yy'; // "Jan 23"
+            } elseif ($daysDiff > 90) { // More than 3 months
+                $timeUnit = 'month';
+                $displayFormat = 'MMM d'; // "Jan 15"
+            } else {
+                $timeUnit = 'day';
+                $displayFormat = 'MMM d'; // "Jan 15"
+            }
+            
             $chartBuilder = \App\Services\ComponentBuilder::chart('progressChart', $chartTitle)
                 ->type('line')
                 ->datasets($chartData['datasets'])
-                ->timeScale('day')
+                ->timeScale($timeUnit, $displayFormat)
                 ->showLegend()
                 ->ariaLabel($exercise->title . ' progress chart')
                 ->containerClass('chart-container-styled')
