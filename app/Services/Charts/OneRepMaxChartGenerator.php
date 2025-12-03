@@ -27,6 +27,11 @@ class OneRepMaxChartGenerator implements ChartGeneratorInterface
                 ];
             })->values()->toArray();
 
+        // If no valid data points (e.g., all high-rep sets), return empty datasets
+        if (empty($dataPoints)) {
+            return ['datasets' => []];
+        }
+
         $datasets = [
             [
                 'label' => '1RM (est.)',
