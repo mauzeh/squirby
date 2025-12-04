@@ -193,7 +193,7 @@ class FormComponentBuilder
         return $this;
     }
     
-    public function textareaField(string $name, string $label, string $defaultValue = '', string $placeholder = ''): self
+    public function textareaField(string $name, string $label, string $defaultValue = '', string $placeholder = '', ?string $cssClass = null): self
     {
         $field = [
             'id' => $this->data['id'] . '-' . $name,
@@ -202,6 +202,7 @@ class FormComponentBuilder
             'type' => 'textarea',
             'defaultValue' => $defaultValue,
             'placeholder' => $placeholder,
+            'cssClass' => $cssClass,
             'ariaLabels' => [
                 'field' => $label
             ]

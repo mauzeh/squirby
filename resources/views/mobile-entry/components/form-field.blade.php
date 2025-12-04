@@ -49,7 +49,7 @@
     @elseif(isset($field['type']) && $field['type'] === 'password')
         <input type="password" id="{{ $field['id'] }}" name="{{ $field['name'] }}" class="text-input" placeholder="{{ $field['placeholder'] ?? '' }}" aria-label="{{ $field['ariaLabels']['field'] }}" autocomplete="{{ $field['name'] === 'current_password' ? 'current-password' : 'new-password' }}">
     @elseif(isset($field['type']) && $field['type'] === 'textarea')
-        <textarea id="{{ $field['id'] }}" name="{{ $field['name'] }}" class="comment-textarea" placeholder="{{ $field['placeholder'] ?? '' }}" rows="3" aria-label="{{ $field['ariaLabels']['field'] }}">{{ old($field['name'], $field['defaultValue']) }}</textarea>
+        <textarea id="{{ $field['id'] }}" name="{{ $field['name'] }}" class="comment-textarea{{ isset($field['cssClass']) && $field['cssClass'] ? ' ' . $field['cssClass'] : '' }}" placeholder="{{ $field['placeholder'] ?? '' }}" rows="3" aria-label="{{ $field['ariaLabels']['field'] }}">{{ old($field['name'], $field['defaultValue']) }}</textarea>
     @elseif(isset($field['type']) && $field['type'] === 'date')
         <input type="date" id="{{ $field['id'] }}" name="{{ $field['name'] }}" class="text-input" value="{{ old($field['name'], $field['defaultValue']) }}" placeholder="{{ $field['placeholder'] ?? '' }}" aria-label="{{ $field['ariaLabels']['field'] }}">
     @else

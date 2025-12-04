@@ -359,6 +359,15 @@
     color: #666;
 }
 
+/* WOD Syntax Textarea - Taller with monospace font */
+.wod-syntax-textarea {
+    min-height: 350px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 1em;
+    line-height: 1.6;
+    letter-spacing: 0.02em;
+}
+
 /* Form Actions */
 .form-actions {
     display: flex;
@@ -463,6 +472,11 @@
         min-height: 80px;
     }
 
+    .wod-syntax-textarea {
+        min-height: 200px;
+        font-size: 0.95em;
+    }
+
     .form-actions {
         gap: var(--spacing-sm);
         margin-top: var(--spacing-lg);
@@ -529,6 +543,11 @@
         font-size: 0.95em;
         padding: 12px;
         min-height: 70px;
+    }
+
+    .wod-syntax-textarea {
+        min-height: 180px;
+        font-size: 0.9em;
     }
 
     .component-messages {
