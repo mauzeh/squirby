@@ -1,9 +1,8 @@
 /**
  * Code Editor Component
  * 
- * Enhanced textarea with syntax highlighting for WOD syntax
- * Uses a simple overlay approach for immediate functionality
- * Can be upgraded to CodeMirror 6 later
+ * Enhanced textarea with syntax highlighting overlay
+ * Simplified approach with proper alignment
  */
 
 (function() {
@@ -38,8 +37,15 @@
      * Initialize WOD syntax editor with highlighting
      */
     function initWodSyntaxEditor(textarea, wrapper, config) {
+        // Set fixed styles on textarea first
+        textarea.style.fontFamily = "'Courier New', Courier, monospace";
+        textarea.style.fontSize = '14px';
+        textarea.style.lineHeight = '1.6';
+        textarea.style.padding = '8px';
+        
         // Add line numbers if enabled
         if (config.lineNumbers) {
+            textarea.style.paddingLeft = '55px';
             addLineNumbers(textarea, wrapper);
         }
         
@@ -75,9 +81,6 @@
             z-index: 1;
         `;
         
-        // Adjust textarea padding to make room for line numbers
-        textarea.style.paddingLeft = '55px';
-        
         function updateLineNumbers() {
             const lines = textarea.value.split('\n').length;
             let html = '';
@@ -103,8 +106,6 @@
     function addSyntaxHighlighting(textarea, wrapper) {
         const overlay = document.createElement('div');
         overlay.className = 'code-editor-overlay';
-        
-        const computedStyle = getComputedStyle(textarea);
         overlay.style.cssText = `
             position: absolute;
             top: 0;
@@ -112,11 +113,11 @@
             right: 0;
             bottom: 0;
             pointer-events: none;
-            padding: ${computedStyle.padding};
-            padding-left: ${computedStyle.paddingLeft};
-            font-family: ${computedStyle.fontFamily};
-            font-size: ${computedStyle.fontSize};
-            line-height: ${computedStyle.lineHeight};
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            padding: 8px;
+            padding-left: ${textarea.style.paddingLeft || '8px'};
             white-space: pre-wrap;
             word-wrap: break-word;
             overflow: hidden;
@@ -152,30 +153,8 @@
      * Enhance textarea with better editing features
      */
     function enhanceTextarea(textarea) {
-        // Auto-indent on Enter
+        // Tab key for indentation
         textarea.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                const cursorPos = textarea.selectionStart;
-                const textBefore = textarea.value.substring(0, cursorPos);
-                const currentLine = textBefore.split('\n').pop();
-                const indent = currentLine.match(/^\s*/)[0];
-                
-                // If current line starts with #, don't indent next line
-                if (currentLine.trim().startsWith('#')) {
-                    return;
-                }
-                
-                // Insert newline with same indentation
-                if (indent) {
-                    e.preventDefault();
-                    const textAfter = textarea.value.substring(cursorPos);
-                    textarea.value = textBefore + '\n' + indent + textAfter;
-                    textarea.selectionStart = textarea.selectionEnd = cursorPos + indent.length + 1;
-                    textarea.dispatchEvent(new Event('input'));
-                }
-            }
-            
-            // Tab key for indentation
             if (e.key === 'Tab') {
                 e.preventDefault();
                 const start = textarea.selectionStart;
