@@ -118,7 +118,7 @@ class WorkoutController extends Controller
                         if (!empty($block['name'])) {
                             $blockSubItem = $rowBuilder->subItem(
                                 $subItemId++,
-                                '📦 ' . $block['name'],
+                                $block['name'],
                                 null,
                                 null
                             );
@@ -973,7 +973,7 @@ class WorkoutController extends Controller
                 if (!empty($block['name'])) {
                     $blockRow = $tableBuilder->row(
                         $rowId++,
-                        '📦 ' . $block['name'],
+                        $block['name'],
                         null,
                         null
                     );
@@ -1155,22 +1155,22 @@ class WorkoutController extends Controller
     private function formatSpecialFormatLabel($format): string
     {
         if ($format['format'] === 'AMRAP' && isset($format['duration'])) {
-            return '⏱️ AMRAP ' . $format['duration'] . 'min';
+            return 'AMRAP ' . $format['duration'] . 'min';
         }
         
         if ($format['format'] === 'EMOM' && isset($format['duration'])) {
-            return '⏱️ EMOM ' . $format['duration'] . 'min';
+            return 'EMOM ' . $format['duration'] . 'min';
         }
         
         if ($format['format'] === 'For Time') {
             if (isset($format['rep_scheme'])) {
-                return '⏱️ ' . $format['rep_scheme'] . ' For Time';
+                return $format['rep_scheme'] . ' For Time';
             }
-            return '⏱️ For Time';
+            return 'For Time';
         }
         
         if ($format['format'] === 'Rounds' && isset($format['rounds'])) {
-            return '🔄 ' . $format['rounds'] . ' Rounds';
+            return $format['rounds'] . ' Rounds';
         }
         
         return $format['description'] ?? 'Custom Format';
@@ -1184,47 +1184,47 @@ class WorkoutController extends Controller
         $tableBuilder = C::table();
         
         // Header row
-        $headerRow = $tableBuilder->row(0, '📖 Syntax Quick Reference', 'Click to expand/collapse', null)
+        $headerRow = $tableBuilder->row(0, 'Syntax Quick Reference', 'Click to expand/collapse', null)
             ->collapsible()
             ->compact();
         
         // Blocks
-        $headerRow->subItem(1, '📦 Blocks', '# Block Name', 'Start each section with #')
+        $headerRow->subItem(1, 'Blocks', '# Block Name', 'Start each section with #')
             ->compact()
             ->add();
         
         // Sets x Reps
-        $headerRow->subItem(2, '💪 Sets x Reps', 'Exercise: 3x8', '3 sets of 8 reps')
+        $headerRow->subItem(2, 'Sets x Reps', 'Exercise: 3x8', '3 sets of 8 reps')
             ->compact()
             ->add();
         
         // Rep Ladder
-        $headerRow->subItem(3, '📈 Rep Ladder', 'Exercise: 5-5-5-3-3-1', 'Descending/ascending reps')
+        $headerRow->subItem(3, 'Rep Ladder', 'Exercise: 5-5-5-3-3-1', 'Descending/ascending reps')
             ->compact()
             ->add();
         
         // Rep Range
-        $headerRow->subItem(4, '📊 Rep Range', 'Exercise: 3x8-12', '3 sets of 8-12 reps')
+        $headerRow->subItem(4, 'Rep Range', 'Exercise: 3x8-12', '3 sets of 8-12 reps')
             ->compact()
             ->add();
         
         // AMRAP
-        $headerRow->subItem(5, '⏱️ AMRAP', 'AMRAP 12min:<br />  10 Exercise A<br />  15 Exercise B', 'As Many Rounds As Possible')
+        $headerRow->subItem(5, 'AMRAP', 'AMRAP 12min:<br />  10 Exercise A<br />  15 Exercise B', 'As Many Rounds As Possible')
             ->compact()
             ->add();
         
         // EMOM
-        $headerRow->subItem(6, '⏱️ EMOM', 'EMOM 16min:<br />  5 Exercise A', 'Every Minute On the Minute')
+        $headerRow->subItem(6, 'EMOM', 'EMOM 16min:<br />  5 Exercise A', 'Every Minute On the Minute')
             ->compact()
             ->add();
         
         // For Time
-        $headerRow->subItem(7, '⏱️ For Time', '21-15-9 For Time:<br />  Exercise A<br />  Exercise B', 'Complete as fast as possible')
+        $headerRow->subItem(7, 'For Time', '21-15-9 For Time:<br />  Exercise A<br />  Exercise B', 'Complete as fast as possible')
             ->compact()
             ->add();
         
         // Rounds
-        $headerRow->subItem(8, '🔄 Rounds', '5 Rounds:<br />  10 Exercise A<br />  20 Exercise B', 'Fixed number of rounds')
+        $headerRow->subItem(8, 'Rounds', '5 Rounds:<br />  10 Exercise A<br />  20 Exercise B', 'Fixed number of rounds')
             ->compact()
             ->add();
         
