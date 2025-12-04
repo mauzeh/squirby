@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Workout;
 use App\Models\WorkoutExercise;
 use App\Services\ComponentBuilder as C;
+use App\Services\WodLoggingService;
 use App\Services\WodDisplayService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -14,10 +15,12 @@ class WorkoutController extends Controller
 {
     use \Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
+    protected $wodLoggingService;
     protected $wodDisplayService;
 
-    public function __construct(WodDisplayService $wodDisplayService)
+    public function __construct(WodLoggingService $wodLoggingService, WodDisplayService $wodDisplayService)
     {
+        $this->wodLoggingService = $wodLoggingService;
         $this->wodDisplayService = $wodDisplayService;
     }
 
@@ -120,7 +123,7 @@ class WorkoutController extends Controller
 
                 // For WODs, show only exercises from parsed data (skip block headers)
                 if ($isWod) {
-                    $this->wodDisplayService->addWodExercisesToRow($rowBuilder, $workout, $today, $loggedExerciseData, $hasLoggedExercisesToday);
+                    $this->wodLoggingService->addWodExercisesToRow($rowBuilder, $workout, $today, $loggedExerciseData, $hasLoggedExercisesToday);
                 }
                 // For templates, add exercises as sub-items with log now button or edit button
                 elseif ($workout->exercises->isNotEmpty()) {
@@ -952,7 +955,13 @@ class WorkoutController extends Controller
             $components[] = $sessionMessages;
         }
 
-        // WOD Preview (exercises only, skip block headers)
+        // WOD Display (formatted preview)
+        if ($workout->wod_syntax) {
+            $processedMarkdown = $this->wodDisplayService->processForDisplay($workout);
+            $components[] = C::markdown($processedMarkdown)->classes('wod-display')->build();
+        }
+
+        // WOD Exercise Table (loggable exercises)
         if ($workout->wod_parsed && isset($workout->wod_parsed['blocks'])) {
             $tableBuilder = C::table();
             
@@ -977,7 +986,7 @@ class WorkoutController extends Controller
             }
             
             $hasLoggedExercisesToday = false;
-            $this->wodDisplayService->addWodExercisesToRow($rowBuilder, $workout, $today, $loggedExerciseData, $hasLoggedExercisesToday);
+            $this->wodLoggingService->addWodExercisesToRow($rowBuilder, $workout, $today, $loggedExerciseData, $hasLoggedExercisesToday);
             
             $rowBuilder->initialState('expanded')->add();
             

@@ -8,6 +8,7 @@ use App\Services\Components\Display\MessagesComponentBuilder;
 use App\Services\Components\Display\SummaryComponentBuilder;
 use App\Services\Components\Display\PRCardsComponentBuilder;
 use App\Services\Components\Display\CalculatorGridComponentBuilder;
+use App\Services\Components\Display\MarkdownComponentBuilder;
 use App\Services\Components\Interactive\ButtonComponentBuilder;
 use App\Services\Components\Interactive\FormComponentBuilder;
 use App\Services\Components\Interactive\BulkActionFormComponentBuilder;
@@ -145,6 +146,14 @@ class ComponentBuilder
             'type' => 'raw_html',
             'data' => ['html' => $html]
         ];
+    }
+    
+    /**
+     * Create a markdown component
+     */
+    public static function markdown(string $markdown): MarkdownComponentBuilder
+    {
+        return new MarkdownComponentBuilder($markdown);
     }
     
     /**

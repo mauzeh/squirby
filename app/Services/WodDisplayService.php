@@ -5,6 +5,13 @@ namespace App\Services;
 use App\Models\Workout;
 use Illuminate\Support\Facades\Auth;
 
+/**
+ * WOD Display Service
+ * 
+ * Processes WOD syntax for display by:
+ * - Converting exercise brackets to clickable links
+ * - Preserving markdown formatting
+ */
 class WodDisplayService
 {
     protected $exerciseMatchingService;
@@ -15,90 +22,40 @@ class WodDisplayService
     }
 
     /**
-     * Flatten WOD exercises (skip special format headers, extract nested exercises)
-     * Only includes loggable exercises
+     * Process WOD syntax for display
+     * Converts exercise brackets to clickable markdown links
+     * 
+     * @param Workout $workout
+     * @return string Processed markdown text (not HTML)
      */
-    public function flattenWodExercises($exercise, &$flatExercises = [])
+    public function processForDisplay(Workout $workout): string
     {
-        if ($exercise['type'] === 'special_format') {
-            // Skip special format header, just process nested exercises
-            if (isset($exercise['exercises'])) {
-                foreach ($exercise['exercises'] as $nestedEx) {
-                    $this->flattenWodExercises($nestedEx, $flatExercises);
-                }
-            }
-        } else {
-            // Regular exercise - only add if loggable
-            if (($exercise['loggable'] ?? false) === true) {
-                $flatExercises[] = $exercise;
-            }
-        }
-        return $flatExercises;
-    }
-
-    /**
-     * Add WOD exercises to a row builder (shared between index and edit)
-     */
-    public function addWodExercisesToRow($rowBuilder, Workout $workout, $today = null, $loggedExerciseData = [], &$hasLoggedExercisesToday = false)
-    {
-        if (!$workout->wod_parsed || !isset($workout->wod_parsed['blocks'])) {
-            return;
+        if (!$workout->wod_syntax) {
+            return '';
         }
 
-        $subItemId = 1000;
-        foreach ($workout->wod_parsed['blocks'] as $block) {
-            foreach ($block['exercises'] as $exercise) {
-                $flatExercises = [];
-                $this->flattenWodExercises($exercise, $flatExercises);
-                foreach ($flatExercises as $flatExercise) {
-                    $this->addWodExerciseSubItem($rowBuilder, $flatExercise, $subItemId, $today, $loggedExerciseData, $hasLoggedExercisesToday, $workout);
-                    $subItemId++;
-                }
-            }
-        }
-    }
-
-    /**
-     * Add WOD exercise as sub-item in workout display
-     */
-    public function addWodExerciseSubItem($rowBuilder, $exercise, &$subItemId, $today, $loggedExerciseData, &$hasLoggedExercisesToday, Workout $workout)
-    {
-        $exerciseName = $exercise['name'];
-        $scheme = isset($exercise['scheme']) ? $exercise['scheme']['display'] : (isset($exercise['reps']) ? $exercise['reps'] . ' reps' : '');
+        $text = $workout->wod_syntax;
         
-        $subItem = $rowBuilder->subItem(
-            $subItemId,
-            $exerciseName,
-            $scheme,
-            null
-        );
-        
-        // Try to find matching exercise in database to allow logging
-        $matchingExercise = $this->exerciseMatchingService->findBestMatch($exerciseName, Auth::id());
-        
-        if ($matchingExercise) {
-            // Check if logged today
-            if (isset($loggedExerciseData[$matchingExercise->id])) {
-                $hasLoggedExercisesToday = true;
-                $liftLog = $loggedExerciseData[$matchingExercise->id];
-                $strategy = $matchingExercise->getTypeStrategy();
-                $formattedMessage = $strategy->formatLoggedItemDisplay($liftLog);
-                
-                $subItem->message('success', $formattedMessage, 'Completed:');
-                $subItem->linkAction('fa-pencil', route('lift-logs.edit', ['lift_log' => $liftLog->id]), 'Edit lift log', 'btn-transparent');
-                $subItem->formAction('fa-trash', route('lift-logs.destroy', ['lift_log' => $liftLog->id]), 'DELETE', ['redirect_to' => 'workouts', 'workout_id' => $workout->id], 'Delete lift log', 'btn-danger', true);
-            } else {
-                // Not logged yet
-                $logUrl = route('lift-logs.create', [
+        // Process double-bracketed exercises (loggable)
+        $text = preg_replace_callback('/\[\[([^\]]+)\]\]/', function($matches) {
+            $exerciseName = $matches[1];
+            $matchingExercise = $this->exerciseMatchingService->findBestMatch($exerciseName, Auth::id());
+            
+            if ($matchingExercise) {
+                $url = route('lift-logs.create', [
                     'exercise_id' => $matchingExercise->id,
-                    'date' => $today->toDateString(),
-                    'redirect_to' => 'workouts',
-                    'workout_id' => $workout->id
+                    'date' => now()->toDateString(),
+                    'redirect_to' => 'workouts'
                 ]);
-                $subItem->linkAction('fa-play', $logUrl, 'Log now', 'btn-log-now');
+                return '[**' . $exerciseName . '**](' . $url . ')';
             }
-        }
+            
+            return '**' . $exerciseName . '**';
+        }, $text);
         
-        $subItem->compact()->add();
+        // Process single-bracketed exercises (non-loggable) - just remove brackets
+        $text = preg_replace('/\[([^\]]+)\]/', '$1', $text);
+        
+        return $text;
     }
 }

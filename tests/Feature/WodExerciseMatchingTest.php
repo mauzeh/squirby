@@ -12,7 +12,7 @@ class WodExerciseMatchingTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_wod_edit_shows_log_now_button_for_existing_exercises()
+    public function test_wod_edit_shows_formatted_display_for_exercises()
     {
         $user = User::factory()->create();
         $exercise = Exercise::factory()->create([
@@ -50,12 +50,13 @@ class WodExerciseMatchingTest extends TestCase
         $response = $this->actingAs($user)->get(route('workouts.edit', $workout));
 
         $response->assertStatus(200);
-        $response->assertSee('Back Squat');
-        $response->assertSee('5x5');
-        $response->assertSee('Log now');
+        $response->assertSee('Strength'); // Block name
+        $response->assertSee('Back Squat'); // Exercise name
+        $response->assertSee('5x5'); // Scheme
+        $response->assertSee('wod-display'); // WOD display container
     }
 
-    public function test_wod_edit_shows_exercise_without_log_button_for_non_existing_exercises()
+    public function test_wod_edit_shows_formatted_display_for_non_existing_exercises()
     {
         $user = User::factory()->create();
 
@@ -90,10 +91,10 @@ class WodExerciseMatchingTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('NonExistentExercise');
         $response->assertSee('3x8');
-        $response->assertDontSee('Log now');
+        $response->assertSee('wod-display');
     }
 
-    public function test_wod_edit_shows_mixed_existing_and_non_existing_exercises()
+    public function test_wod_edit_shows_formatted_display_for_mixed_exercises()
     {
         $user = User::factory()->create();
         $exercise = Exercise::factory()->create([
@@ -142,14 +143,13 @@ class WodExerciseMatchingTest extends TestCase
         $response = $this->actingAs($user)->get(route('workouts.edit', $workout));
 
         $response->assertStatus(200);
-        // Existing exercise should have log button
+        // Both exercises should be shown in formatted display
         $response->assertSee('Bench Press');
-        $response->assertSee('Log now');
-        // Non-existing exercise should be shown but without log button
         $response->assertSee('FakeExercise');
+        $response->assertSee('wod-display');
     }
 
-    public function test_wod_edit_uses_fuzzy_matching_for_exercises()
+    public function test_wod_edit_shows_formatted_display_with_clickable_links()
     {
         $user = User::factory()->create();
         $exercise = Exercise::factory()->create([
@@ -188,8 +188,9 @@ class WodExerciseMatchingTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertSee('Push ups');
-        // Should match "Push-ups" exercise via fuzzy matching and show log button
-        $response->assertSee('Log now');
+        $response->assertSee('3x10');
+        // Should show formatted WOD display with clickable exercise link
+        $response->assertSee('wod-display');
     }
 
     public function test_wod_only_shows_loggable_exercises_with_double_brackets()
