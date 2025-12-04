@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Workout;
 use App\Models\WorkoutExercise;
 use App\Services\ComponentBuilder as C;
+use App\Services\WodDisplayService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -12,6 +13,13 @@ use Illuminate\Support\Facades\Auth;
 class WorkoutController extends Controller
 {
     use \Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+
+    protected $wodDisplayService;
+
+    public function __construct(WodDisplayService $wodDisplayService)
+    {
+        $this->wodDisplayService = $wodDisplayService;
+    }
 
     /**
      * Display a listing of the user's workouts
@@ -110,27 +118,9 @@ class WorkoutController extends Controller
                 // Check if this workout has any exercises logged today (for auto-expand)
                 $hasLoggedExercisesToday = false;
 
-                // For WODs, show blocks and exercises from parsed data
-                if ($isWod && $workout->wod_parsed && isset($workout->wod_parsed['blocks'])) {
-                    $subItemId = 1000; // Start with high number to avoid conflicts
-                    foreach ($workout->wod_parsed['blocks'] as $blockIndex => $block) {
-                        // Add block header as sub-item (only if block has a name)
-                        if (!empty($block['name'])) {
-                            $blockSubItem = $rowBuilder->subItem(
-                                $subItemId++,
-                                $block['name'],
-                                null,
-                                null
-                            );
-                            $blockSubItem->compact()->add();
-                        }
-                        
-                        // Add exercises in this block
-                        foreach ($block['exercises'] as $exIndex => $exercise) {
-                            $this->addWodExerciseSubItem($rowBuilder, $exercise, $subItemId, $today, $loggedExerciseData, $hasLoggedExercisesToday, $workout);
-                            $subItemId++;
-                        }
-                    }
+                // For WODs, show only exercises from parsed data (skip block headers)
+                if ($isWod) {
+                    $this->wodDisplayService->addWodExercisesToRow($rowBuilder, $workout, $today, $loggedExerciseData, $hasLoggedExercisesToday);
                 }
                 // For templates, add exercises as sub-items with log now button or edit button
                 elseif ($workout->exercises->isNotEmpty()) {
@@ -962,30 +952,34 @@ class WorkoutController extends Controller
             $components[] = $sessionMessages;
         }
 
-        // WOD Preview (parsed blocks)
+        // WOD Preview (exercises only, skip block headers)
         if ($workout->wod_parsed && isset($workout->wod_parsed['blocks'])) {
             $tableBuilder = C::table();
-            $rowId = 1;
-            $userId = Auth::id();
             
-            foreach ($workout->wod_parsed['blocks'] as $block) {
-                // Block header (only if block has a name)
-                if (!empty($block['name'])) {
-                    $blockRow = $tableBuilder->row(
-                        $rowId++,
-                        $block['name'],
-                        null,
-                        null
-                    );
-                    $blockRow->compact()->add();
-                }
-                
-                // Exercises in block
-                foreach ($block['exercises'] as $exercise) {
-                    $this->addWodExercisePreview($tableBuilder, $exercise, $rowId, $userId);
-                    $rowId++;
-                }
+            // Create a dummy row for the workout
+            $rowBuilder = $tableBuilder->row(
+                $workout->id,
+                $workout->name,
+                null,
+                null
+            );
+            
+            // Add exercises as sub-items (same logic as index)
+            $today = Carbon::today();
+            $todaysLiftLogs = \App\Models\LiftLog::where('user_id', Auth::id())
+                ->whereDate('logged_at', $today)
+                ->with(['liftSets'])
+                ->get();
+            
+            $loggedExerciseData = [];
+            foreach ($todaysLiftLogs as $log) {
+                $loggedExerciseData[$log->exercise_id] = $log;
             }
+            
+            $hasLoggedExercisesToday = false;
+            $this->wodDisplayService->addWodExercisesToRow($rowBuilder, $workout, $today, $loggedExerciseData, $hasLoggedExercisesToday);
+            
+            $rowBuilder->initialState('expanded')->add();
             
             $components[] = $tableBuilder->build();
         }
@@ -1025,129 +1019,9 @@ class WorkoutController extends Controller
         return view('mobile-entry.flexible', compact('data'));
     }
 
-    /**
-     * Add WOD exercise as sub-item in workout index
-     */
-    private function addWodExerciseSubItem($rowBuilder, $exercise, &$subItemId, $today, $loggedExerciseData, &$hasLoggedExercisesToday, $workout)
-    {
-        if ($exercise['type'] === 'special_format') {
-            // Special format header
-            $formatLabel = $this->formatSpecialFormatLabel($exercise);
-            $subItem = $rowBuilder->subItem(
-                $subItemId++,
-                $formatLabel,
-                null,
-                null
-            );
-            $subItem->compact()->add();
-            
-            // Nested exercises
-            if (isset($exercise['exercises'])) {
-                foreach ($exercise['exercises'] as $nestedEx) {
-                    $this->addWodExerciseSubItem($rowBuilder, $nestedEx, $subItemId, $today, $loggedExerciseData, $hasLoggedExercisesToday, $workout);
-                }
-            }
-        } else {
-            // Regular exercise
-            $exerciseName = $exercise['name'];
-            $scheme = isset($exercise['scheme']) ? $exercise['scheme']['display'] : (isset($exercise['reps']) ? $exercise['reps'] . ' reps' : '');
-            
-            $subItem = $rowBuilder->subItem(
-                $subItemId,
-                $exerciseName,
-                $scheme,
-                null
-            );
-            
-            // Try to find matching exercise in database to allow logging
-            $matchingService = app(\App\Services\ExerciseMatchingService::class);
-            $matchingExercise = $matchingService->findBestMatch($exerciseName, Auth::id());
-            
-            if ($matchingExercise) {
-                // Check if logged today
-                if (isset($loggedExerciseData[$matchingExercise->id])) {
-                    $hasLoggedExercisesToday = true;
-                    $liftLog = $loggedExerciseData[$matchingExercise->id];
-                    $strategy = $matchingExercise->getTypeStrategy();
-                    $formattedMessage = $strategy->formatLoggedItemDisplay($liftLog);
-                    
-                    $subItem->message('success', $formattedMessage, 'Completed:');
-                    $subItem->linkAction('fa-pencil', route('lift-logs.edit', ['lift_log' => $liftLog->id]), 'Edit lift log', 'btn-transparent');
-                    $subItem->formAction('fa-trash', route('lift-logs.destroy', ['lift_log' => $liftLog->id]), 'DELETE', ['redirect_to' => 'workouts', 'workout_id' => $workout->id], 'Delete lift log', 'btn-danger', true);
-                } else {
-                    // Not logged yet
-                    $logUrl = route('lift-logs.create', [
-                        'exercise_id' => $matchingExercise->id,
-                        'date' => $today->toDateString(),
-                        'redirect_to' => 'workouts',
-                        'workout_id' => $workout->id
-                    ]);
-                    $subItem->linkAction('fa-play', $logUrl, 'Log now', 'btn-log-now');
-                }
-            }
-            
-            $subItem->compact()->add();
-        }
-    }
 
-    /**
-     * Add WOD exercise preview in edit view
-     */
-    private function addWodExercisePreview($tableBuilder, $exercise, &$rowId, $userId = null)
-    {
-        if ($exercise['type'] === 'special_format') {
-            $formatLabel = $this->formatSpecialFormatLabel($exercise);
-            $row = $tableBuilder->row(
-                $rowId++,
-                '  ' . $formatLabel,
-                null,
-                null
-            );
-            $row->compact()->add();
-            
-            if (isset($exercise['exercises'])) {
-                foreach ($exercise['exercises'] as $nestedEx) {
-                    $this->addWodExercisePreview($tableBuilder, $nestedEx, $rowId, $userId);
-                }
-            }
-        } else {
-            $exerciseName = $exercise['name'];
-            $scheme = isset($exercise['scheme']) ? $exercise['scheme']['display'] : (isset($exercise['reps']) ? $exercise['reps'] . ' reps' : '');
-            
-            // Try to match exercise from database
-            $matchingService = app(\App\Services\ExerciseMatchingService::class);
-            $matchedExercise = $matchingService->findBestMatch($exerciseName, $userId ?? Auth::id());
-            
-            $row = $tableBuilder->row(
-                $rowId++,
-                '  ' . $exerciseName,
-                $scheme,
-                null
-            );
-            
-            $row->compact();
-            
-            // If exercise exists, add link to edit page
-            if ($matchedExercise) {
-                $row->linkAction(
-                    'fa-link',
-                    route('exercises.edit', $matchedExercise->id),
-                    'View exercise',
-                    'btn-transparent'
-                );
-            } else {
-                // Show warning icon for exercises not found in library
-                $row->linkAction(
-                    'fa-exclamation-triangle',
-                    '#',
-                    'Exercise not found in your library',
-                    'btn-warning-icon'
-                );
-            }
-            
-            $row->add();
-        }
-    }
+
+
 
     /**
      * Format special format label
