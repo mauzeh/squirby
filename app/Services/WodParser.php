@@ -225,8 +225,8 @@ class WodParser
     {
         $trimmed = trim($line);
         
-        // Simple format: "10 Box Jumps" or "Box Jumps"
-        if (preg_match('/^(\d+)\s+(.+)$/', $trimmed, $matches)) {
+        // Format: "10 [Box Jumps]"
+        if (preg_match('/^(\d+)\s+\[([^\]]+)\]$/', $trimmed, $matches)) {
             return [
                 'type' => 'exercise',
                 'name' => trim($matches[2]),
@@ -234,11 +234,11 @@ class WodParser
             ];
         }
         
-        // Just exercise name
-        if (!empty($trimmed)) {
+        // Format: "[Box Jumps]"
+        if (preg_match('/^\[([^\]]+)\]$/', $trimmed, $matches)) {
             return [
                 'type' => 'exercise',
-                'name' => $trimmed
+                'name' => trim($matches[1])
             ];
         }
         
@@ -252,9 +252,10 @@ class WodParser
     {
         $trimmed = trim($line);
         
-        // Format with colon: "Exercise Name: 3x8"
-        if (str_contains($trimmed, ':')) {
-            [$name, $scheme] = array_map('trim', explode(':', $trimmed, 2));
+        // Format with colon: "[Exercise Name]: 3x8"
+        if (preg_match('/^\[([^\]]+)\]:\s*(.+)$/', $trimmed, $matches)) {
+            $name = trim($matches[1]);
+            $scheme = trim($matches[2]);
             
             if (empty($name) || empty($scheme)) {
                 return null;
@@ -267,9 +268,8 @@ class WodParser
             ];
         }
         
-        // Format without colon: "Exercise Name 3x8" or "Exercise Name 3-3-3"
-        // Try to extract scheme from end of line
-        if (preg_match('/^(.+?)\s+((?:\d+x\d+(?:-\d+)?|\d+(?:-\d+)+))$/i', $trimmed, $matches)) {
+        // Format without colon: "[Exercise Name] 3x8" or "[Exercise Name] 3-3-3"
+        if (preg_match('/^\[([^\]]+)\]\s+((?:\d+x\d+(?:-\d+)?|\d+(?:-\d+)+))$/i', $trimmed, $matches)) {
             return [
                 'type' => 'exercise',
                 'name' => trim($matches[1]),
@@ -408,15 +408,15 @@ class WodParser
     private function unparseIndentedExercise(array $exercise): string
     {
         if (isset($exercise['reps'])) {
-            return $exercise['reps'] . ' ' . $exercise['name'];
+            return $exercise['reps'] . ' [' . $exercise['name'] . ']';
         }
-        return $exercise['name'];
+        return '[' . $exercise['name'] . ']';
     }
     
     private function unparseExercise(array $exercise): string
     {
         $name = $exercise['name'];
         $scheme = $exercise['scheme']['display'] ?? '';
-        return $name . ': ' . $scheme;
+        return '[' . $name . ']: ' . $scheme;
     }
 }

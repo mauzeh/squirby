@@ -24,7 +24,7 @@ class WodExerciseMatchingTest extends TestCase
         $workout = Workout::factory()->create([
             'user_id' => $user->id,
             'name' => 'Test WOD',
-            'wod_syntax' => "# Strength\nBack Squat: 5x5",
+            'wod_syntax' => "# Strength\n[Back Squat]: 5x5",
             'wod_parsed' => [
                 'blocks' => [
                     [
@@ -61,7 +61,7 @@ class WodExerciseMatchingTest extends TestCase
         $workout = Workout::factory()->create([
             'user_id' => $user->id,
             'name' => 'Test WOD',
-            'wod_syntax' => "# Strength\nNonExistentExercise: 3x8",
+            'wod_syntax' => "# Strength\n[NonExistentExercise]: 3x8",
             'wod_parsed' => [
                 'blocks' => [
                     [
@@ -103,7 +103,7 @@ class WodExerciseMatchingTest extends TestCase
         $workout = Workout::factory()->create([
             'user_id' => $user->id,
             'name' => 'Test WOD',
-            'wod_syntax' => "# Workout\nBench Press: 5x5\nFakeExercise: 3x8",
+            'wod_syntax' => "# Workout\n[Bench Press]: 5x5\n[FakeExercise]: 3x8",
             'wod_parsed' => [
                 'blocks' => [
                     [
@@ -158,7 +158,7 @@ class WodExerciseMatchingTest extends TestCase
         $workout = Workout::factory()->create([
             'user_id' => $user->id,
             'name' => 'Test WOD',
-            'wod_syntax' => "# Workout\nPush ups: 3x10",  // Different format (space instead of hyphen)
+            'wod_syntax' => "# Workout\n[Push ups]: 3x10",  // Different format (space instead of hyphen)
             'wod_parsed' => [
                 'blocks' => [
                     [

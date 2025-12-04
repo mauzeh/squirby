@@ -19,8 +19,8 @@ class WodParserTest extends TestCase
     {
         $text = <<<WOD
 # Strength
-Back Squat: 5-5-5-5-5
-Bench Press: 3x8
+[Back Squat]: 5-5-5-5-5
+[Bench Press]: 3x8
 WOD;
 
         $result = $this->parser->parse($text);
@@ -46,9 +46,9 @@ WOD;
         $text = <<<WOD
 # Conditioning
 AMRAP 12min:
-  10 Box Jumps
-  15 Push-ups
-  20 Air Squats
+  10 [Box Jumps]
+  15 [Push-ups]
+  20 [Air Squats]
 WOD;
 
         $result = $this->parser->parse($text);
@@ -72,16 +72,16 @@ WOD;
     {
         $text = <<<WOD
 # Block 1: Strength
-Back Squat: 5-5-5-5-5
+[Back Squat]: 5-5-5-5-5
 
 # Block 2: Accessory
-Dumbbell Row: 3x12
-Face Pulls: 3x15-20
+[Dumbbell Row]: 3x12
+[Face Pulls]: 3x15-20
 
 # Block 3: Conditioning
 AMRAP 12min:
-  10 Box Jumps
-  15 Push-ups
+  10 [Box Jumps]
+  15 [Push-ups]
 WOD;
 
         $result = $this->parser->parse($text);
@@ -96,7 +96,7 @@ WOD;
     {
         $text = <<<WOD
 # Workout
-Curls: 3x8-12
+[Curls]: 3x8-12
 WOD;
 
         $result = $this->parser->parse($text);
@@ -113,8 +113,8 @@ WOD;
         $text = <<<WOD
 # WOD
 21-15-9 For Time:
-  Thrusters
-  Pull-ups
+  [Thrusters]
+  [Pull-ups]
 WOD;
 
         $result = $this->parser->parse($text);
@@ -131,8 +131,8 @@ WOD;
         $text = <<<WOD
 # WOD
 5 Rounds:
-  10 Push-ups
-  20 Squats
+  10 [Push-ups]
+  20 [Squats]
 WOD;
 
         $result = $this->parser->parse($text);
@@ -148,9 +148,9 @@ WOD;
         $text = <<<WOD
 # Workout
 // This is a comment
-Back Squat: 5x5
+[Back Squat]: 5x5
 -- Another comment
-Bench Press: 3x8
+[Bench Press]: 3x8
 WOD;
 
         $result = $this->parser->parse($text);
@@ -162,7 +162,7 @@ WOD;
     {
         $text = <<<WOD
 # Max Effort
-Deadlift: 1
+[Deadlift]: 1
 WOD;
 
         $result = $this->parser->parse($text);
@@ -176,8 +176,8 @@ WOD;
     {
         $text = <<<WOD
 # Cardio
-Row: 500m
-Run: 5min
+[Row]: 500m
+[Run]: 5min
 WOD;
 
         $result = $this->parser->parse($text);
@@ -197,13 +197,13 @@ WOD;
     {
         $text = <<<WOD
 # Strength
-Back Squat: 5-5-5-5-5
-Bench Press: 3x8
+[Back Squat]: 5-5-5-5-5
+[Bench Press]: 3x8
 
 # Conditioning
 AMRAP 12min:
-  10 Box Jumps
-  15 Push-ups
+  10 [Box Jumps]
+  15 [Push-ups]
 
 WOD;
 
@@ -220,8 +220,8 @@ WOD;
     {
         $text = <<<WOD
 # Workout
-Back Squat 3x8
-Bench Press 5x5
+[Back Squat] 3x8
+[Bench Press] 5x5
 WOD;
 
         $result = $this->parser->parse($text);
@@ -246,8 +246,8 @@ WOD;
     {
         $text = <<<WOD
 # Strength
-Deadlift 5-5-5-5-5
-Front Squat 3-3-3
+[Deadlift] 5-5-5-5-5
+[Front Squat] 3-3-3
 WOD;
 
         $result = $this->parser->parse($text);
@@ -267,8 +267,8 @@ WOD;
     {
         $text = <<<WOD
 # Accessory
-Curls 3x8-12
-Tricep Extensions 4x10-15
+[Curls] 3x8-12
+[Tricep Extensions] 4x10-15
 WOD;
 
         $result = $this->parser->parse($text);
@@ -292,10 +292,10 @@ WOD;
     {
         $text = <<<WOD
 # Workout
-Back Squat: 5-5-5-5-5
-Bench Press 3x8
-Deadlift: 3x5
-Overhead Press 5x5
+[Back Squat]: 5-5-5-5-5
+[Bench Press] 3x8
+[Deadlift]: 3x5
+[Overhead Press] 5x5
 WOD;
 
         $result = $this->parser->parse($text);
