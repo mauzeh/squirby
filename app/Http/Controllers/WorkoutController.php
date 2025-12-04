@@ -146,7 +146,7 @@ class WorkoutController extends Controller
                                     'workout_id' => $workout->id
                                 ],
                                 'Delete lift log',
-                                'btn-danger',
+                                '',
                                 true
                             )
                             ->compact();
@@ -382,7 +382,7 @@ class WorkoutController extends Controller
                     'DELETE',
                     [],
                     'Remove exercise',
-                    'btn-danger',
+                    '',
                     true
                 );
                 
