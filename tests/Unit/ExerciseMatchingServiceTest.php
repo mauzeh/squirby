@@ -304,4 +304,81 @@ class ExerciseMatchingServiceTest extends TestCase
         $this->assertNotNull($result);
         $this->assertEquals($pushPress->id, $result->id);
     }
+
+    public function test_abbreviation_expansion_with_plurals()
+    {
+        $exercise = Exercise::factory()->create([
+            'title' => 'Kettlebell Swing',
+            'user_id' => $this->user->id
+        ]);
+
+        // "KB Swings" should expand to "Kettlebell Swings" then match "Kettlebell Swing"
+        $result = $this->service->findBestMatch('KB Swings', $this->user->id);
+
+        $this->assertNotNull($result);
+        $this->assertEquals($exercise->id, $result->id);
+    }
+
+    public function test_prefers_exact_match_over_abbreviation_expansion()
+    {
+        // Create an exercise with the abbreviation as its actual name
+        $kbSwings = Exercise::factory()->create([
+            'title' => 'KB Swings',
+            'user_id' => $this->user->id
+        ]);
+
+        // Also create the expanded version
+        $kettlebellSwing = Exercise::factory()->create([
+            'title' => 'Kettlebell Swing',
+            'user_id' => $this->user->id
+        ]);
+
+        // Should prefer exact match "KB Swings" over expanded "Kettlebell Swing"
+        $result = $this->service->findBestMatch('KB Swings', $this->user->id);
+
+        $this->assertNotNull($result);
+        $this->assertEquals($kbSwings->id, $result->id);
+    }
+
+    public function test_abbreviation_does_not_expand_within_words()
+    {
+        $muscleSnatch = Exercise::factory()->create([
+            'title' => 'Muscle Snatch',
+            'user_id' => $this->user->id
+        ]);
+
+        // "Muscle Snatch" should NOT be expanded (mu is part of "muscle", not standalone)
+        $result = $this->service->findBestMatch('Muscle Snatch', $this->user->id);
+
+        $this->assertNotNull($result);
+        $this->assertEquals($muscleSnatch->id, $result->id);
+    }
+
+    public function test_standalone_abbreviation_expands_correctly()
+    {
+        $muscleUp = Exercise::factory()->create([
+            'title' => 'Muscle Up',
+            'user_id' => $this->user->id
+        ]);
+
+        // "MU" as standalone should expand to "Muscle Up"
+        $result = $this->service->findBestMatch('MU', $this->user->id);
+
+        $this->assertNotNull($result);
+        $this->assertEquals($muscleUp->id, $result->id);
+    }
+
+    public function test_abbreviation_expansion_in_compound_names()
+    {
+        $exercise = Exercise::factory()->create([
+            'title' => 'Dumbbell Muscle Snatch',
+            'user_id' => $this->user->id
+        ]);
+
+        // "DB Muscle Snatch" should expand "DB" but not "mu" in "Muscle"
+        $result = $this->service->findBestMatch('DB Muscle Snatch', $this->user->id);
+
+        $this->assertNotNull($result);
+        $this->assertEquals($exercise->id, $result->id);
+    }
 }
