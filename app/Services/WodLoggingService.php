@@ -63,18 +63,21 @@ class WodLoggingService
      */
     public function addWodExerciseSubItem($rowBuilder, $exercise, &$subItemId, $today, $loggedExerciseData, &$hasLoggedExercisesToday, Workout $workout)
     {
-        $exerciseName = $exercise['name'];
+        $exerciseNameFromSyntax = $exercise['name'];
         $scheme = isset($exercise['scheme']) ? $exercise['scheme']['display'] : (isset($exercise['reps']) ? $exercise['reps'] . ' reps' : '');
+        
+        // Try to find matching exercise in database to allow logging
+        $matchingExercise = $this->exerciseMatchingService->findBestMatch($exerciseNameFromSyntax, Auth::id());
+        
+        // Use database exercise name if found, otherwise use syntax name
+        $displayName = $matchingExercise ? $matchingExercise->title : $exerciseNameFromSyntax;
         
         $subItem = $rowBuilder->subItem(
             $subItemId,
-            $exerciseName,
+            $displayName,
             $scheme,
             null
         );
-        
-        // Try to find matching exercise in database to allow logging
-        $matchingExercise = $this->exerciseMatchingService->findBestMatch($exerciseName, Auth::id());
         
         if ($matchingExercise) {
             // Check if logged today

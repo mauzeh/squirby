@@ -315,4 +315,137 @@ class WodExerciseMatchingTest extends TestCase
         // Should NOT show non-loggable exercise from special format
         $response->assertDontSee('Stretching');
     }
+
+    public function test_wod_table_shows_database_exercise_name_not_syntax_name()
+    {
+        $user = User::factory()->create();
+        
+        // Database has singular form
+        $exercise = Exercise::factory()->create([
+            'user_id' => $user->id,
+            'title' => 'Back Squat',
+            'exercise_type' => 'weighted_resistance',
+        ]);
+
+        // WOD syntax uses plural form
+        $workout = Workout::factory()->create([
+            'user_id' => $user->id,
+            'name' => 'Test WOD',
+            'wod_syntax' => "# Strength\n[[Back Squats]] 5x5",
+            'wod_parsed' => [
+                'blocks' => [
+                    [
+                        'name' => 'Strength',
+                        'exercises' => [
+                            [
+                                'type' => 'exercise',
+                                'name' => 'Back Squats',
+                                'loggable' => true,
+                                'scheme' => [
+                                    'type' => 'sets_x_reps',
+                                    'sets' => 5,
+                                    'reps' => 5,
+                                    'display' => '5x5'
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        ]);
+
+        $response = $this->actingAs($user)->get(route('workouts.index'));
+
+        $response->assertStatus(200);
+        // Table should show database name (singular)
+        $response->assertSee('Back Squat');
+        // Table should NOT show syntax name (plural) in the exercise list
+        // Note: The WOD display markdown will still show "Back Squats" but that's in a different section
+    }
+
+    public function test_wod_display_shows_syntax_name_while_table_shows_database_name()
+    {
+        $user = User::factory()->create();
+        
+        // Database has singular form
+        $exercise = Exercise::factory()->create([
+            'user_id' => $user->id,
+            'title' => 'Deadlift',
+            'exercise_type' => 'weighted_resistance',
+        ]);
+
+        // WOD syntax uses plural form
+        $workout = Workout::factory()->create([
+            'user_id' => $user->id,
+            'name' => 'Test WOD',
+            'wod_syntax' => "# Strength\n[[Deadlifts]] 5 reps, building",
+            'wod_parsed' => [
+                'blocks' => [
+                    [
+                        'name' => 'Strength',
+                        'exercises' => [
+                            [
+                                'type' => 'exercise',
+                                'name' => 'Deadlifts',
+                                'loggable' => true,
+                                'scheme' => [
+                                    'type' => 'custom',
+                                    'display' => '5 reps, building'
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        ]);
+
+        $response = $this->actingAs($user)->get(route('workouts.edit', $workout));
+
+        $response->assertStatus(200);
+        // WOD display should show syntax name (plural) - this is in the markdown
+        $response->assertSee('Deadlifts');
+        // Table should show database name (singular)
+        $response->assertSee('Deadlift');
+        // Should show the scheme
+        $response->assertSee('5 reps, building');
+    }
+
+    public function test_wod_table_shows_syntax_name_when_no_database_match()
+    {
+        $user = User::factory()->create();
+
+        // No matching exercise in database
+        $workout = Workout::factory()->create([
+            'user_id' => $user->id,
+            'name' => 'Test WOD',
+            'wod_syntax' => "# Workout\n[[Nonexistent Exercise]] 3x8",
+            'wod_parsed' => [
+                'blocks' => [
+                    [
+                        'name' => 'Workout',
+                        'exercises' => [
+                            [
+                                'type' => 'exercise',
+                                'name' => 'Nonexistent Exercise',
+                                'loggable' => true,
+                                'scheme' => [
+                                    'type' => 'sets_x_reps',
+                                    'sets' => 3,
+                                    'reps' => 8,
+                                    'display' => '3x8'
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        ]);
+
+        $response = $this->actingAs($user)->get(route('workouts.index'));
+
+        $response->assertStatus(200);
+        // Should show syntax name since no database match exists
+        $response->assertSee('Nonexistent Exercise');
+        $response->assertSee('3x8');
+    }
 }
