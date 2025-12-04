@@ -70,7 +70,7 @@ class WodParser
                 ];
             }
             
-            // Check for special format (AMRAP, EMOM, For Time, Rounds)
+            // Check for special format (lines starting with >)
             if ($this->isSpecialFormat($line)) {
                 // Save previous special format if exists
                 if ($currentSpecialFormat !== null) {
@@ -138,13 +138,12 @@ class WodParser
     }
     
     /**
-     * Check if line is a special format
+     * Check if line is a special format (starts with >)
      */
     private function isSpecialFormat(string $line): bool
     {
         $trimmed = trim($line);
-        return preg_match('/^(AMRAP|EMOM|For Time|[0-9]+ Rounds?)[\s:]/i', $trimmed) ||
-               preg_match('/^[0-9]+-[0-9]+-[0-9]+\s+(For Time|Rounds?)[\s:]/i', $trimmed);
+        return str_starts_with($trimmed, '>');
     }
     
     /**
@@ -154,59 +153,12 @@ class WodParser
     {
         $trimmed = trim($line);
         
-        // AMRAP Xmin:
-        if (preg_match('/^AMRAP\s+(\d+)\s*min/i', $trimmed, $matches)) {
-            return [
-                'type' => 'special_format',
-                'format' => 'AMRAP',
-                'duration' => (int)$matches[1],
-                'exercises' => []
-            ];
-        }
-        
-        // EMOM Xmin:
-        if (preg_match('/^EMOM\s+(\d+)\s*min/i', $trimmed, $matches)) {
-            return [
-                'type' => 'special_format',
-                'format' => 'EMOM',
-                'duration' => (int)$matches[1],
-                'exercises' => []
-            ];
-        }
-        
-        // For Time:
-        if (preg_match('/^For Time/i', $trimmed)) {
-            return [
-                'type' => 'special_format',
-                'format' => 'For Time',
-                'exercises' => []
-            ];
-        }
-        
-        // X Rounds: or X Round:
-        if (preg_match('/^(\d+)\s+Rounds?[\s:]/i', $trimmed, $matches)) {
-            return [
-                'type' => 'special_format',
-                'format' => 'Rounds',
-                'rounds' => (int)$matches[1],
-                'exercises' => []
-            ];
-        }
-        
-        // 21-15-9 For Time: or similar
-        if (preg_match('/^([0-9-]+)\s+(For Time|Rounds?)[\s:]/i', $trimmed, $matches)) {
-            return [
-                'type' => 'special_format',
-                'format' => $matches[2],
-                'rep_scheme' => $matches[1],
-                'exercises' => []
-            ];
-        }
+        // Remove the leading > and any whitespace after it
+        $description = trim(substr($trimmed, 1));
         
         return [
             'type' => 'special_format',
-            'format' => 'Custom',
-            'description' => rtrim($trimmed, ':'),
+            'description' => $description,
             'exercises' => []
         ];
     }
@@ -366,26 +318,7 @@ class WodParser
     
     private function unparseSpecialFormat(array $format): string
     {
-        if ($format['format'] === 'AMRAP' && isset($format['duration'])) {
-            return 'AMRAP ' . $format['duration'] . 'min:';
-        }
-        
-        if ($format['format'] === 'EMOM' && isset($format['duration'])) {
-            return 'EMOM ' . $format['duration'] . 'min:';
-        }
-        
-        if ($format['format'] === 'For Time') {
-            if (isset($format['rep_scheme'])) {
-                return $format['rep_scheme'] . ' For Time:';
-            }
-            return 'For Time:';
-        }
-        
-        if ($format['format'] === 'Rounds' && isset($format['rounds'])) {
-            return $format['rounds'] . ' Rounds:';
-        }
-        
-        return $format['description'] ?? 'Custom Format:';
+        return '> ' . ($format['description'] ?? '');
     }
     
     private function unparseExercise(array $exercise): string

@@ -1154,26 +1154,7 @@ class WorkoutController extends Controller
      */
     private function formatSpecialFormatLabel($format): string
     {
-        if ($format['format'] === 'AMRAP' && isset($format['duration'])) {
-            return 'AMRAP ' . $format['duration'] . 'min';
-        }
-        
-        if ($format['format'] === 'EMOM' && isset($format['duration'])) {
-            return 'EMOM ' . $format['duration'] . 'min';
-        }
-        
-        if ($format['format'] === 'For Time') {
-            if (isset($format['rep_scheme'])) {
-                return $format['rep_scheme'] . ' For Time';
-            }
-            return 'For Time';
-        }
-        
-        if ($format['format'] === 'Rounds' && isset($format['rounds'])) {
-            return $format['rounds'] . ' Rounds';
-        }
-        
-        return $format['description'] ?? 'Custom Format';
+        return $format['description'] ?? 'Format';
     }
     
     /**
