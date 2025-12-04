@@ -36,7 +36,11 @@ class WodDisplayService
 
         $text = $workout->wod_syntax;
         
-        // Process double-bracketed exercises (loggable)
+        // First, process single-bracketed exercises (non-loggable) - just remove brackets
+        // This must be done BEFORE processing double brackets to avoid conflicts
+        $text = preg_replace('/(?<!\[)\[([^\]]+)\](?!\])/', '$1', $text);
+        
+        // Then, process double-bracketed exercises (loggable)
         $text = preg_replace_callback('/\[\[([^\]]+)\]\]/', function($matches) {
             $exerciseName = $matches[1];
             $matchingExercise = $this->exerciseMatchingService->findBestMatch($exerciseName, Auth::id());
@@ -47,14 +51,11 @@ class WodDisplayService
                     'date' => now()->toDateString(),
                     'redirect_to' => 'workouts'
                 ]);
-                return '[**' . $exerciseName . '**](' . $url . ')';
+                return '**[' . $exerciseName . '](' . $url . ')**';
             }
             
             return '**' . $exerciseName . '**';
         }, $text);
-        
-        // Process single-bracketed exercises (non-loggable) - just remove brackets
-        $text = preg_replace('/\[([^\]]+)\]/', '$1', $text);
         
         return $text;
     }

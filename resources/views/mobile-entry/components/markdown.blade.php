@@ -10,11 +10,12 @@
     $environment->addExtension(new GithubFlavoredMarkdownExtension());
     $converter = new MarkdownConverter($environment);
     
-    $html = $converter->convert($data['markdown'])->getContent();
+    $markdown = $data['markdown'] ?? '';
+    $html = $converter->convert($markdown)->getContent();
 @endphp
 
 <div class="component-markdown {{ $data['classes'] ?? '' }}">
-    <div class="prose prose-sm max-w-none font-mono bg-gray-50 p-4 rounded border border-gray-200">
+    <div class="prose prose-sm max-w-none bg-gray-50 p-4 rounded border border-gray-200">
         {!! $html !!}
     </div>
 </div>
