@@ -966,6 +966,7 @@ class WorkoutController extends Controller
         if ($workout->wod_parsed && isset($workout->wod_parsed['blocks'])) {
             $tableBuilder = C::table();
             $rowId = 1;
+            $userId = Auth::id();
             
             foreach ($workout->wod_parsed['blocks'] as $block) {
                 // Block header (only if block has a name)
@@ -981,7 +982,7 @@ class WorkoutController extends Controller
                 
                 // Exercises in block
                 foreach ($block['exercises'] as $exercise) {
-                    $this->addWodExercisePreview($tableBuilder, $exercise, $rowId);
+                    $this->addWodExercisePreview($tableBuilder, $exercise, $rowId, $userId);
                     $rowId++;
                 }
             }
@@ -1092,7 +1093,7 @@ class WorkoutController extends Controller
     /**
      * Add WOD exercise preview in edit view
      */
-    private function addWodExercisePreview($tableBuilder, $exercise, &$rowId)
+    private function addWodExercisePreview($tableBuilder, $exercise, &$rowId, $userId = null)
     {
         if ($exercise['type'] === 'special_format') {
             $formatLabel = $this->formatSpecialFormatLabel($exercise);
@@ -1106,12 +1107,16 @@ class WorkoutController extends Controller
             
             if (isset($exercise['exercises'])) {
                 foreach ($exercise['exercises'] as $nestedEx) {
-                    $this->addWodExercisePreview($tableBuilder, $nestedEx, $rowId);
+                    $this->addWodExercisePreview($tableBuilder, $nestedEx, $rowId, $userId);
                 }
             }
         } else {
             $exerciseName = $exercise['name'];
             $scheme = isset($exercise['scheme']) ? $exercise['scheme']['display'] : (isset($exercise['reps']) ? $exercise['reps'] . ' reps' : '');
+            
+            // Try to match exercise from database
+            $matchingService = app(\App\Services\ExerciseMatchingService::class);
+            $matchedExercise = $matchingService->findBestMatch($exerciseName, $userId ?? Auth::id());
             
             $row = $tableBuilder->row(
                 $rowId++,
@@ -1119,6 +1124,20 @@ class WorkoutController extends Controller
                 $scheme,
                 null
             );
+            
+            // If exercise exists, add link to edit page
+            if ($matchedExercise) {
+                $row->linkAction(
+                    'fa-link',
+                    route('exercises.edit', $matchedExercise->id),
+                    'View exercise',
+                    'btn-transparent'
+                );
+            } else {
+                // Show warning icon for unmatched exercises
+                $row->message('warning', 'Exercise not found in your library', '⚠️');
+            }
+            
             $row->compact()->add();
         }
     }
