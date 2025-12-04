@@ -261,11 +261,11 @@ class LiftLogTableRowBuilder
                 }
             }
             
-            // If this log's best 1RM beats or ties the previous best, it's a PR
-            // Use >= to include ties as PRs
-            if ($logMaxEstimated1RM >= $maxEstimated1RMSoFar - $tolerance) {
+            // If this log's best 1RM beats the previous best, it's a PR
+            // Only mark as PR if it strictly beats the previous max (or if it's the first log)
+            if ($logMaxEstimated1RM > $maxEstimated1RMSoFar + $tolerance) {
                 $prLogIds[] = $log->id;
-                $maxEstimated1RMSoFar = max($maxEstimated1RMSoFar, $logMaxEstimated1RM);
+                $maxEstimated1RMSoFar = $logMaxEstimated1RM;
             }
         }
         

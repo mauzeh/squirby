@@ -643,7 +643,7 @@ class LiftLogTableRowBuilderTest extends TestCase
             'reps' => 1
         ]);
 
-        // Tied PR
+        // Tied - not a PR (doesn't beat previous)
         $log2 = LiftLog::factory()->create([
             'user_id' => $user->id,
             'exercise_id' => $exercise->id,
@@ -662,9 +662,10 @@ class LiftLogTableRowBuilderTest extends TestCase
         $this->actingAs($user);
         $rows = $this->builder->buildRows(collect([$log1, $log2]));
 
-        // Both should be marked as PRs (tied)
+        // Only log1 should be marked as PR (first lift)
+        // log2 is not a PR because it only ties, doesn't beat
         $this->assertEquals('row-pr', $rows[0]['cssClass']);
-        $this->assertEquals('row-pr', $rows[1]['cssClass']);
+        $this->assertNull($rows[1]['cssClass']);
     }
 
     /** @test */

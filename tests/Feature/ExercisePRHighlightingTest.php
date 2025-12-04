@@ -292,10 +292,10 @@ class ExercisePRHighlightingTest extends TestCase
 
         $response->assertStatus(200);
         
-        // Both should be marked as PRs
+        // Only the first should be marked as PR (ties don't count as new PRs)
         $content = $response->getContent();
         $prBadgeCount = substr_count($content, '🏆 PR');
-        $this->assertEquals(2, $prBadgeCount, 'Expected 2 PR badges for tied PRs');
+        $this->assertEquals(1, $prBadgeCount, 'Expected 1 PR badge - only the first lift, ties do not count as new PRs');
     }
 
     /** @test */
