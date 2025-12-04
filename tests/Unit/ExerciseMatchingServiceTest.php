@@ -381,4 +381,73 @@ class ExerciseMatchingServiceTest extends TestCase
         $this->assertNotNull($result);
         $this->assertEquals($exercise->id, $result->id);
     }
+
+    public function test_database_alias_matching()
+    {
+        $exercise = Exercise::factory()->create([
+            'title' => 'Glute Ham Developer Sit-up',
+            'user_id' => $this->user->id
+        ]);
+
+        // Create a database alias
+        \App\Models\ExerciseMatchingAlias::create([
+            'exercise_id' => $exercise->id,
+            'alias' => 'GHD Situp'
+        ]);
+
+        // Should match via database alias
+        $result = $this->service->findBestMatch('GHD Situp', $this->user->id);
+
+        $this->assertNotNull($result);
+        $this->assertEquals($exercise->id, $result->id);
+    }
+
+    public function test_database_alias_takes_priority_over_config()
+    {
+        // Create two exercises
+        $kbSwing = Exercise::factory()->create([
+            'title' => 'Kettlebell Swing',
+            'user_id' => $this->user->id
+        ]);
+
+        $customExercise = Exercise::factory()->create([
+            'title' => 'Custom KB Exercise',
+            'user_id' => $this->user->id
+        ]);
+
+        // Create a database alias that overrides the config expansion
+        \App\Models\ExerciseMatchingAlias::create([
+            'exercise_id' => $customExercise->id,
+            'alias' => 'KB Swings'
+        ]);
+
+        // Should match the custom exercise via database alias, not the config expansion
+        $result = $this->service->findBestMatch('KB Swings', $this->user->id);
+
+        $this->assertNotNull($result);
+        $this->assertEquals($customExercise->id, $result->id);
+    }
+
+    public function test_database_alias_case_insensitive()
+    {
+        $exercise = Exercise::factory()->create([
+            'title' => 'Toes to Bar',
+            'user_id' => $this->user->id
+        ]);
+
+        \App\Models\ExerciseMatchingAlias::create([
+            'exercise_id' => $exercise->id,
+            'alias' => 'T2B'
+        ]);
+
+        // Should match regardless of case
+        $result1 = $this->service->findBestMatch('t2b', $this->user->id);
+        $result2 = $this->service->findBestMatch('T2B', $this->user->id);
+        $result3 = $this->service->findBestMatch('t2B', $this->user->id);
+
+        $this->assertNotNull($result1);
+        $this->assertEquals($exercise->id, $result1->id);
+        $this->assertEquals($exercise->id, $result2->id);
+        $this->assertEquals($exercise->id, $result3->id);
+    }
 }

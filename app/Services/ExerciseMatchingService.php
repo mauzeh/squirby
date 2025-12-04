@@ -32,6 +32,12 @@ class ExerciseMatchingService
         // Normalize the search term
         $normalizedSearch = $this->normalizeString($exerciseName);
         
+        // Check database aliases first (highest priority for custom mappings)
+        $aliasMatch = $this->checkDatabaseAliases($normalizedSearch, $exercises);
+        if ($aliasMatch) {
+            return $aliasMatch;
+        }
+        
         // Expand abbreviations in the search term
         // This transforms "KB Swings" -> "Kettlebell Swings"
         $expandedSearch = $this->expandAbbreviations($normalizedSearch);
@@ -104,6 +110,30 @@ class ExerciseMatchingService
         $str = trim($str);
         
         return $str;
+    }
+    
+    /**
+     * Check database for matching aliases
+     * 
+     * @param string $normalizedSearch Normalized search term
+     * @param Collection $exercises Available exercises
+     * @return Exercise|null
+     */
+    private function checkDatabaseAliases(string $normalizedSearch, Collection $exercises): ?Exercise
+    {
+        // Get exercise IDs we're searching within
+        $exerciseIds = $exercises->pluck('id');
+        
+        // Look for alias match (case-insensitive)
+        $alias = \App\Models\ExerciseMatchingAlias::whereIn('exercise_id', $exerciseIds)
+            ->whereRaw('LOWER(alias) = ?', [$normalizedSearch])
+            ->first();
+        
+        if ($alias) {
+            return $exercises->firstWhere('id', $alias->exercise_id);
+        }
+        
+        return null;
     }
     
     /**
