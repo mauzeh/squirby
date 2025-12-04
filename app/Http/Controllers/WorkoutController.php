@@ -1055,9 +1055,8 @@ class WorkoutController extends Controller
             );
             
             // Try to find matching exercise in database to allow logging
-            $matchingExercise = \App\Models\Exercise::where('title', 'LIKE', '%' . $exerciseName . '%')
-                ->availableToUser(Auth::id())
-                ->first();
+            $matchingService = app(\App\Services\ExerciseMatchingService::class);
+            $matchingExercise = $matchingService->findBestMatch($exerciseName, Auth::id());
             
             if ($matchingExercise) {
                 // Check if logged today
