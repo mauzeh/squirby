@@ -21,7 +21,7 @@
     <body>
         @if(session()->has('impersonator_id'))
             <div class="impersonation-bar">
-                You are currently impersonating {{ auth()->user()->name }}. <a href="{{ route('users.leave-impersonate') }}" style="color: #000;">Switch Back</a>
+                You are currently impersonating {{ auth()->user()->name }} ({{ auth()->user()->id }}). <a href="{{ route('users.leave-impersonate') }}" style="color: #000;">Switch Back</a>
             </div>
         @endif
         @if(app()->environment('staging'))
