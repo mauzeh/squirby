@@ -24,7 +24,7 @@ class WodExerciseMatchingTest extends TestCase
         $workout = Workout::factory()->create([
             'user_id' => $user->id,
             'name' => 'Test WOD',
-            'wod_syntax' => "# Strength\n[Back Squat]: 5x5",
+            'wod_syntax' => "# Strength\n[[Back Squat]]: 5x5",
             'wod_parsed' => [
                 'blocks' => [
                     [
@@ -33,6 +33,7 @@ class WodExerciseMatchingTest extends TestCase
                             [
                                 'type' => 'exercise',
                                 'name' => 'Back Squat',
+                                'loggable' => true,
                                 'scheme' => [
                                     'type' => 'sets_x_reps',
                                     'sets' => 5,
@@ -61,7 +62,7 @@ class WodExerciseMatchingTest extends TestCase
         $workout = Workout::factory()->create([
             'user_id' => $user->id,
             'name' => 'Test WOD',
-            'wod_syntax' => "# Strength\n[NonExistentExercise]: 3x8",
+            'wod_syntax' => "# Strength\n[[NonExistentExercise]]: 3x8",
             'wod_parsed' => [
                 'blocks' => [
                     [
@@ -70,6 +71,7 @@ class WodExerciseMatchingTest extends TestCase
                             [
                                 'type' => 'exercise',
                                 'name' => 'NonExistentExercise',
+                                'loggable' => true,
                                 'scheme' => [
                                     'type' => 'sets_x_reps',
                                     'sets' => 3,
@@ -103,7 +105,7 @@ class WodExerciseMatchingTest extends TestCase
         $workout = Workout::factory()->create([
             'user_id' => $user->id,
             'name' => 'Test WOD',
-            'wod_syntax' => "# Workout\n[Bench Press]: 5x5\n[FakeExercise]: 3x8",
+            'wod_syntax' => "# Workout\n[[Bench Press]]: 5x5\n[[FakeExercise]]: 3x8",
             'wod_parsed' => [
                 'blocks' => [
                     [
@@ -112,6 +114,7 @@ class WodExerciseMatchingTest extends TestCase
                             [
                                 'type' => 'exercise',
                                 'name' => 'Bench Press',
+                                'loggable' => true,
                                 'scheme' => [
                                     'type' => 'sets_x_reps',
                                     'sets' => 5,
@@ -122,6 +125,7 @@ class WodExerciseMatchingTest extends TestCase
                             [
                                 'type' => 'exercise',
                                 'name' => 'FakeExercise',
+                                'loggable' => true,
                                 'scheme' => [
                                     'type' => 'sets_x_reps',
                                     'sets' => 3,
@@ -157,7 +161,7 @@ class WodExerciseMatchingTest extends TestCase
         $workout = Workout::factory()->create([
             'user_id' => $user->id,
             'name' => 'Test WOD',
-            'wod_syntax' => "# Workout\n[Push ups]: 3x10",  // Different format (space instead of hyphen)
+            'wod_syntax' => "# Workout\n[[Push ups]]: 3x10",  // Different format (space instead of hyphen)
             'wod_parsed' => [
                 'blocks' => [
                     [
@@ -166,6 +170,7 @@ class WodExerciseMatchingTest extends TestCase
                             [
                                 'type' => 'exercise',
                                 'name' => 'Push ups',
+                                'loggable' => true,
                                 'scheme' => [
                                     'type' => 'sets_x_reps',
                                     'sets' => 3,
@@ -185,5 +190,128 @@ class WodExerciseMatchingTest extends TestCase
         $response->assertSee('Push ups');
         // Should match "Push-ups" exercise via fuzzy matching and show log button
         $response->assertSee('Log now');
+    }
+
+    public function test_wod_only_shows_loggable_exercises_with_double_brackets()
+    {
+        $user = User::factory()->create();
+        
+        // Create exercises for both loggable and non-loggable
+        $squatExercise = Exercise::factory()->create([
+            'user_id' => $user->id,
+            'title' => 'Back Squat',
+            'exercise_type' => 'weighted_resistance',
+        ]);
+        
+        $warmupExercise = Exercise::factory()->create([
+            'user_id' => $user->id,
+            'title' => 'Warm-up Squats',
+            'exercise_type' => 'bodyweight',
+        ]);
+
+        $workout = Workout::factory()->create([
+            'user_id' => $user->id,
+            'name' => 'Test WOD',
+            'wod_syntax' => "# Workout\n[[Back Squat]]: 5x5\n[Warm-up Squats]: 2x10",
+            'wod_parsed' => [
+                'blocks' => [
+                    [
+                        'name' => 'Workout',
+                        'exercises' => [
+                            [
+                                'type' => 'exercise',
+                                'name' => 'Back Squat',
+                                'loggable' => true,
+                                'scheme' => [
+                                    'type' => 'sets_x_reps',
+                                    'sets' => 5,
+                                    'reps' => 5,
+                                    'display' => '5x5'
+                                ]
+                            ],
+                            [
+                                'type' => 'exercise',
+                                'name' => 'Warm-up Squats',
+                                'loggable' => false,
+                                'scheme' => [
+                                    'type' => 'sets_x_reps',
+                                    'sets' => 2,
+                                    'reps' => 10,
+                                    'display' => '2x10'
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        ]);
+
+        $response = $this->actingAs($user)->get(route('workouts.index'));
+
+        $response->assertStatus(200);
+        // Should show loggable exercise
+        $response->assertSee('Back Squat');
+        $response->assertSee('5x5');
+        // Should NOT show non-loggable exercise
+        $response->assertDontSee('Warm-up Squats');
+        $response->assertDontSee('2x10');
+    }
+
+    public function test_wod_special_formats_respect_loggable_flag()
+    {
+        $user = User::factory()->create();
+        
+        $burpeeExercise = Exercise::factory()->create([
+            'user_id' => $user->id,
+            'title' => 'Burpees',
+            'exercise_type' => 'bodyweight',
+        ]);
+        
+        $stretchExercise = Exercise::factory()->create([
+            'user_id' => $user->id,
+            'title' => 'Stretching',
+            'exercise_type' => 'bodyweight',
+        ]);
+
+        $workout = Workout::factory()->create([
+            'user_id' => $user->id,
+            'name' => 'Test WOD',
+            'wod_syntax' => "> AMRAP 10min\n10 [[Burpees]]\n5 [Stretching]",
+            'wod_parsed' => [
+                'blocks' => [
+                    [
+                        'name' => '',
+                        'exercises' => [
+                            [
+                                'type' => 'special_format',
+                                'description' => 'AMRAP 10min',
+                                'exercises' => [
+                                    [
+                                        'type' => 'exercise',
+                                        'name' => 'Burpees',
+                                        'reps' => 10,
+                                        'loggable' => true
+                                    ],
+                                    [
+                                        'type' => 'exercise',
+                                        'name' => 'Stretching',
+                                        'reps' => 5,
+                                        'loggable' => false
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        ]);
+
+        $response = $this->actingAs($user)->get(route('workouts.index'));
+
+        $response->assertStatus(200);
+        // Should show loggable exercise from special format
+        $response->assertSee('Burpees');
+        // Should NOT show non-loggable exercise from special format
+        $response->assertDontSee('Stretching');
     }
 }

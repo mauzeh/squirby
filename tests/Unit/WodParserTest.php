@@ -176,4 +176,63 @@ WOD;
         $this->assertEquals('Block 1', $result['blocks'][0]['name']);
         $this->assertEquals('Block 2', $result['blocks'][1]['name']);
     }
+
+    public function test_parses_double_bracket_exercises_as_loggable()
+    {
+        $text = <<<WOD
+# Workout
+[[Back Squat]]: 5x5
+[Warm-up Squats]: 2x10
+WOD;
+
+        $result = $this->parser->parse($text);
+
+        $this->assertCount(2, $result['blocks'][0]['exercises']);
+        
+        $loggable = $result['blocks'][0]['exercises'][0];
+        $this->assertEquals('Back Squat', $loggable['name']);
+        $this->assertTrue($loggable['loggable']);
+        
+        $nonLoggable = $result['blocks'][0]['exercises'][1];
+        $this->assertEquals('Warm-up Squats', $nonLoggable['name']);
+        $this->assertFalse($nonLoggable['loggable']);
+    }
+
+    public function test_parses_double_bracket_in_special_formats()
+    {
+        $text = <<<WOD
+# WOD
+> AMRAP 12min
+10 [[Box Jumps]]
+15 [Push-ups]
+WOD;
+
+        $result = $this->parser->parse($text);
+
+        $format = $result['blocks'][0]['exercises'][0];
+        $this->assertCount(2, $format['exercises']);
+        
+        $loggable = $format['exercises'][0];
+        $this->assertEquals('Box Jumps', $loggable['name']);
+        $this->assertTrue($loggable['loggable']);
+        
+        $nonLoggable = $format['exercises'][1];
+        $this->assertEquals('Push-ups', $nonLoggable['name']);
+        $this->assertFalse($nonLoggable['loggable']);
+    }
+
+    public function test_unparse_preserves_loggable_flag()
+    {
+        $text = <<<WOD
+# Workout
+[[Back Squat]]: 5x5
+[Warm-up]: 2x10
+WOD;
+
+        $parsed = $this->parser->parse($text);
+        $unparsed = $this->parser->unparse($parsed);
+
+        $this->assertStringContainsString('[[Back Squat]]', $unparsed);
+        $this->assertStringContainsString('[Warm-up]', $unparsed);
+    }
 }

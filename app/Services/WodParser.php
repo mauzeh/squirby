@@ -170,24 +170,62 @@ class WodParser
     {
         $trimmed = trim($line);
         
-        // Format: "10 [Exercise Name]" (for AMRAP/EMOM/etc)
+        // Format: "10 [[Exercise Name]]" (loggable, for AMRAP/EMOM/etc)
+        if (preg_match('/^(\d+)\s+\[\[([^\]]+)\]\]$/', $trimmed, $matches)) {
+            return [
+                'type' => 'exercise',
+                'name' => trim($matches[2]),
+                'reps' => (int)$matches[1],
+                'loggable' => true
+            ];
+        }
+        
+        // Format: "10 [Exercise Name]" (non-loggable, for AMRAP/EMOM/etc)
         if (preg_match('/^(\d+)\s+\[([^\]]+)\]$/', $trimmed, $matches)) {
             return [
                 'type' => 'exercise',
                 'name' => trim($matches[2]),
-                'reps' => (int)$matches[1]
+                'reps' => (int)$matches[1],
+                'loggable' => false
             ];
         }
         
-        // Format: "[Exercise Name]" (just the exercise, no scheme)
+        // Format: "[[Exercise Name]]" (loggable, just the exercise, no scheme)
+        if (preg_match('/^\[\[([^\]]+)\]\]$/', $trimmed, $matches)) {
+            return [
+                'type' => 'exercise',
+                'name' => trim($matches[1]),
+                'loggable' => true
+            ];
+        }
+        
+        // Format: "[Exercise Name]" (non-loggable, just the exercise, no scheme)
         if (preg_match('/^\[([^\]]+)\]$/', $trimmed, $matches)) {
             return [
                 'type' => 'exercise',
-                'name' => trim($matches[1])
+                'name' => trim($matches[1]),
+                'loggable' => false
             ];
         }
         
-        // Format with colon: "[Exercise Name]: 3x8"
+        // Format with colon: "[[Exercise Name]]: 3x8" (loggable)
+        if (preg_match('/^\[\[([^\]]+)\]\]:\s*(.+)$/', $trimmed, $matches)) {
+            $name = trim($matches[1]);
+            $scheme = trim($matches[2]);
+            
+            if (empty($name) || empty($scheme)) {
+                return null;
+            }
+            
+            return [
+                'type' => 'exercise',
+                'name' => $name,
+                'scheme' => $this->parseScheme($scheme),
+                'loggable' => true
+            ];
+        }
+        
+        // Format with colon: "[Exercise Name]: 3x8" (non-loggable)
         if (preg_match('/^\[([^\]]+)\]:\s*(.+)$/', $trimmed, $matches)) {
             $name = trim($matches[1]);
             $scheme = trim($matches[2]);
@@ -199,16 +237,28 @@ class WodParser
             return [
                 'type' => 'exercise',
                 'name' => $name,
-                'scheme' => $this->parseScheme($scheme)
+                'scheme' => $this->parseScheme($scheme),
+                'loggable' => false
             ];
         }
         
-        // Format without colon: "[Exercise Name] 3x8" or "[Exercise Name] 3-3-3"
+        // Format without colon: "[[Exercise Name]] 3x8" (loggable)
+        if (preg_match('/^\[\[([^\]]+)\]\]\s+((?:\d+x\d+(?:-\d+)?|\d+(?:-\d+)+))$/i', $trimmed, $matches)) {
+            return [
+                'type' => 'exercise',
+                'name' => trim($matches[1]),
+                'scheme' => $this->parseScheme($matches[2]),
+                'loggable' => true
+            ];
+        }
+        
+        // Format without colon: "[Exercise Name] 3x8" (non-loggable)
         if (preg_match('/^\[([^\]]+)\]\s+((?:\d+x\d+(?:-\d+)?|\d+(?:-\d+)+))$/i', $trimmed, $matches)) {
             return [
                 'type' => 'exercise',
                 'name' => trim($matches[1]),
-                'scheme' => $this->parseScheme($matches[2])
+                'scheme' => $this->parseScheme($matches[2]),
+                'loggable' => false
             ];
         }
         
@@ -324,19 +374,21 @@ class WodParser
     private function unparseExercise(array $exercise): string
     {
         $name = $exercise['name'];
+        $loggable = $exercise['loggable'] ?? false;
+        $brackets = $loggable ? '[[' . $name . ']]' : '[' . $name . ']';
         
-        // If exercise has reps (from AMRAP/EMOM/etc), format as "10 [Exercise]"
+        // If exercise has reps (from AMRAP/EMOM/etc), format as "10 [[Exercise]]" or "10 [Exercise]"
         if (isset($exercise['reps'])) {
-            return $exercise['reps'] . ' [' . $name . ']';
+            return $exercise['reps'] . ' ' . $brackets;
         }
         
-        // If exercise has scheme, format as "[Exercise]: 3x8"
+        // If exercise has scheme, format as "[[Exercise]]: 3x8" or "[Exercise]: 3x8"
         if (isset($exercise['scheme'])) {
             $scheme = $exercise['scheme']['display'] ?? '';
-            return '[' . $name . ']: ' . $scheme;
+            return $brackets . ': ' . $scheme;
         }
         
         // Just the exercise name
-        return '[' . $name . ']';
+        return $brackets;
     }
 }
