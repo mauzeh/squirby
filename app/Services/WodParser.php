@@ -43,6 +43,12 @@ class WodParser
             
             // Check for block header
             if ($this->isBlockHeader($line)) {
+                // Save any remaining special format to current block
+                if ($currentSpecialFormat !== null && $currentBlock !== null) {
+                    $currentBlock['exercises'][] = $currentSpecialFormat;
+                    $currentSpecialFormat = null;
+                }
+                
                 // Save previous block if exists
                 if ($currentBlock !== null) {
                     $blocks[] = $currentBlock;
@@ -53,7 +59,6 @@ class WodParser
                     'name' => $this->parseBlockName($line),
                     'exercises' => []
                 ];
-                $currentSpecialFormat = null;
                 continue;
             }
             
@@ -67,29 +72,25 @@ class WodParser
             
             // Check for special format (AMRAP, EMOM, For Time, Rounds)
             if ($this->isSpecialFormat($line)) {
+                // Save previous special format if exists
+                if ($currentSpecialFormat !== null) {
+                    $currentBlock['exercises'][] = $currentSpecialFormat;
+                }
                 $currentSpecialFormat = $this->parseSpecialFormat($line);
                 continue;
             }
             
-            // Check if line is indented (belongs to special format)
-            if ($currentSpecialFormat !== null && $this->isIndented($line)) {
-                $exercise = $this->parseIndentedExercise($line);
-                if ($exercise) {
-                    $currentSpecialFormat['exercises'][] = $exercise;
-                }
-                continue;
-            }
-            
-            // If we were in a special format and hit a non-indented line, save it
-            if ($currentSpecialFormat !== null) {
-                $currentBlock['exercises'][] = $currentSpecialFormat;
-                $currentSpecialFormat = null;
-            }
-            
-            // Parse regular exercise
+            // Try to parse as exercise
             $exercise = $this->parseExercise($line);
+            
             if ($exercise) {
-                $currentBlock['exercises'][] = $exercise;
+                // If we're in a special format, add to it
+                if ($currentSpecialFormat !== null) {
+                    $currentSpecialFormat['exercises'][] = $exercise;
+                } else {
+                    // Otherwise add as regular exercise to block
+                    $currentBlock['exercises'][] = $exercise;
+                }
             }
         }
         
@@ -211,21 +212,13 @@ class WodParser
     }
     
     /**
-     * Check if line is indented
+     * Parse regular exercise line
      */
-    private function isIndented(string $line): bool
-    {
-        return strlen($line) > 0 && ($line[0] === ' ' || $line[0] === "\t");
-    }
-    
-    /**
-     * Parse indented exercise (part of special format)
-     */
-    private function parseIndentedExercise(string $line): ?array
+    private function parseExercise(string $line): ?array
     {
         $trimmed = trim($line);
         
-        // Format: "10 [Box Jumps]"
+        // Format: "10 [Exercise Name]" (for AMRAP/EMOM/etc)
         if (preg_match('/^(\d+)\s+\[([^\]]+)\]$/', $trimmed, $matches)) {
             return [
                 'type' => 'exercise',
@@ -234,23 +227,13 @@ class WodParser
             ];
         }
         
-        // Format: "[Box Jumps]"
+        // Format: "[Exercise Name]" (just the exercise, no scheme)
         if (preg_match('/^\[([^\]]+)\]$/', $trimmed, $matches)) {
             return [
                 'type' => 'exercise',
                 'name' => trim($matches[1])
             ];
         }
-        
-        return null;
-    }
-    
-    /**
-     * Parse regular exercise line
-     */
-    private function parseExercise(string $line): ?array
-    {
-        $trimmed = trim($line);
         
         // Format with colon: "[Exercise Name]: 3x8"
         if (preg_match('/^\[([^\]]+)\]:\s*(.+)$/', $trimmed, $matches)) {
@@ -368,7 +351,7 @@ class WodParser
                 if ($exercise['type'] === 'special_format') {
                     $lines[] = $this->unparseSpecialFormat($exercise);
                     foreach ($exercise['exercises'] as $subExercise) {
-                        $lines[] = '  ' . $this->unparseIndentedExercise($subExercise);
+                        $lines[] = $this->unparseExercise($subExercise);
                     }
                 } else {
                     $lines[] = $this->unparseExercise($exercise);
@@ -405,18 +388,22 @@ class WodParser
         return $format['description'] ?? 'Custom Format:';
     }
     
-    private function unparseIndentedExercise(array $exercise): string
-    {
-        if (isset($exercise['reps'])) {
-            return $exercise['reps'] . ' [' . $exercise['name'] . ']';
-        }
-        return '[' . $exercise['name'] . ']';
-    }
-    
     private function unparseExercise(array $exercise): string
     {
         $name = $exercise['name'];
-        $scheme = $exercise['scheme']['display'] ?? '';
-        return '[' . $name . ']: ' . $scheme;
+        
+        // If exercise has reps (from AMRAP/EMOM/etc), format as "10 [Exercise]"
+        if (isset($exercise['reps'])) {
+            return $exercise['reps'] . ' [' . $name . ']';
+        }
+        
+        // If exercise has scheme, format as "[Exercise]: 3x8"
+        if (isset($exercise['scheme'])) {
+            $scheme = $exercise['scheme']['display'] ?? '';
+            return '[' . $name . ']: ' . $scheme;
+        }
+        
+        // Just the exercise name
+        return '[' . $name . ']';
     }
 }

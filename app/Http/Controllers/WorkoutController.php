@@ -256,7 +256,7 @@ class WorkoutController extends Controller
 
         if ($isWod) {
             // WOD creation form with syntax textarea
-            $exampleSyntax = "# Block 1: Strength\n[Back Squat]: 5-5-5-5-5\n[Bench Press]: 3x8\n\n# Block 2: Conditioning\nAMRAP 12min:\n  10 [Box Jumps]\n  15 [Push-ups]\n  20 [Air Squats]";
+            $exampleSyntax = "# Block 1: Strength\n[Back Squat]: 5-5-5-5-5\n[Bench Press]: 3x8\n\n# Block 2: Conditioning\nAMRAP 12min:\n10 [Box Jumps]\n15 [Push-ups]\n20 [Air Squats]";
             
             // Syntax help message
             $components[] = C::messages()
@@ -1214,22 +1214,22 @@ class WorkoutController extends Controller
             ->add();
         
         // AMRAP
-        $headerRow->subItem(6, 'AMRAP', 'AMRAP 12min:<br />  10 [Exercise A]<br />  15 [Exercise B]', 'As Many Rounds As Possible')
+        $headerRow->subItem(6, 'AMRAP', 'AMRAP 12min:<br />10 [Exercise A]<br />15 [Exercise B]', 'As Many Rounds As Possible')
             ->compact()
             ->add();
         
         // EMOM
-        $headerRow->subItem(7, 'EMOM', 'EMOM 16min:<br />  5 [Exercise A]', 'Every Minute On the Minute')
+        $headerRow->subItem(7, 'EMOM', 'EMOM 16min:<br />5 [Exercise A]', 'Every Minute On the Minute')
             ->compact()
             ->add();
         
         // For Time
-        $headerRow->subItem(8, 'For Time', '21-15-9 For Time:<br />  [Exercise A]<br />  [Exercise B]', 'Complete as fast as possible')
+        $headerRow->subItem(8, 'For Time', '21-15-9 For Time:<br />[Exercise A]<br />[Exercise B]', 'Complete as fast as possible')
             ->compact()
             ->add();
         
         // Rounds
-        $headerRow->subItem(9, 'Rounds', '5 Rounds:<br />  10 [Exercise A]<br />  20 [Exercise B]', 'Fixed number of rounds')
+        $headerRow->subItem(9, 'Rounds', '5 Rounds:<br />10 [Exercise A]<br />20 [Exercise B]', 'Fixed number of rounds')
             ->compact()
             ->add();
         

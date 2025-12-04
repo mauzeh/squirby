@@ -75,43 +75,43 @@ Exercises are written as: `[Exercise Name]: scheme`
 
 ```
 AMRAP 12min:
-  10 [Box Jumps]
-  15 [Push-ups]
-  20 [Air Squats]
+10 [Box Jumps]
+15 [Push-ups]
+20 [Air Squats]
 ```
 
 ### EMOM (Every Minute On the Minute)
 
 ```
 EMOM 16min:
-  5 [Pull-ups]
-  10 [Push-ups]
+5 [Pull-ups]
+10 [Push-ups]
 ```
 
 ### For Time
 
 ```
 For Time:
-  100 [Wall Balls]
-  75 [Kettlebell Swings]
-  50 [Box Jumps]
+100 [Wall Balls]
+75 [Kettlebell Swings]
+50 [Box Jumps]
 ```
 
 Or with rep scheme:
 
 ```
 21-15-9 For Time:
-  [Thrusters]
-  [Pull-ups]
+[Thrusters]
+[Pull-ups]
 ```
 
 ### Rounds
 
 ```
 5 Rounds:
-  10 [Push-ups]
-  20 [Squats]
-  30 [Sit-ups]
+10 [Push-ups]
+20 [Squats]
+30 [Sit-ups]
 ```
 
 ## Complete Examples
@@ -124,8 +124,8 @@ Or with rep scheme:
 
 # Metcon
 21-15-9 For Time:
-  [Thrusters]
-  [Pull-ups]
+[Thrusters]
+[Pull-ups]
 ```
 
 ### Bodybuilding Style
@@ -150,9 +150,9 @@ Or with rep scheme:
 
 # WOD
 AMRAP 20min:
-  5 [Pull-ups]
-  10 [Push-ups]
-  15 [Air Squats]
+5 [Pull-ups]
+10 [Push-ups]
+15 [Air Squats]
 
 # Cool Down
 [Stretch]: 10min
@@ -171,8 +171,8 @@ AMRAP 20min:
 
 # Block 3: Conditioning
 EMOM 12min:
-  10 [Kettlebell Swings]
-  5 [Burpees]
+10 [Kettlebell Swings]
+5 [Burpees]
 ```
 
 ## Comments
@@ -193,7 +193,7 @@ Comments are ignored when parsing.
 1. **Keep it simple**: The syntax is designed to be quick to type
 2. **Be specific**: Include weight recommendations in parentheses if needed
 3. **Use blocks**: Organize your workout into logical sections
-4. **Indentation matters**: For special formats (AMRAP, EMOM, etc.), indent the exercises with 2 spaces
+4. **No indentation needed**: Exercises following special formats (AMRAP, EMOM, etc.) are automatically grouped
 5. **Blank lines**: Use blank lines between blocks for readability - they're ignored
 
 ## Usage
