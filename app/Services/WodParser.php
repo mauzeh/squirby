@@ -174,6 +174,21 @@ class WodParser
     {
         $trimmed = trim($line);
         
+        // Strip markdown list markers (bullets and numbered lists) but preserve WOD syntax
+        // Markdown list formats:
+        //   - Unordered: "* ", "- ", "+ " (with optional leading whitespace)
+        //   - Ordered: "1. ", "123. " (number followed by period and space)
+        // After stripping, we preserve everything else (reps, exercise names, schemes)
+        
+        // First strip leading whitespace
+        $trimmed = ltrim($trimmed);
+        
+        // Strip ordered list markers: "1. ", "123. ", etc.
+        $trimmed = preg_replace('/^\d+\.\s+/', '', $trimmed);
+        
+        // Strip unordered list markers: "* ", "- ", "+ "
+        $trimmed = preg_replace('/^[\*\-\+]\s+/', '', $trimmed);
+        
         // Format: "10 [[Exercise Name]]" (loggable, for AMRAP/EMOM/etc)
         if (preg_match('/^(\d+)\s+\[\[([^\]]+)\]\]$/', $trimmed, $matches)) {
             return [
