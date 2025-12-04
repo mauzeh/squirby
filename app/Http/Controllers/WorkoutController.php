@@ -248,23 +248,46 @@ class WorkoutController extends Controller
             ->build();
 
         if ($isWod) {
-            // WOD creation form with syntax textarea
-            $exampleSyntax = "# Block 1: Strength\n[Back Squat]: 5-5-5-5-5\n[Bench Press]: 3x8\n\n# Block 2: Conditioning\nAMRAP 12min:\n10 [Box Jumps]\n15 [Push-ups]\n20 [Air Squats]";
+            // WOD creation form with code editor
+            $exampleSyntax = "# Block 1: Strength\n[[Back Squat]]: 5-5-5-5-5\n[[Bench Press]]: 3x8\n\n# Block 2: Conditioning\nAMRAP 12min:\n10 [[Box Jumps]]\n15 [[Push-ups]]\n20 [[Air Squats]]";
             
             // Syntax help message
             $components[] = C::messages()
                 ->info('Use simple text syntax to create your workout. Start blocks with #, then list exercises with their rep schemes.')
                 ->build();
             
-            $components[] = C::form('create-wod', 'WOD Details')
-                ->type('primary')
-                ->formAction(route('workouts.store'))
-                ->textField('name', 'WOD Name:', '', 'e.g., Monday Strength')
-                ->textareaField('wod_syntax', 'WOD Syntax:', '', $exampleSyntax, 'wod-syntax-textarea')
-                ->textField('description', 'Description:', '', 'Optional')
-                ->hiddenField('type', 'wod')
-                ->submitButton('Create WOD')
-                ->build();
+            // Single form with embedded code editor
+            $components[] = [
+                'type' => 'wod-form',
+                'data' => [
+                    'id' => 'create-wod',
+                    'title' => 'WOD Details',
+                    'formAction' => route('workouts.store'),
+                    'formType' => 'primary',
+                    'nameField' => [
+                        'label' => 'WOD Name:',
+                        'value' => '',
+                        'placeholder' => 'e.g., Monday Strength'
+                    ],
+                    'codeEditor' => [
+                        'id' => 'wod-syntax-editor',
+                        'label' => 'WOD Syntax',
+                        'name' => 'wod_syntax',
+                        'value' => '',
+                        'placeholder' => $exampleSyntax,
+                        'mode' => 'wod-syntax',
+                        'height' => '400px',
+                        'lineNumbers' => true
+                    ],
+                    'descriptionField' => [
+                        'label' => 'Description:',
+                        'value' => '',
+                        'placeholder' => 'Optional'
+                    ],
+                    'submitButton' => 'Create WOD'
+                ],
+                'requiresScript' => 'mobile-entry/components/code-editor'
+            ];
             
             // Syntax guide
             $components[] = $this->buildSyntaxGuide();
@@ -998,17 +1021,44 @@ class WorkoutController extends Controller
             ->info('Use simple text syntax to structure your workout. Start blocks with #, then list exercises with their rep schemes.')
             ->build();
         
-        // Edit form
-        $components[] = C::form('edit-wod', 'WOD Details')
-            ->type('info')
-            ->formAction(route('workouts.update', $workout->id))
-            ->textField('name', 'WOD Name:', $workout->name, 'e.g., Monday Strength')
-            ->textareaField('wod_syntax', 'WOD Syntax:', $workout->wod_syntax ?? '', 'Use WOD syntax', 'wod-syntax-textarea')
-            ->textField('description', 'Description:', $workout->description ?? '', 'Optional')
-            ->hiddenField('_method', 'PUT')
-            ->hiddenField('type', 'wod')
-            ->submitButton('Update WOD')
-            ->build();
+        // Edit form with code editor
+        $exampleSyntax = "# Block 1: Strength\n[[Back Squat]]: 5-5-5-5-5\n[[Bench Press]]: 3x8\n\n# Block 2: Conditioning\nAMRAP 12min:\n10 [[Box Jumps]]\n15 [[Push-ups]]\n20 [[Air Squats]]";
+        
+        $components[] = [
+            'type' => 'wod-form',
+            'data' => [
+                'id' => 'edit-wod',
+                'title' => 'WOD Details',
+                'formAction' => route('workouts.update', $workout->id),
+                'formType' => 'info',
+                'nameField' => [
+                    'label' => 'WOD Name:',
+                    'value' => $workout->name,
+                    'placeholder' => 'e.g., Monday Strength'
+                ],
+                'codeEditor' => [
+                    'id' => 'wod-syntax-editor',
+                    'label' => 'WOD Syntax',
+                    'name' => 'wod_syntax',
+                    'value' => $workout->wod_syntax ?? '',
+                    'placeholder' => $exampleSyntax,
+                    'mode' => 'wod-syntax',
+                    'height' => '400px',
+                    'lineNumbers' => true
+                ],
+                'descriptionField' => [
+                    'label' => 'Description:',
+                    'value' => $workout->description ?? '',
+                    'placeholder' => 'Optional'
+                ],
+                'submitButton' => 'Update WOD',
+                'hiddenFields' => [
+                    '_method' => 'PUT',
+                    'type' => 'wod'
+                ]
+            ],
+            'requiresScript' => 'mobile-entry/components/code-editor'
+        ];
         
         // Syntax guide
         $components[] = $this->buildSyntaxGuide();
