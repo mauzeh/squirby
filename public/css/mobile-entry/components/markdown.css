@@ -167,11 +167,32 @@
 .wod-display .markdown-content {
     background-color: #1a1a1a; /* Darker, matches body background */
     border: 2px solid #555;
+    font-family: monospace;
+    font-size: 0.95rem;
+}
+
+.wod-display .markdown-content h1 {
+    font-size: 1.1rem;
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.wod-display .markdown-content h2 {
+    font-size: 1.05rem;
+    margin-top: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.wod-display .markdown-content h3 {
+    font-size: 1rem;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
 }
 
 .wod-display .markdown-content a {
     color: #28a745; /* Green, matches .button.create */
     text-decoration: none;
+    font-family: monospace;
 }
 
 .wod-display .markdown-content a:hover {
