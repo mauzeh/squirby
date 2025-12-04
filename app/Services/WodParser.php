@@ -10,13 +10,17 @@ namespace App\Services;
  * Syntax Examples:
  * 
  * # Block 1: Strength
- * Back Squat: 5-5-5-5-5
- * Bench Press: 3x8
+ * [[Back Squat]] 5-5-5-5-5
+ * [[Bench Press]] 3x8
  * 
  * # Block 2: Conditioning
  * AMRAP 12min:
- *   10 Box Jumps
- *   15 Push-ups
+ * 10 [[Box Jumps]]
+ * 15 [[Push-ups]]
+ * 
+ * Double brackets [[...]] = loggable exercises
+ * Single brackets [...] = non-loggable exercises (warm-ups, stretches, etc.)
+ * Colon after exercise name is optional
  */
 class WodParser
 {
@@ -242,8 +246,8 @@ class WodParser
             ];
         }
         
-        // Format without colon: "[[Exercise Name]] 3x8" (loggable)
-        if (preg_match('/^\[\[([^\]]+)\]\]\s+((?:\d+x\d+(?:-\d+)?|\d+(?:-\d+)+))$/i', $trimmed, $matches)) {
+        // Format without colon but with text after: "[[Exercise Name]] any text here" (loggable)
+        if (preg_match('/^\[\[([^\]]+)\]\]\s+(.+)$/', $trimmed, $matches)) {
             return [
                 'type' => 'exercise',
                 'name' => trim($matches[1]),
@@ -252,8 +256,8 @@ class WodParser
             ];
         }
         
-        // Format without colon: "[Exercise Name] 3x8" (non-loggable)
-        if (preg_match('/^\[([^\]]+)\]\s+((?:\d+x\d+(?:-\d+)?|\d+(?:-\d+)+))$/i', $trimmed, $matches)) {
+        // Format without colon but with text after: "[Exercise Name] any text here" (non-loggable)
+        if (preg_match('/^\[([^\]]+)\]\s+(.+)$/', $trimmed, $matches)) {
             return [
                 'type' => 'exercise',
                 'name' => trim($matches[1]),

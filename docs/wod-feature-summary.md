@@ -18,9 +18,11 @@ A complete WOD (Workout of the Day) feature that allows users to create structur
 - **Features**:
   - Block parsing (# headers)
   - Exercise schemes (3x8, 5-5-5, 3x8-12, etc.)
+  - Freeform text after exercise names (no colon required)
   - Special formats (AMRAP, EMOM, For Time, Rounds)
   - Time/distance formats (500m, 5min, 2:00)
   - Comment support (// and --)
+  - Loggable vs non-loggable exercises (double vs single brackets)
   - Unparse capability (convert back to text)
 
 ### 3. Model Updates
@@ -52,7 +54,7 @@ A complete WOD (Workout of the Day) feature that allows users to create structur
 
 ### 6. Tests
 - **File**: `tests/Unit/WodParserTest.php`
-- **Coverage**: 10 tests covering all syntax features
+- **Coverage**: 15 tests covering all syntax features
 - All tests passing ✓
 
 ### 7. Documentation
@@ -96,35 +98,35 @@ A complete WOD (Workout of the Day) feature that allows users to create structur
 ### Simple Strength
 ```
 # Strength
-Back Squat: 5-5-5-5-5
-Bench Press: 3x8
+[[Back Squat]] 5-5-5-5-5
+[[Bench Press]] 3x8
 ```
 
 ### CrossFit Style
 ```
 # Strength
-Deadlift: 5-3-1-1-1
+[[Deadlift]] 5-3-1-1-1
 
 # Metcon
 21-15-9 For Time:
-  Thrusters (95/65)
-  Pull-ups
+[[Thrusters]] (95/65)
+[[Pull-ups]]
 ```
 
 ### Multiple Blocks
 ```
 # Block 1: Strength
-Back Squat: 5x5
+[[Back Squat]] 5x5
 
 # Block 2: Accessory
-Dumbbell Row: 3x12
-Face Pulls: 3x15-20
+[[Dumbbell Row]] 3x12
+[Face Pulls] 3x15-20
 
 # Block 3: Conditioning
 AMRAP 12min:
-  10 Box Jumps
-  15 Push-ups
-  20 Air Squats
+10 [[Box Jumps]]
+15 [[Push-ups]]
+20 [Air Squats]
 ```
 
 ## Integration Points
@@ -149,6 +151,8 @@ AMRAP 12min:
 - Stateful parsing with block and special format tracking
 - Handles indentation for nested exercises
 - Flexible regex patterns for various formats
+- Accepts freeform text after exercise names (colon optional)
+- Distinguishes loggable (`[[...]]`) from non-loggable (`[...]`) exercises
 - Graceful fallback for unrecognized syntax
 
 ### Data Structure

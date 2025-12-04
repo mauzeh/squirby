@@ -26,7 +26,7 @@ You can use 1-3 hash marks (`#`, `##`, `###`) - they all work the same way.
 
 ### Exercises
 
-Exercises are written as: `[[Exercise Name]]: scheme` or `[Exercise Name]: scheme`
+Exercises are written with brackets around the name, optionally followed by a scheme or description.
 
 **Important:** 
 - **Double brackets `[[...]]`** = Loggable exercises (user needs to log these)
@@ -38,41 +38,56 @@ Both types will be matched to your exercise library using fuzzy matching, but on
 
 1. **Sets x Reps**: `3x8` or `3 x 8`
    ```
-   [[Bench Press]]: 3x8        // Loggable
-   [Warm-up Push-ups]: 2x10    // Not loggable
+   [[Bench Press]] 3x8         // Loggable
+   [[Bench Press]]: 3x8        // Also works with colon
+   [Warm-up Push-ups] 2x10     // Not loggable
    ```
 
 2. **Rep Ladder**: `5-5-5-3-3-1`
    ```
-   [[Back Squat]]: 5-5-5-5-5   // Loggable
-   [[Deadlift]]: 5-3-1-1-1     // Loggable
+   [[Back Squat]] 5-5-5-5-5    // Loggable
+   [[Deadlift]]: 5-3-1-1-1     // Loggable (colon optional)
    ```
 
 3. **Rep Range**: `3x8-12`
    ```
-   [[Dumbbell Row]]: 3x8-12    // Loggable
+   [[Dumbbell Row]] 3x8-12     // Loggable
    [Face Pulls]: 3x15-20       // Not loggable
    ```
 
-4. **Single Set**: Just a number
+4. **Freeform Text**: Any text after the exercise name
    ```
-   [[Max Deadlift]]: 1         // Loggable
+   [[Back Squat]] 5 reps, building      // Loggable
+   [[Deadlift]] work up to heavy single // Loggable
+   [Stretching] 5 minutes               // Not loggable
+   [Mobility Work] as needed            // Not loggable
    ```
 
-5. **Time/Distance**: `500m`, `5min`, `2km`, `30sec`
+5. **Single Set**: Just a number
    ```
-   [Row]: 500m                 // Not loggable (warm-up)
+   [[Max Deadlift]] 1          // Loggable
+   ```
+
+6. **Time/Distance**: `500m`, `5min`, `2km`, `30sec`
+   ```
+   [Row] 500m                  // Not loggable (warm-up)
    [[Run]]: 5min               // Loggable
-   [Bike]: 2km                 // Not loggable
-   [[Plank]]: 30sec            // Loggable
+   [Bike] 2km                  // Not loggable
+   [[Plank]] 30sec             // Loggable
    ```
 
-6. **Time Format**: `2:00` (minutes:seconds)
+7. **Time Format**: `2:00` (minutes:seconds)
    ```
-   [[L-Sit Hold]]: 0:30        // Loggable
+   [[L-Sit Hold]] 0:30         // Loggable
    ```
 
-**Note:** The colon (`:`) is optional. You can write `[Exercise] 3x8` or `[Exercise]: 3x8` - both work!
+**Note:** The colon (`:`) is completely optional. You can write:
+- `[[Exercise]] 3x8` ✓
+- `[[Exercise]]: 3x8` ✓
+- `[[Exercise]] any text here` ✓
+- `[[Exercise]]: any text here` ✓
+
+All formats work the same way!
 
 ## Special Formats
 
@@ -125,7 +140,7 @@ Or with rep scheme:
 
 ```
 # Strength
-[[Back Squat]]: 5-5-3-3-1-1
+[[Back Squat]] 5-5-3-3-1-1
 
 # Metcon
 21-15-9 For Time:
@@ -137,21 +152,21 @@ Or with rep scheme:
 
 ```
 # Chest & Triceps
-[[Bench Press]]: 4x8
-[[Incline Dumbbell Press]]: 3x10-12
-[Cable Flyes]: 3x15              // Accessory, not tracked
+[[Bench Press]] 4x8
+[[Incline Dumbbell Press]] 3x10-12
+[Cable Flyes] 3x15              // Accessory, not tracked
 
 # Triceps
-[[Skull Crushers]]: 3x12
-[Rope Pushdowns]: 3x15           // Accessory, not tracked
+[[Skull Crushers]] 3x12
+[Rope Pushdowns] 3x15           // Accessory, not tracked
 ```
 
 ### Functional Fitness
 
 ```
 # Warm-up
-[Row]: 500m                      // Warm-up, not tracked
-[Dynamic Stretching]: 5min       // Warm-up, not tracked
+[Row] 500m                       // Warm-up, not tracked
+[Dynamic Stretching] 5 minutes   // Warm-up, not tracked
 
 # WOD
 AMRAP 20min:
@@ -160,19 +175,19 @@ AMRAP 20min:
 15 [[Air Squats]]
 
 # Cool Down
-[Stretch]: 10min                 // Cool down, not tracked
+[Stretch] 10min                  // Cool down, not tracked
 ```
 
 ### Strength & Conditioning
 
 ```
 # Block 1: Strength
-[[Deadlift]]: 5-5-5-3-3-1
-[[Romanian Deadlift]]: 3x8
+[[Deadlift]] 5-5-5-3-3-1
+[[Romanian Deadlift]] 3x8
 
 # Block 2: Accessory
-[[Dumbbell Row]]: 3x12
-[Face Pulls]: 3x15-20            // Optional accessory
+[[Dumbbell Row]] 3x12
+[Face Pulls] 3x15-20             // Optional accessory
 
 # Block 3: Conditioning
 EMOM 12min:
@@ -187,7 +202,7 @@ Add comments using `//` or `--`:
 ```
 # Strength
 // Focus on form today
-[Back Squat]: 5x5
+[[Back Squat]] 5x5
 -- Keep rest periods to 2 minutes
 ```
 

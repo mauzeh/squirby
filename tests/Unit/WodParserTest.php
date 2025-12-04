@@ -235,4 +235,50 @@ WOD;
         $this->assertStringContainsString('[[Back Squat]]', $unparsed);
         $this->assertStringContainsString('[Warm-up]', $unparsed);
     }
+
+    public function test_parses_double_bracket_with_freeform_text()
+    {
+        $text = <<<WOD
+# Workout
+[[Back Squat]] 5 reps, building
+[[Deadlift]] work up to heavy single
+WOD;
+
+        $result = $this->parser->parse($text);
+
+        $this->assertCount(2, $result['blocks'][0]['exercises']);
+        
+        $squat = $result['blocks'][0]['exercises'][0];
+        $this->assertEquals('Back Squat', $squat['name']);
+        $this->assertTrue($squat['loggable']);
+        $this->assertEquals('5 reps, building', $squat['scheme']['display']);
+        
+        $deadlift = $result['blocks'][0]['exercises'][1];
+        $this->assertEquals('Deadlift', $deadlift['name']);
+        $this->assertTrue($deadlift['loggable']);
+        $this->assertEquals('work up to heavy single', $deadlift['scheme']['display']);
+    }
+
+    public function test_parses_single_bracket_with_freeform_text()
+    {
+        $text = <<<WOD
+# Workout
+[Stretching] 5 minutes
+[Mobility Work] as needed
+WOD;
+
+        $result = $this->parser->parse($text);
+
+        $this->assertCount(2, $result['blocks'][0]['exercises']);
+        
+        $stretching = $result['blocks'][0]['exercises'][0];
+        $this->assertEquals('Stretching', $stretching['name']);
+        $this->assertFalse($stretching['loggable']);
+        $this->assertEquals('5 minutes', $stretching['scheme']['display']);
+        
+        $mobility = $result['blocks'][0]['exercises'][1];
+        $this->assertEquals('Mobility Work', $mobility['name']);
+        $this->assertFalse($mobility['loggable']);
+        $this->assertEquals('as needed', $mobility['scheme']['display']);
+    }
 }
