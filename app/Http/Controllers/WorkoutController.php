@@ -256,6 +256,11 @@ class WorkoutController extends Controller
             // WOD creation form with syntax textarea
             $exampleSyntax = "# Block 1: Strength\nBack Squat: 5-5-5-5-5\nBench Press: 3x8\n\n# Block 2: Conditioning\nAMRAP 12min:\n  10 Box Jumps\n  15 Push-ups\n  20 Air Squats";
             
+            // Syntax help message
+            $components[] = C::messages()
+                ->info('Use simple text syntax to create your workout. Start blocks with #, then list exercises with their rep schemes.')
+                ->build();
+            
             $components[] = C::form('create-wod', 'WOD Details')
                 ->type('primary')
                 ->formAction(route('workouts.store'))
@@ -265,6 +270,9 @@ class WorkoutController extends Controller
                 ->hiddenField('type', 'wod')
                 ->submitButton('Create WOD')
                 ->build();
+            
+            // Syntax guide
+            $components[] = $this->buildSyntaxGuide();
         } else {
             // Template creation form
             $components[] = C::form('create-template', 'Template Details')
@@ -977,6 +985,11 @@ class WorkoutController extends Controller
             $components[] = $tableBuilder->build();
         }
 
+        // Syntax help message
+        $components[] = C::messages()
+            ->info('Use simple text syntax to structure your workout. Start blocks with #, then list exercises with their rep schemes.')
+            ->build();
+        
         // Edit form
         $components[] = C::form('edit-wod', 'WOD Details')
             ->type('info')
@@ -988,6 +1001,9 @@ class WorkoutController extends Controller
             ->hiddenField('type', 'wod')
             ->submitButton('Update WOD')
             ->build();
+        
+        // Syntax guide
+        $components[] = $this->buildSyntaxGuide();
 
         // Delete workout button
         $components[] = [
@@ -1129,5 +1145,62 @@ class WorkoutController extends Controller
         }
         
         return $format['description'] ?? 'Custom Format';
+    }
+    
+    /**
+     * Build syntax guide component
+     */
+    private function buildSyntaxGuide(): array
+    {
+        $tableBuilder = C::table();
+        
+        // Header row
+        $headerRow = $tableBuilder->row(0, '📖 Syntax Quick Reference', 'Click to expand/collapse', null)
+            ->collapsible()
+            ->compact();
+        
+        // Blocks
+        $headerRow->subItem(1, '📦 Blocks', '# Block Name', 'Start each section with #')
+            ->compact()
+            ->add();
+        
+        // Sets x Reps
+        $headerRow->subItem(2, '💪 Sets x Reps', 'Exercise: 3x8', '3 sets of 8 reps')
+            ->compact()
+            ->add();
+        
+        // Rep Ladder
+        $headerRow->subItem(3, '📈 Rep Ladder', 'Exercise: 5-5-5-3-3-1', 'Descending/ascending reps')
+            ->compact()
+            ->add();
+        
+        // Rep Range
+        $headerRow->subItem(4, '📊 Rep Range', 'Exercise: 3x8-12', '3 sets of 8-12 reps')
+            ->compact()
+            ->add();
+        
+        // AMRAP
+        $headerRow->subItem(5, '⏱️ AMRAP', "AMRAP 12min:\n  10 Exercise A\n  15 Exercise B", 'As Many Rounds As Possible')
+            ->compact()
+            ->add();
+        
+        // EMOM
+        $headerRow->subItem(6, '⏱️ EMOM', "EMOM 16min:\n  5 Exercise A", 'Every Minute On the Minute')
+            ->compact()
+            ->add();
+        
+        // For Time
+        $headerRow->subItem(7, '⏱️ For Time', "21-15-9 For Time:\n  Exercise A\n  Exercise B", 'Complete as fast as possible')
+            ->compact()
+            ->add();
+        
+        // Rounds
+        $headerRow->subItem(8, '🔄 Rounds', "5 Rounds:\n  10 Exercise A\n  20 Exercise B", 'Fixed number of rounds')
+            ->compact()
+            ->add();
+        
+        $headerRow->add();
+        
+        return $tableBuilder->build();
     }
 }
