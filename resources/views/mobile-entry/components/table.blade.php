@@ -24,10 +24,10 @@
             @endif
             <div class="component-table-cell{{ isset($row['wrapText']) && $row['wrapText'] ? ' cell-wrap-text' : '' }}">
                 @if(isset($row['line1']) && !empty($row['line1']))
-                <div class="{{ $row['titleClass'] ?? 'cell-title' }}">{{ $row['line1'] }}</div>
+                <div class="{{ $row['titleClass'] ?? 'cell-title' }}">{!! $row['line1'] !!}</div>
                 @endif
                 @if(isset($row['line2']) && !empty($row['line2']))
-                <div class="cell-content">{{ $row['line2'] }}</div>
+                <div class="cell-content">{!! $row['line2'] !!}</div>
                 @endif
                 @if(isset($row['badges']) && !empty($row['badges']))
                 <div class="table-badges">
@@ -42,7 +42,7 @@
                 </div>
                 @endif
                 @if(isset($row['line3']) && !empty($row['line3']))
-                <div class="cell-detail">{{ $row['line3'] }}</div>
+                <div class="cell-detail">{!! $row['line3'] !!}</div>
                 @endif
             </div>
             <div class="component-table-actions{{ isset($row['compact']) && $row['compact'] ? ' actions-compact' : '' }}{{ isset($row['wrapActions']) && $row['wrapActions'] ? ' actions-wrap' : '' }}">
@@ -121,13 +121,13 @@
                 <div class="component-table-subitem{{ $hasOneLinkAction ? ' subitem-clickable' : '' }}" @if($hasOneLinkAction) data-href="{{ $singleActionUrl }}" @endif>
                     <div class="component-table-cell">
                         @if(isset($subItem['line1']) && !empty($subItem['line1']))
-                        <div class="cell-title">{{ $subItem['line1'] }}</div>
+                        <div class="cell-title">{!! $subItem['line1'] !!}</div>
                         @endif
                         @if(isset($subItem['line2']) && !empty($subItem['line2']))
-                        <div class="cell-content">{{ $subItem['line2'] }}</div>
+                        <div class="cell-content">{!! $subItem['line2'] !!}</div>
                         @endif
                         @if(isset($subItem['line3']) && !empty($subItem['line3']))
-                        <div class="cell-detail">{{ $subItem['line3'] }}</div>
+                        <div class="cell-detail">{!! $subItem['line3'] !!}</div>
                         @endif
                         @if(isset($subItem['messages']) && !empty($subItem['messages']))
                             @foreach($subItem['messages'] as $message)
