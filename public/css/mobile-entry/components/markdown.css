@@ -5,12 +5,12 @@
 }
 
 .markdown-content {
-    background-color: #1f2937;
+    background-color: #2a2a2a; /* Matches form-container */
     padding: 1rem;
-    border-radius: 0.5rem;
-    border: 1px solid #374151;
+    border-radius: 8px;
+    border: 1px solid #555;
     line-height: 1.6;
-    color: #e5e7eb;
+    color: #f2f2f2; /* Matches body text */
 }
 
 /* Typography */
@@ -20,7 +20,7 @@
     margin-top: 1.5rem;
     margin-bottom: 1rem;
     line-height: 1.2;
-    color: #f9fafb;
+    color: #f2f2f2; /* Matches h1, h2 */
 }
 
 .markdown-content h2 {
@@ -29,7 +29,7 @@
     margin-top: 1.25rem;
     margin-bottom: 0.75rem;
     line-height: 1.3;
-    color: #f9fafb;
+    color: #f2f2f2;
 }
 
 .markdown-content h3 {
@@ -38,7 +38,7 @@
     margin-top: 1rem;
     margin-bottom: 0.5rem;
     line-height: 1.4;
-    color: #f3f4f6;
+    color: #f2f2f2;
 }
 
 .markdown-content h1:first-child,
@@ -57,28 +57,28 @@
 
 /* Links */
 .markdown-content a {
-    color: #60a5fa;
+    color: #b3d7ff; /* Matches app.css link color */
     text-decoration: underline;
     font-weight: 600;
 }
 
 .markdown-content a:hover {
-    color: #93c5fd;
+    color: #d4e7ff;
 }
 
 .markdown-content a:active {
-    color: #3b82f6;
+    color: #92c7ff;
 }
 
 /* Strong and emphasis */
 .markdown-content strong {
     font-weight: 700;
-    color: #f9fafb;
+    color: #f2f2f2;
 }
 
 .markdown-content em {
     font-style: italic;
-    color: #d1d5db;
+    color: #ccc;
 }
 
 /* Lists */
@@ -102,22 +102,22 @@
 
 /* Code */
 .markdown-content code {
-    background-color: #374151;
-    color: #fbbf24;
+    background-color: #3a3a3a; /* Matches input backgrounds */
+    color: #ffc107; /* Yellow accent like edit button */
     padding: 0.125rem 0.375rem;
-    border-radius: 0.25rem;
+    border-radius: 5px;
     font-family: monospace;
     font-size: 0.875em;
 }
 
 .markdown-content pre {
-    background-color: #111827;
-    color: #e5e7eb;
+    background-color: #1a1a1a; /* Matches body background */
+    color: #f2f2f2;
     padding: 1rem;
-    border-radius: 0.5rem;
+    border-radius: 5px;
     overflow-x: auto;
     margin-bottom: 1rem;
-    border: 1px solid #374151;
+    border: 1px solid #555;
 }
 
 .markdown-content pre code {
@@ -128,18 +128,18 @@
 
 /* Blockquotes */
 .markdown-content blockquote {
-    border-left: 4px solid #4b5563;
+    border-left: 4px solid #555;
     padding-left: 1rem;
     margin-left: 0;
     margin-bottom: 1rem;
-    color: #9ca3af;
+    color: #ccc;
     font-style: italic;
 }
 
 /* Horizontal rules */
 .markdown-content hr {
     border: 0;
-    border-top: 1px solid #4b5563;
+    border-top: 1px solid #555;
     margin: 1.5rem 0;
 }
 
@@ -152,29 +152,29 @@
 
 .markdown-content th,
 .markdown-content td {
-    border: 1px solid #4b5563;
+    border: 1px solid #444; /* Matches log-entries-table */
     padding: 0.5rem;
     text-align: left;
 }
 
 .markdown-content th {
-    background-color: #374151;
+    background-color: #3a3a3a; /* Matches log-entries-table th */
     font-weight: 600;
-    color: #f9fafb;
+    color: #f2f2f2;
 }
 
 /* WOD-specific styling */
 .wod-display .markdown-content {
-    background-color: #111827;
-    border: 2px solid #374151;
+    background-color: #1a1a1a; /* Darker, matches body background */
+    border: 2px solid #555;
 }
 
 .wod-display .markdown-content a {
-    color: #34d399;
+    color: #28a745; /* Green, matches .button.create */
     text-decoration: none;
 }
 
 .wod-display .markdown-content a:hover {
-    color: #6ee7b7;
+    color: #34ce57;
     text-decoration: underline;
 }
