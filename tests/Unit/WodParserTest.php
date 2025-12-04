@@ -215,4 +215,108 @@ WOD;
         
         $this->assertEquals($parsed['blocks'], $reparsed['blocks']);
     }
+
+    public function test_parses_exercise_without_colon_with_sets_x_reps()
+    {
+        $text = <<<WOD
+# Workout
+Back Squat 3x8
+Bench Press 5x5
+WOD;
+
+        $result = $this->parser->parse($text);
+
+        $this->assertCount(1, $result['blocks']);
+        $this->assertCount(2, $result['blocks'][0]['exercises']);
+        
+        $squat = $result['blocks'][0]['exercises'][0];
+        $this->assertEquals('Back Squat', $squat['name']);
+        $this->assertEquals('sets_x_reps', $squat['scheme']['type']);
+        $this->assertEquals(3, $squat['scheme']['sets']);
+        $this->assertEquals(8, $squat['scheme']['reps']);
+        
+        $bench = $result['blocks'][0]['exercises'][1];
+        $this->assertEquals('Bench Press', $bench['name']);
+        $this->assertEquals('sets_x_reps', $bench['scheme']['type']);
+        $this->assertEquals(5, $bench['scheme']['sets']);
+        $this->assertEquals(5, $bench['scheme']['reps']);
+    }
+
+    public function test_parses_exercise_without_colon_with_rep_ladder()
+    {
+        $text = <<<WOD
+# Strength
+Deadlift 5-5-5-5-5
+Front Squat 3-3-3
+WOD;
+
+        $result = $this->parser->parse($text);
+
+        $deadlift = $result['blocks'][0]['exercises'][0];
+        $this->assertEquals('Deadlift', $deadlift['name']);
+        $this->assertEquals('rep_ladder', $deadlift['scheme']['type']);
+        $this->assertEquals([5, 5, 5, 5, 5], $deadlift['scheme']['reps']);
+        
+        $squat = $result['blocks'][0]['exercises'][1];
+        $this->assertEquals('Front Squat', $squat['name']);
+        $this->assertEquals('rep_ladder', $squat['scheme']['type']);
+        $this->assertEquals([3, 3, 3], $squat['scheme']['reps']);
+    }
+
+    public function test_parses_exercise_without_colon_with_rep_range()
+    {
+        $text = <<<WOD
+# Accessory
+Curls 3x8-12
+Tricep Extensions 4x10-15
+WOD;
+
+        $result = $this->parser->parse($text);
+
+        $curls = $result['blocks'][0]['exercises'][0];
+        $this->assertEquals('Curls', $curls['name']);
+        $this->assertEquals('sets_x_rep_range', $curls['scheme']['type']);
+        $this->assertEquals(3, $curls['scheme']['sets']);
+        $this->assertEquals(8, $curls['scheme']['reps_min']);
+        $this->assertEquals(12, $curls['scheme']['reps_max']);
+        
+        $extensions = $result['blocks'][0]['exercises'][1];
+        $this->assertEquals('Tricep Extensions', $extensions['name']);
+        $this->assertEquals('sets_x_rep_range', $extensions['scheme']['type']);
+        $this->assertEquals(4, $extensions['scheme']['sets']);
+        $this->assertEquals(10, $extensions['scheme']['reps_min']);
+        $this->assertEquals(15, $extensions['scheme']['reps_max']);
+    }
+
+    public function test_parses_mixed_colon_and_no_colon_syntax()
+    {
+        $text = <<<WOD
+# Workout
+Back Squat: 5-5-5-5-5
+Bench Press 3x8
+Deadlift: 3x5
+Overhead Press 5x5
+WOD;
+
+        $result = $this->parser->parse($text);
+
+        $this->assertCount(4, $result['blocks'][0]['exercises']);
+        
+        // With colon
+        $this->assertEquals('Back Squat', $result['blocks'][0]['exercises'][0]['name']);
+        $this->assertEquals([5, 5, 5, 5, 5], $result['blocks'][0]['exercises'][0]['scheme']['reps']);
+        
+        // Without colon
+        $this->assertEquals('Bench Press', $result['blocks'][0]['exercises'][1]['name']);
+        $this->assertEquals(3, $result['blocks'][0]['exercises'][1]['scheme']['sets']);
+        $this->assertEquals(8, $result['blocks'][0]['exercises'][1]['scheme']['reps']);
+        
+        // With colon
+        $this->assertEquals('Deadlift', $result['blocks'][0]['exercises'][2]['name']);
+        $this->assertEquals(3, $result['blocks'][0]['exercises'][2]['scheme']['sets']);
+        
+        // Without colon
+        $this->assertEquals('Overhead Press', $result['blocks'][0]['exercises'][3]['name']);
+        $this->assertEquals(5, $result['blocks'][0]['exercises'][3]['scheme']['sets']);
+    }
 }

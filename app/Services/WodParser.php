@@ -252,22 +252,32 @@ class WodParser
     {
         $trimmed = trim($line);
         
-        // Must have a colon to separate exercise name from scheme
-        if (!str_contains($trimmed, ':')) {
-            return null;
+        // Format with colon: "Exercise Name: 3x8"
+        if (str_contains($trimmed, ':')) {
+            [$name, $scheme] = array_map('trim', explode(':', $trimmed, 2));
+            
+            if (empty($name) || empty($scheme)) {
+                return null;
+            }
+            
+            return [
+                'type' => 'exercise',
+                'name' => $name,
+                'scheme' => $this->parseScheme($scheme)
+            ];
         }
         
-        [$name, $scheme] = array_map('trim', explode(':', $trimmed, 2));
-        
-        if (empty($name) || empty($scheme)) {
-            return null;
+        // Format without colon: "Exercise Name 3x8" or "Exercise Name 3-3-3"
+        // Try to extract scheme from end of line
+        if (preg_match('/^(.+?)\s+((?:\d+x\d+(?:-\d+)?|\d+(?:-\d+)+))$/i', $trimmed, $matches)) {
+            return [
+                'type' => 'exercise',
+                'name' => trim($matches[1]),
+                'scheme' => $this->parseScheme($matches[2])
+            ];
         }
         
-        return [
-            'type' => 'exercise',
-            'name' => $name,
-            'scheme' => $this->parseScheme($scheme)
-        ];
+        return null;
     }
     
     /**

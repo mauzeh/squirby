@@ -1125,6 +1125,8 @@ class WorkoutController extends Controller
                 null
             );
             
+            $row->compact();
+            
             // If exercise exists, add link to edit page
             if ($matchedExercise) {
                 $row->linkAction(
@@ -1134,11 +1136,16 @@ class WorkoutController extends Controller
                     'btn-transparent'
                 );
             } else {
-                // Show warning icon for unmatched exercises
-                $row->message('warning', 'Exercise not found in your library', '⚠️');
+                // Show warning icon for exercises not found in library
+                $row->linkAction(
+                    'fa-exclamation-triangle',
+                    '#',
+                    'Exercise not found in your library',
+                    'btn-warning-icon'
+                );
             }
             
-            $row->compact()->add();
+            $row->add();
         }
     }
 
