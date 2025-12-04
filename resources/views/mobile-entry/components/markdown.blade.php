@@ -15,7 +15,7 @@
 @endphp
 
 <div class="component-markdown {{ $data['classes'] ?? '' }}">
-    <div class="prose prose-sm max-w-none bg-gray-50 p-4 rounded border border-gray-200">
+    <div class="markdown-content">
         {!! $html !!}
     </div>
 </div>
