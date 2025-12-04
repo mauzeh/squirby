@@ -212,4 +212,96 @@ class ExerciseMatchingServiceTest extends TestCase
         $this->assertNotNull($result);
         $this->assertEquals($exercise->id, $result->id);
     }
+
+    public function test_handles_crossfit_abbreviations()
+    {
+        // Test common CrossFit abbreviations
+        $exercises = [
+            'Kettlebell Swing' => ['KB Swing', 'KBS'],
+            'Toes to Bar' => ['T2B', 'TTB'],
+            'Chest to Bar' => ['C2B', 'CTB'],
+            'Handstand Push Up' => ['HSPU'],
+            'Double Under' => ['DU'],
+            'Muscle Up' => ['MU'],
+            'Wall Ball' => ['WB'],
+            'Box Jump Over' => ['BJO', 'BJOU'],
+        ];
+
+        foreach ($exercises as $fullName => $abbreviations) {
+            $exercise = Exercise::factory()->create([
+                'title' => $fullName,
+                'user_id' => $this->user->id
+            ]);
+
+            foreach ($abbreviations as $abbr) {
+                $result = $this->service->findBestMatch($abbr, $this->user->id);
+                
+                $this->assertNotNull($result, "Failed to match '{$abbr}' to '{$fullName}'");
+                $this->assertEquals($exercise->id, $result->id, "'{$abbr}' matched wrong exercise");
+            }
+        }
+    }
+
+    public function test_handles_olympic_lift_abbreviations()
+    {
+        $exercises = [
+            'Power Clean' => ['PC'],
+            'Power Snatch' => ['PS'],
+            'Front Squat' => ['FS'],
+            'Back Squat' => ['BS'],
+            'Overhead Squat' => ['OHS'],
+            'Push Press' => ['PP'],
+            'Push Jerk' => ['PJ'],
+            'Deadlift' => ['DL'],
+            'Romanian Deadlift' => ['RDL'],
+        ];
+
+        foreach ($exercises as $fullName => $abbreviations) {
+            $exercise = Exercise::factory()->create([
+                'title' => $fullName,
+                'user_id' => $this->user->id
+            ]);
+
+            foreach ($abbreviations as $abbr) {
+                $result = $this->service->findBestMatch($abbr, $this->user->id);
+                
+                $this->assertNotNull($result, "Failed to match '{$abbr}' to '{$fullName}'");
+                $this->assertEquals($exercise->id, $result->id, "'{$abbr}' matched wrong exercise");
+            }
+        }
+    }
+
+    public function test_abbreviations_work_in_compound_names()
+    {
+        $exercise = Exercise::factory()->create([
+            'title' => 'Dumbbell Row',
+            'user_id' => $this->user->id
+        ]);
+
+        // Should match "DB Row" to "Dumbbell Row"
+        $result = $this->service->findBestMatch('DB Row', $this->user->id);
+
+        $this->assertNotNull($result);
+        $this->assertEquals($exercise->id, $result->id);
+    }
+
+    public function test_avoids_false_positives_with_abbreviations()
+    {
+        // Create exercises that could conflict
+        Exercise::factory()->create([
+            'title' => 'Push Up',
+            'user_id' => $this->user->id
+        ]);
+        
+        $pushPress = Exercise::factory()->create([
+            'title' => 'Push Press',
+            'user_id' => $this->user->id
+        ]);
+
+        // "PP" should match "Push Press", not "Push Up"
+        $result = $this->service->findBestMatch('PP', $this->user->id);
+
+        $this->assertNotNull($result);
+        $this->assertEquals($pushPress->id, $result->id);
+    }
 }

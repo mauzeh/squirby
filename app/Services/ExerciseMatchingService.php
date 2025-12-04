@@ -32,29 +32,46 @@ class ExerciseMatchingService
         // Normalize the search term
         $normalizedSearch = $this->normalizeString($exerciseName);
         
-        // Try exact match first (case-insensitive)
-        $exactMatch = $exercises->first(function ($exercise) use ($normalizedSearch) {
-            return $this->normalizeString($exercise->title) === $normalizedSearch;
+        // Expand abbreviations in the search term
+        // This transforms "KB Swings" -> "Kettlebell Swings"
+        $expandedSearch = $this->expandAbbreviations($normalizedSearch);
+        
+        // Try exact match first (case-insensitive) with expanded search
+        $exactMatch = $exercises->first(function ($exercise) use ($expandedSearch) {
+            return $this->normalizeString($exercise->title) === $expandedSearch;
         });
         
         if ($exactMatch) {
             return $exactMatch;
         }
         
-        // Try fuzzy matching with scoring
-        $scoredExercises = $exercises->map(function ($exercise) use ($normalizedSearch, $exerciseName) {
+        // Also try exact match with original normalized search (in case no expansion happened)
+        if ($expandedSearch !== $normalizedSearch) {
+            $exactMatch = $exercises->first(function ($exercise) use ($normalizedSearch) {
+                return $this->normalizeString($exercise->title) === $normalizedSearch;
+            });
+            
+            if ($exactMatch) {
+                return $exactMatch;
+            }
+        }
+        
+        // Try fuzzy matching with scoring (use expanded search)
+        $scoredExercises = $exercises->map(function ($exercise) use ($expandedSearch, $exerciseName) {
             $normalizedTitle = $this->normalizeString($exercise->title);
-            $score = $this->calculateMatchScore($normalizedSearch, $normalizedTitle, $exerciseName, $exercise->title);
+            $score = $this->calculateMatchScore($expandedSearch, $normalizedTitle, $exerciseName, $exercise->title);
             
             return [
                 'exercise' => $exercise,
                 'score' => $score
             ];
         })
-        ->filter(function ($item) {
+        ->filter(function ($item) use ($expandedSearch) {
             // Minimum score threshold to avoid false positives
-            // Score must be at least 150 (e.g., contains search term)
-            return $item['score'] >= 150;
+            // Lower threshold for very short searches (abbreviations like "KB", "HSPU")
+            // since they're likely intentional abbreviations
+            $minScore = strlen($expandedSearch) <= 4 ? 100 : 150;
+            return $item['score'] >= $minScore;
         })
         ->sortByDesc('score');
         
@@ -87,6 +104,38 @@ class ExerciseMatchingService
         $str = trim($str);
         
         return $str;
+    }
+    
+    /**
+     * Expand abbreviations in a search term
+     * Transforms "KB Swings" -> "Kettlebell Swings"
+     * 
+     * @param string $search Normalized search term
+     * @return string Search term with abbreviations expanded
+     */
+    private function expandAbbreviations(string $search): string
+    {
+        $abbreviations = config('exercise_abbreviations', []);
+        
+        // Sort abbreviations by length (longest first) to avoid partial replacements
+        // e.g., "kbs" should be checked before "kb"
+        uksort($abbreviations, function($a, $b) {
+            return strlen($b) - strlen($a);
+        });
+        
+        foreach ($abbreviations as $abbr => $fullForms) {
+            // Use word boundary to match whole words only
+            // This prevents "kb" from matching inside "keyboard"
+            $pattern = '/\b' . preg_quote($abbr, '/') . '\b/i';
+            
+            if (preg_match($pattern, $search)) {
+                // Replace with the first (primary) full form
+                $search = preg_replace($pattern, $fullForms[0], $search);
+                break; // Only expand one abbreviation to avoid conflicts
+            }
+        }
+        
+        return $search;
     }
     
     /**
@@ -208,19 +257,33 @@ class ExerciseMatchingService
             $variations[] = $name . 's';
         }
         
-        // Handle common abbreviations
-        $abbreviations = [
-            'db' => 'dumbbell',
-            'bb' => 'barbell',
-            'kb' => 'kettlebell',
-        ];
+        // Load abbreviations from config
+        $abbreviations = config('exercise_abbreviations', []);
         
-        foreach ($abbreviations as $abbr => $full) {
-            if (str_contains($name, $abbr)) {
-                $variations[] = str_replace($abbr, $full, $name);
+        foreach ($abbreviations as $abbr => $fullForms) {
+            // Check if the search term is the abbreviation
+            if ($name === $abbr) {
+                // Add all full forms as variations
+                foreach ($fullForms as $full) {
+                    $variations[] = $full;
+                }
             }
-            if (str_contains($name, $full)) {
-                $variations[] = str_replace($full, $abbr, $name);
+            
+            // Check if the search term contains the abbreviation
+            if (str_contains($name, $abbr)) {
+                foreach ($fullForms as $full) {
+                    $variations[] = str_replace($abbr, $full, $name);
+                }
+            }
+            
+            // Check if the search term is or contains any of the full forms
+            foreach ($fullForms as $full) {
+                if ($name === $full) {
+                    $variations[] = $abbr;
+                }
+                if (str_contains($name, $full)) {
+                    $variations[] = str_replace($full, $abbr, $name);
+                }
             }
         }
         
