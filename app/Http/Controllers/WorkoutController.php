@@ -114,14 +114,16 @@ class WorkoutController extends Controller
                 if ($isWod && $workout->wod_parsed && isset($workout->wod_parsed['blocks'])) {
                     $subItemId = 1000; // Start with high number to avoid conflicts
                     foreach ($workout->wod_parsed['blocks'] as $blockIndex => $block) {
-                        // Add block header as sub-item
-                        $blockSubItem = $rowBuilder->subItem(
-                            $subItemId++,
-                            '📦 ' . $block['name'],
-                            null,
-                            null
-                        );
-                        $blockSubItem->compact()->add();
+                        // Add block header as sub-item (only if block has a name)
+                        if (!empty($block['name'])) {
+                            $blockSubItem = $rowBuilder->subItem(
+                                $subItemId++,
+                                '📦 ' . $block['name'],
+                                null,
+                                null
+                            );
+                            $blockSubItem->compact()->add();
+                        }
                         
                         // Add exercises in this block
                         foreach ($block['exercises'] as $exIndex => $exercise) {
@@ -966,14 +968,16 @@ class WorkoutController extends Controller
             $rowId = 1;
             
             foreach ($workout->wod_parsed['blocks'] as $block) {
-                // Block header
-                $blockRow = $tableBuilder->row(
-                    $rowId++,
-                    '📦 ' . $block['name'],
-                    null,
-                    null
-                );
-                $blockRow->compact()->add();
+                // Block header (only if block has a name)
+                if (!empty($block['name'])) {
+                    $blockRow = $tableBuilder->row(
+                        $rowId++,
+                        '📦 ' . $block['name'],
+                        null,
+                        null
+                    );
+                    $blockRow->compact()->add();
+                }
                 
                 // Exercises in block
                 foreach ($block['exercises'] as $exercise) {

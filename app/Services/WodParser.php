@@ -57,10 +57,10 @@ class WodParser
                 continue;
             }
             
-            // If no block started yet, create a default one
+            // If no block started yet, create a default one with empty name
             if ($currentBlock === null) {
                 $currentBlock = [
-                    'name' => 'Workout',
+                    'name' => '',
                     'exercises' => []
                 ];
             }
