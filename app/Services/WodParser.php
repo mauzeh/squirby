@@ -126,7 +126,7 @@ class WodParser
      */
     private function isBlockHeader(string $line): bool
     {
-        return preg_match('/^#{1,3}\s+/', $line);
+        return preg_match('/^#{1,3}\s*/', $line);
     }
     
     /**
@@ -134,7 +134,7 @@ class WodParser
      */
     private function parseBlockName(string $line): string
     {
-        return trim(preg_replace('/^#{1,3}\s+/', '', $line));
+        return trim(preg_replace('/^#{1,3}\s*/', '', $line));
     }
     
     /**

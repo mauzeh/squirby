@@ -512,4 +512,24 @@ WOD;
         $this->assertStringContainsString('10 [Burpees]', $unparsed);
         $this->assertStringContainsString('20 [Squats]', $unparsed);
     }
+
+    /** @test */
+    public function parses_block_headers_without_space_after_hash()
+    {
+        $text = <<<'WOD'
+#Block 1
+[Squats]: 3x10
+##Block 2
+[Deadlifts]: 5x5
+###Block 3
+[Bench Press]: 3x8
+WOD;
+
+        $result = $this->parser->parse($text);
+
+        $this->assertCount(3, $result['blocks']);
+        $this->assertEquals('Block 1', $result['blocks'][0]['name']);
+        $this->assertEquals('Block 2', $result['blocks'][1]['name']);
+        $this->assertEquals('Block 3', $result['blocks'][2]['name']);
+    }
 }
