@@ -155,28 +155,20 @@
                     autocompleteDiv.appendChild(item);
                 });
                 
-                // Position the autocomplete below the textarea
-                const textareaRect = textarea.getBoundingClientRect();
-                const editorComponent = textarea.closest('.component-code-editor');
-                const componentRect = editorComponent.getBoundingClientRect();
-                
-                // Position relative to component
-                autocompleteDiv.style.left = '10px';
-                autocompleteDiv.style.top = (textareaRect.bottom - componentRect.top + 5) + 'px';
-                
-                console.log('Before setting display - current value:', autocompleteDiv.style.display);
+                // Position the autocomplete - use fixed position for now to test visibility
+                autocompleteDiv.style.left = '50px';
+                autocompleteDiv.style.top = '100px';
                 autocompleteDiv.style.display = 'block';
-                console.log('After setting display - new value:', autocompleteDiv.style.display);
-                console.log('Computed display:', window.getComputedStyle(autocompleteDiv).display);
+                autocompleteDiv.style.width = '300px';
                 
-                // Force a reflow
-                autocompleteDiv.offsetHeight;
-                
-                console.log('Final check - display:', autocompleteDiv.style.display);
-                console.log('Autocomplete element:', autocompleteDiv);
+                console.log('showAutocomplete - Setting display to block');
+                console.log('showAutocomplete - Display is now:', autocompleteDiv.style.display);
+                console.log('showAutocomplete - Element:', autocompleteDiv);
+                console.log('showAutocomplete - Parent:', autocompleteDiv.parentElement);
             }
             
             function hideAutocomplete(autocompleteDiv) {
+                console.log('hideAutocomplete called');
                 autocompleteDiv.style.display = 'none';
             }
             
