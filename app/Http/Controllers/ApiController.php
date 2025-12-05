@@ -12,13 +12,21 @@ class ApiController extends Controller
      */
     public function exerciseAutocomplete()
     {
-        $exercises = Exercise::availableToUser(Auth::id())
+        $userId = Auth::id();
+        
+        $exercises = Exercise::availableToUser($userId)
             ->select('title')
             ->orderBy('title')
             ->get()
             ->pluck('title')
             ->unique()
             ->values();
+
+        \Log::info('Exercise autocomplete', [
+            'user_id' => $userId,
+            'count' => $exercises->count(),
+            'sample' => $exercises->take(5)->toArray()
+        ]);
 
         return response()->json($exercises);
     }

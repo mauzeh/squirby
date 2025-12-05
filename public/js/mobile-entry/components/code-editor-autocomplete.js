@@ -31,6 +31,18 @@
                 })
                 .catch(err => console.error('Failed to load exercises:', err));
             
+            // Find the component-code-editor parent
+            const editorComponent = textarea.closest('.component-code-editor');
+            if (!editorComponent) {
+                console.error('Could not find .component-code-editor parent');
+                return;
+            }
+            
+            // Ensure component has position relative for absolute positioning
+            if (!editorComponent.style.position || editorComponent.style.position === 'static') {
+                editorComponent.style.position = 'relative';
+            }
+            
             // Create autocomplete dropdown
             autocompleteDiv = document.createElement('div');
             autocompleteDiv.className = 'code-editor-autocomplete';
@@ -42,15 +54,19 @@
                 max-height: 200px;
                 overflow-y: auto;
                 display: none;
-                z-index: 1000;
+                z-index: 9999;
                 box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+                min-width: 200px;
             `;
-            wrapper.appendChild(autocompleteDiv);
+            editorComponent.appendChild(autocompleteDiv);
             
             // Handle input for autocomplete
             textarea.addEventListener('input', () => {
+                console.log('Input event - exercisesLoaded:', exercisesLoaded, 'exercises.length:', exercises.length);
+                
                 // Skip if exercises haven't loaded yet
                 if (!exercisesLoaded || exercises.length === 0) {
+                    console.log('Skipping autocomplete - not ready');
                     return;
                 }
                 
@@ -59,12 +75,15 @@
                 
                 // Check if we're inside brackets
                 const bracketMatch = textBeforeCursor.match(/\[{1,2}([^\]]*?)$/);
+                console.log('Bracket match:', bracketMatch);
                 
                 if (bracketMatch && bracketMatch[1].length > 0) {
                     const query = bracketMatch[1].toLowerCase();
+                    console.log('Searching for:', query);
                     const matches = exercises.filter(ex => 
                         ex.toLowerCase().includes(query)
                     ).slice(0, 10);
+                    console.log('Found matches:', matches.length);
                     
                     if (matches.length > 0) {
                         showAutocomplete(matches, textarea, autocompleteDiv);
@@ -105,6 +124,7 @@
             });
             
             function showAutocomplete(matches, textarea, autocompleteDiv) {
+                console.log('showAutocomplete called with', matches.length, 'matches');
                 autocompleteDiv.innerHTML = '';
                 
                 matches.forEach((exercise) => {
@@ -135,11 +155,25 @@
                     autocompleteDiv.appendChild(item);
                 });
                 
-                // Position the autocomplete below cursor
-                const coords = getCaretCoordinates(textarea);
-                autocompleteDiv.style.left = coords.left + 'px';
-                autocompleteDiv.style.top = (coords.top + 20) + 'px';
+                // Position the autocomplete below the textarea
+                const textareaRect = textarea.getBoundingClientRect();
+                const editorComponent = textarea.closest('.component-code-editor');
+                const componentRect = editorComponent.getBoundingClientRect();
+                
+                // Position relative to component
+                autocompleteDiv.style.left = '10px';
+                autocompleteDiv.style.top = (textareaRect.bottom - componentRect.top + 5) + 'px';
+                
+                console.log('Before setting display - current value:', autocompleteDiv.style.display);
                 autocompleteDiv.style.display = 'block';
+                console.log('After setting display - new value:', autocompleteDiv.style.display);
+                console.log('Computed display:', window.getComputedStyle(autocompleteDiv).display);
+                
+                // Force a reflow
+                autocompleteDiv.offsetHeight;
+                
+                console.log('Final check - display:', autocompleteDiv.style.display);
+                console.log('Autocomplete element:', autocompleteDiv);
             }
             
             function hideAutocomplete(autocompleteDiv) {
