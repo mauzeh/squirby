@@ -9,7 +9,7 @@ use App\Services\ComponentBuilder as C;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
-class ExerciseAliasController extends Controller
+class ExerciseMatchingAliasController extends Controller
 {
     protected $exerciseListService;
 
