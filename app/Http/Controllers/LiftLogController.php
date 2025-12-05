@@ -135,34 +135,7 @@ class LiftLogController extends Controller
                 ->asLink(route('mobile-entry.lifts', ['expand_selection' => true]))
                 ->build();
         } else {
-            $aliasService = app(\App\Services\ExerciseAliasService::class);
-            
-            // Get lift log counts for each exercise
-            $exerciseLogCounts = $this->exerciseListService->getExerciseLogCounts($userId, $exercises->pluck('id')->toArray());
-            
-            $listBuilder = \App\Services\ComponentBuilder::itemList();
-            
-            foreach ($exercises as $exercise) {
-                $displayName = $aliasService->getDisplayName($exercise, auth()->user());
-                $logCount = $exerciseLogCounts[$exercise->id] ?? 0;
-                $typeLabel = $logCount . ' ' . ($logCount === 1 ? 'log' : 'logs');
-                
-                $listBuilder->item(
-                    (string) $exercise->id,
-                    $displayName,
-                    route('exercises.show-logs', ['exercise' => $exercise, 'from' => 'lift-logs-index']),
-                    $typeLabel,
-                    'exercise-history'
-                );
-            }
-            
-            $components[] = $listBuilder
-                ->filterPlaceholder('Tap to search...')
-                ->noResultsMessage('No exercises found.')
-                ->initialState('expanded')
-                ->showCancelButton(false)
-                ->restrictHeight(false)
-                ->build();
+            $components[] = $this->exerciseListService->generateMetricsExerciseList($userId);
         }
 
         $data = ['components' => $components];

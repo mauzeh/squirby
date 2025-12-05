@@ -49,57 +49,11 @@ class ExerciseMatchingAliasController extends Controller
             ->build();
         
         // Generate exercise list using the service
-        $exerciseListData = $this->exerciseListService->generateExerciseList(Auth::id(), [
-            'filter_placeholder' => 'Search exercises...',
-            'no_results_message' => 'No exercises found.',
-            'initial_state' => 'expanded',
-            'show_cancel_button' => false,
-            'restrict_height' => false,
-            'recent_days' => 30,
-            'url_generator' => function ($exercise) use ($aliasName, $workoutId) {
-                return route('exercise-aliases.store', [
-                    'exercise_id' => $exercise->id,
-                    'alias_name' => $aliasName,
-                    'workout_id' => $workoutId
-                ]);
-            },
-            'type_label_generator' => function ($exercise, $isRecent) {
-                return $isRecent ? 'Recent' : 'All';
-            }
-        ]);
-        
-        // Build the item list component
-        $itemListBuilder = C::itemList()
-            ->filterPlaceholder($exerciseListData['filterPlaceholder'])
-            ->noResultsMessage($exerciseListData['noResultsMessage'])
-            ->initialState($exerciseListData['initialState'])
-            ->showCancelButton($exerciseListData['showCancelButton'])
-            ->restrictHeight($exerciseListData['restrictHeight']);
-        
-        foreach ($exerciseListData['items'] as $item) {
-            $itemListBuilder->item(
-                $item['id'],
-                $item['name'],
-                $item['href'],
-                $item['type']['label'],
-                $item['type']['cssClass'],
-                $item['type']['priority']
-            );
-        }
-        
-        // Add create form for new exercises
-        $itemListBuilder->createForm(
-            route('exercise-aliases.create-and-link'),
-            'exercise_name',
-            [
-                'alias_name' => $aliasName,
-                'workout_id' => $workoutId
-            ],
-            'Create "{term}"',
-            'POST'
+        $components[] = $this->exerciseListService->generateAliasLinkingExerciseList(
+            Auth::id(),
+            $aliasName,
+            $workoutId
         );
-        
-        $components[] = $itemListBuilder->build();
         
         $data = ['components' => $components];
         return view('mobile-entry.flexible', compact('data'));

@@ -113,6 +113,266 @@ class ExerciseListService
     }
 
     /**
+     * Generate a complete exercise selection list component for workout templates
+     * 
+     * @param int $userId
+     * @param \App\Models\Workout $workout
+     * @param bool $shouldExpand Whether the list should start expanded
+     * @return array Complete item list component
+     */
+    public function generateWorkoutExerciseList(int $userId, $workout, bool $shouldExpand = false): array
+    {
+        // Get user's accessible exercises with aliases
+        $exercises = Exercise::availableToUser($userId)
+            ->with(['aliases' => function ($query) use ($userId) {
+                $query->where('user_id', $userId);
+            }])
+            ->orderBy('title', 'asc')
+            ->get();
+
+        // Apply aliases to exercises
+        $user = \App\Models\User::find($userId);
+        $exercises = $this->aliasService->applyAliasesToExercises($exercises, $user);
+
+        // Get exercises already in this workout (to exclude from selection list)
+        $workoutExerciseIds = $workout->exercises()->pluck('exercise_id')->toArray();
+
+        // Get recent exercises (last 7 days) for the "Recent" category
+        $recentExerciseIds = LiftLog::where('user_id', $userId)
+            ->where('logged_at', '>=', \Carbon\Carbon::now()->subDays(7))
+            ->pluck('exercise_id')
+            ->unique()
+            ->toArray();
+
+        // Get last performed dates for all exercises
+        $lastPerformedDates = LiftLog::where('user_id', $userId)
+            ->whereIn('exercise_id', $exercises->pluck('id'))
+            ->select('exercise_id', DB::raw('MAX(logged_at) as last_logged_at'))
+            ->groupBy('exercise_id')
+            ->pluck('last_logged_at', 'exercise_id');
+
+        // Get top 10 recommended exercises
+        $recommendationEngine = app(\App\Services\RecommendationEngine::class);
+        $recommendations = $recommendationEngine->getRecommendations($userId, 10);
+        
+        $recommendationMap = [];
+        foreach ($recommendations as $index => $recommendation) {
+            $exerciseId = $recommendation['exercise']->id;
+            $recommendationMap[$exerciseId] = $index + 1;
+        }
+
+        $items = [];
+        
+        foreach ($exercises as $exercise) {
+            // Skip exercises already in workout
+            if (in_array($exercise->id, $workoutExerciseIds)) {
+                continue;
+            }
+            
+            // Calculate "X ago" label
+            $lastPerformedLabel = '';
+            if (isset($lastPerformedDates[$exercise->id])) {
+                $lastPerformed = \Carbon\Carbon::parse($lastPerformedDates[$exercise->id]);
+                $lastPerformedLabel = $lastPerformed->diffForHumans(['short' => true]);
+            }
+            
+            // Categorize exercises
+            if (isset($recommendationMap[$exercise->id])) {
+                $rank = $recommendationMap[$exercise->id];
+                $itemType = [
+                    'label' => '<i class="fas fa-star"></i> Recommended',
+                    'cssClass' => 'in-program',
+                    'priority' => 1,
+                    'subPriority' => $rank
+                ];
+            } elseif (in_array($exercise->id, $recentExerciseIds)) {
+                $itemType = [
+                    'label' => 'Recent',
+                    'cssClass' => 'recent',
+                    'priority' => 2,
+                    'subPriority' => 0
+                ];
+            } else {
+                $itemType = [
+                    'label' => $lastPerformedLabel,
+                    'cssClass' => 'regular',
+                    'priority' => 3,
+                    'subPriority' => 0
+                ];
+            }
+
+            $items[] = [
+                'id' => 'exercise-' . $exercise->id,
+                'name' => $exercise->title,
+                'type' => $itemType,
+                'href' => route('workouts.add-exercise', [
+                    $workout->id,
+                    'exercise' => $exercise->id
+                ])
+            ];
+        }
+
+        // Sort items
+        usort($items, function ($a, $b) {
+            $priorityComparison = $a['type']['priority'] <=> $b['type']['priority'];
+            if ($priorityComparison !== 0) {
+                return $priorityComparison;
+            }
+            
+            $subPriorityA = $a['type']['subPriority'] ?? 0;
+            $subPriorityB = $b['type']['subPriority'] ?? 0;
+            $subPriorityComparison = $subPriorityA <=> $subPriorityB;
+            if ($subPriorityComparison !== 0) {
+                return $subPriorityComparison;
+            }
+            
+            return strcmp($a['name'], $b['name']);
+        });
+
+        // Build the component
+        $listBuilder = ComponentBuilder::itemList()
+            ->filterPlaceholder('Search exercises...')
+            ->noResultsMessage('No exercises found.');
+        
+        if ($shouldExpand) {
+            $listBuilder->initialState('expanded');
+        }
+
+        foreach ($items as $item) {
+            $listBuilder->item(
+                $item['id'],
+                $item['name'],
+                $item['href'],
+                $item['type']['label'],
+                $item['type']['cssClass'],
+                $item['type']['priority']
+            );
+        }
+
+        // Add create form
+        $listBuilder->createForm(
+            route('workouts.create-exercise', $workout->id),
+            'exercise_name',
+            [],
+            'Create "{term}"',
+            'POST'
+        );
+
+        return $listBuilder->build();
+    }
+
+    /**
+     * Generate a complete exercise list component for metrics page
+     * 
+     * @param int $userId
+     * @return array Complete item list component
+     */
+    public function generateMetricsExerciseList(int $userId): array
+    {
+        // Get all exercises that the user has logged
+        $exercises = $this->getLoggedExercises($userId);
+
+        // Get lift log counts for each exercise
+        $exerciseLogCounts = $this->getExerciseLogCounts($userId, $exercises->pluck('id')->toArray());
+        
+        $listBuilder = ComponentBuilder::itemList();
+        
+        foreach ($exercises as $exercise) {
+            $displayName = $this->aliasService->getDisplayName($exercise, \App\Models\User::find($userId));
+            $logCount = $exerciseLogCounts[$exercise->id] ?? 0;
+            $typeLabel = $logCount . ' ' . ($logCount === 1 ? 'log' : 'logs');
+            
+            $listBuilder->item(
+                (string) $exercise->id,
+                $displayName,
+                route('exercises.show-logs', ['exercise' => $exercise, 'from' => 'lift-logs-index']),
+                $typeLabel,
+                'exercise-history'
+            );
+        }
+        
+        return $listBuilder
+            ->filterPlaceholder('Tap to search...')
+            ->noResultsMessage('No exercises found.')
+            ->initialState('expanded')
+            ->showCancelButton(false)
+            ->restrictHeight(false)
+            ->build();
+    }
+
+    /**
+     * Generate a complete exercise list component for alias linking
+     * 
+     * @param int $userId
+     * @param string $aliasName The alias name being linked
+     * @param int|null $workoutId Optional workout ID for redirect
+     * @return array Complete item list component
+     */
+    public function generateAliasLinkingExerciseList(int $userId, string $aliasName, ?int $workoutId = null): array
+    {
+        // Get user's accessible exercises with aliases
+        $exercises = Exercise::availableToUser($userId)
+            ->with(['aliases' => function ($query) use ($userId) {
+                $query->where('user_id', $userId);
+            }])
+            ->orderBy('title', 'asc')
+            ->get();
+
+        // Apply aliases to exercises
+        $user = \App\Models\User::find($userId);
+        $exercises = $this->aliasService->applyAliasesToExercises($exercises, $user);
+
+        // Get recent exercises (last 30 days)
+        $recentExerciseIds = LiftLog::where('user_id', $userId)
+            ->where('logged_at', '>=', now()->subDays(30))
+            ->distinct()
+            ->pluck('exercise_id')
+            ->toArray();
+
+        // Build the component
+        $listBuilder = ComponentBuilder::itemList()
+            ->filterPlaceholder('Search exercises...')
+            ->noResultsMessage('No exercises found.')
+            ->initialState('expanded')
+            ->showCancelButton(false)
+            ->restrictHeight(false);
+
+        foreach ($exercises as $exercise) {
+            $isRecent = in_array($exercise->id, $recentExerciseIds);
+            $typeLabel = $isRecent ? 'Recent' : 'All';
+            $typeCssClass = $isRecent ? 'recent' : 'all';
+            $priority = $isRecent ? 1 : 2;
+            
+            $listBuilder->item(
+                (string) $exercise->id,
+                $exercise->title,
+                route('exercise-aliases.store', [
+                    'exercise_id' => $exercise->id,
+                    'alias_name' => $aliasName,
+                    'workout_id' => $workoutId
+                ]),
+                $typeLabel,
+                $typeCssClass,
+                $priority
+            );
+        }
+
+        // Add create form for new exercises
+        $listBuilder->createForm(
+            route('exercise-aliases.create-and-link'),
+            'exercise_name',
+            [
+                'alias_name' => $aliasName,
+                'workout_id' => $workoutId
+            ],
+            'Create "{term}"',
+            'POST'
+        );
+
+        return $listBuilder->build();
+    }
+
+    /**
      * Get exercises that the user has logged (for metrics page)
      * 
      * @param int $userId
