@@ -155,16 +155,27 @@
                     autocompleteDiv.appendChild(item);
                 });
                 
-                // Position the autocomplete - use fixed position for now to test visibility
-                autocompleteDiv.style.left = '50px';
-                autocompleteDiv.style.top = '100px';
+                // Position the autocomplete near the cursor
+                const coords = getCaretCoordinates(textarea);
+                const editorComponent = textarea.closest('.component-code-editor');
+                const componentRect = editorComponent.getBoundingClientRect();
+                const textareaRect = textarea.getBoundingClientRect();
+                
+                // Calculate position: textarea position + caret position within textarea
+                const left = (textareaRect.left - componentRect.left) + coords.left;
+                const top = (textareaRect.top - componentRect.top) + coords.top + 20; // 20px below cursor
+                
+                autocompleteDiv.style.left = left + 'px';
+                autocompleteDiv.style.top = top + 'px';
                 autocompleteDiv.style.display = 'block';
                 autocompleteDiv.style.width = '300px';
                 
-                console.log('showAutocomplete - Setting display to block');
-                console.log('showAutocomplete - Display is now:', autocompleteDiv.style.display);
-                console.log('showAutocomplete - Element:', autocompleteDiv);
-                console.log('showAutocomplete - Parent:', autocompleteDiv.parentElement);
+                console.log('Positioning autocomplete - textarea offset:', {
+                    textareaLeft: textareaRect.left - componentRect.left,
+                    textareaTop: textareaRect.top - componentRect.top
+                });
+                console.log('Positioning autocomplete - caret coords:', coords);
+                console.log('Positioning autocomplete - final position:', { left, top });
             }
             
             function hideAutocomplete(autocompleteDiv) {
@@ -206,6 +217,7 @@
                 const div = document.createElement('div');
                 const style = window.getComputedStyle(textarea);
                 
+                // Copy all relevant styles from textarea
                 div.style.cssText = `
                     position: absolute;
                     visibility: hidden;
@@ -215,7 +227,10 @@
                     font-size: ${style.fontSize};
                     line-height: ${style.lineHeight};
                     padding: ${style.padding};
-                    width: ${textarea.offsetWidth}px;
+                    border: ${style.border};
+                    width: ${textarea.clientWidth}px;
+                    top: 0;
+                    left: 0;
                 `;
                 
                 const textBeforeCursor = textarea.value.substring(0, textarea.selectionStart);
@@ -227,15 +242,19 @@
                 
                 document.body.appendChild(div);
                 
-                const rect = textarea.getBoundingClientRect();
                 const spanRect = span.getBoundingClientRect();
+                const divRect = div.getBoundingClientRect();
                 
+                // Calculate position relative to the div (which mimics the textarea)
+                // Then adjust for textarea scroll
                 const coords = {
-                    left: spanRect.left - rect.left + textarea.scrollLeft,
-                    top: spanRect.top - rect.top + textarea.scrollTop
+                    left: spanRect.left - divRect.left - textarea.scrollLeft,
+                    top: spanRect.top - divRect.top - textarea.scrollTop
                 };
                 
                 document.body.removeChild(div);
+                
+                console.log('getCaretCoordinates:', coords, 'scrollLeft:', textarea.scrollLeft, 'scrollTop:', textarea.scrollTop);
                 return coords;
             }
         }
