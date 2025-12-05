@@ -74,6 +74,11 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('lift-logs', LiftLogController::class)->except(['show']);
 
+    // Exercise Aliases
+    Route::get('exercise-aliases/create', [App\Http\Controllers\ExerciseAliasController::class, 'create'])->name('exercise-aliases.create');
+    Route::get('exercise-aliases/store', [App\Http\Controllers\ExerciseAliasController::class, 'store'])->name('exercise-aliases.store');
+    Route::post('exercise-aliases/create-and-link', [App\Http\Controllers\ExerciseAliasController::class, 'createAndLink'])->name('exercise-aliases.create-and-link');
+
     // Exercise Recommendations
     Route::get('recommendations', [RecommendationController::class, 'index'])->name('recommendations.index');
 

@@ -41,11 +41,12 @@ class WodDisplayService
         $text = preg_replace('/(?<!\[)\[([^\]]+)\](?!\])/', '$1', $text);
         
         // Then, process double-bracketed exercises (loggable)
-        $text = preg_replace_callback('/\[\[([^\]]+)\]\]/', function($matches) {
+        $text = preg_replace_callback('/\[\[([^\]]+)\]\]/', function($matches) use ($workout) {
             $exerciseName = $matches[1];
             $matchingExercise = $this->exerciseMatchingService->findBestMatch($exerciseName, Auth::id());
             
             if ($matchingExercise) {
+                // Matched - link to lift log creation
                 $url = route('lift-logs.create', [
                     'exercise_id' => $matchingExercise->id,
                     'date' => now()->toDateString(),
@@ -54,7 +55,12 @@ class WodDisplayService
                 return '**[' . $exerciseName . '](' . $url . ')**';
             }
             
-            return '**' . $exerciseName . '**';
+            // Unmatched - link to alias creation page
+            $url = route('exercise-aliases.create', [
+                'alias_name' => $exerciseName,
+                'workout_id' => $workout->id
+            ]);
+            return '**[' . $exerciseName . '](' . $url . ')**';
         }, $text);
         
         return $text;

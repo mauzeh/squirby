@@ -26,17 +26,20 @@ class LiftLogController extends Controller
     protected $liftLogTablePresenter;
     protected $redirectService;
     protected $liftLogTableRowBuilder;
+    protected $exerciseListService;
 
     public function __construct(
         ExerciseService $exerciseService,
         LiftLogTablePresenter $liftLogTablePresenter,
         RedirectService $redirectService,
-        \App\Services\LiftLogTableRowBuilder $liftLogTableRowBuilder
+        \App\Services\LiftLogTableRowBuilder $liftLogTableRowBuilder,
+        \App\Services\ExerciseListService $exerciseListService
     ) {
         $this->exerciseService = $exerciseService;
         $this->liftLogTablePresenter = $liftLogTablePresenter;
         $this->redirectService = $redirectService;
         $this->liftLogTableRowBuilder = $liftLogTableRowBuilder;
+        $this->exerciseListService = $exerciseListService;
     }
     /**
      * Show the form for creating a new lift log entry
@@ -107,18 +110,8 @@ class LiftLogController extends Controller
     {
         $userId = auth()->id();
         
-        // Get all exercises that the user has logged, with their aliases
-        $exercises = Exercise::whereHas('liftLogs', function ($query) use ($userId) {
-            $query->where('user_id', $userId);
-        })
-        ->with([
-            'aliases' => function ($query) use ($userId) {
-                $query->where('user_id', $userId);
-            },
-            'user' // Load user relationship for badge display
-        ])
-        ->orderBy('title', 'asc')
-        ->get();
+        // Get all exercises that the user has logged
+        $exercises = $this->exerciseListService->getLoggedExercises($userId);
 
         // Build components array
         $components = [
@@ -143,14 +136,11 @@ class LiftLogController extends Controller
                 ->build();
         } else {
             $aliasService = app(\App\Services\ExerciseAliasService::class);
-            $listBuilder = \App\Services\ComponentBuilder::itemList();
             
             // Get lift log counts for each exercise
-            $exerciseLogCounts = \App\Models\LiftLog::where('user_id', $userId)
-                ->whereIn('exercise_id', $exercises->pluck('id'))
-                ->select('exercise_id', \DB::raw('count(*) as log_count'))
-                ->groupBy('exercise_id')
-                ->pluck('log_count', 'exercise_id');
+            $exerciseLogCounts = $this->exerciseListService->getExerciseLogCounts($userId, $exercises->pluck('id')->toArray());
+            
+            $listBuilder = \App\Services\ComponentBuilder::itemList();
             
             foreach ($exercises as $exercise) {
                 $displayName = $aliasService->getDisplayName($exercise, auth()->user());
