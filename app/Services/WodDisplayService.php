@@ -46,12 +46,8 @@ class WodDisplayService
             $matchingExercise = $this->exerciseMatchingService->findBestMatch($exerciseName, Auth::id());
             
             if ($matchingExercise) {
-                // Matched - link to lift log creation
-                $url = route('lift-logs.create', [
-                    'exercise_id' => $matchingExercise->id,
-                    'date' => now()->toDateString(),
-                    'redirect_to' => 'workouts'
-                ]);
+                // Matched - link to exercise logs page
+                $url = route('exercises.show-logs', ['exercise' => $matchingExercise->id]);
                 return '**[' . $exerciseName . '](' . $url . ')**';
             }
             
