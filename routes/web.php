@@ -82,6 +82,9 @@ Route::middleware('auth')->group(function () {
     // Exercise Recommendations
     Route::get('recommendations', [RecommendationController::class, 'index'])->name('recommendations.index');
 
+    // API Routes
+    Route::get('api/exercises/autocomplete', [App\Http\Controllers\ApiController::class, 'exerciseAutocomplete'])->name('api.exercises.autocomplete');
+
     // Workouts
     Route::resource('workouts', WorkoutController::class)->except(['show']);
     Route::get('workouts/{workout}/add-exercise', [WorkoutController::class, 'addExercise'])->name('workouts.add-exercise');

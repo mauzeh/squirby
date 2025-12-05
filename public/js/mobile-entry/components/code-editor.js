@@ -54,6 +54,11 @@
         
         // Enhance textarea behavior
         enhanceTextarea(textarea);
+        
+        // Add autocomplete (if available)
+        if (window.CodeEditorAutocomplete) {
+            window.CodeEditorAutocomplete.init(textarea, wrapper);
+        }
     }
     
     /**
@@ -168,6 +173,7 @@
         });
     }
     
+
     /**
      * Highlight WOD syntax
      */

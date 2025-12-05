@@ -281,7 +281,7 @@ class WorkoutController extends Controller
                         'value' => '',
                         'placeholder' => $exampleSyntax,
                         'mode' => 'wod-syntax',
-                        'height' => '400px',
+                        'height' => '600px',
                         'lineNumbers' => true
                     ],
                     'descriptionField' => [
@@ -291,7 +291,10 @@ class WorkoutController extends Controller
                     ],
                     'submitButton' => 'Create WOD'
                 ],
-                'requiresScript' => 'mobile-entry/components/code-editor'
+                'requiresScript' => [
+                    'mobile-entry/components/code-editor',
+                    'mobile-entry/components/code-editor-autocomplete'
+                ]
             ];
             
             // Syntax guide
@@ -897,7 +900,7 @@ class WorkoutController extends Controller
                     'value' => $workout->wod_syntax ?? '',
                     'placeholder' => $exampleSyntax,
                     'mode' => 'wod-syntax',
-                    'height' => '400px',
+                    'height' => '600px',
                     'lineNumbers' => true
                 ],
                 'descriptionField' => [
@@ -911,7 +914,10 @@ class WorkoutController extends Controller
                     'type' => 'wod'
                 ]
             ],
-            'requiresScript' => 'mobile-entry/components/code-editor'
+            'requiresScript' => [
+                'mobile-entry/components/code-editor',
+                'mobile-entry/components/code-editor-autocomplete'
+            ]
         ];
         
         // Syntax guide

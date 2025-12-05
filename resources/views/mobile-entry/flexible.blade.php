@@ -32,7 +32,14 @@
         if (isset($data['components'])) {
             foreach ($data['components'] as $component) {
                 if (isset($component['requiresScript'])) {
-                    $requiredScripts[$component['requiresScript']] = true;
+                    // Support both string and array format
+                    $scripts = is_array($component['requiresScript']) 
+                        ? $component['requiresScript'] 
+                        : [$component['requiresScript']];
+                    
+                    foreach ($scripts as $script) {
+                        $requiredScripts[$script] = true;
+                    }
                 }
             }
         }
