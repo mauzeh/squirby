@@ -161,21 +161,37 @@
                 const componentRect = editorComponent.getBoundingClientRect();
                 const textareaRect = textarea.getBoundingClientRect();
                 
-                // Calculate position: textarea position + caret position within textarea
-                const left = (textareaRect.left - componentRect.left) + coords.left;
+                const autocompleteWidth = 300;
+                
+                // Calculate initial position: textarea position + caret position within textarea
+                let left = (textareaRect.left - componentRect.left) + coords.left;
                 const top = (textareaRect.top - componentRect.top) + coords.top + 20; // 20px below cursor
+                
+                // Check if autocomplete would overflow to the right
+                const rightEdge = left + autocompleteWidth;
+                const componentWidth = componentRect.width;
+                
+                if (rightEdge > componentWidth) {
+                    // Flip to the left of the cursor
+                    left = left - autocompleteWidth;
+                    // Ensure it doesn't go off the left edge
+                    if (left < 0) {
+                        left = 0;
+                    }
+                    console.log('Autocomplete would overflow - flipping to left');
+                }
                 
                 autocompleteDiv.style.left = left + 'px';
                 autocompleteDiv.style.top = top + 'px';
                 autocompleteDiv.style.display = 'block';
-                autocompleteDiv.style.width = '300px';
+                autocompleteDiv.style.width = autocompleteWidth + 'px';
                 
                 console.log('Positioning autocomplete - textarea offset:', {
                     textareaLeft: textareaRect.left - componentRect.left,
                     textareaTop: textareaRect.top - componentRect.top
                 });
                 console.log('Positioning autocomplete - caret coords:', coords);
-                console.log('Positioning autocomplete - final position:', { left, top });
+                console.log('Positioning autocomplete - final position:', { left, top, rightEdge, componentWidth });
             }
             
             function hideAutocomplete(autocompleteDiv) {
