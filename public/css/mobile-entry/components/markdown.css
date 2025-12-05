@@ -57,7 +57,7 @@
 
 /* Links */
 .markdown-content a {
-    color: #b3d7ff; /* Matches app.css link color */
+    color: #4da3ff; /* Matches app.css link color */
     text-decoration: underline;
     font-weight: 600;
 }
@@ -190,12 +190,9 @@
 }
 
 .wod-display .markdown-content a {
-    color: #28a745; /* Green, matches .button.create */
     text-decoration: none;
-    font-family: monospace;
 }
 
 .wod-display .markdown-content a:hover {
-    color: #34ce57;
     text-decoration: underline;
 }
