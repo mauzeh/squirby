@@ -74,17 +74,14 @@ class WorkoutController extends Controller
 
         // Title
         $components[] = C::title('Workouts')
-            ->subtitle('WODs and workout templates')
+            ->subtitle('Your workout programs')
             ->build();
 
         // Table of workouts with exercises as sub-items
         if ($workouts->isNotEmpty()) {
-            // Create buttons (shown when there are workouts)
-            $components[] = C::button('Create WOD')
-                ->asLink(route('workouts.create', ['type' => 'wod']))
-                ->build();
-            $components[] = C::button('Create Template')
-                ->asLink(route('workouts.create', ['type' => 'template']))
+            // Create button (shown when there are workouts)
+            $components[] = C::button('Create Workout')
+                ->asLink(route('workouts.create'))
                 ->build();
             $tableBuilder = C::table();
 
@@ -212,10 +209,10 @@ class WorkoutController extends Controller
         } else {
             // Empty state: show message first, then button
             $components[] = C::messages()
-                ->info('No templates yet. Create your first template to get started!')
+                ->info('No workouts yet. Create your first workout to get started!')
                 ->build();
             
-            $components[] = C::button('Create New Workout')
+            $components[] = C::button('Create Workout')
                 ->asLink(route('workouts.create'))
                 ->build();
         }
@@ -225,143 +222,112 @@ class WorkoutController extends Controller
     }
 
     /**
-     * Show the form for creating a new template or WOD
+     * Show the form for creating a new workout
      */
     public function create(Request $request)
     {
-        $type = $request->query('type', 'template');
-        $isWod = $type === 'wod';
-        
         $components = [];
 
         // Title
-        $components[] = C::title($isWod ? 'Create WOD' : 'Create Template')
-            ->subtitle($isWod ? 'Workout of the Day' : 'Reusable workout template')
+        $components[] = C::title('Create Workout')
+            ->subtitle('Define your workout program')
             ->build();
 
-        if ($isWod) {
-            // WOD creation form with code editor
-            $exampleSyntax = "# Block 1: Strength\n[[Back Squat]]: 5-5-5-5-5\n[[Bench Press]]: 3x8\n\n# Block 2: Conditioning\nAMRAP 12min:\n10 [[Box Jumps]]\n15 [[Push-ups]]\n20 [[Air Squats]]";
-            
-            // Single form with embedded code editor
-            $components[] = [
-                'type' => 'wod-form',
-                'data' => [
-                    'id' => 'create-wod',
-                    'title' => 'WOD Details',
-                    'formAction' => route('workouts.store'),
-                    'formType' => 'primary',
-                    'nameField' => [
-                        'label' => 'WOD Name:',
-                        'value' => '',
-                        'placeholder' => 'e.g., Monday Strength'
-                    ],
-                    'codeEditor' => [
-                        'id' => 'wod-syntax-editor',
-                        'label' => 'WOD Syntax',
-                        'name' => 'wod_syntax',
-                        'value' => '',
-                        'placeholder' => $exampleSyntax,
-                        'mode' => 'wod-syntax',
-                        'height' => '600px',
-                        'lineNumbers' => true
-                    ],
-                    'descriptionField' => [
-                        'label' => 'Description:',
-                        'value' => '',
-                        'placeholder' => 'Optional'
-                    ],
-                    'submitButton' => 'Create WOD'
+        // WOD creation form with code editor
+        $exampleSyntax = "# Block 1: Strength\n[[Back Squat]]: 5-5-5-5-5\n[[Bench Press]]: 3x8\n\n# Block 2: Conditioning\nAMRAP 12min:\n10 [[Box Jumps]]\n15 [[Push-ups]]\n20 [[Air Squats]]";
+        
+        // Single form with embedded code editor
+        $components[] = [
+            'type' => 'wod-form',
+            'data' => [
+                'id' => 'create-workout',
+                'title' => 'Workout Details',
+                'formAction' => route('workouts.store'),
+                'formType' => 'primary',
+                'nameField' => [
+                    'label' => 'Workout Name:',
+                    'value' => '',
+                    'placeholder' => 'e.g., Monday Strength'
                 ],
-                'requiresScript' => [
-                    'mobile-entry/components/code-editor',
-                    'mobile-entry/components/code-editor-autocomplete'
-                ]
-            ];
-        } else {
-            // Template creation form
-            $components[] = C::form('create-template', 'Template Details')
-                ->type('primary')
-                ->formAction(route('workouts.store'))
-                ->textField('name', 'Template Name:', '', 'e.g., Push Day')
-                ->textField('description', 'Description:', '', 'Optional')
-                ->hiddenField('type', 'template')
-                ->submitButton('Create Template')
-                ->build();
-        }
+                'codeEditor' => [
+                    'id' => 'wod-syntax-editor',
+                    'label' => 'Workout Syntax',
+                    'name' => 'wod_syntax',
+                    'value' => '',
+                    'placeholder' => $exampleSyntax,
+                    'mode' => 'wod-syntax',
+                    'height' => '600px',
+                    'lineNumbers' => true
+                ],
+                'descriptionField' => [
+                    'label' => 'Description:',
+                    'value' => '',
+                    'placeholder' => 'Optional'
+                ],
+                'submitButton' => 'Create Workout'
+            ],
+            'requiresScript' => [
+                'mobile-entry/components/code-editor',
+                'mobile-entry/components/code-editor-autocomplete'
+            ]
+        ];
 
         $data = ['components' => $components];
         return view('mobile-entry.flexible', compact('data'));
     }
 
     /**
-     * Store a newly created template or WOD
+     * Store a newly created workout
      */
     public function store(Request $request)
     {
-        $type = $request->input('type', 'template');
-        $isWod = $type === 'wod';
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'wod_syntax' => 'required|string',
+        ]);
         
-        if ($isWod) {
-            $validated = $request->validate([
-                'name' => 'required|string|max:255',
-                'description' => 'nullable|string',
-                'wod_syntax' => 'required|string',
-            ]);
-            
-            // Parse the WOD syntax
-            $parser = app(\App\Services\WodParser::class);
-            try {
-                $parsed = $parser->parse($validated['wod_syntax']);
-            } catch (\Exception $e) {
-                return back()
-                    ->withInput()
-                    ->with('error', 'Failed to parse WOD syntax: ' . $e->getMessage());
-            }
-            
-            $workout = Workout::create([
-                'user_id' => Auth::id(),
-                'name' => $validated['name'],
-                'description' => $validated['description'] ?? null,
-                'wod_syntax' => $validated['wod_syntax'],
-                'wod_parsed' => $parsed, // Auto-syncs exercises via model event
-                'is_public' => false,
-            ]);
-            
-            return redirect()
-                ->route('workouts.edit', $workout->id)
-                ->with('success', 'WOD created!');
-        } else {
-            $validated = $request->validate([
-                'name' => 'required|string|max:255',
-                'description' => 'nullable|string',
-            ]);
-
-            $workout = Workout::create([
-                'user_id' => Auth::id(),
-                'name' => $validated['name'],
-                'description' => $validated['description'] ?? null,
-                'is_public' => false,
-            ]);
-
-            return redirect()
-                ->route('workouts.edit', $workout->id)
-                ->with('success', 'Template created! Now add exercises.');
+        // Parse the workout syntax
+        $parser = app(\App\Services\WodParser::class);
+        try {
+            $parsed = $parser->parse($validated['wod_syntax']);
+        } catch (\Exception $e) {
+            return back()
+                ->withInput()
+                ->with('error', 'Failed to parse workout syntax: ' . $e->getMessage());
         }
+        
+        $workout = Workout::create([
+            'user_id' => Auth::id(),
+            'name' => $validated['name'],
+            'description' => $validated['description'] ?? null,
+            'wod_syntax' => $validated['wod_syntax'],
+            'wod_parsed' => $parsed, // Auto-syncs exercises via model event
+            'is_public' => false,
+        ]);
+        
+        return redirect()
+            ->route('workouts.edit', $workout->id)
+            ->with('success', 'Workout created!');
     }
 
     /**
-     * Show the form for editing the specified template or WOD
+     * Show the form for editing the specified workout
      */
     public function edit(Request $request, Workout $workout)
     {
         $this->authorize('update', $workout);
 
-        $isWod = $workout->isWod();
-        
-        if ($isWod) {
-            return $this->editWod($request, $workout);
-        }
+        // All workouts are now WODs
+        return $this->editWod($request, $workout);
+    }
+
+    /**
+     * Legacy template edit (deprecated - kept for backward compatibility)
+     * @deprecated
+     */
+    private function editTemplate(Request $request, Workout $workout)
+    {
 
         $workout->load('exercises.exercise.aliases');
         
@@ -505,55 +471,38 @@ class WorkoutController extends Controller
     }
 
     /**
-     * Update the specified template or WOD
+     * Update the specified workout
      */
     public function update(Request $request, Workout $workout)
     {
         $this->authorize('update', $workout);
 
-        $type = $request->input('type', 'template');
-        $isWod = $type === 'wod';
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'wod_syntax' => 'required|string',
+        ]);
         
-        if ($isWod) {
-            $validated = $request->validate([
-                'name' => 'required|string|max:255',
-                'description' => 'nullable|string',
-                'wod_syntax' => 'required|string',
-            ]);
-            
-            // Parse the WOD syntax
-            $parser = app(\App\Services\WodParser::class);
-            try {
-                $parsed = $parser->parse($validated['wod_syntax']);
-            } catch (\Exception $e) {
-                return back()
-                    ->withInput()
-                    ->with('error', 'Failed to parse WOD syntax: ' . $e->getMessage());
-            }
-            
-            $workout->update([
-                'name' => $validated['name'],
-                'description' => $validated['description'] ?? null,
-                'wod_syntax' => $validated['wod_syntax'],
-                'wod_parsed' => $parsed, // Auto-syncs exercises via model event
-            ]);
-            
-            return redirect()
-                ->route('workouts.edit', $workout->id)
-                ->with('success', 'WOD updated!');
-        } else {
-            $validated = $request->validate([
-                'name' => 'required|string|max:255',
-                'description' => 'nullable|string',
-                'notes' => 'nullable|string',
-            ]);
-
-            $workout->update($validated);
-
-            return redirect()
-                ->route('workouts.edit', $workout->id)
-                ->with('success', 'Template updated!');
+        // Parse the workout syntax
+        $parser = app(\App\Services\WodParser::class);
+        try {
+            $parsed = $parser->parse($validated['wod_syntax']);
+        } catch (\Exception $e) {
+            return back()
+                ->withInput()
+                ->with('error', 'Failed to parse workout syntax: ' . $e->getMessage());
         }
+        
+        $workout->update([
+            'name' => $validated['name'],
+            'description' => $validated['description'] ?? null,
+            'wod_syntax' => $validated['wod_syntax'],
+            'wod_parsed' => $parsed, // Auto-syncs exercises via model event
+        ]);
+        
+        return redirect()
+            ->route('workouts.edit', $workout->id)
+            ->with('success', 'Workout updated!');
     }
 
     /**
@@ -571,7 +520,8 @@ class WorkoutController extends Controller
     }
 
     /**
-     * Add an exercise to a template
+     * Add an exercise to a workout
+     * @deprecated Templates are deprecated. Exercises should be defined in workout syntax.
      */
     public function addExercise(Request $request, Workout $workout)
     {
@@ -621,7 +571,8 @@ class WorkoutController extends Controller
     }
 
     /**
-     * Create a new exercise and add it to the template
+     * Create a new exercise and add it to the workout
+     * @deprecated Templates are deprecated. Exercises should be defined in workout syntax.
      */
     public function createExercise(Request $request, Workout $workout)
     {
@@ -663,7 +614,8 @@ class WorkoutController extends Controller
     }
 
     /**
-     * Move an exercise up or down in the template
+     * Move an exercise up or down in the workout
+     * @deprecated Templates are deprecated. Exercise order should be defined in workout syntax.
      */
     public function moveExercise(Request $request, Workout $workout, WorkoutExercise $exercise)
     {
@@ -705,7 +657,8 @@ class WorkoutController extends Controller
     }
 
     /**
-     * Remove an exercise from a template
+     * Remove an exercise from a workout
+     * @deprecated Templates are deprecated. Exercises should be managed in workout syntax.
      */
     public function removeExercise(Workout $workout, WorkoutExercise $exercise)
     {
@@ -795,7 +748,7 @@ class WorkoutController extends Controller
     }
 
     /**
-     * Edit WOD (different UI than template)
+     * Edit workout
      */
     private function editWod(Request $request, Workout $workout)
     {
@@ -803,7 +756,7 @@ class WorkoutController extends Controller
 
         // Title with back button
         $components[] = C::title($workout->name)
-            ->subtitle('Edit WOD')
+            ->subtitle('Edit Workout')
             ->backButton('fa-arrow-left', route('workouts.index'), 'Back to workouts')
             ->build();
 
@@ -812,7 +765,7 @@ class WorkoutController extends Controller
             $components[] = $sessionMessages;
         }
 
-        // WOD Display (formatted preview)
+        // Workout Display (formatted preview)
         if ($workout->wod_syntax) {
             $processedMarkdown = $this->wodDisplayService->processForDisplay($workout);
             $components[] = C::markdown($processedMarkdown)->classes('wod-display')->build();
@@ -824,18 +777,18 @@ class WorkoutController extends Controller
         $components[] = [
             'type' => 'wod-form',
             'data' => [
-                'id' => 'edit-wod',
-                'title' => 'WOD Details',
+                'id' => 'edit-workout',
+                'title' => 'Workout Details',
                 'formAction' => route('workouts.update', $workout->id),
                 'formType' => 'info',
                 'nameField' => [
-                    'label' => 'WOD Name:',
+                    'label' => 'Workout Name:',
                     'value' => $workout->name,
                     'placeholder' => 'e.g., Monday Strength'
                 ],
                 'codeEditor' => [
                     'id' => 'wod-syntax-editor',
-                    'label' => 'WOD Syntax',
+                    'label' => 'Workout Syntax',
                     'name' => 'wod_syntax',
                     'value' => $workout->wod_syntax ?? '',
                     'placeholder' => $exampleSyntax,
@@ -848,10 +801,9 @@ class WorkoutController extends Controller
                     'value' => $workout->description ?? '',
                     'placeholder' => 'Optional'
                 ],
-                'submitButton' => 'Update WOD',
+                'submitButton' => 'Update Workout',
                 'hiddenFields' => [
-                    '_method' => 'PUT',
-                    'type' => 'wod'
+                    '_method' => 'PUT'
                 ]
             ],
             'requiresScript' => [
@@ -893,13 +845,13 @@ class WorkoutController extends Controller
         }
 
         // Delete workout form
-        $components[] = C::form('delete-wod', 'Danger Zone')
+        $components[] = C::form('delete-workout', 'Danger Zone')
             ->formAction(route('workouts.destroy', $workout->id))
             ->hiddenField('_method', 'DELETE')
-            ->message('warning', 'Once this WOD is deleted, all of its data will be permanently removed.')
-            ->submitButton('Delete WOD')
+            ->message('warning', 'Once this workout is deleted, all of its data will be permanently removed.')
+            ->submitButton('Delete Workout')
             ->submitButtonClass('btn-danger')
-            ->confirmMessage('Are you sure you want to delete this WOD? This action cannot be undone.')
+            ->confirmMessage('Are you sure you want to delete this workout? This action cannot be undone.')
             ->build();
 
         $data = ['components' => $components];

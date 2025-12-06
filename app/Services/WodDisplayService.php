@@ -15,10 +15,14 @@ use Illuminate\Support\Facades\Auth;
 class WodDisplayService
 {
     protected $exerciseMatchingService;
+    protected $exerciseAliasService;
 
-    public function __construct(ExerciseMatchingService $exerciseMatchingService)
-    {
+    public function __construct(
+        ExerciseMatchingService $exerciseMatchingService,
+        ExerciseAliasService $exerciseAliasService
+    ) {
         $this->exerciseMatchingService = $exerciseMatchingService;
+        $this->exerciseAliasService = $exerciseAliasService;
     }
 
     /**
@@ -46,9 +50,12 @@ class WodDisplayService
             $matchingExercise = $this->exerciseMatchingService->findBestMatch($exerciseName, Auth::id());
             
             if ($matchingExercise) {
+                // Get the display name (alias if exists, otherwise original name)
+                $displayName = $this->exerciseAliasService->getDisplayName($matchingExercise, Auth::user());
+                
                 // Matched - link to exercise logs page
                 $url = route('exercises.show-logs', ['exercise' => $matchingExercise->id]);
-                return '**[' . $exerciseName . '](' . $url . ')**';
+                return '**[' . $displayName . '](' . $url . ')**';
             }
             
             // Unmatched - link to alias creation page

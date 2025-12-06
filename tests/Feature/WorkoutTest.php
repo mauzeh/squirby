@@ -34,6 +34,7 @@ class WorkoutTest extends TestCase
         $response = $this->actingAs($user)->post(route('workouts.store'), [
             'name' => 'Push Day',
             'description' => 'Upper body pushing exercises',
+            'wod_syntax' => '[[Bench Press]]: 3x8',
         ]);
 
         $response->assertRedirect();
@@ -168,7 +169,6 @@ class WorkoutTest extends TestCase
     public function template_edit_view_shows_aliased_exercise_names()
     {
         $user = User::factory()->create();
-        $workout = Workout::factory()->create(['user_id' => $user->id]);
         $exercise = Exercise::factory()->create([
             'title' => 'Bench Press',
             'user_id' => null,
@@ -181,10 +181,25 @@ class WorkoutTest extends TestCase
             'alias_name' => 'BP',
         ]);
 
-        WorkoutExercise::create([
-            'workout_id' => $workout->id,
-            'exercise_id' => $exercise->id,
-            'order' => 1,
+        $workout = Workout::create([
+            'user_id' => $user->id,
+            'name' => 'Test Workout',
+            'wod_syntax' => '[[Bench Press]]: 3x8',
+            'wod_parsed' => [
+                'blocks' => [
+                    [
+                        'name' => 'Strength',
+                        'exercises' => [
+                            [
+                                'type' => 'exercise',
+                                'name' => 'Bench Press',
+                                'loggable' => true,
+                                'scheme' => '3x8'
+                            ]
+                        ]
+                    ]
+                ]
+            ]
         ]);
 
         $response = $this->actingAs($user)->get(route('workouts.edit', $workout->id));
