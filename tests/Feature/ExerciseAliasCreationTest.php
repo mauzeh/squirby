@@ -159,8 +159,8 @@ class ExerciseAliasCreationTest extends TestCase
         $wodDisplayService = app(\App\Services\WodDisplayService::class);
         $processed = $wodDisplayService->processForDisplay($workout);
         
-        // Should contain link to lift log creation, not alias creation
-        $this->assertStringContainsString('lift-logs/create', $processed);
+        // Should contain link to exercise logs, not alias creation
+        $this->assertStringContainsString('exercises/' . $exercise->id . '/logs', $processed);
         $this->assertStringNotContainsString('exercise-aliases/create', $processed);
     }
 

@@ -239,7 +239,7 @@ class WodParser
             return [
                 'type' => 'exercise',
                 'name' => $name,
-                'scheme' => $this->parseScheme($scheme),
+                'scheme' => $scheme,
                 'loggable' => true
             ];
         }
@@ -256,7 +256,7 @@ class WodParser
             return [
                 'type' => 'exercise',
                 'name' => $name,
-                'scheme' => $this->parseScheme($scheme),
+                'scheme' => $scheme,
                 'loggable' => false
             ];
         }
@@ -266,7 +266,7 @@ class WodParser
             return [
                 'type' => 'exercise',
                 'name' => trim($matches[1]),
-                'scheme' => $this->parseScheme($matches[2]),
+                'scheme' => trim($matches[2]),
                 'loggable' => true
             ];
         }
@@ -276,87 +276,14 @@ class WodParser
             return [
                 'type' => 'exercise',
                 'name' => trim($matches[1]),
-                'scheme' => $this->parseScheme($matches[2]),
+                'scheme' => trim($matches[2]),
                 'loggable' => false
             ];
         }
         
         return null;
     }
-    
-    /**
-     * Parse rep/set scheme
-     */
-    private function parseScheme(string $scheme): array
-    {
-        $scheme = trim($scheme);
-        
-        // Format: 3x8 or 3 x 8
-        if (preg_match('/^(\d+)\s*x\s*(\d+)$/i', $scheme, $matches)) {
-            return [
-                'type' => 'sets_x_reps',
-                'sets' => (int)$matches[1],
-                'reps' => (int)$matches[2],
-                'display' => $matches[1] . 'x' . $matches[2]
-            ];
-        }
-        
-        // Format: 3x8-12 (range)
-        if (preg_match('/^(\d+)\s*x\s*(\d+)-(\d+)$/i', $scheme, $matches)) {
-            return [
-                'type' => 'sets_x_rep_range',
-                'sets' => (int)$matches[1],
-                'reps_min' => (int)$matches[2],
-                'reps_max' => (int)$matches[3],
-                'display' => $matches[1] . 'x' . $matches[2] . '-' . $matches[3]
-            ];
-        }
-        
-        // Format: 5-5-5-3-3-1 (descending/ascending)
-        if (preg_match('/^(\d+(-\d+)+)$/', $scheme, $matches)) {
-            $reps = array_map('intval', explode('-', $matches[1]));
-            return [
-                'type' => 'rep_ladder',
-                'reps' => $reps,
-                'display' => implode('-', $reps)
-            ];
-        }
-        
-        // Format: single number (e.g., "5" or "1")
-        if (preg_match('/^\d+$/', $scheme)) {
-            return [
-                'type' => 'single_set',
-                'reps' => (int)$scheme,
-                'display' => $scheme
-            ];
-        }
-        
-        // Format: time-based (e.g., "500m", "5min", "2:00")
-        if (preg_match('/^(\d+)(m|min|km|cal|sec)$/i', $scheme, $matches)) {
-            return [
-                'type' => 'time_distance',
-                'value' => (int)$matches[1],
-                'unit' => strtolower($matches[2]),
-                'display' => $scheme
-            ];
-        }
-        
-        // Format: time (e.g., "2:00", "1:30")
-        if (preg_match('/^(\d+):(\d+)$/', $scheme, $matches)) {
-            return [
-                'type' => 'time',
-                'minutes' => (int)$matches[1],
-                'seconds' => (int)$matches[2],
-                'display' => $scheme
-            ];
-        }
-        
-        // Fallback: store as-is
-        return [
-            'type' => 'custom',
-            'display' => $scheme
-        ];
-    }
+
     
     /**
      * Convert parsed data back to text format
@@ -403,8 +330,7 @@ class WodParser
         
         // If exercise has scheme, format as "[[Exercise]]: 3x8" or "[Exercise]: 3x8"
         if (isset($exercise['scheme'])) {
-            $scheme = $exercise['scheme']['display'] ?? '';
-            return $brackets . ': ' . $scheme;
+            return $brackets . ': ' . $exercise['scheme'];
         }
         
         // Just the exercise name

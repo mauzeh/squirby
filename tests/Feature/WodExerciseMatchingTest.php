@@ -34,12 +34,7 @@ class WodExerciseMatchingTest extends TestCase
                                 'type' => 'exercise',
                                 'name' => 'Back Squat',
                                 'loggable' => true,
-                                'scheme' => [
-                                    'type' => 'sets_x_reps',
-                                    'sets' => 5,
-                                    'reps' => 5,
-                                    'display' => '5x5'
-                                ]
+                                'scheme' => '5x5'
                             ]
                         ]
                     ]
@@ -73,12 +68,7 @@ class WodExerciseMatchingTest extends TestCase
                                 'type' => 'exercise',
                                 'name' => 'NonExistentExercise',
                                 'loggable' => true,
-                                'scheme' => [
-                                    'type' => 'sets_x_reps',
-                                    'sets' => 3,
-                                    'reps' => 8,
-                                    'display' => '3x8'
-                                ]
+                                'scheme' => '3x8'
                             ]
                         ]
                     ]
@@ -116,23 +106,13 @@ class WodExerciseMatchingTest extends TestCase
                                 'type' => 'exercise',
                                 'name' => 'Bench Press',
                                 'loggable' => true,
-                                'scheme' => [
-                                    'type' => 'sets_x_reps',
-                                    'sets' => 5,
-                                    'reps' => 5,
-                                    'display' => '5x5'
-                                ]
+                                'scheme' => '5x5'
                             ],
                             [
                                 'type' => 'exercise',
                                 'name' => 'FakeExercise',
                                 'loggable' => true,
-                                'scheme' => [
-                                    'type' => 'sets_x_reps',
-                                    'sets' => 3,
-                                    'reps' => 8,
-                                    'display' => '3x8'
-                                ]
+                                'scheme' => '3x8'
                             ]
                         ]
                     ]
@@ -171,12 +151,7 @@ class WodExerciseMatchingTest extends TestCase
                                 'type' => 'exercise',
                                 'name' => 'Push ups',
                                 'loggable' => true,
-                                'scheme' => [
-                                    'type' => 'sets_x_reps',
-                                    'sets' => 3,
-                                    'reps' => 10,
-                                    'display' => '3x10'
-                                ]
+                                'scheme' => '3x10'
                             ]
                         ]
                     ]
@@ -223,23 +198,13 @@ class WodExerciseMatchingTest extends TestCase
                                 'type' => 'exercise',
                                 'name' => 'Back Squat',
                                 'loggable' => true,
-                                'scheme' => [
-                                    'type' => 'sets_x_reps',
-                                    'sets' => 5,
-                                    'reps' => 5,
-                                    'display' => '5x5'
-                                ]
+                                'scheme' => '5x5'
                             ],
                             [
                                 'type' => 'exercise',
                                 'name' => 'Warm-up Squats',
                                 'loggable' => false,
-                                'scheme' => [
-                                    'type' => 'sets_x_reps',
-                                    'sets' => 2,
-                                    'reps' => 10,
-                                    'display' => '2x10'
-                                ]
+                                'scheme' => '2x10'
                             ]
                         ]
                     ]
@@ -341,12 +306,7 @@ class WodExerciseMatchingTest extends TestCase
                                 'type' => 'exercise',
                                 'name' => 'Back Squats',
                                 'loggable' => true,
-                                'scheme' => [
-                                    'type' => 'sets_x_reps',
-                                    'sets' => 5,
-                                    'reps' => 5,
-                                    'display' => '5x5'
-                                ]
+                                'scheme' => '5x5'
                             ]
                         ]
                     ]
@@ -388,10 +348,7 @@ class WodExerciseMatchingTest extends TestCase
                                 'type' => 'exercise',
                                 'name' => 'Deadlifts',
                                 'loggable' => true,
-                                'scheme' => [
-                                    'type' => 'custom',
-                                    'display' => '5 reps, building'
-                                ]
+                                'scheme' => '5 reps, building'
                             ]
                         ]
                     ]
@@ -428,12 +385,7 @@ class WodExerciseMatchingTest extends TestCase
                                 'type' => 'exercise',
                                 'name' => 'Nonexistent Exercise',
                                 'loggable' => true,
-                                'scheme' => [
-                                    'type' => 'sets_x_reps',
-                                    'sets' => 3,
-                                    'reps' => 8,
-                                    'display' => '3x8'
-                                ]
+                                'scheme' => '3x8'
                             ]
                         ]
                     ]

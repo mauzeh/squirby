@@ -31,8 +31,7 @@ WOD;
         
         $squat = $result['blocks'][0]['exercises'][0];
         $this->assertEquals('Back Squat', $squat['name']);
-        $this->assertEquals('rep_ladder', $squat['scheme']['type']);
-        $this->assertEquals([5, 5, 5, 5, 5], $squat['scheme']['reps']);
+        $this->assertEquals('5-5-5-5-5', $squat['scheme']);
     }
 
     public function test_parses_special_format_with_exercises()
@@ -251,12 +250,12 @@ WOD;
         $squat = $result['blocks'][0]['exercises'][0];
         $this->assertEquals('Back Squat', $squat['name']);
         $this->assertTrue($squat['loggable']);
-        $this->assertEquals('5 reps, building', $squat['scheme']['display']);
+        $this->assertEquals('5 reps, building', $squat['scheme']);
         
         $deadlift = $result['blocks'][0]['exercises'][1];
         $this->assertEquals('Deadlift', $deadlift['name']);
         $this->assertTrue($deadlift['loggable']);
-        $this->assertEquals('work up to heavy single', $deadlift['scheme']['display']);
+        $this->assertEquals('work up to heavy single', $deadlift['scheme']);
     }
 
     public function test_parses_single_bracket_with_freeform_text()
@@ -274,12 +273,12 @@ WOD;
         $stretching = $result['blocks'][0]['exercises'][0];
         $this->assertEquals('Stretching', $stretching['name']);
         $this->assertFalse($stretching['loggable']);
-        $this->assertEquals('5 minutes', $stretching['scheme']['display']);
+        $this->assertEquals('5 minutes', $stretching['scheme']);
         
         $mobility = $result['blocks'][0]['exercises'][1];
         $this->assertEquals('Mobility Work', $mobility['name']);
         $this->assertFalse($mobility['loggable']);
-        $this->assertEquals('as needed', $mobility['scheme']['display']);
+        $this->assertEquals('as needed', $mobility['scheme']);
     }
 
     public function test_parses_markdown_list_formats()
@@ -302,13 +301,13 @@ WOD;
         $squat = $result['blocks'][0]['exercises'][0];
         $this->assertEquals('Back Squat', $squat['name']);
         $this->assertTrue($squat['loggable']);
-        $this->assertEquals('5 reps, building', $squat['scheme']['display']);
+        $this->assertEquals('5 reps, building', $squat['scheme']);
         
         // Unordered list with dash
         $deadlift = $result['blocks'][0]['exercises'][1];
         $this->assertEquals('Deadlift', $deadlift['name']);
         $this->assertTrue($deadlift['loggable']);
-        $this->assertEquals('5x5', $deadlift['scheme']['display']);
+        $this->assertEquals('5x5', $deadlift['scheme']);
         
         // Unordered list with plus
         $bench = $result['blocks'][0]['exercises'][2];
@@ -480,27 +479,14 @@ WOD;
 
         $this->assertCount(7, $result['blocks'][0]['exercises']);
         
-        // Sets x Reps
-        $this->assertEquals('sets_x_reps', $result['blocks'][0]['exercises'][0]['scheme']['type']);
-        
-        // Rep ladder
-        $this->assertEquals('rep_ladder', $result['blocks'][0]['exercises'][1]['scheme']['type']);
-        
-        // Sets x Rep range
-        $this->assertEquals('sets_x_rep_range', $result['blocks'][0]['exercises'][2]['scheme']['type']);
-        
-        // Custom text
-        $this->assertEquals('custom', $result['blocks'][0]['exercises'][3]['scheme']['type']);
-        $this->assertEquals('5 reps, building', $result['blocks'][0]['exercises'][3]['scheme']['display']);
-        
-        // Custom text
-        $this->assertEquals('custom', $result['blocks'][0]['exercises'][4]['scheme']['type']);
-        
-        // Time/distance
-        $this->assertEquals('time_distance', $result['blocks'][0]['exercises'][5]['scheme']['type']);
-        
-        // Time format
-        $this->assertEquals('time', $result['blocks'][0]['exercises'][6]['scheme']['type']);
+        // Various scheme formats stored as strings
+        $this->assertEquals('3x8', $result['blocks'][0]['exercises'][0]['scheme']);
+        $this->assertEquals('5-5-5-3-3-1', $result['blocks'][0]['exercises'][1]['scheme']);
+        $this->assertEquals('3x8-12', $result['blocks'][0]['exercises'][2]['scheme']);
+        $this->assertEquals('5 reps, building', $result['blocks'][0]['exercises'][3]['scheme']);
+        $this->assertEquals('work up to heavy single', $result['blocks'][0]['exercises'][4]['scheme']);
+        $this->assertEquals('500m', $result['blocks'][0]['exercises'][5]['scheme']);
+        $this->assertEquals('2:00', $result['blocks'][0]['exercises'][6]['scheme']);
     }
 
     public function test_parses_markdown_lists_with_colon_syntax()
@@ -517,13 +503,13 @@ WOD;
         $this->assertCount(3, $result['blocks'][0]['exercises']);
         
         $this->assertEquals('Back Squat', $result['blocks'][0]['exercises'][0]['name']);
-        $this->assertEquals('5x5', $result['blocks'][0]['exercises'][0]['scheme']['display']);
+        $this->assertEquals('5x5', $result['blocks'][0]['exercises'][0]['scheme']);
         
         $this->assertEquals('Deadlift', $result['blocks'][0]['exercises'][1]['name']);
-        $this->assertEquals('3x8', $result['blocks'][0]['exercises'][1]['scheme']['display']);
+        $this->assertEquals('3x8', $result['blocks'][0]['exercises'][1]['scheme']);
         
         $this->assertEquals('Bench Press', $result['blocks'][0]['exercises'][2]['name']);
-        $this->assertEquals('3x10', $result['blocks'][0]['exercises'][2]['scheme']['display']);
+        $this->assertEquals('3x10', $result['blocks'][0]['exercises'][2]['scheme']);
     }
 
     public function test_parses_markdown_lists_with_just_exercise_names()
