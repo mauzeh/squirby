@@ -83,7 +83,6 @@ class WorkoutController extends Controller
             $tableBuilder = C::table();
 
             foreach ($workouts as $workout) {
-                $isWod = $workout->isWod();
                 $line1 = $workout->name;
                 
                 // Get exercises for display
@@ -297,8 +296,8 @@ class WorkoutController extends Controller
             ]
         ];
 
-        // WOD Exercise Table (loggable exercises)
-        if ($workout->isWod()) {
+        // Exercise Table (for workouts with exercises)
+        if ($workout->exercises->isNotEmpty()) {
             $tableBuilder = C::table();
             
             // Create a dummy row for the workout

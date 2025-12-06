@@ -18,7 +18,7 @@ class Workout extends Model
     {
         static::saved(function ($workout) {
             // Auto-sync exercises when wod_syntax changes
-            if ($workout->isWod() && $workout->isDirty('wod_syntax')) {
+            if (!empty($workout->wod_syntax) && $workout->isDirty('wod_syntax')) {
                 $workout->syncWodExercises();
             }
         });
@@ -58,13 +58,7 @@ class Workout extends Model
         return $this->hasMany(WorkoutExercise::class)->orderBy('order');
     }
 
-    /**
-     * Check if this is a WOD (has syntax)
-     */
-    public function isWod(): bool
-    {
-        return !empty($this->wod_syntax);
-    }
+
 
     /**
      * Create a copy of this workout for another user
