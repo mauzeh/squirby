@@ -92,28 +92,8 @@ class WorkoutController extends Controller
                 $isWod = $workout->isWod();
                 $line1 = $workout->name;
                 
-                // Get exercises for display - either from template or parsed WOD
-                $exercisesToDisplay = [];
-                if ($isWod) {
-                    // Extract exercises from parsed WOD (only loggable ones)
-                    $parsed = $workout->wod_parsed;
-                    if ($parsed && isset($parsed['blocks'])) {
-                        foreach ($parsed['blocks'] as $block) {
-                            if (isset($block['exercises'])) {
-                                foreach ($block['exercises'] as $exerciseData) {
-                                    if (isset($exerciseData['name']) 
-                                        && $exerciseData['type'] === 'exercise'
-                                        && !empty($exerciseData['loggable'])) {
-                                        $exercisesToDisplay[] = $exerciseData['name'];
-                                    }
-                                }
-                            }
-                        }
-                    }
-                } else {
-                    // Get from template exercises
-                    $exercisesToDisplay = $workout->exercises->pluck('exercise.title')->toArray();
-                }
+                // Get exercises for display - now unified for both WODs and templates
+                $exercisesToDisplay = $workout->exercises->pluck('exercise.title')->toArray();
                 
                 $exerciseCount = count($exercisesToDisplay);
                 if ($exerciseCount > 0) {
@@ -136,15 +116,12 @@ class WorkoutController extends Controller
                 // Check if this workout has any exercises logged today (for auto-expand)
                 $hasLoggedExercisesToday = false;
 
-                // Add exercises as sub-items with log now button or edit button
-                if ($isWod) {
-                    // For WODs, use parsed exercises
-                    $this->wodLoggingService->addWodExercisesToRow($rowBuilder, $workout, $today, $loggedExerciseData, $hasLoggedExercisesToday);
-                } elseif ($workout->exercises->isNotEmpty()) {
-                    // For templates, use workout exercises
+                // Add exercises as sub-items with log now button or edit button (unified for both WODs and templates)
+                if ($workout->exercises->isNotEmpty()) {
                     foreach ($workout->exercises as $index => $exercise) {
                         $exerciseLine1 = $exercise->exercise->title;
-                        $exerciseLine2 = null;
+                        // Show scheme if available (for WODs)
+                        $exerciseLine2 = $exercise->scheme ?? null;
                         $exerciseLine3 = null;
                         
                         // Check if exercise was logged today
@@ -154,9 +131,9 @@ class WorkoutController extends Controller
                             // Get the lift log data
                             $liftLog = $loggedExerciseData[$exercise->exercise_id];
                             
-                            // Show comments inline if they exist
+                            // Show comments in line3 if they exist (keep scheme in line2)
                             if (!empty($liftLog->comments)) {
-                                $exerciseLine2 = $liftLog->comments;
+                                $exerciseLine3 = $liftLog->comments;
                             }
                             
                             // Format the lift data using exercise type strategy
@@ -196,12 +173,12 @@ class WorkoutController extends Controller
                             )
                             ->compact();
                         } else {
-                            // Not logged yet - show only exercise name
+                            // Not logged yet - show exercise name and scheme
                             $subItemBuilder = $rowBuilder->subItem(
                                 $exercise->id,
                                 $exerciseLine1,
-                                null,
-                                null
+                                $exerciseLine2,
+                                $exerciseLine3
                             );
                             
                             // Show log now button - link to lift-logs/create
@@ -347,7 +324,7 @@ class WorkoutController extends Controller
                 'name' => $validated['name'],
                 'description' => $validated['description'] ?? null,
                 'wod_syntax' => $validated['wod_syntax'],
-                'wod_parsed' => $parsed,
+                'wod_parsed' => $parsed, // Auto-syncs exercises via model event
                 'is_public' => false,
             ]);
             
@@ -558,7 +535,7 @@ class WorkoutController extends Controller
                 'name' => $validated['name'],
                 'description' => $validated['description'] ?? null,
                 'wod_syntax' => $validated['wod_syntax'],
-                'wod_parsed' => $parsed,
+                'wod_parsed' => $parsed, // Auto-syncs exercises via model event
             ]);
             
             return redirect()
@@ -928,9 +905,4 @@ class WorkoutController extends Controller
         $data = ['components' => $components];
         return view('mobile-entry.flexible', compact('data'));
     }
-
-
-
-
-
 }
