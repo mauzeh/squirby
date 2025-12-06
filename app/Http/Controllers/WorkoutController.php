@@ -110,84 +110,9 @@ class WorkoutController extends Controller
                 // Check if this workout has any exercises logged today (for auto-expand)
                 $hasLoggedExercisesToday = false;
 
-                // Add exercises as sub-items with log now button or edit button
-                if ($workout->exercises->isNotEmpty()) {
-                    foreach ($workout->exercises as $index => $exercise) {
-                        $exerciseLine1 = $exercise->exercise->title;
-                        // Show scheme if available (for WODs)
-                        $exerciseLine2 = $exercise->scheme ?? null;
-                        $exerciseLine3 = null;
-                        
-                        // Check if exercise was logged today
-                        if (in_array($exercise->exercise_id, $loggedExerciseIds)) {
-                            $hasLoggedExercisesToday = true;
-                            
-                            // Get the lift log data
-                            $liftLog = $loggedExerciseData[$exercise->exercise_id];
-                            
-                            // Show comments in line3 if they exist (keep scheme in line2)
-                            if (!empty($liftLog->comments)) {
-                                $exerciseLine3 = $liftLog->comments;
-                            }
-                            
-                            // Format the lift data using exercise type strategy
-                            $strategy = $exercise->exercise->getTypeStrategy();
-                            $formattedMessage = $strategy->formatLoggedItemDisplay($liftLog);
-                            
-                            $subItemBuilder = $rowBuilder->subItem(
-                                $exercise->id,
-                                $exerciseLine1,
-                                $exerciseLine2,
-                                $exerciseLine3
-                            );
-                            
-                            // Add green success message with lift details
-                            $subItemBuilder->message('success', $formattedMessage, 'Completed:');
-                            
-                            // Show edit pencil icon (transparent style)
-                            $subItemBuilder->linkAction(
-                                'fa-pencil', 
-                                route('lift-logs.edit', ['lift_log' => $liftLog->id]), 
-                                'Edit lift log', 
-                                'btn-transparent'
-                            );
-                            
-                            // Add delete button for the lift log
-                            $subItemBuilder->formAction(
-                                'fa-trash',
-                                route('lift-logs.destroy', ['lift_log' => $liftLog->id]),
-                                'DELETE',
-                                [
-                                    'redirect_to' => 'workouts',
-                                    'workout_id' => $workout->id
-                                ],
-                                'Delete lift log',
-                                'btn-danger',
-                                true
-                            )
-                            ->compact();
-                        } else {
-                            // Not logged yet - show exercise name and scheme
-                            $subItemBuilder = $rowBuilder->subItem(
-                                $exercise->id,
-                                $exerciseLine1,
-                                $exerciseLine2,
-                                $exerciseLine3
-                            );
-                            
-                            // Show log now button - link to lift-logs/create
-                            $logUrl = route('lift-logs.create', [
-                                'exercise_id' => $exercise->exercise_id,
-                                'date' => $today->toDateString(),
-                                'redirect_to' => 'workouts',
-                                'workout_id' => $workout->id
-                            ]);
-                            $subItemBuilder->linkAction('fa-play', $logUrl, 'Log now', 'btn-log-now')
-                                ->compact();
-                        }
-                        
-                        $subItemBuilder->add();
-                    }
+                // Use WodLoggingService for consistent exercise display (same as edit page)
+                if ($workout->isWod()) {
+                    $this->wodLoggingService->addWodExercisesToRow($rowBuilder, $workout, $today, $loggedExerciseData, $hasLoggedExercisesToday);
                 }
 
                 // Auto-expand workouts that have any exercises logged today
