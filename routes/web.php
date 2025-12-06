@@ -87,10 +87,6 @@ Route::middleware('auth')->group(function () {
 
     // Workouts
     Route::resource('workouts', WorkoutController::class)->except(['show']);
-    Route::get('workouts/{workout}/add-exercise', [WorkoutController::class, 'addExercise'])->name('workouts.add-exercise');
-    Route::post('workouts/{workout}/create-exercise', [WorkoutController::class, 'createExercise'])->name('workouts.create-exercise');
-    Route::get('workouts/{workout}/exercises/{exercise}/move', [WorkoutController::class, 'moveExercise'])->name('workouts.move-exercise');
-    Route::delete('workouts/{workout}/exercises/{exercise}', [WorkoutController::class, 'removeExercise'])->name('workouts.remove-exercise');
     Route::get('workouts-browse', [WorkoutController::class, 'browse'])->name('workouts.browse');
     Route::get('workouts/{workout}/apply', [WorkoutController::class, 'apply'])->name('workouts.apply');
 
@@ -123,8 +119,7 @@ Route::middleware('auth')->group(function () {
     Route::match(['get', 'post'], 'labs/ingredient-entry', [LabsController::class, 'ingredientEntry'])->name('labs.ingredient-entry');
     Route::get('labs/chart-example', [LabsController::class, 'chartExample'])->name('labs.chart-example');
 
-    Route::post('workouts/apply-template', [WorkoutController::class, 'applyTemplate'])->name('workouts.apply-template');
-    Route::post('workouts/remove-exercise', [WorkoutController::class, 'removeExercise'])->name('workouts.remove-exercise');
+
 
 });
 

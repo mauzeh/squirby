@@ -64,38 +64,10 @@ class Workout extends Model
 
     /**
      * Check if this is a WOD (has syntax)
-     * @deprecated All workouts are now WODs. This method always returns true if wod_syntax exists.
      */
     public function isWod(): bool
     {
         return !empty($this->wod_syntax);
-    }
-
-    /**
-     * Check if this is a template (no syntax, has exercises)
-     * @deprecated Templates are deprecated. All workouts should be WODs.
-     */
-    public function isTemplate(): bool
-    {
-        return empty($this->wod_syntax);
-    }
-
-    /**
-     * Scope to get only WODs
-     * @deprecated All workouts are now WODs
-     */
-    public function scopeWods($query)
-    {
-        return $query->whereNotNull('wod_syntax');
-    }
-
-    /**
-     * Scope to get only templates
-     * @deprecated Templates are deprecated
-     */
-    public function scopeTemplates($query)
-    {
-        return $query->whereNull('wod_syntax');
     }
 
     /**
@@ -121,17 +93,13 @@ class Workout extends Model
             'user_id' => $user->id,
             'name' => $this->name,
             'description' => $this->description,
+            'wod_syntax' => $this->wod_syntax,
+            'wod_parsed' => $this->wod_parsed,
             'is_public' => false,
             'tags' => $this->tags,
         ]);
 
-        foreach ($this->exercises as $exercise) {
-            WorkoutExercise::create([
-                'workout_id' => $newWorkout->id,
-                'exercise_id' => $exercise->exercise_id,
-                'order' => $exercise->order,
-            ]);
-        }
+        // Exercises will be auto-synced via model event
 
         return $newWorkout;
     }
