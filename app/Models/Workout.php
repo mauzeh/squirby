@@ -144,20 +144,19 @@ class Workout extends Model
 
     /**
      * Helper method to create a workout exercise
+     * Only links to existing exercises - does NOT auto-create them
      */
     private function createWorkoutExercise(array $exerciseData, int $order): void
     {
-        // Find or create the exercise
+        // Find the exercise - do NOT auto-create
         $exercise = Exercise::where('title', $exerciseData['name'])
             ->availableToUser($this->user_id)
             ->first();
 
         if (!$exercise) {
-            // Create new exercise for this user
-            $exercise = Exercise::create([
-                'title' => $exerciseData['name'],
-                'user_id' => $this->user_id,
-            ]);
+            // Exercise doesn't exist - skip it
+            // User should create exercises explicitly or use the alias system
+            return;
         }
 
         // Create workout exercise with scheme
