@@ -353,9 +353,20 @@ class ExerciseController extends Controller
                 ->build();
         }
         
-        // Log now button
+        // Log now button - determine redirect based on where user came from
+        $redirectTo = $from === 'mobile-entry-lifts' ? 'mobile-entry-lifts' : 'exercises-logs';
+        $logNowParams = [
+            'exercise_id' => $exercise->id,
+            'redirect_to' => $redirectTo
+        ];
+        
+        // Add date parameter if coming from mobile-entry-lifts
+        if ($from === 'mobile-entry-lifts' && $date) {
+            $logNowParams['date'] = $date;
+        }
+        
         $components[] = \App\Services\ComponentBuilder::button('Log Now')
-            ->asLink(route('lift-logs.create', ['exercise_id' => $exercise->id, 'redirect_to' => 'exercises-logs']))
+            ->asLink(route('lift-logs.create', $logNowParams))
             ->build();
         
         // PR Cards and Calculator Grid (if exercise supports it)

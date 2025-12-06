@@ -60,8 +60,17 @@ class MobileEntryController extends Controller
         // Generate interface messages
         $interfaceMessages = $formService->generateInterfaceMessages($sessionMessages);
         
+        // Check if there are any logs for today
+        $hasLogsToday = \App\Models\LiftLog::where('user_id', Auth::id())
+            ->whereDate('logged_at', $selectedDate->toDateString())
+            ->exists();
+        
+        // Check if user has metrics-first flow enabled and no logs yet today
+        $shouldExpandSelection = $request->boolean('expand_selection') || 
+            (Auth::user()->shouldUseMetricsFirstLoggingFlow() && !$hasLogsToday);
+        
         // Always add contextual help messages
-        $contextualMessages = $formService->generateContextualHelpMessages(Auth::id(), $selectedDate, $request->boolean('expand_selection'));
+        $contextualMessages = $formService->generateContextualHelpMessages(Auth::id(), $selectedDate, $shouldExpandSelection);
         if (!empty($contextualMessages)) {
             $interfaceMessages['messages'] = array_merge($interfaceMessages['messages'] ?? [], $contextualMessages);
             $interfaceMessages['hasMessages'] = true;
@@ -104,8 +113,8 @@ class MobileEntryController extends Controller
             $components[] = $summaryBuilder->build();
         }
         
-        // Add Lift button
-        if (!$request->boolean('expand_selection')) {
+        // Add Lift button (hide if selection is expanded)
+        if (!$shouldExpandSelection) {
             $components[] = \App\Services\ComponentBuilder::button('Log Now')
                 ->ariaLabel('Add new exercise')
                 ->addClass('btn-add-item')
@@ -117,7 +126,7 @@ class MobileEntryController extends Controller
             ->filterPlaceholder($itemSelectionList['filterPlaceholder'])
             ->noResultsMessage($itemSelectionList['noResultsMessage']);
 
-        if ($request->boolean('expand_selection')) {
+        if ($shouldExpandSelection) {
             $itemListBuilder->initialState('expanded');
         }
         
