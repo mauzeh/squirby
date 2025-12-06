@@ -25,21 +25,6 @@ class WodExerciseMatchingTest extends TestCase
             'user_id' => $user->id,
             'name' => 'Test WOD',
             'wod_syntax' => "# Strength\n[[Back Squat]]: 5x5",
-            'wod_parsed' => [
-                'blocks' => [
-                    [
-                        'name' => 'Strength',
-                        'exercises' => [
-                            [
-                                'type' => 'exercise',
-                                'name' => 'Back Squat',
-                                'loggable' => true,
-                                'scheme' => '5x5'
-                            ]
-                        ]
-                    ]
-                ]
-            ]
         ]);
 
         $response = $this->actingAs($user)->get(route('workouts.edit', $workout));
@@ -59,21 +44,6 @@ class WodExerciseMatchingTest extends TestCase
             'user_id' => $user->id,
             'name' => 'Test WOD',
             'wod_syntax' => "# Strength\n[[NonExistentExercise]]: 3x8",
-            'wod_parsed' => [
-                'blocks' => [
-                    [
-                        'name' => 'Strength',
-                        'exercises' => [
-                            [
-                                'type' => 'exercise',
-                                'name' => 'NonExistentExercise',
-                                'loggable' => true,
-                                'scheme' => '3x8'
-                            ]
-                        ]
-                    ]
-                ]
-            ]
         ]);
 
         $response = $this->actingAs($user)->get(route('workouts.edit', $workout));
@@ -97,27 +67,6 @@ class WodExerciseMatchingTest extends TestCase
             'user_id' => $user->id,
             'name' => 'Test WOD',
             'wod_syntax' => "# Workout\n[[Bench Press]]: 5x5\n[[FakeExercise]]: 3x8",
-            'wod_parsed' => [
-                'blocks' => [
-                    [
-                        'name' => 'Workout',
-                        'exercises' => [
-                            [
-                                'type' => 'exercise',
-                                'name' => 'Bench Press',
-                                'loggable' => true,
-                                'scheme' => '5x5'
-                            ],
-                            [
-                                'type' => 'exercise',
-                                'name' => 'FakeExercise',
-                                'loggable' => true,
-                                'scheme' => '3x8'
-                            ]
-                        ]
-                    ]
-                ]
-            ]
         ]);
 
         $response = $this->actingAs($user)->get(route('workouts.edit', $workout));
@@ -142,21 +91,6 @@ class WodExerciseMatchingTest extends TestCase
             'user_id' => $user->id,
             'name' => 'Test WOD',
             'wod_syntax' => "# Workout\n[[Push ups]]: 3x10",  // Different format (space instead of hyphen)
-            'wod_parsed' => [
-                'blocks' => [
-                    [
-                        'name' => 'Workout',
-                        'exercises' => [
-                            [
-                                'type' => 'exercise',
-                                'name' => 'Push ups',
-                                'loggable' => true,
-                                'scheme' => '3x10'
-                            ]
-                        ]
-                    ]
-                ]
-            ]
         ]);
 
         $response = $this->actingAs($user)->get(route('workouts.edit', $workout));
@@ -189,27 +123,6 @@ class WodExerciseMatchingTest extends TestCase
             'user_id' => $user->id,
             'name' => 'Test WOD',
             'wod_syntax' => "# Workout\n[[Back Squat]]: 5x5\n[Warm-up Squats]: 2x10",
-            'wod_parsed' => [
-                'blocks' => [
-                    [
-                        'name' => 'Workout',
-                        'exercises' => [
-                            [
-                                'type' => 'exercise',
-                                'name' => 'Back Squat',
-                                'loggable' => true,
-                                'scheme' => '5x5'
-                            ],
-                            [
-                                'type' => 'exercise',
-                                'name' => 'Warm-up Squats',
-                                'loggable' => false,
-                                'scheme' => '2x10'
-                            ]
-                        ]
-                    ]
-                ]
-            ]
         ]);
 
         $response = $this->actingAs($user)->get(route('workouts.index'));
@@ -243,33 +156,6 @@ class WodExerciseMatchingTest extends TestCase
             'user_id' => $user->id,
             'name' => 'Test WOD',
             'wod_syntax' => "> AMRAP 10min\n10 [[Burpees]]\n5 [Stretching]",
-            'wod_parsed' => [
-                'blocks' => [
-                    [
-                        'name' => '',
-                        'exercises' => [
-                            [
-                                'type' => 'special_format',
-                                'description' => 'AMRAP 10min',
-                                'exercises' => [
-                                    [
-                                        'type' => 'exercise',
-                                        'name' => 'Burpees',
-                                        'reps' => 10,
-                                        'loggable' => true
-                                    ],
-                                    [
-                                        'type' => 'exercise',
-                                        'name' => 'Stretching',
-                                        'reps' => 5,
-                                        'loggable' => false
-                                    ]
-                                ]
-                            ]
-                        ]
-                    ]
-                ]
-            ]
         ]);
 
         $response = $this->actingAs($user)->get(route('workouts.index'));
@@ -297,21 +183,6 @@ class WodExerciseMatchingTest extends TestCase
             'user_id' => $user->id,
             'name' => 'Test WOD',
             'wod_syntax' => "# Strength\n[[Back Squats]] 5x5",
-            'wod_parsed' => [
-                'blocks' => [
-                    [
-                        'name' => 'Strength',
-                        'exercises' => [
-                            [
-                                'type' => 'exercise',
-                                'name' => 'Back Squats',
-                                'loggable' => true,
-                                'scheme' => '5x5'
-                            ]
-                        ]
-                    ]
-                ]
-            ]
         ]);
 
         $response = $this->actingAs($user)->get(route('workouts.index'));
@@ -339,21 +210,6 @@ class WodExerciseMatchingTest extends TestCase
             'user_id' => $user->id,
             'name' => 'Test WOD',
             'wod_syntax' => "# Strength\n[[Deadlifts]] 5 reps, building",
-            'wod_parsed' => [
-                'blocks' => [
-                    [
-                        'name' => 'Strength',
-                        'exercises' => [
-                            [
-                                'type' => 'exercise',
-                                'name' => 'Deadlifts',
-                                'loggable' => true,
-                                'scheme' => '5 reps, building'
-                            ]
-                        ]
-                    ]
-                ]
-            ]
         ]);
 
         $response = $this->actingAs($user)->get(route('workouts.edit', $workout));
@@ -376,21 +232,6 @@ class WodExerciseMatchingTest extends TestCase
             'user_id' => $user->id,
             'name' => 'Test WOD',
             'wod_syntax' => "# Workout\n[[Nonexistent Exercise]] 3x8",
-            'wod_parsed' => [
-                'blocks' => [
-                    [
-                        'name' => 'Workout',
-                        'exercises' => [
-                            [
-                                'type' => 'exercise',
-                                'name' => 'Nonexistent Exercise',
-                                'loggable' => true,
-                                'scheme' => '3x8'
-                            ]
-                        ]
-                    ]
-                ]
-            ]
         ]);
 
         $response = $this->actingAs($user)->get(route('workouts.index'));

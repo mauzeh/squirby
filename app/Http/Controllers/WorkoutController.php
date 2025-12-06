@@ -299,7 +299,6 @@ class WorkoutController extends Controller
             'name' => $validated['name'],
             'description' => $validated['description'] ?? null,
             'wod_syntax' => $validated['wod_syntax'],
-            'wod_parsed' => $parsed, // Auto-syncs exercises via model event
             'is_public' => false,
         ]);
         
@@ -376,7 +375,7 @@ class WorkoutController extends Controller
         ];
 
         // WOD Exercise Table (loggable exercises)
-        if ($workout->wod_parsed && isset($workout->wod_parsed['blocks'])) {
+        if ($workout->isWod()) {
             $tableBuilder = C::table();
             
             // Create a dummy row for the workout
@@ -448,7 +447,6 @@ class WorkoutController extends Controller
             'name' => $validated['name'],
             'description' => $validated['description'] ?? null,
             'wod_syntax' => $validated['wod_syntax'],
-            'wod_parsed' => $parsed, // Auto-syncs exercises via model event
         ]);
         
         return redirect()

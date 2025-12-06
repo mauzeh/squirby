@@ -17,8 +17,8 @@ class Workout extends Model
     protected static function booted()
     {
         static::saved(function ($workout) {
-            // Auto-sync exercises when wod_parsed is set or updated
-            if ($workout->isWod() && $workout->wod_parsed) {
+            // Auto-sync exercises when wod_syntax changes
+            if ($workout->isWod() && $workout->isDirty('wod_syntax')) {
                 $workout->syncWodExercises();
             }
         });
@@ -41,13 +41,11 @@ class Workout extends Model
         'is_public',
         'times_used',
         'wod_syntax',
-        'wod_parsed',
     ];
 
     protected $casts = [
         'is_public' => 'boolean',
         'times_used' => 'integer',
-        'wod_parsed' => 'array',
     ];
 
     public function user(): BelongsTo
@@ -78,7 +76,6 @@ class Workout extends Model
             'name' => $this->name,
             'description' => $this->description,
             'wod_syntax' => $this->wod_syntax,
-            'wod_parsed' => $this->wod_parsed,
             'is_public' => false,
         ]);
 
@@ -88,12 +85,32 @@ class Workout extends Model
     }
 
     /**
+     * Parse WOD syntax on-demand
+     */
+    public function getParsedWod(): ?array
+    {
+        if (empty($this->wod_syntax)) {
+            return null;
+        }
+
+        try {
+            $parser = app(\App\Services\WodParser::class);
+            return $parser->parse($this->wod_syntax);
+        } catch (\Exception $e) {
+            \Log::error('Failed to parse WOD syntax for workout ' . $this->id . ': ' . $e->getMessage());
+            return null;
+        }
+    }
+
+    /**
      * Sync WOD exercises to workout_exercises table
      * Extracts loggable exercises from parsed WOD and creates/updates workout_exercises records
      */
     public function syncWodExercises(): void
     {
-        if (!isset($this->wod_parsed['blocks'])) {
+        $parsed = $this->getParsedWod();
+        
+        if (!$parsed || !isset($parsed['blocks'])) {
             return;
         }
 
@@ -101,7 +118,7 @@ class Workout extends Model
         $this->exercises()->delete();
 
         $order = 1;
-        foreach ($this->wod_parsed['blocks'] as $block) {
+        foreach ($parsed['blocks'] as $block) {
             if (!isset($block['exercises'])) {
                 continue;
             }

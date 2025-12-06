@@ -41,12 +41,14 @@ class WodLoggingService
      */
     public function addWodExercisesToRow($rowBuilder, Workout $workout, $today = null, $loggedExerciseData = [], &$hasLoggedExercisesToday = false)
     {
-        if (!$workout->wod_parsed || !isset($workout->wod_parsed['blocks'])) {
+        $parsed = $workout->getParsedWod();
+        
+        if (!$parsed || !isset($parsed['blocks'])) {
             return;
         }
 
         $subItemId = 1000;
-        foreach ($workout->wod_parsed['blocks'] as $block) {
+        foreach ($parsed['blocks'] as $block) {
             foreach ($block['exercises'] as $exercise) {
                 $flatExercises = [];
                 $this->flattenWodExercises($exercise, $flatExercises);

@@ -65,21 +65,6 @@ class WorkoutTest extends TestCase
             'user_id' => $user->id,
             'name' => 'Test Workout',
             'wod_syntax' => '[[Bench Press]]: 3x8',
-            'wod_parsed' => [
-                'blocks' => [
-                    [
-                        'name' => 'Strength',
-                        'exercises' => [
-                            [
-                                'type' => 'exercise',
-                                'name' => 'Bench Press',
-                                'loggable' => true,
-                                'scheme' => '3x8'
-                            ]
-                        ]
-                    ]
-                ]
-            ]
         ]);
 
         $response = $this->actingAs($user)->get(route('workouts.edit', $workout->id));
