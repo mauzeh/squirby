@@ -202,10 +202,14 @@ class ImportWodifyLiftLog extends Command
                 throw new \Exception('Duplicate entry exists (use --overwrite to replace)');
             }
         } else {
-            // Delete existing entries for this exercise on this date
+            // Delete existing entries for this exercise on this date with matching weight/reps
             $existing = LiftLog::where('user_id', $user->id)
                 ->where('exercise_id', $exercise->id)
                 ->whereDate('logged_at', $date->format('Y-m-d'))
+                ->whereHas('liftSets', function ($query) use ($workout) {
+                    $query->where('weight', $workout['weight'])
+                          ->where('reps', $workout['reps']);
+                })
                 ->get();
             
             foreach ($existing as $log) {
