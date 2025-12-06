@@ -16,7 +16,8 @@ class PRCardsComponentBuilder
         $this->data = [
             'title' => $title,
             'cards' => [],
-            'ariaLabel' => $title
+            'ariaLabel' => $title,
+            'scrollable' => false
         ];
     }
     
@@ -50,6 +51,17 @@ class PRCardsComponentBuilder
     public function ariaLabel(string $label): self
     {
         $this->data['ariaLabel'] = $label;
+        return $this;
+    }
+    
+    /**
+     * Enable horizontal scrolling for the cards
+     * 
+     * @return self
+     */
+    public function scrollable(): self
+    {
+        $this->data['scrollable'] = true;
         return $this;
     }
     

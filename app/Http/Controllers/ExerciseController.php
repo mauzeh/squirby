@@ -371,7 +371,7 @@ class ExerciseController extends Controller
         
         // PR Cards and Calculator Grid (if exercise supports it)
         if ($this->exercisePRService->supportsPRTracking($exercise)) {
-            $prData = $this->exercisePRService->getPRData($exercise, auth()->user());
+            $prData = $this->exercisePRService->getPRData($exercise, auth()->user(), 10);
             $estimated1RM = null;
             
             // Check if we have any actual 1-3 rep PRs
@@ -389,10 +389,15 @@ class ExerciseController extends Controller
             if ($prData || $estimated1RM) {
                 // Build PR Cards component only if we have actual PR data
                 if ($prData) {
-                    $prCardsBuilder = \App\Services\ComponentBuilder::prCards('Heaviest Lifts');
+                    $prCardsBuilder = \App\Services\ComponentBuilder::prCards('Heaviest Lifts')
+                        ->scrollable(); // Enable horizontal scrolling
                     
-                    foreach (['rep_1' => '1 × 1', 'rep_2' => '1 × 2', 'rep_3' => '1 × 3'] as $key => $label) {
-                        if (isset($prData[$key])) {
+                    // Show PRs for 1-10 reps
+                    for ($reps = 1; $reps <= 10; $reps++) {
+                        $key = "rep_{$reps}";
+                        $label = "1 × {$reps}";
+                        
+                        if (isset($prData[$key]) && $prData[$key] !== null) {
                             $prCardsBuilder->card($label, $prData[$key]['weight'], 'lbs', $prData[$key]['date']);
                         } else {
                             $prCardsBuilder->card($label, null, 'lbs');

@@ -28,13 +28,14 @@ class ExercisePRService
 
     /**
      * Get PR data for an exercise
-     * Returns the heaviest lifts for 1, 2, and 3 rep ranges
+     * Returns the heaviest lifts for specified rep ranges (default 1-10)
      * 
      * @param Exercise $exercise
      * @param User $user
+     * @param int $maxReps Maximum number of reps to track (default 10)
      * @return array|null Returns null if exercise doesn't support PRs
      */
-    public function getPRData(Exercise $exercise, User $user): ?array
+    public function getPRData(Exercise $exercise, User $user, int $maxReps = 10): ?array
     {
         // Check if exercise supports PR tracking
         if (!$this->supportsPRTracking($exercise)) {
@@ -54,8 +55,8 @@ class ExercisePRService
 
         $prData = [];
 
-        // Process each target rep range (1, 2, 3)
-        foreach ([1, 2, 3] as $targetReps) {
+        // Process each target rep range (1 through maxReps)
+        for ($targetReps = 1; $targetReps <= $maxReps; $targetReps++) {
             $bestForReps = null;
             $maxWeight = 0;
 

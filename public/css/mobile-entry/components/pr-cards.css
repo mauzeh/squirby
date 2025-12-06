@@ -20,6 +20,43 @@
     gap: var(--spacing-md);
 }
 
+/* Horizontal Scrollable Container */
+.pr-cards-horizontal {
+    display: flex;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+    gap: var(--spacing-md);
+    padding-bottom: var(--spacing-sm);
+}
+
+.pr-cards-horizontal::-webkit-scrollbar {
+    height: 6px;
+}
+
+.pr-cards-horizontal::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.pr-cards-horizontal::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
+}
+
+.pr-cards-horizontal::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(255, 255, 255, 0.5);
+}
+
+/* Cards in horizontal mode */
+.pr-cards-horizontal .pr-card {
+    flex: 0 0 auto;
+    width: 140px;
+    scroll-snap-align: start;
+}
+
 /* Individual Card Styling */
 .pr-card {
     background-color: var(--tertiary-bg);
@@ -100,6 +137,11 @@
         font-size: 0.7rem;
         margin-top: 4px;
     }
+
+    /* Horizontal scrolling adjustments for mobile */
+    .pr-cards-horizontal .pr-card {
+        width: 120px;
+    }
 }
 
 @media (max-width: 480px) {
@@ -137,6 +179,16 @@
     .pr-card-date {
         font-size: 0.65rem;
         margin-top: 3px;
+    }
+
+    /* Horizontal scrolling adjustments for small mobile */
+    .pr-cards-horizontal {
+        gap: 8px;
+    }
+
+    .pr-cards-horizontal .pr-card {
+        width: 110px;
+        padding: 12px 8px;
     }
 }
 
