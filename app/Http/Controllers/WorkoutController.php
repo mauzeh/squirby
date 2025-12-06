@@ -329,10 +329,10 @@ class WorkoutController extends Controller
         }
 
         // Delete workout form
-        $components[] = C::form('delete-workout', 'Danger Zone')
+        $components[] = C::form('delete-workout', 'Removing this workout')
             ->formAction(route('workouts.destroy', $workout->id))
             ->hiddenField('_method', 'DELETE')
-            ->message('warning', 'Once this workout is deleted, all of its data will be permanently removed.')
+            ->message('info', 'User logs will be preserved if this workout is delete.')
             ->submitButton('Delete Workout')
             ->submitButtonClass('btn-danger')
             ->confirmMessage('Are you sure you want to delete this workout? This action cannot be undone.')
