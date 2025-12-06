@@ -87,8 +87,6 @@ Route::middleware('auth')->group(function () {
 
     // Workouts
     Route::resource('workouts', WorkoutController::class)->except(['show']);
-    Route::get('workouts-browse', [WorkoutController::class, 'browse'])->name('workouts.browse');
-    Route::get('workouts/{workout}/apply', [WorkoutController::class, 'apply'])->name('workouts.apply');
 
     // Mobile Entry - Supports date parameter
     Route::get('mobile-entry/lifts', [MobileEntryController::class, 'lifts'])->name('mobile-entry.lifts');

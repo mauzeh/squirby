@@ -71,20 +71,6 @@ class Workout extends Model
     }
 
     /**
-     * Apply this workout to a specific date for a user
-     * 
-     * Note: This method now just increments the usage counter.
-     * Users will click on individual exercises to log them via lift-logs/create.
-     */
-    public function applyToDate(Carbon $date, User $user): void
-    {
-        // No longer creates MobileLiftForm records
-        // Users navigate directly to lift-logs/create for each exercise
-        
-        $this->increment('times_used');
-    }
-
-    /**
      * Create a copy of this workout for another user
      */
     public function duplicate(User $user): self
