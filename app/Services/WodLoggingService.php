@@ -8,10 +8,14 @@ use Illuminate\Support\Facades\Auth;
 class WodLoggingService
 {
     protected $exerciseMatchingService;
+    protected $exerciseAliasService;
 
-    public function __construct(ExerciseMatchingService $exerciseMatchingService)
-    {
+    public function __construct(
+        ExerciseMatchingService $exerciseMatchingService,
+        ExerciseAliasService $exerciseAliasService
+    ) {
         $this->exerciseMatchingService = $exerciseMatchingService;
+        $this->exerciseAliasService = $exerciseAliasService;
     }
 
     /**
@@ -63,7 +67,7 @@ class WodLoggingService
     private function addWorkoutExerciseSubItem($rowBuilder, $workoutExercise, $today, $loggedExerciseData, &$hasLoggedExercisesToday, Workout $workout)
     {
         $exercise = $workoutExercise->exercise;
-        $displayName = $exercise->title;
+        $displayName = $this->exerciseAliasService->getDisplayName($exercise, Auth::user());
         $scheme = $workoutExercise->scheme ?? null;
         
         $subItem = $rowBuilder->subItem(
