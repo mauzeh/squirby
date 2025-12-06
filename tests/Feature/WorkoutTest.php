@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 use App\Models\User;
+use App\Models\Role;
 use App\Models\Exercise;
 use App\Models\Workout;
 use App\Models\WorkoutExercise;
@@ -13,6 +14,15 @@ use App\Models\ExerciseAlias;
 class WorkoutTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        
+        // Create roles
+        Role::create(['name' => 'Admin']);
+        Role::create(['name' => 'Athlete']);
+    }
 
     /** @test */
     public function user_can_view_their_templates()
@@ -30,6 +40,8 @@ class WorkoutTest extends TestCase
     public function user_can_create_template()
     {
         $user = User::factory()->create();
+        $adminRole = Role::where('name', 'Admin')->first();
+        $user->roles()->attach($adminRole);
 
         $response = $this->actingAs($user)->post(route('workouts.store'), [
             'name' => 'Push Day',
@@ -49,6 +61,8 @@ class WorkoutTest extends TestCase
     public function template_edit_view_shows_aliased_exercise_names()
     {
         $user = User::factory()->create();
+        $adminRole = Role::where('name', 'Admin')->first();
+        $user->roles()->attach($adminRole);
         $exercise = Exercise::factory()->create([
             'title' => 'Bench Press',
             'user_id' => null,

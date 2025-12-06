@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use Tests\TestCase;
 use App\Models\User;
+use App\Models\Role;
 use App\Models\Workout;
 use App\Models\Exercise;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -12,9 +13,20 @@ class WodExerciseMatchingTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        
+        // Create roles
+        Role::create(['name' => 'Admin']);
+        Role::create(['name' => 'Athlete']);
+    }
+
     public function test_wod_edit_shows_formatted_display_for_exercises()
     {
         $user = User::factory()->create();
+        $adminRole = Role::where('name', 'Admin')->first();
+        $user->roles()->attach($adminRole);
         $exercise = Exercise::factory()->create([
             'user_id' => $user->id,
             'title' => 'Back Squat',
@@ -39,6 +51,8 @@ class WodExerciseMatchingTest extends TestCase
     public function test_wod_edit_shows_formatted_display_for_non_existing_exercises()
     {
         $user = User::factory()->create();
+        $adminRole = Role::where('name', 'Admin')->first();
+        $user->roles()->attach($adminRole);
 
         $workout = Workout::factory()->create([
             'user_id' => $user->id,
@@ -57,6 +71,8 @@ class WodExerciseMatchingTest extends TestCase
     public function test_wod_edit_shows_formatted_display_for_mixed_exercises()
     {
         $user = User::factory()->create();
+        $adminRole = Role::where('name', 'Admin')->first();
+        $user->roles()->attach($adminRole);
         $exercise = Exercise::factory()->create([
             'user_id' => $user->id,
             'title' => 'Bench Press',
@@ -81,6 +97,8 @@ class WodExerciseMatchingTest extends TestCase
     public function test_wod_edit_shows_formatted_display_with_clickable_links()
     {
         $user = User::factory()->create();
+        $adminRole = Role::where('name', 'Admin')->first();
+        $user->roles()->attach($adminRole);
         $exercise = Exercise::factory()->create([
             'user_id' => $user->id,
             'title' => 'Push-ups',
@@ -197,6 +215,8 @@ class WodExerciseMatchingTest extends TestCase
     public function test_wod_display_shows_syntax_name_while_table_shows_database_name()
     {
         $user = User::factory()->create();
+        $adminRole = Role::where('name', 'Admin')->first();
+        $user->roles()->attach($adminRole);
         
         // Database has singular form
         $exercise = Exercise::factory()->create([
