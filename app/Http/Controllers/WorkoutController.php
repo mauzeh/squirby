@@ -332,7 +332,7 @@ class WorkoutController extends Controller
         $components[] = C::form('delete-workout', 'Removing this workout')
             ->formAction(route('workouts.destroy', $workout->id))
             ->hiddenField('_method', 'DELETE')
-            ->message('info', 'User logs will be preserved if this workout is delete.')
+            ->message('info', 'User logs will be preserved if this workout is deleted.')
             ->submitButton('Delete Workout')
             ->submitButtonClass('btn-danger')
             ->confirmMessage('Are you sure you want to delete this workout? This action cannot be undone.')
