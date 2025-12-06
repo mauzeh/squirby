@@ -27,7 +27,7 @@ class Workout extends Model
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->logOnly(['user_id', 'name', 'description', 'notes', 'is_public', 'tags', 'times_used'])
+            ->logOnly(['user_id', 'name', 'description', 'notes', 'is_public', 'times_used'])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }
@@ -39,7 +39,6 @@ class Workout extends Model
         'description',
         'notes',
         'is_public',
-        'tags',
         'times_used',
         'wod_syntax',
         'wod_parsed',
@@ -47,7 +46,6 @@ class Workout extends Model
 
     protected $casts = [
         'is_public' => 'boolean',
-        'tags' => 'array',
         'times_used' => 'integer',
         'wod_parsed' => 'array',
     ];
@@ -82,7 +80,6 @@ class Workout extends Model
             'wod_syntax' => $this->wod_syntax,
             'wod_parsed' => $this->wod_parsed,
             'is_public' => false,
-            'tags' => $this->tags,
         ]);
 
         // Exercises will be auto-synced via model event
