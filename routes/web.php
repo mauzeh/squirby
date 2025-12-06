@@ -85,7 +85,27 @@ Route::middleware('auth')->group(function () {
     // API Routes
     Route::get('api/exercises/autocomplete', [App\Http\Controllers\ApiController::class, 'exerciseAutocomplete'])->name('api.exercises.autocomplete');
 
-    // Workouts
+    // Workouts - Simple Mode
+    Route::get('workouts/create-simple', [App\Http\Controllers\SimpleWorkoutController::class, 'create'])
+        ->name('workouts.create-simple');
+    Route::post('workouts/store-simple', [App\Http\Controllers\SimpleWorkoutController::class, 'store'])
+        ->name('workouts.store-simple');
+    Route::get('workouts/{workout}/edit-simple', [App\Http\Controllers\SimpleWorkoutController::class, 'edit'])
+        ->name('workouts.edit-simple');
+    Route::put('workouts/{workout}/update-simple', [App\Http\Controllers\SimpleWorkoutController::class, 'update'])
+        ->name('workouts.update-simple');
+    
+    // Simple workout exercise management
+    Route::get('workouts/{workout}/add-exercise', [App\Http\Controllers\SimpleWorkoutController::class, 'addExercise'])
+        ->name('simple-workouts.add-exercise');
+    Route::post('workouts/{workout}/create-exercise', [App\Http\Controllers\SimpleWorkoutController::class, 'createExercise'])
+        ->name('simple-workouts.create-exercise');
+    Route::get('workouts/{workout}/exercises/{exercise}/move', [App\Http\Controllers\SimpleWorkoutController::class, 'moveExercise'])
+        ->name('simple-workouts.move-exercise');
+    Route::delete('workouts/{workout}/exercises/{exercise}', [App\Http\Controllers\SimpleWorkoutController::class, 'removeExercise'])
+        ->name('simple-workouts.remove-exercise');
+    
+    // Workouts - Advanced Mode (WOD Syntax)
     Route::resource('workouts', WorkoutController::class)->except(['show']);
 
     // Mobile Entry - Supports date parameter
