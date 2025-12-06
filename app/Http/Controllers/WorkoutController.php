@@ -91,28 +91,38 @@ class WorkoutController extends Controller
             foreach ($workouts as $workout) {
                 $isWod = $workout->isWod();
                 $line1 = $workout->name;
-                $exerciseCount = $isWod ? 0 : $workout->exercises->count();
                 
-                // Build exercise list or WOD preview
+                // Get exercises for display - either from template or parsed WOD
+                $exercisesToDisplay = [];
                 if ($isWod) {
+                    // Extract exercises from parsed WOD (only loggable ones)
                     $parsed = $workout->wod_parsed;
                     if ($parsed && isset($parsed['blocks'])) {
-                        $blockCount = count($parsed['blocks']);
-                        $line2 = $blockCount . ' ' . ($blockCount === 1 ? 'block' : 'blocks');
-                    } else {
-                        $line2 = 'WOD';
+                        foreach ($parsed['blocks'] as $block) {
+                            if (isset($block['exercises'])) {
+                                foreach ($block['exercises'] as $exerciseData) {
+                                    if (isset($exerciseData['name']) 
+                                        && $exerciseData['type'] === 'exercise'
+                                        && !empty($exerciseData['loggable'])) {
+                                        $exercisesToDisplay[] = $exerciseData['name'];
+                                    }
+                                }
+                            }
+                        }
                     }
-                    $line3 = $workout->description ?: 'Workout of the Day';
                 } else {
-                    if ($exerciseCount > 0) {
-                        $exerciseTitles = $workout->exercises->pluck('exercise.title')->toArray();
-                        $exerciseList = implode(', ', $exerciseTitles);
-                        $line2 = $exerciseCount . ' ' . ($exerciseCount === 1 ? 'exercise' : 'exercises') . ': ' . $exerciseList;
-                    } else {
-                        $line2 = 'No exercises';
-                    }
-                    $line3 = $workout->description ?: null;
+                    // Get from template exercises
+                    $exercisesToDisplay = $workout->exercises->pluck('exercise.title')->toArray();
                 }
+                
+                $exerciseCount = count($exercisesToDisplay);
+                if ($exerciseCount > 0) {
+                    $exerciseList = implode(', ', $exercisesToDisplay);
+                    $line2 = $exerciseCount . ' ' . ($exerciseCount === 1 ? 'exercise' : 'exercises') . ': ' . $exerciseList;
+                } else {
+                    $line2 = 'No exercises';
+                }
+                $line3 = $workout->description ?: null;
 
                 $rowBuilder = $tableBuilder->row(
                     $workout->id,
@@ -126,12 +136,12 @@ class WorkoutController extends Controller
                 // Check if this workout has any exercises logged today (for auto-expand)
                 $hasLoggedExercisesToday = false;
 
-                // For WODs, show only exercises from parsed data (skip block headers)
+                // Add exercises as sub-items with log now button or edit button
                 if ($isWod) {
+                    // For WODs, use parsed exercises
                     $this->wodLoggingService->addWodExercisesToRow($rowBuilder, $workout, $today, $loggedExerciseData, $hasLoggedExercisesToday);
-                }
-                // For templates, add exercises as sub-items with log now button or edit button
-                elseif ($workout->exercises->isNotEmpty()) {
+                } elseif ($workout->exercises->isNotEmpty()) {
+                    // For templates, use workout exercises
                     foreach ($workout->exercises as $index => $exercise) {
                         $exerciseLine1 = $exercise->exercise->title;
                         $exerciseLine2 = null;
