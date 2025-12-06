@@ -38,60 +38,46 @@ class WodLoggingService
 
     /**
      * Add WOD exercises to a row builder (shared between index and edit)
+     * Uses workout_exercises table (database) instead of parsing WOD syntax
      */
     public function addWodExercisesToRow($rowBuilder, Workout $workout, $today = null, $loggedExerciseData = [], &$hasLoggedExercisesToday = false)
     {
-        $parsed = $workout->getParsedWod();
-        
-        if (!$parsed || !isset($parsed['blocks'])) {
+        // Use workout_exercises from database instead of parsing syntax
+        if ($workout->exercises->isEmpty()) {
             return;
         }
 
-        $subItemId = 1000;
-        foreach ($parsed['blocks'] as $block) {
-            foreach ($block['exercises'] as $exercise) {
-                $flatExercises = [];
-                $this->flattenWodExercises($exercise, $flatExercises);
-                foreach ($flatExercises as $flatExercise) {
-                    $this->addWodExerciseSubItem($rowBuilder, $flatExercise, $subItemId, $today, $loggedExerciseData, $hasLoggedExercisesToday, $workout);
-                    $subItemId++;
-                }
+        foreach ($workout->exercises as $workoutExercise) {
+            if (!$workoutExercise->exercise) {
+                continue;
             }
+
+            $this->addWorkoutExerciseSubItem($rowBuilder, $workoutExercise, $today, $loggedExerciseData, $hasLoggedExercisesToday, $workout);
         }
     }
 
     /**
-     * Add WOD exercise as sub-item in workout display
-     * Only shows exercises that exist in the database
+     * Add workout exercise as sub-item in workout display
+     * Uses exercise from workout_exercises table (database)
      */
-    public function addWodExerciseSubItem($rowBuilder, $exercise, &$subItemId, $today, $loggedExerciseData, &$hasLoggedExercisesToday, Workout $workout)
+    private function addWorkoutExerciseSubItem($rowBuilder, $workoutExercise, $today, $loggedExerciseData, &$hasLoggedExercisesToday, Workout $workout)
     {
-        $exerciseNameFromSyntax = $exercise['name'];
-        $scheme = $exercise['scheme'] ?? '';
-        
-        // Try to find matching exercise in database to allow logging
-        $matchingExercise = $this->exerciseMatchingService->findBestMatch($exerciseNameFromSyntax, Auth::id());
-        
-        // Only show exercises that exist in the database
-        if (!$matchingExercise) {
-            return;
-        }
-        
-        // Use the canonical database exercise name
-        $displayName = $matchingExercise->title;
+        $exercise = $workoutExercise->exercise;
+        $displayName = $exercise->title;
+        $scheme = $workoutExercise->scheme ?? null;
         
         $subItem = $rowBuilder->subItem(
-            $subItemId,
+            $workoutExercise->id,
             $displayName,
             $scheme,
             null
         );
         
         // Check if logged today
-        if (isset($loggedExerciseData[$matchingExercise->id])) {
+        if (isset($loggedExerciseData[$exercise->id])) {
             $hasLoggedExercisesToday = true;
-            $liftLog = $loggedExerciseData[$matchingExercise->id];
-            $strategy = $matchingExercise->getTypeStrategy();
+            $liftLog = $loggedExerciseData[$exercise->id];
+            $strategy = $exercise->getTypeStrategy();
             $formattedMessage = $strategy->formatLoggedItemDisplay($liftLog);
             
             $subItem->message('success', $formattedMessage, 'Completed:');
@@ -100,7 +86,7 @@ class WodLoggingService
         } else {
             // Not logged yet
             $logUrl = route('lift-logs.create', [
-                'exercise_id' => $matchingExercise->id,
+                'exercise_id' => $exercise->id,
                 'date' => $today->toDateString(),
                 'redirect_to' => 'workouts',
                 'workout_id' => $workout->id

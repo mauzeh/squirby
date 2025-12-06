@@ -110,10 +110,8 @@ class WorkoutController extends Controller
                 // Check if this workout has any exercises logged today (for auto-expand)
                 $hasLoggedExercisesToday = false;
 
-                // Use WodLoggingService for consistent exercise display (same as edit page)
-                if ($workout->isWod()) {
-                    $this->wodLoggingService->addWodExercisesToRow($rowBuilder, $workout, $today, $loggedExerciseData, $hasLoggedExercisesToday);
-                }
+                // Use WodLoggingService for consistent exercise display (works for both WOD and regular workouts)
+                $this->wodLoggingService->addWodExercisesToRow($rowBuilder, $workout, $today, $loggedExerciseData, $hasLoggedExercisesToday);
 
                 // Auto-expand workouts that have any exercises logged today
                 // OR if this workout was explicitly requested (e.g., after deletion)
