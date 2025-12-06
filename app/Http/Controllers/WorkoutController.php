@@ -504,16 +504,14 @@ class WorkoutController extends Controller
             ->submitButton('Update Workout')
             ->build();
 
-        // Delete workout button
-        $components[] = [
-            'type' => 'delete-button',
-            'data' => [
-                'text' => 'Delete Workout',
-                'action' => route('workouts.destroy', $workout->id),
-                'method' => 'DELETE',
-                'confirmMessage' => 'Are you sure you want to delete this workout? This action cannot be undone.'
-            ]
-        ];
+        // Delete workout form
+        $components[] = C::form('delete-workout', 'Delete Workout')
+            ->formAction(route('workouts.destroy', $workout->id))
+            ->hiddenField('_method', 'DELETE')
+            ->submitButton('Delete Workout')
+            ->submitButtonClass('btn-danger')
+            ->confirmMessage('Are you sure you want to delete this workout? This action cannot be undone.')
+            ->build();
 
         $data = ['components' => $components];
         return view('mobile-entry.flexible', compact('data'));
@@ -833,38 +831,6 @@ class WorkoutController extends Controller
             $components[] = C::markdown($processedMarkdown)->classes('wod-display')->build();
         }
 
-        // WOD Exercise Table (loggable exercises)
-        if ($workout->wod_parsed && isset($workout->wod_parsed['blocks'])) {
-            $tableBuilder = C::table();
-            
-            // Create a dummy row for the workout
-            $rowBuilder = $tableBuilder->row(
-                $workout->id,
-                $workout->name,
-                null,
-                null
-            );
-            
-            // Add exercises as sub-items (same logic as index)
-            $today = Carbon::today();
-            $todaysLiftLogs = \App\Models\LiftLog::where('user_id', Auth::id())
-                ->whereDate('logged_at', $today)
-                ->with(['liftSets'])
-                ->get();
-            
-            $loggedExerciseData = [];
-            foreach ($todaysLiftLogs as $log) {
-                $loggedExerciseData[$log->exercise_id] = $log;
-            }
-            
-            $hasLoggedExercisesToday = false;
-            $this->wodLoggingService->addWodExercisesToRow($rowBuilder, $workout, $today, $loggedExerciseData, $hasLoggedExercisesToday);
-            
-            $rowBuilder->initialState('expanded')->add();
-            
-            $components[] = $tableBuilder->build();
-        }
-
         // Edit form with code editor
         $exampleSyntax = "# Block 1: Strength\n[[Back Squat]]: 5-5-5-5-5\n[[Bench Press]]: 3x8\n\n# Block 2: Conditioning\nAMRAP 12min:\n10 [[Box Jumps]]\n15 [[Push-ups]]\n20 [[Air Squats]]";
         
@@ -907,16 +873,47 @@ class WorkoutController extends Controller
             ]
         ];
 
-        // Delete workout button
-        $components[] = [
-            'type' => 'delete-button',
-            'data' => [
-                'text' => 'Delete WOD',
-                'action' => route('workouts.destroy', $workout->id),
-                'method' => 'DELETE',
-                'confirmMessage' => 'Are you sure you want to delete this WOD? This action cannot be undone.'
-            ]
-        ];
+        // WOD Exercise Table (loggable exercises)
+        if ($workout->wod_parsed && isset($workout->wod_parsed['blocks'])) {
+            $tableBuilder = C::table();
+            
+            // Create a dummy row for the workout
+            $rowBuilder = $tableBuilder->row(
+                $workout->id,
+                $workout->name,
+                null,
+                null
+            );
+            
+            // Add exercises as sub-items (same logic as index)
+            $today = Carbon::today();
+            $todaysLiftLogs = \App\Models\LiftLog::where('user_id', Auth::id())
+                ->whereDate('logged_at', $today)
+                ->with(['liftSets'])
+                ->get();
+            
+            $loggedExerciseData = [];
+            foreach ($todaysLiftLogs as $log) {
+                $loggedExerciseData[$log->exercise_id] = $log;
+            }
+            
+            $hasLoggedExercisesToday = false;
+            $this->wodLoggingService->addWodExercisesToRow($rowBuilder, $workout, $today, $loggedExerciseData, $hasLoggedExercisesToday);
+            
+            $rowBuilder->initialState('expanded')->add();
+            
+            $components[] = $tableBuilder->build();
+        }
+
+        // Delete workout form
+        $components[] = C::form('delete-wod', 'Danger Zone')
+            ->formAction(route('workouts.destroy', $workout->id))
+            ->hiddenField('_method', 'DELETE')
+            ->message('warning', 'Once this WOD is deleted, all of its data will be permanently removed.')
+            ->submitButton('Delete WOD')
+            ->submitButtonClass('btn-danger')
+            ->confirmMessage('Are you sure you want to delete this WOD? This action cannot be undone.')
+            ->build();
 
         $data = ['components' => $components];
         return view('mobile-entry.flexible', compact('data'));
