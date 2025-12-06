@@ -20,9 +20,11 @@ trait DetectsSimpleWorkouts
     /**
      * Determine if the current user can access advanced workout features
      * Only Admins can create/edit advanced workouts with WOD syntax
+     * Also available when impersonating (for testing/support)
      */
     protected function canAccessAdvancedWorkouts(): bool
     {
-        return \Illuminate\Support\Facades\Auth::user()->hasRole('Admin');
+        return \Illuminate\Support\Facades\Auth::user()->hasRole('Admin') 
+            || session()->has('impersonator_id');
     }
 }

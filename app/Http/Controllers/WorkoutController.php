@@ -78,10 +78,17 @@ class WorkoutController extends Controller
 
         // Table of workouts with exercises as sub-items
         if ($workouts->isNotEmpty()) {
-            // Create button (shown when there are workouts) - defaults to simple mode
+            // Create buttons - admins get both options, regular users only get simple
             $components[] = C::button('Create Workout')
                 ->asLink(route('workouts.create-simple'))
                 ->build();
+            
+            // Show advanced workout button for admins and when impersonating
+            if ($this->canAccessAdvancedWorkouts()) {
+                $components[] = C::button('Create Advanced Workout')
+                    ->asLink(route('workouts.create'))
+                    ->build();
+            }
             $tableBuilder = C::table();
 
             foreach ($workouts as $workout) {
@@ -149,14 +156,22 @@ class WorkoutController extends Controller
                 ->confirmMessage('deleteItem', 'Are you sure you want to delete this workout, exercise, or lift log? This action cannot be undone.')
                 ->build();
         } else {
-            // Empty state: show message first, then button - defaults to simple mode
+            // Empty state: show message first, then buttons
             $components[] = C::messages()
                 ->info('No workouts yet. Create your first workout to get started!')
                 ->build();
             
+            // Create buttons - admins get both options, regular users only get simple
             $components[] = C::button('Create Workout')
                 ->asLink(route('workouts.create-simple'))
                 ->build();
+            
+            // Show advanced workout button for admins and when impersonating
+            if ($this->canAccessAdvancedWorkouts()) {
+                $components[] = C::button('Create Advanced Workout')
+                    ->asLink(route('workouts.create'))
+                    ->build();
+            }
         }
 
         $data = ['components' => $components];
@@ -165,12 +180,12 @@ class WorkoutController extends Controller
 
     /**
      * Show the form for creating a new workout (Advanced WOD Syntax)
-     * Only accessible to Admins
+     * Only accessible to Admins and when impersonating
      */
     public function create(Request $request)
     {
-        // Only admins can create advanced workouts
-        if (!Auth::user()->hasRole('Admin')) {
+        // Only admins and impersonators can create advanced workouts
+        if (!$this->canAccessAdvancedWorkouts()) {
             return redirect()->route('workouts.create-simple')
                 ->with('info', 'Advanced workout creation is only available to admins.');
         }
@@ -227,12 +242,12 @@ class WorkoutController extends Controller
 
     /**
      * Store a newly created workout (Advanced WOD Syntax)
-     * Only accessible to Admins
+     * Only accessible to Admins and when impersonating
      */
     public function store(Request $request)
     {
-        // Only admins can create advanced workouts
-        if (!Auth::user()->hasRole('Admin')) {
+        // Only admins and impersonators can create advanced workouts
+        if (!$this->canAccessAdvancedWorkouts()) {
             return redirect()->route('workouts.create-simple')
                 ->with('error', 'Advanced workout creation is only available to admins.');
         }
@@ -268,7 +283,7 @@ class WorkoutController extends Controller
 
     /**
      * Show the form for editing the specified workout (Advanced WOD Syntax)
-     * Only accessible to Admins
+     * Only accessible to Admins and when impersonating
      */
     public function edit(Request $request, Workout $workout)
     {
@@ -279,8 +294,8 @@ class WorkoutController extends Controller
             return redirect()->route('workouts.edit-simple', $workout);
         }
 
-        // Only admins can edit advanced workouts
-        if (!Auth::user()->hasRole('Admin')) {
+        // Only admins and impersonators can edit advanced workouts
+        if (!$this->canAccessAdvancedWorkouts()) {
             return redirect()->route('workouts.edit-simple', $workout)
                 ->with('error', 'Advanced workout editing is only available to admins.');
         }
@@ -393,14 +408,14 @@ class WorkoutController extends Controller
 
     /**
      * Update the specified workout (Advanced WOD Syntax)
-     * Only accessible to Admins
+     * Only accessible to Admins and when impersonating
      */
     public function update(Request $request, Workout $workout)
     {
         $this->authorize('update', $workout);
 
-        // Only admins can update advanced workouts
-        if (!Auth::user()->hasRole('Admin')) {
+        // Only admins and impersonators can update advanced workouts
+        if (!$this->canAccessAdvancedWorkouts()) {
             return redirect()->route('workouts.edit-simple', $workout)
                 ->with('error', 'Advanced workout editing is only available to admins.');
         }
