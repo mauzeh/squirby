@@ -256,11 +256,6 @@ class WorkoutController extends Controller
             // WOD creation form with code editor
             $exampleSyntax = "# Block 1: Strength\n[[Back Squat]]: 5-5-5-5-5\n[[Bench Press]]: 3x8\n\n# Block 2: Conditioning\nAMRAP 12min:\n10 [[Box Jumps]]\n15 [[Push-ups]]\n20 [[Air Squats]]";
             
-            // Syntax help message
-            $components[] = C::messages()
-                ->info('Use simple text syntax to create your workout. Start blocks with #, then list exercises with their rep schemes.')
-                ->build();
-            
             // Single form with embedded code editor
             $components[] = [
                 'type' => 'wod-form',
@@ -296,9 +291,6 @@ class WorkoutController extends Controller
                     'mobile-entry/components/code-editor-autocomplete'
                 ]
             ];
-            
-            // Syntax guide
-            $components[] = $this->buildSyntaxGuide();
         } else {
             // Template creation form
             $components[] = C::form('create-template', 'Template Details')
@@ -873,11 +865,6 @@ class WorkoutController extends Controller
             $components[] = $tableBuilder->build();
         }
 
-        // Syntax help message
-        $components[] = C::messages()
-            ->info('Use simple text syntax to structure your workout. Start blocks with #, then list exercises with their rep schemes.')
-            ->build();
-        
         // Edit form with code editor
         $exampleSyntax = "# Block 1: Strength\n[[Back Squat]]: 5-5-5-5-5\n[[Bench Press]]: 3x8\n\n# Block 2: Conditioning\nAMRAP 12min:\n10 [[Box Jumps]]\n15 [[Push-ups]]\n20 [[Air Squats]]";
         
@@ -919,9 +906,6 @@ class WorkoutController extends Controller
                 'mobile-entry/components/code-editor-autocomplete'
             ]
         ];
-        
-        // Syntax guide
-        $components[] = $this->buildSyntaxGuide();
 
         // Delete workout button
         $components[] = [
@@ -942,73 +926,4 @@ class WorkoutController extends Controller
 
 
 
-    /**
-     * Format special format label
-     */
-    private function formatSpecialFormatLabel($format): string
-    {
-        return $format['description'] ?? 'Format';
-    }
-    
-    /**
-     * Build syntax guide component
-     */
-    private function buildSyntaxGuide(): array
-    {
-        $tableBuilder = C::table();
-        
-        // Header row
-        $headerRow = $tableBuilder->row(0, 'Syntax Quick Reference', 'Click to expand/collapse', null)
-            ->collapsible()
-            ->compact();
-        
-        // Blocks
-        $headerRow->subItem(1, 'Blocks', '# Block Name', 'Start each section with #')
-            ->compact()
-            ->add();
-        
-        // Exercise Names
-        $headerRow->subItem(2, 'Exercise Names', '[Exercise Name]', 'Enclose exercise names in brackets')
-            ->compact()
-            ->add();
-        
-        // Sets x Reps
-        $headerRow->subItem(3, 'Sets x Reps', '[Exercise]: 3x8', '3 sets of 8 reps')
-            ->compact()
-            ->add();
-        
-        // Rep Ladder
-        $headerRow->subItem(4, 'Rep Ladder', '[Exercise]: 5-5-5-3-3-1', 'Descending/ascending reps')
-            ->compact()
-            ->add();
-        
-        // Rep Range
-        $headerRow->subItem(5, 'Rep Range', '[Exercise]: 3x8-12', '3 sets of 8-12 reps')
-            ->compact()
-            ->add();
-        
-        // AMRAP
-        $headerRow->subItem(6, 'AMRAP', 'AMRAP 12min:<br />10 [Exercise A]<br />15 [Exercise B]', 'As Many Rounds As Possible')
-            ->compact()
-            ->add();
-        
-        // EMOM
-        $headerRow->subItem(7, 'EMOM', 'EMOM 16min:<br />5 [Exercise A]', 'Every Minute On the Minute')
-            ->compact()
-            ->add();
-        
-        // For Time
-        $headerRow->subItem(8, 'For Time', '21-15-9 For Time:<br />[Exercise A]<br />[Exercise B]', 'Complete as fast as possible')
-            ->compact()
-            ->add();
-        
-        // Rounds
-        $headerRow->subItem(9, 'Rounds', '5 Rounds:<br />10 [Exercise A]<br />20 [Exercise B]', 'Fixed number of rounds')
-            ->compact()
-            ->add();
-        
-        $headerRow->add();
-        
-        return $tableBuilder->build();
-    }
 }
