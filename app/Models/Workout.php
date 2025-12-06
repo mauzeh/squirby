@@ -145,13 +145,13 @@ class Workout extends Model
     /**
      * Helper method to create a workout exercise
      * Only links to existing exercises - does NOT auto-create them
+     * Uses ExerciseMatchingService to find exercises by name or alias
      */
     private function createWorkoutExercise(array $exerciseData, int $order): void
     {
-        // Find the exercise - do NOT auto-create
-        $exercise = Exercise::where('title', $exerciseData['name'])
-            ->availableToUser($this->user_id)
-            ->first();
+        // Use the matching service to find exercise by name or alias
+        $matchingService = app(\App\Services\ExerciseMatchingService::class);
+        $exercise = $matchingService->findBestMatch($exerciseData['name'], $this->user_id);
 
         if (!$exercise) {
             // Exercise doesn't exist - skip it

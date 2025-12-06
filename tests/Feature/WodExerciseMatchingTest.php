@@ -223,7 +223,7 @@ class WodExerciseMatchingTest extends TestCase
         $response->assertSee('5 reps, building');
     }
 
-    public function test_wod_table_shows_syntax_name_when_no_database_match()
+    public function test_wod_table_does_not_show_nonexistent_exercises()
     {
         $user = User::factory()->create();
 
@@ -237,8 +237,10 @@ class WodExerciseMatchingTest extends TestCase
         $response = $this->actingAs($user)->get(route('workouts.index'));
 
         $response->assertStatus(200);
-        // Should show syntax name since no database match exists
-        $response->assertSee('Nonexistent Exercise');
-        $response->assertSee('3x8');
+        // Table should NOT show non-existent exercises
+        // (They will appear in the WOD display with a link to create them)
+        $response->assertDontSee('Nonexistent Exercise');
+        // The WOD display will still show it in markdown format
+        $response->assertSee('Test WOD'); // Workout name should be visible
     }
 }

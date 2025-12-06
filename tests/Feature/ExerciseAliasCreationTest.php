@@ -165,6 +165,43 @@ class ExerciseAliasCreationTest extends TestCase
     }
 
     /** @test */
+    public function wod_display_shows_original_syntax_not_exercise_name()
+    {
+        $user = User::factory()->create();
+        
+        // Create an exercise with a specific name
+        $exercise = Exercise::factory()->create([
+            'title' => 'Back Rack Lunge',
+            'user_id' => $user->id
+        ]);
+        
+        // Create an alias that maps "HelemaalNiks" to "Back Rack Lunge"
+        ExerciseMatchingAlias::create([
+            'exercise_id' => $exercise->id,
+            'alias' => 'HelemaalNiks'
+        ]);
+        
+        // Create workout with the alias in WOD syntax
+        $workout = Workout::factory()->create([
+            'user_id' => $user->id,
+            'wod_syntax' => "# Let's go!\n* [[Bench Press]] 5x5\n* [[HelemaalNiks]] 3x10"
+        ]);
+        
+        $this->actingAs($user);
+        $wodDisplayService = app(\App\Services\WodDisplayService::class);
+        $processed = $wodDisplayService->processForDisplay($workout);
+        
+        // Should show the original text "HelemaalNiks" from WOD syntax
+        $this->assertStringContainsString('HelemaalNiks', $processed);
+        
+        // Should NOT show the actual exercise name "Back Rack Lunge"
+        $this->assertStringNotContainsString('Back Rack Lunge', $processed);
+        
+        // Should link to the correct exercise
+        $this->assertStringContainsString('exercises/' . $exercise->id . '/logs', $processed);
+    }
+
+    /** @test */
     public function alias_creation_page_shows_recent_exercises_first()
     {
         $user = User::factory()->create();

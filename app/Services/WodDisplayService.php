@@ -50,8 +50,9 @@ class WodDisplayService
             $matchingExercise = $this->exerciseMatchingService->findBestMatch($exerciseName, Auth::id());
             
             if ($matchingExercise) {
-                // Get the display name (alias if exists, otherwise original name)
-                $displayName = $this->exerciseAliasService->getDisplayName($matchingExercise, Auth::user());
+                // Use the original text from WOD syntax, not the exercise's actual name
+                // This preserves what the user typed (e.g., "HelemaalNiks" instead of "Back Rack Lunge")
+                $displayName = $exerciseName;
                 
                 // Matched - link to exercise logs page
                 $url = route('exercises.show-logs', ['exercise' => $matchingExercise->id]);
