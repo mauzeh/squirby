@@ -660,5 +660,92 @@ class LiftLogLoggingTest extends TestCase {
         $this->assertContains('🏆 PR', $pressBadges, 'Strict Press should have PR badge');
     }
 
+    /** @test */
+    public function mobile_entry_lifts_page_sets_all_prs_flag_when_all_lifts_are_prs()
+    {
+        $exercise = \App\Models\Exercise::factory()->create(['user_id' => $this->user->id]);
+
+        // Log a previous lift
+        $prevLog = \App\Models\LiftLog::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => now()->subWeek(),
+        ]);
+        $prevLog->liftSets()->create(['weight' => 100, 'reps' => 5, 'notes' => '']);
+
+        // Log a PR today
+        $prLog = \App\Models\LiftLog::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => now(),
+        ]);
+        $prLog->liftSets()->create(['weight' => 120, 'reps' => 5, 'notes' => '']);
+
+        // Visit mobile-entry lifts page
+        $response = $this->get(route('mobile-entry.lifts'));
+
+        $response->assertStatus(200);
+        $response->assertViewHas('data', function ($data) {
+            return isset($data['all_prs']) && $data['all_prs'] === true;
+        });
+    }
+
+    /** @test */
+    public function mobile_entry_lifts_page_does_not_set_all_prs_flag_when_some_lifts_are_not_prs()
+    {
+        $exercise1 = \App\Models\Exercise::factory()->create(['user_id' => $this->user->id]);
+        $exercise2 = \App\Models\Exercise::factory()->create(['user_id' => $this->user->id]);
+
+        // Log previous lifts
+        $prevLog1 = \App\Models\LiftLog::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $exercise1->id,
+            'logged_at' => now()->subWeek(),
+        ]);
+        $prevLog1->liftSets()->create(['weight' => 100, 'reps' => 5, 'notes' => '']);
+
+        $prevLog2 = \App\Models\LiftLog::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $exercise2->id,
+            'logged_at' => now()->subWeek(),
+        ]);
+        $prevLog2->liftSets()->create(['weight' => 200, 'reps' => 5, 'notes' => '']);
+
+        // Log one PR and one non-PR today
+        $prLog = \App\Models\LiftLog::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $exercise1->id,
+            'logged_at' => now(),
+        ]);
+        $prLog->liftSets()->create(['weight' => 120, 'reps' => 5, 'notes' => '']);
+
+        $nonPrLog = \App\Models\LiftLog::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $exercise2->id,
+            'logged_at' => now(),
+        ]);
+        $nonPrLog->liftSets()->create(['weight' => 180, 'reps' => 5, 'notes' => '']); // Lighter than previous
+
+        // Visit mobile-entry lifts page
+        $response = $this->get(route('mobile-entry.lifts'));
+
+        $response->assertStatus(200);
+        $response->assertViewHas('data', function ($data) {
+            return isset($data['all_prs']) && $data['all_prs'] === false;
+        });
+    }
+
+    /** @test */
+    public function mobile_entry_lifts_page_does_not_set_all_prs_flag_when_no_lifts_logged()
+    {
+        // Visit mobile-entry lifts page with no lifts logged
+        $response = $this->get(route('mobile-entry.lifts'));
+
+        $response->assertStatus(200);
+        $response->assertViewHas('data', function ($data) {
+            return isset($data['all_prs']) && $data['all_prs'] === false;
+        });
+    }
+
 
 }
