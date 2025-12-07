@@ -507,6 +507,10 @@ class LiftLogController extends Controller
      * Check if the logged lift is a personal record
      * Uses the same 1RM-based logic as the table row builder for consistency
      * 
+     * For lifts with 1-5 reps, a PR is marked if EITHER:
+     * 1. It's the heaviest weight ever lifted for that specific rep count (rep-specific PR)
+     * 2. OR it beats the overall estimated 1RM
+     * 
      * @param \App\Models\LiftLog $liftLog
      * @param \App\Models\Exercise $exercise
      * @param int $userId
@@ -531,12 +535,34 @@ class LiftLogController extends Controller
         
         // Calculate the best estimated 1RM from the current log
         $currentBest1RM = 0;
+        $isRepSpecificPR = false;
+        $tolerance = 0.1;
+        
         foreach ($liftLog->liftSets as $set) {
             if ($set->weight > 0 && $set->reps > 0) {
                 try {
                     $estimated1RM = $strategy->calculate1RM($set->weight, $set->reps, $liftLog);
                     if ($estimated1RM > $currentBest1RM) {
                         $currentBest1RM = $estimated1RM;
+                    }
+                    
+                    // For low-rep sets (1-5 reps), check if this is a rep-specific PR
+                    if ($set->reps <= 5) {
+                        $maxWeightForReps = 0;
+                        
+                        // Find the max weight previously lifted for this rep count
+                        foreach ($previousLogs as $prevLog) {
+                            foreach ($prevLog->liftSets as $prevSet) {
+                                if ($prevSet->reps == $set->reps && $prevSet->weight > $maxWeightForReps) {
+                                    $maxWeightForReps = $prevSet->weight;
+                                }
+                            }
+                        }
+                        
+                        // Check if current weight beats previous max for this rep count
+                        if ($set->weight > $maxWeightForReps + $tolerance) {
+                            $isRepSpecificPR = true;
+                        }
                     }
                 } catch (\Exception $e) {
                     continue;
@@ -566,9 +592,12 @@ class LiftLogController extends Controller
             }
         }
         
-        // This is a PR if the current 1RM beats the previous best
-        $tolerance = 0.1; // Small tolerance for floating point comparison
-        return $currentBest1RM > $previousBest1RM + $tolerance;
+        // This is a PR if EITHER:
+        // 1. It's a rep-specific PR (for 1-5 reps)
+        // 2. OR it beats the overall estimated 1RM
+        $beats1RM = $currentBest1RM > $previousBest1RM + $tolerance;
+        
+        return $isRepSpecificPR || $beats1RM;
     }
 
 }

@@ -747,5 +747,97 @@ class LiftLogLoggingTest extends TestCase {
         });
     }
 
+    /** @test */
+    public function low_rep_lifts_are_marked_as_pr_when_heaviest_for_that_rep_count()
+    {
+        $exercise = \App\Models\Exercise::factory()->create(['user_id' => $this->user->id]);
+
+        // Log 410 lbs x 4 reps (estimated 1RM ~464 lbs)
+        $log410x4 = \App\Models\LiftLog::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => now()->subWeek(),
+        ]);
+        $log410x4->liftSets()->create(['weight' => 410, 'reps' => 4, 'notes' => '']);
+
+        // Log 430 lbs x 1 rep (actual 1RM = 430, which is less than estimated 464)
+        // But this should still be a PR because it's the heaviest 1-rep lift
+        $liftLogData = [
+            'exercise_id' => $exercise->id,
+            'weight' => 430,
+            'reps' => 1,
+            'rounds' => 1,
+            'comments' => 'Max attempt',
+            'date' => now()->format('Y-m-d'),
+            'logged_at' => '14:30',
+        ];
+
+        $response = $this->post(route('lift-logs.store'), $liftLogData);
+
+        // Should be marked as PR because it's the heaviest 1-rep lift
+        $response->assertSessionHas('is_pr', true);
+        
+        $successMessage = session('success');
+        $this->assertStringContainsString('NEW PR!', $successMessage);
+    }
+
+    /** @test */
+    public function rep_specific_pr_detection_works_for_all_low_rep_ranges()
+    {
+        $exercise = \App\Models\Exercise::factory()->create(['user_id' => $this->user->id]);
+
+        // Log different rep ranges
+        $logs = [
+            ['weight' => 100, 'reps' => 1],
+            ['weight' => 95, 'reps' => 2],
+            ['weight' => 90, 'reps' => 3],
+            ['weight' => 85, 'reps' => 4],
+            ['weight' => 80, 'reps' => 5],
+        ];
+
+        foreach ($logs as $logData) {
+            $log = \App\Models\LiftLog::factory()->create([
+                'user_id' => $this->user->id,
+                'exercise_id' => $exercise->id,
+                'logged_at' => now()->subWeek(),
+            ]);
+            $log->liftSets()->create(['weight' => $logData['weight'], 'reps' => $logData['reps'], 'notes' => '']);
+        }
+
+        // Now log heavier weights for each rep range - all should be PRs
+        $newLogs = [
+            ['weight' => 105, 'reps' => 1],
+            ['weight' => 100, 'reps' => 2],
+            ['weight' => 95, 'reps' => 3],
+            ['weight' => 90, 'reps' => 4],
+            ['weight' => 85, 'reps' => 5],
+        ];
+
+        foreach ($newLogs as $logData) {
+            $log = \App\Models\LiftLog::factory()->create([
+                'user_id' => $this->user->id,
+                'exercise_id' => $exercise->id,
+                'logged_at' => now(),
+            ]);
+            $log->liftSets()->create(['weight' => $logData['weight'], 'reps' => $logData['reps'], 'notes' => '']);
+        }
+
+        // Use the table row builder to check PR detection
+        $todaysLogs = \App\Models\LiftLog::where('user_id', $this->user->id)
+            ->whereDate('logged_at', now()->toDateString())
+            ->with(['exercise', 'liftSets'])
+            ->get();
+
+        $builder = app(\App\Services\LiftLogTableRowBuilder::class);
+        $rows = $builder->buildRows($todaysLogs, []);
+
+        // All 5 logs should be marked as PRs
+        $this->assertCount(5, $rows);
+        foreach ($rows as $row) {
+            $badges = collect($row['badges'])->pluck('text')->toArray();
+            $this->assertContains('🏆 PR', $badges, 'Each rep-specific PR should have a badge');
+        }
+    }
+
 
 }
