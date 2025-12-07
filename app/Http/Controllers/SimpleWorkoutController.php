@@ -398,8 +398,9 @@ class SimpleWorkoutController extends Controller
 
         // Create workout if it doesn't exist (first exercise being added)
         if (!$workout) {
-            // For new exercises, use the exercise name as a hint for the workout name
-            $name = $validated['workout_name'] ?? $validated['exercise_name'] . ' Workout';
+            // Use provided name, or generate intelligent name based on exercise
+            $nameGenerator = app(\App\Services\WorkoutNameGenerator::class);
+            $name = $validated['workout_name'] ?? $nameGenerator->generate($exercise);
             
             $workout = Workout::create([
                 'user_id' => Auth::id(),
