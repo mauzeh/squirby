@@ -156,9 +156,40 @@ class MobileEntryController extends Controller
         // Logged items (now using table component with full component data)
         $components[] = $loggedItems;
         
+        // Check if all logged items today are PRs (for celebration)
+        $todaysLogs = \App\Models\LiftLog::where('user_id', Auth::id())
+            ->whereDate('logged_at', $selectedDate->toDateString())
+            ->with(['exercise', 'liftSets'])
+            ->get();
+        
+        $allPRs = false;
+        if ($todaysLogs->isNotEmpty()) {
+            // Get all exercise IDs from today
+            $exerciseIds = $todaysLogs->pluck('exercise_id')->unique();
+            
+            // Get all historical logs for PR calculation
+            $allLogs = \App\Models\LiftLog::where('user_id', Auth::id())
+                ->whereIn('exercise_id', $exerciseIds)
+                ->with(['exercise', 'liftSets'])
+                ->orderBy('logged_at', 'asc')
+                ->get();
+            
+            // Calculate PR log IDs
+            $tableRowBuilder = app(\App\Services\LiftLogTableRowBuilder::class);
+            $reflection = new \ReflectionClass($tableRowBuilder);
+            $method = $reflection->getMethod('calculatePRLogIds');
+            $method->setAccessible(true);
+            $prLogIds = $method->invoke($tableRowBuilder, $allLogs);
+            
+            // Check if all today's logs are PRs
+            $todaysLogIds = $todaysLogs->pluck('id')->toArray();
+            $allPRs = !empty($todaysLogIds) && count(array_intersect($todaysLogIds, $prLogIds)) === count($todaysLogIds);
+        }
+        
         $data = [
             'components' => $components,
-            'autoscroll' => true
+            'autoscroll' => true,
+            'all_prs' => $allPRs
         ];
 
         return view('mobile-entry.flexible', compact('data'));

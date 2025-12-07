@@ -20,7 +20,8 @@
 @section('scripts')
     <script>
         window.mobileEntryConfig = {
-            autoscroll: {{ isset($data['autoscroll']) && $data['autoscroll'] ? 'true' : 'false' }}
+            autoscroll: {{ isset($data['autoscroll']) && $data['autoscroll'] ? 'true' : 'false' }},
+            allPRs: {{ isset($data['all_prs']) && $data['all_prs'] ? 'true' : 'false' }}
         };
         
         // Check for PR flag from session and store in sessionStorage
