@@ -226,46 +226,52 @@ class LiftLogTableRowBuilder
             return [];
         }
 
-        // Only process if this is an exercise that supports 1RM calculation
-        $firstLog = $liftLogs->first();
-        $strategy = $firstLog->exercise->getTypeStrategy();
-        
-        if (!$strategy->canCalculate1RM()) {
-            return [];
-        }
-
-        // Sort logs by date (oldest first) to process chronologically
-        $sortedLogs = $liftLogs->sortBy('logged_at');
-        
         $prLogIds = [];
-        $maxEstimated1RMSoFar = 0;
-        $tolerance = 0.1; // Small tolerance for floating point comparison
         
-        // Process each log chronologically
-        foreach ($sortedLogs as $log) {
-            $logMaxEstimated1RM = 0;
+        // Group logs by exercise to process each exercise independently
+        $logsByExercise = $liftLogs->groupBy('exercise_id');
+        
+        foreach ($logsByExercise as $exerciseId => $exerciseLogs) {
+            // Only process if this is an exercise that supports 1RM calculation
+            $firstLog = $exerciseLogs->first();
+            $strategy = $firstLog->exercise->getTypeStrategy();
             
-            // Find the best estimated 1RM in this log
-            foreach ($log->liftSets as $set) {
-                if ($set->weight > 0 && $set->reps > 0) {
-                    try {
-                        $estimated1RM = $strategy->calculate1RM($set->weight, $set->reps, $log);
-                        
-                        if ($estimated1RM > $logMaxEstimated1RM) {
-                            $logMaxEstimated1RM = $estimated1RM;
+            if (!$strategy->canCalculate1RM()) {
+                continue;
+            }
+
+            // Sort logs by date (oldest first) to process chronologically
+            $sortedLogs = $exerciseLogs->sortBy('logged_at');
+            
+            $maxEstimated1RMSoFar = 0;
+            $tolerance = 0.1; // Small tolerance for floating point comparison
+            
+            // Process each log chronologically for this exercise
+            foreach ($sortedLogs as $log) {
+                $logMaxEstimated1RM = 0;
+                
+                // Find the best estimated 1RM in this log
+                foreach ($log->liftSets as $set) {
+                    if ($set->weight > 0 && $set->reps > 0) {
+                        try {
+                            $estimated1RM = $strategy->calculate1RM($set->weight, $set->reps, $log);
+                            
+                            if ($estimated1RM > $logMaxEstimated1RM) {
+                                $logMaxEstimated1RM = $estimated1RM;
+                            }
+                        } catch (\Exception $e) {
+                            // Skip sets that can't be calculated
+                            continue;
                         }
-                    } catch (\Exception $e) {
-                        // Skip sets that can't be calculated
-                        continue;
                     }
                 }
-            }
-            
-            // If this log's best 1RM beats the previous best, it's a PR
-            // Only mark as PR if it strictly beats the previous max (or if it's the first log)
-            if ($logMaxEstimated1RM > $maxEstimated1RMSoFar + $tolerance) {
-                $prLogIds[] = $log->id;
-                $maxEstimated1RMSoFar = $logMaxEstimated1RM;
+                
+                // If this log's best 1RM beats the previous best, it's a PR
+                // Only mark as PR if it strictly beats the previous max (or if it's the first log)
+                if ($logMaxEstimated1RM > $maxEstimated1RMSoFar + $tolerance) {
+                    $prLogIds[] = $log->id;
+                    $maxEstimated1RMSoFar = $logMaxEstimated1RM;
+                }
             }
         }
         
