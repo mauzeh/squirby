@@ -28,7 +28,48 @@ class SimpleWorkoutTest extends TestCase
     public function user_can_create_simple_workout()
     {
         $user = User::factory()->create();
+        $exercise = Exercise::factory()->create(['user_id' => null]);
 
+        // New flow: GET request shows form, no workout created yet
+        $response = $this->actingAs($user)->get(route('workouts.create-simple'));
+
+        $response->assertOk();
+        $response->assertSee('Select exercises below to add them to your workout.');
+        
+        // Verify NO workout was created yet
+        $this->assertDatabaseMissing('workouts', [
+            'user_id' => $user->id,
+        ]);
+        
+        // Add first exercise - this creates the workout
+        $response = $this->actingAs($user)->get(route('simple-workouts.add-exercise-new', [
+            'exercise' => $exercise->id,
+            'workout_name' => 'My Test Workout'
+        ]));
+
+        $response->assertRedirect();
+        
+        // NOW verify a workout was created
+        $this->assertDatabaseHas('workouts', [
+            'user_id' => $user->id,
+            'name' => 'My Test Workout',
+            'wod_syntax' => null, // Simple workouts have null wod_syntax
+        ]);
+        
+        // Verify exercise was added
+        $workout = Workout::where('user_id', $user->id)->first();
+        $this->assertDatabaseHas('workout_exercises', [
+            'workout_id' => $workout->id,
+            'exercise_id' => $exercise->id,
+        ]);
+    }
+
+    /** @test */
+    public function user_can_create_simple_workout_via_legacy_post()
+    {
+        $user = User::factory()->create();
+
+        // Legacy flow still works for backwards compatibility
         $response = $this->actingAs($user)->post(route('workouts.store-simple'), [
             'name' => 'Push Day',
             'description' => 'Upper body pushing exercises',
@@ -238,8 +279,6 @@ class SimpleWorkoutTest extends TestCase
 
         $response = $this->actingAs($user)->put(route('workouts.update-simple', $workout->id), [
             'name' => 'New Name',
-            'description' => 'Updated description',
-            'notes' => 'Some notes',
         ]);
 
         $response->assertRedirect(route('workouts.edit-simple', $workout->id));
@@ -248,8 +287,6 @@ class SimpleWorkoutTest extends TestCase
         $this->assertDatabaseHas('workouts', [
             'id' => $workout->id,
             'name' => 'New Name',
-            'description' => 'Updated description',
-            'notes' => 'Some notes',
             'wod_syntax' => null, // Should remain null
         ]);
     }

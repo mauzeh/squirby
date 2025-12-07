@@ -16,22 +16,63 @@ class SimpleWorkoutController extends Controller
     use DetectsSimpleWorkouts;
 
     /**
-     * Show the form for creating a new simple workout
+     * Show the form for creating a new simple workout (no DB persistence yet)
      */
     public function create()
     {
+        // Generate a default name with current date
+        $defaultName = 'New Workout - ' . Carbon::now()->format('M j, Y');
+        
         $components = [];
 
         // Title
         $components[] = C::title('Create Workout')->build();
 
-        // Form
-        $components[] = C::form('create-workout', 'Workout Details')
-            ->type('primary')
-            ->formAction(route('workouts.store-simple'))
-            ->textField('name', 'Workout Name:', '', 'e.g., Push Day')
-            ->textField('description', 'Description:', '', 'Optional')
-            ->submitButton('Create Workout')
+        // Info message
+        $components[] = C::messages()
+            ->info('Select exercises below to add them to your workout.')
+            ->build();
+
+        // Add Exercise button
+        $components[] = C::button('Add Exercise')
+            ->ariaLabel('Add exercise to workout')
+            ->addClass('btn-add-item')
+            ->build();
+
+        // Exercise selection list
+        $itemSelectionList = $this->generateExerciseSelectionListForNew(Auth::id(), $defaultName);
+        
+        $itemListBuilder = C::itemList()
+            ->filterPlaceholder($itemSelectionList['filterPlaceholder'])
+            ->noResultsMessage($itemSelectionList['noResultsMessage']);
+
+        foreach ($itemSelectionList['items'] as $item) {
+            $itemListBuilder->item(
+                $item['id'],
+                $item['name'],
+                $item['href'],
+                $item['type']['label'],
+                $item['type']['cssClass'],
+                $item['type']['priority']
+            );
+        }
+
+        if (isset($itemSelectionList['createForm'])) {
+            $itemListBuilder->createForm(
+                $itemSelectionList['createForm']['action'],
+                $itemSelectionList['createForm']['inputName'],
+                $itemSelectionList['createForm']['hiddenFields'],
+                $itemSelectionList['createForm']['buttonTextTemplate'] ?? 'Create "{term}"',
+                $itemSelectionList['createForm']['method'] ?? 'POST'
+            );
+        }
+
+        $components[] = $itemListBuilder->build();
+
+        // Workout name form
+        $components[] = C::form('edit-workout-name', 'Workout Name')
+            ->type('info')
+            ->textField('name', '', $defaultName, 'e.g., Push Day')
             ->build();
 
         $data = ['components' => $components];
@@ -39,10 +80,12 @@ class SimpleWorkoutController extends Controller
     }
 
     /**
-     * Store a newly created simple workout
+     * Store a newly created simple workout (deprecated - now handled by create())
      */
     public function store(Request $request)
     {
+        // This method is kept for backwards compatibility but is no longer used
+        // in the normal flow. Users are redirected directly from create() to edit()
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -219,21 +262,15 @@ class SimpleWorkoutController extends Controller
             $components[] = $tableBuilder
                 ->confirmMessage('deleteItem', 'Are you sure you want to remove this exercise from the workout?')
                 ->build();
-        } else {
-            $components[] = C::messages()
-                ->info('No exercises yet. Add your first exercise above.')
-                ->build();
         }
 
-        // Workout details form at bottom
-        $components[] = C::form('edit-workout-details', 'Workout Details')
+        // Workout name form at bottom
+        $components[] = C::form('edit-workout-name', 'Rename Workout')
             ->type('info')
             ->formAction(route('workouts.update-simple', $workout->id))
-            ->textField('name', 'Workout Name:', $workout->name, 'e.g., Push Day')
-            ->textField('description', 'Description:', $workout->description ?? '', 'Optional')
-            ->textareaField('notes', 'Notes:', $workout->notes ?? '', 'Optional workout notes')
+            ->textField('name', '', $workout->name, 'e.g., Push Day')
             ->hiddenField('_method', 'PUT')
-            ->submitButton('Update Workout')
+            ->submitButton('Rename')
             ->build();
 
         // Delete workout button
@@ -266,14 +303,10 @@ class SimpleWorkoutController extends Controller
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'notes' => 'nullable|string',
         ]);
 
         $workout->update([
             'name' => $validated['name'],
-            'description' => $validated['description'] ?? null,
-            'notes' => $validated['notes'] ?? null,
             // wod_syntax stays null
         ]);
 
@@ -283,18 +316,23 @@ class SimpleWorkoutController extends Controller
     }
 
     /**
-     * Add an exercise to a workout
+     * Add an exercise to a workout (creates workout if it doesn't exist)
      */
-    public function addExercise(Request $request, Workout $workout)
+    public function addExercise(Request $request, Workout $workout = null)
     {
-        $this->authorize('update', $workout);
-
         $exerciseId = $request->input('exercise');
+        $workoutName = $request->input('workout_name');
         
         if (!$exerciseId) {
-            return redirect()
-                ->route('workouts.edit-simple', $workout->id)
-                ->with('error', 'No exercise specified.');
+            if ($workout) {
+                return redirect()
+                    ->route('workouts.edit-simple', $workout->id)
+                    ->with('error', 'No exercise specified.');
+            } else {
+                return redirect()
+                    ->route('workouts.create-simple')
+                    ->with('error', 'No exercise specified.');
+            }
         }
 
         $exercise = \App\Models\Exercise::where('id', $exerciseId)
@@ -302,9 +340,28 @@ class SimpleWorkoutController extends Controller
             ->first();
 
         if (!$exercise) {
-            return redirect()
-                ->route('workouts.edit-simple', $workout->id)
-                ->with('error', 'Exercise not found.');
+            if ($workout) {
+                return redirect()
+                    ->route('workouts.edit-simple', $workout->id)
+                    ->with('error', 'Exercise not found.');
+            } else {
+                return redirect()
+                    ->route('workouts.create-simple')
+                    ->with('error', 'Exercise not found.');
+            }
+        }
+
+        // Create workout if it doesn't exist (first exercise being added)
+        if (!$workout) {
+            $workout = Workout::create([
+                'user_id' => Auth::id(),
+                'name' => $workoutName ?: 'New Workout - ' . Carbon::now()->format('M j, Y'),
+                'description' => null,
+                'wod_syntax' => null,
+                'is_public' => false,
+            ]);
+        } else {
+            $this->authorize('update', $workout);
         }
 
         // Check if exercise already exists in workout
@@ -333,14 +390,13 @@ class SimpleWorkoutController extends Controller
     }
 
     /**
-     * Create a new exercise and add it to the workout
+     * Create a new exercise and add it to the workout (creates workout if it doesn't exist)
      */
-    public function createExercise(Request $request, Workout $workout)
+    public function createExercise(Request $request, Workout $workout = null)
     {
-        $this->authorize('update', $workout);
-
         $validated = $request->validate([
             'exercise_name' => 'required|string|max:255',
+            'workout_name' => 'nullable|string|max:255',
         ]);
 
         // Find or create exercise
@@ -348,6 +404,19 @@ class SimpleWorkoutController extends Controller
             ['title' => $validated['exercise_name']],
             ['user_id' => Auth::id()]
         );
+
+        // Create workout if it doesn't exist (first exercise being added)
+        if (!$workout) {
+            $workout = Workout::create([
+                'user_id' => Auth::id(),
+                'name' => $validated['workout_name'] ?? 'New Workout - ' . Carbon::now()->format('M j, Y'),
+                'description' => null,
+                'wod_syntax' => null,
+                'is_public' => false,
+            ]);
+        } else {
+            $this->authorize('update', $workout);
+        }
 
         // Check if exercise already exists in workout
         $exists = WorkoutExercise::where('workout_id', $workout->id)
@@ -554,6 +623,126 @@ class SimpleWorkoutController extends Controller
                 'inputName' => 'exercise_name',
                 'buttonTextTemplate' => 'Create "{term}"',
                 'hiddenFields' => []
+            ],
+            'items' => $items,
+            'filterPlaceholder' => 'Search exercises...'
+        ];
+    }
+
+    /**
+     * Generate exercise selection list for new workout (no workout ID yet)
+     */
+    private function generateExerciseSelectionListForNew($userId, $defaultName)
+    {
+        // Get user's accessible exercises with aliases
+        $exercises = \App\Models\Exercise::availableToUser($userId)
+            ->with(['aliases' => function ($query) use ($userId) {
+                $query->where('user_id', $userId);
+            }])
+            ->orderBy('title', 'asc')
+            ->get();
+
+        // Apply aliases to exercises
+        $user = \App\Models\User::find($userId);
+        $aliasService = app(\App\Services\ExerciseAliasService::class);
+        $exercises = $aliasService->applyAliasesToExercises($exercises, $user);
+
+        // Get recent exercises (last 7 days) for the "Recent" category
+        $recentExerciseIds = \App\Models\LiftLog::where('user_id', $userId)
+            ->where('logged_at', '>=', \Carbon\Carbon::now()->subDays(7))
+            ->pluck('exercise_id')
+            ->unique()
+            ->toArray();
+
+        // Get last performed dates for all exercises
+        $lastPerformedDates = \App\Models\LiftLog::where('user_id', $userId)
+            ->whereIn('exercise_id', $exercises->pluck('id'))
+            ->select('exercise_id', \DB::raw('MAX(logged_at) as last_logged_at'))
+            ->groupBy('exercise_id')
+            ->pluck('last_logged_at', 'exercise_id');
+
+        // Get top 10 recommended exercises
+        $recommendationEngine = app(\App\Services\RecommendationEngine::class);
+        $recommendations = $recommendationEngine->getRecommendations($userId, 10);
+        
+        $recommendationMap = [];
+        foreach ($recommendations as $index => $recommendation) {
+            $exerciseId = $recommendation['exercise']->id;
+            $recommendationMap[$exerciseId] = $index + 1;
+        }
+
+        $items = [];
+        
+        foreach ($exercises as $exercise) {
+            // Calculate "X ago" label
+            $lastPerformedLabel = '';
+            if (isset($lastPerformedDates[$exercise->id])) {
+                $lastPerformed = \Carbon\Carbon::parse($lastPerformedDates[$exercise->id]);
+                $lastPerformedLabel = $lastPerformed->diffForHumans(['short' => true]);
+            }
+            
+            // Categorize exercises
+            if (isset($recommendationMap[$exercise->id])) {
+                $rank = $recommendationMap[$exercise->id];
+                $itemType = [
+                    'label' => '<i class="fas fa-star"></i> Recommended',
+                    'cssClass' => 'in-program',
+                    'priority' => 1,
+                    'subPriority' => $rank
+                ];
+            } elseif (in_array($exercise->id, $recentExerciseIds)) {
+                $itemType = [
+                    'label' => 'Recent',
+                    'cssClass' => 'recent',
+                    'priority' => 2,
+                    'subPriority' => 0
+                ];
+            } else {
+                $itemType = [
+                    'label' => $lastPerformedLabel,
+                    'cssClass' => 'regular',
+                    'priority' => 3,
+                    'subPriority' => 0
+                ];
+            }
+
+            $items[] = [
+                'id' => 'exercise-' . $exercise->id,
+                'name' => $exercise->title,
+                'type' => $itemType,
+                'href' => route('simple-workouts.add-exercise-new', [
+                    'exercise' => $exercise->id,
+                    'workout_name' => $defaultName
+                ])
+            ];
+        }
+
+        // Sort items
+        usort($items, function ($a, $b) {
+            $priorityComparison = $a['type']['priority'] <=> $b['type']['priority'];
+            if ($priorityComparison !== 0) {
+                return $priorityComparison;
+            }
+            
+            $subPriorityA = $a['type']['subPriority'] ?? 0;
+            $subPriorityB = $b['type']['subPriority'] ?? 0;
+            $subPriorityComparison = $subPriorityA <=> $subPriorityB;
+            if ($subPriorityComparison !== 0) {
+                return $subPriorityComparison;
+            }
+            
+            return strcmp($a['name'], $b['name']);
+        });
+
+        return [
+            'noResultsMessage' => 'No exercises found.',
+            'createForm' => [
+                'action' => route('simple-workouts.create-exercise-new'),
+                'inputName' => 'exercise_name',
+                'buttonTextTemplate' => 'Create "{term}"',
+                'hiddenFields' => [
+                    'workout_name' => $defaultName
+                ]
             ],
             'items' => $items,
             'filterPlaceholder' => 'Search exercises...'

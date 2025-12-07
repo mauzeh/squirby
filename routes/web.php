@@ -96,6 +96,10 @@ Route::middleware('auth')->group(function () {
         ->name('workouts.update-simple');
     
     // Simple workout exercise management
+    Route::get('workouts/new/add-exercise', [App\Http\Controllers\SimpleWorkoutController::class, 'addExercise'])
+        ->name('simple-workouts.add-exercise-new');
+    Route::post('workouts/new/create-exercise', [App\Http\Controllers\SimpleWorkoutController::class, 'createExercise'])
+        ->name('simple-workouts.create-exercise-new');
     Route::get('workouts/{workout}/add-exercise', [App\Http\Controllers\SimpleWorkoutController::class, 'addExercise'])
         ->name('simple-workouts.add-exercise');
     Route::post('workouts/{workout}/create-exercise', [App\Http\Controllers\SimpleWorkoutController::class, 'createExercise'])
