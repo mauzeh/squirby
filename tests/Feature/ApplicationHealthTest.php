@@ -100,6 +100,7 @@ class ApplicationHealthTest extends TestCase
             'lift-logs.create', // Requires exercise_id query parameter
             'exercise-aliases.create', // Requires alias_name query parameter
             'exercise-aliases.store', // Requires exercise_id and alias_name query parameters
+            'simple-workouts.add-exercise-new', // Requires exercise query parameter
             
             // API/utility routes
             'sanctum.csrf-cookie',
