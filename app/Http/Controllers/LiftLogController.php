@@ -505,6 +505,7 @@ class LiftLogController extends Controller
 
     /**
      * Check if the logged lift is a personal record
+     * Uses the same 1RM-based logic as the table row builder for consistency
      * 
      * @param \App\Models\LiftLog $liftLog
      * @param \App\Models\Exercise $exercise
@@ -513,29 +514,61 @@ class LiftLogController extends Controller
      */
     private function checkIfPR($liftLog, $exercise, $userId)
     {
-        // Get the weight from the first set
-        $currentWeight = $liftLog->liftSets()->first()->weight ?? 0;
+        $strategy = $exercise->getTypeStrategy();
         
-        // For bodyweight exercises, we don't track PRs
-        if ($exercise->exercise_type === 'bodyweight') {
+        // Only exercises that support 1RM calculation can have PRs
+        if (!$strategy->canCalculate1RM()) {
             return false;
         }
         
-        // Get the max weight for this exercise before this log
-        $previousMaxWeight = LiftLog::where('lift_logs.exercise_id', $exercise->id)
-            ->where('lift_logs.user_id', $userId)
-            ->where('lift_logs.id', '!=', $liftLog->id)
-            ->where('lift_logs.logged_at', '<', $liftLog->logged_at)
-            ->join('lift_sets', 'lift_logs.id', '=', 'lift_sets.lift_log_id')
-            ->max('lift_sets.weight');
+        // Get all previous lift logs for this exercise (before this one)
+        $previousLogs = LiftLog::where('exercise_id', $exercise->id)
+            ->where('user_id', $userId)
+            ->where('logged_at', '<', $liftLog->logged_at)
+            ->with('liftSets')
+            ->orderBy('logged_at', 'asc')
+            ->get();
         
-        // If no previous weight, this is the first log (a PR by default)
-        if ($previousMaxWeight === null) {
-            return true;
+        // Calculate the best estimated 1RM from the current log
+        $currentBest1RM = 0;
+        foreach ($liftLog->liftSets as $set) {
+            if ($set->weight > 0 && $set->reps > 0) {
+                try {
+                    $estimated1RM = $strategy->calculate1RM($set->weight, $set->reps, $liftLog);
+                    if ($estimated1RM > $currentBest1RM) {
+                        $currentBest1RM = $estimated1RM;
+                    }
+                } catch (\Exception $e) {
+                    continue;
+                }
+            }
         }
         
-        // Check if current weight is greater than previous max
-        return $currentWeight > $previousMaxWeight;
+        // If this is the first log, it's a PR
+        if ($previousLogs->isEmpty()) {
+            return $currentBest1RM > 0;
+        }
+        
+        // Find the best estimated 1RM from all previous logs
+        $previousBest1RM = 0;
+        foreach ($previousLogs as $log) {
+            foreach ($log->liftSets as $set) {
+                if ($set->weight > 0 && $set->reps > 0) {
+                    try {
+                        $estimated1RM = $strategy->calculate1RM($set->weight, $set->reps, $log);
+                        if ($estimated1RM > $previousBest1RM) {
+                            $previousBest1RM = $estimated1RM;
+                        }
+                    } catch (\Exception $e) {
+                        continue;
+                    }
+                }
+            }
+        }
+        
+        // This is a PR if the current 1RM beats the previous best
+        $tolerance = 0.1; // Small tolerance for floating point comparison
+        return $currentBest1RM > $previousBest1RM + $tolerance;
     }
 
 }
