@@ -29,7 +29,7 @@
     }
     
     /**
-     * Trigger confetti celebration with 10 randomized waves over 10 seconds
+     * Trigger confetti celebration with 3 randomized waves
      */
     function celebrateWithConfetti() {
         loadConfetti()
@@ -82,13 +82,13 @@
                     }
                 };
                 
-                // Create 10 waves with randomized timing
+                // Create 3 waves with randomized timing
                 const waves = [];
                 let cumulativeDelay = 0;
                 
-                for (let i = 0; i < 10; i++) {
-                    // Random delay between waves (800ms to 1200ms)
-                    const delay = i === 0 ? 0 : random(800, 1200);
+                for (let i = 0; i < 3; i++) {
+                    // Random delay between waves (400ms to 800ms)
+                    const delay = i === 0 ? 0 : random(400, 800);
                     cumulativeDelay += delay;
                     
                     waves.push({
