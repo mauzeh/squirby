@@ -34,7 +34,12 @@
             </div>
         @endif
         @auth
-        <div class="navbar @if(!app()->environment('production')) env-navbar-non-production @endif">
+        @php
+            $showAdminHues = request()->get('test_admin_hues') == '1' || 
+                            (app()->environment('production') && (auth()->user()->hasRole('Admin') || session()->has('impersonator_id')));
+            $showNonProdHues = !app()->environment('production') && request()->get('test_admin_hues') != '1';
+        @endphp
+        <div class="navbar @if($showNonProdHues) env-navbar-non-production @elseif($showAdminHues) env-navbar-admin-production @endif">
             @foreach($menuService->getMainMenu() as $item)
                 <a @if(isset($item['id']))id="{{ $item['id'] }}"@endif 
                    href="{{ route($item['route']) }}" 
@@ -64,7 +69,7 @@
         </div>
 
         @if ($menuService->shouldShowSubMenu())
-        <div class="navbar sub-navbar @if(!app()->environment('production')) env-navbar-non-production @endif">
+        <div class="navbar sub-navbar @if($showNonProdHues) env-navbar-non-production @elseif($showAdminHues) env-navbar-admin-production @endif">
             @foreach($menuService->getSubMenu() as $item)
                 <a href="{{ isset($item['routeParams']) ? route($item['route'], $item['routeParams']) : route($item['route']) }}" 
                    class="{{ $item['active'] ? 'active' : '' }}"

@@ -57,6 +57,22 @@ a {
     background-color: #007a00; /* More subtle green hue for hover state in non-production environments */
 }
 
+.env-navbar-admin-production {
+    background-color: #8b0000; /* Dark red for production admin/impersonation */
+}
+
+.sub-navbar.env-navbar-admin-production {
+    background-color: #660000; /* Darker red for the sub-nav */
+}
+
+.env-navbar-admin-production a.active, .env-navbar-admin-production a.active:hover {
+    background-color: #dc3545; /* Bright red for active links, maintained on hover */
+}
+
+.env-navbar-admin-production a:hover {
+    background-color: #a00000; /* More subtle red hue for hover state in production admin/impersonation */
+}
+
 .navbar a.top-level-nav-item i {
     margin-bottom: 5px;
 }
