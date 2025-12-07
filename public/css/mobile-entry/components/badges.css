@@ -52,19 +52,17 @@
 .table-badge--pr {
     background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
     font-weight: bold;
-    font-size: 0.9em;
-    padding: 5px 10px;
-    box-shadow: 0 0 0 0 rgba(255, 107, 53, 0.7);
+    box-shadow: 0 0 0 0 rgba(255, 107, 53, 1);
     animation: pr-pulse 2s infinite;
     position: relative;
 }
 
 @keyframes pr-pulse {
     0% {
-        box-shadow: 0 0 0 0 rgba(255, 107, 53, 0.7);
+        box-shadow: 0 0 0 0 rgba(255, 107, 53, 1);
     }
     50% {
-        box-shadow: 0 0 0 8px rgba(255, 107, 53, 0);
+        box-shadow: 0 0 0 15px rgba(255, 107, 53, 0);
     }
     100% {
         box-shadow: 0 0 0 0 rgba(255, 107, 53, 0);
