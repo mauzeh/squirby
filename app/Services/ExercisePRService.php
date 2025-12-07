@@ -74,7 +74,7 @@ class ExercisePRService
                         $bestForReps = [
                             'weight' => $set->weight,
                             'lift_log_id' => $log->id,
-                            'date' => $log->logged_at->format('Y-m-d'),
+                            'date' => $log->logged_at,
                             'is_estimated' => false,
                         ];
                     }
@@ -170,7 +170,7 @@ class ExercisePRService
                         $bestLift = [
                             'weight' => round($estimated1RM),
                             'lift_log_id' => $log->id,
-                            'date' => $log->logged_at->format('Y-m-d'),
+                            'date' => $log->logged_at,
                             'is_estimated' => true,
                             'based_on_reps' => $set->reps,
                             'based_on_weight' => $set->weight,

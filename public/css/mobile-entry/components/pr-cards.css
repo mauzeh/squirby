@@ -18,19 +18,28 @@
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: var(--spacing-md);
+    padding: 10px; /* Minimal padding for halo effect (10px) */
+    overflow: visible; /* Ensure halo effect is not clipped */
 }
 
 /* Horizontal Scrollable Container */
 .pr-cards-horizontal {
     display: flex;
     overflow-x: auto;
-    overflow-y: hidden;
+    overflow-y: visible; /* Allow halo to show vertically */
     scroll-snap-type: x mandatory;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: thin;
     scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
     gap: var(--spacing-md);
-    padding-bottom: var(--spacing-sm);
+    padding: 10px 10px 10px 0; /* Top/right/bottom padding for halo (10px), left handled by ::before */
+}
+
+/* Add invisible spacer before first card to prevent halo cutoff */
+.pr-cards-horizontal::before {
+    content: '';
+    flex: 0 0 0px; /* 0px width spacer - just to prevent scroll-snap alignment */
+    scroll-snap-align: start;
 }
 
 .pr-cards-horizontal::-webkit-scrollbar {
@@ -225,4 +234,43 @@
 .pr-card:focus-visible {
     outline: 2px solid var(--color-primary);
     outline-offset: 2px;
+}
+
+/* Recent PR Card - Special styling with pulsating halo effect (within 7 days) */
+.pr-card--recent {
+    background: radial-gradient(circle at center, #ff8a50 0%, #e65100 50%, #d84315 100%);
+    border-color: rgba(216, 67, 21, 0.5);
+    box-shadow: 0 0 0 0 rgba(230, 81, 0, 1);
+    animation: pr-card-pulse 2s infinite;
+    position: relative;
+}
+
+@keyframes pr-card-pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(230, 81, 0, 1);
+    }
+    50% {
+        box-shadow: 0 0 0 10px rgba(230, 81, 0, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(230, 81, 0, 0);
+    }
+}
+
+/* Ensure text remains readable on orange background with white text */
+.pr-card--recent .pr-card-label,
+.pr-card--recent .pr-card-value,
+.pr-card--recent .pr-card-unit,
+.pr-card--recent .pr-card-date {
+    color: white;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+/* Adjust hover effect for recent PR cards */
+@media (hover: hover) {
+    .pr-card--recent:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 0 0 0 rgba(230, 81, 0, 1), 0 4px 8px rgba(0, 0, 0, 0.4);
+        border-color: rgba(230, 81, 0, 0.8);
+    }
 }
