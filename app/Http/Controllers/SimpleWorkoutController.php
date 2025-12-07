@@ -20,9 +20,6 @@ class SimpleWorkoutController extends Controller
      */
     public function create()
     {
-        // Generate a default name with current date
-        $defaultName = 'New Workout - ' . Carbon::now()->format('M j, Y');
-        
         $components = [];
 
         // Title
@@ -33,18 +30,14 @@ class SimpleWorkoutController extends Controller
             ->info('Select exercises below to add them to your workout.')
             ->build();
 
-        // Add Exercise button
-        $components[] = C::button('Add Exercise')
-            ->ariaLabel('Add exercise to workout')
-            ->addClass('btn-add-item')
-            ->build();
-
-        // Exercise selection list
-        $itemSelectionList = $this->generateExerciseSelectionListForNew(Auth::id(), $defaultName);
+        // Exercise selection list - always expanded on create page
+        // Don't pass a default name - let the controller generate it based on the exercise
+        $itemSelectionList = $this->generateExerciseSelectionListForNew(Auth::id());
         
         $itemListBuilder = C::itemList()
             ->filterPlaceholder($itemSelectionList['filterPlaceholder'])
-            ->noResultsMessage($itemSelectionList['noResultsMessage']);
+            ->noResultsMessage($itemSelectionList['noResultsMessage'])
+            ->initialState('expanded');
 
         foreach ($itemSelectionList['items'] as $item) {
             $itemListBuilder->item(
@@ -68,12 +61,6 @@ class SimpleWorkoutController extends Controller
         }
 
         $components[] = $itemListBuilder->build();
-
-        // Workout name form
-        $components[] = C::form('edit-workout-name', 'Workout Name')
-            ->type('info')
-            ->textField('name', '', $defaultName, 'e.g., Push Day')
-            ->build();
 
         $data = ['components' => $components];
         return view('mobile-entry.flexible', compact('data'));
@@ -353,9 +340,13 @@ class SimpleWorkoutController extends Controller
 
         // Create workout if it doesn't exist (first exercise being added)
         if (!$workout) {
+            // Use provided name, or generate intelligent name based on exercise
+            $nameGenerator = app(\App\Services\WorkoutNameGenerator::class);
+            $name = $workoutName ?: $nameGenerator->generate($exercise);
+            
             $workout = Workout::create([
                 'user_id' => Auth::id(),
-                'name' => $workoutName ?: 'New Workout - ' . Carbon::now()->format('M j, Y'),
+                'name' => $name,
                 'description' => null,
                 'wod_syntax' => null,
                 'is_public' => false,
@@ -407,9 +398,12 @@ class SimpleWorkoutController extends Controller
 
         // Create workout if it doesn't exist (first exercise being added)
         if (!$workout) {
+            // For new exercises, use the exercise name as a hint for the workout name
+            $name = $validated['workout_name'] ?? $validated['exercise_name'] . ' Workout';
+            
             $workout = Workout::create([
                 'user_id' => Auth::id(),
-                'name' => $validated['workout_name'] ?? 'New Workout - ' . Carbon::now()->format('M j, Y'),
+                'name' => $name,
                 'description' => null,
                 'wod_syntax' => null,
                 'is_public' => false,
@@ -632,7 +626,7 @@ class SimpleWorkoutController extends Controller
     /**
      * Generate exercise selection list for new workout (no workout ID yet)
      */
-    private function generateExerciseSelectionListForNew($userId, $defaultName)
+    private function generateExerciseSelectionListForNew($userId)
     {
         // Get user's accessible exercises with aliases
         $exercises = \App\Models\Exercise::availableToUser($userId)
@@ -711,8 +705,7 @@ class SimpleWorkoutController extends Controller
                 'name' => $exercise->title,
                 'type' => $itemType,
                 'href' => route('simple-workouts.add-exercise-new', [
-                    'exercise' => $exercise->id,
-                    'workout_name' => $defaultName
+                    'exercise' => $exercise->id
                 ])
             ];
         }
@@ -740,12 +733,12 @@ class SimpleWorkoutController extends Controller
                 'action' => route('simple-workouts.create-exercise-new'),
                 'inputName' => 'exercise_name',
                 'buttonTextTemplate' => 'Create "{term}"',
-                'hiddenFields' => [
-                    'workout_name' => $defaultName
-                ]
+                'hiddenFields' => []
             ],
             'items' => $items,
             'filterPlaceholder' => 'Search exercises...'
         ];
     }
+
+
 }

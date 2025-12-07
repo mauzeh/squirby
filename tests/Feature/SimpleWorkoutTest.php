@@ -36,28 +36,37 @@ class SimpleWorkoutTest extends TestCase
         $response->assertOk();
         $response->assertSee('Select exercises below to add them to your workout.');
         
+        // Verify exercise list is configured to be expanded by default
+        $response->assertViewHas('data', function ($data) {
+            $components = $data['components'];
+            foreach ($components as $component) {
+                if (isset($component['type']) && $component['type'] === 'item-list') {
+                    return isset($component['data']['initialState']) && 
+                           $component['data']['initialState'] === 'expanded';
+                }
+            }
+            return false;
+        });
+        
         // Verify NO workout was created yet
         $this->assertDatabaseMissing('workouts', [
             'user_id' => $user->id,
         ]);
         
-        // Add first exercise - this creates the workout
+        // Add first exercise - this creates the workout with default name
         $response = $this->actingAs($user)->get(route('simple-workouts.add-exercise-new', [
             'exercise' => $exercise->id,
-            'workout_name' => 'My Test Workout'
         ]));
 
         $response->assertRedirect();
         
-        // NOW verify a workout was created
-        $this->assertDatabaseHas('workouts', [
-            'user_id' => $user->id,
-            'name' => 'My Test Workout',
-            'wod_syntax' => null, // Simple workouts have null wod_syntax
-        ]);
+        // Verify a workout was created (name will be date-based since no intelligence data)
+        $workout = Workout::where('user_id', $user->id)->first();
+        $this->assertNotNull($workout);
+        $this->assertStringContainsString('New Workout', $workout->name); // Falls back to date-based name
+        $this->assertNull($workout->wod_syntax); // Simple workouts have null wod_syntax
         
         // Verify exercise was added
-        $workout = Workout::where('user_id', $user->id)->first();
         $this->assertDatabaseHas('workout_exercises', [
             'workout_id' => $workout->id,
             'exercise_id' => $exercise->id,
@@ -81,6 +90,47 @@ class SimpleWorkoutTest extends TestCase
             'name' => 'Push Day',
             'description' => 'Upper body pushing exercises',
             'wod_syntax' => null, // Simple workouts have null wod_syntax
+        ]);
+    }
+
+    /** @test */
+    public function user_can_create_workout_by_creating_new_exercise()
+    {
+        $user = User::factory()->create();
+
+        // New flow: GET request shows form, no workout created yet
+        $response = $this->actingAs($user)->get(route('workouts.create-simple'));
+
+        $response->assertOk();
+        
+        // Verify NO workout was created yet
+        $this->assertDatabaseMissing('workouts', [
+            'user_id' => $user->id,
+        ]);
+        
+        // Create new exercise - this creates the workout with default name
+        $response = $this->actingAs($user)->post(route('simple-workouts.create-exercise-new'), [
+            'exercise_name' => 'Brand New Exercise',
+        ]);
+
+        $response->assertRedirect();
+        
+        // Verify workout was created with name based on exercise
+        $workout = Workout::where('user_id', $user->id)->first();
+        $this->assertNotNull($workout);
+        $this->assertEquals('Brand New Exercise Workout', $workout->name);
+        $this->assertNull($workout->wod_syntax);
+        
+        // Verify exercise was created
+        $this->assertDatabaseHas('exercises', [
+            'title' => 'Brand New Exercise',
+        ]);
+        
+        // Verify exercise was added to workout
+        $exercise = Exercise::where('title', 'Brand New Exercise')->first();
+        $this->assertDatabaseHas('workout_exercises', [
+            'workout_id' => $workout->id,
+            'exercise_id' => $exercise->id,
         ]);
     }
 
