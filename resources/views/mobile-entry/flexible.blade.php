@@ -15,6 +15,8 @@
     <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/pr-cards.css') }}">
     <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/calculator-grid.css') }}">
     <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/chart.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/markdown.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/code-editor.css') }}">
 @endsection
 
 @section('scripts')
@@ -37,7 +39,14 @@
         if (isset($data['components'])) {
             foreach ($data['components'] as $component) {
                 if (isset($component['requiresScript'])) {
-                    $requiredScripts[$component['requiresScript']] = true;
+                    // Support both string and array format
+                    $scripts = is_array($component['requiresScript']) 
+                        ? $component['requiresScript'] 
+                        : [$component['requiresScript']];
+                    
+                    foreach ($scripts as $script) {
+                        $requiredScripts[$script] = true;
+                    }
                 }
             }
         }

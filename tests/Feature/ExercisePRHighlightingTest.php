@@ -210,10 +210,12 @@ class ExercisePRHighlightingTest extends TestCase
 
         $response->assertStatus(200);
         
-        // Should only see 1 PR badge (for the 5 rep lift which has higher estimated 1RM)
+        // Should see 2 PR badges:
+        // - The 5 rep lift (highest estimated 1RM)
+        // - The 1 rep lift (rep-specific PR - heaviest 1-rep lift)
         $content = $response->getContent();
         $prBadgeCount = substr_count($content, '🏆 PR');
-        $this->assertEquals(1, $prBadgeCount, 'Expected only 1 PR badge - the 5 rep lift was the PR');
+        $this->assertEquals(2, $prBadgeCount, 'Expected 2 PR badges - both lifts are PRs (1RM and rep-specific)');
     }
 
     /** @test */

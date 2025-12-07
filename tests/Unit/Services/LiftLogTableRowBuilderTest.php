@@ -599,7 +599,8 @@ class LiftLogTableRowBuilderTest extends TestCase
             'reps' => 5
         ]);
 
-        // 250 lbs × 1 rep = 250 lbs estimated 1RM (NOT a PR - doesn't beat log1's 350)
+        // 250 lbs × 1 rep = 250 lbs estimated 1RM
+        // This IS a PR because it's the heaviest 1-rep lift (rep-specific PR for 1-5 reps)
         $log2 = LiftLog::factory()->create([
             'user_id' => $user->id,
             'exercise_id' => $exercise->id,
@@ -621,8 +622,8 @@ class LiftLogTableRowBuilderTest extends TestCase
         // log1 should be PR (first lift, and highest estimated 1RM)
         $this->assertEquals('row-pr', $rows[0]['cssClass']);
         
-        // log2 should not be PR (doesn't beat log1's estimated 1RM)
-        $this->assertNull($rows[1]['cssClass']);
+        // log2 should also be PR (rep-specific PR - heaviest 1-rep lift)
+        $this->assertEquals('row-pr', $rows[1]['cssClass']);
     }
 
     /** @test */

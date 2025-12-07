@@ -91,12 +91,15 @@ class ApplicationHealthTest extends TestCase
             'users.index',
             'users.create',
             'users.impersonate',
+            'workouts.create', // Advanced WOD syntax - admin only
             
             // Impersonation leave (requires active impersonation)
             'users.leave-impersonate',
             
             // Routes that require query parameters
             'lift-logs.create', // Requires exercise_id query parameter
+            'exercise-aliases.create', // Requires alias_name query parameter
+            'exercise-aliases.store', // Requires exercise_id and alias_name query parameters
             
             // API/utility routes
             'sanctum.csrf-cookie',

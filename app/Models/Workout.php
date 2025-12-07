@@ -14,10 +14,20 @@ class Workout extends Model
 {
     use HasFactory, LogsActivity;
 
+    protected static function booted()
+    {
+        static::saved(function ($workout) {
+            // Auto-sync exercises when wod_syntax changes
+            if (!empty($workout->wod_syntax) && $workout->isDirty('wod_syntax')) {
+                $workout->syncWodExercises();
+            }
+        });
+    }
+
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->logOnly(['user_id', 'name', 'description', 'notes', 'is_public', 'tags', 'times_used'])
+            ->logOnly(['user_id', 'name', 'description', 'notes', 'is_public', 'times_used'])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }
@@ -29,13 +39,12 @@ class Workout extends Model
         'description',
         'notes',
         'is_public',
-        'tags',
         'times_used',
+        'wod_syntax',
     ];
 
     protected $casts = [
         'is_public' => 'boolean',
-        'tags' => 'array',
         'times_used' => 'integer',
     ];
 
@@ -49,19 +58,7 @@ class Workout extends Model
         return $this->hasMany(WorkoutExercise::class)->orderBy('order');
     }
 
-    /**
-     * Apply this workout to a specific date for a user
-     * 
-     * Note: This method now just increments the usage counter.
-     * Users will click on individual exercises to log them via lift-logs/create.
-     */
-    public function applyToDate(Carbon $date, User $user): void
-    {
-        // No longer creates MobileLiftForm records
-        // Users navigate directly to lift-logs/create for each exercise
-        
-        $this->increment('times_used');
-    }
+
 
     /**
      * Create a copy of this workout for another user
@@ -72,18 +69,96 @@ class Workout extends Model
             'user_id' => $user->id,
             'name' => $this->name,
             'description' => $this->description,
+            'wod_syntax' => $this->wod_syntax,
             'is_public' => false,
-            'tags' => $this->tags,
         ]);
 
-        foreach ($this->exercises as $exercise) {
-            WorkoutExercise::create([
-                'workout_id' => $newWorkout->id,
-                'exercise_id' => $exercise->exercise_id,
-                'order' => $exercise->order,
-            ]);
-        }
+        // Exercises will be auto-synced via model event
 
         return $newWorkout;
+    }
+
+    /**
+     * Parse WOD syntax on-demand
+     */
+    public function getParsedWod(): ?array
+    {
+        if (empty($this->wod_syntax)) {
+            return null;
+        }
+
+        try {
+            $parser = app(\App\Services\WodParser::class);
+            return $parser->parse($this->wod_syntax);
+        } catch (\Exception $e) {
+            \Log::error('Failed to parse WOD syntax for workout ' . $this->id . ': ' . $e->getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Sync WOD exercises to workout_exercises table
+     * Extracts loggable exercises from parsed WOD and creates/updates workout_exercises records
+     */
+    public function syncWodExercises(): void
+    {
+        $parsed = $this->getParsedWod();
+        
+        if (!$parsed || !isset($parsed['blocks'])) {
+            return;
+        }
+
+        // Delete existing workout exercises for this WOD
+        $this->exercises()->delete();
+
+        $order = 1;
+        foreach ($parsed['blocks'] as $block) {
+            if (!isset($block['exercises'])) {
+                continue;
+            }
+
+            foreach ($block['exercises'] as $exerciseData) {
+                // Handle special formats (nested exercises)
+                if ($exerciseData['type'] === 'special_format' && isset($exerciseData['exercises'])) {
+                    foreach ($exerciseData['exercises'] as $nestedExercise) {
+                        if ($nestedExercise['type'] === 'exercise' && !empty($nestedExercise['loggable'])) {
+                            $this->createWorkoutExercise($nestedExercise, $order++);
+                        }
+                    }
+                    continue;
+                }
+
+                // Handle regular exercises
+                if ($exerciseData['type'] === 'exercise' && !empty($exerciseData['loggable'])) {
+                    $this->createWorkoutExercise($exerciseData, $order++);
+                }
+            }
+        }
+    }
+
+    /**
+     * Helper method to create a workout exercise
+     * Only links to existing exercises - does NOT auto-create them
+     * Uses ExerciseMatchingService to find exercises by name or alias
+     */
+    private function createWorkoutExercise(array $exerciseData, int $order): void
+    {
+        // Use the matching service to find exercise by name or alias
+        $matchingService = app(\App\Services\ExerciseMatchingService::class);
+        $exercise = $matchingService->findBestMatch($exerciseData['name'], $this->user_id);
+
+        if (!$exercise) {
+            // Exercise doesn't exist - skip it
+            // User should create exercises explicitly or use the alias system
+            return;
+        }
+
+        // Create workout exercise with scheme
+        WorkoutExercise::create([
+            'workout_id' => $this->id,
+            'exercise_id' => $exercise->id,
+            'order' => $order,
+            'scheme' => $exerciseData['scheme'] ?? null,
+        ]);
     }
 }

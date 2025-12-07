@@ -17,7 +17,6 @@ class WorkoutFactory extends Factory
             'name' => $this->faker->words(2, true),
             'description' => $this->faker->sentence(),
             'is_public' => false,
-            'tags' => [],
             'times_used' => 0,
         ];
     }

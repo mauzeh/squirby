@@ -274,11 +274,14 @@ class ExercisePRCardsIntegrationTest extends TestCase
         $response->assertSee('This 1-rep max is estimated based on your previous lifts');
         $response->assertSee('test your actual 1, 2, or 3 rep max');
         
-        // Should NOT show PR cards since there are no 1-3 rep tests
-        $response->assertDontSee('Heaviest Lifts');
-        $response->assertDontSee('1 × 1');
-        $response->assertDontSee('1 × 2');
-        $response->assertDontSee('1 × 3');
+        // Should show PR cards since we now track rep-specific PRs for 1-5 reps
+        $response->assertSee('Heaviest Lifts');
+        $response->assertSee('1 × 5'); // The 5-rep lift should be shown
+        
+        // PR cards show all rep ranges 1-10 (with empty cards for untested ranges)
+        $response->assertSee('1 × 1');
+        $response->assertSee('1 × 2');
+        $response->assertSee('1 × 3');
     }
 
     /** @test */

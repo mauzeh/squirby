@@ -15,7 +15,7 @@ class WorkoutExercise extends Model
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->logOnly(['workout_id', 'exercise_id', 'order'])
+            ->logOnly(['workout_id', 'exercise_id', 'order', 'scheme'])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }
@@ -25,6 +25,7 @@ class WorkoutExercise extends Model
         'workout_id',
         'exercise_id',
         'order',
+        'scheme',
     ];
 
     protected $casts = [

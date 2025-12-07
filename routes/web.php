@@ -74,17 +74,39 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('lift-logs', LiftLogController::class)->except(['show']);
 
+    // Exercise Matching Aliases
+    Route::get('exercise-aliases/create', [App\Http\Controllers\ExerciseMatchingAliasController::class, 'create'])->name('exercise-aliases.create');
+    Route::get('exercise-aliases/store', [App\Http\Controllers\ExerciseMatchingAliasController::class, 'store'])->name('exercise-aliases.store');
+    Route::post('exercise-aliases/create-and-link', [App\Http\Controllers\ExerciseMatchingAliasController::class, 'createAndLink'])->name('exercise-aliases.create-and-link');
+
     // Exercise Recommendations
     Route::get('recommendations', [RecommendationController::class, 'index'])->name('recommendations.index');
 
-    // Workouts
+    // API Routes
+    Route::get('api/exercises/autocomplete', [App\Http\Controllers\ApiController::class, 'exerciseAutocomplete'])->name('api.exercises.autocomplete');
+
+    // Workouts - Simple Mode
+    Route::get('workouts/create-simple', [App\Http\Controllers\SimpleWorkoutController::class, 'create'])
+        ->name('workouts.create-simple');
+    Route::post('workouts/store-simple', [App\Http\Controllers\SimpleWorkoutController::class, 'store'])
+        ->name('workouts.store-simple');
+    Route::get('workouts/{workout}/edit-simple', [App\Http\Controllers\SimpleWorkoutController::class, 'edit'])
+        ->name('workouts.edit-simple');
+    Route::put('workouts/{workout}/update-simple', [App\Http\Controllers\SimpleWorkoutController::class, 'update'])
+        ->name('workouts.update-simple');
+    
+    // Simple workout exercise management
+    Route::get('workouts/{workout}/add-exercise', [App\Http\Controllers\SimpleWorkoutController::class, 'addExercise'])
+        ->name('simple-workouts.add-exercise');
+    Route::post('workouts/{workout}/create-exercise', [App\Http\Controllers\SimpleWorkoutController::class, 'createExercise'])
+        ->name('simple-workouts.create-exercise');
+    Route::get('workouts/{workout}/exercises/{exercise}/move', [App\Http\Controllers\SimpleWorkoutController::class, 'moveExercise'])
+        ->name('simple-workouts.move-exercise');
+    Route::delete('workouts/{workout}/exercises/{exercise}', [App\Http\Controllers\SimpleWorkoutController::class, 'removeExercise'])
+        ->name('simple-workouts.remove-exercise');
+    
+    // Workouts - Advanced Mode (WOD Syntax)
     Route::resource('workouts', WorkoutController::class)->except(['show']);
-    Route::get('workouts/{workout}/add-exercise', [WorkoutController::class, 'addExercise'])->name('workouts.add-exercise');
-    Route::post('workouts/{workout}/create-exercise', [WorkoutController::class, 'createExercise'])->name('workouts.create-exercise');
-    Route::get('workouts/{workout}/exercises/{exercise}/move', [WorkoutController::class, 'moveExercise'])->name('workouts.move-exercise');
-    Route::delete('workouts/{workout}/exercises/{exercise}', [WorkoutController::class, 'removeExercise'])->name('workouts.remove-exercise');
-    Route::get('workouts-browse', [WorkoutController::class, 'browse'])->name('workouts.browse');
-    Route::get('workouts/{workout}/apply', [WorkoutController::class, 'apply'])->name('workouts.apply');
 
     // Mobile Entry - Supports date parameter
     Route::get('mobile-entry/lifts', [MobileEntryController::class, 'lifts'])->name('mobile-entry.lifts');
@@ -115,8 +137,7 @@ Route::middleware('auth')->group(function () {
     Route::match(['get', 'post'], 'labs/ingredient-entry', [LabsController::class, 'ingredientEntry'])->name('labs.ingredient-entry');
     Route::get('labs/chart-example', [LabsController::class, 'chartExample'])->name('labs.chart-example');
 
-    Route::post('workouts/apply-template', [WorkoutController::class, 'applyTemplate'])->name('workouts.apply-template');
-    Route::post('workouts/remove-exercise', [WorkoutController::class, 'removeExercise'])->name('workouts.remove-exercise');
+
 
 });
 
