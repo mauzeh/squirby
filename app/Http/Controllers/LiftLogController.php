@@ -275,10 +275,13 @@ class LiftLogController extends Controller
             ]);
         }
 
+        // Check if this is a PR
+        $isPR = $this->checkIfPR($liftLog, $exercise, auth()->id());
+
         // Note: MobileLiftForm is deprecated - we now use direct lift-logs/create flow
 
         // Generate a celebratory success message with workout details
-        $successMessage = $this->generateSuccessMessage($exercise, $request->input('weight'), $reps, $rounds, $request->input('band_color'));
+        $successMessage = $this->generateSuccessMessage($exercise, $request->input('weight'), $reps, $rounds, $request->input('band_color'), $isPR);
 
         return $this->redirectService->getRedirect(
             'lift_logs',
@@ -289,7 +292,7 @@ class LiftLogController extends Controller
                 'exercise' => $liftLog->exercise_id,
             ],
             $successMessage
-        );
+        )->with('is_pr', $isPR);
     }
 
     /**
@@ -449,9 +452,10 @@ class LiftLogController extends Controller
      * @param int $reps
      * @param int $rounds
      * @param string|null $bandColor
+     * @param bool $isPR
      * @return string
      */
-    private function generateSuccessMessage($exercise, $weight, $reps, $rounds, $bandColor = null)
+    private function generateSuccessMessage($exercise, $weight, $reps, $rounds, $bandColor = null, $isPR = false)
     {
         // Get display name (alias if exists, otherwise title)
         $aliasService = app(\App\Services\ExerciseAliasService::class);
@@ -466,7 +470,14 @@ class LiftLogController extends Controller
         $randomTemplate = $celebrationTemplates[array_rand($celebrationTemplates)];
         
         // Replace placeholders in the template
-        return str_replace([':exercise', ':details'], [$exerciseTitle, $workoutDescription], $randomTemplate);
+        $message = str_replace([':exercise', ':details'], [$exerciseTitle, $workoutDescription], $randomTemplate);
+        
+        // Add PR indicator if this is a personal record
+        if ($isPR) {
+            $message .= ' 🎉 NEW PR!';
+        }
+        
+        return $message;
     }
 
     /**
@@ -490,6 +501,41 @@ class LiftLogController extends Controller
         }
         
         return str_replace(':exercise', $exerciseTitle, config('mobile_entry_messages.success.lift_deleted'));
+    }
+
+    /**
+     * Check if the logged lift is a personal record
+     * 
+     * @param \App\Models\LiftLog $liftLog
+     * @param \App\Models\Exercise $exercise
+     * @param int $userId
+     * @return bool
+     */
+    private function checkIfPR($liftLog, $exercise, $userId)
+    {
+        // Get the weight from the first set
+        $currentWeight = $liftLog->liftSets()->first()->weight ?? 0;
+        
+        // For bodyweight exercises, we don't track PRs
+        if ($exercise->exercise_type === 'bodyweight') {
+            return false;
+        }
+        
+        // Get the max weight for this exercise before this log
+        $previousMaxWeight = LiftLog::where('lift_logs.exercise_id', $exercise->id)
+            ->where('lift_logs.user_id', $userId)
+            ->where('lift_logs.id', '!=', $liftLog->id)
+            ->where('lift_logs.logged_at', '<', $liftLog->logged_at)
+            ->join('lift_sets', 'lift_logs.id', '=', 'lift_sets.lift_log_id')
+            ->max('lift_sets.weight');
+        
+        // If no previous weight, this is the first log (a PR by default)
+        if ($previousMaxWeight === null) {
+            return true;
+        }
+        
+        // Check if current weight is greater than previous max
+        return $currentWeight > $previousMaxWeight;
     }
 
 }

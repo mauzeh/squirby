@@ -331,5 +331,218 @@ class LiftLogLoggingTest extends TestCase {
         $response->assertDontSee('lbs (est. incl. BW)');
     }
 
+    /** @test */
+    public function first_lift_log_is_marked_as_pr()
+    {
+        $exercise = \App\Models\Exercise::factory()->create(['user_id' => $this->user->id]);
+
+        $liftLogData = [
+            'exercise_id' => $exercise->id,
+            'weight' => 100,
+            'reps' => 5,
+            'rounds' => 3,
+            'comments' => 'First lift',
+            'date' => now()->format('Y-m-d'),
+            'logged_at' => '14:30',
+        ];
+
+        $response = $this->post(route('lift-logs.store'), $liftLogData);
+
+        // First lift should be marked as PR
+        $response->assertSessionHas('is_pr', true);
+        
+        // Success message should contain PR indicator
+        $successMessage = session('success');
+        $this->assertStringContainsString('NEW PR!', $successMessage);
+    }
+
+    /** @test */
+    public function heavier_lift_is_marked_as_pr()
+    {
+        $exercise = \App\Models\Exercise::factory()->create(['user_id' => $this->user->id]);
+
+        // Log first lift at 100 lbs
+        $firstLiftLog = \App\Models\LiftLog::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => now()->subDay(),
+        ]);
+        $firstLiftLog->liftSets()->create([
+            'weight' => 100,
+            'reps' => 5,
+            'notes' => 'First lift',
+        ]);
+
+        // Log second lift at 120 lbs (heavier = PR)
+        $liftLogData = [
+            'exercise_id' => $exercise->id,
+            'weight' => 120,
+            'reps' => 5,
+            'rounds' => 3,
+            'comments' => 'Heavier lift',
+            'date' => now()->format('Y-m-d'),
+            'logged_at' => '14:30',
+        ];
+
+        $response = $this->post(route('lift-logs.store'), $liftLogData);
+
+        // Heavier lift should be marked as PR
+        $response->assertSessionHas('is_pr', true);
+        
+        // Success message should contain PR indicator
+        $successMessage = session('success');
+        $this->assertStringContainsString('NEW PR!', $successMessage);
+    }
+
+    /** @test */
+    public function lighter_lift_is_not_marked_as_pr()
+    {
+        $exercise = \App\Models\Exercise::factory()->create(['user_id' => $this->user->id]);
+
+        // Log first lift at 120 lbs
+        $firstLiftLog = \App\Models\LiftLog::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => now()->subDay(),
+        ]);
+        $firstLiftLog->liftSets()->create([
+            'weight' => 120,
+            'reps' => 5,
+            'notes' => 'Heavy lift',
+        ]);
+
+        // Log second lift at 100 lbs (lighter = not a PR)
+        $liftLogData = [
+            'exercise_id' => $exercise->id,
+            'weight' => 100,
+            'reps' => 5,
+            'rounds' => 3,
+            'comments' => 'Lighter lift',
+            'date' => now()->format('Y-m-d'),
+            'logged_at' => '14:30',
+        ];
+
+        $response = $this->post(route('lift-logs.store'), $liftLogData);
+
+        // Lighter lift should NOT be marked as PR
+        $response->assertSessionHas('is_pr', false);
+        
+        // Success message should NOT contain PR indicator
+        $successMessage = session('success');
+        $this->assertStringNotContainsString('NEW PR!', $successMessage);
+    }
+
+    /** @test */
+    public function equal_weight_lift_is_not_marked_as_pr()
+    {
+        $exercise = \App\Models\Exercise::factory()->create(['user_id' => $this->user->id]);
+
+        // Log first lift at 100 lbs
+        $firstLiftLog = \App\Models\LiftLog::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => now()->subDay(),
+        ]);
+        $firstLiftLog->liftSets()->create([
+            'weight' => 100,
+            'reps' => 5,
+            'notes' => 'First lift',
+        ]);
+
+        // Log second lift at same weight (equal = not a PR)
+        $liftLogData = [
+            'exercise_id' => $exercise->id,
+            'weight' => 100,
+            'reps' => 5,
+            'rounds' => 3,
+            'comments' => 'Same weight',
+            'date' => now()->format('Y-m-d'),
+            'logged_at' => '14:30',
+        ];
+
+        $response = $this->post(route('lift-logs.store'), $liftLogData);
+
+        // Equal weight should NOT be marked as PR
+        $response->assertSessionHas('is_pr', false);
+        
+        // Success message should NOT contain PR indicator
+        $successMessage = session('success');
+        $this->assertStringNotContainsString('NEW PR!', $successMessage);
+    }
+
+    /** @test */
+    public function bodyweight_exercises_are_not_marked_as_pr()
+    {
+        $exercise = \App\Models\Exercise::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_type' => 'bodyweight'
+        ]);
+
+        $liftLogData = [
+            'exercise_id' => $exercise->id,
+            'weight' => 0,
+            'reps' => 10,
+            'rounds' => 3,
+            'comments' => 'Bodyweight exercise',
+            'date' => now()->format('Y-m-d'),
+            'logged_at' => '14:30',
+        ];
+
+        $response = $this->post(route('lift-logs.store'), $liftLogData);
+
+        // Bodyweight exercises should NOT be marked as PR
+        $response->assertSessionHas('is_pr', false);
+        
+        // Success message should NOT contain PR indicator
+        $successMessage = session('success');
+        $this->assertStringNotContainsString('NEW PR!', $successMessage);
+    }
+
+    /** @test */
+    public function pr_detection_only_considers_previous_lifts()
+    {
+        $exercise = \App\Models\Exercise::factory()->create(['user_id' => $this->user->id]);
+
+        // Log first lift at 100 lbs yesterday
+        $firstLiftLog = \App\Models\LiftLog::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => now()->subDay(),
+        ]);
+        $firstLiftLog->liftSets()->create([
+            'weight' => 100,
+            'reps' => 5,
+            'notes' => 'First lift',
+        ]);
+
+        // Log second lift at 120 lbs today (PR)
+        $secondLiftLog = \App\Models\LiftLog::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => now(),
+        ]);
+        $secondLiftLog->liftSets()->create([
+            'weight' => 120,
+            'reps' => 5,
+            'notes' => 'PR lift',
+        ]);
+
+        // Log third lift at 110 lbs tomorrow (not a PR, even though it's heavier than first)
+        $liftLogData = [
+            'exercise_id' => $exercise->id,
+            'weight' => 110,
+            'reps' => 5,
+            'rounds' => 3,
+            'comments' => 'Not a PR',
+            'date' => now()->addDay()->format('Y-m-d'),
+            'logged_at' => '14:30',
+        ];
+
+        $response = $this->post(route('lift-logs.store'), $liftLogData);
+
+        // Should NOT be marked as PR because 120 lbs was already logged
+        $response->assertSessionHas('is_pr', false);
+    }
+
 
 }
