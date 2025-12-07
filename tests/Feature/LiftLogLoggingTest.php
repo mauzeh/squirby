@@ -544,5 +544,121 @@ class LiftLogLoggingTest extends TestCase {
         $response->assertSessionHas('is_pr', false);
     }
 
+    /** @test */
+    public function pr_detection_works_independently_for_different_exercises()
+    {
+        // Create two different exercises
+        $backSquat = \App\Models\Exercise::factory()->create([
+            'user_id' => $this->user->id,
+            'title' => 'Back Squat'
+        ]);
+        $strictPress = \App\Models\Exercise::factory()->create([
+            'user_id' => $this->user->id,
+            'title' => 'Strict Press'
+        ]);
+
+        // Log Back Squat at 300 lbs (heavy exercise)
+        $backSquatLog = \App\Models\LiftLog::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $backSquat->id,
+            'logged_at' => now()->subDay(),
+        ]);
+        $backSquatLog->liftSets()->create([
+            'weight' => 300,
+            'reps' => 5,
+            'notes' => 'Heavy squat',
+        ]);
+
+        // Log Strict Press at 100 lbs (lighter exercise, but should still be a PR)
+        $strictPressData = [
+            'exercise_id' => $strictPress->id,
+            'weight' => 100,
+            'reps' => 5,
+            'rounds' => 1,
+            'comments' => 'First press',
+            'date' => now()->format('Y-m-d'),
+            'logged_at' => '14:30',
+        ];
+
+        $response = $this->post(route('lift-logs.store'), $strictPressData);
+
+        // Should be marked as PR even though 100 lbs < 300 lbs
+        // because they are different exercises
+        $response->assertSessionHas('is_pr', true);
+        
+        $successMessage = session('success');
+        $this->assertStringContainsString('NEW PR!', $successMessage);
+    }
+
+    /** @test */
+    public function pr_badges_display_correctly_for_multiple_exercises_on_same_day()
+    {
+        // Create two exercises
+        $backSquat = \App\Models\Exercise::factory()->create([
+            'user_id' => $this->user->id,
+            'title' => 'Back Squat'
+        ]);
+        $strictPress = \App\Models\Exercise::factory()->create([
+            'user_id' => $this->user->id,
+            'title' => 'Strict Press'
+        ]);
+
+        // Log previous lifts for both exercises
+        $prevSquat = \App\Models\LiftLog::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $backSquat->id,
+            'logged_at' => now()->subWeek(),
+        ]);
+        $prevSquat->liftSets()->create(['weight' => 250, 'reps' => 5, 'notes' => '']);
+
+        $prevPress = \App\Models\LiftLog::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $strictPress->id,
+            'logged_at' => now()->subWeek(),
+        ]);
+        $prevPress->liftSets()->create(['weight' => 80, 'reps' => 5, 'notes' => '']);
+
+        // Log PRs for both exercises today
+        $squatPR = \App\Models\LiftLog::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $backSquat->id,
+            'logged_at' => now(),
+        ]);
+        $squatPR->liftSets()->create(['weight' => 300, 'reps' => 5, 'notes' => '']);
+
+        $pressPR = \App\Models\LiftLog::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $strictPress->id,
+            'logged_at' => now(),
+        ]);
+        $pressPR->liftSets()->create(['weight' => 100, 'reps' => 5, 'notes' => '']);
+
+        // Use the table row builder to generate rows (simulating mobile-entry page)
+        $todaysLogs = \App\Models\LiftLog::where('user_id', $this->user->id)
+            ->whereDate('logged_at', now()->toDateString())
+            ->with(['exercise', 'liftSets'])
+            ->get();
+
+        $builder = app(\App\Services\LiftLogTableRowBuilder::class);
+        $rows = $builder->buildRows($todaysLogs, [
+            'showDateBadge' => false,
+            'showCheckbox' => false,
+        ]);
+
+        // Both should have PR badges
+        $squatRow = collect($rows)->firstWhere('id', $squatPR->id);
+        $pressRow = collect($rows)->firstWhere('id', $pressPR->id);
+
+        $this->assertNotNull($squatRow);
+        $this->assertNotNull($pressRow);
+
+        // Check that both have PR badges
+        $squatBadges = collect($squatRow['badges'])->pluck('text')->toArray();
+        $pressBadges = collect($pressRow['badges'])->pluck('text')->toArray();
+
+        $this->assertContains('🏆 PR', $squatBadges, 'Back Squat should have PR badge');
+        $this->assertContains('🏆 PR', $pressBadges, 'Strict Press should have PR badge');
+    }
+
 
 }
