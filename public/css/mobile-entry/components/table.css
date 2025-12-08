@@ -84,6 +84,22 @@ able Component - Tabular CRUD list optimized for narrow screens */
     background-color: rgba(255, 255, 255, 0.05);
 }
 
+/* Clickable rows (single link action) */
+.component-table-row.row-clickable {
+    cursor: pointer;
+    user-select: none;
+}
+
+@media (hover: hover) {
+    .component-table-row.row-clickable:hover {
+        background-color: rgba(0, 123, 255, 0.15);
+    }
+}
+
+.component-table-row.row-clickable:active {
+    background-color: rgba(0, 123, 255, 0.25);
+}
+
 /* Chevron icon indicator */
 .table-expand-icon {
     color: var(--text-secondary);

@@ -14,8 +14,11 @@
             $isCollapsible = $hasSubitems && ($row['collapsible'] ?? true);
             $initialState = $row['initialState'] ?? 'collapsed';
             $expandedClass = $initialState === 'expanded' ? ' expanded' : '';
+            // Check if this row has a clickable URL set
+            $isClickable = isset($row['clickableUrl']) && !empty($row['clickableUrl']);
+            $clickableUrl = $isClickable ? $row['clickableUrl'] : null;
         @endphp
-        <div class="component-table-row {{ $hasSubitems ? 'has-subitems' : '' }} {{ $isCollapsible ? 'is-collapsible' : '' }}{{ $expandedClass }}{{ isset($row['checkbox']) && $row['checkbox'] ? ' has-checkbox' : '' }}{{ isset($row['cssClass']) && $row['cssClass'] ? ' ' . $row['cssClass'] : '' }}" data-row-id="{{ $row['id'] }}" @if($isCollapsible) data-toggle-subitems="{{ $row['id'] }}" @endif>
+        <div class="component-table-row {{ $hasSubitems ? 'has-subitems' : '' }} {{ $isCollapsible ? 'is-collapsible' : '' }}{{ $expandedClass }}{{ isset($row['checkbox']) && $row['checkbox'] ? ' has-checkbox' : '' }}{{ isset($row['cssClass']) && $row['cssClass'] ? ' ' . $row['cssClass'] : '' }}{{ $isClickable ? ' row-clickable' : '' }}" data-row-id="{{ $row['id'] }}" @if($isCollapsible) data-toggle-subitems="{{ $row['id'] }}" @endif @if($isClickable) data-href="{{ $clickableUrl }}" @endif>
             @if(isset($row['checkbox']) && $row['checkbox'])
             <input type="checkbox" class="template-checkbox" value="{{ $row['id'] }}" style="width: 20px; height: 20px; margin-right: 10px; cursor: pointer; flex-shrink: 0;">
             @endif

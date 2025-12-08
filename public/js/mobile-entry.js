@@ -720,6 +720,40 @@ document.addEventListener('DOMContentLoaded', function() {
     setupTableExpand();
     
     /**
+     * Clickable Rows
+     * 
+     * Makes table rows with a single link action fully clickable.
+     * The entire row becomes a link for better mobile UX.
+     * Clicks on action buttons are still handled normally.
+     */
+    const setupClickableRows = () => {
+        const clickableRows = document.querySelectorAll('.component-table-row.row-clickable');
+        
+        clickableRows.forEach(row => {
+            row.addEventListener('click', function(event) {
+                // Ignore clicks on action buttons, links, or forms
+                if (event.target.closest('.component-table-actions') || 
+                    event.target.closest('a') || 
+                    event.target.closest('button') || 
+                    event.target.closest('form')) {
+                    return;
+                }
+                
+                // Get the href from data attribute
+                const href = this.dataset.href;
+                
+                if (href) {
+                    // Navigate to the URL
+                    window.location.href = href;
+                }
+            });
+        });
+    };
+    
+    // Initialize clickable rows
+    setupClickableRows();
+    
+    /**
      * Clickable Sub-Items
      * 
      * Makes sub-items with a single link action fully clickable.

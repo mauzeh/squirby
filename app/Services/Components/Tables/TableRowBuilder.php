@@ -158,6 +158,12 @@ class TableRowBuilder
         return $this;
     }
     
+    public function clickable(string $url): self
+    {
+        $this->data['clickableUrl'] = $url;
+        return $this;
+    }
+    
     public function add(): TableComponentBuilder
     {
         $this->parent->addRow($this->data);

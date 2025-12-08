@@ -6,7 +6,6 @@ use App\Http\Controllers\Concerns\DetectsSimpleWorkouts;
 use App\Models\Workout;
 use App\Models\WorkoutExercise;
 use App\Services\ComponentBuilder as C;
-use App\Services\WodLoggingService;
 use App\Services\WodDisplayService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -17,14 +16,10 @@ class WorkoutController extends Controller
     use \Illuminate\Foundation\Auth\Access\AuthorizesRequests;
     use DetectsSimpleWorkouts;
 
-    protected $wodLoggingService;
     protected $wodDisplayService;
 
-    public function __construct(
-        WodLoggingService $wodLoggingService, 
-        WodDisplayService $wodDisplayService
-    ) {
-        $this->wodLoggingService = $wodLoggingService;
+    public function __construct(WodDisplayService $wodDisplayService) 
+    {
         $this->wodDisplayService = $wodDisplayService;
     }
 
@@ -33,41 +28,11 @@ class WorkoutController extends Controller
      */
     public function index(Request $request)
     {
-        $today = Carbon::today();
-        $expandWorkoutId = $request->query('workout_id'); // For manual expansion after delete
-        
         // Get user's workouts
         $workouts = Workout::where('user_id', Auth::id())
-            ->with(['exercises.exercise.aliases'])
+            ->with(['exercises.exercise'])
             ->orderBy('name')
             ->get();
-
-        // Get today's logged exercises with their lift log data for this user
-        $todaysLiftLogs = \App\Models\LiftLog::where('user_id', Auth::id())
-            ->whereDate('logged_at', $today)
-            ->with(['liftSets'])
-            ->get();
-        
-        // Create a map of exercise_id => lift log for quick lookup
-        $loggedExerciseData = [];
-        foreach ($todaysLiftLogs as $log) {
-            $loggedExerciseData[$log->exercise_id] = $log;
-        }
-        
-        $loggedExerciseIds = array_keys($loggedExerciseData);
-
-        // Apply aliases to all exercises
-        $user = Auth::user();
-        $aliasService = app(\App\Services\ExerciseAliasService::class);
-        
-        foreach ($workouts as $workout) {
-            foreach ($workout->exercises as $workoutExercise) {
-                if ($workoutExercise->exercise) {
-                    $displayName = $aliasService->getDisplayName($workoutExercise->exercise, $user);
-                    $workoutExercise->exercise->title = $displayName;
-                }
-            }
-        }
 
         $components = [];
 
@@ -76,7 +41,7 @@ class WorkoutController extends Controller
             ->subtitle('Your workout programs')
             ->build();
 
-        // Table of workouts with exercises as sub-items
+        // Table of workouts
         if ($workouts->isNotEmpty()) {
             // Create buttons - admins get both options, regular users only get simple
             $components[] = C::button('Create Workout')
@@ -89,6 +54,7 @@ class WorkoutController extends Controller
                     ->asLink(route('workouts.create'))
                     ->build();
             }
+            
             $tableBuilder = C::table();
 
             foreach ($workouts as $workout) {
@@ -98,11 +64,10 @@ class WorkoutController extends Controller
                 $line1 = $workout->name;
                 
                 // Get exercises for display
-                $exercisesToDisplay = $workout->exercises->pluck('exercise.title')->toArray();
-                
-                $exerciseCount = count($exercisesToDisplay);
+                $exerciseCount = $workout->exercises->count();
                 if ($exerciseCount > 0) {
-                    $exerciseList = implode(', ', $exercisesToDisplay);
+                    $exerciseNames = $workout->exercises->pluck('exercise.title')->filter()->toArray();
+                    $exerciseList = implode(', ', $exerciseNames);
                     $line2 = $exerciseCount . ' ' . ($exerciseCount === 1 ? 'exercise' : 'exercises') . ': ' . $exerciseList;
                 } else {
                     $line2 = 'No exercises';
@@ -129,32 +94,15 @@ class WorkoutController extends Controller
                     $line3
                 );
                 
-                // Only add edit button if user has permission
+                // Make the entire row clickable if user has permission to edit
                 if ($editRoute) {
-                    $rowBuilder->linkAction('fa-info', $editRoute, 'View workout details', 'btn-info-circle');
+                    $rowBuilder->clickable($editRoute);
                 }
                 
-                $rowBuilder->compact();
-
-                // Check if this workout has any exercises logged today (for auto-expand)
-                $hasLoggedExercisesToday = false;
-
-                // Use WodLoggingService for consistent exercise display (works for both WOD and regular workouts)
-                $this->wodLoggingService->addWodExercisesToRow($rowBuilder, $workout, $today, $loggedExerciseData, $hasLoggedExercisesToday);
-
-                // Auto-expand workouts that have any exercises logged today
-                // OR if this workout was explicitly requested (e.g., after deletion)
-                // OR if there's only one workout (always show it expanded)
-                if ($hasLoggedExercisesToday || ($expandWorkoutId && $workout->id == $expandWorkoutId) || $workouts->count() === 1) {
-                    $rowBuilder->initialState('expanded');
-                }
-                
-                $rowBuilder->add();
+                $rowBuilder->compact()->add();
             }
 
-            $components[] = $tableBuilder
-                ->confirmMessage('deleteItem', 'Are you sure you want to delete this workout, exercise, or lift log? This action cannot be undone.')
-                ->build();
+            $components[] = $tableBuilder->build();
         } else {
             // Empty state: show message first, then buttons
             $components[] = C::messages()
@@ -360,37 +308,7 @@ class WorkoutController extends Controller
             ]
         ];
 
-        // Exercise Table (for workouts with exercises)
-        if ($workout->exercises->isNotEmpty()) {
-            $tableBuilder = C::table();
-            
-            // Create a dummy row for the workout
-            $rowBuilder = $tableBuilder->row(
-                $workout->id,
-                $workout->name,
-                null,
-                null
-            );
-            
-            // Add exercises as sub-items (same logic as index)
-            $today = Carbon::today();
-            $todaysLiftLogs = \App\Models\LiftLog::where('user_id', Auth::id())
-                ->whereDate('logged_at', $today)
-                ->with(['liftSets'])
-                ->get();
-            
-            $loggedExerciseData = [];
-            foreach ($todaysLiftLogs as $log) {
-                $loggedExerciseData[$log->exercise_id] = $log;
-            }
-            
-            $hasLoggedExercisesToday = false;
-            $this->wodLoggingService->addWodExercisesToRow($rowBuilder, $workout, $today, $loggedExerciseData, $hasLoggedExercisesToday);
-            
-            $rowBuilder->initialState('expanded')->add();
-            
-            $components[] = $tableBuilder->build();
-        }
+
 
         // Delete workout form
         $components[] = C::form('delete-workout', 'Removing this workout')
