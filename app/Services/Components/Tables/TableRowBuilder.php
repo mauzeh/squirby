@@ -127,6 +127,25 @@ class TableRowBuilder
         return $this;
     }
     
+    public function message(string $type, string $text, ?string $prefix = null): self
+    {
+        if (!isset($this->data['messages'])) {
+            $this->data['messages'] = [];
+        }
+        
+        $message = [
+            'type' => $type,
+            'text' => $text
+        ];
+        
+        if ($prefix !== null) {
+            $message['prefix'] = $prefix;
+        }
+        
+        $this->data['messages'][] = $message;
+        return $this;
+    }
+    
     public function collapsible(bool $collapsible = true): self
     {
         $this->data['collapsible'] = $collapsible;

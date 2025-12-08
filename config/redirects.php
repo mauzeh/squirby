@@ -26,6 +26,10 @@ return [
                 'route' => 'workouts.index',
                 'params' => ['workout_id'],
             ],
+            'simple-workout' => [
+                'route' => 'workouts.edit-simple',
+                'params' => ['workout_id'],
+            ],
             'exercises-logs' => [
                 'route' => 'exercises.show-logs',
                 'params' => ['exercise_id'],
@@ -46,6 +50,10 @@ return [
             ],
             'workouts' => [
                 'route' => 'workouts.index',
+                'params' => ['workout_id'],
+            ],
+            'simple-workout' => [
+                'route' => 'workouts.edit-simple',
                 'params' => ['workout_id'],
             ],
             'exercises-logs' => [

@@ -41,6 +41,16 @@
                     @endforeach
                 </div>
                 @endif
+                @if(isset($row['messages']) && !empty($row['messages']))
+                    @foreach($row['messages'] as $message)
+                    <div class="component-message component-message--{{ $message['type'] }}">
+                        @if(isset($message['prefix']) && !empty($message['prefix']))
+                        <span class="message-prefix">{{ $message['prefix'] }}</span>
+                        @endif
+                        {!! $message['text'] !!}
+                    </div>
+                    @endforeach
+                @endif
                 @if(isset($row['line3']) && !empty($row['line3']))
                 <div class="cell-detail">{!! $row['line3'] !!}</div>
                 @endif

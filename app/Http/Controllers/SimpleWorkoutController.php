@@ -189,10 +189,34 @@ class SimpleWorkoutController extends Controller
             $tableBuilder = C::table();
             
             $exerciseCount = $workout->exercises->count();
+            
+            // Get today's logged exercises for this user
+            $today = \Carbon\Carbon::today();
+            $todaysLiftLogs = \App\Models\LiftLog::where('user_id', Auth::id())
+                ->whereDate('logged_at', $today)
+                ->with(['liftSets'])
+                ->get();
+            
+            // Create a map of exercise_id => lift log for quick lookup
+            $loggedExerciseData = [];
+            foreach ($todaysLiftLogs as $log) {
+                $loggedExerciseData[$log->exercise_id] = $log;
+            }
 
             foreach ($workout->exercises as $index => $exercise) {
                 $line1 = $exercise->exercise->title;
-                $line2 = 'Priority: ' . $exercise->order;
+                
+                // Check if this exercise was logged today
+                $isLoggedToday = isset($loggedExerciseData[$exercise->exercise_id]);
+                
+                if ($isLoggedToday) {
+                    // Don't show line2 for logged exercises - we'll use a message instead
+                    $line2 = null;
+                } else {
+                    // Show helpful message about logging
+                    $line2 = 'Tap play to begin logging';
+                }
+                
                 $line3 = null;
                 
                 $isFirst = $index === 0;
@@ -200,6 +224,25 @@ class SimpleWorkoutController extends Controller
                 
                 $rowBuilder = $tableBuilder->row($exercise->id, $line1, $line2, $line3)
                     ->compact(); // Enable compact mode for smaller buttons
+                
+                // Add green message box for logged exercises
+                if ($isLoggedToday) {
+                    $liftLog = $loggedExerciseData[$exercise->exercise_id];
+                    $strategy = $exercise->exercise->getTypeStrategy();
+                    $loggedData = $strategy->formatLoggedItemDisplay($liftLog);
+                    $rowBuilder->message('success', $loggedData, 'Completed:');
+                }
+                
+                // Add play button to start logging (only if not logged today)
+                if (!$isLoggedToday) {
+                    $logUrl = route('lift-logs.create', [
+                        'exercise_id' => $exercise->exercise_id,
+                        'date' => $today->toDateString(),
+                        'redirect_to' => 'simple-workout',
+                        'workout_id' => $workout->id
+                    ]);
+                    $rowBuilder->linkAction('fa-play', $logUrl, 'Log now', 'btn-log-now');
+                }
                 
                 // Show only one arrow button to save space:
                 // - Last item shows up arrow (to move it up)

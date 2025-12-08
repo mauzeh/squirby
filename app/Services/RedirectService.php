@@ -98,14 +98,25 @@ class RedirectService
             }
 
             // Special handling for workout_id parameter
-            // Keep as 'workout_id' for query parameter
+            // For workouts.edit-simple route, it needs 'workout' as route parameter
+            // For workouts.index route, it needs 'workout_id' as query parameter
             if ($paramName === 'workout_id') {
+                $workoutId = null;
                 if (isset($context['workout_id'])) {
-                    $params['workout_id'] = $context['workout_id'];
-                    continue;
+                    $workoutId = $context['workout_id'];
+                } elseif ($request->has('workout_id')) {
+                    $workoutId = $request->input('workout_id');
                 }
-                if ($request->has('workout_id')) {
-                    $params['workout_id'] = $request->input('workout_id');
+                
+                if ($workoutId !== null) {
+                    // Check if this is for workouts.edit-simple route (needs 'workout' param)
+                    $redirectTo = $request->input('redirect_to', 'default');
+                    if ($redirectTo === 'simple-workout') {
+                        $params['workout'] = $workoutId;
+                    } else {
+                        // For other routes, keep as query parameter
+                        $params['workout_id'] = $workoutId;
+                    }
                     continue;
                 }
             }

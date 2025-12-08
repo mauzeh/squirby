@@ -506,42 +506,58 @@ class SimpleWorkoutTest extends TestCase
                 return false;
             }
             
-            // Check first row (not last): should have compact mode and down arrow only
+            // Check first row (not last): should have compact mode, play button, down arrow, and delete
             $firstRow = $rows[0];
             if (!isset($firstRow['compact']) || $firstRow['compact'] !== true) {
                 return false;
             }
-            if (count($firstRow['actions']) !== 2) { // down arrow + delete
+            if (count($firstRow['actions']) !== 3) { // play + down arrow + delete
                 return false;
             }
-            // First action should be down arrow
-            if ($firstRow['actions'][0]['icon'] !== 'fa-arrow-down') {
+            // First action should be play button
+            if ($firstRow['actions'][0]['icon'] !== 'fa-play') {
+                return false;
+            }
+            // Second action should be down arrow
+            if ($firstRow['actions'][1]['icon'] !== 'fa-arrow-down') {
+                return false;
+            }
+            // Verify redirect_to parameter is 'simple-workout'
+            if (strpos($firstRow['actions'][0]['url'], 'redirect_to=simple-workout') === false) {
                 return false;
             }
             
-            // Check middle row (not last): should have compact mode and down arrow only
+            // Check middle row (not last): should have compact mode, play button, down arrow, and delete
             $middleRow = $rows[1];
             if (!isset($middleRow['compact']) || $middleRow['compact'] !== true) {
                 return false;
             }
-            if (count($middleRow['actions']) !== 2) { // down arrow + delete
+            if (count($middleRow['actions']) !== 3) { // play + down arrow + delete
                 return false;
             }
-            // First action should be down arrow
-            if ($middleRow['actions'][0]['icon'] !== 'fa-arrow-down') {
+            // First action should be play button
+            if ($middleRow['actions'][0]['icon'] !== 'fa-play') {
+                return false;
+            }
+            // Second action should be down arrow
+            if ($middleRow['actions'][1]['icon'] !== 'fa-arrow-down') {
                 return false;
             }
             
-            // Check last row: should have compact mode and up arrow only
+            // Check last row: should have compact mode, play button, up arrow, and delete
             $lastRow = $rows[2];
             if (!isset($lastRow['compact']) || $lastRow['compact'] !== true) {
                 return false;
             }
-            if (count($lastRow['actions']) !== 2) { // up arrow + delete
+            if (count($lastRow['actions']) !== 3) { // play + up arrow + delete
                 return false;
             }
-            // First action should be up arrow
-            if ($lastRow['actions'][0]['icon'] !== 'fa-arrow-up') {
+            // First action should be play button
+            if ($lastRow['actions'][0]['icon'] !== 'fa-play') {
+                return false;
+            }
+            // Second action should be up arrow
+            if ($lastRow['actions'][1]['icon'] !== 'fa-arrow-up') {
                 return false;
             }
             
@@ -594,20 +610,334 @@ class SimpleWorkoutTest extends TestCase
                 return false;
             }
             
-            // Single row should have compact mode and only delete button (no arrows)
+            // Single row should have compact mode and play + delete buttons (no arrows)
             $row = $rows[0];
             if (!isset($row['compact']) || $row['compact'] !== true) {
                 return false;
             }
-            if (count($row['actions']) !== 1) { // only delete
+            if (count($row['actions']) !== 2) { // play + delete
                 return false;
             }
-            // Only action should be delete (trash icon)
+            // First action should be play button
+            if ($row['actions'][0]['icon'] !== 'fa-play') {
+                return false;
+            }
+            // Second action should be delete (trash icon)
+            if ($row['actions'][1]['icon'] !== 'fa-trash') {
+                return false;
+            }
+            
+            return true;
+        });
+    }
+
+    /** @test */
+    public function workout_edit_shows_play_button_for_each_exercise()
+    {
+        $user = User::factory()->create();
+        $workout = Workout::factory()->create([
+            'user_id' => $user->id,
+            'wod_syntax' => null,
+        ]);
+        
+        $exercise = Exercise::factory()->create(['user_id' => null, 'title' => 'Bench Press']);
+        
+        WorkoutExercise::create([
+            'workout_id' => $workout->id,
+            'exercise_id' => $exercise->id,
+            'order' => 1,
+        ]);
+
+        $response = $this->actingAs($user)->get(route('workouts.edit-simple', $workout->id));
+
+        $response->assertOk();
+        
+        // Verify play button exists and links to lift-logs/create
+        $response->assertViewHas('data', function ($data) use ($exercise, $workout) {
+            $components = $data['components'];
+            
+            // Find the table component
+            $tableComponent = null;
+            foreach ($components as $component) {
+                if (isset($component['type']) && $component['type'] === 'table') {
+                    $tableComponent = $component;
+                    break;
+                }
+            }
+            
+            if (!$tableComponent) {
+                return false;
+            }
+            
+            $rows = $tableComponent['data']['rows'];
+            $row = $rows[0];
+            
+            // Check for play button
+            $hasPlayButton = false;
+            foreach ($row['actions'] as $action) {
+                if ($action['icon'] === 'fa-play' && $action['type'] === 'link') {
+                    $hasPlayButton = true;
+                    // Verify URL contains exercise_id and workout_id
+                    if (strpos($action['url'], 'exercise_id=' . $exercise->id) === false) {
+                        return false;
+                    }
+                    if (strpos($action['url'], 'workout_id=' . $workout->id) === false) {
+                        return false;
+                    }
+                }
+            }
+            
+            return $hasPlayButton;
+        });
+    }
+
+    /** @test */
+    public function workout_edit_shows_helpful_message_when_exercise_not_logged()
+    {
+        $user = User::factory()->create();
+        $workout = Workout::factory()->create([
+            'user_id' => $user->id,
+            'wod_syntax' => null,
+        ]);
+        
+        $exercise = Exercise::factory()->create(['user_id' => null, 'title' => 'Squat']);
+        
+        WorkoutExercise::create([
+            'workout_id' => $workout->id,
+            'exercise_id' => $exercise->id,
+            'order' => 1,
+        ]);
+
+        $response = $this->actingAs($user)->get(route('workouts.edit-simple', $workout->id));
+
+        $response->assertOk();
+        $response->assertSee('Tap play to begin logging');
+    }
+
+    /** @test */
+    public function workout_edit_shows_logged_data_when_exercise_logged_today()
+    {
+        $user = User::factory()->create();
+        $workout = Workout::factory()->create([
+            'user_id' => $user->id,
+            'wod_syntax' => null,
+        ]);
+        
+        $exercise = Exercise::factory()->create(['user_id' => null, 'title' => 'Deadlift']);
+        
+        WorkoutExercise::create([
+            'workout_id' => $workout->id,
+            'exercise_id' => $exercise->id,
+            'order' => 1,
+        ]);
+
+        // Log the exercise today
+        $liftLog = \App\Models\LiftLog::create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => \Carbon\Carbon::now(),
+        ]);
+
+        \App\Models\LiftSet::create([
+            'lift_log_id' => $liftLog->id,
+            'weight' => 225,
+            'reps' => 5,
+            'set_number' => 1,
+        ]);
+
+        $response = $this->actingAs($user)->get(route('workouts.edit-simple', $workout->id));
+
+        $response->assertOk();
+        // Should show the logged data instead of "Tap play to begin logging"
+        $response->assertDontSee('Tap play to begin logging');
+        $response->assertSee('225'); // Should see the weight
+    }
+
+    /** @test */
+    public function workout_edit_hides_play_button_when_exercise_logged_today()
+    {
+        $user = User::factory()->create();
+        $workout = Workout::factory()->create([
+            'user_id' => $user->id,
+            'wod_syntax' => null,
+        ]);
+        
+        $exercise = Exercise::factory()->create(['user_id' => null, 'title' => 'Squat']);
+        
+        WorkoutExercise::create([
+            'workout_id' => $workout->id,
+            'exercise_id' => $exercise->id,
+            'order' => 1,
+        ]);
+
+        // Log the exercise today
+        $liftLog = \App\Models\LiftLog::create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => \Carbon\Carbon::now(),
+        ]);
+
+        \App\Models\LiftSet::create([
+            'lift_log_id' => $liftLog->id,
+            'weight' => 315,
+            'reps' => 3,
+            'set_number' => 1,
+        ]);
+
+        $response = $this->actingAs($user)->get(route('workouts.edit-simple', $workout->id));
+
+        $response->assertOk();
+        
+        // Verify play button is hidden when exercise is logged
+        $response->assertViewHas('data', function ($data) {
+            $components = $data['components'];
+            
+            // Find the table component
+            $tableComponent = null;
+            foreach ($components as $component) {
+                if (isset($component['type']) && $component['type'] === 'table') {
+                    $tableComponent = $component;
+                    break;
+                }
+            }
+            
+            if (!$tableComponent) {
+                return false;
+            }
+            
+            $rows = $tableComponent['data']['rows'];
+            $row = $rows[0];
+            
+            // Should only have delete button (no play button since it's logged)
+            if (count($row['actions']) !== 1) {
+                return false;
+            }
+            
+            // The only action should be delete (trash icon)
             if ($row['actions'][0]['icon'] !== 'fa-trash') {
                 return false;
             }
             
             return true;
         });
+    }
+
+    /** @test */
+    public function workout_edit_shows_green_message_box_for_logged_exercises()
+    {
+        $user = User::factory()->create();
+        $workout = Workout::factory()->create([
+            'user_id' => $user->id,
+            'wod_syntax' => null,
+        ]);
+        
+        $exercise = Exercise::factory()->create(['user_id' => null, 'title' => 'Bench Press']);
+        
+        WorkoutExercise::create([
+            'workout_id' => $workout->id,
+            'exercise_id' => $exercise->id,
+            'order' => 1,
+        ]);
+
+        // Log the exercise today
+        $liftLog = \App\Models\LiftLog::create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => \Carbon\Carbon::now(),
+        ]);
+
+        \App\Models\LiftSet::create([
+            'lift_log_id' => $liftLog->id,
+            'weight' => 185,
+            'reps' => 8,
+            'set_number' => 1,
+        ]);
+
+        $response = $this->actingAs($user)->get(route('workouts.edit-simple', $workout->id));
+
+        $response->assertOk();
+        
+        // Verify green success message is present
+        $response->assertViewHas('data', function ($data) {
+            $components = $data['components'];
+            
+            // Find the table component
+            $tableComponent = null;
+            foreach ($components as $component) {
+                if (isset($component['type']) && $component['type'] === 'table') {
+                    $tableComponent = $component;
+                    break;
+                }
+            }
+            
+            if (!$tableComponent) {
+                return false;
+            }
+            
+            $rows = $tableComponent['data']['rows'];
+            $row = $rows[0];
+            
+            // Should have messages array
+            if (!isset($row['messages']) || !is_array($row['messages'])) {
+                return false;
+            }
+            
+            // Should have at least one message
+            if (count($row['messages']) === 0) {
+                return false;
+            }
+            
+            $message = $row['messages'][0];
+            
+            // Message should be type 'success' (green)
+            if ($message['type'] !== 'success') {
+                return false;
+            }
+            
+            // Message should have 'Completed:' prefix
+            if ($message['prefix'] !== 'Completed:') {
+                return false;
+            }
+            
+            // Message text should contain the logged data (weight and reps)
+            if (strpos($message['text'], '185') === false) {
+                return false;
+            }
+            
+            return true;
+        });
+    }
+
+    /** @test */
+    public function logging_exercise_from_simple_workout_redirects_back_to_workout_editor()
+    {
+        $user = User::factory()->create();
+        $workout = Workout::factory()->create([
+            'user_id' => $user->id,
+            'wod_syntax' => null,
+        ]);
+        
+        $exercise = Exercise::factory()->create(['user_id' => null, 'title' => 'Deadlift']);
+        
+        WorkoutExercise::create([
+            'workout_id' => $workout->id,
+            'exercise_id' => $exercise->id,
+            'order' => 1,
+        ]);
+
+        // Submit a lift log with redirect_to=simple-workout
+        $response = $this->actingAs($user)->post(route('lift-logs.store'), [
+            'exercise_id' => $exercise->id,
+            'weight' => 405,
+            'reps' => 1,
+            'rounds' => 1,
+            'date' => \Carbon\Carbon::today()->toDateString(),
+            'time' => '14:00',
+            'redirect_to' => 'simple-workout',
+            'workout_id' => $workout->id,
+        ]);
+
+        // Should redirect back to the simple workout editor
+        $response->assertRedirect(route('workouts.edit-simple', $workout->id));
     }
 }
