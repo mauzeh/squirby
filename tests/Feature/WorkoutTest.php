@@ -33,7 +33,8 @@ class WorkoutTest extends TestCase
         $response = $this->actingAs($user)->get(route('workouts.index'));
 
         $response->assertOk();
-        $response->assertSee($workout->name);
+        // Workout with no exercises shows "Empty Workout"
+        $response->assertSee('Empty Workout');
     }
 
     /** @test */
@@ -126,10 +127,8 @@ class WorkoutTest extends TestCase
         $response = $this->actingAs($user)->get(route('workouts.index'));
 
         $response->assertOk();
-        $response->assertSee('2 exercises:');
-        // Note: Index page shows original exercise names, not aliases
-        $response->assertSee('Bench Press');
-        $response->assertSee('Squat');
+        // With 2 exercises without intelligence, it shows the exercise names directly
+        $response->assertSee('Bench Press & Squat', false);
     }
 
     /** @test */
@@ -164,7 +163,8 @@ class WorkoutTest extends TestCase
         $response = $this->actingAs($user)->get(route('workouts.index'));
 
         $response->assertOk();
-        $response->assertSee('3 exercises:');
+        // With 3+ exercises, "Bench Press" in name triggers "Upper Body" fallback
+        $response->assertSee('Upper Body • 3 exercises', false);
         $response->assertSee('Bench Press, Dips, Tricep Extensions');
     }
 
@@ -223,8 +223,9 @@ class WorkoutTest extends TestCase
         $response = $this->actingAs($user)->get(route('workouts.index'));
 
         $response->assertOk();
-        $response->assertSee('Test Workout');
-        $response->assertSee('1 exercise: Bench Press');
+        // With 1 exercise without intelligence, it just shows the exercise name
+        $response->assertSee('Bench Press');
+        $response->assertDontSee('Test Workout');
         
         // Verify the row is clickable (has clickableUrl set)
         $response->assertViewHas('data', function ($data) use ($workout) {
