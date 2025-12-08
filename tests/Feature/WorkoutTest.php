@@ -302,4 +302,131 @@ class WorkoutTest extends TestCase
         // Regular user should not see admin's workout
         $response->assertDontSee('Advanced Workout');
     }
+
+    /** @test */
+    public function simple_workouts_use_generated_labels_in_index()
+    {
+        $user = User::factory()->create();
+        
+        // Create a simple workout (no wod_syntax)
+        $workout = Workout::factory()->create([
+            'user_id' => $user->id,
+            'name' => 'Workout', // Generic name for simple workouts
+            'wod_syntax' => null,
+        ]);
+        
+        // Add exercises with intelligence data
+        $exercise1 = Exercise::factory()->create(['title' => 'Bench Press', 'user_id' => null]);
+        $exercise2 = Exercise::factory()->create(['title' => 'Overhead Press', 'user_id' => null]);
+        
+        // Create intelligence data for push exercises
+        \App\Models\ExerciseIntelligence::create([
+            'exercise_id' => $exercise1->id,
+            'muscle_data' => json_encode([]),
+            'primary_mover' => 'chest',
+            'largest_muscle' => 'chest',
+            'movement_archetype' => 'push',
+            'category' => 'strength',
+            'difficulty_level' => 3,
+        ]);
+        
+        \App\Models\ExerciseIntelligence::create([
+            'exercise_id' => $exercise2->id,
+            'muscle_data' => json_encode([]),
+            'primary_mover' => 'shoulders',
+            'largest_muscle' => 'shoulders',
+            'movement_archetype' => 'push',
+            'category' => 'strength',
+            'difficulty_level' => 3,
+        ]);
+        
+        WorkoutExercise::create(['workout_id' => $workout->id, 'exercise_id' => $exercise1->id, 'order' => 1]);
+        WorkoutExercise::create(['workout_id' => $workout->id, 'exercise_id' => $exercise2->id, 'order' => 2]);
+        
+        $response = $this->actingAs($user)->get(route('workouts.index'));
+        
+        $response->assertOk();
+        // Should show generated label, not the stored name
+        $response->assertSee('Push Day • 2 exercises', false);
+        // Verify the generated label is used by checking the view data
+        $response->assertViewHas('data', function ($data) {
+            $components = $data['components'];
+            foreach ($components as $component) {
+                if (isset($component['type']) && $component['type'] === 'table') {
+                    $rows = $component['data']['rows'];
+                    if (!empty($rows)) {
+                        // First row should have the generated label, not "Workout"
+                        return $rows[0]['line1'] === 'Push Day • 2 exercises';
+                    }
+                }
+            }
+            return false;
+        });
+    }
+
+    /** @test */
+    public function advanced_workouts_use_stored_name_in_index()
+    {
+        $adminRole = Role::where('name', 'Admin')->first();
+        $admin = User::factory()->create();
+        $admin->roles()->attach($adminRole);
+        
+        // Create an advanced workout with custom name
+        $workout = Workout::factory()->create([
+            'user_id' => $admin->id,
+            'name' => 'My Custom Advanced Workout',
+            'wod_syntax' => '[[Bench Press]]: 5x5',
+        ]);
+        
+        $exercise = Exercise::factory()->create(['title' => 'Bench Press', 'user_id' => null]);
+        WorkoutExercise::create(['workout_id' => $workout->id, 'exercise_id' => $exercise->id, 'order' => 1]);
+        
+        $response = $this->actingAs($admin)->get(route('workouts.index'));
+        
+        $response->assertOk();
+        // Should show the stored custom name, not a generated label
+        $response->assertSee('My Custom Advanced Workout');
+    }
+
+    /** @test */
+    public function mixed_workout_list_shows_correct_labels_for_each_type()
+    {
+        $adminRole = Role::where('name', 'Admin')->first();
+        $admin = User::factory()->create();
+        $admin->roles()->attach($adminRole);
+        
+        // Create a simple workout
+        $simpleWorkout = Workout::factory()->create([
+            'user_id' => $admin->id,
+            'name' => 'Workout',
+            'wod_syntax' => null,
+        ]);
+        
+        $pullUp = Exercise::factory()->create(['title' => 'Pull-Up', 'user_id' => null]);
+        \App\Models\ExerciseIntelligence::create([
+            'exercise_id' => $pullUp->id,
+            'muscle_data' => json_encode([]),
+            'primary_mover' => 'back',
+            'largest_muscle' => 'back',
+            'movement_archetype' => 'pull',
+            'category' => 'strength',
+            'difficulty_level' => 3,
+        ]);
+        WorkoutExercise::create(['workout_id' => $simpleWorkout->id, 'exercise_id' => $pullUp->id, 'order' => 1]);
+        
+        // Create an advanced workout
+        $advancedWorkout = Workout::factory()->create([
+            'user_id' => $admin->id,
+            'name' => 'Murph WOD',
+            'wod_syntax' => 'For Time:\n1 Mile Run\n100 [[Pull-ups]]\n200 [[Push-ups]]\n300 [[Air Squats]]\n1 Mile Run',
+        ]);
+        
+        $response = $this->actingAs($admin)->get(route('workouts.index'));
+        
+        $response->assertOk();
+        // Simple workout should show generated label
+        $response->assertSee('Pull Day • 1 exercise', false);
+        // Advanced workout should show stored name
+        $response->assertSee('Murph WOD');
+    }
 }

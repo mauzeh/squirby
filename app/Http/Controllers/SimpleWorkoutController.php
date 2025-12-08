@@ -128,8 +128,11 @@ class SimpleWorkoutController extends Controller
 
         $components = [];
 
-        // Title with back button
-        $components[] = C::title($workout->name)
+        // Title with back button - use generated label instead of stored name
+        $nameGenerator = app(\App\Services\WorkoutNameGenerator::class);
+        $workoutLabel = $nameGenerator->generateFromWorkout($workout);
+        
+        $components[] = C::title($workoutLabel)
             ->subtitle('Edit workout')
             ->backButton('fa-arrow-left', route('workouts.index'), 'Back to workouts')
             ->build();
@@ -283,15 +286,6 @@ class SimpleWorkoutController extends Controller
                 ->build();
         }
 
-        // Workout name form at bottom
-        $components[] = C::form('edit-workout-name', 'Rename Workout')
-            ->type('info')
-            ->formAction(route('workouts.update-simple', $workout->id))
-            ->textField('name', '', $workout->name, 'e.g., Push Day')
-            ->hiddenField('_method', 'PUT')
-            ->submitButton('Rename')
-            ->build();
-
         // Delete workout button
         $components[] = [
             'type' => 'delete-button',
@@ -372,9 +366,9 @@ class SimpleWorkoutController extends Controller
 
         // Create workout if it doesn't exist (first exercise being added)
         if (!$workout) {
-            // Use provided name, or generate intelligent name based on exercise
-            $nameGenerator = app(\App\Services\WorkoutNameGenerator::class);
-            $name = $workoutName ?: $nameGenerator->generate($exercise);
+            // For simple workouts, use a generic name since we generate labels dynamically
+            // The name field is kept for advanced workouts but not used for simple ones
+            $name = $workoutName ?: 'Workout';
             
             $workout = Workout::create([
                 'user_id' => Auth::id(),

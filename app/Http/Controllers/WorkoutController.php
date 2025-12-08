@@ -61,9 +61,14 @@ class WorkoutController extends Controller
                 $isSimple = $this->isSimpleWorkout($workout);
                 $isAdmin = $this->canAccessAdvancedWorkouts();
                 
-                // Generate intelligent label based on exercises
-                $nameGenerator = app(\App\Services\WorkoutNameGenerator::class);
-                $line1 = $nameGenerator->generateFromWorkout($workout);
+                // For simple workouts, generate intelligent label based on exercises
+                // For advanced workouts, use the stored name
+                if ($isSimple) {
+                    $nameGenerator = app(\App\Services\WorkoutNameGenerator::class);
+                    $line1 = $nameGenerator->generateFromWorkout($workout);
+                } else {
+                    $line1 = $workout->name;
+                }
                 
                 // Get exercises for display
                 $exerciseCount = $workout->exercises->count();
