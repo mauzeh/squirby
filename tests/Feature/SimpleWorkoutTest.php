@@ -446,4 +446,168 @@ class SimpleWorkoutTest extends TestCase
 
         $response->assertForbidden();
     }
+
+    /** @test */
+    public function workout_edit_table_uses_compact_mode_and_single_arrow_buttons()
+    {
+        $user = User::factory()->create();
+        $workout = Workout::factory()->create([
+            'user_id' => $user->id,
+            'wod_syntax' => null,
+        ]);
+        
+        $exercise1 = Exercise::factory()->create(['user_id' => null, 'title' => 'Exercise 1']);
+        $exercise2 = Exercise::factory()->create(['user_id' => null, 'title' => 'Exercise 2']);
+        $exercise3 = Exercise::factory()->create(['user_id' => null, 'title' => 'Exercise 3']);
+        
+        WorkoutExercise::create([
+            'workout_id' => $workout->id,
+            'exercise_id' => $exercise1->id,
+            'order' => 1,
+        ]);
+        
+        WorkoutExercise::create([
+            'workout_id' => $workout->id,
+            'exercise_id' => $exercise2->id,
+            'order' => 2,
+        ]);
+        
+        WorkoutExercise::create([
+            'workout_id' => $workout->id,
+            'exercise_id' => $exercise3->id,
+            'order' => 3,
+        ]);
+
+        $response = $this->actingAs($user)->get(route('workouts.edit-simple', $workout->id));
+
+        $response->assertOk();
+        
+        // Verify table component structure
+        $response->assertViewHas('data', function ($data) {
+            $components = $data['components'];
+            
+            // Find the table component
+            $tableComponent = null;
+            foreach ($components as $component) {
+                if (isset($component['type']) && $component['type'] === 'table') {
+                    $tableComponent = $component;
+                    break;
+                }
+            }
+            
+            if (!$tableComponent) {
+                return false;
+            }
+            
+            $rows = $tableComponent['data']['rows'];
+            
+            // Should have 3 rows
+            if (count($rows) !== 3) {
+                return false;
+            }
+            
+            // Check first row (not last): should have compact mode and down arrow only
+            $firstRow = $rows[0];
+            if (!isset($firstRow['compact']) || $firstRow['compact'] !== true) {
+                return false;
+            }
+            if (count($firstRow['actions']) !== 2) { // down arrow + delete
+                return false;
+            }
+            // First action should be down arrow
+            if ($firstRow['actions'][0]['icon'] !== 'fa-arrow-down') {
+                return false;
+            }
+            
+            // Check middle row (not last): should have compact mode and down arrow only
+            $middleRow = $rows[1];
+            if (!isset($middleRow['compact']) || $middleRow['compact'] !== true) {
+                return false;
+            }
+            if (count($middleRow['actions']) !== 2) { // down arrow + delete
+                return false;
+            }
+            // First action should be down arrow
+            if ($middleRow['actions'][0]['icon'] !== 'fa-arrow-down') {
+                return false;
+            }
+            
+            // Check last row: should have compact mode and up arrow only
+            $lastRow = $rows[2];
+            if (!isset($lastRow['compact']) || $lastRow['compact'] !== true) {
+                return false;
+            }
+            if (count($lastRow['actions']) !== 2) { // up arrow + delete
+                return false;
+            }
+            // First action should be up arrow
+            if ($lastRow['actions'][0]['icon'] !== 'fa-arrow-up') {
+                return false;
+            }
+            
+            return true;
+        });
+    }
+
+    /** @test */
+    public function workout_with_single_exercise_shows_no_arrow_buttons()
+    {
+        $user = User::factory()->create();
+        $workout = Workout::factory()->create([
+            'user_id' => $user->id,
+            'wod_syntax' => null,
+        ]);
+        
+        $exercise = Exercise::factory()->create(['user_id' => null, 'title' => 'Single Exercise']);
+        
+        WorkoutExercise::create([
+            'workout_id' => $workout->id,
+            'exercise_id' => $exercise->id,
+            'order' => 1,
+        ]);
+
+        $response = $this->actingAs($user)->get(route('workouts.edit-simple', $workout->id));
+
+        $response->assertOk();
+        
+        // Verify table component structure
+        $response->assertViewHas('data', function ($data) {
+            $components = $data['components'];
+            
+            // Find the table component
+            $tableComponent = null;
+            foreach ($components as $component) {
+                if (isset($component['type']) && $component['type'] === 'table') {
+                    $tableComponent = $component;
+                    break;
+                }
+            }
+            
+            if (!$tableComponent) {
+                return false;
+            }
+            
+            $rows = $tableComponent['data']['rows'];
+            
+            // Should have 1 row
+            if (count($rows) !== 1) {
+                return false;
+            }
+            
+            // Single row should have compact mode and only delete button (no arrows)
+            $row = $rows[0];
+            if (!isset($row['compact']) || $row['compact'] !== true) {
+                return false;
+            }
+            if (count($row['actions']) !== 1) { // only delete
+                return false;
+            }
+            // Only action should be delete (trash icon)
+            if ($row['actions'][0]['icon'] !== 'fa-trash') {
+                return false;
+            }
+            
+            return true;
+        });
+    }
 }

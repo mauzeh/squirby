@@ -198,39 +198,28 @@ class SimpleWorkoutController extends Controller
                 $isFirst = $index === 0;
                 $isLast = $index === $exerciseCount - 1;
                 
-                $rowBuilder = $tableBuilder->row($exercise->id, $line1, $line2, $line3);
+                $rowBuilder = $tableBuilder->row($exercise->id, $line1, $line2, $line3)
+                    ->compact(); // Enable compact mode for smaller buttons
                 
-                // Add move up button (disabled if first)
-                if (!$isFirst) {
+                // Show only one arrow button to save space:
+                // - Last item shows up arrow (to move it up)
+                // - All other items show down arrow (to move them down)
+                if ($isLast && !$isFirst) {
+                    // Last item: show up arrow
                     $rowBuilder->linkAction(
                         'fa-arrow-up',
                         route('simple-workouts.move-exercise', [$workout->id, $exercise->id, 'direction' => 'up']),
                         'Move up'
                     );
-                } else {
-                    $rowBuilder->linkAction(
-                        'fa-arrow-up',
-                        '#',
-                        'Move up',
-                        'btn-disabled'
-                    );
-                }
-                
-                // Add move down button (disabled if last)
-                if (!$isLast) {
+                } elseif (!$isLast) {
+                    // Not last item: show down arrow
                     $rowBuilder->linkAction(
                         'fa-arrow-down',
                         route('simple-workouts.move-exercise', [$workout->id, $exercise->id, 'direction' => 'down']),
                         'Move down'
                     );
-                } else {
-                    $rowBuilder->linkAction(
-                        'fa-arrow-down',
-                        '#',
-                        'Move down',
-                        'btn-disabled'
-                    );
                 }
+                // Note: If there's only one item (isFirst && isLast), no arrow is shown
                 
                 // Add delete button
                 $rowBuilder->formAction(
