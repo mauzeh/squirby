@@ -38,7 +38,7 @@ class WorkoutController extends Controller
 
         // Title
         $components[] = C::title('Workouts')
-            ->subtitle('Your workout programs')
+            ->subtitle('Tap a workout to edit exercises and log your lifts')
             ->build();
 
         // Table of workouts
@@ -99,7 +99,7 @@ class WorkoutController extends Controller
                     $rowBuilder->clickable($editRoute);
                 }
                 
-                $rowBuilder->compact()->add();
+                $rowBuilder->wrapText()->compact()->add();
             }
 
             $components[] = $tableBuilder->build();

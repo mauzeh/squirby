@@ -59,7 +59,9 @@
                 @endif
             </div>
             <div class="component-table-actions{{ isset($row['compact']) && $row['compact'] ? ' actions-compact' : '' }}{{ isset($row['wrapActions']) && $row['wrapActions'] ? ' actions-wrap' : '' }}">
-                @if(isset($row['actions']) && !empty($row['actions']))
+                @if($isClickable)
+                <i class="fas fa-chevron-right table-chevron-icon"></i>
+                @elseif(isset($row['actions']) && !empty($row['actions']))
                     {{-- New format: custom actions --}}
                     @foreach($row['actions'] as $action)
                         @if($action['type'] === 'link')

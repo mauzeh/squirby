@@ -120,6 +120,22 @@ able Component - Tabular CRUD list optimized for narrow screens */
     }
 }
 
+/* Chevron icon for clickable rows */
+.table-chevron-icon {
+    color: var(--text-secondary);
+    font-size: 1.2em;
+    flex-shrink: 0;
+    align-self: center;
+    transition: all var(--transition-fast);
+}
+
+@media (hover: hover) {
+    .component-table-row.row-clickable:hover .table-chevron-icon {
+        color: var(--text-primary);
+        transform: translateX(4px);
+    }
+}
+
 @media (hover: hover) {
     .component-table-row:hover {
         background-color: var(--input-bg);
