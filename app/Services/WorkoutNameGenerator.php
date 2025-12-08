@@ -13,7 +13,7 @@ class WorkoutNameGenerator
     /**
      * Generate an intelligent workout label based on all exercises in the workout
      */
-    public function generateFromWorkout(Workout $workout): string
+    public function generateFromWorkout(Workout $workout, bool $includeCount = true): string
     {
         $exercises = $workout->exercises()->with('exercise.intelligence')->get();
         
@@ -28,21 +28,30 @@ class WorkoutNameGenerator
         // If we have intelligence data, always use intelligent labels
         if (!empty($archetypes)) {
             $label = $this->determineLabel($archetypes, $categories, $exercises);
-            return $label . ' • ' . $exercises->count() . ($exercises->count() === 1 ? ' exercise' : ' exercises');
+            if ($includeCount) {
+                return $label . ' • ' . $exercises->count() . ($exercises->count() === 1 ? ' exercise' : ' exercises');
+            }
+            return $label;
         }
         
         // Fallback: For 1-2 exercises without intelligence, just list them
         if ($exercises->count() <= 2) {
             $names = $exercises->pluck('exercise.title')->filter()->toArray();
             if (count($names) === 0) {
-                return 'Workout • ' . $exercises->count() . ' exercises';
+                if ($includeCount) {
+                    return 'Workout • ' . $exercises->count() . ' exercises';
+                }
+                return 'Workout';
             }
             return implode(' & ', $names);
         }
         
         // For 3+ exercises without intelligence, use fallback label
         $label = $this->fallbackLabel($exercises);
-        return $label . ' • ' . $exercises->count() . ' exercises';
+        if ($includeCount) {
+            return $label . ' • ' . $exercises->count() . ' exercises';
+        }
+        return $label;
     }
     
     /**

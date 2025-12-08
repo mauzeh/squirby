@@ -128,9 +128,9 @@ class SimpleWorkoutController extends Controller
 
         $components = [];
 
-        // Title with back button - use generated label instead of stored name
+        // Title with back button - use generated label without exercise count
         $nameGenerator = app(\App\Services\WorkoutNameGenerator::class);
-        $workoutLabel = $nameGenerator->generateFromWorkout($workout);
+        $workoutLabel = $nameGenerator->generateFromWorkout($workout, false);
         
         $components[] = C::title($workoutLabel)
             ->subtitle('Edit workout')
