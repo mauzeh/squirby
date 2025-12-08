@@ -67,8 +67,7 @@ class WorkoutController extends Controller
                 $exerciseCount = $workout->exercises->count();
                 if ($exerciseCount > 0) {
                     $exerciseNames = $workout->exercises->pluck('exercise.title')->filter()->toArray();
-                    $exerciseList = implode(', ', $exerciseNames);
-                    $line2 = $exerciseCount . ' ' . ($exerciseCount === 1 ? 'exercise' : 'exercises') . ': ' . $exerciseList;
+                    $line2 = implode(', ', $exerciseNames);
                 } else {
                     $line2 = 'No exercises';
                 }
