@@ -370,14 +370,34 @@ able Component - Tabular CRUD list optimized for narrow screens */
     outline-offset: 2px;
 }
 
-/* Log now button - green variant for sub-items */
+/* Log now button - green variant with pulsating halo */
 .btn-log-now {
     background-color: var(--color-success) !important;
+    animation: pulse-halo 2s ease-in-out infinite;
+}
+
+@keyframes pulse-halo {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
+    }
+    50% {
+        box-shadow: 0 0 0 8px rgba(34, 197, 94, 0);
+    }
 }
 
 @media (hover: hover) {
     .btn-log-now:hover {
         background-color: var(--color-success-hover) !important;
+        animation: pulse-halo-hover 2s ease-in-out infinite;
+    }
+}
+
+@keyframes pulse-halo-hover {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.9);
+    }
+    50% {
+        box-shadow: 0 0 0 10px rgba(34, 197, 94, 0);
     }
 }
 

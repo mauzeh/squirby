@@ -297,6 +297,48 @@ class SimpleWorkoutTest extends TestCase
             'user_id' => $user->id,
             'wod_syntax' => null,
         ]);
+        
+        // Add two exercises
+        $exercise1 = Exercise::factory()->create(['user_id' => null]);
+        $exercise2 = Exercise::factory()->create(['user_id' => null]);
+        
+        $we1 = WorkoutExercise::create([
+            'workout_id' => $workout->id,
+            'exercise_id' => $exercise1->id,
+            'order' => 1,
+        ]);
+        
+        WorkoutExercise::create([
+            'workout_id' => $workout->id,
+            'exercise_id' => $exercise2->id,
+            'order' => 2,
+        ]);
+
+        $response = $this->actingAs($user)->delete(route('simple-workouts.remove-exercise', [
+            'workout' => $workout->id,
+            'exercise' => $we1->id,
+        ]));
+
+        $response->assertRedirect(route('workouts.edit-simple', $workout->id));
+        $response->assertSessionHas('success', 'Exercise removed!');
+        $this->assertDatabaseMissing('workout_exercises', [
+            'id' => $we1->id,
+        ]);
+        // Workout should still exist
+        $this->assertDatabaseHas('workouts', [
+            'id' => $workout->id,
+        ]);
+    }
+
+    /** @test */
+    public function removing_last_exercise_from_simple_workout_deletes_workout()
+    {
+        $user = User::factory()->create();
+        $workout = Workout::factory()->create([
+            'user_id' => $user->id,
+            'wod_syntax' => null, // Simple workout
+        ]);
+        
         $exercise = Exercise::factory()->create(['user_id' => null]);
         
         $we = WorkoutExercise::create([
@@ -310,10 +352,58 @@ class SimpleWorkoutTest extends TestCase
             'exercise' => $we->id,
         ]));
 
-        $response->assertRedirect(route('workouts.edit-simple', $workout->id));
-        $response->assertSessionHas('success', 'Exercise removed!');
+        // Should redirect to workout index, not back to edit page
+        $response->assertRedirect(route('workouts.index'));
+        $response->assertSessionHas('success', 'Last exercise removed. Workout deleted.');
+        
+        // Exercise should be removed
         $this->assertDatabaseMissing('workout_exercises', [
             'id' => $we->id,
+        ]);
+        
+        // Workout should be deleted
+        $this->assertDatabaseMissing('workouts', [
+            'id' => $workout->id,
+        ]);
+    }
+
+    /** @test */
+    public function removing_last_exercise_from_advanced_workout_does_not_delete_workout()
+    {
+        $adminRole = Role::where('name', 'Admin')->first();
+        $admin = User::factory()->create();
+        $admin->roles()->attach($adminRole);
+        
+        $workout = Workout::factory()->create([
+            'user_id' => $admin->id,
+            'wod_syntax' => '[[Bench Press]]: 5x5', // Advanced workout
+        ]);
+        
+        $exercise = Exercise::factory()->create(['user_id' => null]);
+        
+        $we = WorkoutExercise::create([
+            'workout_id' => $workout->id,
+            'exercise_id' => $exercise->id,
+            'order' => 1,
+        ]);
+
+        $response = $this->actingAs($admin)->delete(route('simple-workouts.remove-exercise', [
+            'workout' => $workout->id,
+            'exercise' => $we->id,
+        ]));
+
+        // Should redirect back to edit page
+        $response->assertRedirect(route('workouts.edit-simple', $workout->id));
+        $response->assertSessionHas('success', 'Exercise removed!');
+        
+        // Exercise should be removed
+        $this->assertDatabaseMissing('workout_exercises', [
+            'id' => $we->id,
+        ]);
+        
+        // Workout should still exist (advanced workouts are not auto-deleted)
+        $this->assertDatabaseHas('workouts', [
+            'id' => $workout->id,
         ]);
     }
 

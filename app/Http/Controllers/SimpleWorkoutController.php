@@ -251,30 +251,32 @@ class SimpleWorkoutController extends Controller
                 // - Last item shows up arrow (to move it up)
                 // - All other items show down arrow (to move them down)
                 if ($isLast && !$isFirst) {
-                    // Last item: show up arrow
+                    // Last item: show up arrow (transparent)
                     $rowBuilder->linkAction(
                         'fa-arrow-up',
                         route('simple-workouts.move-exercise', [$workout->id, $exercise->id, 'direction' => 'up']),
-                        'Move up'
+                        'Move up',
+                        'btn-transparent'
                     );
                 } elseif (!$isLast) {
-                    // Not last item: show down arrow
+                    // Not last item: show down arrow (transparent)
                     $rowBuilder->linkAction(
                         'fa-arrow-down',
                         route('simple-workouts.move-exercise', [$workout->id, $exercise->id, 'direction' => 'down']),
-                        'Move down'
+                        'Move down',
+                        'btn-transparent'
                     );
                 }
                 // Note: If there's only one item (isFirst && isLast), no arrow is shown
                 
-                // Add delete button
+                // Add delete button (transparent)
                 $rowBuilder->formAction(
                     'fa-trash',
                     route('simple-workouts.remove-exercise', [$workout->id, $exercise->id]),
                     'DELETE',
                     [],
                     'Remove exercise',
-                    '',
+                    'btn-transparent',
                     true
                 );
                 
@@ -517,7 +519,21 @@ class SimpleWorkoutController extends Controller
             abort(404);
         }
 
+        // Check if this is the last exercise in the workout
+        $exerciseCount = $workout->exercises()->count();
+        $isLastExercise = $exerciseCount === 1;
+        $isSimpleWorkout = $this->isSimpleWorkout($workout);
+
         $exercise->delete();
+
+        // If this was the last exercise in a simple workout, delete the workout entirely
+        if ($isLastExercise && $isSimpleWorkout) {
+            $workout->delete();
+            
+            return redirect()
+                ->route('workouts.index')
+                ->with('success', 'Last exercise removed. Workout deleted.');
+        }
 
         return redirect()
             ->route('workouts.edit-simple', $workout->id)
