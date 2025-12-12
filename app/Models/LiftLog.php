@@ -16,7 +16,7 @@ class LiftLog extends Model
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->logOnly(['exercise_id', 'comments', 'logged_at', 'user_id'])
+            ->logOnly(['exercise_id', 'comments', 'logged_at', 'user_id', 'workout_id'])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }
@@ -29,6 +29,7 @@ class LiftLog extends Model
         'comments',
         'logged_at',
         'user_id',
+        'workout_id',
     ];
 
     protected $casts = [
@@ -136,5 +137,10 @@ class LiftLog extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function workout()
+    {
+        return $this->belongsTo(Workout::class);
     }
 }

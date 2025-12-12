@@ -206,6 +206,7 @@ class LiftLogController extends Controller
             'comments' => $request->input('comments'),
             'logged_at' => $loggedAt,
             'user_id' => auth()->id(),
+            'workout_id' => $request->input('workout_id'),
         ]);
 
         LiftLogged::dispatch($liftLog);
