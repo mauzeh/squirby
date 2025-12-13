@@ -408,7 +408,8 @@ able Component - Tabular CRUD list optimized for narrow screens */
 
 /* Compact actions container - makes all buttons 75% size */
 .component-table-actions.actions-compact .btn-table-edit,
-.component-table-actions.actions-compact .btn-table-delete {
+.component-table-actions.actions-compact .btn-table-delete,
+.component-table-actions.actions-compact .btn-table-edit.btn-secondary {
     width: var(--touch-target-compact);
     height: var(--touch-target-compact);
     font-size: 15px;

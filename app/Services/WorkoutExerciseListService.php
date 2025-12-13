@@ -11,10 +11,14 @@ use Carbon\Carbon;
 class WorkoutExerciseListService
 {
     protected $aliasService;
+    protected $exerciseMatchingService;
 
-    public function __construct(\App\Services\ExerciseAliasService $aliasService)
-    {
+    public function __construct(
+        \App\Services\ExerciseAliasService $aliasService,
+        \App\Services\ExerciseMatchingService $exerciseMatchingService
+    ) {
         $this->aliasService = $aliasService;
+        $this->exerciseMatchingService = $exerciseMatchingService;
     }
 
     /**
@@ -521,14 +525,12 @@ class WorkoutExerciseListService
             ];
         }
 
-        // Find actual Exercise models for these names
-        $exercises = \App\Models\Exercise::whereIn('title', $exerciseNames)
-            ->availableToUser(Auth::id())
-            ->with(['aliases' => function ($query) {
-                $query->where('user_id', Auth::id());
-            }])
-            ->get()
-            ->keyBy('title');
+        // Use fuzzy matching to find exercises (similar to WOD Display)
+        $matchedExercises = [];
+        foreach ($exerciseNames as $exerciseName) {
+            $matchedExercise = $this->exerciseMatchingService->findBestMatch($exerciseName, Auth::id());
+            $matchedExercises[$exerciseName] = $matchedExercise;
+        }
 
         // Get today's logged exercises for this user if showing logged status
         $loggedExerciseData = [];
@@ -549,12 +551,12 @@ class WorkoutExerciseListService
         $user = Auth::user();
 
         foreach ($exerciseNames as $index => $exerciseName) {
-            $exercise = $exercises->get($exerciseName);
+            $exercise = $matchedExercises[$exerciseName];
             
             if (!$exercise) {
-                // Exercise doesn't exist in database - show as unavailable
+                // Exercise not found - show with alias creation option
                 $line1 = $exerciseName;
-                $line2 = 'Exercise not found - create it first';
+                $line2 = 'Exercise not found - create alias to link it';
                 $line3 = null;
                 
                 $rowBuilder = $tableBuilder->row($index, $line1, $line2, $line3);
@@ -563,14 +565,26 @@ class WorkoutExerciseListService
                     $rowBuilder->compact();
                 }
                 
+                // Add alias creation button instead of play button
+                $aliasUrl = route('exercise-aliases.create', [
+                    'alias_name' => $exerciseName,
+                    'workout_id' => $workout->id
+                ]);
+                $rowBuilder->linkAction('fa-link', $aliasUrl, 'Create alias', 'btn-secondary');
+                
                 $rowBuilder->add();
                 continue;
             }
 
-            // Apply alias if exists
+            // Apply alias if exists (preserve original WOD name if it's an alias)
             $displayName = $this->aliasService->getDisplayName($exercise, $user);
             
-            $line1 = $displayName;
+            // If the WOD name differs from the exercise title, show both
+            if (strtolower($exerciseName) !== strtolower($exercise->title)) {
+                $line1 = $exerciseName . ' → ' . $displayName;
+            } else {
+                $line1 = $displayName;
+            }
             
             // Check if this exercise was logged today
             $isLoggedToday = isset($loggedExerciseData[$exercise->id]);
