@@ -336,4 +336,25 @@ class WodParser
         // Just the exercise name
         return $brackets;
     }
+
+    /**
+     * Extract all loggable exercise names from WOD syntax
+     * 
+     * This is a simpler method that just extracts exercise names from [[Exercise Name]] patterns
+     * without doing full parsing. Useful for generating exercise lists.
+     * 
+     * @param string $text WOD syntax text
+     * @return array Array of unique exercise names
+     */
+    public function extractLoggableExercises(string $text): array
+    {
+        $exerciseNames = [];
+        
+        // Find all [[Exercise Name]] patterns (loggable exercises)
+        if (preg_match_all('/\[\[([^\]]+)\]\]/', $text, $matches)) {
+            $exerciseNames = array_unique(array_map('trim', $matches[1]));
+        }
+        
+        return array_values($exerciseNames); // Re-index array
+    }
 }

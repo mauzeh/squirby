@@ -17,10 +17,14 @@ class WorkoutController extends Controller
     use DetectsSimpleWorkouts;
 
     protected $wodDisplayService;
+    protected $exerciseListService;
 
-    public function __construct(WodDisplayService $wodDisplayService) 
-    {
+    public function __construct(
+        WodDisplayService $wodDisplayService,
+        \App\Services\WorkoutExerciseListService $exerciseListService
+    ) {
         $this->wodDisplayService = $wodDisplayService;
+        $this->exerciseListService = $exerciseListService;
     }
 
     /**
@@ -273,6 +277,18 @@ class WorkoutController extends Controller
             $components[] = C::markdown($processedMarkdown)->classes('wod-display')->build();
         }
 
+        // Exercise list table (read-only - derived from WOD syntax)
+        $exerciseListTable = $this->exerciseListService->generateExerciseListTable($workout, [
+            'redirectContext' => 'advanced-workout',
+            'showPlayButtons' => true,
+            'showMoveButtons' => false,  // No manual reordering for advanced workouts
+            'showDeleteButtons' => false, // No manual deletion for advanced workouts
+            'showLoggedStatus' => true,
+            'compactMode' => true,
+        ]);
+        
+        $components[] = $exerciseListTable;
+
         // Edit form with code editor
         $exampleSyntax = "# Block 1: Strength\n[[Back Squat]]: 5-5-5-5-5\n[[Bench Press]]: 3x8\n\n# Block 2: Conditioning\nAMRAP 12min:\n10 [[Box Jumps]]\n15 [[Push-ups]]\n20 [[Air Squats]]";
         
@@ -384,4 +400,6 @@ class WorkoutController extends Controller
             ->route('workouts.index')
             ->with('success', 'Workout deleted!');
     }
+
+
 }

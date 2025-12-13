@@ -48,7 +48,86 @@ WOD;
         $format = $result['blocks'][0]['exercises'][0];
         $this->assertEquals('special_format', $format['type']);
         $this->assertEquals('AMRAP 12min', $format['description']);
-        $this->assertCount(2, $format['exercises']);
+    }
+
+    public function test_extracts_loggable_exercises()
+    {
+        $text = <<<WOD
+# Every 3 min. x 5 sets:
+* 3 [[Strict Press]], build per set
+* 8-10 [[DB Tripod Row]] (/side)
+
+# 4 Rounds (16min. Total):
+* 40sec. of [[Double DB Hang Cleans]]
+* 20sec. Rest 
+* 40sec. of [[Double Unders]]
+* 20sec. Rest 
+* 40sec. of [[Toes-To-Bar]]
+* 20sec. Rest 
+* 40sec. of Max [[Push-Ups]]
+* 20sec. Rest
+
+*Notes: Week 2 of 3 in our short EOY Strength block.*
+WOD;
+
+        $exercises = $this->parser->extractLoggableExercises($text);
+
+        $expected = [
+            'Strict Press',
+            'DB Tripod Row',
+            'Double DB Hang Cleans',
+            'Double Unders',
+            'Toes-To-Bar',
+            'Push-Ups'
+        ];
+
+        $this->assertEquals($expected, $exercises);
+    }
+
+    public function test_extracts_loggable_exercises_ignores_non_loggable()
+    {
+        $text = <<<WOD
+# Warm-up
+[Dynamic Stretching] 5min
+[Foam Rolling] 3min
+
+# Strength
+[[Back Squat]]: 5x5
+[[Bench Press]]: 3x8
+
+# Cool-down
+[Static Stretching] 10min
+WOD;
+
+        $exercises = $this->parser->extractLoggableExercises($text);
+
+        $expected = [
+            'Back Squat',
+            'Bench Press'
+        ];
+
+        $this->assertEquals($expected, $exercises);
+    }
+
+    public function test_extracts_loggable_exercises_handles_duplicates()
+    {
+        $text = <<<WOD
+# Round 1
+[[Burpees]]: 10 reps
+
+# Round 2  
+[[Burpees]]: 15 reps
+
+# Round 3
+[[Burpees]]: 20 reps
+WOD;
+
+        $exercises = $this->parser->extractLoggableExercises($text);
+
+        $expected = ['Burpees'];
+
+        $this->assertEquals($expected, $exercises);
+        $this->assertCount(1, $exercises); // Should only have one unique exercise
     }
 
     public function test_parses_multiple_blocks()

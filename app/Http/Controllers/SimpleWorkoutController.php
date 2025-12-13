@@ -15,6 +15,13 @@ class SimpleWorkoutController extends Controller
     use \Illuminate\Foundation\Auth\Access\AuthorizesRequests;
     use DetectsSimpleWorkouts;
 
+    protected $exerciseListService;
+
+    public function __construct(\App\Services\WorkoutExerciseListService $exerciseListService)
+    {
+        $this->exerciseListService = $exerciseListService;
+    }
+
     /**
      * Show the form for creating a new simple workout (no DB persistence yet)
      */
@@ -31,36 +38,8 @@ class SimpleWorkoutController extends Controller
             ->build();
 
         // Exercise selection list - always expanded on create page
-        // Don't pass a default name - let the controller generate it based on the exercise
-        $itemSelectionList = $this->generateExerciseSelectionListForNew(Auth::id());
-        
-        $itemListBuilder = C::itemList()
-            ->filterPlaceholder($itemSelectionList['filterPlaceholder'])
-            ->noResultsMessage($itemSelectionList['noResultsMessage'])
-            ->initialState('expanded');
-
-        foreach ($itemSelectionList['items'] as $item) {
-            $itemListBuilder->item(
-                $item['id'],
-                $item['name'],
-                $item['href'],
-                $item['type']['label'],
-                $item['type']['cssClass'],
-                $item['type']['priority']
-            );
-        }
-
-        if (isset($itemSelectionList['createForm'])) {
-            $itemListBuilder->createForm(
-                $itemSelectionList['createForm']['action'],
-                $itemSelectionList['createForm']['inputName'],
-                $itemSelectionList['createForm']['hiddenFields'],
-                $itemSelectionList['createForm']['buttonTextTemplate'] ?? 'Create "{term}"',
-                $itemSelectionList['createForm']['method'] ?? 'POST'
-            );
-        }
-
-        $components[] = $itemListBuilder->build();
+        $exerciseSelectionList = $this->exerciseListService->generateExerciseSelectionListForNew(Auth::id());
+        $components[] = $exerciseSelectionList;
 
         $data = ['components' => $components];
         return view('mobile-entry.flexible', compact('data'));
@@ -154,139 +133,24 @@ class SimpleWorkoutController extends Controller
         $components[] = $buttonBuilder->build();
 
         // Exercise selection list - expanded if coming from "Add exercises" button
-        $itemSelectionList = $this->generateExerciseSelectionList(Auth::id(), $workout);
+        $exerciseSelectionList = $this->exerciseListService->generateExerciseSelectionList($workout, [
+            'redirectContext' => 'simple-workout',
+            'initialState' => $shouldExpandList ? 'expanded' : 'collapsed'
+        ]);
         
-        $itemListBuilder = C::itemList()
-            ->filterPlaceholder($itemSelectionList['filterPlaceholder'])
-            ->noResultsMessage($itemSelectionList['noResultsMessage']);
+        $components[] = $exerciseSelectionList;
+
+        // Exercise list table
+        $exerciseListTable = $this->exerciseListService->generateExerciseListTable($workout, [
+            'redirectContext' => 'simple-workout',
+            'showPlayButtons' => true,
+            'showMoveButtons' => true,
+            'showDeleteButtons' => true,
+            'showLoggedStatus' => true,
+            'compactMode' => true,
+        ]);
         
-        if ($shouldExpandList) {
-            $itemListBuilder->initialState('expanded');
-        }
-
-        foreach ($itemSelectionList['items'] as $item) {
-            $itemListBuilder->item(
-                $item['id'],
-                $item['name'],
-                $item['href'],
-                $item['type']['label'],
-                $item['type']['cssClass'],
-                $item['type']['priority']
-            );
-        }
-
-        if (isset($itemSelectionList['createForm'])) {
-            $itemListBuilder->createForm(
-                $itemSelectionList['createForm']['action'],
-                $itemSelectionList['createForm']['inputName'],
-                $itemSelectionList['createForm']['hiddenFields'],
-                $itemSelectionList['createForm']['buttonTextTemplate'] ?? 'Create "{term}"',
-                $itemSelectionList['createForm']['method'] ?? 'POST'
-            );
-        }
-
-        $components[] = $itemListBuilder->build();
-
-        // Table of exercises
-        if ($workout->exercises->isNotEmpty()) {
-            $tableBuilder = C::table();
-            
-            $exerciseCount = $workout->exercises->count();
-            
-            // Get today's logged exercises for this user
-            $today = \Carbon\Carbon::today();
-            $todaysLiftLogs = \App\Models\LiftLog::where('user_id', Auth::id())
-                ->whereDate('logged_at', $today)
-                ->with(['liftSets'])
-                ->get();
-            
-            // Create a map of exercise_id => lift log for quick lookup
-            $loggedExerciseData = [];
-            foreach ($todaysLiftLogs as $log) {
-                $loggedExerciseData[$log->exercise_id] = $log;
-            }
-
-            foreach ($workout->exercises as $index => $exercise) {
-                $line1 = $exercise->exercise->title;
-                
-                // Check if this exercise was logged today
-                $isLoggedToday = isset($loggedExerciseData[$exercise->exercise_id]);
-                
-                if ($isLoggedToday) {
-                    // Don't show line2 for logged exercises - we'll use a message instead
-                    $line2 = null;
-                } else {
-                    // Show helpful message about logging
-                    $line2 = 'Tap play to begin logging';
-                }
-                
-                $line3 = null;
-                
-                $isFirst = $index === 0;
-                $isLast = $index === $exerciseCount - 1;
-                
-                $rowBuilder = $tableBuilder->row($exercise->id, $line1, $line2, $line3)
-                    ->compact(); // Enable compact mode for smaller buttons
-                
-                // Add green message box for logged exercises
-                if ($isLoggedToday) {
-                    $liftLog = $loggedExerciseData[$exercise->exercise_id];
-                    $strategy = $exercise->exercise->getTypeStrategy();
-                    $loggedData = $strategy->formatLoggedItemDisplay($liftLog);
-                    $rowBuilder->message('success', $loggedData, 'Completed:');
-                }
-                
-                // Add play button to start logging (only if not logged today)
-                if (!$isLoggedToday) {
-                    $logUrl = route('lift-logs.create', [
-                        'exercise_id' => $exercise->exercise_id,
-                        'date' => $today->toDateString(),
-                        'redirect_to' => 'simple-workout',
-                        'workout_id' => $workout->id
-                    ]);
-                    $rowBuilder->linkAction('fa-play', $logUrl, 'Log now', 'btn-log-now');
-                }
-                
-                // Show only one arrow button to save space:
-                // - Last item shows up arrow (to move it up)
-                // - All other items show down arrow (to move them down)
-                if ($isLast && !$isFirst) {
-                    // Last item: show up arrow (transparent)
-                    $rowBuilder->linkAction(
-                        'fa-arrow-up',
-                        route('simple-workouts.move-exercise', [$workout->id, $exercise->id, 'direction' => 'up']),
-                        'Move up',
-                        'btn-transparent'
-                    );
-                } elseif (!$isLast) {
-                    // Not last item: show down arrow (transparent)
-                    $rowBuilder->linkAction(
-                        'fa-arrow-down',
-                        route('simple-workouts.move-exercise', [$workout->id, $exercise->id, 'direction' => 'down']),
-                        'Move down',
-                        'btn-transparent'
-                    );
-                }
-                // Note: If there's only one item (isFirst && isLast), no arrow is shown
-                
-                // Add delete button (transparent)
-                $rowBuilder->formAction(
-                    'fa-trash',
-                    route('simple-workouts.remove-exercise', [$workout->id, $exercise->id]),
-                    'DELETE',
-                    [],
-                    'Remove exercise',
-                    'btn-transparent',
-                    true
-                );
-                
-                $rowBuilder->add();
-            }
-
-            $components[] = $tableBuilder
-                ->confirmMessage('deleteItem', 'Are you sure you want to remove this exercise from the workout?')
-                ->build();
-        }
+        $components[] = $exerciseListTable;
 
         // Delete workout button
         $components[] = [
@@ -540,248 +404,7 @@ class SimpleWorkoutController extends Controller
             ->with('success', 'Exercise removed!');
     }
 
-    /**
-     * Generate exercise selection list (similar to mobile entry)
-     */
-    private function generateExerciseSelectionList($userId, Workout $workout)
-    {
-        // Get user's accessible exercises with aliases
-        $exercises = \App\Models\Exercise::availableToUser($userId)
-            ->with(['aliases' => function ($query) use ($userId) {
-                $query->where('user_id', $userId);
-            }])
-            ->orderBy('title', 'asc')
-            ->get();
 
-        // Apply aliases to exercises
-        $user = \App\Models\User::find($userId);
-        $aliasService = app(\App\Services\ExerciseAliasService::class);
-        $exercises = $aliasService->applyAliasesToExercises($exercises, $user);
-
-        // Get exercises already in this workout (to exclude from selection list)
-        $workoutExerciseIds = $workout->exercises()->pluck('exercise_id')->toArray();
-
-        // Get recent exercises (last 7 days) for the "Recent" category
-        $recentExerciseIds = \App\Models\LiftLog::where('user_id', $userId)
-            ->where('logged_at', '>=', \Carbon\Carbon::now()->subDays(7))
-            ->pluck('exercise_id')
-            ->unique()
-            ->toArray();
-
-        // Get last performed dates for all exercises
-        $lastPerformedDates = \App\Models\LiftLog::where('user_id', $userId)
-            ->whereIn('exercise_id', $exercises->pluck('id'))
-            ->select('exercise_id', \DB::raw('MAX(logged_at) as last_logged_at'))
-            ->groupBy('exercise_id')
-            ->pluck('last_logged_at', 'exercise_id');
-
-        // Get top 10 recommended exercises
-        $recommendationEngine = app(\App\Services\RecommendationEngine::class);
-        $recommendations = $recommendationEngine->getRecommendations($userId, 10);
-        
-        $recommendationMap = [];
-        foreach ($recommendations as $index => $recommendation) {
-            $exerciseId = $recommendation['exercise']->id;
-            $recommendationMap[$exerciseId] = $index + 1;
-        }
-
-        $items = [];
-        
-        foreach ($exercises as $exercise) {
-            // Skip exercises already in workout
-            if (in_array($exercise->id, $workoutExerciseIds)) {
-                continue;
-            }
-            
-            // Calculate "X ago" label
-            $lastPerformedLabel = '';
-            if (isset($lastPerformedDates[$exercise->id])) {
-                $lastPerformed = \Carbon\Carbon::parse($lastPerformedDates[$exercise->id]);
-                $lastPerformedLabel = $lastPerformed->diffForHumans(['short' => true]);
-            }
-            
-            // Categorize exercises
-            if (isset($recommendationMap[$exercise->id])) {
-                $rank = $recommendationMap[$exercise->id];
-                $itemType = [
-                    'label' => '<i class="fas fa-star"></i> Recommended',
-                    'cssClass' => 'in-program',
-                    'priority' => 1,
-                    'subPriority' => $rank
-                ];
-            } elseif (in_array($exercise->id, $recentExerciseIds)) {
-                $itemType = [
-                    'label' => 'Recent',
-                    'cssClass' => 'recent',
-                    'priority' => 2,
-                    'subPriority' => 0
-                ];
-            } else {
-                $itemType = [
-                    'label' => $lastPerformedLabel,
-                    'cssClass' => 'regular',
-                    'priority' => 3,
-                    'subPriority' => 0
-                ];
-            }
-
-            $items[] = [
-                'id' => 'exercise-' . $exercise->id,
-                'name' => $exercise->title,
-                'type' => $itemType,
-                'href' => route('simple-workouts.add-exercise', [
-                    $workout->id,
-                    'exercise' => $exercise->id
-                ])
-            ];
-        }
-
-        // Sort items
-        usort($items, function ($a, $b) {
-            $priorityComparison = $a['type']['priority'] <=> $b['type']['priority'];
-            if ($priorityComparison !== 0) {
-                return $priorityComparison;
-            }
-            
-            $subPriorityA = $a['type']['subPriority'] ?? 0;
-            $subPriorityB = $b['type']['subPriority'] ?? 0;
-            $subPriorityComparison = $subPriorityA <=> $subPriorityB;
-            if ($subPriorityComparison !== 0) {
-                return $subPriorityComparison;
-            }
-            
-            return strcmp($a['name'], $b['name']);
-        });
-
-        return [
-            'noResultsMessage' => 'No exercises found.',
-            'createForm' => [
-                'action' => route('simple-workouts.create-exercise', $workout->id),
-                'inputName' => 'exercise_name',
-                'buttonTextTemplate' => 'Create "{term}"',
-                'hiddenFields' => []
-            ],
-            'items' => $items,
-            'filterPlaceholder' => 'Search exercises...'
-        ];
-    }
-
-    /**
-     * Generate exercise selection list for new workout (no workout ID yet)
-     */
-    private function generateExerciseSelectionListForNew($userId)
-    {
-        // Get user's accessible exercises with aliases
-        $exercises = \App\Models\Exercise::availableToUser($userId)
-            ->with(['aliases' => function ($query) use ($userId) {
-                $query->where('user_id', $userId);
-            }])
-            ->orderBy('title', 'asc')
-            ->get();
-
-        // Apply aliases to exercises
-        $user = \App\Models\User::find($userId);
-        $aliasService = app(\App\Services\ExerciseAliasService::class);
-        $exercises = $aliasService->applyAliasesToExercises($exercises, $user);
-
-        // Get recent exercises (last 7 days) for the "Recent" category
-        $recentExerciseIds = \App\Models\LiftLog::where('user_id', $userId)
-            ->where('logged_at', '>=', \Carbon\Carbon::now()->subDays(7))
-            ->pluck('exercise_id')
-            ->unique()
-            ->toArray();
-
-        // Get last performed dates for all exercises
-        $lastPerformedDates = \App\Models\LiftLog::where('user_id', $userId)
-            ->whereIn('exercise_id', $exercises->pluck('id'))
-            ->select('exercise_id', \DB::raw('MAX(logged_at) as last_logged_at'))
-            ->groupBy('exercise_id')
-            ->pluck('last_logged_at', 'exercise_id');
-
-        // Get top 10 recommended exercises
-        $recommendationEngine = app(\App\Services\RecommendationEngine::class);
-        $recommendations = $recommendationEngine->getRecommendations($userId, 10);
-        
-        $recommendationMap = [];
-        foreach ($recommendations as $index => $recommendation) {
-            $exerciseId = $recommendation['exercise']->id;
-            $recommendationMap[$exerciseId] = $index + 1;
-        }
-
-        $items = [];
-        
-        foreach ($exercises as $exercise) {
-            // Calculate "X ago" label
-            $lastPerformedLabel = '';
-            if (isset($lastPerformedDates[$exercise->id])) {
-                $lastPerformed = \Carbon\Carbon::parse($lastPerformedDates[$exercise->id]);
-                $lastPerformedLabel = $lastPerformed->diffForHumans(['short' => true]);
-            }
-            
-            // Categorize exercises
-            if (isset($recommendationMap[$exercise->id])) {
-                $rank = $recommendationMap[$exercise->id];
-                $itemType = [
-                    'label' => '<i class="fas fa-star"></i> Recommended',
-                    'cssClass' => 'in-program',
-                    'priority' => 1,
-                    'subPriority' => $rank
-                ];
-            } elseif (in_array($exercise->id, $recentExerciseIds)) {
-                $itemType = [
-                    'label' => 'Recent',
-                    'cssClass' => 'recent',
-                    'priority' => 2,
-                    'subPriority' => 0
-                ];
-            } else {
-                $itemType = [
-                    'label' => $lastPerformedLabel,
-                    'cssClass' => 'regular',
-                    'priority' => 3,
-                    'subPriority' => 0
-                ];
-            }
-
-            $items[] = [
-                'id' => 'exercise-' . $exercise->id,
-                'name' => $exercise->title,
-                'type' => $itemType,
-                'href' => route('simple-workouts.add-exercise-new', [
-                    'exercise' => $exercise->id
-                ])
-            ];
-        }
-
-        // Sort items
-        usort($items, function ($a, $b) {
-            $priorityComparison = $a['type']['priority'] <=> $b['type']['priority'];
-            if ($priorityComparison !== 0) {
-                return $priorityComparison;
-            }
-            
-            $subPriorityA = $a['type']['subPriority'] ?? 0;
-            $subPriorityB = $b['type']['subPriority'] ?? 0;
-            $subPriorityComparison = $subPriorityA <=> $subPriorityB;
-            if ($subPriorityComparison !== 0) {
-                return $subPriorityComparison;
-            }
-            
-            return strcmp($a['name'], $b['name']);
-        });
-
-        return [
-            'noResultsMessage' => 'No exercises found.',
-            'createForm' => [
-                'action' => route('simple-workouts.create-exercise-new'),
-                'inputName' => 'exercise_name',
-                'buttonTextTemplate' => 'Create "{term}"',
-                'hiddenFields' => []
-            ],
-            'items' => $items,
-            'filterPlaceholder' => 'Search exercises...'
-        ];
-    }
 
 
 }
