@@ -412,6 +412,8 @@ able Component - Tabular CRUD list optimized for narrow screens */
 .component-table-actions.actions-compact .btn-table-edit.btn-secondary {
     width: var(--touch-target-compact);
     height: var(--touch-target-compact);
+    min-width: var(--touch-target-compact);
+    min-height: var(--touch-target-compact);
     font-size: 15px;
 }
 
