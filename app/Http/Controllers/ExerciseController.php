@@ -113,6 +113,10 @@ class ExerciseController extends Controller
                 ->spacedRows();
             
             foreach ($exercises as $exercise) {
+                // Get display name (alias if exists, otherwise title)
+                $aliasService = app(\App\Services\ExerciseAliasService::class);
+                $displayName = $aliasService->getDisplayName($exercise, auth()->user());
+                
                 // Determine badge type and text
                 if ($exercise->isGlobal()) {
                     $badgeText = 'Everyone';
@@ -127,7 +131,7 @@ class ExerciseController extends Controller
                 
                 $rowBuilder = $tableBuilder->row(
                     $exercise->id,
-                    $exercise->title
+                    $displayName
                 )
                 ->badge($badgeText, $badgeType)
                 ->badge($exerciseType, 'info')

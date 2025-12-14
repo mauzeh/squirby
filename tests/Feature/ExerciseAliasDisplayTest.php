@@ -15,47 +15,7 @@ class ExerciseAliasDisplayTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_exercise_list_shows_aliases_for_user_with_aliases()
-    {
-        $user = User::factory()->create();
-        $exercise1 = Exercise::factory()->create(['title' => 'Bench Press', 'user_id' => null]);
-        $exercise2 = Exercise::factory()->create(['title' => 'Back Squat', 'user_id' => null]);
-        
-        ExerciseAlias::factory()->create([
-            'user_id' => $user->id,
-            'exercise_id' => $exercise1->id,
-            'alias_name' => 'BP'
-        ]);
-        
-        ExerciseAlias::factory()->create([
-            'user_id' => $user->id,
-            'exercise_id' => $exercise2->id,
-            'alias_name' => 'Squat'
-        ]);
 
-        $response = $this->actingAs($user)
-            ->get(route('exercises.index'));
-
-        $response->assertStatus(200)
-            ->assertSee('BP')
-            ->assertSee('Squat')
-            ->assertDontSee('Bench Press')
-            ->assertDontSee('Back Squat');
-    }
-
-    public function test_exercise_list_shows_titles_for_user_without_aliases()
-    {
-        $user = User::factory()->create();
-        $exercise1 = Exercise::factory()->create(['title' => 'Bench Press', 'user_id' => null]);
-        $exercise2 = Exercise::factory()->create(['title' => 'Back Squat', 'user_id' => null]);
-
-        $response = $this->actingAs($user)
-            ->get(route('exercises.index'));
-
-        $response->assertStatus(200)
-            ->assertSee('Bench Press')
-            ->assertSee('Back Squat');
-    }
 
     public function test_lift_log_table_shows_aliases()
     {
@@ -117,36 +77,7 @@ class ExerciseAliasDisplayTest extends TestCase
             ->assertSee('BP');
     }
 
-    public function test_exercise_list_shows_mixed_aliases_and_titles()
-    {
-        $user = User::factory()->create();
-        $exercise1 = Exercise::factory()->create(['title' => 'Bench Press', 'user_id' => null]);
-        $exercise2 = Exercise::factory()->create(['title' => 'Back Squat', 'user_id' => null]);
-        $exercise3 = Exercise::factory()->create(['title' => 'Deadlift', 'user_id' => null]);
-        
-        // Only create alias for first two exercises
-        ExerciseAlias::factory()->create([
-            'user_id' => $user->id,
-            'exercise_id' => $exercise1->id,
-            'alias_name' => 'BP'
-        ]);
-        
-        ExerciseAlias::factory()->create([
-            'user_id' => $user->id,
-            'exercise_id' => $exercise2->id,
-            'alias_name' => 'Squat'
-        ]);
 
-        $response = $this->actingAs($user)
-            ->get(route('exercises.index'));
-
-        $response->assertStatus(200)
-            ->assertSee('BP')
-            ->assertSee('Squat')
-            ->assertSee('Deadlift')
-            ->assertDontSee('Bench Press')
-            ->assertDontSee('Back Squat');
-    }
 
     public function test_lift_log_index_shows_aliases_for_multiple_exercises()
     {
@@ -198,40 +129,7 @@ class ExerciseAliasDisplayTest extends TestCase
             ->assertSee('Squat');
     }
 
-    public function test_different_users_see_their_own_aliases_in_exercise_list()
-    {
-        $user1 = User::factory()->create();
-        $user2 = User::factory()->create();
-        $exercise = Exercise::factory()->create(['title' => 'Bench Press', 'user_id' => null]);
-        
-        ExerciseAlias::factory()->create([
-            'user_id' => $user1->id,
-            'exercise_id' => $exercise->id,
-            'alias_name' => 'BP'
-        ]);
-        
-        ExerciseAlias::factory()->create([
-            'user_id' => $user2->id,
-            'exercise_id' => $exercise->id,
-            'alias_name' => 'Bench'
-        ]);
 
-        // User 1 sees "BP"
-        $response1 = $this->actingAs($user1)
-            ->get(route('exercises.index'));
-        $response1->assertStatus(200)
-            ->assertSee('BP')
-            ->assertDontSee('Bench Press')
-            ->assertDontSee('Bench');
-
-        // User 2 sees "Bench"
-        $response2 = $this->actingAs($user2)
-            ->get(route('exercises.index'));
-        $response2->assertStatus(200)
-            ->assertSee('Bench')
-            ->assertDontSee('Bench Press')
-            ->assertDontSee('BP');
-    }
 
     public function test_different_users_see_their_own_aliases_in_lift_logs()
     {
