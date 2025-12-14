@@ -335,16 +335,7 @@ class ExerciseController extends Controller
         return redirect()->route('exercises.index')->with('success', 'Exercise deleted successfully.');
     }
 
-    /**
-     * Remove the specified resources from storage.
-     * 
-     * @deprecated Bulk deletion is no longer supported
-     */
-    public function destroySelected(Request $request)
-    {
-        // Bulk deletion is no longer supported - redirect to index
-        return redirect()->route('exercises.index')->with('error', 'Bulk deletion is no longer supported.');
-    }
+
 
     /**
      * Promote a user exercise to global exercise.
