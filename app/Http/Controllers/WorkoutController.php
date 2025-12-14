@@ -156,7 +156,7 @@ class WorkoutController extends Controller
             ->build();
 
         // WOD creation form with code editor
-        $exampleSyntax = "# Block 1: Strength\n[[Back Squat]]: 5-5-5-5-5\n[[Bench Press]]: 3x8\n\n# Block 2: Conditioning\nAMRAP 12min:\n10 [[Box Jumps]]\n15 [[Push-ups]]\n20 [[Air Squats]]";
+        $exampleSyntax = "# Block 1: Strength\n[Back Squat]: 5-5-5-5-5\n[Bench Press]: 3x8\n\n# Block 2: Conditioning\nAMRAP 12min:\n10 [Box Jumps]\n15 [Push-ups]\n20 [Air Squats]";
         
         // Single form with embedded code editor
         $components[] = [
@@ -290,7 +290,7 @@ class WorkoutController extends Controller
         $components[] = $exerciseListTable;
 
         // Edit form with code editor
-        $exampleSyntax = "# Block 1: Strength\n[[Back Squat]]: 5-5-5-5-5\n[[Bench Press]]: 3x8\n\n# Block 2: Conditioning\nAMRAP 12min:\n10 [[Box Jumps]]\n15 [[Push-ups]]\n20 [[Air Squats]]";
+        $exampleSyntax = "# Block 1: Strength\n[Back Squat]: 5-5-5-5-5\n[Bench Press]: 3x8\n\n# Block 2: Conditioning\nAMRAP 12min:\n10 [Box Jumps]\n15 [Push-ups]\n20 [Air Squats]";
         
         $components[] = [
             'type' => 'wod-form',

@@ -518,7 +518,7 @@ class WorkoutExerciseListService
                     'messages' => [
                         [
                             'type' => 'info',
-                            'text' => 'No loggable exercises found in workout syntax. Use [[Exercise Name]] to make exercises loggable.'
+                            'text' => 'No loggable exercises found in workout syntax. Use [Exercise Name] to make exercises loggable.'
                         ]
                     ]
                 ]

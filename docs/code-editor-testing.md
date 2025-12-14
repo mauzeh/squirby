@@ -18,15 +18,15 @@ Try entering this WOD syntax:
 
 ```
 # Block 1: Strength
-[[Back Squat]]: 5-5-5-5-5
-[[Bench Press]]: 3x8
+[Back Squat]: 5-5-5-5-5
+[Bench Press]: 3x8
 [Warm-up Push-ups]: 2x10
 
 # Block 2: Conditioning
 AMRAP 12min:
-10 [[Box Jumps]]
-15 [[Push-ups]]
-20 [[Air Squats]]
+10 [Box Jumps]
+15 [Push-ups]
+20 [Air Squats]
 
 // This is a comment
 -- This is also a comment

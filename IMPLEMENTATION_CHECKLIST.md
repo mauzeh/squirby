@@ -43,7 +43,7 @@
 
 ### Syntax Highlighting
 - [x] Headers (`# Block Name`) - Green, bold
-- [x] Loggable exercises (`[[Exercise]]`) - Orange, bold
+- [x] Loggable exercises (`[Exercise]`) - Orange, bold
 - [x] Info exercises (`[Exercise]`) - Light blue
 - [x] Special formats (`AMRAP`, `EMOM`, etc.) - Purple, bold
 - [x] Rep schemes (`3x8`, `5-5-5`) - Light green

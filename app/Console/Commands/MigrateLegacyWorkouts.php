@@ -73,9 +73,9 @@ class MigrateLegacyWorkouts extends Command
                     $scheme = $workoutExercise->scheme ?? '';
                     
                     if ($scheme) {
-                        $exerciseLines[] = "- [[{$exerciseName}]]: {$scheme}";
+                        $exerciseLines[] = "- [{$exerciseName}]: {$scheme}";
                     } else {
-                        $exerciseLines[] = "- [[{$exerciseName}]]";
+                        $exerciseLines[] = "- [{$exerciseName}]";
                     }
                 }
             }
