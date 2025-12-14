@@ -47,7 +47,7 @@ class WorkoutTest extends TestCase
         $response = $this->actingAs($user)->post(route('workouts.store'), [
             'name' => 'Push Day',
             'description' => 'Upper body pushing exercises',
-            'wod_syntax' => '[[Bench Press]]: 3x8',
+            'wod_syntax' => '[Bench Press]: 3x8',
         ]);
 
         $response->assertRedirect();
@@ -79,7 +79,7 @@ class WorkoutTest extends TestCase
         $workout = Workout::create([
             'user_id' => $user->id,
             'name' => 'Test Workout',
-            'wod_syntax' => '[[Bench Press]]: 3x8',
+            'wod_syntax' => '[Bench Press]: 3x8',
         ]);
 
         $response = $this->actingAs($user)->get(route('workouts.edit', $workout->id));
@@ -285,7 +285,7 @@ class WorkoutTest extends TestCase
         $workout = Workout::factory()->create([
             'user_id' => $admin->id,
             'name' => 'Advanced Workout',
-            'wod_syntax' => '[[Bench Press]]: 5x5'
+            'wod_syntax' => '[Bench Press]: 5x5'
         ]);
         
         $exercise = Exercise::factory()->create(['user_id' => null, 'title' => 'Bench Press']);
@@ -375,7 +375,7 @@ class WorkoutTest extends TestCase
         $workout = Workout::factory()->create([
             'user_id' => $admin->id,
             'name' => 'My Custom Advanced Workout',
-            'wod_syntax' => '[[Bench Press]]: 5x5',
+            'wod_syntax' => '[Bench Press]: 5x5',
         ]);
         
         $exercise = Exercise::factory()->create(['title' => 'Bench Press', 'user_id' => null]);
@@ -418,7 +418,7 @@ class WorkoutTest extends TestCase
         $advancedWorkout = Workout::factory()->create([
             'user_id' => $admin->id,
             'name' => 'Murph WOD',
-            'wod_syntax' => 'For Time:\n1 Mile Run\n100 [[Pull-ups]]\n200 [[Push-ups]]\n300 [[Air Squats]]\n1 Mile Run',
+            'wod_syntax' => 'For Time:\n1 Mile Run\n100 [Pull-ups]\n200 [Push-ups]\n300 [Air Squats]\n1 Mile Run',
         ]);
         
         $response = $this->actingAs($admin)->get(route('workouts.index'));

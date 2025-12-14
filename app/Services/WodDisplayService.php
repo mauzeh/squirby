@@ -40,12 +40,8 @@ class WodDisplayService
 
         $text = $workout->wod_syntax;
         
-        // First, process single-bracketed exercises (non-loggable) - just remove brackets
-        // This must be done BEFORE processing double brackets to avoid conflicts
-        $text = preg_replace('/(?<!\[)\[([^\]]+)\](?!\])/', '$1', $text);
-        
-        // Then, process double-bracketed exercises (loggable)
-        $text = preg_replace_callback('/\[\[([^\]]+)\]\]/', function($matches) use ($workout) {
+        // Process single-bracketed exercises (all exercises are now loggable)
+        $text = preg_replace_callback('/\[([^\]]+)\]/', function($matches) use ($workout) {
             $exerciseName = $matches[1];
             $matchingExercise = $this->exerciseMatchingService->findBestMatch($exerciseName, Auth::id());
             

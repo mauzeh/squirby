@@ -123,7 +123,7 @@ class ExerciseAliasCreationTest extends TestCase
         $user = User::factory()->create();
         $workout = Workout::factory()->create([
             'user_id' => $user->id,
-            'wod_syntax' => "AMRAP 10min:\n10 [[KB Swings]]\n15 [[Push-ups]]"
+            'wod_syntax' => "AMRAP 10min:\n10 [KB Swings]\n15 [Push-ups]"
         ]);
         
         $this->actingAs($user);
@@ -152,7 +152,7 @@ class ExerciseAliasCreationTest extends TestCase
         
         $workout = Workout::factory()->create([
             'user_id' => $user->id,
-            'wod_syntax' => "AMRAP 10min:\n10 [[KB Swings]]"
+            'wod_syntax' => "AMRAP 10min:\n10 [KB Swings]"
         ]);
         
         $this->actingAs($user);
@@ -184,7 +184,7 @@ class ExerciseAliasCreationTest extends TestCase
         // Create workout with the alias in WOD syntax
         $workout = Workout::factory()->create([
             'user_id' => $user->id,
-            'wod_syntax' => "# Let's go!\n* [[Bench Press]] 5x5\n* [[HelemaalNiks]] 3x10"
+            'wod_syntax' => "# Let's go!\n* [Bench Press] 5x5\n* [HelemaalNiks] 3x10"
         ]);
         
         $this->actingAs($user);

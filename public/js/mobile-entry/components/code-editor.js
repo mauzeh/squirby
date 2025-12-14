@@ -208,13 +208,9 @@
             // Process exercises and schemes
             let processed = line;
             
-            // Loggable exercises [[Exercise]]
-            processed = processed.replace(/(\[\[)([^\]]+)(\]\])/g, 
-                '<span class="cm-wod-bracket">$1</span><span class="cm-wod-exercise-loggable">$2</span><span class="cm-wod-bracket">$3</span>');
-            
-            // Info exercises [Exercise]
+            // Exercises [Exercise] - all exercises are now loggable
             processed = processed.replace(/(\[)([^\]]+)(\])/g, 
-                '<span class="cm-wod-bracket">$1</span><span class="cm-wod-exercise-info">$2</span><span class="cm-wod-bracket">$3</span>');
+                '<span class="cm-wod-bracket">$1</span><span class="cm-wod-exercise-loggable">$2</span><span class="cm-wod-bracket">$3</span>');
             
             // Rep schemes after colon (: 3x8, : 5-5-5, etc.)
             processed = processed.replace(/:\s*(\d+[-x]\d+[-\d]*)/g, 

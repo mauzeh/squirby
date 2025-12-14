@@ -60,8 +60,8 @@ AMRAP 12min:
 | Element | Color | Example |
 |---------|-------|---------|
 | Headers | Green | `# Block 1: Strength` |
-| Loggable Exercises | Orange | `[[Back Squat]]` |
-| Info Exercises | Light Blue | `[Warm-up]` |
+| Exercises | Orange | `[Back Squat]` |
+
 | Special Formats | Purple | `AMRAP 12min:` |
 | Rep Schemes | Light Green | `5-5-5-5-5`, `3x8` |
 | Comments | Green Italic | `// comment` |

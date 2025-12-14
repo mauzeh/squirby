@@ -20,7 +20,7 @@ class WodLoggingService
 
     /**
      * Flatten WOD exercises (skip special format headers, extract nested exercises)
-     * Only includes loggable exercises
+     * All exercises are now loggable
      */
     public function flattenWodExercises($exercise, &$flatExercises = [])
     {
@@ -32,10 +32,8 @@ class WodLoggingService
                 }
             }
         } else {
-            // Regular exercise - only add if loggable
-            if (($exercise['loggable'] ?? false) === true) {
-                $flatExercises[] = $exercise;
-            }
+            // Regular exercise - all exercises are now loggable
+            $flatExercises[] = $exercise;
         }
         return $flatExercises;
     }

@@ -36,7 +36,7 @@ class WodExerciseMatchingTest extends TestCase
         $workout = Workout::factory()->create([
             'user_id' => $user->id,
             'name' => 'Test WOD',
-            'wod_syntax' => "# Strength\n[[Back Squat]]: 5x5",
+            'wod_syntax' => "# Strength\n[Back Squat]: 5x5",
         ]);
 
         $response = $this->actingAs($user)->get(route('workouts.edit', $workout));
@@ -57,7 +57,7 @@ class WodExerciseMatchingTest extends TestCase
         $workout = Workout::factory()->create([
             'user_id' => $user->id,
             'name' => 'Test WOD',
-            'wod_syntax' => "# Strength\n[[NonExistentExercise]]: 3x8",
+            'wod_syntax' => "# Strength\n[NonExistentExercise]: 3x8",
         ]);
 
         $response = $this->actingAs($user)->get(route('workouts.edit', $workout));
@@ -82,7 +82,7 @@ class WodExerciseMatchingTest extends TestCase
         $workout = Workout::factory()->create([
             'user_id' => $user->id,
             'name' => 'Test WOD',
-            'wod_syntax' => "# Workout\n[[Bench Press]]: 5x5\n[[FakeExercise]]: 3x8",
+            'wod_syntax' => "# Workout\n[Bench Press]: 5x5\n[FakeExercise]: 3x8",
         ]);
 
         $response = $this->actingAs($user)->get(route('workouts.edit', $workout));
@@ -108,7 +108,7 @@ class WodExerciseMatchingTest extends TestCase
         $workout = Workout::factory()->create([
             'user_id' => $user->id,
             'name' => 'Test WOD',
-            'wod_syntax' => "# Workout\n[[Push ups]]: 3x10",  // Different format (space instead of hyphen)
+            'wod_syntax' => "# Workout\n[Push ups]: 3x10",  // Different format (space instead of hyphen)
         ]);
 
         $response = $this->actingAs($user)->get(route('workouts.edit', $workout));
@@ -120,13 +120,13 @@ class WodExerciseMatchingTest extends TestCase
         $response->assertSee('wod-display');
     }
 
-    public function test_wod_only_shows_loggable_exercises_with_double_brackets()
+    public function test_wod_shows_all_exercises_with_single_brackets()
     {
         $adminRole = \App\Models\Role::where('name', 'Admin')->first();
         $user = User::factory()->create();
         $user->roles()->attach($adminRole);
         
-        // Create exercises for both loggable and non-loggable
+        // Create exercises
         $squatExercise = Exercise::factory()->create([
             'user_id' => $user->id,
             'title' => 'Back Squat',
@@ -142,21 +142,20 @@ class WodExerciseMatchingTest extends TestCase
         $workout = Workout::factory()->create([
             'user_id' => $user->id,
             'name' => 'Test WOD',
-            'wod_syntax' => "# Workout\n[[Back Squat]]: 5x5\n[Warm-up Squats]: 2x10",
+            'wod_syntax' => "# Workout\n[Back Squat]: 5x5\n[Warm-up Squats]: 2x10",
         ]);
 
         $response = $this->actingAs($user)->get(route('workouts.edit', $workout->id));
 
         $response->assertStatus(200);
-        // Should show loggable exercise in WOD display
+        // Should show all exercises in WOD display
         $response->assertSee('Back Squat');
         $response->assertSee('5x5');
-        // WOD display shows all exercises in syntax, but only double-bracketed ones are loggable
-        // The display will show "Warm-up Squats" but it won't have a log button
         $response->assertSee('Warm-up Squats');
+        $response->assertSee('2x10');
     }
 
-    public function test_wod_special_formats_respect_loggable_flag()
+    public function test_wod_special_formats_show_all_exercises()
     {
         $user = User::factory()->create();
         
@@ -175,16 +174,15 @@ class WodExerciseMatchingTest extends TestCase
         $workout = Workout::factory()->create([
             'user_id' => $user->id,
             'name' => 'Test WOD',
-            'wod_syntax' => "> AMRAP 10min\n10 [[Burpees]]\n5 [Stretching]",
+            'wod_syntax' => "> AMRAP 10min\n10 [Burpees]\n5 [Stretching]",
         ]);
 
         $response = $this->actingAs($user)->get(route('workouts.index'));
 
         $response->assertStatus(200);
-        // Should show loggable exercise from special format
+        // Should show both exercises from special format
         $response->assertSee('Burpees');
-        // Should NOT show non-loggable exercise from special format
-        $response->assertDontSee('Stretching');
+        $response->assertSee('Stretching');
     }
 
     public function test_wod_table_shows_database_exercise_name_not_syntax_name()
@@ -202,7 +200,7 @@ class WodExerciseMatchingTest extends TestCase
         $workout = Workout::factory()->create([
             'user_id' => $user->id,
             'name' => 'Test WOD',
-            'wod_syntax' => "# Strength\n[[Back Squats]] 5x5",
+            'wod_syntax' => "# Strength\n[Back Squats] 5x5",
         ]);
 
         $response = $this->actingAs($user)->get(route('workouts.index'));
@@ -231,7 +229,7 @@ class WodExerciseMatchingTest extends TestCase
         $workout = Workout::factory()->create([
             'user_id' => $user->id,
             'name' => 'Test WOD',
-            'wod_syntax' => "# Strength\n[[Deadlifts]] 5 reps, building",
+            'wod_syntax' => "# Strength\n[Deadlifts] 5 reps, building",
         ]);
 
         $response = $this->actingAs($user)->get(route('workouts.edit', $workout));
@@ -253,7 +251,7 @@ class WodExerciseMatchingTest extends TestCase
         $workout = Workout::factory()->create([
             'user_id' => $user->id,
             'name' => 'Test WOD',
-            'wod_syntax' => "# Workout\n[[Nonexistent Exercise]] 3x8",
+            'wod_syntax' => "# Workout\n[Nonexistent Exercise] 3x8",
         ]);
 
         $response = $this->actingAs($user)->get(route('workouts.index'));

@@ -376,7 +376,7 @@ class SimpleWorkoutTest extends TestCase
         
         $workout = Workout::factory()->create([
             'user_id' => $admin->id,
-            'wod_syntax' => '[[Bench Press]]: 5x5', // Advanced workout
+            'wod_syntax' => '[Bench Press]: 5x5', // Advanced workout
         ]);
         
         $exercise = Exercise::factory()->create(['user_id' => null]);
@@ -474,7 +474,7 @@ class SimpleWorkoutTest extends TestCase
         
         $workout = Workout::factory()->create([
             'user_id' => $user->id,
-            'wod_syntax' => '[[Bench Press]]: 3x8', // Advanced workout
+            'wod_syntax' => '[Bench Press]: 3x8', // Advanced workout
         ]);
 
         $response = $this->actingAs($user)->get(route('workouts.edit-simple', $workout->id));
@@ -492,7 +492,7 @@ class SimpleWorkoutTest extends TestCase
         
         $workout = Workout::factory()->create([
             'user_id' => $user->id,
-            'wod_syntax' => '[[Bench Press]]: 3x8', // Advanced workout
+            'wod_syntax' => '[Bench Press]: 3x8', // Advanced workout
         ]);
 
         $response = $this->actingAs($user)->get(route('workouts.edit-simple', $workout->id));
@@ -509,7 +509,7 @@ class SimpleWorkoutTest extends TestCase
         
         $workout = Workout::factory()->create([
             'user_id' => $user->id,
-            'wod_syntax' => '[[Bench Press]]: 3x8', // Advanced workout
+            'wod_syntax' => '[Bench Press]: 3x8', // Advanced workout
         ]);
 
         // Simulate impersonation

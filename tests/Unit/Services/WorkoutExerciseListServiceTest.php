@@ -108,7 +108,7 @@ class WorkoutExerciseListServiceTest extends TestCase
     {
         $workout = Workout::factory()->create([
             'user_id' => $this->user->id,
-            'wod_syntax' => "# Strength\n[[Back Squat]]: 5x5\n[[Bench Press]]: 3x8"
+            'wod_syntax' => "# Strength\n[Back Squat]: 5x5\n[Bench Press]: 3x8"
         ]);
 
         $exercise1 = Exercise::factory()->create(['title' => 'Back Squat']);
@@ -138,7 +138,7 @@ class WorkoutExerciseListServiceTest extends TestCase
     {
         $workout = Workout::factory()->create([
             'user_id' => $this->user->id,
-            'wod_syntax' => "# Strength\n[[Unknown Exercise]]: 5x5"
+            'wod_syntax' => "# Strength\n[Unknown Exercise]: 5x5"
         ]);
 
         // Mock matching service to return null (no match)
@@ -167,7 +167,7 @@ class WorkoutExerciseListServiceTest extends TestCase
     {
         $workout = Workout::factory()->create([
             'user_id' => $this->user->id,
-            'wod_syntax' => "# Strength\n[[KB Swings]]: 3x10"
+            'wod_syntax' => "# Strength\n[KB Swings]: 3x10"
         ]);
 
         $exercise = Exercise::factory()->create(['title' => 'Kettlebell Swings']);
@@ -286,7 +286,7 @@ class WorkoutExerciseListServiceTest extends TestCase
     {
         $workout = Workout::factory()->create([
             'user_id' => $this->user->id,
-            'wod_syntax' => "# Warm-up\n[Dynamic Stretching] 5min\n[Foam Rolling] 3min"
+            'wod_syntax' => "# Warm-up\nDynamic Stretching 5min\nFoam Rolling 3min" // No brackets = no exercises
         ]);
 
         $result = $this->service->generateExerciseListTable($workout, [

@@ -34,8 +34,8 @@ AMRAP 12min:
 
 You should see:
 - **Green** headers (# Block 1: Strength)
-- **Orange/brown** loggable exercises ([[Back Squat]])
-- **Light blue** info exercises ([Warm-up Push-ups])
+- **Orange/brown** exercises ([Back Squat])
+
 - **Purple** special formats (AMRAP 12min:)
 - **Light green** rep schemes (5-5-5-5-5, 3x8)
 - **Green italic** comments (// This is a comment)

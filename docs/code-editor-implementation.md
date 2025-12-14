@@ -85,8 +85,8 @@ See `docs/code-editor-upgrade.md` for upgrade instructions.
 
 **WOD Syntax Mode:**
 - Headers (`# Block Name`) - Green, bold
-- Loggable exercises (`[[Exercise]]`) - Orange/brown, bold
-- Info exercises (`[Exercise]`) - Light blue
+- Exercises (`[Exercise]`) - Orange/brown, bold
+
 - Special formats (`AMRAP`, `EMOM`, etc.) - Purple, bold
 - Rep schemes (`3x8`, `5-5-5`) - Light green
 - Comments (`//`, `--`) - Green, italic
