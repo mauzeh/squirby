@@ -218,12 +218,18 @@
                 const textBeforeCursor = textarea.value.substring(0, cursorPos);
                 const textAfterCursor = textarea.value.substring(cursorPos);
                 
-                // Find the start of the current exercise name
+                // Find the start of the current exercise name and determine bracket type
                 const bracketMatch = textBeforeCursor.match(/\[{1,2}([^\]]*?)$/);
                 if (bracketMatch) {
+                    const fullMatch = bracketMatch[0];
+                    const openingBrackets = fullMatch.substring(0, fullMatch.length - bracketMatch[1].length);
+                    const closingBrackets = openingBrackets.replace(/\[/g, ']'); // Convert [ to ]
+                    
                     const startPos = cursorPos - bracketMatch[1].length;
-                    textarea.value = textarea.value.substring(0, startPos) + exercise + textAfterCursor;
-                    textarea.selectionStart = textarea.selectionEnd = startPos + exercise.length;
+                    const exerciseWithClosing = exercise + closingBrackets;
+                    
+                    textarea.value = textarea.value.substring(0, startPos) + exerciseWithClosing + textAfterCursor;
+                    textarea.selectionStart = textarea.selectionEnd = startPos + exerciseWithClosing.length;
                     textarea.dispatchEvent(new Event('input'));
                     textarea.focus();
                 }
