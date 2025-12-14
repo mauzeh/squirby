@@ -121,15 +121,15 @@ class Workout extends Model
                 // Handle special formats (nested exercises)
                 if ($exerciseData['type'] === 'special_format' && isset($exerciseData['exercises'])) {
                     foreach ($exerciseData['exercises'] as $nestedExercise) {
-                        if ($nestedExercise['type'] === 'exercise' && !empty($nestedExercise['loggable'])) {
+                        if ($nestedExercise['type'] === 'exercise') {
                             $this->createWorkoutExercise($nestedExercise, $order++);
                         }
                     }
                     continue;
                 }
 
-                // Handle regular exercises
-                if ($exerciseData['type'] === 'exercise' && !empty($exerciseData['loggable'])) {
+                // Handle regular exercises - all exercises are now loggable
+                if ($exerciseData['type'] === 'exercise') {
                     $this->createWorkoutExercise($exerciseData, $order++);
                 }
             }
