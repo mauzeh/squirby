@@ -29,63 +29,62 @@ You can use 1-3 hash marks (`#`, `##`, `###`) - they all work the same way.
 Exercises are written with brackets around the name, optionally followed by a scheme or description.
 
 **Important:** 
-- **Double brackets `[[...]]`** = Loggable exercises (user needs to log these)
-- **Single brackets `[...]`** = Non-loggable exercises (informational only, like warm-ups or stretches)
+- **Brackets `[...]`** = Exercises that can be logged by users
 
-Both types will be matched to your exercise library using fuzzy matching, but only double-bracketed exercises will appear in the workout display for logging.
+All bracketed exercises will be matched to your exercise library using fuzzy matching and can be logged during workouts.
 
 **Format Options:**
 
 1. **Sets x Reps**: `3x8` or `3 x 8`
    ```
-   [[Bench Press]] 3x8         // Loggable
-   [[Bench Press]]: 3x8        // Also works with colon
-   [Warm-up Push-ups] 2x10     // Not loggable
+   [Bench Press] 3x8
+   [Bench Press]: 3x8        // Also works with colon
+   [Warm-up Push-ups] 2x10
    ```
 
 2. **Rep Ladder**: `5-5-5-3-3-1`
    ```
-   [[Back Squat]] 5-5-5-5-5    // Loggable
-   [[Deadlift]]: 5-3-1-1-1     // Loggable (colon optional)
+   [Back Squat] 5-5-5-5-5
+   [Deadlift]: 5-3-1-1-1     // Colon optional
    ```
 
 3. **Rep Range**: `3x8-12`
    ```
-   [[Dumbbell Row]] 3x8-12     // Loggable
-   [Face Pulls]: 3x15-20       // Not loggable
+   [Dumbbell Row] 3x8-12
+   [Face Pulls]: 3x15-20
    ```
 
 4. **Freeform Text**: Any text after the exercise name
    ```
-   [[Back Squat]] 5 reps, building      // Loggable
-   [[Deadlift]] work up to heavy single // Loggable
-   [Stretching] 5 minutes               // Not loggable
-   [Mobility Work] as needed            // Not loggable
+   [Back Squat] 5 reps, building
+   [Deadlift] work up to heavy single
+   [Stretching] 5 minutes
+   [Mobility Work] as needed
    ```
 
 5. **Single Set**: Just a number
    ```
-   [[Max Deadlift]] 1          // Loggable
+   [Max Deadlift] 1
    ```
 
 6. **Time/Distance**: `500m`, `5min`, `2km`, `30sec`
    ```
-   [Row] 500m                  // Not loggable (warm-up)
-   [[Run]]: 5min               // Loggable
-   [Bike] 2km                  // Not loggable
-   [[Plank]] 30sec             // Loggable
+   [Row] 500m
+   [Run]: 5min
+   [Bike] 2km
+   [Plank] 30sec
    ```
 
 7. **Time Format**: `2:00` (minutes:seconds)
    ```
-   [[L-Sit Hold]] 0:30         // Loggable
+   [L-Sit Hold] 0:30
    ```
 
 **Note:** The colon (`:`) is completely optional. You can write:
-- `[[Exercise]] 3x8` ✓
-- `[[Exercise]]: 3x8` ✓
-- `[[Exercise]] any text here` ✓
-- `[[Exercise]]: any text here` ✓
+- `[Exercise] 3x8` ✓
+- `[Exercise]: 3x8` ✓
+- `[Exercise] any text here` ✓
+- `[Exercise]: any text here` ✓
 
 All formats work the same way!
 
@@ -95,43 +94,43 @@ All formats work the same way!
 
 ```
 AMRAP 12min:
-10 [[Box Jumps]]      // Loggable
-15 [[Push-ups]]       // Loggable
-20 [Air Squats]       // Not loggable
+10 [Box Jumps]
+15 [Push-ups]
+20 [Air Squats]
 ```
 
 ### EMOM (Every Minute On the Minute)
 
 ```
 EMOM 16min:
-5 [[Pull-ups]]        // Loggable
-10 [[Push-ups]]       // Loggable
+5 [Pull-ups]
+10 [Push-ups]
 ```
 
 ### For Time
 
 ```
 For Time:
-100 [[Wall Balls]]           // Loggable
-75 [[Kettlebell Swings]]     // Loggable
-50 [Box Jumps]               // Not loggable
+100 [Wall Balls]
+75 [Kettlebell Swings]
+50 [Box Jumps]
 ```
 
 Or with rep scheme:
 
 ```
 21-15-9 For Time:
-[[Thrusters]]         // Loggable
-[[Pull-ups]]          // Loggable
+[Thrusters]
+[Pull-ups]
 ```
 
 ### Rounds
 
 ```
 5 Rounds:
-10 [[Push-ups]]       // Loggable
-20 [[Squats]]         // Loggable
-30 [Sit-ups]          // Not loggable
+10 [Push-ups]
+20 [Squats]
+30 [Sit-ups]
 ```
 
 ## Complete Examples
@@ -140,59 +139,59 @@ Or with rep scheme:
 
 ```
 # Strength
-[[Back Squat]] 5-5-3-3-1-1
+[Back Squat] 5-5-3-3-1-1
 
 # Metcon
 21-15-9 For Time:
-[[Thrusters]]
-[[Pull-ups]]
+[Thrusters]
+[Pull-ups]
 ```
 
 ### Bodybuilding Style
 
 ```
 # Chest & Triceps
-[[Bench Press]] 4x8
-[[Incline Dumbbell Press]] 3x10-12
-[Cable Flyes] 3x15              // Accessory, not tracked
+[Bench Press] 4x8
+[Incline Dumbbell Press] 3x10-12
+[Cable Flyes] 3x15
 
 # Triceps
-[[Skull Crushers]] 3x12
-[Rope Pushdowns] 3x15           // Accessory, not tracked
+[Skull Crushers] 3x12
+[Rope Pushdowns] 3x15
 ```
 
 ### Functional Fitness
 
 ```
 # Warm-up
-[Row] 500m                       // Warm-up, not tracked
-[Dynamic Stretching] 5 minutes   // Warm-up, not tracked
+Row 500m easy pace
+Dynamic stretching 5 minutes
 
 # WOD
 AMRAP 20min:
-5 [[Pull-ups]]
-10 [[Push-ups]]
-15 [[Air Squats]]
+5 [Pull-ups]
+10 [Push-ups]
+15 [Air Squats]
 
 # Cool Down
-[Stretch] 10min                  // Cool down, not tracked
+Stretch 10min
 ```
 
 ### Strength & Conditioning
 
 ```
 # Block 1: Strength
-[[Deadlift]] 5-5-5-3-3-1
-[[Romanian Deadlift]] 3x8
+[Deadlift] 5-5-5-3-3-1
+[Romanian Deadlift] 3x8
 
 # Block 2: Accessory
-[[Dumbbell Row]] 3x12
-[Face Pulls] 3x15-20             // Optional accessory
+[Dumbbell Row] 3x12
+[Face Pulls] 3x15-20
 
 # Block 3: Conditioning
 EMOM 12min:
-10 [[Kettlebell Swings]]
-5 [[Burpees]]
+10 [Kettlebell Swings]
+5 [Burpees]
 ```
 
 ## Comments
@@ -202,7 +201,7 @@ Add comments using `//` or `--`:
 ```
 # Strength
 // Focus on form today
-[[Back Squat]] 5x5
+[Back Squat] 5x5
 -- Keep rest periods to 2 minutes
 ```
 
@@ -211,8 +210,8 @@ Comments are ignored when parsing.
 ## Tips
 
 1. **Keep it simple**: The syntax is designed to be quick to type
-2. **Use double brackets for main work**: Use `[[Exercise]]` for exercises you want users to log (main lifts, metcon movements)
-3. **Use single brackets for auxiliary work**: Use `[Exercise]` for warm-ups, cool-downs, stretches, or optional accessories
+2. **Use brackets for exercises**: Use `[Exercise]` for exercises you want users to log
+3. **Use plain text for notes**: Use plain text for warm-up instructions, notes, or non-trackable items
 4. **Be specific**: Include weight recommendations in parentheses if needed
 5. **Use blocks**: Organize your workout into logical sections
 6. **No indentation needed**: Exercises following special formats (AMRAP, EMOM, etc.) are automatically grouped

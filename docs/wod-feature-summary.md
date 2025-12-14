@@ -22,7 +22,7 @@ A complete WOD (Workout of the Day) feature that allows users to create structur
   - Special formats (AMRAP, EMOM, For Time, Rounds)
   - Time/distance formats (500m, 5min, 2:00)
   - Comment support (// and --)
-  - Loggable vs non-loggable exercises (double vs single brackets)
+  - Exercise parsing with single bracket notation
   - Unparse capability (convert back to text)
 
 ### 3. Model Updates
@@ -98,34 +98,34 @@ A complete WOD (Workout of the Day) feature that allows users to create structur
 ### Simple Strength
 ```
 # Strength
-[[Back Squat]] 5-5-5-5-5
-[[Bench Press]] 3x8
+[Back Squat] 5-5-5-5-5
+[Bench Press] 3x8
 ```
 
 ### CrossFit Style
 ```
 # Strength
-[[Deadlift]] 5-3-1-1-1
+[Deadlift] 5-3-1-1-1
 
 # Metcon
 21-15-9 For Time:
-[[Thrusters]] (95/65)
-[[Pull-ups]]
+[Thrusters] (95/65)
+[Pull-ups]
 ```
 
 ### Multiple Blocks
 ```
 # Block 1: Strength
-[[Back Squat]] 5x5
+[Back Squat] 5x5
 
 # Block 2: Accessory
-[[Dumbbell Row]] 3x12
+[Dumbbell Row] 3x12
 [Face Pulls] 3x15-20
 
 # Block 3: Conditioning
 AMRAP 12min:
-10 [[Box Jumps]]
-15 [[Push-ups]]
+10 [Box Jumps]
+15 [Push-ups]
 20 [Air Squats]
 ```
 
@@ -152,7 +152,7 @@ AMRAP 12min:
 - Handles indentation for nested exercises
 - Flexible regex patterns for various formats
 - Accepts freeform text after exercise names (colon optional)
-- Distinguishes loggable (`[[...]]`) from non-loggable (`[...]`) exercises
+- Uses single bracket notation (`[...]`) for all exercises
 - Graceful fallback for unrecognized syntax
 
 ### Data Structure
@@ -206,4 +206,4 @@ Run tests:
 php artisan test --filter=WodParserTest
 ```
 
-All 10 tests passing with 44 assertions.
+All 28 tests passing with 141 assertions.
