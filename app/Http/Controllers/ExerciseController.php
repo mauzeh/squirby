@@ -9,6 +9,7 @@ use App\Services\ExerciseMergeService;
 use App\Services\ChartService;
 use App\Services\ExercisePRService;
 use App\Services\ExerciseTypes\ExerciseTypeFactory;
+use App\Services\ComponentBuilder;
 use App\Presenters\LiftLogTablePresenter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -73,7 +74,127 @@ class ExerciseController extends Controller
             }
         }
         
-        return view('exercises.index', compact('exercises', 'mergeEligibleIds'))->with('exerciseMergeService', $this->exerciseMergeService);
+        // Build components for flexible UI
+        $components = $this->buildExerciseIndexComponents($exercises, $mergeEligibleIds, $currentUser);
+        $data = ['components' => $components];
+        
+        return view('mobile-entry.flexible', compact('data'));
+    }
+
+    /**
+     * Build components for the exercise index page.
+     */
+    private function buildExerciseIndexComponents($exercises, $mergeEligibleIds, $currentUser)
+    {
+        $components = [];
+        
+        // Title
+        $components[] = \App\Services\ComponentBuilder::title('Exercises')->build();
+        
+        // Messages from session
+        if ($sessionMessages = \App\Services\ComponentBuilder::messagesFromSession()) {
+            $components[] = $sessionMessages;
+        }
+        
+        // Add Exercise button
+        $components[] = \App\Services\ComponentBuilder::button('Add Exercise')
+            ->asLink(route('exercises.create'))
+            ->build();
+        
+        // Build table
+        if ($exercises->isEmpty()) {
+            $components[] = \App\Services\ComponentBuilder::messages()
+                ->info('No exercises found. Add one to get started!')
+                ->build();
+        } else {
+            $tableBuilder = \App\Services\ComponentBuilder::table()
+                ->confirmMessage('deleteItem', 'Are you sure you want to delete this exercise?')
+                ->ariaLabel('Exercises list')
+                ->spacedRows();
+            
+            foreach ($exercises as $exercise) {
+                // Determine badge type and text
+                if ($exercise->isGlobal()) {
+                    $badgeText = 'Everyone';
+                    $badgeType = 'success';
+                } else {
+                    $badgeText = $exercise->user_id === auth()->id() ? 'You' : $exercise->user->name;
+                    $badgeType = 'warning';
+                }
+                
+                // Build exercise type display
+                $exerciseType = ucfirst(str_replace('_', ' ', $exercise->exercise_type));
+                
+                $rowBuilder = $tableBuilder->row(
+                    $exercise->id,
+                    $exercise->title
+                )
+                ->badge($badgeText, $badgeType)
+                ->badge($exerciseType, 'info')
+                ->compact();
+                
+                // Add edit action if user can edit
+                if ($exercise->canBeEditedBy($currentUser)) {
+                    $rowBuilder->linkAction('fa-pencil', route('exercises.edit', $exercise), 'Edit', 'btn-secondary');
+                }
+                
+                // Add admin actions
+                if ($currentUser->hasRole('Admin')) {
+                    if (!$exercise->isGlobal()) {
+                        // Promote to global
+                        $rowBuilder->formAction(
+                            'fa-globe', 
+                            route('exercises.promote', $exercise), 
+                            'POST', 
+                            [], 
+                            'Promote to global', 
+                            'btn-success', 
+                            'Are you sure you want to promote this exercise to global status?'
+                        );
+                    } else {
+                        // Unpromote to personal
+                        $rowBuilder->formAction(
+                            'fa-user', 
+                            route('exercises.unpromote', $exercise), 
+                            'POST', 
+                            [], 
+                            'Unpromote to personal', 
+                            'btn-warning', 
+                            'Are you sure you want to unpromote this exercise back to personal status? This will only work if no other users have workout logs with this exercise.'
+                        );
+                    }
+                    
+                    // Merge action if eligible
+                    if ($mergeEligibleIds->contains($exercise->id)) {
+                        $rowBuilder->linkAction(
+                            'fa-code-branch', 
+                            route('exercises.show-merge', $exercise), 
+                            'Merge exercise', 
+                            'btn-info'
+                        );
+                    }
+                }
+                
+                // Add delete action if user can delete
+                if ($exercise->canBeDeletedBy($currentUser)) {
+                    $rowBuilder->formAction(
+                        'fa-trash', 
+                        route('exercises.destroy', $exercise), 
+                        'DELETE', 
+                        [], 
+                        'Delete', 
+                        'btn-danger', 
+                        'Are you sure you want to delete this exercise?'
+                    );
+                }
+                
+                $rowBuilder->add();
+            }
+            
+            $components[] = $tableBuilder->build();
+        }
+        
+        return $components;
     }
 
     /**
@@ -216,27 +337,13 @@ class ExerciseController extends Controller
 
     /**
      * Remove the specified resources from storage.
+     * 
+     * @deprecated Bulk deletion is no longer supported
      */
     public function destroySelected(Request $request)
     {
-        $validated = $request->validate([
-            'exercise_ids' => 'required|array',
-            'exercise_ids.*' => 'exists:exercises,id',
-        ]);
-
-        $exercises = Exercise::whereIn('id', $validated['exercise_ids'])->get();
-
-        foreach ($exercises as $exercise) {
-            $this->authorize('delete', $exercise);
-            
-            if ($exercise->liftLogs()->exists()) {
-                return back()->withErrors(['error' => "Cannot delete exercise '{$exercise->title}': it has associated lift logs."]);
-            }
-        }
-
-        Exercise::destroy($validated['exercise_ids']);
-
-        return redirect()->route('exercises.index')->with('success', 'Selected exercises deleted successfully!');
+        // Bulk deletion is no longer supported - redirect to index
+        return redirect()->route('exercises.index')->with('error', 'Bulk deletion is no longer supported.');
     }
 
     /**
