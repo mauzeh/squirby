@@ -8,14 +8,15 @@ The flexible UI system has been successfully migrated and is now in production u
 
 ## Quick Links
 
-- **[Migration Guide](migration-guide.md)** - Complete guide for migrating from old to new system
-- **[Migration Completed Report](migration-completed.md)** - Summary of completed migration
-- **[ComponentBuilder Quick Reference](component-builder-quick-reference.md)** - Quick reference for using ComponentBuilder API
-- **[Mobile Entry Documentation](mobile-entry.md)** - Detailed API documentation
+- **[ComponentBuilder Quick Reference](component-builder-quick-reference.md)** - Complete API reference for all components
+- **[CHANGELOG v1.4](CHANGELOG-v1.4.md)** - Latest changes and new components
+- **[Mobile Entry Documentation](mobile-entry.md)** - Detailed architecture documentation
 - **[Testing Guide](testing.md)** - How to test flexible UI components
-- **[Admin Menu Documentation](admin-menu.md)** - Admin interface documentation
+- **[Migration Guide](migration-guide.md)** - Complete guide for migrating from old to new system
+- **[Table Component Guide](table-component.md)** - Complete table component documentation
 - **[Initial State Configuration](initial-state.md)** - Configure collapsed/expanded state for item lists
 - **[Title Back Button](title-back-button.md)** - Add navigation buttons to page titles
+- **[Admin Menu Documentation](admin-menu.md)** - Admin interface documentation
 
 ## Overview
 
@@ -59,14 +60,19 @@ $data = [
 | Component | Type | Description |
 |-----------|------|-------------|
 | Navigation | `navigation` | Date navigation with prev/today/next buttons |
-| Title | `title` | Page title with optional subtitle |
+| Title | `title` | Page title with optional subtitle and back button |
 | Messages | `messages` | Success, error, warning, info, tip messages |
 | Summary | `summary` | Key metrics display (calories, entries, etc.) |
-| Button | `button` | Action button (e.g., "Add Exercise") |
+| Button | `button` | Action button with enhanced mobile UX |
 | Item List | `item-list` | Searchable list with filter and create form |
-| Form | `form` | Data entry form with fields and validation |
+| Form | `form` | Data entry form with enhanced mobile inputs |
 | Items | `items` | Logged items with edit/delete actions |
-| Table | `table` | Tabular CRUD list optimized for narrow screens |
+| Table | `table` | Tabular CRUD list with badges and bulk actions |
+| PR Cards | `pr-cards` | Personal record tracking with visual highlights |
+| Calculator Grid | `calculator-grid` | Interactive calculation display |
+| Code Editor | `code-editor` | IDE-like syntax editor with highlighting |
+| Markdown | `markdown` | Rich text rendering with custom styling |
+| Chart | `chart` | Chart.js integration with enhanced styling |
 
 ## Quick Start
 
@@ -234,6 +240,13 @@ When adding new features:
 
 ## Version History
 
+- **v1.4** (December 13, 2025) - Major expansion with 4 new components and enhanced UX
+  - New components: PR Cards, Calculator Grid, Code Editor, Markdown
+  - Enhanced existing components with better mobile UX
+  - Component-based CSS architecture
+  - Automatic script loading system
+  - 328 commits with significant improvements
+
 - **v1.3** (November 13, 2025) - Table component enhancements
   - Clickable sub-items (entire row tappable for single actions)
   - Compact button mode (75% size for secondary actions)
@@ -263,7 +276,3 @@ When adding new features:
   - Critical bug fixes applied
   - Documentation created
 
----
-
-**Status:** Production Ready ✅  
-**Last Updated:** November 13, 2025
