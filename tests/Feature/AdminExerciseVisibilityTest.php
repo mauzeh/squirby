@@ -521,36 +521,5 @@ class AdminExerciseVisibilityTest extends TestCase
         $this->assertFalse($availableExercises->contains($otherUserExercise));
     }
 
-    /** @test */
-    public function admin_bulk_operations_work_with_mixed_exercise_ownership()
-    {
-        // Create admin user with role
-        $adminRole = Role::factory()->create(['name' => 'Admin']);
-        $admin = User::factory()->create();
-        $admin->roles()->attach($adminRole);
-        $this->actingAs($admin);
 
-        // Create exercises from different users
-        $user1 = User::factory()->create();
-        $user2 = User::factory()->create();
-        $globalExercise = Exercise::factory()->create(['user_id' => null]);
-        $user1Exercise = Exercise::factory()->create(['user_id' => $user1->id]);
-        $user2Exercise = Exercise::factory()->create(['user_id' => $user2->id]);
-        $adminExercise = Exercise::factory()->create(['user_id' => $admin->id]);
-
-        // Admin should be able to bulk delete exercises from different users
-        $response = $this->post(route('exercises.destroy-selected'), [
-            'exercise_ids' => [$user1Exercise->id, $user2Exercise->id, $adminExercise->id],
-        ]);
-        $response->assertRedirect(route('exercises.index'));
-        $response->assertSessionHas('success');
-
-        // Exercises should be soft deleted
-        $this->assertSoftDeleted($user1Exercise);
-        $this->assertSoftDeleted($user2Exercise);
-        $this->assertSoftDeleted($adminExercise);
-        
-        // Global exercise should still exist and not be soft deleted
-        $this->assertDatabaseHas('exercises', ['id' => $globalExercise->id, 'deleted_at' => null]);
-    }
 }

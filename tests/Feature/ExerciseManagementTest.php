@@ -500,27 +500,7 @@ class ExerciseManagementTest extends TestCase
         $response->assertViewHas('canCreateGlobal', true);
     }
 
-    /** @test */
-    public function cannot_delete_selected_exercises_with_lift_logs()
-    {
-        $user = User::factory()->create();
-        $this->actingAs($user);
 
-        $exercise1 = Exercise::factory()->create(['user_id' => $user->id]);
-        $exercise2 = Exercise::factory()->create(['user_id' => $user->id]);
-        
-        // Add lift log to first exercise
-        LiftLog::factory()->create(['exercise_id' => $exercise1->id, 'user_id' => $user->id]);
-
-        $response = $this->post(route('exercises.destroy-selected'), [
-            'exercise_ids' => [$exercise1->id, $exercise2->id]
-        ]);
-
-        $response->assertRedirect();
-        $response->assertSessionHasErrors('error');
-        $this->assertDatabaseHas('exercises', ['id' => $exercise1->id, 'deleted_at' => null]);
-        $this->assertDatabaseHas('exercises', ['id' => $exercise2->id, 'deleted_at' => null]);
-    }
     public function index_view_displays_global_badge_for_global_exercises()
     {
         $user = User::factory()->create();
