@@ -122,12 +122,12 @@ class ExerciseUserBadgeTest extends TestCase
 
         $response->assertStatus(200);
         
-        // Check for Everyone badge with green background
-        $response->assertSee('background-color: #4CAF50');
+        // Check for Everyone badge with success styling (green)
+        $response->assertSee('table-badge--success', false);
         $response->assertSee('Everyone');
         
-        // Check for user badge with yellow background
-        $response->assertSee('background-color: #FFC107');
+        // Check for user badge with warning styling (orange)
+        $response->assertSee('table-badge--warning', false);
         $response->assertSee('You');
     }
 }
