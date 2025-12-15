@@ -2,6 +2,12 @@
 
 @section('title', 'Register')
 
+@section('description')
+    <div class="register-link-container" style="margin-bottom: 20px; border: none; padding: 0;">
+        <p>Already registered? <a href="{{ route('login') }}" class="register-link">Sign in here</a></p>
+    </div>
+@endsection
+
 @section('google-auth')
     <div class="google-signin-container">
         <a href="{{ route('auth.google') }}" class="google-signin-btn">
@@ -50,8 +56,3 @@
     </form>
 @endsection
 
-@section('bottom-links')
-    <div class="register-link-container">
-        <p>Already registered? <a href="{{ route('login') }}" class="register-link">Sign in here</a></p>
-    </div>
-@endsection

@@ -152,7 +152,7 @@ body .google-signin-btn:active {
 
 .forgot-password-link {
     color: #007bff;
-    text-decoration: none;
+    text-decoration: underline;
     font-size: 16px;
     font-weight: 500;
     transition: color 0.2s ease;
@@ -160,7 +160,6 @@ body .google-signin-btn:active {
 
 .forgot-password-link:hover {
     color: #0056b3;
-    text-decoration: underline;
 }
 
 .forgot-password-description {
@@ -298,14 +297,13 @@ body .google-signin-btn:active {
 
 .register-link {
     color: #007bff;
-    text-decoration: none;
+    text-decoration: underline;
     font-weight: 500;
     transition: color 0.2s ease;
 }
 
 .register-link:hover {
     color: #0056b3;
-    text-decoration: underline;
 }
 
 /* Mobile optimizations for register link */
