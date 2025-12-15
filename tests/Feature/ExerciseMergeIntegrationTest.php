@@ -501,7 +501,7 @@ class ExerciseMergeIntegrationTest extends TestCase
         $this->assertSoftDeleted($sourceExercise);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function merge_with_alias_creation_disabled_does_not_create_alias()
     {
         $this->actingAs($this->admin);
@@ -537,7 +537,7 @@ class ExerciseMergeIntegrationTest extends TestCase
         $this->assertSoftDeleted($sourceExercise);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function merge_creates_alias_before_source_deletion()
     {
         $this->actingAs($this->admin);
@@ -576,7 +576,7 @@ class ExerciseMergeIntegrationTest extends TestCase
         $this->assertDatabaseHas('exercises', ['id' => $targetExercise->id, 'deleted_at' => null]);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function merge_with_alias_creation_within_transaction()
     {
         $this->actingAs($this->admin);
@@ -627,7 +627,7 @@ class ExerciseMergeIntegrationTest extends TestCase
         $this->assertSoftDeleted($sourceExercise);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function merge_handles_duplicate_alias_gracefully()
     {
         $this->actingAs($this->admin);
@@ -680,7 +680,7 @@ class ExerciseMergeIntegrationTest extends TestCase
         $this->assertEquals(1, $aliasCount);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function merge_defaults_to_creating_alias_when_checkbox_not_provided()
     {
         $this->actingAs($this->admin);
@@ -714,7 +714,7 @@ class ExerciseMergeIntegrationTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function merge_success_message_mentions_alias_creation()
     {
         $this->actingAs($this->admin);
@@ -745,7 +745,7 @@ class ExerciseMergeIntegrationTest extends TestCase
         });
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function merge_creates_database_log_entry_with_all_details()
     {
         $this->actingAs($this->admin);
@@ -808,7 +808,7 @@ class ExerciseMergeIntegrationTest extends TestCase
         $this->assertEquals($targetExercise->id, $mergeLog->targetExercise->id);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function merge_log_persists_even_after_target_exercise_deleted()
     {
         $this->actingAs($this->admin);
