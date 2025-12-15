@@ -580,10 +580,15 @@ class ExerciseManagementTest extends TestCase
         $response = $this->get(route('exercises.index'));
 
         $response->assertStatus(200);
-        // Should see delete button for deletable exercise
+        
+        // Should see both exercises
+        $response->assertSee('Deletable Exercise');
+        $response->assertSee('Non-Deletable Exercise');
+        
+        // Should see delete button (fa-trash icon) for deletable exercise
+        // Note: The flexible UI system only shows delete buttons for exercises that can actually be deleted
+        // rather than showing disabled buttons, so we should see at least one delete button
         $response->assertSee('fa-trash');
-        // Should see disabled delete button for non-deletable exercise
-        $response->assertSee('cursor: not-allowed');
     }
 
     /** @test */
