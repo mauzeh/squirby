@@ -1,0 +1,52 @@
+Date	Component Name	Performance Result Type	Fully Formatted Result	Comment
+01/09/2023	Front Squat	Weight	5 x 5 @ 165 lbs	build up
+01/09/2023	Power Clean	Weight	5 x 3 @ 145 lbs	
+01/10/2023	Push Jerk	Weight	5 x 5 @ 125 lbs	95, 105, 115, 115, 125
+01/13/2023	Bench Press	Weight	5 x 5 @ 145 lbs	
+01/13/2023	Deadlift	Weight	5 x 5 @ 225 lbs	
+01/16/2023	Front Squat	Weight	5 x 5 @ 175 lbs	
+01/16/2023	Power Clean	Weight	5 x 2 @ 135 lbs	
+01/27/2023	Bench Press	Weight	5 x 5 @ 145 lbs	
+02/27/2023	Back Squat	Weight	3 x 8 @ 195 lbs	
+02/27/2023	Bench Press	Weight	4 x 6 @ 155 lbs	
+02/28/2023	Power Snatch	Weight	10 x 1 @ 120 lbs	
+03/02/2023	Squat Clean	Weight	5 x 1 @ 175 lbs	
+03/03/2023	Strict Press	Weight	3 x 8 @ 75 lbs	
+03/13/2023	Back Squat	Weight	3 x 6 @ 205 lbs	
+05/09/2023	Push Press	Weight	2 x 4 @ 150 lbs	115, 125, 135, 145, 150
+06/09/2023	Strict Press	Weight	3 x 6 @ 95 lbs	75, 85, 95, 95, 105
+06/19/2023	Back Squat	Weight	3 x 8 @ 205 lbs	
+07/07/2023	Strict Press	Weight	3 x 6 @ 100 lbs	
+08/23/2023	Deadlift	Weight	1 x 5 @ 255 lbs	
+08/24/2023	Power Snatch	Weight	20 x 1 @ 150 lbs	
+09/11/2023	Back Rack Lunge	Weight	3 x 7 @ 165 lbs	
+09/12/2023	Push Press	Weight	5 x 5 @ 145 lbs	135, 145, 150, 155 (for 3), 145
+09/14/2023	Power Clean	Weight	5 x 3 @ 185 lbs	155, 165, 175, 185, 185
+10/10/2023	Bench Press	Weight	3 x 8 @ 145 lbs	
+10/14/2023	Power Clean	Weight	1 x 1 @ 215 lbs	
+10/17/2023	Bench Press	Weight	3 x 8 @ 145 lbs	
+10/23/2023	Back Rack Lunge	Weight	4 x 6 @ 165 lbs	
+11/20/2023	Deadlift	Weight	1 x 2 @ 295 lbs	
+11/27/2023	Deadlift	Weight	1 x 2 @ 295 lbs	
+12/04/2023	Deadlift	Weight	1 x 2 @ 325 lbs	
+12/31/2023	Deadlift	Weight	1 x 3 @ 140 kg	
+01/04/2024	Bench Press	Weight	1 x 5 @ 187.5 lbs	
+02/12/2024	Back Squat	Weight	3 x 7 @ 205 lbs	
+03/15/2024	Strict Press	Weight	4 x 8 @ 80 lbs	75, 80, 80, 80, 80
+04/01/2024	Back Rack Lunge	Weight	3 x 5 @ 155 lbs	
+04/09/2024	Push Press	Weight	3 x 5 @ 155 lbs	135, 145, 155
+04/10/2024	Front Squat	Weight	3 x 5 @ 185 lbs	
+04/12/2024	Bench Press	Weight	3 x 5 @ 175 lbs	155, 165, 170, 175, 185 (x3)
+03/03/2025	Back Squat	Weight	3 x 5 @ 225 lbs	
+03/04/2025	Hang Power Snatch	Weight	4 x 6 @ 105 lbs	
+03/07/2025	Deadlift	Weight	3 x 5 @ 275 lbs	
+03/12/2025	Strict Press	Weight	5 x 4 @ 105 lbs	
+08/15/2025	Deadlift	Weight	3 x 5 @ 305 lbs	
+08/16/2025	Bench Press	Weight	3 x 5 @ 185 lbs	
+08/19/2025	Power Clean	Weight	3 x 3 @ 185 lbs	superset with pull-ups
+08/21/2025	Bench Press	Weight	4 x 4 @ 185 lbs	
+08/26/2025	Power Clean	Weight	3 x 3 @ 195 lbs	
+08/27/2025	Bench Press	Weight	3 x 3 @ 195 lbs	
+09/13/2025	Push Press	Weight	3 x 5 @ 155 lbs	
+09/19/2025	Push Press	Weight	3 x 5 @ 165 lbs	
+10/14/2025	Power Clean	Weight	1 x 1 @ 225 lbs	
