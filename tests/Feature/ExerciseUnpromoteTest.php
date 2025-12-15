@@ -140,14 +140,14 @@ class ExerciseUnpromoteTest extends TestCase
         $indexResponse->assertSee('Global Exercise');
         // Should not show "Everyone" badge anymore since it's now user-specific
         $indexResponse->assertDontSee('Everyone');
-        // Should show "Personal" instead of "Global" in mobile view
-        $indexResponse->assertSee('Personal');
+        // Should show the regular user's name since admin is viewing someone else's exercise
+        $indexResponse->assertSee($this->regularUser->name);
 
         // Verify the exercise is visible to the original owner
         $ownerResponse = $this->actingAs($this->regularUser)->get(route('exercises.index'));
         $ownerResponse->assertSee('Global Exercise');
-        // Should show "Personal" instead of "Global" in mobile view
-        $ownerResponse->assertSee('Personal');
+        // Should show "You" since the regular user is viewing their own exercise
+        $ownerResponse->assertSee('You');
     }
 
     /** @test */

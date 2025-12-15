@@ -162,7 +162,7 @@ class ExerciseController extends Controller
                             route('exercises.unpromote', $exercise), 
                             'POST', 
                             [], 
-                            'Unpromote to personal', 
+                            'Unpromote to personal exercise', 
                             'btn-warning', 
                             'Are you sure you want to unpromote this exercise back to personal status? This will only work if no other users have workout logs with this exercise.'
                         );
