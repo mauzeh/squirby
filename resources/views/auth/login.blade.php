@@ -1,28 +1,54 @@
-@extends('app')
+<!DOCTYPE html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
-@section('styles')
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('favicon/apple-touch-icon.png') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('favicon/favicon-32x32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('favicon/favicon-16x16.png') }}">
+    <link rel="manifest" href="{{ asset('favicon/site.webmanifest') }}">
+    <link rel="shortcut icon" href="{{ asset('favicon/favicon.ico') }}">
+
+    <title>{{ config('app.name', 'Quantified Athletics') }} - Login</title>
+
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
     <link rel="stylesheet" href="{{ asset('css/login.css') }}">
-@endsection
+</head>
+<body>
+    @if(app()->environment('staging'))
+        <div class="env-bar staging">
+            STAGING ENVIRONMENT
+        </div>
+    @elseif(app()->environment('local'))
+        <div class="env-bar local">
+            LOCAL DEV ENVIRONMENT
+        </div>
+    @endif
 
-@section('content')
     <div class="login-container">
         <div class="login-form-wrapper">
             <h3 class="login-title">Log In</h3>
 
             @if ($errors->any())
                 <div class="error-message-box">
-                    <ul>
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
+                    @if ($errors->count() == 1)
+                        {{ $errors->first() }}
+                    @else
+                        <ul>
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    @endif
                 </div>
             @endif
 
             <!-- Session Status -->
             @if (session('status'))
                 <div class="success-message-box">
-                    {{ session('status') }}
+                    {!! session('status') !!}
                 </div>
             @endif
 
@@ -64,18 +90,54 @@
                     <input id="password" type="password" name="password" required autocomplete="current-password" />
                 </div>
 
-                <!-- Remember Me -->
+                <!-- Remember Me and Forgot Password -->
                 <div class="login-checkbox-group">
                     <label for="remember_me" class="checkbox-label">
                         <input id="remember_me" type="checkbox" name="remember" checked>
                         <span>Remember me</span>
                     </label>
+                    <a href="{{ route('password.request') }}" class="forgot-password-link">Forgot password?</a>
                 </div>
 
                 <button type="submit" class="login-button">
                     Log in
                 </button>
             </form>
+
+            <div class="register-link-container">
+                <p>Don't have an account? <a href="{{ route('register') }}" class="register-link">Sign up here</a></p>
+            </div>
         </div>
     </div>
-@endsection
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const emailInput = document.getElementById('email');
+            const forgotPasswordLink = document.querySelector('.forgot-password-link');
+            const baseUrl = forgotPasswordLink.href;
+
+            function updateForgotPasswordLink() {
+                const email = emailInput.value.trim();
+                if (email) {
+                    const url = new URL(baseUrl);
+                    url.searchParams.set('email', email);
+                    forgotPasswordLink.href = url.toString();
+                } else {
+                    forgotPasswordLink.href = baseUrl;
+                }
+            }
+
+            // Update link when user types in email field
+            emailInput.addEventListener('input', updateForgotPasswordLink);
+            
+            // Update link when user pastes into email field
+            emailInput.addEventListener('paste', function() {
+                setTimeout(updateForgotPasswordLink, 10);
+            });
+
+            // Initial update in case there's a pre-filled value
+            updateForgotPasswordLink();
+        });
+    </script>
+</body>
+</html>
