@@ -12,6 +12,7 @@ class UserSeederService
      */
     public function seedNewUser(User $user): void
     {
+        $this->setExercisePreferences($user);
         $this->createMeasurementTypes($user);
         $this->createDefaultIngredients($user);
         $this->createSampleMeal($user);
@@ -24,6 +25,21 @@ class UserSeederService
     public function seedAdminUser(User $user): void
     {
         $this->createMeasurementTypes($user);
+    }
+
+    /**
+     * Set exercise preferences for new users.
+     * Most preferences are "ON" except prefill_suggested_values which is "OFF".
+     */
+    private function setExercisePreferences(User $user): void
+    {
+        $user->update([
+            'show_global_exercises' => true,
+            'show_extra_weight' => true,
+            'prefill_suggested_values' => false,
+            'show_recommended_exercises' => true,
+            'metrics_first_logging_flow' => true,
+        ]);
     }
 
     /**

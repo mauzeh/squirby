@@ -28,4 +28,30 @@ class RegistrationTest extends TestCase
         $this->assertAuthenticated();
         $response->assertRedirect(route('mobile-entry.lifts', absolute: false));
     }
+
+    public function test_new_users_have_correct_exercise_preferences(): void
+    {
+        // First seed the database with required data
+        $this->seed(\Database\Seeders\UnitSeeder::class);
+        $this->seed(\Database\Seeders\UserSeeder::class);
+        $this->seed(\Database\Seeders\IngredientSeeder::class);
+
+        $response = $this->post('/register', [
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ]);
+
+        $this->assertAuthenticated();
+        
+        $user = auth()->user();
+        
+        // Verify exercise preferences are set correctly
+        $this->assertTrue($user->show_global_exercises);
+        $this->assertTrue($user->show_extra_weight);
+        $this->assertFalse($user->prefill_suggested_values); // OFF for new users
+        $this->assertTrue($user->show_recommended_exercises);
+        $this->assertTrue($user->metrics_first_logging_flow);
+    }
 }

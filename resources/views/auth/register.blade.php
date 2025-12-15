@@ -42,12 +42,21 @@
         <div class="login-form-group">
             <label for="password">Password</label>
             <input id="password" type="password" name="password" required autocomplete="new-password" />
+            <div class="password-requirements">
+                <small>Must be at least 8 characters</small>
+            </div>
+            @error('password')
+                <div class="field-error">{{ $message }}</div>
+            @enderror
         </div>
 
         <!-- Confirm Password -->
         <div class="login-form-group">
             <label for="password_confirmation">Confirm Password</label>
             <input id="password_confirmation" type="password" name="password_confirmation" required autocomplete="new-password" />
+            @error('password_confirmation')
+                <div class="field-error">{{ $message }}</div>
+            @enderror
         </div>
 
         <button type="submit" class="login-button">

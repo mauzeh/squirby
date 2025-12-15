@@ -347,3 +347,30 @@ body .google-signin-btn:active {
 .error-message-box li:last-child {
     margin-bottom: 0;
 }
+
+/* Password requirements styling */
+.password-requirements {
+    margin-top: 4px;
+}
+
+.password-requirements small {
+    color: #888;
+    font-size: 14px;
+    line-height: 1.3;
+}
+
+/* Field-specific error styling */
+.field-error {
+    margin-top: 4px;
+    color: #dc3545;
+    font-size: 14px;
+    line-height: 1.3;
+}
+
+/* Mobile optimizations for password requirements and field errors */
+@media (max-width: 480px) {
+    .password-requirements small,
+    .field-error {
+        font-size: 13px;
+    }
+}
