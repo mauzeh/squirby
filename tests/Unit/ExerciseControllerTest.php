@@ -40,8 +40,20 @@ class ExerciseControllerTest extends TestCase
         $chartService = $this->createMock(\App\Services\ChartService::class);
         $liftLogTablePresenter = $this->createMock(\App\Presenters\LiftLogTablePresenter::class);
         $exercisePRService = $this->createMock(\App\Services\ExercisePRService::class);
+        $createExerciseAction = $this->createMock(\App\Actions\Exercises\CreateExerciseAction::class);
+        $updateExerciseAction = $this->createMock(\App\Actions\Exercises\UpdateExerciseAction::class);
+        $mergeExerciseAction = $this->createMock(\App\Actions\Exercises\MergeExerciseAction::class);
         
-        $this->controller = new ExerciseController($exerciseService, $exerciseMergeService, $chartService, $liftLogTablePresenter, $exercisePRService);
+        $this->controller = new ExerciseController(
+            $exerciseService, 
+            $exerciseMergeService, 
+            $chartService, 
+            $liftLogTablePresenter, 
+            $exercisePRService,
+            $createExerciseAction,
+            $updateExerciseAction,
+            $mergeExerciseAction
+        );
     }
 
     public function test_promote_authorizes_exercise(): void

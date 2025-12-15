@@ -2,13 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Exercises\CreateExerciseAction;
+use App\Actions\Exercises\UpdateExerciseAction;
+use App\Actions\Exercises\MergeExerciseAction;
 use App\Models\Exercise;
 use App\Models\User;
 use App\Services\ExerciseService;
 use App\Services\ExerciseMergeService;
 use App\Services\ChartService;
 use App\Services\ExercisePRService;
-use App\Services\ExerciseTypes\ExerciseTypeFactory;
 use App\Services\ComponentBuilder;
 use App\Presenters\LiftLogTablePresenter;
 use Illuminate\Http\Request;
@@ -19,20 +21,16 @@ class ExerciseController extends Controller
 {
     use AuthorizesRequests;
     
-    protected $exerciseService;
-    protected $exerciseMergeService;
-    protected $chartService;
-    protected $liftLogTablePresenter;
-    protected $exercisePRService;
-
-    public function __construct(ExerciseService $exerciseService, ExerciseMergeService $exerciseMergeService, \App\Services\ChartService $chartService, LiftLogTablePresenter $liftLogTablePresenter, ExercisePRService $exercisePRService)
-    {
-        $this->exerciseService = $exerciseService;
-        $this->exerciseMergeService = $exerciseMergeService;
-        $this->chartService = $chartService;
-        $this->liftLogTablePresenter = $liftLogTablePresenter;
-        $this->exercisePRService = $exercisePRService;
-    }
+    public function __construct(
+        private ExerciseService $exerciseService,
+        private ExerciseMergeService $exerciseMergeService,
+        private ChartService $chartService,
+        private LiftLogTablePresenter $liftLogTablePresenter,
+        private ExercisePRService $exercisePRService,
+        private CreateExerciseAction $createExerciseAction,
+        private UpdateExerciseAction $updateExerciseAction,
+        private MergeExerciseAction $mergeExerciseAction
+    ) {}
 
     /**
      * Display a listing of the resource.
@@ -215,48 +213,8 @@ class ExerciseController extends Controller
      */
     public function store(Request $request)
     {
-        $availableTypes = ExerciseTypeFactory::getAvailableTypes();
+        $exercise = $this->createExerciseAction->execute($request, auth()->user());
         
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'exercise_type' => 'required|in:' . implode(',', $availableTypes),
-            'is_global' => 'nullable|boolean',
-        ]);
-
-        // Check admin permission for global exercises
-        if ($validated['is_global'] ?? false) {
-            $this->authorize('createGlobalExercise', Exercise::class);
-        }
-
-        // Check for name conflicts
-        $this->validateExerciseName($validated['title'], $validated['is_global'] ?? false);
-
-        $exerciseType = $validated['exercise_type'];
-
-        // Create a temporary exercise to determine the strategy
-        $tempExercise = new Exercise([
-            'exercise_type' => $exerciseType,
-        ]);
-
-        // Use exercise type strategy to process exercise data
-        $exerciseTypeStrategy = ExerciseTypeFactory::create($tempExercise);
-        $processedData = $exerciseTypeStrategy->processExerciseData($validated);
-
-        $exercise = new Exercise([
-            'title' => $processedData['title'],
-            'description' => $processedData['description'],
-            'exercise_type' => $exerciseType,
-        ]);
-        
-        if ($validated['is_global'] ?? false) {
-            $exercise->user_id = null;
-        } else {
-            $exercise->user_id = auth()->id();
-        }
-
-        $exercise->save();
-
         return redirect()->route('exercises.index')->with('success', 'Exercise created successfully.');
     }
 
@@ -285,40 +243,7 @@ class ExerciseController extends Controller
     {
         $this->authorize('update', $exercise);
         
-        $availableTypes = ExerciseTypeFactory::getAvailableTypes();
-        
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'exercise_type' => 'required|in:' . implode(',', $availableTypes),
-            'is_global' => 'nullable|boolean',
-        ]);
-
-        // Check admin permission for global exercises
-        if ($validated['is_global'] ?? false) {
-            $this->authorize('createGlobalExercise', Exercise::class);
-        }
-
-        // Check for name conflicts (excluding current exercise)
-        $this->validateExerciseNameForUpdate($exercise, $validated['title'], $validated['is_global'] ?? false);
-
-        $exerciseType = $validated['exercise_type'];
-
-        // Create a temporary exercise with new values to determine the strategy
-        $tempExercise = new Exercise([
-            'exercise_type' => $exerciseType,
-        ]);
-
-        // Use exercise type strategy to process exercise data
-        $exerciseTypeStrategy = ExerciseTypeFactory::create($tempExercise);
-        $processedData = $exerciseTypeStrategy->processExerciseData($validated);
-
-        $exercise->update([
-            'title' => $processedData['title'],
-            'description' => $processedData['description'],
-            'exercise_type' => $exerciseType,
-            'user_id' => ($validated['is_global'] ?? false) ? null : auth()->id()
-        ]);
+        $this->updateExerciseAction->execute($request, $exercise, auth()->user());
 
         return redirect()->route('exercises.index')->with('success', 'Exercise updated successfully.');
     }
@@ -653,102 +578,20 @@ class ExerciseController extends Controller
     {
         $this->authorize('merge', $exercise);
 
-        $validated = $request->validate([
-            'target_exercise_id' => 'required|exists:exercises,id',
-            'create_alias' => 'nullable|boolean',
-        ]);
-
-        $targetExercise = Exercise::findOrFail($validated['target_exercise_id']);
-
-        // Validate compatibility
-        $compatibility = $this->exerciseMergeService->validateMergeCompatibility($exercise, $targetExercise);
-        
-        if (!$compatibility['can_merge']) {
-            return back()->withErrors(['error' => 'Merge failed: ' . implode(', ', $compatibility['errors'])]);
-        }
-
-        // Get create_alias parameter, default to true if not provided
-        $createAlias = $request->boolean('create_alias', true);
-
         try {
-            $this->exerciseMergeService->mergeExercises($exercise, $targetExercise, auth()->user(), $createAlias);
-            
-            // Build success message
-            $successMessage = "Exercise '{$exercise->title}' successfully merged into '{$targetExercise->title}'. All workout data has been preserved.";
-            
-            // Add alias creation note if applicable
-            if ($createAlias && $exercise->user) {
-                $successMessage .= " An alias has been created so the owner will continue to see '{$exercise->title}'.";
-            }
+            $result = $this->mergeExerciseAction->execute($request, $exercise, auth()->user());
             
             return redirect()->route('exercises.index')
-                ->with('success', $successMessage);
+                ->with('success', $result['successMessage']);
                 
+        } catch (\InvalidArgumentException $e) {
+            return back()->withErrors(['error' => $e->getMessage()]);
         } catch (\Exception $e) {
             return back()->withErrors(['error' => 'Merge failed: ' . $e->getMessage()]);
         }
     }
 
-    /**
-     * Validate exercise name for conflicts when creating new exercise.
-     */
-    private function validateExerciseName(string $title, bool $isGlobal): void
-    {
-        if ($isGlobal) {
-            // Check if global exercise with same name exists
-            if (Exercise::global()->where('title', $title)->exists()) {
-                throw \Illuminate\Validation\ValidationException::withMessages([
-                    'title' => 'A global exercise with this name already exists.'
-                ]);
-            }
-        } else {
-            // Check if user has exercise with same name OR global exercise exists
-            $userId = auth()->id();
-            $conflicts = Exercise::where('title', $title)
-                ->where(function ($q) use ($userId) {
-                    $q->whereNull('user_id')
-                      ->orWhere('user_id', $userId);
-                })
-                ->exists();
 
-            if ($conflicts) {
-                throw \Illuminate\Validation\ValidationException::withMessages([
-                    'title' => 'An exercise with this name already exists.'
-                ]);
-            }
-        }
-    }
-
-    /**
-     * Validate exercise name for conflicts when updating existing exercise.
-     */
-    private function validateExerciseNameForUpdate(Exercise $exercise, string $title, bool $isGlobal): void
-    {
-        if ($isGlobal) {
-            // Check if another global exercise with same name exists
-            if (Exercise::global()->where('title', $title)->where('id', '!=', $exercise->id)->exists()) {
-                throw \Illuminate\Validation\ValidationException::withMessages([
-                    'title' => 'A global exercise with this name already exists.'
-                ]);
-            }
-        } else {
-            // Check if user has another exercise with same name OR global exercise exists
-            $userId = auth()->id();
-            $conflicts = Exercise::where('title', $title)
-                ->where('id', '!=', $exercise->id)
-                ->where(function ($q) use ($userId) {
-                    $q->whereNull('user_id')
-                      ->orWhere('user_id', $userId);
-                })
-                ->exists();
-
-            if ($conflicts) {
-                throw \Illuminate\Validation\ValidationException::withMessages([
-                    'title' => 'An exercise with this name already exists.'
-                ]);
-            }
-        }
-    }
 
     /**
      * Determine the original owner of an exercise based on lift logs.

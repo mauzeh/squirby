@@ -32,7 +32,7 @@ class ExerciseMergeIntegrationTest extends TestCase
         $this->regularUser = User::factory()->create();
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function complete_merge_workflow_transfers_all_data_correctly()
     {
         $this->actingAs($this->admin);
@@ -130,7 +130,7 @@ class ExerciseMergeIntegrationTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function merge_workflow_handles_intelligence_conflicts_correctly()
     {
         $this->actingAs($this->admin);
@@ -167,7 +167,7 @@ class ExerciseMergeIntegrationTest extends TestCase
         $this->assertSoftDeleted($sourceIntelligence);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function merge_workflow_prevents_unauthorized_access()
     {
         $this->actingAs($this->regularUser); // Non-admin user
@@ -186,7 +186,7 @@ class ExerciseMergeIntegrationTest extends TestCase
         $mergeResponse->assertStatus(403);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function merge_workflow_validates_compatibility_requirements()
     {
         $this->actingAs($this->admin);
@@ -223,7 +223,7 @@ class ExerciseMergeIntegrationTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function merge_workflow_displays_warnings_for_visibility_issues()
     {
         $this->actingAs($this->admin);
@@ -265,7 +265,7 @@ class ExerciseMergeIntegrationTest extends TestCase
         $this->assertTrue($hasVisibilityWarning, 'Expected to find global visibility warning in target compatibility checks');
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function merge_workflow_handles_transaction_rollback_on_failure()
     {
         $this->actingAs($this->admin);
@@ -290,7 +290,8 @@ class ExerciseMergeIntegrationTest extends TestCase
             'target_exercise_id' => $targetId
         ]);
 
-        $response->assertStatus(404);
+        $response->assertRedirect();
+        $response->assertSessionHasErrors(['error']);
 
         // Verify rollback - source exercise and lift log should be unchanged and not soft-deleted
         $this->assertDatabaseHas('exercises', ['id' => $sourceExercise->id, 'deleted_at' => null]);
@@ -302,7 +303,7 @@ class ExerciseMergeIntegrationTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function merge_workflow_logs_operations_correctly()
     {
         $this->actingAs($this->admin);
@@ -336,7 +337,7 @@ class ExerciseMergeIntegrationTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function merge_workflow_preserves_data_integrity_with_multiple_users()
     {
         $this->actingAs($this->admin);
@@ -396,7 +397,7 @@ class ExerciseMergeIntegrationTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function merge_workflow_handles_band_type_compatibility()
     {
         $this->actingAs($this->admin);
@@ -424,7 +425,7 @@ class ExerciseMergeIntegrationTest extends TestCase
         $this->assertDatabaseHas('exercises', ['id' => $targetExercise->id, 'deleted_at' => null]);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function merge_workflow_rejects_incompatible_band_types()
     {
         $this->actingAs($this->admin);
@@ -452,7 +453,7 @@ class ExerciseMergeIntegrationTest extends TestCase
         $this->assertDatabaseHas('exercises', ['id' => $targetExercise->id]);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function merge_workflow_shows_no_targets_available_message()
     {
         $this->actingAs($this->admin);
@@ -470,7 +471,7 @@ class ExerciseMergeIntegrationTest extends TestCase
         $response->assertSessionHasErrors();
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function merge_with_alias_creation_enabled_creates_alias()
     {
         $this->actingAs($this->admin);

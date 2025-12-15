@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Workouts\CreateWorkoutAction;
+use App\Actions\Workouts\UpdateWorkoutAction;
 use App\Http\Controllers\Concerns\DetectsSimpleWorkouts;
 use App\Models\Workout;
 use App\Models\WorkoutExercise;
@@ -16,16 +18,12 @@ class WorkoutController extends Controller
     use \Illuminate\Foundation\Auth\Access\AuthorizesRequests;
     use DetectsSimpleWorkouts;
 
-    protected $wodDisplayService;
-    protected $exerciseListService;
-
     public function __construct(
-        WodDisplayService $wodDisplayService,
-        \App\Services\WorkoutExerciseListService $exerciseListService
-    ) {
-        $this->wodDisplayService = $wodDisplayService;
-        $this->exerciseListService = $exerciseListService;
-    }
+        private WodDisplayService $wodDisplayService,
+        private \App\Services\WorkoutExerciseListService $exerciseListService,
+        private CreateWorkoutAction $createWorkoutAction,
+        private UpdateWorkoutAction $updateWorkoutAction
+    ) {}
 
     /**
      * Display a listing of the user's workouts
@@ -204,39 +202,21 @@ class WorkoutController extends Controller
      */
     public function store(Request $request)
     {
-        // Only admins and impersonators can create advanced workouts
-        if (!$this->canAccessAdvancedWorkouts()) {
-            return redirect()->route('workouts.create-simple')
-                ->with('error', 'Advanced workout creation is only available to admins.');
-        }
-
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'wod_syntax' => 'required|string',
-        ]);
-        
-        // Parse the workout syntax
-        $parser = app(\App\Services\WodParser::class);
         try {
-            $parsed = $parser->parse($validated['wod_syntax']);
-        } catch (\Exception $e) {
+            $workout = $this->createWorkoutAction->execute($request, auth()->user());
+            
+            return redirect()
+                ->route('workouts.edit', $workout->id)
+                ->with('success', 'Workout created!');
+                
+        } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
+            return redirect()->route('workouts.create-simple')
+                ->with('error', $e->getMessage());
+        } catch (\InvalidArgumentException $e) {
             return back()
                 ->withInput()
-                ->with('error', 'Failed to parse workout syntax: ' . $e->getMessage());
+                ->with('error', $e->getMessage());
         }
-        
-        $workout = Workout::create([
-            'user_id' => Auth::id(),
-            'name' => $validated['name'],
-            'description' => $validated['description'] ?? null,
-            'wod_syntax' => $validated['wod_syntax'],
-            'is_public' => false,
-        ]);
-        
-        return redirect()
-            ->route('workouts.edit', $workout->id)
-            ->with('success', 'Workout created!');
     }
 
     /**
@@ -354,37 +334,21 @@ class WorkoutController extends Controller
     {
         $this->authorize('update', $workout);
 
-        // Only admins and impersonators can update advanced workouts
-        if (!$this->canAccessAdvancedWorkouts()) {
-            return redirect()->route('workouts.edit-simple', $workout)
-                ->with('error', 'Advanced workout editing is only available to admins.');
-        }
-
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'wod_syntax' => 'required|string',
-        ]);
-        
-        // Parse the workout syntax
-        $parser = app(\App\Services\WodParser::class);
         try {
-            $parsed = $parser->parse($validated['wod_syntax']);
-        } catch (\Exception $e) {
+            $this->updateWorkoutAction->execute($request, $workout, auth()->user());
+            
+            return redirect()
+                ->route('workouts.edit', $workout->id)
+                ->with('success', 'Workout updated!');
+                
+        } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
+            return redirect()->route('workouts.edit-simple', $workout)
+                ->with('error', $e->getMessage());
+        } catch (\InvalidArgumentException $e) {
             return back()
                 ->withInput()
-                ->with('error', 'Failed to parse workout syntax: ' . $e->getMessage());
+                ->with('error', $e->getMessage());
         }
-        
-        $workout->update([
-            'name' => $validated['name'],
-            'description' => $validated['description'] ?? null,
-            'wod_syntax' => $validated['wod_syntax'],
-        ]);
-        
-        return redirect()
-            ->route('workouts.edit', $workout->id)
-            ->with('success', 'Workout updated!');
     }
 
     /**
