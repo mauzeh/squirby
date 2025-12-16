@@ -87,6 +87,7 @@
 
         <p>The user has been automatically set up with:</p>
         <ul>
+            <li>Athlete role assigned</li>
             <li>Default exercise preferences (most features enabled)</li>
             <li>Default measurement types (Bodyweight, Waist)</li>
             <li>Sample ingredients and meal</li>

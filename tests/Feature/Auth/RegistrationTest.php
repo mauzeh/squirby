@@ -88,6 +88,27 @@ class RegistrationTest extends TestCase
         $this->assertTrue($user->metrics_first_logging_flow);
     }
 
+    public function test_new_users_are_assigned_athlete_role(): void
+    {
+        $this->seedRequiredData();
+
+        $response = $this->post('/register', [
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ]);
+
+        $this->assertAuthenticated();
+        
+        $user = auth()->user();
+        
+        // Verify user has the Athlete role
+        $this->assertTrue($user->hasRole('Athlete'));
+        $this->assertCount(1, $user->roles);
+        $this->assertEquals('Athlete', $user->roles->first()->name);
+    }
+
     public function test_new_users_get_seeded_with_default_data(): void
     {
         $this->seedRequiredData();

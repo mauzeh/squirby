@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Role;
 use App\Models\Unit;
 use App\Models\User;
 
@@ -13,6 +14,7 @@ class UserSeederService
     public function seedNewUser(User $user): void
     {
         $this->setExercisePreferences($user);
+        $this->assignAthleteRole($user);
         $this->createMeasurementTypes($user);
         $this->createDefaultIngredients($user);
         $this->createSampleMeal($user);
@@ -40,6 +42,18 @@ class UserSeederService
             'show_recommended_exercises' => true,
             'metrics_first_logging_flow' => true,
         ]);
+    }
+
+    /**
+     * Assign the Athlete role to new users.
+     */
+    private function assignAthleteRole(User $user): void
+    {
+        $athleteRole = Role::where('name', 'Athlete')->first();
+        
+        if ($athleteRole) {
+            $user->roles()->attach($athleteRole);
+        }
     }
 
     /**
