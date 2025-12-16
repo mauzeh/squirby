@@ -31,11 +31,8 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request, UserSeederService $userSeederService): RedirectResponse
     {
-        $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
-        ]);
+        // Custom validation to handle soft-deleted users
+        $this->validateRegistration($request);
 
         $user = User::create([
             'name' => $request->name,
@@ -54,5 +51,34 @@ class RegisteredUserController extends Controller
         Auth::login($user);
 
         return redirect(route('mobile-entry.lifts', absolute: false));
+    }
+
+    /**
+     * Validate registration request with custom email uniqueness check.
+     */
+    private function validateRegistration(Request $request): void
+    {
+        $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'lowercase', 'email', 'max:255'],
+            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+        ]);
+
+        // Check if user exists with this email, including soft-deleted ones
+        $existingUser = User::withTrashed()->where('email', $request->email)->first();
+
+        if ($existingUser) {
+            if ($existingUser->trashed()) {
+                // Soft-deleted user - provide specific error message
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'email' => 'This email address was previously registered but the account has been deactivated. Please contact support to reactivate your account or use a different email address.'
+                ]);
+            } else {
+                // Active user - standard uniqueness error
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'email' => 'The email has already been taken.'
+                ]);
+            }
+        }
     }
 }

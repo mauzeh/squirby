@@ -193,6 +193,60 @@ class RegistrationTest extends TestCase
         $this->assertGuest();
     }
 
+    public function test_registration_rejects_soft_deleted_user_email(): void
+    {
+        // Create and soft-delete a user
+        $deletedUser = User::factory()->create(['email' => 'deleted@example.com']);
+        $deletedUser->delete(); // Soft delete
+        
+        $this->assertTrue($deletedUser->trashed());
+
+        // Try to register with the same email
+        $response = $this->post('/register', [
+            'name' => 'New User',
+            'email' => 'deleted@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ]);
+
+        // Should fail with specific validation error
+        $response->assertSessionHasErrors('email');
+        $this->assertGuest();
+        
+        // Check the specific error message
+        $errors = session('errors');
+        $this->assertStringContainsString('previously registered', $errors->get('email')[0]);
+        $this->assertStringContainsString('deactivated', $errors->get('email')[0]);
+        
+        // The soft-deleted user should remain soft-deleted and unchanged
+        $deletedUser->refresh();
+        $this->assertTrue($deletedUser->trashed());
+        $this->assertNotEquals('New User', $deletedUser->name);
+        
+        // Should still only be one user with this email (the soft-deleted one)
+        $this->assertEquals(1, User::withTrashed()->where('email', 'deleted@example.com')->count());
+    }
+
+    public function test_registration_prevents_duplicate_active_users(): void
+    {
+        // Create existing active user
+        User::factory()->create(['email' => 'active@example.com']);
+
+        // Try to register with the same email (different case to test case-insensitive check)
+        $response = $this->post('/register', [
+            'name' => 'Another User',
+            'email' => 'ACTIVE@EXAMPLE.COM',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ]);
+
+        $response->assertSessionHasErrors('email');
+        $this->assertGuest();
+        
+        // Should still only be one user with this email
+        $this->assertEquals(1, User::where('email', 'active@example.com')->count());
+    }
+
     public function test_registration_requires_password(): void
     {
         $response = $this->post('/register', [
