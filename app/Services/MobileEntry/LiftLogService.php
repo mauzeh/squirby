@@ -507,29 +507,34 @@ class LiftLogService extends MobileEntryBaseService
   /**
      * Generate item selection list based on user's accessible exercises
      * 
-     * Simplified 3-category system for better mobile UX:
+     * Adaptive system that prioritizes exercises based on user experience:
      * 
+     * For New Users (< 5 total lift logs):
+     * 1. Popular Exercises (Essential beginner-friendly exercises)
+     *    - Label: <i class="fas fa-thumbs-up"></i> Popular
+     *    - Style: 'in-program' (green, prominent)
+     *    - Priority: 1
+     *    - Curated list of most common beginner exercises
+     * 
+     * For Experienced Users (≥ 5 total lift logs):
      * 1. Recommended (Top 10 AI Recommendations)
      *    - Label: <i class="fas fa-star"></i> Recommended
      *    - Style: 'in-program' (green, prominent)
      *    - Priority: 1
-     *    - Ordered by recommendation engine score (highest score first)
      *    - Based on muscle balance, movement diversity, recovery, and training history
-     *    - Only shows exercises performed in last 31 days
      * 
+     * For All Users:
      * 2. Recent (Last 7 Days)
      *    - Label: Recent
      *    - Style: 'recent' (green, lighter)
      *    - Priority: 2
-     *    - Exercises performed in the last 7 days (not already in top 10 recommendations)
-     *    - Ordered alphabetically
+     *    - Exercises performed in the last 7 days
      * 
      * 3. All Others
-     *    - No label
+     *    - No label or last performed date
      *    - Style: 'regular' (gray)
      *    - Priority: 3
-     *    - All remaining exercises (custom and regular)
-     *    - Ordered alphabetically
+     *    - All remaining exercises, ordered alphabetically
      * 
      * @param int $userId
      * @param Carbon $selectedDate
@@ -571,15 +576,26 @@ class LiftLogService extends MobileEntryBaseService
             ->groupBy('exercise_id')
             ->pluck('last_logged_at', 'exercise_id');
 
-        // Get top 10 recommended exercises using the recommendation engine (if user preference enabled)
-        $recommendationMap = [];
-        if ($user->shouldShowRecommendedExercises()) {
-            $recommendations = $this->recommendationEngine->getRecommendations($userId, 10);
-            
-            // Create a map of exercise IDs to their recommendation rankings
-            foreach ($recommendations as $index => $recommendation) {
-                $exerciseId = $recommendation['exercise']->id;
-                $recommendationMap[$exerciseId] = $index + 1;  // Rank 1 is highest, rank 10 is lowest
+        // Check if user is new (has fewer than 5 total lift logs)
+        $totalLiftLogs = LiftLog::where('user_id', $userId)->count();
+        $isNewUser = $totalLiftLogs < 5;
+
+        // Get prioritized exercises based on user experience
+        $prioritizedExerciseMap = [];
+        
+        if ($isNewUser) {
+            // For new users: show common beginner-friendly exercises at the top
+            $prioritizedExerciseMap = $this->getCommonExercisesForNewUsers($exercises);
+        } else {
+            // For experienced users: use AI recommendations if enabled
+            if ($user->shouldShowRecommendedExercises()) {
+                $recommendations = $this->recommendationEngine->getRecommendations($userId, 10);
+                
+                // Create a map of exercise IDs to their recommendation rankings
+                foreach ($recommendations as $index => $recommendation) {
+                    $exerciseId = $recommendation['exercise']->id;
+                    $prioritizedExerciseMap[$exerciseId] = $index + 1;  // Rank 1 is highest, rank 10 is lowest
+                }
             }
         }
 
@@ -593,15 +609,16 @@ class LiftLogService extends MobileEntryBaseService
                 $lastPerformedLabel = $lastPerformed->diffForHumans(['short' => true]);
             }
             
-            // Simplified 3-category system (or 2-category if recommendations disabled)
-            if (isset($recommendationMap[$exercise->id])) {
-                // Category 1: Recommended (Top 10 from AI) - only if preference enabled
-                $rank = $recommendationMap[$exercise->id];
+            // Adaptive category system based on user experience
+            if (isset($prioritizedExerciseMap[$exercise->id])) {
+                // Category 1: Prioritized exercises (Common for new users, AI recommendations for experienced users)
+                $rank = $prioritizedExerciseMap[$exercise->id];
+                $label = $isNewUser ? 'Popular' : '<i class="fas fa-star"></i> Recommended';
                 $itemType = [
-                    'label' => '<i class="fas fa-star"></i> Recommended',
+                    'label' => $label,
                     'cssClass' => 'in-program',  // Green, prominent
                     'priority' => 1,
-                    'subPriority' => $rank  // Preserve recommendation engine order
+                    'subPriority' => $rank  // Preserve ordering
                 ];
             } elseif (in_array($exercise->id, $recentExerciseIds)) {
                 // Category 2: Recent (Last 7 days, not in top 10)
@@ -788,5 +805,46 @@ class LiftLogService extends MobileEntryBaseService
         
         // For dates more than a week away
         return $date->format('l, F j, Y');
+    }
+
+    /**
+     * Get the top 10 most logged exercises by non-admin users for new user prioritization
+     * 
+     * Returns a map of exercise IDs to their priority ranking (1-10)
+     * Only includes exercises that exist in the user's available exercises
+     * 
+     * @param \Illuminate\Support\Collection $exercises Available exercises for the user
+     * @return array Map of exercise_id => priority_rank
+     */
+    private function getCommonExercisesForNewUsers($exercises): array
+    {
+        // Get available exercise IDs to filter the query
+        $availableExerciseIds = $exercises->pluck('id')->toArray();
+        
+        if (empty($availableExerciseIds)) {
+            return [];
+        }
+        
+        // Find top 10 most logged exercises by non-admin users
+        $topExercises = LiftLog::select('exercise_id', \DB::raw('COUNT(*) as log_count'))
+            ->whereIn('exercise_id', $availableExerciseIds)
+            ->whereHas('user', function ($query) {
+                $query->whereDoesntHave('roles', function ($roleQuery) {
+                    $roleQuery->where('name', 'Admin');
+                });
+            })
+            ->groupBy('exercise_id')
+            ->orderBy('log_count', 'desc')
+            ->limit(10)
+            ->pluck('exercise_id')
+            ->toArray();
+        
+        // Create priority map (1 = highest priority)
+        $priorityMap = [];
+        foreach ($topExercises as $index => $exerciseId) {
+            $priorityMap[$exerciseId] = $index + 1;
+        }
+        
+        return $priorityMap;
     }
 }

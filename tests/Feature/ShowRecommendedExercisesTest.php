@@ -300,4 +300,89 @@ class ShowRecommendedExercisesTest extends TestCase
         $response->assertSee('Bench Press'); // Should still see all exercises
         $response->assertSee('Deadlift'); // Should still see old exercise
     }
+
+    /** @test */
+    public function new_users_see_popular_exercises_instead_of_ai_recommendations()
+    {
+        // Seed required data
+        $this->seed(\Database\Seeders\RoleSeeder::class);
+        $this->seed(\Database\Seeders\UnitSeeder::class);
+        $this->seed(\Database\Seeders\UserSeeder::class);
+        $this->seed(\Database\Seeders\IngredientSeeder::class);
+        
+        // Create a new user (0 lift logs = new user)
+        $newUser = User::factory()->create([
+            'show_recommended_exercises' => true,
+        ]);
+        
+        // Create exercises and make some popular with other users
+        $popularExercise = Exercise::factory()->create(['title' => 'Popular Exercise']);
+        $unpopularExercise = Exercise::factory()->create(['title' => 'Unpopular Exercise']);
+        
+        $otherUser1 = User::factory()->create();
+        $otherUser2 = User::factory()->create();
+        
+        // Make one exercise very popular
+        LiftLog::factory()->count(20)->create([
+            'user_id' => $otherUser1->id,
+            'exercise_id' => $popularExercise->id,
+        ]);
+        LiftLog::factory()->count(15)->create([
+            'user_id' => $otherUser2->id,
+            'exercise_id' => $popularExercise->id,
+        ]);
+        
+        // Make other exercise less popular
+        LiftLog::factory()->count(2)->create([
+            'user_id' => $otherUser1->id,
+            'exercise_id' => $unpopularExercise->id,
+        ]);
+        
+        $this->actingAs($newUser);
+        $response = $this->get(route('mobile-entry.lifts'));
+        
+        $response->assertStatus(200);
+        
+        // New users should see "Popular" label instead of "Recommended"
+        $response->assertSee('Popular Exercise');
+        $response->assertSee('Popular'); // Should see "Popular" label
+        $response->assertDontSee('Recommended'); // Should NOT see "Recommended" label for new users
+        
+        // Should also see unpopular exercise but without Popular label
+        $response->assertSee('Unpopular Exercise');
+    }
+
+    /** @test */
+    public function experienced_users_do_not_see_popular_label()
+    {
+        // Seed required data
+        $this->seed(\Database\Seeders\RoleSeeder::class);
+        $this->seed(\Database\Seeders\UnitSeeder::class);
+        $this->seed(\Database\Seeders\UserSeeder::class);
+        $this->seed(\Database\Seeders\IngredientSeeder::class);
+        
+        // Create an experienced user (5+ lift logs)
+        $experiencedUser = User::factory()->create([
+            'show_recommended_exercises' => true,
+        ]);
+        
+        $exercise = Exercise::factory()->create(['title' => 'User Exercise']);
+        
+        // Give user 5+ lift logs to make them experienced
+        LiftLog::factory()->count(5)->create([
+            'user_id' => $experiencedUser->id,
+            'exercise_id' => $exercise->id,
+        ]);
+        
+        $this->actingAs($experiencedUser);
+        $response = $this->get(route('mobile-entry.lifts'));
+        
+        $response->assertStatus(200);
+        
+        // Experienced users should NOT see "Popular" label (that's only for new users)
+        $response->assertDontSee('Popular');
+        
+        // Should see their exercises
+        $response->assertSee('User Exercise');
+    }
 }
