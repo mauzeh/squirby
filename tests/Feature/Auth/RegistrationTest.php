@@ -5,6 +5,7 @@ namespace Tests\Feature\Auth;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
 class RegistrationTest extends TestCase
@@ -14,6 +15,7 @@ class RegistrationTest extends TestCase
     private function seedRequiredData(): void
     {
         $this->seed(\Database\Seeders\UnitSeeder::class);
+        $this->seed(\Database\Seeders\RoleSeeder::class);
         $this->seed(\Database\Seeders\UserSeeder::class);
         $this->seed(\Database\Seeders\IngredientSeeder::class);
     }
@@ -558,5 +560,118 @@ class RegistrationTest extends TestCase
 
         $this->assertAuthenticated();
         $this->assertTrue(Hash::check($complexPassword, auth()->user()->password));
+    }
+
+    // Email Notification Tests
+
+    public function test_registration_sends_notification_to_admin_users(): void
+    {
+        Mail::fake();
+        $this->seedRequiredData();
+
+        // Create admin users
+        $admin1 = User::factory()->create(['email' => 'admin1@example.com']);
+        $admin2 = User::factory()->create(['email' => 'admin2@example.com']);
+        
+        // Assign admin role
+        $adminRole = \App\Models\Role::where('name', 'Admin')->first();
+        $admin1->roles()->attach($adminRole);
+        $admin2->roles()->attach($adminRole);
+
+        // Register a new user
+        $response = $this->post('/register', [
+            'name' => 'New Test User',
+            'email' => 'newuser@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ]);
+
+        $this->assertAuthenticated();
+
+        // Assert that email was sent to admin users
+        Mail::assertSent(\App\Mail\NewUserRegistered::class, function ($mail) use ($admin1, $admin2) {
+            // The email should be sent to the first admin found (which includes the seeded admin)
+            // and should have the test admin users in CC
+            return $mail->hasTo('admin@example.com') && 
+                   $mail->hasCc($admin1->email) &&
+                   $mail->hasCc($admin2->email) &&
+                   $mail->newUser->email === 'newuser@example.com';
+        });
+    }
+
+    public function test_registration_handles_single_admin_user(): void
+    {
+        Mail::fake();
+        $this->seedRequiredData();
+
+        // Create only one additional admin user (the seeded admin already exists)
+        $admin = User::factory()->create(['email' => 'single-admin@example.com']);
+        $adminRole = \App\Models\Role::where('name', 'Admin')->first();
+        $admin->roles()->attach($adminRole);
+
+        // Register a new user
+        $response = $this->post('/register', [
+            'name' => 'New Test User',
+            'email' => 'newuser@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ]);
+
+        $this->assertAuthenticated();
+
+        // Assert that email was sent to admin users (seeded admin as primary, additional admin as CC)
+        Mail::assertSent(\App\Mail\NewUserRegistered::class, function ($mail) use ($admin) {
+            return $mail->hasTo('admin@example.com') && 
+                   $mail->hasCc($admin->email) &&
+                   $mail->newUser->email === 'newuser@example.com';
+        });
+    }
+
+    public function test_registration_handles_no_admin_users(): void
+    {
+        Mail::fake();
+        $this->seedRequiredData();
+
+        // Don't create any admin users (only the seeded ones exist)
+        // Register a new user
+        $response = $this->post('/register', [
+            'name' => 'New Test User',
+            'email' => 'newuser@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ]);
+
+        $this->assertAuthenticated();
+
+        // Assert that email was sent (to the seeded admin user)
+        Mail::assertSent(\App\Mail\NewUserRegistered::class);
+    }
+
+    public function test_registration_email_contains_correct_user_information(): void
+    {
+        Mail::fake();
+        $this->seedRequiredData();
+
+        // Create admin user
+        $admin = User::factory()->create(['email' => 'content-admin@example.com']);
+        $adminRole = \App\Models\Role::where('name', 'Admin')->first();
+        $admin->roles()->attach($adminRole);
+
+        // Register a new user
+        $response = $this->post('/register', [
+            'name' => 'John Doe',
+            'email' => 'john.doe@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ]);
+
+        $this->assertAuthenticated();
+
+        // Assert email content
+        Mail::assertSent(\App\Mail\NewUserRegistered::class, function ($mail) {
+            return $mail->newUser->name === 'John Doe' &&
+                   $mail->newUser->email === 'john.doe@example.com' &&
+                   $mail->envelope()->subject === 'New User Registration - John Doe';
+        });
     }
 }
