@@ -1,49 +1,46 @@
-@extends('app')
+@extends('layouts.auth')
 
-@section('content')
-    <div class="container">
-        <div class="form-container" style="max-width: 400px; margin: 50px auto;">
-            <h3 style="text-align: center; margin-bottom: 20px;">Reset Password</h3>
+@section('title', 'Set New Password')
 
-            <form method="POST" action="{{ route('password.store') }}">
-                @csrf
+@section('description')
+    <div class="forgot-password-description">
+        <p>Enter your new password below. Make sure it's secure and something you'll remember.</p>
+    </div>
+@endsection
 
-                <!-- Password Reset Token -->
-                <input type="hidden" name="token" value="{{ $request->route('token') }}">
+@section('form')
+    <form method="POST" action="{{ route('password.store') }}" class="login-form">
+        @csrf
 
-                <!-- Email Address -->
-                <div class="form-group">
-                    <label for="email">Email</label>
-                    <input id="email" class="form-control" type="email" name="email" value="{{ old('email', $request->email) }}" required autofocus autocomplete="username" />
-                    @error('email')
-                        <div class="error-message">{{ $message }}</div>
-                    @enderror
-                </div>
+        <!-- Password Reset Token -->
+        <input type="hidden" name="token" value="{{ $request->route('token') }}">
 
-                <!-- Password -->
-                <div class="form-group">
-                    <label for="password">Password</label>
-                    <input id="password" class="form-control" type="password" name="password" required autocomplete="new-password" />
-                    @error('password')
-                        <div class="error-message">{{ $message }}</div>
-                    @enderror
-                </div>
-
-                <!-- Confirm Password -->
-                <div class="form-group">
-                    <label for="password_confirmation">Confirm Password</label>
-                    <input id="password_confirmation" class="form-control" type="password" name="password_confirmation" required autocomplete="new-password" />
-                    @error('password_confirmation')
-                        <div class="error-message">{{ $message }}</div>
-                    @enderror
-                </div>
-
-                <div class="flex items-center justify-end mt-4">
-                    <button type="submit" class="button">
-                        Reset Password
-                    </button>
-                </div>
-            </form>
+        <!-- Email Address -->
+        <div class="login-form-group">
+            <label for="email">Email</label>
+            <input id="email" type="email" name="email" value="{{ old('email', $request->email) }}" required autofocus autocomplete="username" readonly />
         </div>
+
+        <!-- Password -->
+        <div class="login-form-group">
+            <label for="password">New Password</label>
+            <input id="password" type="password" name="password" required autocomplete="new-password" />
+        </div>
+
+        <!-- Confirm Password -->
+        <div class="login-form-group">
+            <label for="password_confirmation">Confirm New Password</label>
+            <input id="password_confirmation" type="password" name="password_confirmation" required autocomplete="new-password" />
+        </div>
+
+        <button type="submit" class="login-button">
+            Reset Password
+        </button>
+    </form>
+@endsection
+
+@section('bottom-links')
+    <div class="register-link-container">
+        <p>Remember your password? <a href="{{ route('login') }}" class="register-link">Back to login</a></p>
     </div>
 @endsection

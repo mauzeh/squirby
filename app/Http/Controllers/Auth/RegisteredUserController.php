@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Events\UserRegistered;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Services\UserSeederService;
@@ -44,6 +45,9 @@ class RegisteredUserController extends Controller
 
         // Seed the new user with default data
         $userSeederService->seedNewUser($user);
+
+        // Dispatch user registered event
+        UserRegistered::dispatch($user);
 
         event(new Registered($user));
 

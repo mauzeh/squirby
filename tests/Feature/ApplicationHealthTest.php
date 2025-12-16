@@ -23,8 +23,12 @@ class ApplicationHealthTest extends TestCase
         foreach ($routes as $routeName) {
             try {
                 $response = $this->get(route($routeName));
+                $content = $response->getContent();
+                
                 if ($response->status() !== 200) {
                     $failures[] = "Route '{$routeName}' returned {$response->status()} instead of 200";
+                } elseif (strlen($content) === 0) {
+                    $failures[] = "Route '{$routeName}' returned empty content (0 bytes) - possible silent failure";
                 }
             } catch (\Exception $e) {
                 $failures[] = "Route '{$routeName}' threw exception: " . $e->getMessage();
@@ -35,7 +39,54 @@ class ApplicationHealthTest extends TestCase
             $this->fail("The following routes failed:\n" . implode("\n", $failures));
         }
 
-        $this->assertTrue(true, "All " . count($routes) . " routes returned 200");
+        $this->assertTrue(true, "All " . count($routes) . " routes returned 200 with content");
+    }
+
+    public function test_auth_pages_return_successful_response_for_guest_users()
+    {
+        // Test auth pages as unauthenticated users (their intended use case)
+        $authRoutes = [
+            'login',
+            'register', 
+            'password.request', // forgot password
+        ];
+
+        $failures = [];
+
+        foreach ($authRoutes as $routeName) {
+            try {
+                $response = $this->get(route($routeName));
+                $content = $response->getContent();
+                
+                if ($response->status() !== 200) {
+                    $failures[] = "Auth route '{$routeName}' returned {$response->status()} instead of 200";
+                } elseif (strlen($content) === 0) {
+                    $failures[] = "Auth route '{$routeName}' returned empty content (0 bytes) - possible silent failure";
+                }
+            } catch (\Exception $e) {
+                $failures[] = "Auth route '{$routeName}' threw exception: " . $e->getMessage();
+            }
+        }
+
+        // Test password reset page with a dummy token
+        try {
+            $response = $this->get(route('password.reset', ['token' => 'dummy-token']) . '?email=test@example.com');
+            $content = $response->getContent();
+            
+            if ($response->status() !== 200) {
+                $failures[] = "Auth route 'password.reset' returned {$response->status()} instead of 200";
+            } elseif (strlen($content) === 0) {
+                $failures[] = "Auth route 'password.reset' returned empty content (0 bytes) - possible silent failure";
+            }
+        } catch (\Exception $e) {
+            $failures[] = "Auth route 'password.reset' threw exception: " . $e->getMessage();
+        }
+
+        if (!empty($failures)) {
+            $this->fail("The following auth routes failed:\n" . implode("\n", $failures));
+        }
+
+        $this->assertTrue(true, "All auth routes returned 200 with content for guest users");
     }
 
     public function test_all_get_routes_return_a_successful_response_for_admin()
@@ -50,8 +101,12 @@ class ApplicationHealthTest extends TestCase
         foreach ($routes as $routeName) {
             try {
                 $response = $this->get(route($routeName));
+                $content = $response->getContent();
+                
                 if ($response->status() !== 200) {
                     $failures[] = "Route '{$routeName}' returned {$response->status()} instead of 200";
+                } elseif (strlen($content) === 0) {
+                    $failures[] = "Route '{$routeName}' returned empty content (0 bytes) - possible silent failure";
                 }
             } catch (\Exception $e) {
                 $failures[] = "Route '{$routeName}' threw exception: " . $e->getMessage();
@@ -62,7 +117,7 @@ class ApplicationHealthTest extends TestCase
             $this->fail("The following routes failed:\n" . implode("\n", $failures));
         }
 
-        $this->assertTrue(true, "All " . count($routes) . " routes returned 200");
+        $this->assertTrue(true, "All " . count($routes) . " routes returned 200 with content");
     }
 
     private function getTestableRoutes(): array
@@ -71,12 +126,14 @@ class ApplicationHealthTest extends TestCase
         $routeList = [];
 
         $exclude = [
-            // Auth routes that redirect when already authenticated
+            // Auth routes that redirect when already authenticated (tested separately as guest users)
             'register',
-            'login',
+            'login', 
             'password.request',
-            'password.email',
             'password.reset',
+            
+            // Auth routes that require special handling
+            'password.email',
             'password.confirm',
             'verification.notice',
             'verification.verify',
