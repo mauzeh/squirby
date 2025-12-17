@@ -84,7 +84,7 @@ class RegistrationTest extends TestCase
         $this->assertTrue($user->show_global_exercises);
         $this->assertTrue($user->show_extra_weight);
         $this->assertFalse($user->prefill_suggested_values); // OFF for new users
-        $this->assertTrue($user->show_recommended_exercises);
+        $this->assertFalse($user->show_recommended_exercises); // OFF for new users
         $this->assertTrue($user->metrics_first_logging_flow);
     }
 

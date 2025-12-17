@@ -4,18 +4,11 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use App\Services\SampleFoodDataService;
 use Illuminate\Support\Facades\Auth;
 use Laravel\Socialite\Facades\Socialite;
 
 class SocialiteController extends Controller
 {
-    protected SampleFoodDataService $sampleFoodDataService;
-
-    public function __construct(SampleFoodDataService $sampleFoodDataService)
-    {
-        $this->sampleFoodDataService = $sampleFoodDataService;
-    }
     public function redirectToGoogle()
     {
         return Socialite::driver('google')
@@ -49,42 +42,16 @@ class SocialiteController extends Controller
                         'google_id' => $googleUser->getId(),
                     ]);
                 } else {
-                    // Create new user
+                    // Create new user with basic info
                     $user = User::create([
                         'name' => $googleUser->getName(),
                         'email' => $googleUser->getEmail(),
                         'google_id' => $googleUser->getId(),
                         'password' => bcrypt(str()->random(16)), // Random password for socialite users
-                        'prefill_suggested_values' => false,
-                        'show_recommended_exercises' => false,
                     ]);
 
-                    // Assign athlete role to new users
-                    $athleteRole = \App\Models\Role::where('name', 'Athlete')->first();
-                    if ($athleteRole) {
-                        $user->roles()->attach($athleteRole);
-                    }
-
-                    // Create default measurement types for new users
-                    \App\Models\MeasurementType::create([
-                        'name' => 'Bodyweight',
-                        'default_unit' => 'lbs',
-                        'user_id' => $user->id,
-                    ]);
-
-                    \App\Models\MeasurementType::create([
-                        'name' => 'Waist Size',
-                        'default_unit' => 'in',
-                        'user_id' => $user->id,
-                    ]);
-
-                    // Create sample food data for new users
-                    try {
-                        $this->sampleFoodDataService->createSampleData($user);
-                    } catch (\Exception $e) {
-                        \Log::warning('Failed to create sample food data for new user: ' . $e->getMessage());
-                        // Don't fail the registration if sample data creation fails
-                    }
+                    // Use UserSeederService to set up all default data consistently
+                    app(\App\Services\UserSeederService::class)->seedNewUser($user);
 
                     $isNewUser = true;
                 }
