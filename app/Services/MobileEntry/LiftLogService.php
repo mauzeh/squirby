@@ -8,7 +8,6 @@ use App\Models\MobileLiftForm;
 use App\Services\TrainingProgressionService;
 use App\Services\ExerciseAliasService;
 use App\Services\Factories\LiftLogFormFactory;
-use App\Services\RecommendationEngine;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 use App\Services\MobileEntry\MobileEntryBaseService;
@@ -19,7 +18,6 @@ class LiftLogService extends MobileEntryBaseService
     protected TrainingProgressionService $trainingProgressionService;
     protected LiftDataCacheService $cacheService;
     protected ExerciseAliasService $aliasService;
-    protected RecommendationEngine $recommendationEngine;
     protected LiftLogFormFactory $liftLogFormFactory;
     protected \App\Services\LiftLogTableRowBuilder $tableRowBuilder;
 
@@ -27,14 +25,12 @@ class LiftLogService extends MobileEntryBaseService
         TrainingProgressionService $trainingProgressionService,
         LiftDataCacheService $cacheService,
         ExerciseAliasService $aliasService,
-        RecommendationEngine $recommendationEngine,
         LiftLogFormFactory $liftLogFormFactory,
         \App\Services\LiftLogTableRowBuilder $tableRowBuilder
     ) {
         $this->trainingProgressionService = $trainingProgressionService;
         $this->cacheService = $cacheService;
         $this->aliasService = $aliasService;
-        $this->recommendationEngine = $recommendationEngine;
         $this->liftLogFormFactory = $liftLogFormFactory;
         $this->tableRowBuilder = $tableRowBuilder;
     }
@@ -583,23 +579,12 @@ class LiftLogService extends MobileEntryBaseService
         $totalLiftLogs = LiftLog::where('user_id', $userId)->count();
         $isNewUser = $totalLiftLogs < 5;
 
-        // Get prioritized exercises based on user experience
+        // Simplified prioritization based on user experience
         $prioritizedExerciseMap = [];
         
         if ($isNewUser) {
             // For new users: show common beginner-friendly exercises at the top
             $prioritizedExerciseMap = $this->getCommonExercisesForNewUsers($exercises);
-        } else {
-            // For experienced users: use AI recommendations if enabled
-            if ($user->shouldShowRecommendedExercises()) {
-                $recommendations = $this->recommendationEngine->getRecommendations($userId, 10);
-                
-                // Create a map of exercise IDs to their recommendation rankings
-                foreach ($recommendations as $index => $recommendation) {
-                    $exerciseId = $recommendation['exercise']->id;
-                    $prioritizedExerciseMap[$exerciseId] = $index + 1;  // Rank 1 is highest, rank 10 is lowest
-                }
-            }
         }
 
         $items = [];
@@ -612,31 +597,39 @@ class LiftLogService extends MobileEntryBaseService
                 $lastPerformedLabel = $lastPerformed->diffForHumans(['short' => true]);
             }
             
-            // Adaptive category system based on user experience
-            if (isset($prioritizedExerciseMap[$exercise->id])) {
-                // Category 1: Prioritized exercises (Common for new users, AI recommendations for experienced users)
+            // Simplified category system
+            if ($isNewUser && isset($prioritizedExerciseMap[$exercise->id])) {
+                // Category 1: Popular exercises for new users
                 $rank = $prioritizedExerciseMap[$exercise->id];
-                $label = $isNewUser ? 'Popular' : '<i class="fas fa-star"></i> Recommended';
                 $itemType = [
-                    'label' => $label,
+                    'label' => 'Popular',
                     'cssClass' => 'in-program',  // Green, prominent
                     'priority' => 1,
                     'subPriority' => $rank  // Preserve ordering
                 ];
-            } elseif (in_array($exercise->id, $recentExerciseIds)) {
-                // Category 2: Recent (Last 7 days, not in top 10)
+            } elseif ($isNewUser && in_array($exercise->id, $recentExerciseIds)) {
+                // Category 2: Recent exercises for new users
                 $itemType = [
                     'label' => 'Recent',
                     'cssClass' => 'recent',  // Green, lighter
                     'priority' => 2,
                     'subPriority' => 0
                 ];
+            } elseif (!$isNewUser && isset($lastPerformedDates[$exercise->id])) {
+                // Category 1: Exercises with logs for experienced users
+                $itemType = [
+                    'label' => $lastPerformedLabel,
+                    'cssClass' => 'in-program',  // Green, show they have history
+                    'priority' => 1,
+                    'subPriority' => 0
+                ];
             } else {
-                // Category 3: All Others (show last performed date)
+                // Category 2/3: All others (never logged or no special priority)
+                $priority = $isNewUser ? 3 : 2;  // Lower priority for new users, medium for experienced
                 $itemType = [
                     'label' => $lastPerformedLabel,
                     'cssClass' => 'regular',  // Gray
-                    'priority' => 3,
+                    'priority' => $priority,
                     'subPriority' => 0
                 ];
             }

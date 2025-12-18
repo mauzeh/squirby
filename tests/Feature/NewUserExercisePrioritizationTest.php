@@ -90,16 +90,16 @@ class NewUserExercisePrioritizationTest extends TestCase
     }
 
     /** @test */
-    public function experienced_user_sees_ai_recommendations_not_popular_exercises()
+    public function experienced_user_sees_logged_exercises_prioritized_not_popular_exercises()
     {
         // Make the experienced user have 5+ lift logs
-        $exercise = Exercise::factory()->create(['title' => 'Test Exercise']);
+        $loggedExercise = Exercise::factory()->create(['title' => 'Logged Exercise']);
         LiftLog::factory()->count(5)->create([
             'user_id' => $this->experiencedUser->id,
-            'exercise_id' => $exercise->id,
+            'exercise_id' => $loggedExercise->id,
         ]);
         
-        // Create a popular exercise (from other users)
+        // Create a popular exercise (from other users) that this user has never logged
         $popularExercise = Exercise::factory()->create(['title' => 'Popular Exercise']);
         $otherUser = User::factory()->create();
         LiftLog::factory()->count(10)->create([
@@ -110,13 +110,18 @@ class NewUserExercisePrioritizationTest extends TestCase
         // Get item selection list for experienced user
         $result = $this->liftLogService->generateItemSelectionList($this->experiencedUser->id, Carbon::today());
         
-        // Find the popular exercise in results
+        // Find exercises in results
+        $loggedExerciseItem = collect($result['items'])->firstWhere('name', 'Logged Exercise');
         $popularExerciseItem = collect($result['items'])->firstWhere('name', 'Popular Exercise');
         
-        // For experienced users, popular exercises should NOT be automatically prioritized
-        // They should use AI recommendations instead (which may be empty if no recommendations)
+        // For experienced users, exercises they've logged should be prioritized (priority 1)
+        $this->assertEquals(1, $loggedExerciseItem['type']['priority']);
+        $this->assertEquals('in-program', $loggedExerciseItem['type']['cssClass']);
+        
+        // Popular exercises they haven't logged should have lower priority (priority 2)
+        $this->assertEquals(2, $popularExerciseItem['type']['priority']);
         $this->assertNotEquals('Popular', $popularExerciseItem['type']['label']);
-        $this->assertNotEquals(1, $popularExerciseItem['type']['priority']);
+        $this->assertEquals('regular', $popularExerciseItem['type']['cssClass']);
     }
 
     /** @test */

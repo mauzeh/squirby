@@ -82,14 +82,12 @@ class GoogleOAuthTest extends TestCase
             'name' => 'John Doe',
             'google_id' => 'google_123',
             'prefill_suggested_values' => false,
-            'show_recommended_exercises' => false,
         ]);
 
         // Assert user has athlete role
         $user = User::where('email', 'john@example.com')->first();
         $this->assertTrue($user->hasRole('Athlete'));
         $this->assertFalse($user->prefill_suggested_values);
-        $this->assertFalse($user->show_recommended_exercises);
         $this->assertTrue($user->shouldShowGlobalExercises()); // check that this one remains true
 
         // Assert user is logged in

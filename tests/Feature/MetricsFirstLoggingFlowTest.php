@@ -212,7 +212,6 @@ class MetricsFirstLoggingFlowTest extends TestCase
             'show_global_exercises' => true,
             'show_extra_weight' => false,
             'prefill_suggested_values' => true,
-            'show_recommended_exercises' => true,
         ]);
         
         $response->assertRedirect(route('profile.edit'));

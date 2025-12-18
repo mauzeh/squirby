@@ -75,7 +75,6 @@ class ProfileController extends Controller
             'show_global_exercises' => ['nullable', 'boolean'],
             'show_extra_weight' => ['nullable', 'boolean'],
             'prefill_suggested_values' => ['nullable', 'boolean'],
-            'show_recommended_exercises' => ['nullable', 'boolean'],
             'metrics_first_logging_flow' => ['nullable', 'boolean'],
         ]);
 
@@ -83,7 +82,6 @@ class ProfileController extends Controller
             'show_global_exercises' => $request->boolean('show_global_exercises'),
             'show_extra_weight' => $request->boolean('show_extra_weight'),
             'prefill_suggested_values' => $request->boolean('prefill_suggested_values'),
-            'show_recommended_exercises' => $request->boolean('show_recommended_exercises'),
             'metrics_first_logging_flow' => $request->boolean('metrics_first_logging_flow'),
         ]);
 

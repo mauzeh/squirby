@@ -59,12 +59,6 @@ class ProfileFormService
                 'When enabled, the lift log form will prefill with AI-suggested weight, reps, and sets based on your training progression. When disabled, the form will prefill with values from your last workout only.'
             )
             ->checkboxField(
-                'show_recommended_exercises',
-                'Show recommended exercises',
-                old('show_recommended_exercises', $user->show_recommended_exercises ?? true),
-                'When enabled, the exercise selection list will show AI-recommended exercises at the top based on muscle balance, movement diversity, and recovery. When disabled, only recent exercises and alphabetical listing will be shown.'
-            )
-            ->checkboxField(
                 'metrics_first_logging_flow',
                 'View metrics before logging',
                 old('metrics_first_logging_flow', $user->metrics_first_logging_flow ?? false),
