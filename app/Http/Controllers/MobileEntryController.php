@@ -127,7 +127,7 @@ class MobileEntryController extends Controller
             ->noResultsMessage($itemSelectionList['noResultsMessage']);
 
         if ($shouldExpandSelection) {
-            $itemListBuilder->initialState('expanded');
+            $itemListBuilder->initialState('expanded')->showCancelButton(false);
         }
         
         foreach ($itemSelectionList['items'] as $item) {
