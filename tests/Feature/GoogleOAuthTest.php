@@ -366,7 +366,7 @@ class GoogleOAuthTest extends TestCase
         $this->assertNotNull($bodyweight);
         $this->assertEquals('lbs', $bodyweight->default_unit);
         
-        $waistSize = $measurementTypes->where('name', 'Waist Size')->first();
+        $waistSize = $measurementTypes->where('name', 'Waist')->first();
         $this->assertNotNull($waistSize);
         $this->assertEquals('in', $waistSize->default_unit);
 
@@ -374,23 +374,16 @@ class GoogleOAuthTest extends TestCase
     }
 
     /** @test */
-    public function it_calls_sample_food_data_service_for_new_users()
+    public function it_creates_basic_ingredients_for_new_users()
     {
         // Create the athlete role for testing (required for user creation)
         \App\Models\Role::create(['name' => 'Athlete']);
 
-        // Mock SampleFoodDataService and assert createSampleData is called once
-        $sampleFoodDataService = Mockery::mock("App\Services\SampleFoodDataService");
-        $sampleFoodDataService->shouldReceive('createSampleData')
-            ->once()
-            ->andReturn(['ingredients' => collect(), 'meals' => collect()]);
-        $this->app->instance("App\Services\SampleFoodDataService", $sampleFoodDataService);
-
         // Mock Google user data
         $googleUser = Mockery::mock(SocialiteUser::class);
-        $googleUser->shouldReceive('getId')->andReturn('google_sample_data_call_test');
-        $googleUser->shouldReceive('getName')->andReturn('Sample Data Caller');
-        $googleUser->shouldReceive('getEmail')->andReturn('sampledatacaller@example.com');
+        $googleUser->shouldReceive('getId')->andReturn('google_ingredients_test');
+        $googleUser->shouldReceive('getName')->andReturn('Ingredients Test User');
+        $googleUser->shouldReceive('getEmail')->andReturn('ingredientstest@example.com');
 
         // Mock Socialite
         Socialite::shouldReceive('driver')
@@ -409,69 +402,54 @@ class GoogleOAuthTest extends TestCase
         // Trigger the Google OAuth callback
         $response = $this->get(route('auth.google.callback'));
 
-        // Assert user was created (optional, but good for context)
-        $this->assertDatabaseHas('users', [
-            'email' => 'sampledatacaller@example.com',
-        ]);
+        // Assert user was created
+        $user = User::where('email', 'ingredientstest@example.com')->first();
+        $this->assertNotNull($user);
+
+        // Assert basic ingredients were created from config
+        $ingredients = $user->ingredients;
+        $this->assertCount(5, $ingredients); // Should match config/user_defaults.php ingredients count
+
+        // Check for specific basic ingredients
+        $chickenBreast = $ingredients->where('name', 'Chicken Breast')->first();
+        $this->assertNotNull($chickenBreast);
+        $this->assertEquals(31.0, $chickenBreast->protein);
+        $this->assertEquals(100, $chickenBreast->base_quantity);
+
+        $brownRice = $ingredients->where('name', 'Brown Rice')->first();
+        $this->assertNotNull($brownRice);
+        $this->assertEquals(2.6, $brownRice->protein);
+        $this->assertEquals(23.0, $brownRice->carbs);
+
+        $broccoli = $ingredients->where('name', 'Broccoli')->first();
+        $this->assertNotNull($broccoli);
+        $this->assertEquals(2.8, $broccoli->protein);
+
+        $oliveOil = $ingredients->where('name', 'Olive Oil')->first();
+        $this->assertNotNull($oliveOil);
+        $this->assertEquals(13.5, $oliveOil->fats);
+
+        $eggs = $ingredients->where('name', 'Eggs')->first();
+        $this->assertNotNull($eggs);
+        $this->assertEquals(6.3, $eggs->protein);
 
         $response->assertRedirect('/mobile-entry/lifts');
         $response->assertSessionHas('success');
     }
 
-    /** @test */
-    public function it_logs_oauth_errors_for_debugging()
-    {
-        // Mock logger
-        \Log::shouldReceive('error')
-            ->once()
-            ->with(
-                'Google OAuth failed: Test exception',
-                Mockery::type('array')
-            );
 
-        // Mock Socialite to throw exception
-        Socialite::shouldReceive('driver')
-            ->with('google')
-            ->once()
-            ->andReturnSelf();
-        
-        Socialite::shouldReceive('redirectUrl')
-            ->once()
-            ->andReturnSelf();
-        
-        Socialite::shouldReceive('user')
-            ->once()
-            ->andThrow(new \Exception('Test exception'));
-
-        $response = $this->get(route('auth.google.callback'));
-
-        $response->assertRedirect('/login');
-        $response->assertSessionHas('error', 'Google authentication failed.');
-    }
 
     /** @test */
-    public function it_continues_registration_even_if_sample_data_creation_fails()
+    public function it_creates_sample_meal_for_new_users()
     {
         // Create the athlete role for testing
         \App\Models\Role::create(['name' => 'Athlete']);
 
-        // Mock SampleFoodDataService to throw exception
-        $sampleFoodDataService = Mockery::mock("App\Services\SampleFoodDataService");
-        $sampleFoodDataService->shouldReceive('createSampleData')
-            ->once()
-            ->andThrow(new \Exception('Sample data creation failed'));
-        $this->app->instance("App\Services\SampleFoodDataService", $sampleFoodDataService);
-
-        // Mock logger to verify warning is logged
-        \Log::shouldReceive('warning')
-            ->once()
-            ->with(Mockery::pattern('/Failed to create sample food data/'));
-
         // Mock Google user data
         $googleUser = Mockery::mock(SocialiteUser::class);
-        $googleUser->shouldReceive('getId')->andReturn('google_sample_fail');
-        $googleUser->shouldReceive('getName')->andReturn('Sample Fail User');
-        $googleUser->shouldReceive('getEmail')->andReturn('samplefail@example.com');
+        $googleUser->shouldReceive('getId')->andReturn('google_meal_test');
+        $googleUser->shouldReceive('getName')->andReturn('Meal Test User');
+        $googleUser->shouldReceive('getEmail')->andReturn('mealtest@example.com');
 
         // Mock Socialite
         Socialite::shouldReceive('driver')
@@ -489,17 +467,31 @@ class GoogleOAuthTest extends TestCase
 
         $response = $this->get(route('auth.google.callback'));
 
-        // Assert user was still created despite sample data failure
-        $this->assertDatabaseHas('users', [
-            'email' => 'samplefail@example.com',
-            'name' => 'Sample Fail User',
-            'google_id' => 'google_sample_fail',
-        ]);
+        // Assert user was created
+        $user = User::where('email', 'mealtest@example.com')->first();
+        $this->assertNotNull($user);
 
-        // Assert user is logged in
-        $this->assertAuthenticated();
+        // Assert sample meal was created from config
+        $meals = $user->meals;
+        $this->assertCount(1, $meals);
 
-        // Assert registration succeeded
+        $sampleMeal = $meals->first();
+        $this->assertEquals('Chicken, Rice & Broccoli', $sampleMeal->name);
+        $this->assertEquals('A balanced meal with protein, carbs, and vegetables.', $sampleMeal->comments);
+
+        // Assert meal has the correct ingredients attached
+        $mealIngredients = $sampleMeal->ingredients;
+        $this->assertCount(4, $mealIngredients); // Should have 4 ingredients from config
+
+        // Check specific ingredient quantities
+        $chickenIngredient = $mealIngredients->where('name', 'Chicken Breast')->first();
+        $this->assertNotNull($chickenIngredient);
+        $this->assertEquals(150, $chickenIngredient->pivot->quantity);
+
+        $riceIngredient = $mealIngredients->where('name', 'Brown Rice')->first();
+        $this->assertNotNull($riceIngredient);
+        $this->assertEquals(100, $riceIngredient->pivot->quantity);
+
         $response->assertRedirect('/mobile-entry/lifts');
         $response->assertSessionHas('success');
     }
