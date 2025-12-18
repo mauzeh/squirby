@@ -5,13 +5,15 @@ namespace App\Services\MobileEntry;
 use App\Models\LiftLog;
 use App\Models\Exercise;
 use App\Models\MobileLiftForm;
+use App\Models\User;
 use App\Services\TrainingProgressionService;
 use App\Services\ExerciseAliasService;
 use App\Services\Factories\LiftLogFormFactory;
+use App\Services\LiftLogTableRowBuilder;
+use App\Services\ComponentBuilder as C;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 use App\Services\MobileEntry\MobileEntryBaseService;
-use App\Services\ComponentBuilder as C;
 
 class LiftLogService extends MobileEntryBaseService
 {
@@ -19,14 +21,14 @@ class LiftLogService extends MobileEntryBaseService
     protected LiftDataCacheService $cacheService;
     protected ExerciseAliasService $aliasService;
     protected LiftLogFormFactory $liftLogFormFactory;
-    protected \App\Services\LiftLogTableRowBuilder $tableRowBuilder;
+    protected LiftLogTableRowBuilder $tableRowBuilder;
 
     public function __construct(
         TrainingProgressionService $trainingProgressionService,
         LiftDataCacheService $cacheService,
         ExerciseAliasService $aliasService,
         LiftLogFormFactory $liftLogFormFactory,
-        \App\Services\LiftLogTableRowBuilder $tableRowBuilder
+        LiftLogTableRowBuilder $tableRowBuilder
     ) {
         $this->trainingProgressionService = $trainingProgressionService;
         $this->cacheService = $cacheService;
@@ -60,7 +62,7 @@ class LiftLogService extends MobileEntryBaseService
         }
         
         // Get user
-        $user = \App\Models\User::find($userId);
+        $user = User::find($userId);
         
         // Apply alias to exercise title
         $displayName = $this->aliasService->getDisplayName($exercise, $user);
@@ -158,7 +160,7 @@ class LiftLogService extends MobileEntryBaseService
             ->first();
         
         // Get user
-        $user = \App\Models\User::find($userId);
+        $user = User::find($userId);
         
         // Apply alias to exercise title
         $displayName = $this->aliasService->getDisplayName($exercise, $user);
@@ -167,7 +169,7 @@ class LiftLogService extends MobileEntryBaseService
         $components = [];
         
         // Add title with back button
-        $components[] = \App\Services\ComponentBuilder::title('Log ' . $displayName)
+        $components[] = C::title('Log ' . $displayName)
             ->subtitle($selectedDate->format('l, F j, Y'))
             ->backButton('fa-arrow-left', $backUrl, 'Back')
             ->build();
@@ -192,7 +194,7 @@ class LiftLogService extends MobileEntryBaseService
         $liftLog->load(['exercise', 'liftSets']);
         
         // Get user
-        $user = \App\Models\User::find($userId);
+        $user = User::find($userId);
         
         // Apply alias to exercise title
         if ($liftLog->exercise) {
@@ -273,9 +275,9 @@ class LiftLogService extends MobileEntryBaseService
     /**
      * Generate messages for a form based on mobile lift form and last session
      * 
-     * @param \App\Models\MobileLiftForm $form
+     * @param MobileLiftForm $form
      * @param array|null $lastSession
-     * @param \App\Models\User|null $user
+     * @param User|null $user
      * @return array
      */
     private function generateFormMessagesForMobileForms($form, $lastSession, $user = null)
@@ -298,7 +300,7 @@ class LiftLogService extends MobileEntryBaseService
             $labels = $strategy->getFieldLabels();
             
             // Create a mock lift log for formatting
-            $mockLiftLog = new \App\Models\LiftLog();
+            $mockLiftLog = new LiftLog();
             $mockLiftLog->exercise = $form->exercise;
             $mockLiftLog->setRelation('liftSets', collect([
                 (object)[
@@ -414,12 +416,10 @@ class LiftLogService extends MobileEntryBaseService
         ];
     }
 
-
-
     /**
      * Determine default weight for an exercise
      * 
-     * @param \App\Models\Exercise $exercise
+     * @param Exercise $exercise
      * @param array|null $lastSession
      * @return float
      */
@@ -499,27 +499,20 @@ class LiftLogService extends MobileEntryBaseService
             ->spacedRows();
 
         return $tableBuilder->build();
-    }  
-  /**
+    }
+
+    /**
      * Generate item selection list based on user's accessible exercises
      * 
      * Adaptive system that prioritizes exercises based on user experience:
      * 
      * For New Users (< 5 total lift logs):
      * 1. Popular Exercises (Essential beginner-friendly exercises)
-     *    - Label: <i class="fas fa-thumbs-up"></i> Popular
+     *    - Label: Popular
      *    - Style: 'in-program' (green, prominent)
      *    - Priority: 1
      *    - Curated list of most common beginner exercises
      * 
-     * For Experienced Users (≥ 5 total lift logs):
-     * 1. Recommended (Top 10 AI Recommendations)
-     *    - Label: <i class="fas fa-star"></i> Recommended
-     *    - Style: 'in-program' (green, prominent)
-     *    - Priority: 1
-     *    - Based on muscle balance, movement diversity, recovery, and training history
-     * 
-     * For All Users:
      * 2. Recent (Last 7 Days)
      *    - Label: Recent
      *    - Style: 'recent' (green, lighter)
@@ -531,6 +524,19 @@ class LiftLogService extends MobileEntryBaseService
      *    - Style: 'regular' (gray)
      *    - Priority: 3
      *    - All remaining exercises, ordered alphabetically
+     * 
+     * For Experienced Users (≥ 5 total lift logs):
+     * 1. Previously Logged Exercises
+     *    - Label: Shows last performed date (e.g., "2 days ago")
+     *    - Style: 'in-program' (green, prominent)
+     *    - Priority: 1
+     *    - Exercises with workout history for this user
+     * 
+     * 2. Never Logged Exercises
+     *    - Label: Empty
+     *    - Style: 'regular' (gray)
+     *    - Priority: 2
+     *    - Exercises never performed by this user, ordered alphabetically
      * 
      * @param int $userId
      * @param Carbon $selectedDate
@@ -547,7 +553,7 @@ class LiftLogService extends MobileEntryBaseService
             ->get();
 
         // Apply aliases to exercises
-        $user = \App\Models\User::find($userId);
+        $user = User::find($userId);
         $exercises = $this->aliasService->applyAliasesToExercises($exercises, $user);
 
         // Get exercises already logged today (to exclude from recent list)
@@ -566,8 +572,6 @@ class LiftLogService extends MobileEntryBaseService
             ->unique()
             ->toArray();
             
-
-
         // Get last performed dates for all exercises in a single query
         $lastPerformedDates = LiftLog::where('user_id', $userId)
             ->whereIn('exercise_id', $exercises->pluck('id'))
@@ -634,8 +638,6 @@ class LiftLogService extends MobileEntryBaseService
                 ];
             }
             
-
-
             // Determine href based on user preference and exercise history
             if ($user->shouldUseMetricsFirstLoggingFlow()) {
                 // Check if this exercise has any logs for this user
@@ -673,7 +675,7 @@ class LiftLogService extends MobileEntryBaseService
             ];
         }
 
-        // Sort items: by priority first, then by subPriority (for recommendations), then alphabetical by name
+        // Sort items: by priority first, then by subPriority (for popular exercises ranking), then alphabetical by name
         usort($items, function ($a, $b) {
             // First sort by priority (lower number = higher priority)
             $priorityComparison = $a['type']['priority'] <=> $b['type']['priority'];
@@ -714,14 +716,6 @@ class LiftLogService extends MobileEntryBaseService
             'filterPlaceholder' => config('mobile_entry_messages.placeholders.search_exercises')
         ];
     }
-
-
-
-
-
-
-
-
 
     /**
      * Add an exercise form by finding the exercise and creating a mobile lift form entry
