@@ -183,6 +183,22 @@ class ShowRecommendedExercisesTest extends TestCase
             'title' => 'Deadlift',
         ]);
         
+        // Create multiple lift logs to make user experienced (5+ logs)
+        // This prevents the exercise from being categorized as "Popular"
+        for ($i = 0; $i < 5; $i++) {
+            $log = LiftLog::factory()->create([
+                'user_id' => $this->user->id,
+                'exercise_id' => $exercise->id,
+                'logged_at' => Carbon::now()->subDays(10 + $i),
+            ]);
+            
+            LiftSet::factory()->create([
+                'lift_log_id' => $log->id,
+                'weight' => 200,
+                'reps' => 5,
+            ]);
+        }
+        
         // Create a recent lift log (within last 7 days, but not today)
         $log = LiftLog::factory()->create([
             'user_id' => $this->user->id,
@@ -266,6 +282,16 @@ class ShowRecommendedExercisesTest extends TestCase
         LiftSet::factory()->create(['lift_log_id' => $log1->id, 'weight' => 100, 'reps' => 5]);
         
         // Recent: logged 3 days ago (within 7 days)
+        // Create multiple logs to make user experienced
+        for ($i = 0; $i < 3; $i++) {
+            $log = LiftLog::factory()->create([
+                'user_id' => $this->user->id,
+                'exercise_id' => $recentExercise->id,
+                'logged_at' => Carbon::now()->subDays(20 + $i),
+            ]);
+            LiftSet::factory()->create(['lift_log_id' => $log->id, 'weight' => 150, 'reps' => 5]);
+        }
+        
         $log2 = LiftLog::factory()->create([
             'user_id' => $this->user->id,
             'exercise_id' => $recentExercise->id,

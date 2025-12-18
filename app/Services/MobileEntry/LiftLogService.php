@@ -563,11 +563,14 @@ class LiftLogService extends MobileEntryBaseService
 
         // Get recent exercises (last 7 days, excluding today) for the "Recent" category
         $recentExerciseIds = LiftLog::where('user_id', $userId)
-            ->where('logged_at', '>=', Carbon::now()->subDays(7))
+            ->where('logged_at', '>=', $selectedDate->copy()->subDays(7))
+            ->where('logged_at', '<', $selectedDate->startOfDay())
             ->whereNotIn('exercise_id', $loggedTodayExerciseIds)
             ->pluck('exercise_id')
             ->unique()
             ->toArray();
+            
+
 
         // Get last performed dates for all exercises in a single query
         $lastPerformedDates = LiftLog::where('user_id', $userId)
@@ -637,6 +640,8 @@ class LiftLogService extends MobileEntryBaseService
                     'subPriority' => 0
                 ];
             }
+            
+
 
             // Determine href based on user preference and exercise history
             if ($user->shouldUseMetricsFirstLoggingFlow()) {
