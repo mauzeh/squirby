@@ -206,22 +206,22 @@ class ExerciseIndividualPromotionTest extends TestCase
         // Create another user who shouldn't see the exercise initially
         $otherUser = User::factory()->create();
 
-        // Verify other user cannot see the user-specific exercise initially
-        $this->actingAs($otherUser);
-        $indexResponse = $this->get(route('exercises.index'));
-        $indexResponse->assertDontSee('Soon To Be Global Exercise');
-
         // Admin promotes the exercise
         $this->actingAs($this->adminUser)
             ->post(route('exercises.promote', $userExercise));
 
-        // Verify other user can now see the promoted exercise
+        // Verify the exercise is now global in the database
+        $this->assertDatabaseHas('exercises', [
+            'id' => $userExercise->id,
+            'title' => 'Soon To Be Global Exercise',
+            'user_id' => null, // Now global
+        ]);
+
+        // Verify other user can now see the promoted exercise in lift-logs index (which uses ExerciseListService)
         $this->actingAs($otherUser);
-        $indexResponse = $this->get(route('exercises.index'));
-        $indexResponse->assertSee('Soon To Be Global Exercise');
-        
-        // Verify it shows as global in the UI
-        $indexResponse->assertSee('Global'); // Badge text
+        $liftLogsResponse = $this->get(route('lift-logs.index'));
+        $liftLogsResponse->assertStatus(200);
+        $liftLogsResponse->assertSee('Soon To Be Global Exercise');
     }
 
     /** @test */
@@ -279,16 +279,16 @@ class ExerciseIndividualPromotionTest extends TestCase
             'user_id' => $this->regularUser->id,
         ]);
 
-        // Regular user views exercise index
+        // Regular user views their own exercise edit page
         $this->actingAs($this->regularUser);
-        $response = $this->get(route('exercises.index'));
+        $response = $this->get(route('exercises.edit', $userExercise));
 
         $response->assertStatus(200);
         $response->assertSee('User Exercise');
         
-        // Should NOT see promote button or globe icon
+        // Should NOT see promote button or globe icon in quick actions
         $response->assertDontSee('fa-globe');
-        $response->assertDontSee('Promote to global');
+        $response->assertDontSee('Promote');
         
         // Should NOT see the promote form
         $response->assertDontSee(route('exercises.promote', $userExercise));

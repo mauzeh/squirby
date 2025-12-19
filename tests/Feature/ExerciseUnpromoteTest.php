@@ -70,18 +70,15 @@ class ExerciseUnpromoteTest extends TestCase
             'user_id' => null,
         ]);
 
-        // Regular user views exercise index
+        // Regular user cannot access exercise index (admin-only)
         $this->actingAs($this->regularUser);
         $response = $this->get(route('exercises.index'));
 
-        $response->assertStatus(200);
-        $response->assertSee('Global Exercise');
+        $response->assertStatus(403);
         
-        // Should NOT see unpromote button or user icon for unpromote
-        $response->assertDontSee('Unpromote');
-        
-        // Should NOT see the unpromote form
-        $response->assertDontSee(route('exercises.unpromote', $globalExercise));
+        // Regular user also cannot access exercise edit page for global exercises
+        $editResponse = $this->get(route('exercises.edit', $globalExercise));
+        $editResponse->assertStatus(403);
     }
 
     /** @test */
@@ -143,11 +140,11 @@ class ExerciseUnpromoteTest extends TestCase
         // Should show the regular user's name since admin is viewing someone else's exercise
         $indexResponse->assertSee($this->regularUser->name);
 
-        // Verify the exercise is visible to the original owner
-        $ownerResponse = $this->actingAs($this->regularUser)->get(route('exercises.index'));
+        // Verify the exercise is now accessible to the original owner via edit page
+        // (Regular users can't access exercise index, but they can edit their own exercises)
+        $ownerResponse = $this->actingAs($this->regularUser)->get(route('exercises.edit', $globalExercise));
+        $ownerResponse->assertStatus(200);
         $ownerResponse->assertSee('Global Exercise');
-        // Should show "You" since the regular user is viewing their own exercise
-        $ownerResponse->assertSee('You');
     }
 
     /** @test */
