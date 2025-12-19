@@ -39,6 +39,9 @@ class ExerciseController extends Controller
      */
     public function index()
     {
+        // Only admins can access the exercise index
+        $this->authorize('viewAny', Exercise::class);
+        
         $userId = auth()->id();
         
         // Build components array

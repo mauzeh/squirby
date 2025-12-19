@@ -54,7 +54,7 @@ class AdminExerciseVisibilityTest extends TestCase
     }
 
     /** @test */
-    public function regular_user_continues_to_see_only_scoped_exercises()
+    public function regular_user_cannot_access_exercise_index()
     {
         // Create regular user
         $user = User::factory()->create();
@@ -79,11 +79,8 @@ class AdminExerciseVisibilityTest extends TestCase
 
         $response = $this->get(route('exercises.index'));
 
-        $response->assertStatus(200);
-        // Regular user should see global and own exercises only
-        $response->assertSee('Global Exercise');
-        $response->assertSee('User Exercise');
-        $response->assertDontSee('Other User Exercise');
+        // Regular users should not be able to access exercise index (admin-only)
+        $response->assertStatus(403);
     }
 
     /** @test */
@@ -115,7 +112,7 @@ class AdminExerciseVisibilityTest extends TestCase
         $response->assertSee('Global Exercise');
         $response->assertSee('User Exercise');
         $response->assertSee('Regular User'); // User name should be visible
-        $response->assertSee('Global'); // Global badge should be visible
+        $response->assertSee('Everyone'); // Global badge should be visible (updated from 'Global')
     }
 
     /** @test */
@@ -205,7 +202,7 @@ class AdminExerciseVisibilityTest extends TestCase
     }
 
     /** @test */
-    public function regular_user_with_mixed_dataset_sees_only_scoped_exercises()
+    public function regular_user_cannot_access_exercise_index_with_mixed_dataset()
     {
         // Create regular user
         $user = User::factory()->create(['name' => 'Regular User']);
@@ -239,17 +236,8 @@ class AdminExerciseVisibilityTest extends TestCase
 
         $response = $this->get(route('exercises.index'));
 
-        $response->assertStatus(200);
-        // Regular user should see only global and own exercises
-        $response->assertSee('Global Bench Press');
-        $response->assertSee('Global Squat');
-        $response->assertSee('User Exercise');
-        $response->assertDontSee('Other User 1 Exercise');
-        $response->assertDontSee('Other User 2 Exercise');
-        
-        // Should not see other users' names
-        $response->assertDontSee('Other User 1');
-        $response->assertDontSee('Other User 2');
+        // Regular users should not be able to access exercise index (admin-only)
+        $response->assertStatus(403);
     }
 
     /** @test */
@@ -409,6 +397,7 @@ class AdminExerciseVisibilityTest extends TestCase
         $this->assertSoftDeleted($userExercise);
     }
 
+    /** @test */
     public function regular_user_cannot_delete_other_users_exercises()
     {
         // Create regular user
@@ -416,7 +405,8 @@ class AdminExerciseVisibilityTest extends TestCase
         $this->actingAs($user);
 
         // Create another user and their exercise
-        $otherUser = Exercise::factory()->create([
+        $otherUser = User::factory()->create();
+        $otherUserExercise = Exercise::factory()->create([
             'title' => 'Other User Exercise',
             'user_id' => $otherUser->id,
         ]);

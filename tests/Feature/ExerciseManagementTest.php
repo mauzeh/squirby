@@ -250,10 +250,14 @@ class ExerciseManagementTest extends TestCase
     }
 
     /** @test */
-    public function index_shows_both_global_and_user_exercises()
+    public function admin_can_view_exercise_index_with_all_exercises()
     {
+        $admin = User::factory()->create();
+        $adminRole = Role::factory()->create(['name' => 'Admin']);
+        $admin->roles()->attach($adminRole);
+        $this->actingAs($admin);
+        
         $user = User::factory()->create();
-        $this->actingAs($user);
 
         // Create global exercise
         $globalExercise = Exercise::factory()->create([
@@ -267,9 +271,9 @@ class ExerciseManagementTest extends TestCase
             'user_id' => $user->id,
         ]);
 
-        // Create another user's exercise (should not be visible)
+        // Create another user's exercise (admin should see all exercises)
         $otherUser = User::factory()->create();
-        Exercise::factory()->create([
+        $otherUserExercise = Exercise::factory()->create([
             'title' => 'Other User Exercise',
             'user_id' => $otherUser->id,
         ]);
@@ -279,7 +283,7 @@ class ExerciseManagementTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('Global Exercise');
         $response->assertSee('User Exercise');
-        $response->assertDontSee('Other User Exercise');
+        $response->assertSee('Other User Exercise'); // Admin should see all exercises
     }
 
     /** @test */
@@ -505,10 +509,12 @@ class ExerciseManagementTest extends TestCase
 
 
     /** @test */
-    public function index_view_displays_global_badge_for_global_exercises()
+    public function admin_can_view_exercise_index_with_global_badges()
     {
-        $user = User::factory()->create();
-        $this->actingAs($user);
+        $admin = User::factory()->create();
+        $adminRole = Role::factory()->create(['name' => 'Admin']);
+        $admin->roles()->attach($adminRole);
+        $this->actingAs($admin);
 
         // Create global exercise
         $globalExercise = Exercise::factory()->create([
@@ -519,7 +525,7 @@ class ExerciseManagementTest extends TestCase
         // Create user exercise
         $userExercise = Exercise::factory()->create([
             'title' => 'User Exercise',
-            'user_id' => $user->id,
+            'user_id' => $admin->id,
         ]);
 
         $response = $this->get(route('exercises.index'));
@@ -532,14 +538,14 @@ class ExerciseManagementTest extends TestCase
     }
 
     /** @test */
-    public function index_view_shows_all_available_exercises_as_clickable_items()
+    public function admin_can_view_exercise_index_with_clickable_items()
     {
         $admin = User::factory()->create();
         $adminRole = Role::factory()->create(['name' => 'Admin']);
         $admin->roles()->attach($adminRole);
+        $this->actingAs($admin);
         
         $user = User::factory()->create();
-        $this->actingAs($user);
 
         // Create global exercise (available to all users)
         $globalExercise = Exercise::factory()->create([
@@ -565,15 +571,17 @@ class ExerciseManagementTest extends TestCase
     }
 
     /** @test */
-    public function index_view_displays_exercise_selection_interface()
+    public function admin_can_view_exercise_selection_interface()
     {
-        $user = User::factory()->create();
-        $this->actingAs($user);
+        $admin = User::factory()->create();
+        $adminRole = Role::factory()->create(['name' => 'Admin']);
+        $admin->roles()->attach($adminRole);
+        $this->actingAs($admin);
 
         // Create some exercises
         $exercise1 = Exercise::factory()->create([
             'title' => 'First Exercise',
-            'user_id' => $user->id,
+            'user_id' => $admin->id,
         ]);
 
         $exercise2 = Exercise::factory()->create([
@@ -595,6 +603,17 @@ class ExerciseManagementTest extends TestCase
         
         // Should see the Add Exercise button
         $response->assertSee('Add Exercise');
+    }
+
+    /** @test */
+    public function regular_users_cannot_access_exercise_index()
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $response = $this->get(route('exercises.index'));
+
+        $response->assertStatus(403);
     }
 
     /** @test */

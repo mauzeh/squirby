@@ -217,36 +217,7 @@ class ExerciseManagementWorkflowTest extends TestCase
             'user_id' => $user2->id,
         ]);
 
-        // Test User1's view
-        $this->actingAs($user1);
-        $user1Response = $this->get(route('exercises.index'));
-        $user1Response->assertStatus(200);
-        
-        // User1 should see global exercises and their own exercise
-        $user1Response->assertSee('Global Bench Press');
-        $user1Response->assertSee('Global Squat');
-        $user1Response->assertSee('User1 Custom Exercise');
-        
-        // User1 should NOT see User2's exercise
-        $user1Response->assertDontSee('User2 Custom Exercise');
-        
-        // Should see Global badges for global exercises
-        $user1Response->assertSee('Global');
-
-        // Test User2's view
-        $this->actingAs($user2);
-        $user2Response = $this->get(route('exercises.index'));
-        $user2Response->assertStatus(200);
-        
-        // User2 should see global exercises and their own exercise
-        $user2Response->assertSee('Global Bench Press');
-        $user2Response->assertSee('Global Squat');
-        $user2Response->assertSee('User2 Custom Exercise');
-        
-        // User2 should NOT see User1's exercise
-        $user2Response->assertDontSee('User1 Custom Exercise');
-
-        // Test Admin's view
+        // Test Admin's view (only admins can access exercise index now)
         $this->actingAs($admin);
         $adminResponse = $this->get(route('exercises.index'));
         $adminResponse->assertStatus(200);
@@ -255,9 +226,12 @@ class ExerciseManagementWorkflowTest extends TestCase
         $adminResponse->assertSee('Global Bench Press');
         $adminResponse->assertSee('Global Squat');
         
-        // Admin should now see all exercises including other users' personal exercises
+        // Admin should see all exercises including other users' personal exercises
         $adminResponse->assertSee('User1 Custom Exercise');
         $adminResponse->assertSee('User2 Custom Exercise');
+        
+        // Should see Global badges for global exercises
+        $adminResponse->assertSee('Everyone'); // Badge text for global exercises
     }
 
     /** @test */
@@ -284,7 +258,11 @@ class ExerciseManagementWorkflowTest extends TestCase
         $user = User::factory()->create();
         $this->actingAs($user);
 
-        // 1. User cannot create global exercise
+        // 1. User cannot access exercise index (admin-only)
+        $indexResponse = $this->get(route('exercises.index'));
+        $indexResponse->assertStatus(403);
+
+        // 2. User cannot create global exercise
         $globalAttempt = [
             'title' => 'Attempted Global Exercise',
             'description' => 'Should not be allowed',
@@ -300,7 +278,7 @@ class ExerciseManagementWorkflowTest extends TestCase
             'deleted_at' => null // Ensure it was never created
         ]);
 
-        // 2. User cannot edit global exercise
+        // 3. User cannot edit global exercise
         $editGlobalResponse = $this->get(route('exercises.edit', $globalExercise));
         $editGlobalResponse->assertStatus(403);
 
@@ -315,12 +293,12 @@ class ExerciseManagementWorkflowTest extends TestCase
             'deleted_at' => null
         ]);
 
-        // 3. User cannot delete global exercise
+        // 4. User cannot delete global exercise
         $deleteGlobalResponse = $this->delete(route('exercises.destroy', $globalExercise));
         $deleteGlobalResponse->assertStatus(403);
         $this->assertDatabaseHas('exercises', ['id' => $globalExercise->id, 'deleted_at' => null]);
 
-        // 4. User cannot edit other user's exercise
+        // 5. User cannot edit other user's exercise
         $editOtherResponse = $this->get(route('exercises.edit', $otherUserExercise));
         $editOtherResponse->assertStatus(403);
 
@@ -335,31 +313,30 @@ class ExerciseManagementWorkflowTest extends TestCase
             'deleted_at' => null
         ]);
 
-        // 5. User cannot delete other user's exercise
+        // 6. User cannot delete other user's exercise
         $deleteOtherResponse = $this->delete(route('exercises.destroy', $otherUserExercise));
         $deleteOtherResponse->assertStatus(403);
         $this->assertDatabaseHas('exercises', ['id' => $otherUserExercise->id, 'deleted_at' => null]);
 
-        // 6. Verify index shows only accessible exercises (global + own) for regular users
+        // 7. Verify admin can access index and see all exercises
         $userExercise = Exercise::factory()->create([
             'title' => 'User Own Exercise',
             'user_id' => $user->id,
         ]);
 
-        $indexResponse = $this->get(route('exercises.index'));
-        $indexResponse->assertStatus(200);
+        $this->actingAs($admin);
+        $adminIndexResponse = $this->get(route('exercises.index'));
+        $adminIndexResponse->assertStatus(200);
         
-        // Regular users should see global exercises and their own exercises
-        $indexResponse->assertSee('User Own Exercise');
-        $indexResponse->assertSee('Global Exercise');
+        // Admin should see all exercises
+        $adminIndexResponse->assertSee('User Own Exercise');
+        $adminIndexResponse->assertSee('Global Exercise');
+        $adminIndexResponse->assertSee('Other User Exercise');
         
-        // Regular users should NOT see other users' personal exercises
-        $indexResponse->assertDontSee('Other User Exercise');
-        
-        // Verify edit links are present for accessible exercises only
-        $indexResponse->assertSee(route('exercises.edit', $userExercise->id));
-        $indexResponse->assertSee(route('exercises.edit', $globalExercise->id));
-        $indexResponse->assertDontSee(route('exercises.edit', $otherUserExercise->id));
+        // Verify edit links are present for all exercises (admin can edit all)
+        $adminIndexResponse->assertSee(route('exercises.edit', $userExercise->id));
+        $adminIndexResponse->assertSee(route('exercises.edit', $globalExercise->id));
+        $adminIndexResponse->assertSee(route('exercises.edit', $otherUserExercise->id));
     }
 
     /** @test */
@@ -431,7 +408,8 @@ class ExerciseManagementWorkflowTest extends TestCase
         $deleteUserWithoutLogsResponse->assertSessionHas('success', 'Exercise deleted successfully.');
         $this->assertSoftDeleted($userExerciseWithoutLogs);
 
-        // Test that exercises with lift logs don't show delete buttons in UI
+        // Test that exercises with lift logs don't show delete buttons in UI (admin view)
+        $this->actingAs($admin);
         $indexResponse = $this->get(route('exercises.index'));
         $indexResponse->assertStatus(200);
         
@@ -529,18 +507,21 @@ class ExerciseManagementWorkflowTest extends TestCase
             'deleted_at' => null
         ]);
 
-        // Verify each user sees correct exercises
-        $this->actingAs($user1);
-        $user1IndexResponse = $this->get(route('exercises.index'));
-        $user1IndexResponse->assertSee('Bench Press'); // Global
-        $user1IndexResponse->assertSee('Squat'); // Global
-        $user1IndexResponse->assertSee('Incline Bench Press'); // Their own
+        // Verify each user sees correct exercises (admin view only now)
+        $this->actingAs($admin);
+        $adminIndexResponse = $this->get(route('exercises.index'));
+        $adminIndexResponse->assertSee('Bench Press'); // Global
+        $adminIndexResponse->assertSee('Squat'); // Global
+        $adminIndexResponse->assertSee('Incline Bench Press'); // Both users have this name
         
-        $this->actingAs($user2);
-        $user2IndexResponse = $this->get(route('exercises.index'));
-        $user2IndexResponse->assertSee('Bench Press'); // Global
-        $user2IndexResponse->assertSee('Squat'); // Global
-        $user2IndexResponse->assertSee('Incline Bench Press'); // Their own (same name as user1's but different exercise)
+        // Admin should see all exercises including both users' exercises with same name
+        $user1Exercise = Exercise::where('title', 'Incline Bench Press')->where('user_id', $user1->id)->first();
+        $user2Exercise = Exercise::where('title', 'Incline Bench Press')->where('user_id', $user2->id)->first();
+        
+        // Both exercises should exist in database
+        $this->assertNotNull($user1Exercise);
+        $this->assertNotNull($user2Exercise);
+        $this->assertNotEquals($user1Exercise->id, $user2Exercise->id);
     }
 
     /** @test */

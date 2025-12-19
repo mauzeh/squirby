@@ -8,6 +8,14 @@ use App\Models\User;
 class ExercisePolicy
 {
     /**
+     * Determine if the user can view the exercise index.
+     */
+    public function viewAny(User $user): bool
+    {
+        return $user->hasRole('Admin');
+    }
+
+    /**
      * Determine if the user can create global exercises.
      */
     public function createGlobalExercise(User $user): bool
