@@ -62,16 +62,22 @@ document.addEventListener('DOMContentLoaded', function() {
             
             itemCards.forEach(card => {
                 const itemNameElement = card.querySelector('.component-list-item-name');
+                const itemTypeElement = card.querySelector('.component-list-item-type');
                 if (!itemNameElement) return;
                 
                 const itemName = itemNameElement.textContent.toLowerCase();
+                const itemType = itemTypeElement ? itemTypeElement.textContent.toLowerCase() : '';
                 const listItem = card.closest('li');
                 
-                if (normalizedSearch === '' || itemName.includes(normalizedSearch)) {
+                // Search in both name and type fields
+                const nameMatches = itemName.includes(normalizedSearch);
+                const typeMatches = itemType.includes(normalizedSearch);
+                
+                if (normalizedSearch === '' || nameMatches || typeMatches) {
                     // Show the item
                     listItem.style.display = '';
                     visibleCount++;
-                    if (itemName === normalizedSearch) { // Check for exact match
+                    if (itemName === normalizedSearch) { // Check for exact match (only on name)
                         exactMatchFound = true;
                     }
                 } else {
