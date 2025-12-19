@@ -16,29 +16,21 @@
                                 <input type="hidden" name="{{ $key }}" value="{{ $value }}">
                             @endforeach
                             <button type="submit" 
-                                    class="quick-action-btn {{ $action['cssClass'] }}"
-                                    @if($action['confirm'])
-                                        onclick="return confirm('{{ addslashes($action['confirm']) }}')"
+                                    class="quick-action-btn {{ $action['cssClass'] }}{{ isset($action['disabled']) && $action['disabled'] ? ' btn-disabled' : '' }}"
+                                    @if(isset($action['disabled']) && $action['disabled'])
+                                        disabled
+                                        @if(isset($action['disabledReason']) && $action['disabledReason'])
+                                            title="{{ $action['disabledReason'] }}"
+                                        @endif
+                                    @else
+                                        @if($action['confirm'])
+                                            onclick="return confirm('{{ addslashes($action['confirm']) }}')"
+                                        @endif
                                     @endif>
                                 <i class="fa {{ $action['icon'] }}"></i>
                                 <span class="quick-action-text">{{ $action['text'] }}</span>
                             </button>
                         </form>
-                    @elseif($action['type'] === 'disabled')
-                        <div class="quick-action-disabled-wrapper" 
-                             @if($action['reason'])
-                                 title="{{ $action['reason'] }}"
-                             @endif>
-                            <button type="button" 
-                                    class="quick-action-btn {{ $action['cssClass'] }} btn-disabled"
-                                    disabled>
-                                <i class="fa {{ $action['icon'] }}"></i>
-                                <span class="quick-action-text">{{ $action['text'] }}</span>
-                            </button>
-                            @if($action['reason'])
-                                <small class="quick-action-reason">{{ $action['reason'] }}</small>
-                            @endif
-                        </div>
                     @else
                         <a href="{{ $action['url'] }}" class="quick-action-btn {{ $action['cssClass'] }}">
                             <i class="fa {{ $action['icon'] }}"></i>

@@ -302,7 +302,7 @@ class ExerciseController extends Controller
                     route('exercises.promote', $exercise),
                     'POST',
                     [],
-                    'Promote to Global',
+                    'Promote',
                     'btn-success',
                     'Are you sure you want to promote this exercise to global status?'
                 );
@@ -313,7 +313,7 @@ class ExerciseController extends Controller
                     route('exercises.unpromote', $exercise),
                     'POST',
                     [],
-                    'Unpromote to Personal',
+                    'Unpromote',
                     'btn-warning',
                     'Are you sure you want to unpromote this exercise back to personal status? This will only work if no other users have workout logs with this exercise.'
                 );
@@ -331,26 +331,20 @@ class ExerciseController extends Controller
         }
 
         // Delete action - always show but disable if not allowed
-        if ($exercise->canBeDeletedBy($currentUser)) {
-            $quickActions->formAction(
-                'fa-trash',
-                route('exercises.destroy', $exercise),
-                'DELETE',
-                [],
-                'Delete',
-                'btn-danger',
-                'Are you sure you want to delete this exercise?'
-            );
-        } else {
-            // Show disabled delete button with reason
-            $reason = $this->getDeleteDisabledReason($exercise, $currentUser);
-            $quickActions->disabledAction(
-                'fa-trash',
-                'Delete',
-                'btn-danger',
-                $reason
-            );
-        }
+        $canDelete = $exercise->canBeDeletedBy($currentUser);
+        $disabledReason = $canDelete ? '' : $this->getDeleteDisabledReason($exercise, $currentUser);
+        
+        $quickActions->formAction(
+            'fa-trash',
+            route('exercises.destroy', $exercise),
+            'DELETE',
+            [],
+            'Delete',
+            'btn-danger',
+            'Are you sure you want to delete this exercise?',
+            !$canDelete,
+            $disabledReason
+        );
 
         return $quickActions->build();
     }
@@ -445,7 +439,7 @@ class ExerciseController extends Controller
 
         $exercise->update(['user_id' => null]);
 
-        return redirect()->route('exercises.index')
+        return redirect()->route('exercises.edit', $exercise)
             ->with('success', "Exercise '{$exercise->title}' promoted to global status successfully.");
     }
 
@@ -480,7 +474,7 @@ class ExerciseController extends Controller
 
         $exercise->update(['user_id' => $originalOwner->id]);
 
-        return redirect()->route('exercises.index')
+        return redirect()->route('exercises.edit', $exercise)
             ->with('success', "Exercise '{$exercise->title}' unpromoted to personal exercise successfully.");
     }
 

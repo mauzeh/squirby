@@ -50,24 +50,10 @@
 }
 
 /* Disabled action styles */
-.quick-action-disabled-wrapper {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-xs);
-}
-
 .quick-action-btn.btn-disabled {
     opacity: 0.5;
     cursor: not-allowed;
     pointer-events: none;
-}
-
-.quick-action-reason {
-    font-size: 0.75rem;
-    color: var(--text-muted);
-    font-style: italic;
-    text-align: center;
-    line-height: 1.2;
 }
 
 /* Button color variants */

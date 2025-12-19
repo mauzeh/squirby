@@ -743,7 +743,7 @@ class ExerciseManagementTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertSee('Quick Actions');
-        $response->assertSee('Promote to Global');
+        $response->assertSee('Promote');
         $response->assertSee('Delete');
 
         // Test with global exercise (should show unpromote action)
@@ -756,7 +756,7 @@ class ExerciseManagementTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertSee('Quick Actions');
-        $response->assertSee('Unpromote to Personal');
+        $response->assertSee('Unpromote');
         $response->assertSee('Delete');
     }
 

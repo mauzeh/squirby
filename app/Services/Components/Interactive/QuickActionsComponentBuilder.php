@@ -24,7 +24,7 @@ class QuickActionsComponentBuilder
         return $this;
     }
     
-    public function formAction(string $icon, string $action, string $method = 'POST', array $params = [], string $text = '', string $cssClass = 'btn-primary', ?string $confirm = null): self
+    public function formAction(string $icon, string $action, string $method = 'POST', array $params = [], string $text = '', string $cssClass = 'btn-primary', ?string $confirm = null, bool $disabled = false, string $disabledReason = ''): self
     {
         $this->data['actions'][] = [
             'type' => 'form',
@@ -34,7 +34,9 @@ class QuickActionsComponentBuilder
             'method' => $method,
             'params' => $params,
             'cssClass' => $cssClass,
-            'confirm' => $confirm
+            'confirm' => $confirm,
+            'disabled' => $disabled,
+            'disabledReason' => $disabledReason
         ];
         return $this;
     }
@@ -50,18 +52,7 @@ class QuickActionsComponentBuilder
         ];
         return $this;
     }
-    
-    public function disabledAction(string $icon, string $text = '', string $cssClass = 'btn-secondary', string $reason = ''): self
-    {
-        $this->data['actions'][] = [
-            'type' => 'disabled',
-            'icon' => $icon,
-            'text' => $text,
-            'cssClass' => $cssClass,
-            'reason' => $reason
-        ];
-        return $this;
-    }
+
     
     public function initialState(string $state): self
     {
