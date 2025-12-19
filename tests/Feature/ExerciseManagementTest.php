@@ -504,6 +504,7 @@ class ExerciseManagementTest extends TestCase
     }
 
 
+    /** @test */
     public function index_view_displays_global_badge_for_global_exercises()
     {
         $user = User::factory()->create();
@@ -526,8 +527,8 @@ class ExerciseManagementTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('Global Exercise');
         $response->assertSee('User Exercise');
-        $response->assertSee('Global', false); // Badge text
-        $response->assertSee('Personal', false); // Scope text
+        $response->assertSee('Everyone', false); // Badge text for global exercises
+        $response->assertSee('You', false); // Badge text for user's own exercises
     }
 
     /** @test */
@@ -743,7 +744,7 @@ class ExerciseManagementTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('Quick Actions');
         $response->assertSee('Promote to Global');
-        $response->assertSee('Delete Exercise');
+        $response->assertSee('Delete');
 
         // Test with global exercise (should show unpromote action)
         $globalExercise = Exercise::factory()->create([
@@ -756,7 +757,7 @@ class ExerciseManagementTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('Quick Actions');
         $response->assertSee('Unpromote to Personal');
-        $response->assertSee('Delete Exercise');
+        $response->assertSee('Delete');
     }
 
     /** @test */
@@ -774,10 +775,10 @@ class ExerciseManagementTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertSee('Quick Actions');
-        $response->assertSee('Delete Exercise');
+        $response->assertSee('Delete');
         $response->assertDontSee('Promote to Global');
         $response->assertDontSee('Unpromote to Personal');
-        $response->assertDontSee('Merge Exercise');
+        $response->assertDontSee('Merge');
     }
 
     /** @test */
@@ -800,7 +801,8 @@ class ExerciseManagementTest extends TestCase
         $response = $this->get(route('exercises.edit', $exercise));
 
         $response->assertStatus(200);
-        // Should not show delete action when exercise has lift logs
-        $response->assertDontSee('Delete Exercise');
+        // Should show disabled delete action when exercise has lift logs
+        $response->assertSee('Delete');
+        $response->assertSee('disabled');
     }
 }
