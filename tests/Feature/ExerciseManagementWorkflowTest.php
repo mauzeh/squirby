@@ -35,8 +35,8 @@ class ExerciseManagementWorkflowTest extends TestCase
         // 1. Admin can access create form with global option
         $createResponse = $this->get(route('exercises.create'));
         $createResponse->assertStatus(200);
-        $createResponse->assertViewHas('canCreateGlobal', true);
-        $createResponse->assertSee('Global Exercise (Available to all users)');
+        $createResponse->assertSee('Global Exercise');
+        $createResponse->assertSee('Make this exercise available to all users');
 
         // 2. Admin creates global exercise
         $globalExerciseData = [
@@ -68,7 +68,7 @@ class ExerciseManagementWorkflowTest extends TestCase
         // 4. Admin can edit global exercise
         $editResponse = $this->get(route('exercises.edit', $globalExercise));
         $editResponse->assertStatus(200);
-        $editResponse->assertViewHas('canCreateGlobal', true);
+        $editResponse->assertSee('Global Exercise');
         $editResponse->assertSee('checked'); // Global checkbox should be checked
 
         // 5. Admin updates global exercise
@@ -117,8 +117,8 @@ class ExerciseManagementWorkflowTest extends TestCase
         // 1. User can access create form without global option
         $createResponse = $this->get(route('exercises.create'));
         $createResponse->assertStatus(200);
-        $createResponse->assertViewHas('canCreateGlobal', false);
-        $createResponse->assertDontSee('Global Exercise (Available to all users)');
+        $createResponse->assertDontSee('Global Exercise');
+        $createResponse->assertDontSee('Make this exercise available to all users');
 
         // 2. User attempts to create exercise with same name as global exercise (should fail)
         $conflictData = [
@@ -157,7 +157,7 @@ class ExerciseManagementWorkflowTest extends TestCase
         // 4. User can edit their own exercise
         $editResponse = $this->get(route('exercises.edit', $personalExercise));
         $editResponse->assertStatus(200);
-        $editResponse->assertViewHas('canCreateGlobal', false);
+        $editResponse->assertDontSee('Global Exercise');
 
         $updatedData = [
             'title' => 'Updated Custom Deadlift',

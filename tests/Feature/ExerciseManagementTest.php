@@ -469,7 +469,8 @@ class ExerciseManagementTest extends TestCase
         $response = $this->get(route('exercises.create'));
 
         $response->assertStatus(200);
-        $response->assertViewHas('canCreateGlobal', true);
+        $response->assertSee('Global Exercise');
+        $response->assertSee('Make this exercise available to all users');
     }
 
     /** @test */
@@ -481,7 +482,8 @@ class ExerciseManagementTest extends TestCase
         $response = $this->get(route('exercises.create'));
 
         $response->assertStatus(200);
-        $response->assertViewHas('canCreateGlobal', false);
+        $response->assertDontSee('Global Exercise');
+        $response->assertDontSee('Make this exercise available to all users');
     }
 
     /** @test */
@@ -497,7 +499,8 @@ class ExerciseManagementTest extends TestCase
         $response = $this->get(route('exercises.edit', $exercise));
 
         $response->assertStatus(200);
-        $response->assertViewHas('canCreateGlobal', true);
+        $response->assertSee('Global Exercise');
+        $response->assertSee('Make this exercise available to all users');
     }
 
 
@@ -603,7 +606,8 @@ class ExerciseManagementTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertSee('name="is_global"', false);
-        $response->assertSee('Global Exercise (Available to all users)');
+        $response->assertSee('Global Exercise');
+        $response->assertSee('Make this exercise available to all users');
     }
 
     /** @test */
@@ -616,7 +620,8 @@ class ExerciseManagementTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertDontSee('name="is_global"', false);
-        $response->assertDontSee('Global Exercise (Available to all users)');
+        $response->assertDontSee('Global Exercise');
+        $response->assertDontSee('Make this exercise available to all users');
     }
 
     /** @test */
@@ -637,7 +642,8 @@ class ExerciseManagementTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('name="is_global"', false);
         $response->assertSee('checked', false);
-        $response->assertSee('Global Exercise (Available to all users)');
+        $response->assertSee('Global Exercise');
+        $response->assertSee('Make this exercise available to all users');
     }
 
     /** @test */
@@ -658,7 +664,8 @@ class ExerciseManagementTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('name="is_global"', false);
         $response->assertDontSee('checked', false);
-        $response->assertSee('Global Exercise (Available to all users)');
+        $response->assertSee('Global Exercise');
+        $response->assertSee('Make this exercise available to all users');
     }
 
     /** @test */

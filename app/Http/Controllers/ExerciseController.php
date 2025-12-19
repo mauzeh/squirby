@@ -12,6 +12,7 @@ use App\Services\ExerciseMergeService;
 use App\Services\ChartService;
 use App\Services\ExercisePRService;
 use App\Services\ComponentBuilder;
+use App\Services\ExerciseFormService;
 use App\Presenters\LiftLogTablePresenter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -29,7 +30,8 @@ class ExerciseController extends Controller
         private ExercisePRService $exercisePRService,
         private CreateExerciseAction $createExerciseAction,
         private UpdateExerciseAction $updateExerciseAction,
-        private MergeExerciseAction $mergeExerciseAction
+        private MergeExerciseAction $mergeExerciseAction,
+        private ExerciseFormService $exerciseFormService
     ) {}
 
     /**
@@ -204,8 +206,31 @@ class ExerciseController extends Controller
      */
     public function create()
     {
-        $canCreateGlobal = auth()->user()->hasRole('Admin');
-        return view('exercises.create', compact('canCreateGlobal'));
+        $exercise = new Exercise();
+        $user = auth()->user();
+        
+        $components = [
+            \App\Services\ComponentBuilder::title('Create Exercise')->build(),
+        ];
+
+        // Add session messages if any
+        if ($sessionMessages = \App\Services\ComponentBuilder::messagesFromSession()) {
+            $components[] = $sessionMessages;
+        }
+
+        // Add form component
+        $components[] = $this->exerciseFormService->generateExerciseForm(
+            $exercise,
+            $user,
+            route('exercises.store'),
+            'POST'
+        );
+
+        return view('mobile-entry.flexible', [
+            'data' => [
+                'components' => $components,
+            ]
+        ]);
     }
 
     /**
@@ -232,8 +257,30 @@ class ExerciseController extends Controller
     public function edit(Exercise $exercise)
     {
         $this->authorize('update', $exercise);
-        $canCreateGlobal = auth()->user()->hasRole('Admin');
-        return view('exercises.edit', compact('exercise', 'canCreateGlobal'));
+        $user = auth()->user();
+        
+        $components = [
+            \App\Services\ComponentBuilder::title('Edit Exercise')->build(),
+        ];
+
+        // Add session messages if any
+        if ($sessionMessages = \App\Services\ComponentBuilder::messagesFromSession()) {
+            $components[] = $sessionMessages;
+        }
+
+        // Add form component
+        $components[] = $this->exerciseFormService->generateExerciseForm(
+            $exercise,
+            $user,
+            route('exercises.update', $exercise),
+            'PUT'
+        );
+
+        return view('mobile-entry.flexible', [
+            'data' => [
+                'components' => $components,
+            ]
+        ]);
     }
 
     /**
