@@ -23,7 +23,9 @@
             <a href="{{ $item['href'] }}" class="component-list-item component-list-item--{{ $item['type']['cssClass'] }}" 
                aria-label="{{ $data['ariaLabels']['selectItem'] }}: {{ $item['name'] }}">
                 <span class="component-list-item-name">{{ $item['name'] }}</span>
+                @if(!empty($item['type']['label']))
                 <span class="component-list-item-type">{!! $item['type']['label'] !!}</span>
+                @endif
             </a>
         </li>
         @endforeach

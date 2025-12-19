@@ -63,53 +63,47 @@ class ExerciseController extends Controller
             ->build();
         
         // Generate exercise selection list
-        $exerciseListService = app(\App\Services\ExerciseListService::class);
-        $exerciseListOptions = [
-            'filter_placeholder' => 'Search exercises...',
-            'no_results_message' => 'No exercises found. Create one to get started!',
-            'initial_state' => 'expanded',
-            'show_cancel_button' => false,
-            'restrict_height' => false,
-            'recent_days' => 30,
-            'url_generator' => function ($exercise) {
-                return route('exercises.edit', $exercise);
-            },
-            'type_label_generator' => function ($exercise, $isRecent) {
-                // Show exercise type and ownership
-                $exerciseType = ucfirst(str_replace('_', ' ', $exercise->exercise_type));
-                
+        $exercises = Exercise::availableToUser($userId)
+            ->with([
+                'aliases' => function ($query) use ($userId) {
+                    $query->where('user_id', $userId);
+                },
+                'user' // Load user relationship for ownership display
+            ])
+            ->orderBy('title', 'asc')
+            ->get();
+
+        // Apply aliases to exercises
+        $aliasService = app(\App\Services\ExerciseAliasService::class);
+        $user = auth()->user();
+        $exercises = $aliasService->applyAliasesToExercises($exercises, $user);
+        
+        if ($exercises->isEmpty()) {
+            $components[] = \App\Services\ComponentBuilder::messages()
+                ->info('No exercises found. Add one to get started!')
+                ->build();
+        } else {
+            $listBuilder = \App\Services\ComponentBuilder::itemList()
+                ->filterPlaceholder('Search exercises...')
+                ->noResultsMessage('No exercises found. Create one to get started!')
+                ->initialState('expanded')
+                ->showCancelButton(false)
+                ->restrictHeight(false);
+            
+            foreach ($exercises as $exercise) {
+                // Show ownership information
                 if ($exercise->isGlobal()) {
                     $ownershipLabel = 'Everyone';
                 } else {
                     $ownershipLabel = $exercise->user_id === auth()->id() ? 'You' : $exercise->user->name;
                 }
                 
-                return $exerciseType . ' • ' . $ownershipLabel;
-            }
-        ];
-        
-        $exerciseListData = $exerciseListService->generateExerciseList($userId, $exerciseListOptions);
-        
-        if (empty($exerciseListData['items'])) {
-            $components[] = \App\Services\ComponentBuilder::messages()
-                ->info('No exercises found. Add one to get started!')
-                ->build();
-        } else {
-            $listBuilder = \App\Services\ComponentBuilder::itemList()
-                ->filterPlaceholder($exerciseListData['filterPlaceholder'])
-                ->noResultsMessage($exerciseListData['noResultsMessage'])
-                ->initialState($exerciseListData['initialState'])
-                ->showCancelButton($exerciseListData['showCancelButton'])
-                ->restrictHeight($exerciseListData['restrictHeight']);
-            
-            foreach ($exerciseListData['items'] as $item) {
                 $listBuilder->item(
-                    $item['id'],
-                    $item['name'],
-                    $item['href'],
-                    $item['type']['label'],
-                    $item['type']['cssClass'],
-                    $item['type']['priority']
+                    (string) $exercise->id,
+                    $exercise->title,
+                    route('exercises.edit', $exercise),
+                    $ownershipLabel,
+                    'exercise-history'
                 );
             }
             

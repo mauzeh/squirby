@@ -212,107 +212,47 @@
     margin-left: var(--spacing-md);
 }
 
-/* Category-specific styling */
-
-/* In Program - Highest priority, most prominent styling */
-.component-list-item--in-program {
-    background-color: rgba(40, 167, 69, 0.12);
-    border-left: 3px solid #28a745;
+/* Category-specific styling - simplified to single style */
+.component-list-item--regular,
+.component-list-item--in-program,
+.component-list-item--recent,
+.component-list-item--custom,
+.component-list-item--highlighted,
+.component-list-item--all,
+.component-list-item--exercise-history {
+    background-color: var(--tertiary-bg);
 }
 
 @media (hover: hover) {
-    .component-list-item--in-program:hover {
-        background-color: rgba(40, 167, 69, 0.18);
+    .component-list-item--regular:hover,
+    .component-list-item--in-program:hover,
+    .component-list-item--recent:hover,
+    .component-list-item--custom:hover,
+    .component-list-item--highlighted:hover,
+    .component-list-item--all:hover,
+    .component-list-item--exercise-history:hover {
+        background-color: var(--input-bg);
     }
 }
 
-.component-list-item--in-program .component-list-item-name {
-    color: #d4edda;
-    font-weight: 600;
-}
-
-.component-list-item--in-program .component-list-item-type {
-    color: rgba(212, 237, 218, 0.8);
-    font-weight: 500;
-}
-
-/* Recent - Second priority, green accent */
-.component-list-item--recent {
-    background-color: rgba(40, 167, 69, 0.08);
-    border-left: 2px solid #28a745;
-}
-
-@media (hover: hover) {
-    .component-list-item--recent:hover {
-        background-color: rgba(40, 167, 69, 0.12);
-    }
-}
-
-.component-list-item--recent .component-list-item-name {
-    color: #d4edda;
-}
-
-.component-list-item--recent .component-list-item-type {
-    color: rgba(212, 237, 218, 0.7);
-}
-
-/* Custom - Third priority, purple accent */
-.component-list-item--custom {
-    background-color: rgba(102, 16, 242, 0.08);
-    border-left: 2px solid #6610f2;
-}
-
-@media (hover: hover) {
-    .component-list-item--custom:hover {
-        background-color: rgba(102, 16, 242, 0.12);
-    }
-}
-
-.component-list-item--custom .component-list-item-name {
-    color: #e2d9f3;
-}
-
-.component-list-item--custom .component-list-item-type {
-    color: rgba(226, 217, 243, 0.7);
-}
-
-/* Regular - Default styling, lowest priority */
-.component-list-item--regular {
-    background-color: rgba(108, 117, 125, 0.05);
-}
-
-@media (hover: hover) {
-    .component-list-item--regular:hover {
-        background-color: rgba(108, 117, 125, 0.08);
-    }
-}
-
-.component-list-item--regular .component-list-item-name {
+.component-list-item--regular .component-list-item-name,
+.component-list-item--in-program .component-list-item-name,
+.component-list-item--recent .component-list-item-name,
+.component-list-item--custom .component-list-item-name,
+.component-list-item--highlighted .component-list-item-name,
+.component-list-item--all .component-list-item-name,
+.component-list-item--exercise-history .component-list-item-name {
     color: var(--text-primary);
 }
 
-.component-list-item--regular .component-list-item-type {
+.component-list-item--regular .component-list-item-type,
+.component-list-item--in-program .component-list-item-type,
+.component-list-item--recent .component-list-item-type,
+.component-list-item--custom .component-list-item-type,
+.component-list-item--highlighted .component-list-item-type,
+.component-list-item--all .component-list-item-type,
+.component-list-item--exercise-history .component-list-item-type {
     color: var(--text-muted);
-}
-
-/* Legacy support - map old 'highlighted' class to 'recent' */
-.component-list-item--highlighted {
-    background-color: rgba(40, 167, 69, 0.08);
-    border-left: 2px solid #28a745;
-}
-
-@media (hover: hover) {
-    .component-list-item--highlighted:hover {
-        background-color: rgba(40, 167, 69, 0.12);
-    }
-}
-
-.component-list-item--highlighted .component-list-item-name {
-    color: #d4edda;
-}
-
-.component-list-item--highlighted .component-list-item-type {
-    color: rgba(212, 237, 218, 0.7);
 }
 
 /* No results styling */
