@@ -46,16 +46,16 @@ class ExerciseUnpromoteTest extends TestCase
             'logged_at' => Carbon::now()->subDays(5),
         ]);
 
-        // Admin views exercise index
+        // Admin views exercise edit page
         $this->actingAs($this->adminUser);
-        $response = $this->get(route('exercises.index'));
+        $response = $this->get(route('exercises.edit', $globalExercise));
 
         $response->assertStatus(200);
         $response->assertSee('Global Exercise');
         
-        // Should see unpromote button with user icon
+        // Should see unpromote button with user icon in quick actions
         $response->assertSee('fa-user');
-        $response->assertSee('Unpromote to personal exercise');
+        $response->assertSee('Unpromote');
         
         // Should see the unpromote form for this exercise
         $response->assertSee(route('exercises.unpromote', $globalExercise));
@@ -78,7 +78,7 @@ class ExerciseUnpromoteTest extends TestCase
         $response->assertSee('Global Exercise');
         
         // Should NOT see unpromote button or user icon for unpromote
-        $response->assertDontSee('Unpromote to personal exercise');
+        $response->assertDontSee('Unpromote');
         
         // Should NOT see the unpromote form
         $response->assertDontSee(route('exercises.unpromote', $globalExercise));
@@ -93,9 +93,9 @@ class ExerciseUnpromoteTest extends TestCase
             'user_id' => $this->adminUser->id,
         ]);
 
-        // Admin views exercise index
+        // Admin views exercise edit page
         $this->actingAs($this->adminUser);
-        $response = $this->get(route('exercises.index'));
+        $response = $this->get(route('exercises.edit', $userExercise));
 
         $response->assertStatus(200);
         $response->assertSee('User Exercise');
@@ -125,7 +125,7 @@ class ExerciseUnpromoteTest extends TestCase
             ->post(route('exercises.unpromote', $globalExercise));
 
         // Assert successful response
-        $response->assertRedirect(route('exercises.index'));
+        $response->assertRedirect(route('exercises.edit', $globalExercise));
         $response->assertSessionHas('success', "Exercise 'Global Exercise' unpromoted to personal exercise successfully.");
 
         // Assert exercise is now owned by original owner
@@ -325,7 +325,7 @@ class ExerciseUnpromoteTest extends TestCase
             ->post(route('exercises.unpromote', $globalExercise));
 
         // Assert successful unpromote
-        $response->assertRedirect(route('exercises.index'));
+        $response->assertRedirect(route('exercises.edit', $globalExercise));
         $response->assertSessionHas('success', "Exercise 'Global Exercise' unpromoted to personal exercise successfully.");
 
         // Refresh exercise from database

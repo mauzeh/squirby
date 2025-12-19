@@ -39,59 +39,17 @@ class ExerciseController extends Controller
      */
     public function index()
     {
-        // Eager load current user's roles to avoid repeated queries
-        $currentUser = auth()->user()->load('roles');
+        $userId = auth()->id();
         
-        $exercises = Exercise::availableToUser()
-            ->with([
-                'user.roles', // Load user relationship with roles for displaying user names and checking permissions
-                'aliases' => function ($query) {
-                    $query->where('user_id', auth()->id());
-                }
-            ])
-            ->withCount('liftLogs') // Add lift logs count for performance
-            ->orderBy('user_id') // Global exercises (null) first, then user exercises
-            ->orderBy('title', 'asc')
-            ->get();
-            
-        // Precompute merge eligibility for admin users to avoid N+1 queries
-        $mergeEligibleIds = collect();
-        if ($currentUser->hasRole('Admin')) {
-            $userExercises = $exercises->where('user_id', '!=', null);
-            if ($userExercises->isNotEmpty()) {
-                // Get all global exercises for comparison
-                $globalExercises = Exercise::onlyGlobal()->get();
-                
-                foreach ($userExercises as $exercise) {
-                    $hasCompatibleTargets = $globalExercises->contains(function ($global) use ($exercise) {
-                        return $exercise->isCompatibleForMerge($global);
-                    });
-                    
-                    if ($hasCompatibleTargets) {
-                        $mergeEligibleIds->push($exercise->id);
-                    }
-                }
-            }
-        }
+        // Build components array
+        $components = [
+            \App\Services\ComponentBuilder::title(
+                'Exercises',
+                'Select an exercise to edit its details, or create a new one.'
+            )->build(),
+        ];
         
-        // Build components for flexible UI
-        $components = $this->buildExerciseIndexComponents($exercises, $mergeEligibleIds, $currentUser);
-        $data = ['components' => $components];
-        
-        return view('mobile-entry.flexible', compact('data'));
-    }
-
-    /**
-     * Build components for the exercise index page.
-     */
-    private function buildExerciseIndexComponents($exercises, $mergeEligibleIds, $currentUser)
-    {
-        $components = [];
-        
-        // Title
-        $components[] = \App\Services\ComponentBuilder::title('Exercises')->build();
-        
-        // Messages from session
+        // Add success/error messages if present
         if ($sessionMessages = \App\Services\ComponentBuilder::messagesFromSession()) {
             $components[] = $sessionMessages;
         }
@@ -101,105 +59,66 @@ class ExerciseController extends Controller
             ->asLink(route('exercises.create'))
             ->build();
         
-        // Build table
-        if ($exercises->isEmpty()) {
+        // Generate exercise selection list
+        $exerciseListService = app(\App\Services\ExerciseListService::class);
+        $exerciseListOptions = [
+            'filter_placeholder' => 'Search exercises...',
+            'no_results_message' => 'No exercises found. Create one to get started!',
+            'initial_state' => 'expanded',
+            'show_cancel_button' => false,
+            'restrict_height' => false,
+            'recent_days' => 30,
+            'url_generator' => function ($exercise) {
+                return route('exercises.edit', $exercise);
+            },
+            'type_label_generator' => function ($exercise, $isRecent) {
+                // Show exercise type and ownership
+                $exerciseType = ucfirst(str_replace('_', ' ', $exercise->exercise_type));
+                
+                if ($exercise->isGlobal()) {
+                    $ownershipLabel = 'Everyone';
+                } else {
+                    $ownershipLabel = $exercise->user_id === auth()->id() ? 'You' : $exercise->user->name;
+                }
+                
+                return $exerciseType . ' • ' . $ownershipLabel;
+            }
+        ];
+        
+        $exerciseListData = $exerciseListService->generateExerciseList($userId, $exerciseListOptions);
+        
+        if (empty($exerciseListData['items'])) {
             $components[] = \App\Services\ComponentBuilder::messages()
                 ->info('No exercises found. Add one to get started!')
                 ->build();
         } else {
-            $tableBuilder = \App\Services\ComponentBuilder::table()
-                ->confirmMessage('deleteItem', 'Are you sure you want to delete this exercise?')
-                ->ariaLabel('Exercises list')
-                ->spacedRows();
+            $listBuilder = \App\Services\ComponentBuilder::itemList()
+                ->filterPlaceholder($exerciseListData['filterPlaceholder'])
+                ->noResultsMessage($exerciseListData['noResultsMessage'])
+                ->initialState($exerciseListData['initialState'])
+                ->showCancelButton($exerciseListData['showCancelButton'])
+                ->restrictHeight($exerciseListData['restrictHeight']);
             
-            foreach ($exercises as $exercise) {
-                // Get display name (alias if exists, otherwise title)
-                $aliasService = app(\App\Services\ExerciseAliasService::class);
-                $displayName = $aliasService->getDisplayName($exercise, auth()->user());
-                
-                // Determine badge type and text
-                if ($exercise->isGlobal()) {
-                    $badgeText = 'Everyone';
-                    $badgeType = 'success';
-                } else {
-                    $badgeText = $exercise->user_id === auth()->id() ? 'You' : $exercise->user->name;
-                    $badgeType = 'warning';
-                }
-                
-                // Build exercise type display
-                $exerciseType = ucfirst(str_replace('_', ' ', $exercise->exercise_type));
-                
-                $rowBuilder = $tableBuilder->row(
-                    $exercise->id,
-                    $displayName
-                )
-                ->badge($badgeText, $badgeType)
-                ->badge($exerciseType, 'info')
-                ->compact();
-                
-                // Add edit action if user can edit
-                if ($exercise->canBeEditedBy($currentUser)) {
-                    $rowBuilder->linkAction('fa-pencil', route('exercises.edit', $exercise), 'Edit', 'btn-secondary');
-                }
-                
-                // Add admin actions
-                if ($currentUser->hasRole('Admin')) {
-                    if (!$exercise->isGlobal()) {
-                        // Promote to global
-                        $rowBuilder->formAction(
-                            'fa-globe', 
-                            route('exercises.promote', $exercise), 
-                            'POST', 
-                            [], 
-                            'Promote to global', 
-                            'btn-success', 
-                            'Are you sure you want to promote this exercise to global status?'
-                        );
-                    } else {
-                        // Unpromote to personal
-                        $rowBuilder->formAction(
-                            'fa-user', 
-                            route('exercises.unpromote', $exercise), 
-                            'POST', 
-                            [], 
-                            'Unpromote to personal exercise', 
-                            'btn-warning', 
-                            'Are you sure you want to unpromote this exercise back to personal status? This will only work if no other users have workout logs with this exercise.'
-                        );
-                    }
-                    
-                    // Merge action if eligible
-                    if ($mergeEligibleIds->contains($exercise->id)) {
-                        $rowBuilder->linkAction(
-                            'fa-code-branch', 
-                            route('exercises.show-merge', $exercise), 
-                            'Merge exercise', 
-                            'btn-info'
-                        );
-                    }
-                }
-                
-                // Add delete action if user can delete
-                if ($exercise->canBeDeletedBy($currentUser)) {
-                    $rowBuilder->formAction(
-                        'fa-trash', 
-                        route('exercises.destroy', $exercise), 
-                        'DELETE', 
-                        [], 
-                        'Delete', 
-                        'btn-danger', 
-                        'Are you sure you want to delete this exercise?'
-                    );
-                }
-                
-                $rowBuilder->add();
+            foreach ($exerciseListData['items'] as $item) {
+                $listBuilder->item(
+                    $item['id'],
+                    $item['name'],
+                    $item['href'],
+                    $item['type']['label'],
+                    $item['type']['cssClass'],
+                    $item['type']['priority']
+                );
             }
             
-            $components[] = $tableBuilder->build();
+            $components[] = $listBuilder->build();
         }
+
+        $data = ['components' => $components];
         
-        return $components;
+        return view('mobile-entry.flexible', compact('data'));
     }
+
+
 
     /**
      * Show the form for creating a new resource.

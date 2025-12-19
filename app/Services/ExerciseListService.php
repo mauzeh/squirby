@@ -48,11 +48,15 @@ class ExerciseListService
             'type_label_generator' => null,
         ], $options);
 
-        // Get user's accessible exercises with aliases
+        // Get user's accessible exercises with aliases and user relationship
         $exercises = Exercise::availableToUser($userId)
-            ->with(['aliases' => function ($query) use ($userId) {
-                $query->where('user_id', $userId);
-            }])
+            ->with([
+                'aliases' => function ($query) use ($userId) {
+                    $query->where('user_id', $userId);
+                },
+                'user' // Load user relationship for ownership display
+            ])
+            ->orderBy('user_id') // Global exercises (null) first, then user exercises
             ->orderBy('title', 'asc')
             ->get();
 

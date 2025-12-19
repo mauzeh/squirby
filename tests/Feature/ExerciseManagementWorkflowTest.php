@@ -340,7 +340,7 @@ class ExerciseManagementWorkflowTest extends TestCase
         $deleteOtherResponse->assertStatus(403);
         $this->assertDatabaseHas('exercises', ['id' => $otherUserExercise->id, 'deleted_at' => null]);
 
-        // 6. Verify user can only see edit/delete buttons for their own exercises
+        // 6. Verify index shows only accessible exercises (global + own) for regular users
         $userExercise = Exercise::factory()->create([
             'title' => 'User Own Exercise',
             'user_id' => $user->id,
@@ -349,11 +349,16 @@ class ExerciseManagementWorkflowTest extends TestCase
         $indexResponse = $this->get(route('exercises.index'));
         $indexResponse->assertStatus(200);
         
-        // Should see edit link for own exercise
-        $indexResponse->assertSee(route('exercises.edit', $userExercise->id));
+        // Regular users should see global exercises and their own exercises
+        $indexResponse->assertSee('User Own Exercise');
+        $indexResponse->assertSee('Global Exercise');
         
-        // Should NOT see edit links for global or other user exercises
-        $indexResponse->assertDontSee(route('exercises.edit', $globalExercise->id));
+        // Regular users should NOT see other users' personal exercises
+        $indexResponse->assertDontSee('Other User Exercise');
+        
+        // Verify edit links are present for accessible exercises only
+        $indexResponse->assertSee(route('exercises.edit', $userExercise->id));
+        $indexResponse->assertSee(route('exercises.edit', $globalExercise->id));
         $indexResponse->assertDontSee(route('exercises.edit', $otherUserExercise->id));
     }
 

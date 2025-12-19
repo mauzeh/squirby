@@ -532,7 +532,7 @@ class ExerciseManagementTest extends TestCase
     }
 
     /** @test */
-    public function index_view_shows_edit_button_only_for_editable_exercises()
+    public function index_view_shows_all_available_exercises_as_clickable_items()
     {
         $admin = User::factory()->create();
         $adminRole = Role::factory()->create(['name' => 'Admin']);
@@ -541,13 +541,13 @@ class ExerciseManagementTest extends TestCase
         $user = User::factory()->create();
         $this->actingAs($user);
 
-        // Create global exercise (not editable by regular user)
+        // Create global exercise (available to all users)
         $globalExercise = Exercise::factory()->create([
             'title' => 'Global Exercise',
             'user_id' => null,
         ]);
 
-        // Create user exercise (editable by user)
+        // Create user exercise (available to user)
         $userExercise = Exercise::factory()->create([
             'title' => 'User Exercise',
             'user_id' => $user->id,
@@ -556,43 +556,45 @@ class ExerciseManagementTest extends TestCase
         $response = $this->get(route('exercises.index'));
 
         $response->assertStatus(200);
-        // Should see edit link for user exercise
+        // Should see both exercises as clickable items that link to edit pages
         $response->assertSee(route('exercises.edit', $userExercise->id));
-        // Should not see edit link for global exercise
-        $response->assertDontSee(route('exercises.edit', $globalExercise->id));
+        $response->assertSee(route('exercises.edit', $globalExercise->id));
+        // Should see exercise names
+        $response->assertSee('Global Exercise');
+        $response->assertSee('User Exercise');
     }
 
     /** @test */
-    public function index_view_shows_delete_button_only_for_deletable_exercises()
+    public function index_view_displays_exercise_selection_interface()
     {
         $user = User::factory()->create();
         $this->actingAs($user);
 
-        // Create exercise without lift logs (deletable)
-        $deletableExercise = Exercise::factory()->create([
-            'title' => 'Deletable Exercise',
+        // Create some exercises
+        $exercise1 = Exercise::factory()->create([
+            'title' => 'First Exercise',
             'user_id' => $user->id,
         ]);
 
-        // Create exercise with lift logs (not deletable)
-        $nonDeletableExercise = Exercise::factory()->create([
-            'title' => 'Non-Deletable Exercise',
-            'user_id' => $user->id,
+        $exercise2 = Exercise::factory()->create([
+            'title' => 'Second Exercise',
+            'user_id' => null, // Global exercise
         ]);
-        LiftLog::factory()->create(['exercise_id' => $nonDeletableExercise->id, 'user_id' => $user->id]);
 
         $response = $this->get(route('exercises.index'));
 
         $response->assertStatus(200);
         
-        // Should see both exercises
-        $response->assertSee('Deletable Exercise');
-        $response->assertSee('Non-Deletable Exercise');
+        // Should see both exercises in the selection interface
+        $response->assertSee('First Exercise');
+        $response->assertSee('Second Exercise');
         
-        // Should see delete button (fa-trash icon) for deletable exercise
-        // Note: The flexible UI system only shows delete buttons for exercises that can actually be deleted
-        // rather than showing disabled buttons, so we should see at least one delete button
-        $response->assertSee('fa-trash');
+        // Should see the page title and description
+        $response->assertSee('Exercises');
+        $response->assertSee('Select an exercise to edit its details, or create a new one.');
+        
+        // Should see the Add Exercise button
+        $response->assertSee('Add Exercise');
     }
 
     /** @test */

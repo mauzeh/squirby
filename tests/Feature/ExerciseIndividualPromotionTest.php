@@ -43,7 +43,7 @@ class ExerciseIndividualPromotionTest extends TestCase
             ->post(route('exercises.promote', $userExercise));
 
         // Assert successful response
-        $response->assertRedirect(route('exercises.index'));
+        $response->assertRedirect(route('exercises.edit', $userExercise));
         $response->assertSessionHas('success', "Exercise 'User Exercise' promoted to global status successfully.");
 
         // Assert exercise is now global (user_id is null)
@@ -134,7 +134,7 @@ class ExerciseIndividualPromotionTest extends TestCase
             ->post(route('exercises.promote', $userExercise));
 
         // Assert successful promotion
-        $response->assertRedirect(route('exercises.index'));
+        $response->assertRedirect(route('exercises.edit', $userExercise));
         $response->assertSessionHas('success', "Exercise 'User Exercise With Logs' promoted to global status successfully.");
 
         // Assert exercise is now global
@@ -178,7 +178,7 @@ class ExerciseIndividualPromotionTest extends TestCase
             ->post(route('exercises.promote', $userExercise));
 
         // Assert successful promotion
-        $response->assertRedirect(route('exercises.index'));
+        $response->assertRedirect(route('exercises.edit', $userExercise));
         $response->assertSessionHas('success', "Exercise 'User Exercise' promoted to global status successfully.");
 
         // Refresh exercise from database
@@ -247,7 +247,7 @@ class ExerciseIndividualPromotionTest extends TestCase
     }
 
     /** @test */
-    public function promote_button_appears_for_admin_users_on_user_exercises()
+    public function promote_button_appears_for_admin_users_on_exercise_edit_page()
     {
         // Create user exercises owned by admin (so they can see them)
         $userExercise = Exercise::factory()->create([
@@ -255,16 +255,16 @@ class ExerciseIndividualPromotionTest extends TestCase
             'user_id' => $this->adminUser->id,
         ]);
 
-        // Admin views exercise index
+        // Admin views exercise edit page
         $this->actingAs($this->adminUser);
-        $response = $this->get(route('exercises.index'));
+        $response = $this->get(route('exercises.edit', $userExercise));
 
         $response->assertStatus(200);
         $response->assertSee('User Exercise');
         
-        // Should see promote button with globe icon
+        // Should see promote button with globe icon in quick actions
         $response->assertSee('fa-globe');
-        $response->assertSee('Promote to global');
+        $response->assertSee('Promote');
         
         // Should see the promote form for this exercise
         $response->assertSee(route('exercises.promote', $userExercise));
@@ -330,7 +330,7 @@ class ExerciseIndividualPromotionTest extends TestCase
             ->post(route('exercises.promote', $userExercise));
 
         // Assert successful response
-        $response->assertRedirect(route('exercises.index'));
+        $response->assertRedirect(route('exercises.edit', $userExercise));
         $response->assertSessionHas('success', "Exercise 'Test Exercise' promoted to global status successfully.");
         $response->assertSessionHasNoErrors();
 

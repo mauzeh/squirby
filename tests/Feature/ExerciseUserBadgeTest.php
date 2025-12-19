@@ -100,7 +100,7 @@ class ExerciseUserBadgeTest extends TestCase
     }
 
     /** @test */
-    public function exercise_badges_have_correct_styling()
+    public function exercise_index_displays_exercise_type_and_ownership_information()
     {
         // Create both types of exercises
         $globalExercise = Exercise::create([
@@ -122,12 +122,10 @@ class ExerciseUserBadgeTest extends TestCase
 
         $response->assertStatus(200);
         
-        // Check for Everyone badge with success styling (green)
-        $response->assertSee('table-badge--success', false);
-        $response->assertSee('Everyone');
-        
-        // Check for user badge with warning styling (orange)
-        $response->assertSee('table-badge--warning', false);
-        $response->assertSee('You');
+        // Check for exercise type and ownership information in the new format
+        $response->assertSee('Regular • Everyone'); // Global exercise
+        $response->assertSee('Regular • You'); // User exercise
+        $response->assertSee('Global Exercise');
+        $response->assertSee('User Exercise');
     }
 }

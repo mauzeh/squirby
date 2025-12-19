@@ -450,7 +450,7 @@ class AdminExerciseVisibilityTest extends TestCase
 
         // Admin should be able to promote other user's exercise
         $response = $this->post(route('exercises.promote', $userExercise));
-        $response->assertRedirect(route('exercises.index'));
+        $response->assertRedirect(route('exercises.edit', $userExercise));
         $response->assertSessionHas('success', "Exercise 'User Exercise' promoted to global status successfully.");
 
         // Exercise should now be global
