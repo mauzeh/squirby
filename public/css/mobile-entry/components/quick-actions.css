@@ -1,0 +1,154 @@
+/* Quick Actions Component Styles */
+
+/* Quick actions uses the same base styling as forms via component-form-section */
+/* Only need to define the specific grid layout and button styles */
+
+.component-body .quick-actions-grid {
+    margin-top: var(--spacing-sm);
+}
+
+.quick-actions-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+}
+
+.quick-action-form {
+    display: inline-block;
+    margin: 0;
+}
+
+.quick-action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm) var(--spacing-md);
+    border: 1px solid transparent;
+    border-radius: var(--border-radius-sm);
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+    transition: var(--transition-fast);
+    background: none;
+    font-family: inherit;
+    min-height: var(--touch-target-small);
+}
+
+.quick-action-btn:hover {
+    text-decoration: none;
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-medium);
+}
+
+.quick-action-btn:active {
+    transform: translateY(0);
+}
+
+.quick-action-text {
+    white-space: nowrap;
+}
+
+/* Disabled action styles */
+.quick-action-disabled-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+
+.quick-action-btn.btn-disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.quick-action-reason {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-style: italic;
+    text-align: center;
+    line-height: 1.2;
+}
+
+/* Button color variants */
+.quick-action-btn.btn-primary {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--text-primary);
+}
+
+.quick-action-btn.btn-primary:hover {
+    background-color: var(--color-primary-hover);
+    border-color: var(--color-primary-hover);
+}
+
+.quick-action-btn.btn-success {
+    background-color: var(--color-success);
+    border-color: var(--color-success);
+    color: var(--text-primary);
+}
+
+.quick-action-btn.btn-success:hover {
+    background-color: var(--color-success-hover);
+    border-color: var(--color-success-hover);
+}
+
+.quick-action-btn.btn-warning {
+    background-color: var(--color-warning);
+    border-color: var(--color-warning);
+    color: var(--primary-bg);
+}
+
+.quick-action-btn.btn-warning:hover {
+    background-color: var(--color-warning-hover);
+    border-color: var(--color-warning-hover);
+}
+
+.quick-action-btn.btn-danger {
+    background-color: var(--color-danger);
+    border-color: var(--color-danger);
+    color: var(--text-primary);
+}
+
+.quick-action-btn.btn-danger:hover {
+    background-color: var(--color-danger-hover);
+    border-color: var(--color-danger-hover);
+}
+
+.quick-action-btn.btn-info {
+    background-color: #17a2b8;
+    border-color: #17a2b8;
+    color: var(--text-primary);
+}
+
+.quick-action-btn.btn-info:hover {
+    background-color: #138496;
+    border-color: #138496;
+}
+
+.quick-action-btn.btn-secondary {
+    background-color: var(--color-secondary);
+    border-color: var(--color-secondary);
+    color: var(--text-primary);
+}
+
+.quick-action-btn.btn-secondary:hover {
+    background-color: var(--color-secondary-hover);
+    border-color: var(--color-secondary-hover);
+}
+
+/* Responsive design */
+@media (max-width: 640px) {
+    .quick-actions-grid {
+        flex-direction: column;
+    }
+    
+    .quick-action-btn {
+        justify-content: center;
+        width: 100%;
+        min-height: var(--touch-target-min);
+    }
+}
+
+/* Mobile-first responsive adjustments */
+/* Responsive styles are handled by the generic component-form-section class */

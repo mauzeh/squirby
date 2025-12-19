@@ -14,6 +14,7 @@ use App\Services\Components\Interactive\FormComponentBuilder;
 use App\Services\Components\Interactive\BulkActionFormComponentBuilder;
 use App\Services\Components\Interactive\SelectAllControlComponentBuilder;
 use App\Services\Components\Interactive\CodeEditorComponentBuilder;
+use App\Services\Components\Interactive\QuickActionsComponentBuilder;
 use App\Services\Components\Lists\ItemListComponentBuilder;
 use App\Services\Components\Tables\TableComponentBuilder;
 use App\Services\Components\Charts\ChartComponentBuilder;
@@ -187,5 +188,13 @@ class ComponentBuilder
     public static function codeEditor(string $id, string $label): CodeEditorComponentBuilder
     {
         return new CodeEditorComponentBuilder($id, $label);
+    }
+    
+    /**
+     * Create a quick actions component
+     */
+    public static function quickActions(string $title = 'Quick Actions'): QuickActionsComponentBuilder
+    {
+        return new QuickActionsComponentBuilder($title);
     }
 }

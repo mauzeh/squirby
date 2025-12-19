@@ -723,4 +723,84 @@ class ExerciseManagementTest extends TestCase
             'user_id' => null,
         ]);
     }
+
+    /** @test */
+    public function edit_page_displays_quick_actions_for_admin()
+    {
+        $admin = User::factory()->create();
+        $adminRole = Role::factory()->create(['name' => 'Admin']);
+        $admin->roles()->attach($adminRole);
+        $this->actingAs($admin);
+
+        // Test with user exercise (should show promote action)
+        $userExercise = Exercise::factory()->create([
+            'title' => 'User Exercise',
+            'user_id' => $admin->id,
+        ]);
+
+        $response = $this->get(route('exercises.edit', $userExercise));
+
+        $response->assertStatus(200);
+        $response->assertSee('Quick Actions');
+        $response->assertSee('Promote to Global');
+        $response->assertSee('Delete Exercise');
+
+        // Test with global exercise (should show unpromote action)
+        $globalExercise = Exercise::factory()->create([
+            'title' => 'Global Exercise',
+            'user_id' => null,
+        ]);
+
+        $response = $this->get(route('exercises.edit', $globalExercise));
+
+        $response->assertStatus(200);
+        $response->assertSee('Quick Actions');
+        $response->assertSee('Unpromote to Personal');
+        $response->assertSee('Delete Exercise');
+    }
+
+    /** @test */
+    public function edit_page_displays_limited_quick_actions_for_regular_user()
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $userExercise = Exercise::factory()->create([
+            'title' => 'User Exercise',
+            'user_id' => $user->id,
+        ]);
+
+        $response = $this->get(route('exercises.edit', $userExercise));
+
+        $response->assertStatus(200);
+        $response->assertSee('Quick Actions');
+        $response->assertSee('Delete Exercise');
+        $response->assertDontSee('Promote to Global');
+        $response->assertDontSee('Unpromote to Personal');
+        $response->assertDontSee('Merge Exercise');
+    }
+
+    /** @test */
+    public function edit_page_hides_delete_action_when_exercise_has_lift_logs()
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $exercise = Exercise::factory()->create([
+            'title' => 'Exercise with Logs',
+            'user_id' => $user->id,
+        ]);
+
+        // Create a lift log for this exercise
+        LiftLog::factory()->create([
+            'exercise_id' => $exercise->id,
+            'user_id' => $user->id,
+        ]);
+
+        $response = $this->get(route('exercises.edit', $exercise));
+
+        $response->assertStatus(200);
+        // Should not show delete action when exercise has lift logs
+        $response->assertDontSee('Delete Exercise');
+    }
 }

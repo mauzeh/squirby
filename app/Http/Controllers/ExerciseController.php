@@ -268,6 +268,9 @@ class ExerciseController extends Controller
             $components[] = $sessionMessages;
         }
 
+        // Add quick actions component
+        $components[] = $this->buildExerciseQuickActions($exercise, $user);
+
         // Add form component
         $components[] = $this->exerciseFormService->generateExerciseForm(
             $exercise,
@@ -281,6 +284,122 @@ class ExerciseController extends Controller
                 'components' => $components,
             ]
         ]);
+    }
+
+    /**
+     * Build quick actions component for exercise edit page
+     */
+    private function buildExerciseQuickActions(Exercise $exercise, User $currentUser): array
+    {
+        $quickActions = \App\Services\ComponentBuilder::quickActions('Quick Actions');
+
+        // Admin actions
+        if ($currentUser->hasRole('Admin')) {
+            if (!$exercise->isGlobal()) {
+                // Promote to global
+                $quickActions->formAction(
+                    'fa-globe',
+                    route('exercises.promote', $exercise),
+                    'POST',
+                    [],
+                    'Promote to Global',
+                    'btn-success',
+                    'Are you sure you want to promote this exercise to global status?'
+                );
+            } else {
+                // Unpromote to personal
+                $quickActions->formAction(
+                    'fa-user',
+                    route('exercises.unpromote', $exercise),
+                    'POST',
+                    [],
+                    'Unpromote to Personal',
+                    'btn-warning',
+                    'Are you sure you want to unpromote this exercise back to personal status? This will only work if no other users have workout logs with this exercise.'
+                );
+            }
+
+            // Merge action if eligible
+            if ($this->isExerciseMergeEligible($exercise)) {
+                $quickActions->linkAction(
+                    'fa-code-branch',
+                    route('exercises.show-merge', $exercise),
+                    'Merge',
+                    'btn-info'
+                );
+            }
+        }
+
+        // Delete action - always show but disable if not allowed
+        if ($exercise->canBeDeletedBy($currentUser)) {
+            $quickActions->formAction(
+                'fa-trash',
+                route('exercises.destroy', $exercise),
+                'DELETE',
+                [],
+                'Delete',
+                'btn-danger',
+                'Are you sure you want to delete this exercise?'
+            );
+        } else {
+            // Show disabled delete button with reason
+            $reason = $this->getDeleteDisabledReason($exercise, $currentUser);
+            $quickActions->disabledAction(
+                'fa-trash',
+                'Delete',
+                'btn-danger',
+                $reason
+            );
+        }
+
+        return $quickActions->build();
+    }
+
+    /**
+     * Get the reason why delete is disabled for this exercise
+     */
+    private function getDeleteDisabledReason(Exercise $exercise, User $currentUser): string
+    {
+        // Check if user has permission to delete
+        if (!$currentUser->can('delete', $exercise)) {
+            if ($exercise->isGlobal() && !$currentUser->hasRole('Admin')) {
+                return 'Only admins can delete global exercises';
+            }
+            if (!$exercise->isGlobal() && $exercise->user_id !== $currentUser->id && !$currentUser->hasRole('Admin')) {
+                return 'You can only delete your own exercises';
+            }
+        }
+        
+        // Check if exercise has lift logs
+        if ($exercise->liftLogs()->exists()) {
+            $logCount = $exercise->liftLogs()->count();
+            $logText = $logCount === 1 ? 'lift log' : 'lift logs';
+            return "Cannot delete: exercise has {$logCount} associated {$logText}";
+        }
+        
+        return 'Cannot delete this exercise';
+    }
+
+    /**
+     * Check if exercise is eligible for merge (simplified version of index logic)
+     */
+    private function isExerciseMergeEligible(Exercise $exercise): bool
+    {
+        // Only user exercises can be merged
+        if ($exercise->isGlobal()) {
+            return false;
+        }
+
+        // Check if there are compatible global exercises for merging
+        $globalExercises = Exercise::onlyGlobal()->get();
+        
+        foreach ($globalExercises as $global) {
+            if ($exercise->isCompatibleForMerge($global)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
