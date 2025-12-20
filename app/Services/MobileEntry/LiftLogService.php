@@ -652,19 +652,31 @@ class LiftLogService extends MobileEntryBaseService
                     ]);
                 } else {
                     // No history: skip metrics page and go directly to logging form
-                    $href = route('lift-logs.create', [
+                    $routeParams = [
                         'exercise_id' => $exercise->id,
-                        'date' => $selectedDate->toDateString(),
                         'redirect_to' => 'mobile-entry-lifts'
-                    ]);
+                    ];
+                    
+                    // Only include date if we're NOT viewing today
+                    if (!$selectedDate->isToday()) {
+                        $routeParams['date'] = $selectedDate->toDateString();
+                    }
+                    
+                    $href = route('lift-logs.create', $routeParams);
                 }
             } else {
                 // Default flow: go directly to lift log creation
-                $href = route('lift-logs.create', [
+                $routeParams = [
                     'exercise_id' => $exercise->id,
-                    'date' => $selectedDate->toDateString(),
                     'redirect_to' => 'mobile-entry-lifts'
-                ]);
+                ];
+                
+                // Only include date if we're NOT viewing today
+                if (!$selectedDate->isToday()) {
+                    $routeParams['date'] = $selectedDate->toDateString();
+                }
+                
+                $href = route('lift-logs.create', $routeParams);
             }
             
             $items[] = [
@@ -695,6 +707,13 @@ class LiftLogService extends MobileEntryBaseService
             return strcmp($a['name'], $b['name']);
         });
 
+        // Prepare hidden fields for create form
+        $hiddenFields = [];
+        // Only include date if we're NOT viewing today
+        if (!$selectedDate->isToday()) {
+            $hiddenFields['date'] = $selectedDate->toDateString();
+        }
+
         return [
             'noResultsMessage' => config('mobile_entry_messages.empty_states.no_exercises_found'),
             'createForm' => [
@@ -704,9 +723,7 @@ class LiftLogService extends MobileEntryBaseService
                 'submitText' => '+',
                 'buttonTextTemplate' => 'Create "{term}"',
                 'ariaLabel' => 'Create new exercise',
-                'hiddenFields' => [
-                    'date' => $selectedDate->toDateString()
-                ]
+                'hiddenFields' => $hiddenFields
             ],
             'items' => $items,
             'ariaLabels' => [

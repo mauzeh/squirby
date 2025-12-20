@@ -221,11 +221,17 @@ class MobileEntryController extends Controller
         
         if ($existingExercise) {
             // Exercise exists, redirect to create lift log for it
-            return redirect()->route('lift-logs.create', [
+            $routeParams = [
                 'exercise_id' => $existingExercise->id,
-                'date' => $selectedDate->toDateString(),
                 'redirect_to' => 'mobile-entry-lifts'
-            ]);
+            ];
+            
+            // Only include date if we're NOT viewing today
+            if (!$selectedDate->isToday()) {
+                $routeParams['date'] = $selectedDate->toDateString();
+            }
+            
+            return redirect()->route('lift-logs.create', $routeParams);
         }
         
         // Generate unique canonical name
@@ -240,11 +246,18 @@ class MobileEntryController extends Controller
         ]);
         
         // Redirect to lift log creation page
-        return redirect()->route('lift-logs.create', [
+        $routeParams = [
             'exercise_id' => $exercise->id,
-            'date' => $selectedDate->toDateString(),
             'redirect_to' => 'mobile-entry-lifts'
-        ])->with('success', 'Exercise "' . $exercise->title . '" created! Now log your first set.');
+        ];
+        
+        // Only include date if we're NOT viewing today
+        if (!$selectedDate->isToday()) {
+            $routeParams['date'] = $selectedDate->toDateString();
+        }
+        
+        return redirect()->route('lift-logs.create', $routeParams)
+            ->with('success', 'Exercise "' . $exercise->title . '" created! Now log your first set.');
     }
     
     /**

@@ -54,8 +54,12 @@ class LiftLogFormFactory
             ->type('primary')
             ->formAction(route('lift-logs.store'))
             ->hiddenField('exercise_id', $exercise->id)
-            ->hiddenField('date', $selectedDate->format('Y-m-d'))
             ->hiddenField('logged_at', now()->format('H:i'));
+        
+        // Only include date if we're NOT viewing today
+        if (!$selectedDate->isToday()) {
+            $formBuilder->hiddenField('date', $selectedDate->format('Y-m-d'));
+        }
         
         if ($deleteAction) {
             $formBuilder->deleteAction($deleteAction);
@@ -86,9 +90,13 @@ class LiftLogFormFactory
         // Build hidden fields with redirect params if provided
         $hiddenFields = [
             'exercise_id' => $exercise->id,
-            'date' => $selectedDate->toDateString(),
             'mobile_lift_form_id' => $mobileLiftForm->id
         ];
+        
+        // Only include date if we're NOT viewing today
+        if (!$selectedDate->isToday()) {
+            $hiddenFields['date'] = $selectedDate->toDateString();
+        }
         
         // Add redirect parameters if they exist, otherwise default to mobile-entry-lifts
         if (!empty($redirectParams['redirect_to'])) {

@@ -414,10 +414,10 @@ class LiftLogCreateTest extends TestCase
 
         $response = $this->post(route('lift-logs.store'), [
             'exercise_id' => $exercise->id,
-            // Missing required fields: date, reps, rounds
+            // Missing required fields: reps, rounds (date is now optional and defaults to today)
         ]);
 
-        $response->assertSessionHasErrors(['date', 'reps', 'rounds']);
+        $response->assertSessionHasErrors(['reps', 'rounds']);
     }
 
     /** @test */

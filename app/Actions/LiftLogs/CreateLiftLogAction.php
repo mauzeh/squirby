@@ -55,7 +55,7 @@ class CreateLiftLogAction
         $rules = [
             'exercise_id' => 'required|exists:exercises,id',
             'comments' => 'nullable|string',
-            'date' => 'required|date',
+            'date' => 'nullable|date', // Make date optional - will default to today if not provided
             'logged_at' => 'nullable|date_format:H:i',
             'reps' => 'required|integer|min:1',
             'rounds' => 'required|integer|min:1',
@@ -73,7 +73,10 @@ class CreateLiftLogAction
     
     private function processLoggedTime(Request $request): Carbon
     {
-        $loggedAtDate = Carbon::parse($request->input('date'));
+        // If no date provided, default to today (this handles the stale page fix)
+        $loggedAtDate = $request->input('date') 
+            ? Carbon::parse($request->input('date'))
+            : Carbon::today();
         
         // If no time provided (mobile entry), use current time but ensure it stays within the selected date
         if ($request->has('logged_at') && $request->input('logged_at')) {
