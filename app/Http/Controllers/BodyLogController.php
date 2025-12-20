@@ -35,17 +35,19 @@ class BodyLogController extends Controller
         $request->validate([
             'measurement_type_id' => 'required|exists:measurement_types,id',
             'value' => 'required|numeric',
-            'date' => 'required|date',
+            'date' => 'nullable|date',  // Make date nullable to handle missing date
             'logged_at' => 'required|date_format:H:i',
             'comments' => 'nullable|string',
         ]);
 
-        $loggedAt = \Carbon\Carbon::parse($request->date)->setTimeFromTimeString($request->logged_at);
+        // If no date provided, default to today (this handles the stale page fix)
+        $date = $request->date ? $request->date : now()->toDateString();
+        $loggedAt = \Carbon\Carbon::parse($date)->setTimeFromTimeString($request->logged_at);
 
         // Check if entry already exists for this measurement type and date
         $existingLog = BodyLog::where('user_id', auth()->id())
             ->where('measurement_type_id', $request->measurement_type_id)
-            ->whereDate('logged_at', $request->date)
+            ->whereDate('logged_at', $date)
             ->first();
 
         if ($existingLog) {

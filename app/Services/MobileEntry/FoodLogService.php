@@ -126,15 +126,18 @@ class FoodLogService extends MobileEntryBaseService
             $caloriesText = $calories . ' cal';
             $proteinText = $protein . 'g protein';
 
+            $deleteParams = ['redirect_to' => 'mobile-entry.foods'];
+            // Only include date if we're NOT viewing today
+            if (!$selectedDate->isToday()) {
+                $deleteParams['date'] = $selectedDate->toDateString();
+            }
+
             $tableBuilder->row($log->id, $log->ingredient->name, null, $log->notes)
                 ->badge($quantityText, 'neutral')
                 ->badge($caloriesText, 'warning', true)
                 ->badge($proteinText, 'success')
                 ->linkAction('fa-pencil', route('food-logs.edit', ['food_log' => $log->id, 'redirect_to' => 'mobile-entry.foods']), 'Edit', 'btn-transparent')
-                ->formAction('fa-trash', route('food-logs.destroy', $log->id), 'DELETE', [
-                    'redirect_to' => 'mobile-entry.foods',
-                    'date' => $selectedDate->toDateString()
-                ], 'Delete', 'btn-transparent', true)
+                ->formAction('fa-trash', route('food-logs.destroy', $log->id), 'DELETE', $deleteParams, 'Delete', 'btn-transparent', true)
                 ->compact()
                 ->add();
         }
@@ -177,15 +180,20 @@ class FoodLogService extends MobileEntryBaseService
         
         // Add meals first (they will have priority 1)
         foreach ($meals as $meal) {
+            $routeParams = [
+                'type' => 'meal',
+                'id' => $meal->id
+            ];
+            // Only include date if we're NOT viewing today
+            if (!$selectedDate->isToday()) {
+                $routeParams['date'] = $selectedDate->toDateString();
+            }
+            
             $items[] = [
                 'id' => 'meal-' . $meal->id,
                 'name' => $meal->name . ' (Meal)',
                 'type' => $this->getItemTypeConfig('meal'),
-                'href' => route('mobile-entry.add-food-form', [
-                    'type' => 'meal',
-                    'id' => $meal->id,
-                    'date' => $selectedDate->toDateString()
-                ])
+                'href' => route('mobile-entry.add-food-form', $routeParams)
             ];
         }
         
@@ -193,15 +201,20 @@ class FoodLogService extends MobileEntryBaseService
         foreach ($ingredients as $ingredient) {
             $itemType = $this->determineIngredientType($ingredient, $userId);
 
+            $routeParams = [
+                'type' => 'ingredient',
+                'id' => $ingredient->id
+            ];
+            // Only include date if we're NOT viewing today
+            if (!$selectedDate->isToday()) {
+                $routeParams['date'] = $selectedDate->toDateString();
+            }
+
             $items[] = [
                 'id' => 'ingredient-' . $ingredient->id,
                 'name' => $ingredient->name,
                 'type' => $itemType,
-                'href' => route('mobile-entry.add-food-form', [
-                    'type' => 'ingredient',
-                    'id' => $ingredient->id,
-                    'date' => $selectedDate->toDateString()
-                ])
+                'href' => route('mobile-entry.add-food-form', $routeParams)
             ];
         }
 
@@ -398,15 +411,24 @@ class FoodLogService extends MobileEntryBaseService
             'section' => $ingredient->name . ' entry',
             'deleteForm' => 'Remove this food form'
         ];
-        $formData['data']['hiddenFields'] = [
+        $hiddenFields = [
             'ingredient_id' => $ingredient->id,
             'logged_at' => $this->getRoundedTime(),
-            'date' => $selectedDate->toDateString(),
             'redirect_to' => 'mobile-entry-foods'
         ];
-        $formData['data']['deleteParams'] = [
-            'date' => $selectedDate->toDateString()
-        ];
+        // Only include date if we're NOT viewing today
+        if (!$selectedDate->isToday()) {
+            $hiddenFields['date'] = $selectedDate->toDateString();
+        }
+        
+        $deleteParams = [];
+        // Only include date if we're NOT viewing today
+        if (!$selectedDate->isToday()) {
+            $deleteParams['date'] = $selectedDate->toDateString();
+        }
+        
+        $formData['data']['hiddenFields'] = $hiddenFields;
+        $formData['data']['deleteParams'] = $deleteParams;
         
         return $formData;
     }
@@ -514,15 +536,24 @@ class FoodLogService extends MobileEntryBaseService
             'section' => $meal->name . ' entry',
             'deleteForm' => 'Remove this meal form'
         ];
-        $formData['data']['hiddenFields'] = [
+        $hiddenFields = [
             'meal_id' => $meal->id,
             'logged_at_meal' => $this->getRoundedTime(),
-            'meal_date' => $selectedDate->toDateString(),
             'redirect_to' => 'mobile-entry-foods'
         ];
-        $formData['data']['deleteParams'] = [
-            'date' => $selectedDate->toDateString()
-        ];
+        // Only include date if we're NOT viewing today
+        if (!$selectedDate->isToday()) {
+            $hiddenFields['meal_date'] = $selectedDate->toDateString();
+        }
+        
+        $deleteParams = [];
+        // Only include date if we're NOT viewing today
+        if (!$selectedDate->isToday()) {
+            $deleteParams['date'] = $selectedDate->toDateString();
+        }
+        
+        $formData['data']['hiddenFields'] = $hiddenFields;
+        $formData['data']['deleteParams'] = $deleteParams;
         
         return $formData;
     }

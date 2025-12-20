@@ -72,14 +72,17 @@ class FoodLogController extends Controller
             'ingredient_id' => 'required|exists:ingredients,id',
             'quantity' => 'required|numeric|min:0.01',
             'logged_at' => 'required|date_format:H:i',
-            'date' => 'required|date',
+            'date' => 'nullable|date',  // Make date nullable to handle missing date
             'notes' => 'nullable|string',
         ]);
 
         $ingredient = Ingredient::find($validated['ingredient_id']);
         $validated['unit_id'] = $ingredient->base_unit_id;
 
-        $loggedAtDate = Carbon::parse($validated['date']);
+        // If no date provided, default to today (this handles the stale page fix)
+        $loggedAtDate = isset($validated['date']) 
+            ? Carbon::parse($validated['date'])
+            : Carbon::today();
         $validated['logged_at'] = $loggedAtDate->setTimeFromTimeString($validated['logged_at']);
 
         $logEntry = FoodLog::create(array_merge($validated, ['user_id' => auth()->id()]));

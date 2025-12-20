@@ -40,14 +40,17 @@ class BodyLogService extends MobileEntryBaseService
 
             $valueText = $log->value . ' ' . $log->measurementType->default_unit;
 
+            $deleteParams = ['redirect_to' => 'mobile-entry-measurements'];
+            // Only include date if we're NOT viewing today
+            if (!$selectedDate->isToday()) {
+                $deleteParams['date'] = $selectedDate->toDateString();
+            }
+
             $tableBuilder->row($log->id, $log->measurementType->name, null, $log->comments)
                 ->badge($valueText, 'info', true)
                 ->linkAction('fa-chart-line', route('body-logs.show-by-type', $log->measurementType), 'View Graph', 'btn-info-circle')
                 ->linkAction('fa-pencil', route('body-logs.edit', $log->id), 'Edit', 'btn-transparent')
-                ->formAction('fa-trash', route('body-logs.destroy', $log->id), 'DELETE', [
-                    'redirect_to' => 'mobile-entry-measurements',
-                    'date' => $selectedDate->toDateString()
-                ], 'Delete', 'btn-transparent', true)
+                ->formAction('fa-trash', route('body-logs.destroy', $log->id), 'DELETE', $deleteParams, 'Delete', 'btn-transparent', true)
                 ->compact()
                 ->add();
         }
@@ -179,12 +182,17 @@ class BodyLogService extends MobileEntryBaseService
         $formData['data']['ariaLabels'] = [
             'section' => $measurementType->name . ' entry'
         ];
-        $formData['data']['hiddenFields'] = [
+        $hiddenFields = [
             'measurement_type_id' => $measurementType->id,
             'logged_at' => now()->format('H:i'),
-            'date' => $selectedDate->toDateString(),
             'redirect_to' => 'mobile-entry-measurements'
         ];
+        // Only include date if we're NOT viewing today
+        if (!$selectedDate->isToday()) {
+            $hiddenFields['date'] = $selectedDate->toDateString();
+        }
+        
+        $formData['data']['hiddenFields'] = $hiddenFields;
         // Completion status (always pending since we only show unlogged measurements)
         $formData['data']['isCompleted'] = false;
         $formData['data']['completionStatus'] = 'pending';

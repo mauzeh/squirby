@@ -7,6 +7,7 @@ use Tests\TestCase;
 use App\Models\User;
 use App\Models\Exercise;
 use Carbon\Carbon;
+use PHPUnit\Framework\Attributes\Test;
 
 class CreateExerciseWorkflowTest extends TestCase
 {
@@ -21,7 +22,7 @@ class CreateExerciseWorkflowTest extends TestCase
         $this->actingAs($this->user);
     }
 
-    /** @test */
+    #[Test]
     public function user_can_create_new_exercise_and_is_redirected_to_lift_logs_create()
     {
         $exerciseName = 'New Custom Exercise';
@@ -39,11 +40,10 @@ class CreateExerciseWorkflowTest extends TestCase
             'exercise_type' => 'regular'
         ]);
 
-        // Should redirect to lift-logs/create
+        // Should redirect to lift-logs/create (without date param for today)
         $exercise = Exercise::where('title', $exerciseName)->first();
         $response->assertRedirect(route('lift-logs.create', [
             'exercise_id' => $exercise->id,
-            'date' => $date,
             'redirect_to' => 'mobile-entry-lifts'
         ]));
 
@@ -52,7 +52,7 @@ class CreateExerciseWorkflowTest extends TestCase
         $this->assertStringContainsString($exerciseName, session('success'));
     }
 
-    /** @test */
+    #[Test]
     public function creating_exercise_with_existing_name_redirects_to_existing_exercise()
     {
         $existingExercise = Exercise::factory()->create([
@@ -70,15 +70,14 @@ class CreateExerciseWorkflowTest extends TestCase
         // Should NOT create a duplicate
         $this->assertEquals(1, Exercise::where('title', 'Bench Press')->count());
 
-        // Should redirect to lift-logs/create for existing exercise
+        // Should redirect to lift-logs/create for existing exercise (without date param for today)
         $response->assertRedirect(route('lift-logs.create', [
             'exercise_id' => $existingExercise->id,
-            'date' => $date,
             'redirect_to' => 'mobile-entry-lifts'
         ]));
     }
 
-    /** @test */
+    #[Test]
     public function create_exercise_requires_exercise_name()
     {
         $response = $this->post(route('mobile-entry.create-exercise'), [
@@ -88,7 +87,7 @@ class CreateExerciseWorkflowTest extends TestCase
         $response->assertSessionHasErrors('exercise_name');
     }
 
-    /** @test */
+    #[Test]
     public function create_exercise_generates_canonical_name()
     {
         // Create exercise
@@ -103,7 +102,7 @@ class CreateExerciseWorkflowTest extends TestCase
         $this->assertEquals('my_custom_exercise', $exercise->canonical_name);
     }
 
-    /** @test */
+    #[Test]
     public function create_exercise_handles_duplicate_canonical_names_for_same_user()
     {
         // Create first exercise
@@ -127,7 +126,7 @@ class CreateExerciseWorkflowTest extends TestCase
         $this->assertCount(1, $exercises);
     }
 
-    /** @test */
+    #[Test]
     public function create_exercise_uses_default_date_if_not_provided()
     {
         $response = $this->post(route('mobile-entry.create-exercise'), [
@@ -136,10 +135,33 @@ class CreateExerciseWorkflowTest extends TestCase
 
         $exercise = Exercise::where('title', 'Test Exercise')->first();
         
+        // Should redirect without date param since it defaults to today
+        $response->assertRedirect(route('lift-logs.create', [
+            'exercise_id' => $exercise->id,
+            'redirect_to' => 'mobile-entry-lifts'
+        ]));
+    }
+
+    #[Test]
+    public function create_exercise_includes_date_param_for_historical_dates()
+    {
+        $historicalDate = Carbon::yesterday()->toDateString();
+
+        $response = $this->post(route('mobile-entry.create-exercise'), [
+            'exercise_name' => 'Historical Exercise',
+            'date' => $historicalDate
+        ]);
+
+        $exercise = Exercise::where('title', 'Historical Exercise')->first();
+        
+        // Should redirect WITH date param for historical dates
         $response->assertRedirect();
-        $this->assertStringContainsString(
-            'date=' . Carbon::today()->toDateString(),
-            $response->headers->get('Location')
-        );
+        $redirectUrl = $response->headers->get('Location');
+        
+        // Check that the URL contains all expected parameters
+        $this->assertStringContainsString('exercise_id=' . $exercise->id, $redirectUrl);
+        $this->assertStringContainsString('date=' . $historicalDate, $redirectUrl);
+        $this->assertStringContainsString('redirect_to=mobile-entry-lifts', $redirectUrl);
+        $this->assertStringContainsString('/lift-logs/create', $redirectUrl);
     }
 }
