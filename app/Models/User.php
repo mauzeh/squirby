@@ -73,10 +73,109 @@ class User extends Authenticatable
         parent::boot();
 
         static::deleting(function ($user) {
-            // Soft delete all associated ExerciseAlias records
+            // Soft delete all associated records when user is soft-deleted
+            
+            // Soft delete exercise aliases
             $user->exerciseAliases()->each(function ($alias) {
                 $alias->delete();
             });
+            
+            // Soft delete user's exercises (not global exercises)
+            $user->exercises()->each(function ($exercise) {
+                $exercise->delete();
+            });
+            
+            // Soft delete lift logs
+            $user->liftLogs()->each(function ($liftLog) {
+                $liftLog->delete();
+            });
+            
+            // Soft delete other user-specific data
+            $user->measurementTypes()->each(function ($measurementType) {
+                $measurementType->delete();
+            });
+            
+            $user->ingredients()->each(function ($ingredient) {
+                $ingredient->delete();
+            });
+            
+            $user->meals()->each(function ($meal) {
+                $meal->delete();
+            });
+            
+            $user->foodLogs()->each(function ($foodLog) {
+                $foodLog->delete();
+            });
+            
+            $user->bodyLogs()->each(function ($bodyLog) {
+                $bodyLog->delete();
+            });
+        });
+        
+        static::restoring(function ($user) {
+            // When restoring a user, also restore their associated data
+            
+            // Restore exercise aliases
+            \App\Models\ExerciseAlias::onlyTrashed()
+                ->where('user_id', $user->id)
+                ->each(function ($alias) {
+                    $alias->restore();
+                });
+            
+            // Restore user's exercises
+            \App\Models\Exercise::onlyTrashed()
+                ->where('user_id', $user->id)
+                ->each(function ($exercise) {
+                    $exercise->restore();
+                });
+            
+            // Restore lift logs
+            \App\Models\LiftLog::onlyTrashed()
+                ->where('user_id', $user->id)
+                ->each(function ($liftLog) {
+                    $liftLog->restore();
+                });
+            
+            // Restore other user-specific data
+            if (class_exists('\App\Models\MeasurementType')) {
+                \App\Models\MeasurementType::onlyTrashed()
+                    ->where('user_id', $user->id)
+                    ->each(function ($measurementType) {
+                        $measurementType->restore();
+                    });
+            }
+            
+            if (class_exists('\App\Models\Ingredient')) {
+                \App\Models\Ingredient::onlyTrashed()
+                    ->where('user_id', $user->id)
+                    ->each(function ($ingredient) {
+                        $ingredient->restore();
+                    });
+            }
+            
+            if (class_exists('\App\Models\Meal')) {
+                \App\Models\Meal::onlyTrashed()
+                    ->where('user_id', $user->id)
+                    ->each(function ($meal) {
+                        $meal->restore();
+                    });
+            }
+            
+            if (class_exists('\App\Models\FoodLog')) {
+                \App\Models\FoodLog::onlyTrashed()
+                    ->where('user_id', $user->id)
+                    ->each(function ($foodLog) {
+                        $foodLog->restore();
+                    });
+            }
+            
+            if (class_exists('\App\Models\BodyLog')) {
+                \App\Models\BodyLog::onlyTrashed()
+                    ->where('user_id', $user->id)
+                    ->each(function ($bodyLog) {
+                        $bodyLog->restore();
+                    });
+            }
         });
     }
 
