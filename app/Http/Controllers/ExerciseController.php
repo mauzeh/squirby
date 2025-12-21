@@ -184,6 +184,9 @@ class ExerciseController extends Controller
             $components[] = $sessionMessages;
         }
 
+        // Add exercise usage summary
+        $components[] = $this->buildExerciseUsageSummary($exercise);
+
         // Add quick actions component
         $components[] = $this->buildExerciseQuickActions($exercise, $user);
 
@@ -200,6 +203,45 @@ class ExerciseController extends Controller
                 'components' => $components,
             ]
         ]);
+    }
+
+    /**
+     * Build simple exercise usage summary with two cards
+     */
+    private function buildExerciseUsageSummary(Exercise $exercise): array
+    {
+        // Get basic statistics
+        $totalLogs = $exercise->liftLogs()->count();
+        $userCount = $exercise->liftLogs()->distinct('user_id')->count('user_id');
+
+        // Get user names
+        $users = $exercise->liftLogs()
+            ->with('user:id,name')
+            ->get()
+            ->pluck('user.name')
+            ->unique()
+            ->values();
+
+        // Build summary component with two simple items
+        $summaryBuilder = \App\Services\ComponentBuilder::summary();
+        
+        // Show usernames in label, count in value
+        if ($userCount === 1) {
+            $summaryBuilder->item("Users with Logs ({$users->first()})", '1');
+        } elseif ($userCount > 1) {
+            $userList = $users->take(3)->implode(', ');
+            if ($userCount > 3) {
+                $remaining = $userCount - 3;
+                $userList .= ", +{$remaining} more";
+            }
+            $summaryBuilder->item("Users with Logs ({$userList})", number_format($userCount));
+        } else {
+            $summaryBuilder->item('Users with Logs', '0');
+        }
+        
+        $summaryBuilder->item('Total Lift Logs', number_format($totalLogs));
+
+        return $summaryBuilder->build();
     }
 
     /**
