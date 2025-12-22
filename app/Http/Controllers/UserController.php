@@ -21,7 +21,63 @@ class UserController extends Controller
     public function index()
     {
         $users = User::with('roles')->get();
-        return view('admin.users.index', compact('users'));
+        
+        $components = [];
+
+        // Title
+        $components[] = C::title('User Administration')
+            ->subtitle('Manage user accounts and permissions')
+            ->build();
+
+        // Add User button
+        $components[] = C::button('Add User')
+            ->asLink(route('users.create'))
+            ->build();
+
+        // Table of users
+        if ($users->isNotEmpty()) {
+            $tableBuilder = C::table();
+
+            foreach ($users as $user) {
+                $line1 = $user->name;
+                $line2 = $user->email;
+                $line3 = $user->roles->pluck('name')->join(', ');
+
+                $rowBuilder = $tableBuilder->row(
+                    $user->id,
+                    $line1,
+                    $line2,
+                    $line3
+                );
+                
+                // Add edit action (pencil icon)
+                $rowBuilder->linkAction(
+                    'fa-solid fa-pencil',
+                    route('users.edit', $user->id),
+                    'Edit user',
+                    'btn-transparent'
+                );
+                
+                // Add impersonate action
+                $rowBuilder->linkAction(
+                    'fa-solid fa-user-secret',
+                    route('users.impersonate', $user->id),
+                    'Impersonate user'
+                );
+                
+                $rowBuilder->wrapText()->compact()->add();
+            }
+
+            $components[] = $tableBuilder->build();
+        } else {
+            // Empty state
+            $components[] = C::messages()
+                ->info('No users yet.')
+                ->build();
+        }
+
+        $data = ['components' => $components];
+        return view('mobile-entry.flexible', compact('data'));
     }
 
     public function create()
