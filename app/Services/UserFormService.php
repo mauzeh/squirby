@@ -9,6 +9,53 @@ use App\Services\ComponentBuilder as C;
 class UserFormService
 {
     /**
+     * Generate user creation form component
+     */
+    public function generateUserCreationForm($roles): array
+    {
+        $form = C::form('user-creation', 'User Information')
+            ->formAction(route('users.store'))
+            ->textField('name', 'Name', old('name', ''))
+            ->textField('email', 'Email', old('email', ''))
+            ->passwordField('password', 'Password')
+            ->passwordField('password_confirmation', 'Confirm Password');
+
+        // Add a checkbox for each role
+        foreach ($roles as $role) {
+            $isSelected = in_array($role->id, old('roles', []));
+            $form->checkboxArrayField(
+                'roles[]',
+                $role->name,
+                $role->id,
+                $isSelected
+            );
+        }
+
+        $form->submitButton('Add User');
+
+        // Add error messages if validation failed
+        if ($errors = session('errors')) {
+            if ($errors->has('name')) {
+                $form->message('error', $errors->first('name'));
+            }
+            if ($errors->has('email')) {
+                $form->message('error', $errors->first('email'));
+            }
+            if ($errors->has('password')) {
+                $form->message('error', $errors->first('password'));
+            }
+            if ($errors->has('password_confirmation')) {
+                $form->message('error', $errors->first('password_confirmation'));
+            }
+            if ($errors->has('roles')) {
+                $form->message('error', $errors->first('roles'));
+            }
+        }
+
+        return $form->build();
+    }
+
+    /**
      * Generate user information form component
      */
     public function generateUserInformationForm(User $user, $roles): array

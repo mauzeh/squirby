@@ -83,7 +83,28 @@ class UserController extends Controller
     public function create()
     {
         $roles = Role::all();
-        return view('admin.users.create', compact('roles'));
+        
+        $components = [
+            C::title('Add User')
+                ->subtitle('Create a new user account')
+                ->backButton('fa-arrow-left', route('users.index'), 'Back to users')
+                ->build(),
+        ];
+
+        // Add session messages if any
+        $sessionMessages = C::messagesFromSession();
+        if ($sessionMessages) {
+            $components[] = $sessionMessages;
+        }
+
+        // Add form component
+        $components[] = $this->userFormService->generateUserCreationForm($roles);
+
+        return view('mobile-entry.flexible', [
+            'data' => [
+                'components' => $components,
+            ]
+        ]);
     }
 
     public function store(Request $request, UserSeederService $userSeederService)
