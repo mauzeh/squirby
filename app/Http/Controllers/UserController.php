@@ -40,14 +40,12 @@ class UserController extends Controller
 
             foreach ($users as $user) {
                 $line1 = $user->name;
-                $line2 = $user->email;
-                $line3 = $user->roles->pluck('name')->join(', ');
+                $line2 = $user->roles->pluck('name')->join(', ') . ' • ' . $user->email;
 
                 $rowBuilder = $tableBuilder->row(
                     $user->id,
                     $line1,
-                    $line2,
-                    $line3
+                    $line2
                 );
                 
                 // Add edit action (pencil icon)
