@@ -266,6 +266,31 @@ class FormComponentBuilder
         return $this;
     }
     
+    public function checkboxArrayField(string $name, string $label, $value, bool $defaultValue, ?string $description = null): self
+    {
+        $field = [
+            'id' => $this->data['id'] . '-' . str_replace(['[', ']'], '', $name) . '-' . $value,
+            'name' => $name,
+            'label' => $label,
+            'type' => 'checkbox_array',
+            'value' => $value,
+            'defaultValue' => $defaultValue,
+            'description' => $description,
+            'ariaLabels' => [
+                'field' => $label
+            ]
+        ];
+        
+        if ($this->currentSection !== null && !empty($this->data['sections'])) {
+            $lastSectionIndex = count($this->data['sections']) - 1;
+            $this->data['sections'][$lastSectionIndex]['fields'][] = $field;
+        } else {
+            $this->data['numericFields'][] = $field;
+        }
+        
+        return $this;
+    }
+    
     public function hiddenField(string $name, $value): self
     {
         $this->data['hiddenFields'][$name] = $value;

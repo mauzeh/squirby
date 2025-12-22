@@ -33,6 +33,31 @@
             </div>
         </div>
     </div>
+@elseif(isset($field['type']) && $field['type'] === 'checkbox_array')
+    {{-- Checkbox array field (for multiple checkboxes with same name) --}}
+    <div style="margin-bottom: 24px;">
+        <div style="display: flex; align-items: flex-start; gap: 12px;">
+            <input 
+                id="{{ $field['id'] }}" 
+                name="{{ $field['name'] }}" 
+                type="checkbox" 
+                value="{{ $field['value'] }}"
+                {{ $field['defaultValue'] ? 'checked' : '' }}
+                aria-label="{{ $field['ariaLabels']['field'] }}"
+                style="width: 20px; height: 20px; margin-top: 2px; cursor: pointer; flex-shrink: 0; accent-color: #007bff;"
+            />
+            <div style="flex: 1;">
+                <label for="{{ $field['id'] }}" style="display: block; color: var(--text-primary); font-weight: 600; font-size: 1.05em; cursor: pointer; margin-bottom: 6px;">
+                    {{ $field['label'] }}
+                </label>
+                @if(isset($field['description']) && $field['description'])
+                <p style="color: var(--text-secondary); font-size: 0.9em; line-height: 1.5; margin: 0;">
+                    {{ $field['description'] }}
+                </p>
+                @endif
+            </div>
+        </div>
+    </div>
 @else
 <div class="form-mobile-group">
     <label for="{{ $field['id'] }}" class="form-mobile-label">{{ $field['label'] }}</label>

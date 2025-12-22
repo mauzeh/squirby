@@ -5,11 +5,19 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\Role;
 use App\Services\UserSeederService;
+use App\Services\UserFormService;
+use App\Services\ComponentBuilder as C;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
+    protected UserFormService $userFormService;
+
+    public function __construct(UserFormService $userFormService)
+    {
+        $this->userFormService = $userFormService;
+    }
     public function index()
     {
         $users = User::with('roles')->get();
@@ -48,7 +56,30 @@ class UserController extends Controller
     public function edit(User $user)
     {
         $roles = Role::all();
-        return view('admin.users.edit', compact('user', 'roles'));
+        
+        $components = [
+            C::title('Edit User')
+                ->subtitle('Manage user account and permissions')
+                ->backButton('fa-arrow-left', route('users.index'), 'Back to users')
+                ->build(),
+        ];
+
+        // Add session messages if any
+        $sessionMessages = C::messagesFromSession();
+        if ($sessionMessages) {
+            $components[] = $sessionMessages;
+        }
+
+        // Add form components
+        $components[] = $this->userFormService->generateUserInformationForm($user, $roles);
+        $components[] = $this->userFormService->generatePasswordForm($user);
+        $components[] = $this->userFormService->generateDeleteUserForm($user);
+
+        return view('mobile-entry.flexible', [
+            'data' => [
+                'components' => $components,
+            ]
+        ]);
     }
 
     public function update(Request $request, User $user)

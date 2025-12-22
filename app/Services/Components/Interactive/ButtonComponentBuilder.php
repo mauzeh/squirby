@@ -45,6 +45,24 @@ class ButtonComponentBuilder
         return $this;
     }
     
+    public function url(string $url): self
+    {
+        return $this->asLink($url);
+    }
+    
+    public function style(string $style): self
+    {
+        $styleClasses = [
+            'primary' => 'btn-primary',
+            'secondary' => 'btn-secondary',
+            'outline' => 'btn-outline',
+            'danger' => 'btn-danger'
+        ];
+        
+        $this->data['cssClass'] = $styleClasses[$style] ?? 'btn-primary';
+        return $this;
+    }
+    
     public function initialState(string $state): self
     {
         $this->data['initialState'] = $state;
