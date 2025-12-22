@@ -212,10 +212,9 @@
     margin-left: var(--spacing-md);
 }
 
-/* Category-specific styling - simplified to single style */
+/* Category-specific styling */
 .component-list-item--regular,
 .component-list-item--in-program,
-.component-list-item--recent,
 .component-list-item--custom,
 .component-list-item--highlighted,
 .component-list-item--all,
@@ -223,15 +222,24 @@
     background-color: var(--tertiary-bg);
 }
 
+/* Green styling for recent category only */
+.component-list-item--recent {
+    background-color: rgba(40, 167, 69, 0.15); /* Green background with transparency */
+    border-left: 3px solid var(--color-success); /* Green left border for emphasis */
+}
+
 @media (hover: hover) {
     .component-list-item--regular:hover,
     .component-list-item--in-program:hover,
-    .component-list-item--recent:hover,
     .component-list-item--custom:hover,
     .component-list-item--highlighted:hover,
     .component-list-item--all:hover,
     .component-list-item--exercise-history:hover {
         background-color: var(--input-bg);
+    }
+    
+    .component-list-item--recent:hover {
+        background-color: rgba(40, 167, 69, 0.25); /* Darker green on hover */
     }
 }
 

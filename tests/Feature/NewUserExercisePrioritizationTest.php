@@ -79,8 +79,8 @@ class NewUserExercisePrioritizationTest extends TestCase
         $benchPressItem = collect($result['items'])->firstWhere('name', 'Bench Press');
         $obscureExerciseItem = collect($result['items'])->firstWhere('name', 'Obscure Exercise');
         
-        // Assert bench press is prioritized (priority 1) and labeled as "Popular"
-        $this->assertEquals(1, $benchPressItem['type']['priority']);
+        // Assert bench press is prioritized (priority 2 for popular exercises) and labeled as "Popular"
+        $this->assertEquals(2, $benchPressItem['type']['priority']);
         $this->assertEquals('Popular', $benchPressItem['type']['label']);
         $this->assertEquals('in-program', $benchPressItem['type']['cssClass']);
         
@@ -92,11 +92,12 @@ class NewUserExercisePrioritizationTest extends TestCase
     /** @test */
     public function experienced_user_sees_logged_exercises_prioritized_not_popular_exercises()
     {
-        // Make the experienced user have 5+ lift logs
+        // Make the experienced user have 5+ lift logs (older than 4 weeks to avoid "recent" category)
         $loggedExercise = Exercise::factory()->create(['title' => 'Logged Exercise']);
         LiftLog::factory()->count(5)->create([
             'user_id' => $this->experiencedUser->id,
             'exercise_id' => $loggedExercise->id,
+            'logged_at' => Carbon::now()->subDays(35), // Older than 4 weeks
         ]);
         
         // Create a popular exercise (from other users) that this user has never logged
@@ -114,12 +115,12 @@ class NewUserExercisePrioritizationTest extends TestCase
         $loggedExerciseItem = collect($result['items'])->firstWhere('name', 'Logged Exercise');
         $popularExerciseItem = collect($result['items'])->firstWhere('name', 'Popular Exercise');
         
-        // For experienced users, exercises they've logged should be prioritized (priority 1)
-        $this->assertEquals(1, $loggedExerciseItem['type']['priority']);
+        // For experienced users, exercises they've logged should be prioritized (priority 2 since no recent exercises)
+        $this->assertEquals(2, $loggedExerciseItem['type']['priority']);
         $this->assertEquals('in-program', $loggedExerciseItem['type']['cssClass']);
         
-        // Popular exercises they haven't logged should have lower priority (priority 2)
-        $this->assertEquals(2, $popularExerciseItem['type']['priority']);
+        // Popular exercises they haven't logged should have lower priority (priority 3)
+        $this->assertEquals(3, $popularExerciseItem['type']['priority']);
         $this->assertNotEquals('Popular', $popularExerciseItem['type']['label']);
         $this->assertEquals('regular', $popularExerciseItem['type']['cssClass']);
     }
@@ -152,9 +153,9 @@ class NewUserExercisePrioritizationTest extends TestCase
         $exercise2Item = collect($result['items'])->firstWhere('name', 'Exercise 2');
         
         // Exercise 2 should be prioritized despite having fewer total logs
-        // because admin logs are excluded
+        // because admin logs are excluded (priority 2 for popular exercises)
         $this->assertEquals('Popular', $exercise2Item['type']['label']);
-        $this->assertEquals(1, $exercise2Item['type']['priority']);
+        $this->assertEquals(2, $exercise2Item['type']['priority']);
         
         // Exercise 1 should not be prioritized (admin logs ignored)
         $this->assertNotEquals('Popular', $exercise1Item['type']['label']);
@@ -203,7 +204,7 @@ class NewUserExercisePrioritizationTest extends TestCase
     }
 
     /** @test */
-    public function recent_exercises_still_appear_in_second_tier_for_new_users()
+    public function recent_exercises_appear_at_top_for_new_users()
     {
         // Create many exercises to ensure recent exercise doesn't accidentally become popular
         $exercises = Exercise::factory()->count(15)->create();
@@ -242,13 +243,50 @@ class NewUserExercisePrioritizationTest extends TestCase
         $popularItem = collect($result['items'])->firstWhere('name', 'Popular Exercise');
         $recentItem = collect($result['items'])->firstWhere('name', 'Recent Exercise');
         
-        // Popular exercise should be priority 1
-        $this->assertEquals(1, $popularItem['type']['priority']);
-        $this->assertEquals('Popular', $popularItem['type']['label']);
-        
-        // Recent exercise should be priority 2 (not popular due to low log count)
-        $this->assertEquals(2, $recentItem['type']['priority']);
+        // Recent exercise should be priority 1 (new logic: recent always first)
+        $this->assertEquals(1, $recentItem['type']['priority']);
         $this->assertEquals('Recent', $recentItem['type']['label']);
+        
+        // Popular exercise should be priority 2 (popular exercises now second tier)
+        $this->assertEquals(2, $popularItem['type']['priority']);
+        $this->assertEquals('Popular', $popularItem['type']['label']);
+    }
+
+    /** @test */
+    public function recent_exercises_appear_at_top_for_experienced_users()
+    {
+        // Make the user experienced (5+ lift logs)
+        $oldExercise = Exercise::factory()->create(['title' => 'Old Exercise']);
+        LiftLog::factory()->count(5)->create([
+            'user_id' => $this->experiencedUser->id,
+            'exercise_id' => $oldExercise->id,
+            'logged_at' => Carbon::now()->subDays(60), // Old logs
+        ]);
+        
+        // Create a recent exercise
+        $recentExercise = Exercise::factory()->create(['title' => 'Recent Exercise']);
+        LiftLog::factory()->create([
+            'user_id' => $this->experiencedUser->id,
+            'exercise_id' => $recentExercise->id,
+            'logged_at' => Carbon::now()->subDays(3), // Recent log
+        ]);
+        
+        // Get item selection list
+        $result = $this->liftLogService->generateItemSelectionList($this->experiencedUser->id, Carbon::today());
+        
+        // Find exercises
+        $recentItem = collect($result['items'])->firstWhere('name', 'Recent Exercise');
+        $oldItem = collect($result['items'])->firstWhere('name', 'Old Exercise');
+        
+        // Recent exercise should be priority 1 with "Recent" label
+        $this->assertEquals(1, $recentItem['type']['priority']);
+        $this->assertEquals('Recent', $recentItem['type']['label']);
+        $this->assertEquals('recent', $recentItem['type']['cssClass']);
+        
+        // Old exercise should be priority 2 with time label
+        $this->assertEquals(2, $oldItem['type']['priority']);
+        $this->assertNotEquals('Recent', $oldItem['type']['label']);
+        $this->assertEquals('in-program', $oldItem['type']['cssClass']);
     }
 
     /** @test */
@@ -319,5 +357,43 @@ class NewUserExercisePrioritizationTest extends TestCase
         
         // Should be limited to 10 popular exercises
         $this->assertLessThanOrEqual(10, $popularCount);
+    }
+
+    /** @test */
+    public function recent_exercises_use_four_week_time_window()
+    {
+        // Create exercises
+        $withinWindowExercise = Exercise::factory()->create(['title' => 'Within Window']);
+        $outsideWindowExercise = Exercise::factory()->create(['title' => 'Outside Window']);
+        
+        // Exercise within 4 weeks (27 days ago)
+        LiftLog::factory()->create([
+            'user_id' => $this->newUser->id,
+            'exercise_id' => $withinWindowExercise->id,
+            'logged_at' => Carbon::now()->subDays(27),
+        ]);
+        
+        // Exercise outside 4 weeks (29 days ago)
+        LiftLog::factory()->create([
+            'user_id' => $this->newUser->id,
+            'exercise_id' => $outsideWindowExercise->id,
+            'logged_at' => Carbon::now()->subDays(29),
+        ]);
+        
+        // Get item selection list
+        $result = $this->liftLogService->generateItemSelectionList($this->newUser->id, Carbon::today());
+        
+        // Find exercises
+        $withinWindowItem = collect($result['items'])->firstWhere('name', 'Within Window');
+        $outsideWindowItem = collect($result['items'])->firstWhere('name', 'Outside Window');
+        
+        // Exercise within 4 weeks should be marked as "Recent"
+        $this->assertEquals('Recent', $withinWindowItem['type']['label']);
+        $this->assertEquals(1, $withinWindowItem['type']['priority']);
+        
+        // Exercise outside 4 weeks should NOT be marked as "Recent"
+        // For new users, it will be priority 3 (regular) since it's not popular and not recent
+        $this->assertNotEquals('Recent', $outsideWindowItem['type']['label']);
+        $this->assertGreaterThan(1, $outsideWindowItem['type']['priority']); // Should be lower priority than recent
     }
 }

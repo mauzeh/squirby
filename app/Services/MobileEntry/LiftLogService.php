@@ -507,17 +507,17 @@ class LiftLogService extends MobileEntryBaseService
      * Adaptive system that prioritizes exercises based on user experience:
      * 
      * For New Users (< 5 total lift logs):
-     * 1. Popular Exercises (Essential beginner-friendly exercises)
-     *    - Label: Popular
-     *    - Style: 'in-program' (green, prominent)
-     *    - Priority: 1
-     *    - Curated list of most common beginner exercises
-     * 
-     * 2. Recent (Last 7 Days)
+     * 1. Recent (Last 4 Weeks)
      *    - Label: Recent
      *    - Style: 'recent' (green, lighter)
+     *    - Priority: 1
+     *    - Exercises performed in the last 4 weeks (excluding today)
+     * 
+     * 2. Popular Exercises (Essential beginner-friendly exercises)
+     *    - Label: Popular
+     *    - Style: 'in-program' (green, prominent)
      *    - Priority: 2
-     *    - Exercises performed in the last 7 days
+     *    - Curated list of most common beginner exercises
      * 
      * 3. All Others
      *    - No label or last performed date
@@ -526,16 +526,22 @@ class LiftLogService extends MobileEntryBaseService
      *    - All remaining exercises, ordered alphabetically
      * 
      * For Experienced Users (≥ 5 total lift logs):
-     * 1. Previously Logged Exercises
+     * 1. Recent (Last 4 Weeks)
+     *    - Label: Recent
+     *    - Style: 'recent' (green, lighter)
+     *    - Priority: 1
+     *    - Exercises performed in the last 4 weeks (excluding today)
+     * 
+     * 2. Previously Logged Exercises
      *    - Label: Shows last performed date (e.g., "2 days ago")
      *    - Style: 'in-program' (green, prominent)
-     *    - Priority: 1
-     *    - Exercises with workout history for this user
+     *    - Priority: 2
+     *    - Other exercises with workout history for this user
      * 
-     * 2. Never Logged Exercises
+     * 3. Never Logged Exercises
      *    - Label: Empty
      *    - Style: 'regular' (gray)
-     *    - Priority: 2
+     *    - Priority: 3
      *    - Exercises never performed by this user, ordered alphabetically
      * 
      * @param int $userId
@@ -563,9 +569,9 @@ class LiftLogService extends MobileEntryBaseService
             ->unique()
             ->toArray();
 
-        // Get recent exercises (last 7 days, excluding today) for the "Recent" category
+        // Get recent exercises (last 4 weeks, excluding today) for the "Recent" category
         $recentExerciseIds = LiftLog::where('user_id', $userId)
-            ->where('logged_at', '>=', $selectedDate->copy()->subDays(7))
+            ->where('logged_at', '>=', $selectedDate->copy()->subDays(28))
             ->where('logged_at', '<', $selectedDate->startOfDay())
             ->whereNotIn('exercise_id', $loggedTodayExerciseIds)
             ->pluck('exercise_id')
@@ -601,35 +607,43 @@ class LiftLogService extends MobileEntryBaseService
                 $lastPerformedLabel = $lastPerformed->diffForHumans(['short' => true]);
             }
             
-            // Simplified category system
-            if ($isNewUser && isset($prioritizedExerciseMap[$exercise->id])) {
-                // Category 1: Popular exercises for new users
+            // Enhanced category system - Recent always at top for all users
+            if ($isNewUser && in_array($exercise->id, $recentExerciseIds)) {
+                // Category 1: Recent exercises for new users (top priority)
+                $itemType = [
+                    'label' => 'Recent',
+                    'cssClass' => 'recent',  // Green, lighter
+                    'priority' => 1,
+                    'subPriority' => 0
+                ];
+            } elseif ($isNewUser && isset($prioritizedExerciseMap[$exercise->id])) {
+                // Category 2: Popular exercises for new users
                 $rank = $prioritizedExerciseMap[$exercise->id];
                 $itemType = [
                     'label' => 'Popular',
                     'cssClass' => 'in-program',  // Green, prominent
-                    'priority' => 1,
+                    'priority' => 2,
                     'subPriority' => $rank  // Preserve ordering
                 ];
-            } elseif ($isNewUser && in_array($exercise->id, $recentExerciseIds)) {
-                // Category 2: Recent exercises for new users
+            } elseif (!$isNewUser && in_array($exercise->id, $recentExerciseIds)) {
+                // Category 1: Recent exercises for experienced users (top priority)
                 $itemType = [
                     'label' => 'Recent',
                     'cssClass' => 'recent',  // Green, lighter
-                    'priority' => 2,
-                    'subPriority' => 0
-                ];
-            } elseif (!$isNewUser && isset($lastPerformedDates[$exercise->id])) {
-                // Category 1: Exercises with logs for experienced users
-                $itemType = [
-                    'label' => $lastPerformedLabel,
-                    'cssClass' => 'in-program',  // Green, show they have history
                     'priority' => 1,
                     'subPriority' => 0
                 ];
+            } elseif (!$isNewUser && isset($lastPerformedDates[$exercise->id])) {
+                // Category 2: Other exercises with logs for experienced users
+                $itemType = [
+                    'label' => $lastPerformedLabel,
+                    'cssClass' => 'in-program',  // Green, show they have history
+                    'priority' => 2,
+                    'subPriority' => 0
+                ];
             } else {
-                // Category 2/3: All others (never logged or no special priority)
-                $priority = $isNewUser ? 3 : 2;  // Lower priority for new users, medium for experienced
+                // Category 3: All others (never logged or no special priority)
+                $priority = $isNewUser ? 3 : 3;  // Lower priority for both user types
                 $itemType = [
                     'label' => $lastPerformedLabel,
                     'cssClass' => 'regular',  // Gray
