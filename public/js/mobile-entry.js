@@ -16,6 +16,15 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Only set up filtering if filter input and item list exist
     if (filterInput && itemList) {
+        
+        // Auto-focus search input on desktop (not mobile to avoid unwanted keyboard)
+        const isDesktop = !(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent));
+        if (isDesktop) {
+            // Small delay to ensure page is fully rendered
+            setTimeout(() => {
+                filterInput.focus();
+            }, 100);
+        }
         // Get all item cards (excluding the filter container, no-results item, and create-item-li)
         const getAllItemCards = () => {
             return Array.from(itemList.querySelectorAll('.component-list-item:not(.component-list-item--no-results):not(.create-item-li)'));
@@ -152,8 +161,12 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Scroll to optimal position when filter input gets focus
+    // Scroll to optimal position when filter input gets focus (mobile only)
     filterInput.addEventListener('focus', function(e) {
+        // Only scroll on mobile devices to avoid disrupting desktop users
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+        if (!isMobile) return;
+        
         // Small delay to ensure any keyboard animations are complete
         setTimeout(() => {
             const filterContainer = e.target.closest('.component-filter-container');
@@ -433,8 +446,12 @@ document.addEventListener('DOMContentLoaded', function() {
             
             const cancelButton = itemListContainer.querySelector('.btn-cancel');
             
-            // Scroll to filter input
+            // Scroll to filter input (mobile only)
             const scrollToFilter = (delay = 300) => {
+                // Only scroll on mobile devices
+                const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+                if (!isMobile) return;
+                
                 const filterInput = itemListContainer.querySelector('.component-filter-input');
                 if (filterInput) {
                     const filterContainer = filterInput.closest('.component-filter-container');
@@ -467,10 +484,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 requestAnimationFrame(() => {
                     const filterInput = itemListContainer.querySelector('.component-filter-input');
                     if (filterInput) {
-                        // Force focus and click to ensure mobile keyboard opens
+                        // Always focus the input when showing the list
                         filterInput.focus();
                         
-                        // Additional mobile keyboard trigger methods
+                        // Additional mobile keyboard trigger methods for mobile devices
                         if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
                             filterInput.click();
                             
@@ -479,8 +496,11 @@ document.addEventListener('DOMContentLoaded', function() {
                             }, 50);
                         }
                         
-                        // Scroll to position the filter input optimally for mobile
-                        scrollToFilter(300);
+                        // Scroll to position the filter input optimally (mobile only)
+                        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+                        if (isMobile) {
+                            scrollToFilter(300);
+                        }
                     }
                 });
             };
@@ -647,13 +667,18 @@ document.addEventListener('DOMContentLoaded', function() {
     setupFormConfirmation();
     
     /**
-     * Auto-scroll to First Form
+     * Auto-scroll to First Form (Mobile Only)
      * 
      * Automatically scrolls the viewport to the first form on page load
      * if there are any forms present. This improves mobile UX by immediately
      * showing the user where they can start entering data and hides the "Add Item" button.
+     * Disabled on desktop to avoid disrupting the user's viewport.
      */
     const autoScrollToFirstForm = () => {
+        // Only auto-scroll on mobile devices
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+        if (!isMobile) return;
+        
         // Find the first form section
         const firstForm = document.querySelector('.component-form-section');
         
