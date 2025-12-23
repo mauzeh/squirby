@@ -25,7 +25,7 @@ class UserController extends Controller
         $components = [];
 
         // Title
-        $components[] = C::title('User Administration')
+        $components[] = C::title('Users')
             ->subtitle('Manage user accounts and permissions')
             ->build();
 

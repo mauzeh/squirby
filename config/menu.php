@@ -9,7 +9,7 @@ return [
             'icon' => 'fa-dumbbell',
             'route' => 'mobile-entry.lifts',
             'patterns' => [ // Patterns for main item active state and sub-menu dispatch
-                'exercises.*', 'lift-logs.*', 'recommendations.*', 'mobile-entry.lifts', 'workouts.*',
+                'lift-logs.*', 'recommendations.*', 'mobile-entry.lifts', 'workouts.*',
             ],
             'children' => [ // Lifts Sub-Menu Items
                 [
@@ -38,15 +38,7 @@ return [
                     'patterns' => ['recommendations.*'],
                     'roles' => ['Admin', 'Impersonator'], // Custom property for conditional display
                 ],
-                // Exercises (conditional)
-                [
-                    'label' => null,
-                    'icon' => 'fa-list',
-                    'route' => 'exercises.index',
-                    'title' => 'Exercises',
-                    'patterns' => ['exercises.*'],
-                    'roles' => ['Admin'], // Custom property for conditional display
-                ],
+
             ],
         ],
         // Food Main Menu Item
@@ -133,10 +125,22 @@ return [
         [
             'label' => null,
             'icon' => 'fa-cog',
-            'route' => 'users.index',
-            'patterns' => ['users.*'],
+            'route' => 'users.index', // Default route when clicking the main settings icon
+            'patterns' => ['users.*', 'exercises.*'], // Patterns for both user and exercise routes
             'style' => 'padding: 14px 8px',
             'roles' => ['Admin'], // Only for Admin
+            'children' => [ // Settings Sub-Menu Items
+                [
+                    'label' => 'Users',
+                    'route' => 'users.index',
+                    'patterns' => ['users.*'],
+                ],
+                [
+                    'label' => 'Exercises',
+                    'route' => 'exercises.index',
+                    'patterns' => ['exercises.*'],
+                ],
+            ],
         ],
         // Profile
         [
