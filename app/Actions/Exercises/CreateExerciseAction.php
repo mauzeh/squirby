@@ -16,7 +16,7 @@ class CreateExerciseAction
         $validated = $this->validateRequest($request, $user);
         
         // Check for name conflicts
-        $this->validateExerciseName($validated['title'], $validated['is_global'] ?? false, $user);
+        $this->validateExerciseName($validated['title'], $user);
 
         $exerciseType = $validated['exercise_type'];
 
@@ -33,13 +33,8 @@ class CreateExerciseAction
             'title' => $processedData['title'],
             'description' => $processedData['description'],
             'exercise_type' => $exerciseType,
+            'user_id' => $user->id, // All new exercises are user exercises
         ]);
-        
-        if ($validated['is_global'] ?? false) {
-            $exercise->user_id = null;
-        } else {
-            $exercise->user_id = $user->id;
-        }
 
         $exercise->save();
         
@@ -54,45 +49,26 @@ class CreateExerciseAction
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'exercise_type' => 'required|in:' . implode(',', $availableTypes),
-            'is_global' => 'nullable|boolean',
         ];
 
-        $validated = $request->validate($rules);
-
-        // Check admin permission for global exercises
-        if ($validated['is_global'] ?? false) {
-            if (!$user->hasRole('Admin')) {
-                throw new \Illuminate\Auth\Access\AuthorizationException('Only admins can create global exercises.');
-            }
-        }
-
-        return $validated;
+        return $request->validate($rules);
     }
     
-    private function validateExerciseName(string $title, bool $isGlobal, User $user): void
+    private function validateExerciseName(string $title, User $user): void
     {
-        if ($isGlobal) {
-            // Check if global exercise with same name exists
-            if (Exercise::global()->where('title', $title)->exists()) {
-                throw \Illuminate\Validation\ValidationException::withMessages([
-                    'title' => 'A global exercise with this name already exists.'
-                ]);
-            }
-        } else {
-            // Check if user has exercise with same name OR global exercise exists
-            $userId = $user->id;
-            $conflicts = Exercise::where('title', $title)
-                ->where(function ($q) use ($userId) {
-                    $q->whereNull('user_id')
-                      ->orWhere('user_id', $userId);
-                })
-                ->exists();
+        // All new exercises are user exercises, so check for conflicts with user's exercises and global exercises
+        $userId = $user->id;
+        $conflicts = Exercise::where('title', $title)
+            ->where(function ($q) use ($userId) {
+                $q->whereNull('user_id')
+                  ->orWhere('user_id', $userId);
+            })
+            ->exists();
 
-            if ($conflicts) {
-                throw \Illuminate\Validation\ValidationException::withMessages([
-                    'title' => 'An exercise with this name already exists.'
-                ]);
-            }
+        if ($conflicts) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'title' => 'An exercise with this name already exists.'
+            ]);
         }
     }
 }

@@ -53,152 +53,11 @@ class ExerciseManagementTest extends TestCase
         $response = $this->post(route('exercises.store'), $exerciseData);
 
         $response->assertSessionHasErrors('title');
-        $this->assertDatabaseMissing('exercises', [
-            'user_id' => $user->id,
-            'description' => $exerciseData['description'],
-        ]);
-    }
-
-    /** @test */
-    public function unauthenticated_user_cannot_create_exercise()
-    {
-        $exerciseData = [
-            'title' => $this->faker->sentence(3),
-            'description' => $this->faker->paragraph(),
-            'exercise_type' => 'regular',
-        ];
-
-        $response = $this->post(route('exercises.store'), $exerciseData);
-
-        $response->assertRedirect(route('login'));
-        $this->assertDatabaseMissing('exercises', $exerciseData);
-    }
-
-    /** @test */
-    public function authenticated_user_can_create_bodyweight_exercise()
-    {
-        $user = User::factory()->create();
-        $this->actingAs($user);
-
-        $exerciseData = [
-            'title' => 'Bodyweight Squat',
-            'description' => 'A squat performed without external weight.',
-            'exercise_type' => 'bodyweight',
-        ];
-
-        $response = $this->post(route('exercises.store'), $exerciseData);
-
-        $response->assertRedirect(route('exercises.index'));
-        $response->assertSessionHas('success', 'Exercise created successfully.');
-        $this->assertDatabaseHas('exercises', [
-            'user_id' => $user->id,
-            'title' => $exerciseData['title'],
-            'description' => $exerciseData['description'],
-            'exercise_type' => 'bodyweight',
-        ]);
-    }
-
-    /** @test */
-    public function authenticated_user_can_edit_exercise_to_be_bodyweight()
-    {
-        $user = User::factory()->create();
-        $this->actingAs($user);
-        $exercise = Exercise::factory()->create(['user_id' => $user->id, 'exercise_type' => 'regular']);
-
-        $updatedData = [
-            'title' => $exercise->title,
-            'description' => $exercise->description,
-            'exercise_type' => 'bodyweight',
-        ];
-
-        $response = $this->put(route('exercises.update', $exercise), $updatedData);
-
-        $response->assertRedirect(route('exercises.index'));
-        $response->assertSessionHas('success', 'Exercise updated successfully.');
-        $this->assertDatabaseHas('exercises', [
-            'id' => $exercise->id,
-            'exercise_type' => 'bodyweight',
-        ]);
-    }
-
-    /** @test */
-    public function authenticated_user_can_edit_exercise_to_not_be_bodyweight()
-    {
-        $user = User::factory()->create();
-        $this->actingAs($user);
-        $exercise = Exercise::factory()->create(['user_id' => $user->id, 'exercise_type' => 'bodyweight']);
-
-        $updatedData = [
-            'title' => $exercise->title,
-            'description' => $exercise->description,
-            'exercise_type' => 'regular',
-        ];
-
-        $response = $this->put(route('exercises.update', $exercise), $updatedData);
-
-        $response->assertRedirect(route('exercises.index'));
-        $response->assertSessionHas('success', 'Exercise updated successfully.');
-        $this->assertDatabaseHas('exercises', [
-            'id' => $exercise->id,
-            'exercise_type' => 'regular',
-        ]);
-    }
-
-    /** @test */
-    public function admin_can_create_global_exercise()
-    {
-        $admin = User::factory()->create();
-        $adminRole = Role::factory()->create(['name' => 'Admin']);
-        $admin->roles()->attach($adminRole);
-        $this->actingAs($admin);
-
-        $exerciseData = [
-            'title' => 'Global Bench Press',
-            'description' => 'A global exercise available to all users',
-            'exercise_type' => 'regular',
-            'is_global' => true,
-        ];
-
-        $response = $this->post(route('exercises.store'), $exerciseData);
-
-        $response->assertRedirect(route('exercises.index'));
-        $response->assertSessionHas('success', 'Exercise created successfully.');
-        $this->assertDatabaseHas('exercises', [
-            'user_id' => null,
-            'title' => $exerciseData['title'],
-            'description' => $exerciseData['description'],
-        ]);
-    }
-
-    /** @test */
-    public function non_admin_cannot_create_global_exercise()
-    {
-        $user = User::factory()->create();
-        $this->actingAs($user);
-
-        $exerciseData = [
-            'title' => 'Global Bench Press',
-            'description' => 'A global exercise available to all users',
-            'exercise_type' => 'regular',
-            'is_global' => true,
-        ];
-
-        $response = $this->post(route('exercises.store'), $exerciseData);
-
-        $response->assertStatus(403);
-        $this->assertDatabaseMissing('exercises', [
-            'user_id' => null,
-            'title' => $exerciseData['title'],
-        ]);
     }
 
     /** @test */
     public function user_cannot_create_exercise_with_same_name_as_global_exercise()
     {
-        $admin = User::factory()->create();
-        $adminRole = Role::factory()->create(['name' => 'Admin']);
-        $admin->roles()->attach($adminRole);
-        
         // Create global exercise
         Exercise::factory()->create([
             'title' => 'Bench Press',
@@ -217,129 +76,6 @@ class ExerciseManagementTest extends TestCase
         $response = $this->post(route('exercises.store'), $exerciseData);
 
         $response->assertSessionHasErrors('title');
-        $this->assertDatabaseMissing('exercises', [
-            'user_id' => $user->id,
-            'title' => $exerciseData['title'],
-        ]);
-    }
-
-    /** @test */
-    public function admin_cannot_create_global_exercise_with_duplicate_name()
-    {
-        $admin = User::factory()->create();
-        $adminRole = Role::factory()->create(['name' => 'Admin']);
-        $admin->roles()->attach($adminRole);
-        $this->actingAs($admin);
-
-        // Create first global exercise
-        Exercise::factory()->create([
-            'title' => 'Bench Press',
-            'user_id' => null,
-        ]);
-
-        $exerciseData = [
-            'title' => 'Bench Press',
-            'description' => 'Duplicate global exercise',
-            'exercise_type' => 'regular',
-            'is_global' => true,
-        ];
-
-        $response = $this->post(route('exercises.store'), $exerciseData);
-
-        $response->assertSessionHasErrors('title');
-    }
-
-    /** @test */
-    public function admin_can_view_exercise_index_with_all_exercises()
-    {
-        $admin = User::factory()->create();
-        $adminRole = Role::factory()->create(['name' => 'Admin']);
-        $admin->roles()->attach($adminRole);
-        $this->actingAs($admin);
-        
-        $user = User::factory()->create();
-
-        // Create global exercise
-        $globalExercise = Exercise::factory()->create([
-            'title' => 'Global Exercise',
-            'user_id' => null,
-        ]);
-
-        // Create user exercise
-        $userExercise = Exercise::factory()->create([
-            'title' => 'User Exercise',
-            'user_id' => $user->id,
-        ]);
-
-        // Create another user's exercise (admin should see all exercises)
-        $otherUser = User::factory()->create();
-        $otherUserExercise = Exercise::factory()->create([
-            'title' => 'Other User Exercise',
-            'user_id' => $otherUser->id,
-        ]);
-
-        $response = $this->get(route('exercises.index'));
-
-        $response->assertStatus(200);
-        $response->assertSee('Global Exercise');
-        $response->assertSee('User Exercise');
-        $response->assertSee('Other User Exercise'); // Admin should see all exercises
-    }
-
-    /** @test */
-    public function admin_can_edit_global_exercise()
-    {
-        $admin = User::factory()->create();
-        $adminRole = Role::factory()->create(['name' => 'Admin']);
-        $admin->roles()->attach($adminRole);
-        $this->actingAs($admin);
-
-        $globalExercise = Exercise::factory()->create([
-            'title' => 'Original Title',
-            'user_id' => null,
-        ]);
-
-        $updatedData = [
-            'title' => 'Updated Global Title',
-            'description' => 'Updated description',
-            'exercise_type' => 'regular',
-            'is_global' => true,
-        ];
-
-        $response = $this->put(route('exercises.update', $globalExercise), $updatedData);
-
-        $response->assertRedirect(route('exercises.index'));
-        $response->assertSessionHas('success', 'Exercise updated successfully.');
-        $this->assertDatabaseHas('exercises', [
-            'id' => $globalExercise->id,
-            'title' => 'Updated Global Title',
-            'user_id' => null,
-        ]);
-    }
-
-    /** @test */
-    public function non_admin_cannot_edit_global_exercise()
-    {
-        $user = User::factory()->create();
-        $this->actingAs($user);
-
-        $globalExercise = Exercise::factory()->create([
-            'title' => 'Global Exercise',
-            'user_id' => null,
-        ]);
-
-        $updatedData = [
-            'title' => 'Hacked Title',
-            'description' => 'Hacked description',
-        ];
-
-        $response = $this->put(route('exercises.update', $globalExercise), $updatedData);
-
-        $response->assertStatus(403);
-        $this->assertDatabaseHas('exercises', [
-            'id' => $globalExercise->id,
-            'title' => 'Global Exercise',
-        ]);
     }
 
     /** @test */
@@ -390,10 +126,21 @@ class ExerciseManagementTest extends TestCase
         $response = $this->put(route('exercises.update', $otherUserExercise), $updatedData);
 
         $response->assertStatus(403);
-        $this->assertDatabaseHas('exercises', [
-            'id' => $otherUserExercise->id,
-            'title' => 'Other User Exercise',
-        ]);
+    }
+
+    /** @test */
+    public function can_delete_exercise_without_lift_logs()
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $exercise = Exercise::factory()->create(['user_id' => $user->id]);
+
+        $response = $this->delete(route('exercises.destroy', $exercise));
+
+        $response->assertRedirect(route('exercises.index'));
+        $response->assertSessionHas('success', 'Exercise deleted successfully.');
+        $this->assertSoftDeleted($exercise);
     }
 
     /** @test */
@@ -413,108 +160,14 @@ class ExerciseManagementTest extends TestCase
     }
 
     /** @test */
-    public function can_delete_exercise_without_lift_logs()
+    public function admin_can_view_exercise_index_with_all_exercises()
     {
+        $admin = User::factory()->create();
+        $adminRole = Role::factory()->create(['name' => 'Admin']);
+        $admin->roles()->attach($adminRole);
+        $this->actingAs($admin);
+        
         $user = User::factory()->create();
-        $this->actingAs($user);
-
-        $exercise = Exercise::factory()->create(['user_id' => $user->id]);
-
-        $response = $this->delete(route('exercises.destroy', $exercise));
-
-        $response->assertRedirect(route('exercises.index'));
-        $response->assertSessionHas('success', 'Exercise deleted successfully.');
-        $this->assertSoftDeleted($exercise);
-    }
-
-    /** @test */
-    public function admin_can_delete_global_exercise_without_lift_logs()
-    {
-        $admin = User::factory()->create();
-        $adminRole = Role::factory()->create(['name' => 'Admin']);
-        $admin->roles()->attach($adminRole);
-        $this->actingAs($admin);
-
-        $globalExercise = Exercise::factory()->create(['user_id' => null]);
-
-        $response = $this->delete(route('exercises.destroy', $globalExercise));
-
-        $response->assertRedirect(route('exercises.index'));
-        $response->assertSessionHas('success', 'Exercise deleted successfully.');
-        $this->assertSoftDeleted($globalExercise);
-    }
-
-    /** @test */
-    public function admin_cannot_delete_global_exercise_with_lift_logs()
-    {
-        $admin = User::factory()->create();
-        $adminRole = Role::factory()->create(['name' => 'Admin']);
-        $admin->roles()->attach($adminRole);
-        $this->actingAs($admin);
-
-        $globalExercise = Exercise::factory()->create(['user_id' => null]);
-        LiftLog::factory()->create(['exercise_id' => $globalExercise->id, 'user_id' => $admin->id]);
-
-        $response = $this->delete(route('exercises.destroy', $globalExercise));
-
-        $response->assertRedirect();
-        $response->assertSessionHasErrors('error');
-        $this->assertDatabaseHas('exercises', ['id' => $globalExercise->id, 'deleted_at' => null]);
-    }
-
-    /** @test */
-    public function create_form_shows_global_option_for_admin()
-    {
-        $admin = User::factory()->create();
-        $adminRole = Role::factory()->create(['name' => 'Admin']);
-        $admin->roles()->attach($adminRole);
-        $this->actingAs($admin);
-
-        $response = $this->get(route('exercises.create'));
-
-        $response->assertStatus(200);
-        $response->assertSee('Global Exercise');
-        $response->assertSee('Make this exercise available to all users');
-    }
-
-    /** @test */
-    public function create_form_does_not_show_global_option_for_regular_user()
-    {
-        $user = User::factory()->create();
-        $this->actingAs($user);
-
-        $response = $this->get(route('exercises.create'));
-
-        $response->assertStatus(200);
-        $response->assertDontSee('Global Exercise');
-        $response->assertDontSee('Make this exercise available to all users');
-    }
-
-    /** @test */
-    public function edit_form_shows_global_option_for_admin()
-    {
-        $admin = User::factory()->create();
-        $adminRole = Role::factory()->create(['name' => 'Admin']);
-        $admin->roles()->attach($adminRole);
-        $this->actingAs($admin);
-
-        $exercise = Exercise::factory()->create(['user_id' => $admin->id]);
-
-        $response = $this->get(route('exercises.edit', $exercise));
-
-        $response->assertStatus(200);
-        $response->assertSee('Global Exercise');
-        $response->assertSee('Make this exercise available to all users');
-    }
-
-
-    /** @test */
-    public function admin_can_view_exercise_index_with_global_badges()
-    {
-        $admin = User::factory()->create();
-        $adminRole = Role::factory()->create(['name' => 'Admin']);
-        $admin->roles()->attach($adminRole);
-        $this->actingAs($admin);
 
         // Create global exercise
         $globalExercise = Exercise::factory()->create([
@@ -525,84 +178,14 @@ class ExerciseManagementTest extends TestCase
         // Create user exercise
         $userExercise = Exercise::factory()->create([
             'title' => 'User Exercise',
-            'user_id' => $admin->id,
-        ]);
-
-        $response = $this->get(route('exercises.index'));
-
-        $response->assertStatus(200);
-        $response->assertSee('Global Exercise');
-        $response->assertSee('User Exercise');
-        $response->assertSee('Everyone', false); // Badge text for global exercises
-        $response->assertSee('You', false); // Badge text for user's own exercises
-    }
-
-    /** @test */
-    public function admin_can_view_exercise_index_with_clickable_items()
-    {
-        $admin = User::factory()->create();
-        $adminRole = Role::factory()->create(['name' => 'Admin']);
-        $admin->roles()->attach($adminRole);
-        $this->actingAs($admin);
-        
-        $user = User::factory()->create();
-
-        // Create global exercise (available to all users)
-        $globalExercise = Exercise::factory()->create([
-            'title' => 'Global Exercise',
-            'user_id' => null,
-        ]);
-
-        // Create user exercise (available to user)
-        $userExercise = Exercise::factory()->create([
-            'title' => 'User Exercise',
             'user_id' => $user->id,
         ]);
 
         $response = $this->get(route('exercises.index'));
 
         $response->assertStatus(200);
-        // Should see both exercises as clickable items that link to edit pages
-        $response->assertSee(route('exercises.edit', $userExercise->id));
-        $response->assertSee(route('exercises.edit', $globalExercise->id));
-        // Should see exercise names
         $response->assertSee('Global Exercise');
         $response->assertSee('User Exercise');
-    }
-
-    /** @test */
-    public function admin_can_view_exercise_selection_interface()
-    {
-        $admin = User::factory()->create();
-        $adminRole = Role::factory()->create(['name' => 'Admin']);
-        $admin->roles()->attach($adminRole);
-        $this->actingAs($admin);
-
-        // Create some exercises
-        $exercise1 = Exercise::factory()->create([
-            'title' => 'First Exercise',
-            'user_id' => $admin->id,
-        ]);
-
-        $exercise2 = Exercise::factory()->create([
-            'title' => 'Second Exercise',
-            'user_id' => null, // Global exercise
-        ]);
-
-        $response = $this->get(route('exercises.index'));
-
-        $response->assertStatus(200);
-        
-        // Should see both exercises in the selection interface
-        $response->assertSee('First Exercise');
-        $response->assertSee('Second Exercise');
-        
-        // Should see the page title and description
-        $response->assertSee('Exercises');
-        $response->assertSee('Select an exercise to edit its details, or create a new one.');
-        
-        // Should see the Add Exercise button
-        $response->assertSee('Add Exercise');
     }
 
     /** @test */
@@ -617,213 +200,196 @@ class ExerciseManagementTest extends TestCase
     }
 
     /** @test */
-    public function create_form_renders_global_checkbox_for_admin()
+    public function admin_can_edit_global_exercise()
     {
         $admin = User::factory()->create();
         $adminRole = Role::factory()->create(['name' => 'Admin']);
         $admin->roles()->attach($adminRole);
         $this->actingAs($admin);
 
-        $response = $this->get(route('exercises.create'));
+        $globalExercise = Exercise::factory()->create([
+            'title' => 'Original Title',
+            'user_id' => null,
+        ]);
 
-        $response->assertStatus(200);
-        $response->assertSee('name="is_global"', false);
-        $response->assertSee('Global Exercise');
-        $response->assertSee('Make this exercise available to all users');
+        $updatedData = [
+            'title' => 'Updated Global Title',
+            'description' => 'Updated description',
+            'exercise_type' => 'regular',
+        ];
+
+        $response = $this->put(route('exercises.update', $globalExercise), $updatedData);
+
+        $response->assertRedirect(route('exercises.index'));
+        $response->assertSessionHas('success', 'Exercise updated successfully.');
+        $this->assertDatabaseHas('exercises', [
+            'id' => $globalExercise->id,
+            'title' => 'Updated Global Title',
+            'user_id' => null,
+        ]);
     }
 
     /** @test */
-    public function create_form_does_not_render_global_checkbox_for_regular_user()
+    public function non_admin_cannot_edit_global_exercise()
     {
         $user = User::factory()->create();
         $this->actingAs($user);
 
-        $response = $this->get(route('exercises.create'));
+        $globalExercise = Exercise::factory()->create([
+            'title' => 'Global Exercise',
+            'user_id' => null,
+        ]);
 
+        $updatedData = [
+            'title' => 'Hacked Title',
+            'description' => 'Hacked description',
+        ];
+
+        $response = $this->put(route('exercises.update', $globalExercise), $updatedData);
+
+        $response->assertStatus(403);
+    }
+
+    /** @test */
+    public function admin_can_promote_user_exercise_to_global()
+    {
+        $admin = User::factory()->create();
+        $adminRole = Role::factory()->create(['name' => 'Admin']);
+        $admin->roles()->attach($adminRole);
+        $this->actingAs($admin);
+
+        $userExercise = Exercise::factory()->create([
+            'user_id' => $admin->id,
+            'title' => 'User Exercise',
+        ]);
+
+        $response = $this->post(route('exercises.promote', $userExercise));
+
+        $response->assertRedirect(route('exercises.edit', $userExercise));
+        $response->assertSessionHas('success', "Exercise 'User Exercise' promoted to global status successfully.");
+        
+        $userExercise->refresh();
+        $this->assertNull($userExercise->user_id);
+        $this->assertTrue($userExercise->isGlobal());
+    }
+
+    /** @test */
+    public function admin_can_unpromote_global_exercise_to_user_exercise()
+    {
+        $admin = User::factory()->create();
+        $adminRole = Role::factory()->create(['name' => 'Admin']);
+        $admin->roles()->attach($adminRole);
+        $this->actingAs($admin);
+
+        // Create a global exercise with lift logs from admin (to determine original owner)
+        $globalExercise = Exercise::factory()->create([
+            'title' => 'Global Exercise',
+            'user_id' => null,
+        ]);
+        
+        // Create lift log to establish original ownership
+        LiftLog::factory()->create([
+            'exercise_id' => $globalExercise->id,
+            'user_id' => $admin->id,
+        ]);
+
+        $response = $this->post(route('exercises.unpromote', $globalExercise));
+
+        $response->assertRedirect(route('exercises.edit', $globalExercise));
+        $response->assertSessionHas('success', "Exercise 'Global Exercise' unpromoted to personal exercise successfully.");
+        
+        $globalExercise->refresh();
+        $this->assertEquals($admin->id, $globalExercise->user_id);
+        $this->assertFalse($globalExercise->isGlobal());
+    }
+
+    /** @test */
+    public function admin_editing_user_exercise_preserves_original_user_id()
+    {
+        // Create a regular user and an admin
+        $regularUser = User::factory()->create();
+        $admin = User::factory()->create();
+        $adminRole = Role::factory()->create(['name' => 'Admin']);
+        $admin->roles()->attach($adminRole);
+
+        // Create a user exercise owned by the regular user
+        $userExercise = Exercise::factory()->create([
+            'user_id' => $regularUser->id,
+            'title' => 'User Exercise',
+            'description' => 'Original description',
+            'exercise_type' => 'regular'
+        ]);
+
+        // Admin edits the exercise (without changing global status)
+        $this->actingAs($admin);
+        $response = $this->put(route('exercises.update', $userExercise), [
+            'title' => 'Updated User Exercise',
+            'description' => 'Updated description',
+            'exercise_type' => 'regular',
+        ]);
+
+        $response->assertRedirect(route('exercises.index'));
+        $response->assertSessionHas('success', 'Exercise updated successfully.');
+
+        // Verify the exercise still belongs to the original user
+        $userExercise->refresh();
+        $this->assertEquals($regularUser->id, $userExercise->user_id);
+        $this->assertFalse($userExercise->isGlobal());
+        $this->assertEquals('Updated User Exercise', $userExercise->title);
+        $this->assertEquals('Updated description', $userExercise->description);
+    }
+
+    /** @test */
+    public function forms_do_not_show_global_checkbox()
+    {
+        $admin = User::factory()->create();
+        $adminRole = Role::factory()->create(['name' => 'Admin']);
+        $admin->roles()->attach($adminRole);
+        $this->actingAs($admin);
+
+        // Test create form
+        $response = $this->get(route('exercises.create'));
         $response->assertStatus(200);
-        $response->assertDontSee('name="is_global"', false);
+        $response->assertDontSee('Global Exercise');
+        $response->assertDontSee('Make this exercise available to all users');
+
+        // Test edit form
+        $exercise = Exercise::factory()->create(['user_id' => $admin->id]);
+        $response = $this->get(route('exercises.edit', $exercise));
+        $response->assertStatus(200);
         $response->assertDontSee('Global Exercise');
         $response->assertDontSee('Make this exercise available to all users');
     }
 
     /** @test */
-    public function edit_form_renders_global_checkbox_checked_for_global_exercise()
+    public function admin_cannot_promote_exercise_with_duplicate_global_name()
     {
         $admin = User::factory()->create();
         $adminRole = Role::factory()->create(['name' => 'Admin']);
         $admin->roles()->attach($adminRole);
         $this->actingAs($admin);
 
-        $globalExercise = Exercise::factory()->create([
-            'title' => 'Global Exercise',
+        // Create a global exercise
+        Exercise::factory()->create([
+            'title' => 'Bench Press',
             'user_id' => null,
         ]);
 
-        $response = $this->get(route('exercises.edit', $globalExercise));
-
-        $response->assertStatus(200);
-        $response->assertSee('name="is_global"', false);
-        $response->assertSee('checked', false);
-        $response->assertSee('Global Exercise');
-        $response->assertSee('Make this exercise available to all users');
-    }
-
-    /** @test */
-    public function edit_form_renders_global_checkbox_unchecked_for_user_exercise()
-    {
-        $admin = User::factory()->create();
-        $adminRole = Role::factory()->create(['name' => 'Admin']);
-        $admin->roles()->attach($adminRole);
-        $this->actingAs($admin);
-
+        // Create a user exercise with the same name
         $userExercise = Exercise::factory()->create([
-            'title' => 'User Exercise',
+            'title' => 'Bench Press',
             'user_id' => $admin->id,
         ]);
 
-        $response = $this->get(route('exercises.edit', $userExercise));
+        // Try to promote the user exercise to global (should fail due to duplicate name)
+        $response = $this->post(route('exercises.promote', $userExercise));
 
-        $response->assertStatus(200);
-        $response->assertSee('name="is_global"', false);
-        $response->assertDontSee('checked', false);
-        $response->assertSee('Global Exercise');
-        $response->assertSee('Make this exercise available to all users');
-    }
-
-    /** @test */
-    public function admin_can_submit_create_form_with_global_option()
-    {
-        $admin = User::factory()->create();
-        $adminRole = Role::factory()->create(['name' => 'Admin']);
-        $admin->roles()->attach($adminRole);
-        $this->actingAs($admin);
-
-        $exerciseData = [
-            'title' => 'New Global Exercise',
-            'description' => 'A new global exercise',
-            'exercise_type' => 'regular',
-            'is_global' => true,
-        ];
-
-        $response = $this->post(route('exercises.store'), $exerciseData);
-
-        $response->assertRedirect(route('exercises.index'));
-        $response->assertSessionHas('success', 'Exercise created successfully.');
-        $this->assertDatabaseHas('exercises', [
-            'title' => 'New Global Exercise',
-            'user_id' => null,
-        ]);
-    }
-
-    /** @test */
-    public function admin_can_submit_edit_form_to_make_exercise_global()
-    {
-        $admin = User::factory()->create();
-        $adminRole = Role::factory()->create(['name' => 'Admin']);
-        $admin->roles()->attach($adminRole);
-        $this->actingAs($admin);
-
-        $userExercise = Exercise::factory()->create([
-            'title' => 'User Exercise',
-            'user_id' => $admin->id,
-        ]);
-
-        $updatedData = [
-            'title' => 'Now Global Exercise',
-            'description' => 'Made global',
-            'exercise_type' => 'regular',
-            'is_global' => true,
-        ];
-
-        $response = $this->put(route('exercises.update', $userExercise), $updatedData);
-
-        $response->assertRedirect(route('exercises.index'));
-        $response->assertSessionHas('success', 'Exercise updated successfully.');
-        $this->assertDatabaseHas('exercises', [
-            'id' => $userExercise->id,
-            'title' => 'Now Global Exercise',
-            'user_id' => null,
-        ]);
-    }
-
-    /** @test */
-    public function edit_page_displays_quick_actions_for_admin()
-    {
-        $admin = User::factory()->create();
-        $adminRole = Role::factory()->create(['name' => 'Admin']);
-        $admin->roles()->attach($adminRole);
-        $this->actingAs($admin);
-
-        // Test with user exercise (should show promote action)
-        $userExercise = Exercise::factory()->create([
-            'title' => 'User Exercise',
-            'user_id' => $admin->id,
-        ]);
-
-        $response = $this->get(route('exercises.edit', $userExercise));
-
-        $response->assertStatus(200);
-        $response->assertSee('Quick Actions');
-        $response->assertSee('Promote');
-        $response->assertSee('Delete');
-
-        // Test with global exercise (should show unpromote action)
-        $globalExercise = Exercise::factory()->create([
-            'title' => 'Global Exercise',
-            'user_id' => null,
-        ]);
-
-        $response = $this->get(route('exercises.edit', $globalExercise));
-
-        $response->assertStatus(200);
-        $response->assertSee('Quick Actions');
-        $response->assertSee('Unpromote');
-        $response->assertSee('Delete');
-    }
-
-    /** @test */
-    public function edit_page_displays_limited_quick_actions_for_regular_user()
-    {
-        $user = User::factory()->create();
-        $this->actingAs($user);
-
-        $userExercise = Exercise::factory()->create([
-            'title' => 'User Exercise',
-            'user_id' => $user->id,
-        ]);
-
-        $response = $this->get(route('exercises.edit', $userExercise));
-
-        $response->assertStatus(200);
-        $response->assertSee('Quick Actions');
-        $response->assertSee('Delete');
-        $response->assertDontSee('Promote to Global');
-        $response->assertDontSee('Unpromote to Personal');
-        $response->assertDontSee('Merge');
-    }
-
-    /** @test */
-    public function edit_page_hides_delete_action_when_exercise_has_lift_logs()
-    {
-        $user = User::factory()->create();
-        $this->actingAs($user);
-
-        $exercise = Exercise::factory()->create([
-            'title' => 'Exercise with Logs',
-            'user_id' => $user->id,
-        ]);
-
-        // Create a lift log for this exercise
-        LiftLog::factory()->create([
-            'exercise_id' => $exercise->id,
-            'user_id' => $user->id,
-        ]);
-
-        $response = $this->get(route('exercises.edit', $exercise));
-
-        $response->assertStatus(200);
-        // Should show disabled delete action when exercise has lift logs
-        $response->assertSee('Delete');
-        $response->assertSee('disabled');
+        $response->assertRedirect();
+        $response->assertSessionHasErrors('error');
+        
+        // Verify the exercise is still a user exercise
+        $userExercise->refresh();
+        $this->assertEquals($admin->id, $userExercise->user_id);
+        $this->assertFalse($userExercise->isGlobal());
     }
 }

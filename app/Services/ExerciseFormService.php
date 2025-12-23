@@ -50,17 +50,6 @@ class ExerciseFormService
             old('exercise_type', $exercise->exercise_type ?? '')
         );
         
-        // Global exercise checkbox (Admin only)
-        if ($canCreateGlobal) {
-            $isGlobal = old('is_global', $exercise->exists ? $exercise->isGlobal() : false);
-            $form->checkboxField(
-                'is_global',
-                'Global Exercise',
-                $isGlobal,
-                'Make this exercise available to all users'
-            );
-        }
-        
         // Submit button
         $form->submitButton($isEdit ? 'Update Exercise' : 'Create Exercise');
         
@@ -129,9 +118,6 @@ class ExerciseFormService
             }
             if ($errors->has('exercise_type')) {
                 $form->message('error', $errors->first('exercise_type'));
-            }
-            if ($errors->has('is_global')) {
-                $form->message('error', $errors->first('is_global'));
             }
         }
     }

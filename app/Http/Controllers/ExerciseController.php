@@ -395,6 +395,11 @@ class ExerciseController extends Controller
             return back()->withErrors(['error' => "Exercise '{$exercise->title}' is already global."]);
         }
 
+        // Check if a global exercise with the same name already exists
+        if (Exercise::global()->where('title', $exercise->title)->exists()) {
+            return back()->withErrors(['error' => "A global exercise with the name '{$exercise->title}' already exists."]);
+        }
+
         $exercise->update(['user_id' => null]);
 
         return redirect()->route('exercises.edit', $exercise)
