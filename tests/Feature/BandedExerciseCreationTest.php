@@ -135,14 +135,26 @@ class BandedExerciseCreationTest extends TestCase
     {
         $this->actingAs($this->admin);
 
+        // Create user exercise first
         $response = $this->post(route('exercises.store'), [
             'title' => 'Global Banded Exercise',
             'description' => 'A global banded exercise',
             'exercise_type' => 'banded_resistance',
-            'is_global' => true,
         ]);
 
         $response->assertRedirect(route('exercises.index'));
+        $this->assertDatabaseHas('exercises', [
+            'title' => 'Global Banded Exercise',
+            'user_id' => $this->admin->id,
+            'exercise_type' => 'banded_resistance',
+        ]);
+        
+        // Promote to global
+        $exercise = Exercise::where('title', 'Global Banded Exercise')->first();
+        $promoteResponse = $this->post(route('exercises.promote', $exercise));
+        $promoteResponse->assertRedirect(route('exercises.edit', $exercise));
+        
+        // Verify it's now global
         $this->assertDatabaseHas('exercises', [
             'title' => 'Global Banded Exercise',
             'user_id' => null,
@@ -164,7 +176,6 @@ class BandedExerciseCreationTest extends TestCase
             'title' => 'Updated Global Banded Exercise',
             'description' => 'Updated global description',
             'exercise_type' => 'banded_assistance',
-            'is_global' => true,
         ]);
 
         $response->assertRedirect(route('exercises.index'));

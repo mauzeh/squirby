@@ -32,69 +32,77 @@ class ExerciseManagementWorkflowTest extends TestCase
         $admin->roles()->attach($adminRole);
         $this->actingAs($admin);
 
-        // 1. Admin can access create form with global option
+        // 1. Admin can access create form (no global option shown)
         $createResponse = $this->get(route('exercises.create'));
         $createResponse->assertStatus(200);
-        $createResponse->assertSee('Global Exercise');
-        $createResponse->assertSee('Make this exercise available to all users');
+        $createResponse->assertDontSee('Global Exercise');
+        $createResponse->assertDontSee('Make this exercise available to all users');
 
-        // 2. Admin creates global exercise
-        $globalExerciseData = [
-            'title' => 'Global Bench Press',
-            'description' => 'Standard bench press exercise available to all users',
+        // 2. Admin creates user exercise first
+        $exerciseData = [
+            'title' => 'Bench Press',
+            'description' => 'Standard bench press exercise',
             'exercise_type' => 'regular',
-            'is_global' => true,
         ];
 
-        $storeResponse = $this->post(route('exercises.store'), $globalExerciseData);
+        $storeResponse = $this->post(route('exercises.store'), $exerciseData);
         $storeResponse->assertRedirect(route('exercises.index'));
         $storeResponse->assertSessionHas('success', 'Exercise created successfully.');
         
-        // Verify global exercise is created correctly
+        // Verify user exercise is created correctly
         $this->assertDatabaseHas('exercises', [
-            'title' => 'Global Bench Press',
-            'user_id' => null,
+            'title' => 'Bench Press',
+            'user_id' => $admin->id,
             'exercise_type' => 'regular',
         ]);
 
-        $globalExercise = Exercise::where('title', 'Global Bench Press')->first();
+        $exercise = Exercise::where('title', 'Bench Press')->first();
 
-        // 3. Admin can see global exercise in listing
+        // 3. Admin promotes exercise to global
+        $promoteResponse = $this->post(route('exercises.promote', $exercise));
+        $promoteResponse->assertRedirect(route('exercises.edit', $exercise));
+        $promoteResponse->assertSessionHas('success', "Exercise 'Bench Press' promoted to global status successfully.");
+        
+        // Verify exercise is now global
+        $exercise->refresh();
+        $this->assertNull($exercise->user_id);
+        $this->assertTrue($exercise->isGlobal());
+
+        // 4. Admin can see global exercise in listing
         $indexResponse = $this->get(route('exercises.index'));
         $indexResponse->assertStatus(200);
-        $indexResponse->assertSee('Global Bench Press');
-        $indexResponse->assertSee('Global'); // Badge
+        $indexResponse->assertSee('Bench Press');
+        $indexResponse->assertSee('Everyone'); // Badge
 
-        // 4. Admin can edit global exercise
-        $editResponse = $this->get(route('exercises.edit', $globalExercise));
+        // 5. Admin can edit global exercise (no global checkbox)
+        $editResponse = $this->get(route('exercises.edit', $exercise));
         $editResponse->assertStatus(200);
-        $editResponse->assertSee('Global Exercise');
-        $editResponse->assertSee('checked'); // Global checkbox should be checked
+        $editResponse->assertDontSee('Global Exercise');
+        $editResponse->assertDontSee('Make this exercise available to all users');
 
-        // 5. Admin updates global exercise
+        // 6. Admin updates global exercise
         $updatedData = [
             'title' => 'Updated Global Bench Press',
             'description' => 'Updated description for global exercise',
             'exercise_type' => 'regular',
-            'is_global' => true,
         ];
 
-        $updateResponse = $this->put(route('exercises.update', $globalExercise), $updatedData);
+        $updateResponse = $this->put(route('exercises.update', $exercise), $updatedData);
         $updateResponse->assertRedirect(route('exercises.index'));
         $updateResponse->assertSessionHas('success', 'Exercise updated successfully.');
         
         $this->assertDatabaseHas('exercises', [
-            'id' => $globalExercise->id,
+            'id' => $exercise->id,
             'title' => 'Updated Global Bench Press',
             'user_id' => null,
         ]);
 
-        // 6. Admin can delete global exercise (when no lift logs exist)
-        $deleteResponse = $this->delete(route('exercises.destroy', $globalExercise));
+        // 7. Admin can delete global exercise (when no lift logs exist)
+        $deleteResponse = $this->delete(route('exercises.destroy', $exercise));
         $deleteResponse->assertRedirect(route('exercises.index'));
         $deleteResponse->assertSessionHas('success', 'Exercise deleted successfully.');
         
-        $this->assertSoftDeleted($globalExercise);
+        $this->assertSoftDeleted($exercise);
     }
 
     /** @test */
@@ -262,20 +270,22 @@ class ExerciseManagementWorkflowTest extends TestCase
         $indexResponse = $this->get(route('exercises.index'));
         $indexResponse->assertStatus(403);
 
-        // 2. User cannot create global exercise
+        // 2. User cannot create global exercise (no is_global parameter accepted)
         $globalAttempt = [
             'title' => 'Attempted Global Exercise',
             'description' => 'Should not be allowed',
             'exercise_type' => 'regular',
-            'is_global' => true,
         ];
 
         $globalResponse = $this->post(route('exercises.store'), $globalAttempt);
-        $globalResponse->assertStatus(403);
-        $this->assertDatabaseMissing('exercises', [
+        $globalResponse->assertRedirect(route('exercises.index'));
+        $globalResponse->assertSessionHas('success', 'Exercise created successfully.');
+        
+        // Verify it was created as user exercise, not global
+        $this->assertDatabaseHas('exercises', [
             'title' => 'Attempted Global Exercise',
-            'user_id' => null,
-            'deleted_at' => null // Ensure it was never created
+            'user_id' => $user->id, // Should be user's exercise, not global
+            'deleted_at' => null
         ]);
 
         // 3. User cannot edit global exercise
@@ -428,22 +438,30 @@ class ExerciseManagementWorkflowTest extends TestCase
         $adminRole = Role::where('name', 'Admin')->first();
         $admin->roles()->attach($adminRole);
 
-        // Admin creates global exercises
+        // Admin creates global exercises using promote workflow
         $this->actingAs($admin);
         
-        $this->post(route('exercises.store'), [
+        // Create user exercises first
+        $benchPressResponse = $this->post(route('exercises.store'), [
             'title' => 'Bench Press',
             'description' => 'Global bench press',
             'exercise_type' => 'regular',
-            'is_global' => true,
         ]);
+        $benchPressResponse->assertRedirect(route('exercises.index'));
         
-        $this->post(route('exercises.store'), [
+        $squatResponse = $this->post(route('exercises.store'), [
             'title' => 'Squat',
             'description' => 'Global squat',
             'exercise_type' => 'regular',
-            'is_global' => true,
         ]);
+        $squatResponse->assertRedirect(route('exercises.index'));
+        
+        // Promote them to global
+        $benchPress = Exercise::where('title', 'Bench Press')->first();
+        $squat = Exercise::where('title', 'Squat')->first();
+        
+        $this->post(route('exercises.promote', $benchPress));
+        $this->post(route('exercises.promote', $squat));
 
         // Create multiple users
         $user1 = User::factory()->create();
@@ -533,23 +551,29 @@ class ExerciseManagementWorkflowTest extends TestCase
         $admin->roles()->attach($adminRole);
         $this->actingAs($admin);
 
-        // Admin creates first global exercise
+        // Admin creates first exercise and promotes to global
         $this->post(route('exercises.store'), [
             'title' => 'Deadlift',
             'description' => 'Global deadlift exercise',
             'exercise_type' => 'regular',
-            'is_global' => true,
-        ]);
-
-        // Admin attempts to create another global exercise with same name (should fail)
-        $conflictResponse = $this->post(route('exercises.store'), [
-            'title' => 'Deadlift',
-            'description' => 'Duplicate global deadlift',
-            'exercise_type' => 'regular',
-            'is_global' => true,
         ]);
         
-        $conflictResponse->assertSessionHasErrors('title');
+        $deadlift = Exercise::where('title', 'Deadlift')->first();
+        $this->post(route('exercises.promote', $deadlift));
+
+        // Admin attempts to create another exercise with same name and promote (should fail promotion)
+        $duplicateResponse = $this->post(route('exercises.store'), [
+            'title' => 'Deadlift',
+            'description' => 'Duplicate deadlift',
+            'exercise_type' => 'regular',
+        ]);
+        
+        // The creation should fail due to name conflict with global exercise
+        $duplicateResponse->assertSessionHasErrors('title');
+        
+        // Verify only one deadlift exists (the global one)
+        $deadliftCount = Exercise::where('title', 'Deadlift')->whereNull('deleted_at')->count();
+        $this->assertEquals(1, $deadliftCount);
         
         // Verify only one global deadlift exists
         $deadliftCount = Exercise::where('title', 'Deadlift')->whereNull('user_id')->whereNull('deleted_at')->count();
@@ -560,7 +584,6 @@ class ExerciseManagementWorkflowTest extends TestCase
             'title' => 'Romanian Deadlift',
             'description' => 'Admin personal exercise',
             'exercise_type' => 'regular',
-            'is_global' => false,
         ]);
         
         $personalResponse->assertRedirect(route('exercises.index'));
