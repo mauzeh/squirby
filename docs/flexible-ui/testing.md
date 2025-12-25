@@ -142,11 +142,11 @@ C::summary()
 
 Once you've verified everything works:
 
-1. Migrate `MobileEntryController::lifts()` to use ComponentBuilder
+1. Update `MobileEntryController::lifts()` to use ComponentBuilder
 2. Test with real data from database
 3. Update services (LiftLogService, etc.) to use ComponentBuilder
-4. Migrate remaining methods (foods, measurements)
-5. Remove old view once migration complete
+4. Update remaining methods (foods, measurements)
+5. Remove old view once updates complete
 
 ## Troubleshooting
 

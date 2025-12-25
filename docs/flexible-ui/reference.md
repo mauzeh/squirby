@@ -1,6 +1,55 @@
-# ComponentBuilder Quick Reference
+# Flexible UI Component Reference
 
-Quick reference guide for using the ComponentBuilder API in mobile entry interfaces.
+Complete API reference and architectural guide for the flexible component-based UI system.
+
+## Architecture Overview
+
+The flexible UI system uses a component-based architecture that is completely flexible and loosely coupled. Every section is optional, components can repeat, and there are no hardcoded array keys.
+
+### Component-Based Structure
+
+Instead of a fixed view with hardcoded sections, the UI renders a list of components:
+
+```php
+$data = [
+    'components' => [
+        ['type' => 'navigation', 'data' => [...]],
+        ['type' => 'title', 'data' => [...]],
+        ['type' => 'form', 'data' => [...]],
+        ['type' => 'form', 'data' => [...]],  // Components can repeat!
+        ['type' => 'items', 'data' => [...]],
+    ]
+];
+
+return view('mobile-entry.flexible', compact('data'));
+```
+
+### Key Benefits
+
+1. **Fully Optional** - Include only the components you need
+2. **No Hardcoded Keys** - View loops through components dynamically
+3. **Repeatable** - Use multiple forms, messages, etc.
+4. **Reorderable** - Components render in the order you define them
+5. **Type-Safe** - Builder classes provide IDE autocomplete
+6. **Backward Compatible** - Existing code continues to work
+
+### Available Component Types
+
+1. **navigation** - Date navigation (prev/today/next) or custom navigation
+2. **title** - Page title with optional subtitle and back button
+3. **messages** - Interface messages (success, error, warning, info, tip)
+4. **summary** - Summary statistics grid
+5. **button** - Action button (like "Add Exercise")
+6. **item-list** - Filterable item selection list with create functionality
+7. **form** - Data entry form with numeric fields, selects, and comments
+8. **items** - Display of previously logged items with edit/delete actions
+9. **table** - Tabular CRUD list with expandable sub-items
+10. **quick-actions** - Standardized action button grid
+11. **pr-cards** - Personal record tracking with visual highlights
+12. **calculator-grid** - Interactive calculation display
+13. **code-editor** - IDE-like syntax editor with highlighting
+14. **markdown** - Rich text rendering with custom styling
+15. **chart** - Chart.js integration with enhanced styling
 
 ## Import
 
@@ -27,17 +76,55 @@ C::title('Main Title', 'Optional Subtitle')->build()
 ```
 
 ### Title with Back Button
+
+> **Added in v1.2** - November 11, 2025
+
 ```php
 C::title('Exercise Details', 'View and edit information')
     ->backButton('fa-arrow-left', route('exercises.index'), 'Back to exercises')
     ->build()
 ```
 
-**Back Button Features:**
+**Back Button Parameters:**
+- `icon` (required) - FontAwesome icon class (e.g., 'fa-arrow-left', 'fa-times', 'fa-chevron-left')
+- `url` (required) - Destination URL (use `route()` helper)
+- `ariaLabel` (optional) - Accessibility label (defaults to 'Go back')
+
+**Visual Layout:**
+```
+[←]        Page Title        
+           Subtitle Text
+```
+
+**Features:**
 - Icon-only button positioned on the left
 - Title and subtitle remain centered
 - 44px touch target for mobile
 - Optional aria label for accessibility
+- Smooth hover and focus transitions
+
+**Use Cases:**
+- Detail pages (exercise details, template editor)
+- Edit pages (edit workout template, edit exercise)
+- Nested navigation (list → detail → edit)
+
+**Common Patterns:**
+```php
+// Template editor
+C::title($template->name, 'Edit template')
+    ->backButton('fa-arrow-left', route('workout-templates.index'), 'Back to templates')
+    ->build()
+
+// Detail view
+C::title($exercise->title, 'Exercise details')
+    ->backButton('fa-arrow-left', route('exercises.index'), 'Back to exercises')
+    ->build()
+
+// Close pattern (modal-like)
+C::title('Quick Add', 'Add exercise to today')
+    ->backButton('fa-times', route('mobile-entry.lifts'), 'Close')
+    ->build()
+```
 
 ## Messages Component
 
@@ -233,6 +320,196 @@ return $itemsBuilder->build()['data'];
 | `danger` | Red | `#dc3545` | Error/critical forms |
 | `info` | Light Blue | `#17a2b8` | Informational forms |
 
+## Complete Usage Examples
+
+### Example 1: Full-Featured Mobile Entry Interface
+
+```php
+public function lifts(Request $request, LiftLogService $formService)
+{
+    $selectedDate = $request->input('date') 
+        ? Carbon::parse($request->input('date')) 
+        : Carbon::today();
+    
+    $prevDay = $selectedDate->copy()->subDay();
+    $nextDay = $selectedDate->copy()->addDay();
+    $today = Carbon::today();
+    
+    // Get data from services
+    $forms = $formService->generateForms(Auth::id(), $selectedDate);
+    $loggedItems = $formService->generateLoggedItems(Auth::id(), $selectedDate);
+    $itemSelectionList = $formService->generateItemSelectionList(Auth::id(), $selectedDate);
+    $summary = $formService->generateSummary(Auth::id(), $selectedDate);
+    
+    // Build components array
+    $components = [];
+    
+    // Navigation
+    $components[] = C::navigation()
+        ->prev('← Prev', route('mobile-entry.lifts', ['date' => $prevDay->toDateString()]))
+        ->center('Today', route('mobile-entry.lifts', ['date' => $today->toDateString()]))
+        ->next('Next →', route('mobile-entry.lifts', ['date' => $nextDay->toDateString()]))
+        ->build();
+    
+    // Title
+    $components[] = C::title($selectedDate->format('M j, Y'))->build();
+    
+    // Messages (from session)
+    if (session()->has('success') || session()->has('error')) {
+        $messagesBuilder = C::messages();
+        if (session('success')) {
+            $messagesBuilder->success(session('success'));
+        }
+        if (session('error')) {
+            $messagesBuilder->error(session('error'));
+        }
+        $components[] = $messagesBuilder->build();
+    }
+    
+    // Summary (if available)
+    if ($summary) {
+        $summaryBuilder = C::summary();
+        foreach ($summary['values'] as $key => $value) {
+            $summaryBuilder->item($key, $value, $summary['labels'][$key] ?? null);
+        }
+        $components[] = $summaryBuilder->build();
+    }
+    
+    // Add Exercise button
+    $components[] = C::button('Add Exercise')
+        ->ariaLabel('Add new exercise')
+        ->build();
+    
+    // Item selection list
+    $itemListBuilder = C::itemList()
+        ->filterPlaceholder($itemSelectionList['filterPlaceholder'])
+        ->noResultsMessage($itemSelectionList['noResultsMessage']);
+    
+    foreach ($itemSelectionList['items'] as $item) {
+        $itemListBuilder->item(
+            $item['id'],
+            $item['name'],
+            $item['href'],
+            $item['type']['label'],
+            $item['type']['cssClass'],
+            $item['type']['priority']
+        );
+    }
+    
+    if (isset($itemSelectionList['createForm'])) {
+        $itemListBuilder->createForm(
+            $itemSelectionList['createForm']['action'],
+            $itemSelectionList['createForm']['inputName'],
+            $itemSelectionList['createForm']['hiddenFields']
+        );
+    }
+    
+    $components[] = $itemListBuilder->build();
+    
+    // Forms (from service)
+    foreach ($forms as $form) {
+        $components[] = ['type' => 'form', 'data' => $form];
+    }
+    
+    // Logged items (from service)
+    $components[] = ['type' => 'items', 'data' => $loggedItems];
+    
+    $data = ['components' => $components];
+    
+    return view('mobile-entry.flexible', compact('data'));
+}
+```
+
+### Example 2: Standalone Form (No Navigation)
+
+```php
+public function quickLog()
+{
+    $data = [
+        'components' => [
+            C::title('Quick Workout Log')->build(),
+            
+            C::messages()
+                ->info('Log your workout quickly')
+                ->build(),
+            
+            C::form('quick-log', 'Log Your Workout')
+                ->type('primary')
+                ->formAction(route('workouts.store'))
+                ->numericField('sets', 'Sets:', 3, 1, 1, 10)
+                ->numericField('reps', 'Reps:', 10, 1, 1, 50)
+                ->numericField('weight', 'Weight:', 135, 5, 45, 500)
+                ->commentField('Notes:', 'How did it feel?')
+                ->submitButton('Save Workout')
+                ->build(),
+        ]
+    ];
+    
+    return view('mobile-entry.flexible', compact('data'));
+}
+```
+
+### Example 3: Multiple Forms
+
+```php
+public function workoutTemplate()
+{
+    $data = [
+        'components' => [
+            C::title('Today\'s Workout', 'Push Day')->build(),
+            
+            C::form('ex-1', 'Bench Press')
+                ->type('primary')
+                ->formAction(route('lift-logs.store'))
+                ->message('info', '135 lbs × 10 reps × 3 sets', 'Last time:')
+                ->numericField('weight', 'Weight:', 135, 5, 45, 500)
+                ->numericField('reps', 'Reps:', 10, 1, 1, 50)
+                ->numericField('sets', 'Sets:', 3, 1, 1, 10)
+                ->hiddenField('exercise_id', 1)
+                ->submitButton('Log Bench Press')
+                ->build(),
+            
+            C::form('ex-2', 'Overhead Press')
+                ->type('primary')
+                ->formAction(route('lift-logs.store'))
+                ->message('info', '95 lbs × 8 reps × 3 sets', 'Last time:')
+                ->numericField('weight', 'Weight:', 95, 5, 45, 300)
+                ->numericField('reps', 'Reps:', 8, 1, 1, 50)
+                ->numericField('sets', 'Sets:', 3, 1, 1, 10)
+                ->hiddenField('exercise_id', 2)
+                ->submitButton('Log Overhead Press')
+                ->build(),
+        ]
+    ];
+    
+    return view('mobile-entry.flexible', compact('data'));
+}
+```
+
+### Example 4: Custom Component Order
+
+Components can appear in any order to match your workflow:
+
+```php
+$data = [
+    'components' => [
+        C::messages()->warning('Complete your profile to continue')->build(),
+        C::title('Profile Setup', '25% Complete')->build(),
+        C::summary()
+            ->item('completed', 2, 'Fields Done')
+            ->item('remaining', 6, 'Fields Left')
+            ->build(),
+        C::form('profile', 'Personal Information')
+            ->type('secondary')
+            ->formAction(route('profile.update'))
+            ->textField('name', 'Full Name:', auth()->user()->name)
+            ->textField('email', 'Email:', auth()->user()->email)
+            ->submitButton('Save Profile')
+            ->build(),
+    ]
+];
+```
+
 ## Complete Controller Example
 
 ```php
@@ -320,7 +597,26 @@ public function lifts(Request $request, LiftLogService $formService)
 }
 ```
 
-## Tips
+## Architecture Files
+
+- **Main View**: `resources/views/mobile-entry/flexible.blade.php`
+- **Component Views**: `resources/views/mobile-entry/components/*.blade.php`
+- **Builder Service**: `app/Services/ComponentBuilder.php`
+- **Component Builders**: `app/Services/Components/*/`
+- **CSS**: `public/css/mobile-entry/components/*.css`
+- **JavaScript**: `public/js/mobile-entry.js`, `public/js/*.js`
+
+## Production Status
+
+All mobile entry interfaces now use the flexible UI system:
+
+1. ✅ `lifts()` - Uses ComponentBuilder and flexible view
+2. ✅ `foods()` - Uses ComponentBuilder and flexible view  
+3. ✅ `measurements()` - Uses ComponentBuilder and flexible view
+4. ✅ User management pages - Component-based architecture
+5. ✅ Exercise management - Enhanced with component-based patterns
+
+## Tips and Best Practices
 
 1. **Always use `build()`** - Don't forget to call `build()` at the end of the chain
 2. **Extract data for forms/items** - Services return `build()['data']` directly
@@ -328,6 +624,8 @@ public function lifts(Request $request, LiftLogService $formService)
 4. **Use type-safe methods** - ComponentBuilder provides type hints for all methods
 5. **Chain methods** - All builder methods return `$this` for fluent chaining
 6. **Empty messages** - Always set `emptyMessage` for items component (even if empty string)
+7. **Coordinate states** - When using button + item list, coordinate their initial states
+8. **Component order matters** - Components render in the order you add them to the array
 
 ## Common Patterns
 
@@ -347,12 +645,13 @@ if ($summary) {
 ### Dynamic Messages
 ```php
 $messagesBuilder = C::messages();
-if ($sessionMessages['success']) {
-    $messagesBuilder->success($sessionMessages['success']);
+if (session('success')) {
+    $messagesBuilder->success(session('success'));
 }
-if ($sessionMessages['error']) {
-    $messagesBuilder->error($sessionMessages['error']);
+if (session('error')) {
+    $messagesBuilder->error(session('error'));
 }
+// Only add if there are messages
 if ($messagesBuilder->hasMessages()) {
     $components[] = $messagesBuilder->build();
 }
@@ -369,6 +668,50 @@ foreach ($forms as $form) {
 $loggedItems = $formService->generateLoggedItems($userId, $date);
 $components[] = ['type' => 'items', 'data' => $loggedItems];
 ```
+
+### Multiple Independent Lists
+```php
+// Exercise list - collapsed by default
+$components[] = C::button('Add Exercise')->addClass('btn-add-item')->build();
+$components[] = C::itemList()
+    ->item('ex-1', 'Bench Press', '#', 'Available', 'regular', 3)
+    ->filterPlaceholder('Search exercises...')
+    ->createForm(route('exercise.create'), 'exercise_name')
+    ->build();
+
+// Meal list - expanded by default  
+$components[] = C::button('Add Meal')->addClass('btn-add-item')->initialState('hidden')->build();
+$components[] = C::itemList()
+    ->item('meal-1', 'Chicken & Rice', '#', 'Favorite', 'in-program', 4)
+    ->filterPlaceholder('Search meals...')
+    ->createForm(route('meal.create'), 'meal_name')
+    ->initialState('expanded')
+    ->build();
+```
+
+## Quick Actions Component
+
+Standardized action button grid for common page operations.
+
+```php
+C::quickActions('Quick Actions')
+    ->formAction('fa-star', route('exercise.promote', $exercise), 'POST', [], 'Promote', 'btn-primary')
+    ->formAction('fa-code-fork', route('exercise.merge.form', $exercise), 'GET', [], 'Merge', 'btn-secondary')
+    ->formAction('fa-trash', route('exercise.destroy', $exercise), 'DELETE', [], 'Delete', 'btn-danger', 'Are you sure?')
+    ->linkAction('fa-edit', route('exercise.edit', $exercise), 'Edit', 'btn-secondary')
+    ->initialState('visible')
+    ->build()
+```
+
+**Methods:**
+- `formAction($icon, $action, $method, $params, $text, $cssClass, $confirm, $disabled, $disabledReason)` - Form-based action
+- `linkAction($icon, $url, $text, $cssClass)` - Link-based action  
+- `initialState($state)` - 'visible' (default) or 'hidden'
+
+**Use Cases:**
+- Exercise management (promote, merge, delete)
+- User administration interfaces
+- Any page requiring multiple related actions
 
 ## Table Component
 

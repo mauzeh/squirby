@@ -4,19 +4,17 @@ Documentation for the flexible component-based mobile entry system.
 
 ## Status: ✅ PRODUCTION READY
 
-The flexible UI system has been successfully migrated and is now in production use for all three main mobile entry interfaces (lifts, foods, measurements).
+The flexible UI system is now in production use across all interfaces with a mature, stable component architecture.
 
 ## Quick Links
 
-- **[ComponentBuilder Quick Reference](component-builder-quick-reference.md)** - Complete API reference for all components
-- **[CHANGELOG v1.4](CHANGELOG-v1.4.md)** - Latest changes and new components
-- **[Mobile Entry Documentation](mobile-entry.md)** - Detailed architecture documentation
+- **[Reference](reference.md)** - Complete API reference for all components
+- **[CHANGELOG v1.5](CHANGELOG-v1.5.md)** - Latest incremental improvements and Quick Actions component
+- **[CHANGELOG v1.4](CHANGELOG-v1.4.md)** - Major expansion with 4 new components
 - **[Testing Guide](testing.md)** - How to test flexible UI components
-- **[Migration Guide](migration-guide.md)** - Complete guide for migrating from old to new system
-- **[Table Component Guide](table-component.md)** - Complete table component documentation
-- **[Initial State Configuration](initial-state.md)** - Configure collapsed/expanded state for item lists
-- **[Title Back Button](title-back-button.md)** - Add navigation buttons to page titles
-- **[Admin Menu Documentation](admin-menu.md)** - Admin interface documentation
+- **[Table Component](component-table.md)** - Complete table component documentation
+- **[Chart Component](component-chart.md)** - Chart.js integration with native API
+- **[Item List Component](component-item-list.md)** - Searchable lists with create functionality
 
 ## Overview
 
@@ -68,6 +66,7 @@ $data = [
 | Form | `form` | Data entry form with enhanced mobile inputs |
 | Items | `items` | Logged items with edit/delete actions |
 | Table | `table` | Tabular CRUD list with badges and bulk actions |
+| Quick Actions | `quick-actions` | Standardized action button grid for page operations |
 | PR Cards | `pr-cards` | Personal record tracking with visual highlights |
 | Calculator Grid | `calculator-grid` | Interactive calculation display |
 | Code Editor | `code-editor` | IDE-like syntax editor with highlighting |
@@ -122,7 +121,7 @@ return view('mobile-entry.flexible', compact('data'));
 | `danger` | Red | Error/critical forms |
 | `info` | Light Blue | Informational forms |
 
-## Migration Status
+## Production Status
 
 ### ✅ Completed
 - LiftLogService (exercise forms)
@@ -224,10 +223,10 @@ public function generateLoggedItems($userId, Carbon $selectedDate)
 ## Support
 
 For questions or issues:
-1. Check the [Quick Reference](component-builder-quick-reference.md) for API usage
-2. Review the [Migration Guide](migration-guide.md) for detailed examples
-3. Look at `FlexibleWorkflowController.php` for working examples
-4. Check the [Testing Guide](testing.md) for test patterns
+1. Check the [Reference](reference.md) for complete API documentation
+2. Look at `FlexibleWorkflowController.php` for working examples
+3. Check the [Testing Guide](testing.md) for test patterns
+4. Review component-specific guides for detailed usage
 
 ## Contributing
 
@@ -239,6 +238,13 @@ When adding new features:
 5. Add examples to the quick reference
 
 ## Version History
+
+- **v1.5** (December 24, 2025) - Incremental improvements with Quick Actions component
+  - New component: Quick Actions for standardized action button grids
+  - Enhanced FormComponentBuilder with checkbox array support
+  - Enhanced ButtonComponentBuilder with style mappings and url() method
+  - Continued adoption of component-based architecture patterns
+  - 59 commits with focused improvements
 
 - **v1.4** (December 13, 2025) - Major expansion with 4 new components and enhanced UX
   - New components: PR Cards, Calculator Grid, Code Editor, Markdown
@@ -270,8 +276,8 @@ When adding new features:
   - Backward compatible with existing code
   - Documentation and examples added
 
-- **v1.0** (November 10, 2025) - Initial migration completed
-  - All three main interfaces migrated
+- **v1.0** (November 10, 2025) - Initial production release
+  - All three main interfaces implemented
   - 92 tests updated and passing
   - Critical bug fixes applied
   - Documentation created

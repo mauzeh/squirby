@@ -168,41 +168,6 @@ The workout template edit page now uses:
 
 None - all changes are backward compatible.
 
-## Migration Guide
-
-### Adding Back Button to Existing Pages
-
-Replace separate button component with integrated back button:
-
-**Before:**
-```php
-$components[] = C::button('← Back')->asLink(route('index'))->build();
-$components[] = C::title('Page Title')->build();
-```
-
-**After:**
-```php
-$components[] = C::title('Page Title')
-    ->backButton('fa-arrow-left', route('index'), 'Back')
-    ->build();
-```
-
-### Using Multiple Lists
-
-No migration needed - just add multiple button/list pairs:
-
-```php
-$components[] = C::button('Add Item 1')->addClass('btn-add-item')->build();
-$components[] = C::itemList()->items(...)->build();
-
-$components[] = C::button('Add Item 2')->addClass('btn-add-item')->build();
-$components[] = C::itemList()->items(...)->build();
-```
-
-### Enabling Auto-Scroll
-
-No migration needed - auto-scroll is automatic when using `initialState('expanded')`.
-
 ## Performance
 
 - No performance impact

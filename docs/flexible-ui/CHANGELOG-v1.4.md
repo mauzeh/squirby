@@ -365,51 +365,6 @@ C::rawHtml('<div class="custom">Content</div>');
 - PR highlighting with visual effects
 - Responsive layouts for mobile
 
-## Migration Examples
-
-### Adding PR Cards to Exercise Pages
-
-```php
-// Before: Basic exercise display
-$components[] = C::title('Bench Press')->build();
-
-// After: With PR cards
-$components[] = C::title('Bench Press')->build();
-$components[] = C::prCards('Personal Records')
-    ->card('1RM', '225 lbs', '2 days ago', true)
-    ->card('5RM', '185 lbs', '1 week ago', false)
-    ->build();
-```
-
-### Upgrading Forms with Enhanced UX
-
-```php
-// Before: Basic form
-C::form('workout', 'Log Exercise')
-    ->numericField('weight', 'Weight:', 185)
-    ->submitButton('Log')
-    ->build();
-
-// After: Enhanced UX
-C::form('workout', 'Log Exercise')
-    ->numericField('weight', 'Weight:', 185, 5, 45, 500)
-    ->submitButton('Log Exercise', 'btn-success btn-large')
-    ->inputMode('numeric')
-    ->selectOnFocus(true)
-    ->build();
-```
-
-### Adding Code Editor for WOD Syntax
-
-```php
-// New: WOD syntax editing
-$components[] = C::codeEditor('wod-content', 'Workout Description')
-    ->content($workout->description)
-    ->placeholder('Enter workout using WOD syntax...')
-    ->autocomplete($exerciseNames)
-    ->build();
-```
-
 ## Breaking Changes
 
 None - all changes are backward compatible.
@@ -445,7 +400,6 @@ This changelog documents all changes since v1.3. Additional documentation needed
 - Code Editor component guide
 - Markdown component guide
 - Updated quick reference with new APIs
-- Migration examples for new components
 
 ## Statistics
 

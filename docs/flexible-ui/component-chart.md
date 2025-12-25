@@ -217,7 +217,7 @@ The chart component automatically loads:
 
 Libraries are loaded once per page and cached for subsequent charts.
 
-## Migration from Raw HTML
+## Upgrading from Raw HTML
 
 **Before:**
 ```php

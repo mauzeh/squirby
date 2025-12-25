@@ -244,13 +244,7 @@ These features are actively used in:
 
 None - all changes are backward compatible.
 
-## Migration Guide
-
-### Adding Clickable Sub-Items
-
-No migration needed - automatically applied when sub-item has single link action.
-
-### Using Compact Buttons
+## Performance Improvements
 
 Add `->compact()` to row builder:
 
