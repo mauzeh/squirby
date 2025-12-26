@@ -1,1 +1,0 @@
-@props(['reps', 'sets']){{ $sets }} x {{ $reps }}
