@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Actions\Workouts\CreateWorkoutAction;
 use App\Actions\Workouts\UpdateWorkoutAction;
 use App\Http\Controllers\Concerns\DetectsSimpleWorkouts;
+use App\Models\Exercise;
 use App\Models\Workout;
 use App\Models\WorkoutExercise;
 use App\Services\ComponentBuilder as C;
@@ -24,6 +25,22 @@ class WorkoutController extends Controller
         private CreateWorkoutAction $createWorkoutAction,
         private UpdateWorkoutAction $updateWorkoutAction
     ) {}
+
+    /**
+     * Get exercise names for autocomplete
+     */
+    private function getExerciseNames()
+    {
+        $userId = Auth::id();
+        
+        return Exercise::availableToUser($userId)
+            ->select('title')
+            ->orderBy('title')
+            ->get()
+            ->pluck('title')
+            ->unique()
+            ->values();
+    }
 
     /**
      * Display a listing of the user's workouts
@@ -192,7 +209,7 @@ class WorkoutController extends Controller
             ]
         ];
 
-        $data = ['components' => $components];
+        $data = ['components' => $components, 'exerciseNames' => $this->getExerciseNames()];
         return view('mobile-entry.flexible', compact('data'));
     }
 
@@ -322,7 +339,7 @@ class WorkoutController extends Controller
             ->confirmMessage('Are you sure you want to delete this workout? This action cannot be undone.')
             ->build();
 
-        $data = ['components' => $components];
+        $data = ['components' => $components, 'exerciseNames' => $this->getExerciseNames()];
         return view('mobile-entry.flexible', compact('data'));
     }
 

@@ -17,19 +17,15 @@
             let selectedIndex = -1;
             let exercisesLoaded = false;
             
-            // Fetch exercise names immediately
-            fetch('/api/exercises/autocomplete')
-                .then(res => {
-                    console.log('Autocomplete response status:', res.status);
-                    return res.json();
-                })
-                .then(data => { 
-                    console.log('Autocomplete data received:', data);
-                    exercises = Array.isArray(data) ? data : [];
-                    exercisesLoaded = true;
-                    console.log('Loaded exercises for autocomplete:', exercises.length);
-                })
-                .catch(err => console.error('Failed to load exercises:', err));
+            // Use inline exercise names
+            if (window.exerciseNames && Array.isArray(window.exerciseNames)) {
+                exercises = window.exerciseNames;
+                exercisesLoaded = true;
+                console.log('Using inline exercise names:', exercises.length);
+            } else {
+                console.warn('No exercise names found in window.exerciseNames');
+                exercisesLoaded = true; // Set to true to prevent infinite waiting
+            }
             
             // Find the component-code-editor parent
             const editorComponent = textarea.closest('.component-code-editor');

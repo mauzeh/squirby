@@ -27,6 +27,11 @@
             allPRs: {{ isset($data['all_prs']) && $data['all_prs'] ? 'true' : 'false' }}
         };
         
+        // Exercise names for autocomplete (if available)
+        @if(isset($data['exerciseNames']))
+            window.exerciseNames = @json($data['exerciseNames']);
+        @endif
+        
         // Check for PR flag from session and store in sessionStorage
         @if(session('is_pr'))
             sessionStorage.setItem('is_pr', 'true');
