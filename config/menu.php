@@ -9,7 +9,7 @@ return [
             'icon' => 'fa-dumbbell',
             'route' => 'mobile-entry.lifts',
             'patterns' => [ // Patterns for main item active state and sub-menu dispatch
-                'lift-logs.*', 'recommendations.*', 'mobile-entry.lifts', 'workouts.*',
+                'lift-logs.*', 'recommendations.*', 'mobile-entry.lifts', 'workouts.*', 'exercises.show-logs',
             ],
             'children' => [ // Lifts Sub-Menu Items
                 [
@@ -126,7 +126,7 @@ return [
             'label' => null,
             'icon' => 'fa-cog',
             'route' => 'users.index', // Default route when clicking the main settings icon
-            'patterns' => ['users.*', 'exercises.*'], // Patterns for both user and exercise routes
+            'patterns' => ['users.*', 'exercises.index', 'exercises.create', 'exercises.edit', 'exercises.destroy'], // Admin exercise management only
             'style' => 'padding: 14px 8px',
             'roles' => ['Admin'], // Only for Admin
             'children' => [ // Settings Sub-Menu Items
@@ -138,7 +138,7 @@ return [
                 [
                     'label' => 'Exercises',
                     'route' => 'exercises.index',
-                    'patterns' => ['exercises.*'],
+                    'patterns' => ['exercises.index', 'exercises.create', 'exercises.edit', 'exercises.destroy'],
                 ],
             ],
         ],
