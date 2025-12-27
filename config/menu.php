@@ -120,6 +120,7 @@ return [
                 [ 'label' => null, 'icon' => 'fa-check-square', 'route' => 'labs.table-bulk-selection', 'title' => 'Table Bulk Selection', 'patterns' => ['labs.table-bulk-selection'] ],
                 [ 'label' => null, 'icon' => 'fa-apple-alt', 'route' => 'labs.ingredient-entry', 'title' => 'Ingredient Entry', 'patterns' => ['labs.ingredient-entry'] ],
                 [ 'label' => null, 'icon' => 'fa-chart-line', 'route' => 'labs.chart-example', 'title' => 'Chart Example', 'patterns' => ['labs.chart-example'] ],
+                [ 'label' => null, 'icon' => 'fa-folder-open', 'route' => 'labs.tabbed-lift-logger', 'title' => 'Tabbed Container', 'patterns' => ['labs.tabbed-lift-logger'] ],
             ],
         ],
         [
