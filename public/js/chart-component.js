@@ -89,25 +89,81 @@ function initializeCharts() {
             return;
         }
         
-        try {
-            const type = canvas.dataset.chartType;
-            const datasets = JSON.parse(canvas.dataset.chartDatasets || '[]');
-            const options = JSON.parse(canvas.dataset.chartOptions || '{}');
-            
-            const ctx = canvas.getContext('2d');
-            
-            new Chart(ctx, {
-                type: type,
-                data: { datasets: datasets },
-                options: options
-            });
-            
-            // Mark as initialized
-            canvas.dataset.chartInitialized = 'true';
-        } catch (error) {
-            console.error('Failed to initialize chart:', error, canvas);
+        // Check if canvas is visible
+        if (isElementVisible(canvas)) {
+            initializeChart(canvas);
+        } else {
+            // Set up observer for when it becomes visible
+            observeChartVisibility(canvas);
         }
     });
+}
+
+/**
+ * Initialize a single chart
+ */
+function initializeChart(canvas) {
+    if (canvas.dataset.chartInitialized === 'true') {
+        return;
+    }
+    
+    try {
+        const type = canvas.dataset.chartType;
+        const datasets = JSON.parse(canvas.dataset.chartDatasets || '[]');
+        const options = JSON.parse(canvas.dataset.chartOptions || '{}');
+        
+        const ctx = canvas.getContext('2d');
+        
+        new Chart(ctx, {
+            type: type,
+            data: { datasets: datasets },
+            options: options
+        });
+        
+        // Mark as initialized
+        canvas.dataset.chartInitialized = 'true';
+    } catch (error) {
+        console.error('Failed to initialize chart:', error, canvas);
+    }
+}
+
+/**
+ * Check if element is visible (not hidden by display:none, visibility:hidden, or hidden attribute)
+ */
+function isElementVisible(element) {
+    const rect = element.getBoundingClientRect();
+    const style = window.getComputedStyle(element);
+    
+    return rect.width > 0 && 
+           rect.height > 0 && 
+           style.display !== 'none' && 
+           style.visibility !== 'hidden' &&
+           !element.hasAttribute('hidden') &&
+           !element.closest('[hidden]');
+}
+
+/**
+ * Set up intersection observer to initialize chart when it becomes visible
+ */
+function observeChartVisibility(canvas) {
+    // Create observer if it doesn't exist
+    if (!window.chartVisibilityObserver) {
+        window.chartVisibilityObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting && isElementVisible(entry.target)) {
+                    initializeChart(entry.target);
+                    // Stop observing once initialized
+                    window.chartVisibilityObserver.unobserve(entry.target);
+                }
+            });
+        }, {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.1
+        });
+    }
+    
+    window.chartVisibilityObserver.observe(canvas);
 }
 
 /**
@@ -128,3 +184,9 @@ if (document.readyState === 'loading') {
     // DOM is already ready
     initChartsWhenReady();
 }
+
+// Export functions for use by other components
+window.ChartComponent = {
+    initializeCharts: initializeCharts,
+    loadChartLibraries: loadChartLibraries
+};

@@ -89,10 +89,29 @@ class TabsComponentBuilder
      */
     public function build(): array
     {
+        // Collect required scripts from nested tab components
+        $requiredScripts = ['mobile-entry/tabs'];
+        
+        foreach ($this->data['tabs'] as $tab) {
+            foreach ($tab['components'] as $component) {
+                if (isset($component['requiresScript'])) {
+                    $scripts = is_array($component['requiresScript']) 
+                        ? $component['requiresScript'] 
+                        : [$component['requiresScript']];
+                    
+                    foreach ($scripts as $script) {
+                        if (!in_array($script, $requiredScripts)) {
+                            $requiredScripts[] = $script;
+                        }
+                    }
+                }
+            }
+        }
+        
         return [
             'type' => 'tabs',
             'data' => $this->data,
-            'requiresScript' => 'mobile-entry/tabs'
+            'requiresScript' => $requiredScripts
         ];
     }
 }
