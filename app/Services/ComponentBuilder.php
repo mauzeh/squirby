@@ -15,6 +15,7 @@ use App\Services\Components\Interactive\BulkActionFormComponentBuilder;
 use App\Services\Components\Interactive\SelectAllControlComponentBuilder;
 use App\Services\Components\Interactive\CodeEditorComponentBuilder;
 use App\Services\Components\Interactive\QuickActionsComponentBuilder;
+use App\Services\Components\Interactive\TabsComponentBuilder;
 use App\Services\Components\Lists\ItemListComponentBuilder;
 use App\Services\Components\Tables\TableComponentBuilder;
 use App\Services\Components\Charts\ChartComponentBuilder;
@@ -196,5 +197,13 @@ class ComponentBuilder
     public static function quickActions(string $title = 'Quick Actions'): QuickActionsComponentBuilder
     {
         return new QuickActionsComponentBuilder($title);
+    }
+    
+    /**
+     * Create a tabs component
+     */
+    public static function tabs(string $id): TabsComponentBuilder
+    {
+        return new TabsComponentBuilder($id);
     }
 }

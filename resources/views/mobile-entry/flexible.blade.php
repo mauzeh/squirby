@@ -18,6 +18,7 @@
     <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/markdown.css') }}">
     <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/code-editor.css') }}">
     <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/quick-actions.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/tabs.css') }}">
 @endsection
 
 @section('scripts')

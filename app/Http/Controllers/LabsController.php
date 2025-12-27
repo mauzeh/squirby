@@ -1024,4 +1024,151 @@ class LabsController extends Controller
         
         return view('mobile-entry.flexible', compact('data'));
     }
+    
+    /**
+     * Example: Tabbed interface with lift logging form and historical graph
+     * Demonstrates tabs component with form and chart in separate tabs
+     */
+    public function tabbedLiftLogger(Request $request)
+    {
+        // Generate sample chart data for the historical tab
+        $chartData = [
+            'datasets' => [
+                [
+                    'label' => 'Working Weight (lbs)',
+                    'data' => [
+                        ['x' => '2024-11-01', 'y' => 135],
+                        ['x' => '2024-11-05', 'y' => 140],
+                        ['x' => '2024-11-08', 'y' => 145],
+                        ['x' => '2024-11-12', 'y' => 150],
+                        ['x' => '2024-11-15', 'y' => 155],
+                        ['x' => '2024-11-19', 'y' => 160],
+                        ['x' => '2024-11-22', 'y' => 165],
+                        ['x' => '2024-11-26', 'y' => 170],
+                    ],
+                    'borderColor' => 'rgb(75, 192, 192)',
+                    'backgroundColor' => 'rgba(75, 192, 192, 0.2)',
+                    'tension' => 0.1,
+                    'fill' => true,
+                ],
+                [
+                    'label' => '1RM Estimate (lbs)',
+                    'data' => [
+                        ['x' => '2024-11-01', 'y' => 180],
+                        ['x' => '2024-11-05', 'y' => 187],
+                        ['x' => '2024-11-08', 'y' => 193],
+                        ['x' => '2024-11-12', 'y' => 200],
+                        ['x' => '2024-11-15', 'y' => 207],
+                        ['x' => '2024-11-19', 'y' => 213],
+                        ['x' => '2024-11-22', 'y' => 220],
+                        ['x' => '2024-11-26', 'y' => 227],
+                    ],
+                    'borderColor' => 'rgb(255, 99, 132)',
+                    'backgroundColor' => 'rgba(255, 99, 132, 0.2)',
+                    'tension' => 0.1,
+                    'fill' => true,
+                ]
+            ]
+        ];
+        
+        // Components for the "Log Lift" tab
+        $logLiftComponents = [
+            // Form for logging the lift
+            C::form('bench-press-log', 'Bench Press')
+                ->type('primary')
+                ->formAction(route('labs.tabbed-lift-logger'))
+                ->message('info', '185 lbs × 8 reps × 3 sets', 'Last workout:')
+                ->message('tip', 'Try to increase weight or reps today!', 'Goal:')
+                ->numericField('weight', 'Weight (lbs):', 185, 5, 45, 500)
+                ->numericField('reps', 'Reps:', 8, 1, 1, 50)
+                ->numericField('sets', 'Sets:', 3, 1, 1, 10)
+                ->textareaField('notes', 'Notes:', '', 'How did it feel?')
+                ->hiddenField('exercise_id', 1)
+                ->hiddenField('date', now()->toDateString())
+                ->submitButton('Log Workout')
+                ->build(),
+            
+            // Quick stats summary
+            C::summary()
+                ->item('streak', '12 days', 'Current Streak')
+                ->item('this_week', '3', 'Workouts This Week')
+                ->item('pr', '185 lbs', 'Current PR')
+                ->item('volume', '4,440 lbs', 'Total Volume')
+                ->build(),
+        ];
+        
+        // Components for the "History" tab
+        $historyComponents = [
+            // Progress chart
+            C::chart('bench-progress-chart', 'Bench Press Progress')
+                ->type('line')
+                ->datasets($chartData['datasets'])
+                ->timeScale('day')
+                ->beginAtZero()
+                ->showLegend()
+                ->ariaLabel('Bench press progress showing working weight and estimated 1RM over time')
+                ->build(),
+            
+            // Recent workouts table
+            C::table()
+                ->row(1, 'Nov 26, 2024', '170 lbs × 5 reps × 3 sets', '1RM: 227 lbs')
+                    ->badge('Today', 'success')
+                    ->badge('170 lbs', 'dark', true)
+                    ->badge('PR!', 'success')
+                    ->linkAction('fa-edit', route('labs.tabbed-lift-logger'), 'Edit')
+                    ->formAction('fa-trash', route('labs.tabbed-lift-logger'), 'DELETE', [], 'Delete', 'btn-danger', true)
+                    ->add()
+                ->row(2, 'Nov 22, 2024', '165 lbs × 6 reps × 3 sets', '1RM: 220 lbs')
+                    ->badge('4 days ago', 'info')
+                    ->badge('165 lbs', 'dark', true)
+                    ->linkAction('fa-edit', route('labs.tabbed-lift-logger'), 'Edit')
+                    ->formAction('fa-trash', route('labs.tabbed-lift-logger'), 'DELETE', [], 'Delete', 'btn-danger', true)
+                    ->add()
+                ->row(3, 'Nov 19, 2024', '160 lbs × 8 reps × 3 sets', '1RM: 213 lbs')
+                    ->badge('11/19', 'neutral')
+                    ->badge('160 lbs', 'dark', true)
+                    ->linkAction('fa-edit', route('labs.tabbed-lift-logger'), 'Edit')
+                    ->formAction('fa-trash', route('labs.tabbed-lift-logger'), 'DELETE', [], 'Delete', 'btn-danger', true)
+                    ->add()
+                ->row(4, 'Nov 15, 2024', '155 lbs × 8 reps × 3 sets', '1RM: 207 lbs')
+                    ->badge('11/15', 'neutral')
+                    ->badge('155 lbs', 'dark', true)
+                    ->linkAction('fa-edit', route('labs.tabbed-lift-logger'), 'Edit')
+                    ->formAction('fa-trash', route('labs.tabbed-lift-logger'), 'DELETE', [], 'Delete', 'btn-danger', true)
+                    ->add()
+                ->ariaLabel('Recent bench press workouts')
+                ->spacedRows()
+                ->confirmMessage('deleteItem', 'Are you sure you want to delete this workout?')
+                ->build(),
+        ];
+        
+        $data = [
+            'components' => [
+                // Page title with back button
+                C::title('Bench Press Tracker', 'Log workouts and view progress')
+                    ->backButton('fa-arrow-left', route('labs.with-nav'), 'Back to examples')
+                    ->build(),
+                
+                // Status messages
+                C::messages()
+                    ->success('Great progress! You\'ve increased 35 lbs this month.')
+                    ->info('This demonstrates a tabbed interface with form and chart components.')
+                    ->tip('Use arrow keys to navigate between tabs', 'Accessibility:')
+                    ->build(),
+                
+                // Tabbed interface
+                C::tabs('lift-tracker-tabs')
+                    ->tab('log', 'Log Lift', $logLiftComponents, 'fa-plus', true)
+                    ->tab('history', 'History', $historyComponents, 'fa-chart-line')
+                    ->ariaLabels([
+                        'section' => 'Lift tracking interface',
+                        'tabList' => 'Switch between logging and history views',
+                        'tabPanel' => 'Content for selected tab'
+                    ])
+                    ->build(),
+            ],
+        ];
+        
+        return view('mobile-entry.flexible', compact('data'));
+    }
 }
