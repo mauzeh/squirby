@@ -243,7 +243,7 @@ class WodExerciseMatchingTest extends TestCase
         $response->assertSee('5 reps, building');
     }
 
-    public function test_wod_table_does_not_show_nonexistent_exercises()
+    public function test_wod_table_shows_nonexistent_exercises_from_advanced_workouts()
     {
         $user = User::factory()->create();
 
@@ -257,10 +257,9 @@ class WodExerciseMatchingTest extends TestCase
         $response = $this->actingAs($user)->get(route('workouts.index'));
 
         $response->assertStatus(200);
-        // Table should NOT show non-existent exercises
-        // (They will appear in the WOD display with a link to create them)
-        $response->assertDontSee('Nonexistent Exercise');
-        // The WOD display will still show it in markdown format
+        // Advanced workouts now show ALL exercises from WOD syntax, even non-existent ones
+        // This allows users to see what exercises are planned in the workout
+        $response->assertSee('Nonexistent Exercise');
         $response->assertSee('Test WOD'); // Workout name should be visible
     }
 }
