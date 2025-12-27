@@ -1049,12 +1049,14 @@ class LabsController extends Controller
         $errors = session()->get('errors', new \Illuminate\Support\MessageBag());
         
         // Determine which tab should be active
-        // If there are validation errors, show the form tab
+        // If there are validation errors, show the log tab
         // If there's a success message, show the history tab
-        // Otherwise, default to history tab
-        $activeTab = 'history'; // Default to history tab
+        // Otherwise, default to about tab (explanation)
+        $activeTab = 'about'; // Default to about tab
         if ($errors->any()) {
             $activeTab = 'log'; // Show form tab if there are errors
+        } elseif (session('success')) {
+            $activeTab = 'history'; // Show history tab if successful submission
         }
         
         // Generate sample chart data for the historical tab
@@ -1097,7 +1099,61 @@ class LabsController extends Controller
             ]
         ];
         
-        // Components for the "History" tab (now first)
+        // Components for the "About" tab (first - explanation)
+        $aboutComponents = [
+            // Explanation of the tabs component
+            C::messages()
+                ->info('This is a demonstration of the Tabs Component from Flexible UI v1.6')
+                ->tip('Tabs provide a clean way to organize related content in separate panels', 'Purpose:')
+                ->tip('Each tab can contain any combination of other components', 'Flexibility:')
+                ->build(),
+            
+            // Features summary
+            C::summary()
+                ->item('tabs', '3', 'Tabs in this example')
+                ->item('components', '6+', 'Components per tab')
+                ->item('scripts', 'Auto', 'Script loading')
+                ->item('a11y', '✓', 'Accessibility ready')
+                ->build(),
+            
+            // Feature details table
+            C::table()
+                ->row(1, 'Tab Navigation', 'Click tabs or use arrow keys', 'Keyboard accessible')
+                    ->badge('Accessible', 'success')
+                    ->add()
+                ->row(2, 'Active State Management', 'Only one tab active at a time', 'Automatic state handling')
+                    ->badge('Automatic', 'info')
+                    ->add()
+                ->row(3, 'Component Nesting', 'Forms, charts, tables, messages', 'Any component type')
+                    ->badge('Flexible', 'neutral')
+                    ->add()
+                ->row(4, 'Script Collection', 'Auto-loads required JavaScript', 'Chart.js, form validation, etc.')
+                    ->badge('Smart', 'success')
+                    ->add()
+                ->row(5, 'ARIA Labels', 'Screen reader friendly', 'Customizable accessibility labels')
+                    ->badge('WCAG', 'success')
+                    ->add()
+                ->ariaLabel('Tab component features')
+                ->spacedRows()
+                ->build(),
+            
+            // Code example
+            C::form('code-example', 'Basic Usage Example')
+                ->type('info')
+                ->message('tip', 'This is how you create a tabbed interface:', 'Code:')
+                ->textareaField('example_code', '', 
+                    "C::tabs('my-tabs')\n" .
+                    "    ->tab('tab1', 'First Tab', \$components1, 'fa-home')\n" .
+                    "    ->tab('tab2', 'Second Tab', \$components2, 'fa-chart')\n" .
+                    "    ->activeTab('tab1')\n" .
+                    "    ->ariaLabels(['section' => 'My interface'])\n" .
+                    "    ->build()",
+                    'Copy this code pattern'
+                )
+                ->build(),
+        ];
+
+        // Components for the "History" tab (now second)
         $historyComponents = [
             // Progress chart
             C::chart('bench-progress-chart', 'Bench Press Progress')
@@ -1142,7 +1198,7 @@ class LabsController extends Controller
                 ->build(),
         ];
         
-        // Components for the "Log Lift" tab (now second)
+        // Components for the "Log Lift" tab (now third)
         $logLiftComponents = [
             // Form for logging the lift
             C::form('bench-press-log', 'Bench Press')
@@ -1190,7 +1246,8 @@ class LabsController extends Controller
                     }
                     
                     if (!session('success') && !$errors->any()) {
-                        $messagesBuilder->info('This demonstrates a tabbed interface with form and chart components.')
+                        $messagesBuilder->info('This demonstrates a tabbed interface with three tabs: About, History, and Log.')
+                            ->tip('The About tab explains how the tabs component works', 'New:')
                             ->tip('Use arrow keys to navigate between tabs', 'Accessibility:')
                             ->tip('Form validation errors will automatically show the Log tab', 'Demo:');
                     }
@@ -1198,13 +1255,14 @@ class LabsController extends Controller
                     return $messagesBuilder->build();
                 })(),
                 
-                // Tabbed interface - History first, Log second
+                // Tabbed interface - About first, History second, Log third
                 C::tabs('lift-tracker-tabs')
+                    ->tab('about', 'About', $aboutComponents, 'fa-info-circle', $activeTab === 'about')
                     ->tab('history', 'History', $historyComponents, 'fa-chart-line', $activeTab === 'history')
                     ->tab('log', 'Log Lift', $logLiftComponents, 'fa-plus', $activeTab === 'log')
                     ->ariaLabels([
-                        'section' => 'Lift tracking interface',
-                        'tabList' => 'Switch between history and logging views',
+                        'section' => 'Lift tracking interface with component explanation',
+                        'tabList' => 'Switch between about, history and logging views',
                         'tabPanel' => 'Content for selected tab'
                     ])
                     ->build(),
