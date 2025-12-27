@@ -162,11 +162,6 @@ class ExerciseController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Exercise $exercise)
-    {
-        return view('exercises.show', compact('exercise'));
-    }
-
     /**
      * Show the form for editing the specified resource.
      */

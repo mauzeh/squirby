@@ -64,7 +64,7 @@ Route::middleware('auth')->group(function () {
     Route::get('body-logs/type/{measurementType}', [BodyLogController::class, 'showByType'])->name('body-logs.show-by-type');
     Route::resource('measurement-types', MeasurementTypeController::class)->except(['show']);
 
-    Route::resource('exercises', ExerciseController::class);
+    Route::resource('exercises', ExerciseController::class)->except(['show']);
     Route::post('exercises/{exercise}/promote', [ExerciseController::class, 'promote'])->name('exercises.promote');
     Route::post('exercises/{exercise}/unpromote', [ExerciseController::class, 'unpromote'])->name('exercises.unpromote');
     Route::get('exercises/{exercise}/logs', [ExerciseController::class, 'showLogs'])->name('exercises.show-logs');

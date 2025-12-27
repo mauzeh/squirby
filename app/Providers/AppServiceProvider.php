@@ -50,7 +50,6 @@ class AppServiceProvider extends ServiceProvider
         // Register view composer for exercise alias display
         View::composer([
             'exercises.index',
-            'exercises.logs',
             'lift-logs.*',
             'programs.*',
             'mobile-entry.*',
