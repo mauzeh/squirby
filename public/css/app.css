@@ -1,3 +1,52 @@
+/* =============================================================================
+   FOUNDATIONAL STYLES
+   These styles address common browser inconsistencies and ensure consistent
+   behavior across all interactive elements in the application.
+   ============================================================================= */
+
+/* 
+ * Form Element Font Inheritance
+ * Problem: Browsers apply default fonts to form elements (buttons, inputs, etc.)
+ * that don't inherit from parent elements, causing visual inconsistencies.
+ * Solution: Force all form elements to inherit typography from their parents.
+ */
+button, 
+input, 
+select, 
+textarea {
+    font-family: inherit;
+    font-size: inherit;
+    line-height: inherit;
+}
+
+/* 
+ * Button Reset
+ * Problem: Browsers apply inconsistent default styling to buttons.
+ * Solution: Remove default button styling to allow custom styling to work properly.
+ * Note: Individual components will add their own styling as needed.
+ */
+button {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+}
+
+/* 
+ * Box Sizing Reset
+ * Problem: Default box-sizing can cause layout issues with padding/borders.
+ * Solution: Use border-box for more predictable sizing behavior.
+ */
+*, 
+*::before, 
+*::after {
+    box-sizing: border-box;
+}
+
+/* =============================================================================
+   APPLICATION STYLES
+   ============================================================================= */
+
 body {
     font-family: sans-serif;
     background-color: #1a1a1a; /* Dark background */
