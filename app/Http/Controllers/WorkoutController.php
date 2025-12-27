@@ -90,12 +90,26 @@ class WorkoutController extends Controller
                 }
                 
                 // Get exercises for display
-                $exerciseCount = $workout->exercises->count();
-                if ($exerciseCount > 0) {
-                    $exerciseNames = $workout->exercises->pluck('exercise.title')->filter()->toArray();
-                    $line2 = implode(', ', $exerciseNames);
+                if ($isSimple) {
+                    // Simple workout: use workout_exercises table
+                    $exerciseCount = $workout->exercises->count();
+                    if ($exerciseCount > 0) {
+                        $exerciseNames = $workout->exercises->pluck('exercise.title')->filter()->toArray();
+                        $line2 = implode(', ', $exerciseNames);
+                    } else {
+                        $line2 = 'No exercises';
+                    }
                 } else {
-                    $line2 = 'No exercises';
+                    // Advanced workout: parse exercises from WOD syntax
+                    $wodParser = app(\App\Services\WodParser::class);
+                    $exerciseNames = $wodParser->extractLoggableExercises($workout->wod_syntax);
+                    $exerciseCount = count($exerciseNames);
+                    
+                    if ($exerciseCount > 0) {
+                        $line2 = implode(', ', $exerciseNames);
+                    } else {
+                        $line2 = 'No exercises';
+                    }
                 }
                 $line3 = $workout->description ?: null;
 

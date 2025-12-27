@@ -429,4 +429,112 @@ class WorkoutTest extends TestCase
         // Advanced workout should show stored name
         $response->assertSee('Murph WOD');
     }
+
+    /** @test */
+    public function advanced_workout_index_shows_exercises_parsed_from_wod_syntax()
+    {
+        $adminRole = Role::where('name', 'Admin')->first();
+        $admin = User::factory()->create();
+        $admin->roles()->attach($adminRole);
+        
+        // Create an advanced workout with WOD syntax but no workout_exercises records
+        $workout = Workout::factory()->create([
+            'user_id' => $admin->id,
+            'name' => 'Tuesday Peak',
+            'wod_syntax' => "# Every 3 min. x 5 sets:\n* 3 [Strict Press], build per set\n* 8-10 [DB Tripod Row] (/side)\n\n# 4 Rounds (16min. Total):\n* 40sec. of [Double DB Hang Cleans]\n* 20sec. Rest\n* 40sec. of [Double Unders]\n* 20sec. Rest\n* 40sec. of [Toes-To-Bar]\n* 20sec. Rest\n* 40sec. of Max [Push-Ups]\n* 20sec. Rest",
+        ]);
+        
+        // Verify no workout_exercises records exist (simulating the bug scenario)
+        $this->assertEquals(0, $workout->exercises()->count());
+        
+        $response = $this->actingAs($admin)->get(route('workouts.index'));
+        
+        $response->assertOk();
+        // Should show exercises parsed from WOD syntax, not "No exercises"
+        $response->assertSee('Strict Press, DB Tripod Row, Double DB Hang Cleans, Double Unders, Toes-To-Bar, Push-Ups');
+        $response->assertDontSee('No exercises');
+    }
+
+    /** @test */
+    public function advanced_workout_with_no_loggable_exercises_shows_no_exercises()
+    {
+        $adminRole = Role::where('name', 'Admin')->first();
+        $admin = User::factory()->create();
+        $admin->roles()->attach($adminRole);
+        
+        // Create an advanced workout with WOD syntax but no [Exercise Name] patterns
+        $workout = Workout::factory()->create([
+            'user_id' => $admin->id,
+            'name' => 'Cardio Day',
+            'wod_syntax' => "# Warm-up:\n5 min easy jog\n\n# Main Set:\n20 min steady state run\n\n# Cool-down:\n5 min walk",
+        ]);
+        
+        $response = $this->actingAs($admin)->get(route('workouts.index'));
+        
+        $response->assertOk();
+        // Should show "No exercises" since there are no [Exercise Name] patterns
+        $response->assertSee('No exercises');
+    }
+
+    /** @test */
+    public function simple_workout_index_uses_workout_exercises_table()
+    {
+        $user = User::factory()->create();
+        
+        // Create a simple workout (no wod_syntax)
+        $workout = Workout::factory()->create([
+            'user_id' => $user->id,
+            'name' => 'Simple Workout',
+            'wod_syntax' => null,
+        ]);
+        
+        $exercise1 = Exercise::factory()->create(['title' => 'Bench Press', 'user_id' => null]);
+        $exercise2 = Exercise::factory()->create(['title' => 'Squat', 'user_id' => null]);
+        
+        WorkoutExercise::create(['workout_id' => $workout->id, 'exercise_id' => $exercise1->id, 'order' => 1]);
+        WorkoutExercise::create(['workout_id' => $workout->id, 'exercise_id' => $exercise2->id, 'order' => 2]);
+        
+        $response = $this->actingAs($user)->get(route('workouts.index'));
+        
+        $response->assertOk();
+        // Should show exercises from workout_exercises table
+        $response->assertSee('Bench Press, Squat');
+        $response->assertDontSee('No exercises');
+    }
+
+    /** @test */
+    public function exercise_display_consistency_between_index_and_edit_pages()
+    {
+        $adminRole = Role::where('name', 'Admin')->first();
+        $admin = User::factory()->create();
+        $admin->roles()->attach($adminRole);
+        
+        // Create exercises that will be matched by the WOD syntax
+        Exercise::factory()->create(['title' => 'Strict Press', 'user_id' => null]);
+        Exercise::factory()->create(['title' => 'Push-Ups', 'user_id' => null]);
+        
+        // Create an advanced workout
+        $workout = Workout::factory()->create([
+            'user_id' => $admin->id,
+            'name' => 'Test Workout',
+            'wod_syntax' => "# Block 1:\n[Strict Press]: 5x5\n[Push-Ups]: 3x10",
+        ]);
+        
+        // Get index page response
+        $indexResponse = $this->actingAs($admin)->get(route('workouts.index'));
+        $indexResponse->assertOk();
+        
+        // Get edit page response
+        $editResponse = $this->actingAs($admin)->get(route('workouts.edit', $workout->id));
+        $editResponse->assertOk();
+        
+        // Both pages should show the same exercises
+        $indexResponse->assertSee('Strict Press, Push-Ups');
+        $editResponse->assertSee('Strict Press');
+        $editResponse->assertSee('Push-Ups');
+        
+        // Neither should show "No exercises"
+        $indexResponse->assertDontSee('No exercises');
+        $editResponse->assertDontSee('No loggable exercises found');
+    }
 }
