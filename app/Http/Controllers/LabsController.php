@@ -1031,6 +1031,32 @@ class LabsController extends Controller
      */
     public function tabbedLiftLogger(Request $request)
     {
+        // Handle form submission
+        if ($request->isMethod('post')) {
+            $request->validate([
+                'weight' => 'required|numeric|min:1|max:1000',
+                'reps' => 'required|integer|min:1|max:100',
+                'sets' => 'required|integer|min:1|max:20',
+                'notes' => 'nullable|string|max:500',
+            ]);
+            
+            // If validation passes, redirect with success
+            return redirect()->route('labs.tabbed-lift-logger')
+                ->with('success', 'Workout logged successfully!');
+        }
+        
+        // Get validation errors from session
+        $errors = session()->get('errors', new \Illuminate\Support\MessageBag());
+        
+        // Determine which tab should be active
+        // If there are validation errors, show the form tab
+        // If there's a success message, show the history tab
+        // Otherwise, default to history tab
+        $activeTab = 'history'; // Default to history tab
+        if ($errors->any()) {
+            $activeTab = 'log'; // Show form tab if there are errors
+        }
+        
         // Generate sample chart data for the historical tab
         $chartData = [
             'datasets' => [
@@ -1071,33 +1097,7 @@ class LabsController extends Controller
             ]
         ];
         
-        // Components for the "Log Lift" tab
-        $logLiftComponents = [
-            // Form for logging the lift
-            C::form('bench-press-log', 'Bench Press')
-                ->type('primary')
-                ->formAction(route('labs.tabbed-lift-logger'))
-                ->message('info', '185 lbs × 8 reps × 3 sets', 'Last workout:')
-                ->message('tip', 'Try to increase weight or reps today!', 'Goal:')
-                ->numericField('weight', 'Weight (lbs):', 185, 5, 45, 500)
-                ->numericField('reps', 'Reps:', 8, 1, 1, 50)
-                ->numericField('sets', 'Sets:', 3, 1, 1, 10)
-                ->textareaField('notes', 'Notes:', '', 'How did it feel?')
-                ->hiddenField('exercise_id', 1)
-                ->hiddenField('date', now()->toDateString())
-                ->submitButton('Log Workout')
-                ->build(),
-            
-            // Quick stats summary
-            C::summary()
-                ->item('streak', '12 days', 'Current Streak')
-                ->item('this_week', '3', 'Workouts This Week')
-                ->item('pr', '185 lbs', 'Current PR')
-                ->item('volume', '4,440 lbs', 'Total Volume')
-                ->build(),
-        ];
-        
-        // Components for the "History" tab
+        // Components for the "History" tab (now first)
         $historyComponents = [
             // Progress chart
             C::chart('bench-progress-chart', 'Bench Press Progress')
@@ -1142,6 +1142,32 @@ class LabsController extends Controller
                 ->build(),
         ];
         
+        // Components for the "Log Lift" tab (now second)
+        $logLiftComponents = [
+            // Form for logging the lift
+            C::form('bench-press-log', 'Bench Press')
+                ->type('primary')
+                ->formAction(route('labs.tabbed-lift-logger'))
+                ->message('info', '185 lbs × 8 reps × 3 sets', 'Last workout:')
+                ->message('tip', 'Try to increase weight or reps today!', 'Goal:')
+                ->numericField('weight', 'Weight (lbs):', old('weight', 185), 5, 45, 500)
+                ->numericField('reps', 'Reps:', old('reps', 8), 1, 1, 50)
+                ->numericField('sets', 'Sets:', old('sets', 3), 1, 1, 10)
+                ->textareaField('notes', 'Notes:', old('notes') ?? '', 'How did it feel?')
+                ->hiddenField('exercise_id', 1)
+                ->hiddenField('date', now()->toDateString())
+                ->submitButton('Log Workout')
+                ->build(),
+            
+            // Quick stats summary
+            C::summary()
+                ->item('streak', '12 days', 'Current Streak')
+                ->item('this_week', '3', 'Workouts This Week')
+                ->item('pr', '185 lbs', 'Current PR')
+                ->item('volume', '4,440 lbs', 'Total Volume')
+                ->build(),
+        ];
+        
         $data = [
             'components' => [
                 // Page title with back button
@@ -1150,19 +1176,35 @@ class LabsController extends Controller
                     ->build(),
                 
                 // Status messages
-                C::messages()
-                    ->success('Great progress! You\'ve increased 35 lbs this month.')
-                    ->info('This demonstrates a tabbed interface with form and chart components.')
-                    ->tip('Use arrow keys to navigate between tabs', 'Accessibility:')
-                    ->build(),
+                (function() use ($errors) {
+                    $messagesBuilder = C::messages();
+                    
+                    if (session('success')) {
+                        $messagesBuilder->success(session('success'));
+                    }
+                    
+                    if ($errors->any()) {
+                        foreach ($errors->all() as $error) {
+                            $messagesBuilder->error($error);
+                        }
+                    }
+                    
+                    if (!session('success') && !$errors->any()) {
+                        $messagesBuilder->info('This demonstrates a tabbed interface with form and chart components.')
+                            ->tip('Use arrow keys to navigate between tabs', 'Accessibility:')
+                            ->tip('Form validation errors will automatically show the Log tab', 'Demo:');
+                    }
+                    
+                    return $messagesBuilder->build();
+                })(),
                 
-                // Tabbed interface
+                // Tabbed interface - History first, Log second
                 C::tabs('lift-tracker-tabs')
-                    ->tab('log', 'Log Lift', $logLiftComponents, 'fa-plus', true)
-                    ->tab('history', 'History', $historyComponents, 'fa-chart-line')
+                    ->tab('history', 'History', $historyComponents, 'fa-chart-line', $activeTab === 'history')
+                    ->tab('log', 'Log Lift', $logLiftComponents, 'fa-plus', $activeTab === 'log')
                     ->ariaLabels([
                         'section' => 'Lift tracking interface',
-                        'tabList' => 'Switch between logging and history views',
+                        'tabList' => 'Switch between history and logging views',
                         'tabPanel' => 'Content for selected tab'
                     ])
                     ->build(),
