@@ -50,6 +50,7 @@ return view('mobile-entry.flexible', compact('data'));
 13. **code-editor** - IDE-like syntax editor with highlighting
 14. **markdown** - Rich text rendering with custom styling
 15. **chart** - Chart.js integration with enhanced styling
+16. **tabs** - Tabbed interface with multiple content panels
 
 ## Import
 
@@ -845,3 +846,226 @@ Sub-items with a single link action automatically become fully clickable:
 - Visual hover feedback on entire row
 - Button still functional
 - Automatic detection (no config needed)
+
+## Tabs Component
+
+Create tabbed interfaces where each tab can contain any combination of other components.
+
+### Basic Tabs
+```php
+C::tabs('my-tabs')
+    ->tab('first', 'First Tab', $firstTabComponents, 'fa-home', true)
+    ->tab('second', 'Second Tab', $secondTabComponents, 'fa-chart-line')
+    ->build()
+```
+
+### Complete Example
+```php
+// Components for the "Log Lift" tab
+$logLiftComponents = [
+    C::form('bench-press-log', 'Bench Press')
+        ->type('primary')
+        ->formAction(route('lift-logs.store'))
+        ->numericField('weight', 'Weight (lbs):', 185, 5, 45, 500)
+        ->numericField('reps', 'Reps:', 8, 1, 1, 50)
+        ->submitButton('Log Workout')
+        ->build(),
+    
+    C::summary()
+        ->item('streak', '12 days', 'Current Streak')
+        ->item('pr', '185 lbs', 'Current PR')
+        ->build(),
+];
+
+// Components for the "History" tab
+$historyComponents = [
+    C::chart('progress-chart', 'Progress Chart')
+        ->type('line')
+        ->datasets($chartData)
+        ->build(),
+    
+    C::table()
+        ->row(1, 'Recent Workout', 'Details')
+        ->build(),
+];
+
+// Create the tabbed interface
+$components = [
+    C::title('Bench Press Tracker')->build(),
+    
+    C::tabs('lift-tracker-tabs')
+        ->tab('log', 'Log Lift', $logLiftComponents, 'fa-plus', true)
+        ->tab('history', 'History', $historyComponents, 'fa-chart-line')
+        ->ariaLabels([
+            'section' => 'Lift tracking interface',
+            'tabList' => 'Switch between logging and history views',
+            'tabPanel' => 'Content for selected tab'
+        ])
+        ->build(),
+];
+```
+
+### Tab Configuration
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `id` | string | Unique identifier for the tab |
+| `label` | string | Display text for the tab button |
+| `components` | array | Array of component data to render in the tab |
+| `icon` | string | Optional FontAwesome icon class (e.g., 'fa-plus', 'fa-chart-line') |
+| `active` | bool | Whether this tab should be active by default |
+
+### Methods
+
+| Method | Parameters | Description |
+|--------|-----------|-------------|
+| `tab()` | `$id, $label, $components, $icon, $active` | Add a tab with content |
+| `activeTab()` | `string $tabId` | Set which tab should be active by default |
+| `ariaLabels()` | `array $labels` | Set accessibility labels |
+| `build()` | - | Build the component |
+
+### Accessibility Features
+
+- **ARIA Support**: Full ARIA labels and roles for screen readers
+- **Keyboard Navigation**: Arrow keys, Home, End keys for tab switching
+- **Focus Management**: Proper focus handling when switching tabs
+- **Screen Reader**: Proper tab/tabpanel relationships
+
+### Keyboard Navigation
+
+| Key | Action |
+|-----|--------|
+| `←` / `→` | Navigate between tabs |
+| `Home` | Go to first tab |
+| `End` | Go to last tab |
+| `Tab` | Move focus to tab content |
+
+### Responsive Design
+
+- **Mobile Optimized**: Scrollable tab navigation on small screens
+- **Touch Friendly**: 44px minimum touch targets
+- **Icon Handling**: Icons hidden on very small screens (< 480px)
+- **Flexible Layout**: Tabs expand to fill available width
+
+### Use Cases
+
+- **Form + Analytics**: Logging interface with historical data
+- **Settings Tabs**: Different configuration sections
+- **Multi-Step Workflows**: Break complex processes into tabs
+- **Content Organization**: Group related functionality
+
+### Integration with Other Components
+
+Each tab can contain any combination of components:
+
+```php
+$tabComponents = [
+    C::messages()->info('Tab-specific message')->build(),
+    C::form('tab-form', 'Form in Tab')->build(),
+    C::table()->row(1, 'Data', 'In Tab')->build(),
+    C::chart('tab-chart', 'Chart in Tab')->build(),
+];
+
+C::tabs('example')
+    ->tab('content', 'Content Tab', $tabComponents)
+    ->build()
+```
+
+### Example: Lift Logging with History
+
+```php
+public function tabbedLiftLogger(Request $request)
+{
+    // Chart data for history tab
+    $chartData = [
+        'datasets' => [
+            [
+                'label' => 'Working Weight (lbs)',
+                'data' => [
+                    ['x' => '2024-11-01', 'y' => 135],
+                    ['x' => '2024-11-05', 'y' => 140],
+                    // ... more data points
+                ],
+                'borderColor' => 'rgb(75, 192, 192)',
+                'backgroundColor' => 'rgba(75, 192, 192, 0.2)',
+            ]
+        ]
+    ];
+    
+    // Log tab components
+    $logComponents = [
+        C::form('bench-press-log', 'Bench Press')
+            ->type('primary')
+            ->formAction(route('lift-logs.store'))
+            ->message('info', '185 lbs × 8 reps × 3 sets', 'Last workout:')
+            ->numericField('weight', 'Weight (lbs):', 185, 5, 45, 500)
+            ->numericField('reps', 'Reps:', 8, 1, 1, 50)
+            ->numericField('sets', 'Sets:', 3, 1, 1, 10)
+            ->submitButton('Log Workout')
+            ->build(),
+        
+        C::summary()
+            ->item('streak', '12 days', 'Current Streak')
+            ->item('pr', '185 lbs', 'Current PR')
+            ->build(),
+    ];
+    
+    // History tab components
+    $historyComponents = [
+        C::chart('bench-progress-chart', 'Bench Press Progress')
+            ->type('line')
+            ->datasets($chartData['datasets'])
+            ->timeScale('day')
+            ->showLegend()
+            ->build(),
+        
+        C::table()
+            ->row(1, 'Nov 26, 2024', '170 lbs × 5 reps × 3 sets', '1RM: 227 lbs')
+                ->badge('Today', 'success')
+                ->badge('170 lbs', 'dark', true)
+                ->badge('PR!', 'success')
+                ->linkAction('fa-edit', route('edit'), 'Edit')
+                ->add()
+            ->build(),
+    ];
+    
+    $data = [
+        'components' => [
+            C::title('Bench Press Tracker', 'Log workouts and view progress')
+                ->backButton('fa-arrow-left', route('exercises.index'), 'Back')
+                ->build(),
+            
+            C::messages()
+                ->success('Great progress! You\'ve increased 35 lbs this month.')
+                ->tip('Use arrow keys to navigate between tabs', 'Accessibility:')
+                ->build(),
+            
+            C::tabs('lift-tracker-tabs')
+                ->tab('log', 'Log Lift', $logComponents, 'fa-plus', true)
+                ->tab('history', 'History', $historyComponents, 'fa-chart-line')
+                ->build(),
+        ],
+    ];
+    
+    return view('mobile-entry.flexible', compact('data'));
+}
+```
+
+### Files
+
+- **Builder**: `app/Services/Components/Interactive/TabsComponentBuilder.php`
+- **Template**: `resources/views/mobile-entry/components/tabs.blade.php`
+- **CSS**: `public/css/mobile-entry/components/tabs.css`
+- **JavaScript**: `public/js/mobile-entry/tabs.js`
+
+### Custom Events
+
+The tabs component triggers custom events for integration:
+
+```javascript
+// Listen for tab changes
+document.addEventListener('tabChanged', function(e) {
+    console.log('Switched to tab:', e.detail.tabId);
+    console.log('Container:', e.detail.container);
+});
+```

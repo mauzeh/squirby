@@ -15,6 +15,7 @@ The flexible UI system is now in production use across all interfaces with a mat
 - **[Table Component](component-table.md)** - Complete table component documentation
 - **[Chart Component](component-chart.md)** - Chart.js integration with native API
 - **[Item List Component](component-item-list.md)** - Searchable lists with create functionality
+- **[Tabs Component](component-tabs.md)** - Tabbed interfaces with multiple content panels
 
 ## Overview
 
@@ -72,6 +73,7 @@ $data = [
 | Code Editor | `code-editor` | IDE-like syntax editor with highlighting |
 | Markdown | `markdown` | Rich text rendering with custom styling |
 | Chart | `chart` | Chart.js integration with enhanced styling |
+| Tabs | `tabs` | Tabbed interface with multiple content panels |
 
 ## Quick Start
 
