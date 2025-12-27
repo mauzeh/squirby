@@ -9,6 +9,7 @@ The flexible UI system is now in production use across all interfaces with a mat
 ## Quick Links
 
 - **[Reference](reference.md)** - Complete API reference for all components
+- **[CHANGELOG v1.6](CHANGELOG-v1.6.md)** - Major new Tabs Component for tabbed interfaces
 - **[CHANGELOG v1.5](CHANGELOG-v1.5.md)** - Latest incremental improvements and Quick Actions component
 - **[CHANGELOG v1.4](CHANGELOG-v1.4.md)** - Major expansion with 4 new components
 - **[Testing Guide](testing.md)** - How to test flexible UI components
@@ -240,6 +241,15 @@ When adding new features:
 5. Add examples to the quick reference
 
 ## Version History
+
+- **v1.6** (December 27, 2025) - Major new Tabs Component for tabbed interfaces
+  - New component: Tabs for organizing content into tabbed interfaces
+  - Each tab can contain any combination of other components (forms, charts, tables, etc.)
+  - Full accessibility support with ARIA compliance and keyboard navigation
+  - Mobile-optimized responsive design with touch-friendly interactions
+  - Complete documentation with examples and best practices
+  - Live demo available at `/labs/tabbed-lift-logger`
+  - 100% backward compatible with existing component architecture
 
 - **v1.5** (December 24, 2025) - Incremental improvements with Quick Actions component
   - New component: Quick Actions for standardized action button grids
