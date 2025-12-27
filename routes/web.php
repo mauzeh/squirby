@@ -25,7 +25,7 @@ Route::get('/', function () {
         return redirect()->route('mobile-entry.lifts');
     }
     return redirect()->route('login');
-});
+})->name('home');
 
 
 

@@ -163,6 +163,9 @@ class ApplicationHealthTest extends TestCase
             // API/utility routes
             'sanctum.csrf-cookie',
             '_ignition.*',
+            
+            // Routes that redirect by design
+            'home', // Root route - redirects authenticated users
         ];
 
         foreach ($routes as $name => $route) {
