@@ -341,8 +341,6 @@ class WorkoutController extends Controller
             ]
         ];
 
-
-
         // Delete workout form
         $components[] = C::form('delete-workout', 'Removing this workout')
             ->formAction(route('workouts.destroy', $workout->id))
@@ -395,6 +393,4 @@ class WorkoutController extends Controller
             ->route('workouts.index')
             ->with('success', 'Workout deleted!');
     }
-
-
 }

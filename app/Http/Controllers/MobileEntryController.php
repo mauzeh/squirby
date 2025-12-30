@@ -195,8 +195,6 @@ class MobileEntryController extends Controller
         return view('mobile-entry.flexible', compact('data'));
     }
 
-
-
     /**
      * Create a new exercise from the mobile interface and redirect to lift log creation
      * 
@@ -294,8 +292,6 @@ class MobileEntryController extends Controller
             ->availableToUser($userId)
             ->exists();
     }
-
-
 
     /**
      * Display the food logging interface
@@ -636,7 +632,4 @@ class MobileEntryController extends Controller
 
         return view('mobile-entry.flexible', compact('data'));
     }
-
-
-
 }

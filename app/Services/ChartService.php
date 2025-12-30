@@ -54,8 +54,6 @@ class ChartService
         return ['datasets' => []];
     }
 
-
-
     /**
      * Generate chart data for BodyLogs.
      */

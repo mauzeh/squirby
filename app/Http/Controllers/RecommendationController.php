@@ -97,6 +97,4 @@ class RecommendationController extends Controller
             'todayProgramExercises'
         ));
     }
-
-
 }

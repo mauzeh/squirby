@@ -34,8 +34,6 @@ class FoodLogController extends Controller
         $this->redirectService = $redirectService;
     }
 
-
-
     /**
      * Show the form for editing the specified resource.
      */
@@ -117,10 +115,6 @@ class FoodLogController extends Controller
             'Log entry added successfully!'
         );
     }
-
-
-
-
 
     public function update(Request $request, FoodLog $foodLog)
     {
@@ -259,8 +253,6 @@ class FoodLogController extends Controller
         );
     }
 
-
-
     /**
      * Generate a celebratory message for food logging
      * 
@@ -323,5 +315,4 @@ class FoodLogController extends Controller
         // Replace placeholders in the template
         return str_replace([':meal', ':details'], [$mealName, $mealDescription], $randomTemplate);
     }
-
 }

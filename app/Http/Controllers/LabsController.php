@@ -1051,8 +1051,8 @@ class LabsController extends Controller
         // Determine which tab should be active
         // If there are validation errors, show the log tab
         // If there's a success message, show the history tab
-        // Otherwise, default to about tab (explanation)
-        $activeTab = 'about'; // Default to about tab
+        // Otherwise, default to help tab (explanation)
+        $activeTab = 'help'; // Default to help tab
         if ($errors->any()) {
             $activeTab = 'log'; // Show form tab if there are errors
         } elseif (session('success')) {
@@ -1099,8 +1099,8 @@ class LabsController extends Controller
             ]
         ];
         
-        // Components for the "About" tab (first - explanation)
-        $aboutComponents = [
+        // Components for the "Help" tab (first - explanation)
+        $helpComponents = [
             // Explanation of the tabs component
             C::messages()
                 ->info('This is a demonstration of the Tabs Component from Flexible UI v1.6')
@@ -1246,23 +1246,23 @@ class LabsController extends Controller
                     }
                     
                     if (!session('success') && !$errors->any()) {
-                        $messagesBuilder->info('This demonstrates a tabbed interface with three tabs: About, History, and Log.')
-                            ->tip('The About tab explains how the tabs component works', 'New:')
+                        $messagesBuilder->info('This demonstrates a tabbed interface with three tabs: Help, History, and Log Lift.')
+                            ->tip('The Help tab explains how the tabs component works', 'New:')
                             ->tip('Use arrow keys to navigate between tabs', 'Accessibility:')
-                            ->tip('Form validation errors will automatically show the Log tab', 'Demo:');
+                            ->tip('Form validation errors will automatically show the Log Lift tab', 'Demo:');
                     }
                     
                     return $messagesBuilder->build();
                 })(),
                 
-                // Tabbed interface - About first, History second, Log third
+                // Tabbed interface - Help first, History second, Log third
                 C::tabs('lift-tracker-tabs')
-                    ->tab('about', 'About', $aboutComponents, 'fa-info-circle', $activeTab === 'about')
+                    ->tab('help', 'Help', $helpComponents, 'fa-question-circle', $activeTab === 'help')
                     ->tab('history', 'History', $historyComponents, 'fa-chart-line', $activeTab === 'history')
                     ->tab('log', 'Log Lift', $logLiftComponents, 'fa-plus', $activeTab === 'log')
                     ->ariaLabels([
-                        'section' => 'Lift tracking interface with component explanation',
-                        'tabList' => 'Switch between about, history and logging views',
+                        'section' => 'Lift tracking interface with component help',
+                        'tabList' => 'Switch between help, history and logging views',
                         'tabPanel' => 'Content for selected tab'
                     ])
                     ->build(),

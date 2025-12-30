@@ -115,8 +115,6 @@ class ExerciseController extends Controller
         return view('mobile-entry.flexible', compact('data'));
     }
 
-
-
     /**
      * Show the form for creating a new resource.
      */
@@ -377,8 +375,6 @@ class ExerciseController extends Controller
         return redirect()->route('exercises.index')->with('success', 'Exercise deleted successfully.');
     }
 
-
-
     /**
      * Promote a user exercise to global exercise.
      */
@@ -435,8 +431,6 @@ class ExerciseController extends Controller
         return redirect()->route('exercises.edit', $exercise)
             ->with('success', "Exercise '{$exercise->title}' unpromoted to personal exercise successfully.");
     }
-
-
 
     public function showLogs(Request $request, Exercise $exercise)
     {
@@ -708,8 +702,6 @@ class ExerciseController extends Controller
             return back()->withErrors(['error' => 'Merge failed: ' . $e->getMessage()]);
         }
     }
-
-
 
     /**
      * Determine the original owner of an exercise based on lift logs.

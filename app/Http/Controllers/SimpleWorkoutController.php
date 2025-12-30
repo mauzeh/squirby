@@ -403,8 +403,4 @@ class SimpleWorkoutController extends Controller
             ->route('workouts.edit-simple', $workout->id)
             ->with('success', 'Exercise removed!');
     }
-
-
-
-
 }

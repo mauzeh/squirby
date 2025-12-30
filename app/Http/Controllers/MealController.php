@@ -183,6 +183,4 @@ class MealController extends Controller
         $meal->delete();
         return redirect()->route('meals.index')->with('success', 'Meal deleted successfully.');
     }
-
-
 }

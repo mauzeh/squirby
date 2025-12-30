@@ -14,7 +14,6 @@ use App\Services\RedirectService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
-
 class LiftLogController extends Controller
 {
     public function __construct(
@@ -26,6 +25,7 @@ class LiftLogController extends Controller
         private CreateLiftLogAction $createLiftLogAction,
         private UpdateLiftLogAction $updateLiftLogAction
     ) {}
+    
     /**
      * Show the form for creating a new lift log entry
      */
