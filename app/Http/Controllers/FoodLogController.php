@@ -162,27 +162,7 @@ class FoodLogController extends Controller
         );
     }
 
-    public function destroySelected(Request $request)
-    {
-        $validated = $request->validate([
-            'food_log_ids' => 'required|array',
-            'food_log_ids.*' => 'exists:food_logs,id',
-        ]);
 
-        $foodLogs = FoodLog::whereIn('id', $validated['food_log_ids'])->get();
-
-        foreach ($foodLogs as $foodLog) {
-            if ($foodLog->user_id !== auth()->id()) {
-                abort(403, 'Unauthorized action.');
-            }
-        }
-
-        $date = $foodLogs->first()->logged_at->format('Y-m-d');
-
-        FoodLog::destroy($validated['food_log_ids']);
-
-        return redirect()->route('mobile-entry.foods', ['date' => $date])->with('success', 'Selected log entries deleted successfully!');
-    }
 
     public function addMealToLog(Request $request)
     {

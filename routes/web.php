@@ -40,7 +40,6 @@ Route::middleware('auth')->group(function () {
 
 
     Route::post('food-logs/add-meal', [FoodLogController::class, 'addMealToLog'])->name('food-logs.add-meal');
-    Route::post('food-logs/destroy-selected', [FoodLogController::class, 'destroySelected'])->name('food-logs.destroy-selected');
 
     Route::get('food-logs/{food_log}/edit', [FoodLogController::class, 'edit'])->name('food-logs.edit');
     Route::post('food-logs', [FoodLogController::class, 'store'])->name('food-logs.store');
