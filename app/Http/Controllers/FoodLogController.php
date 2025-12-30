@@ -92,26 +92,38 @@ class FoodLogController extends Controller
                 auth()->id(),
                 'ingredient',
                 $validated['ingredient_id'],
-                Carbon::parse($validated['date'])
+                $loggedAtDate
             );
 
             // Generate celebratory message
             $celebratoryMessage = $this->generateCelebratoryMessage($logEntry);
 
+            // Only include date in redirect if it's not today
+            $redirectContext = [];
+            if (!$loggedAtDate->isToday()) {
+                $redirectContext['date'] = $loggedAtDate->format('Y-m-d');
+            }
+
             return $this->redirectService->getRedirect(
                 'food_logs',
                 'store',
                 $request,
-                [],
+                $redirectContext,
                 $celebratoryMessage
             );
         }
 
+        // Only include date in redirect if it's not today
+        $redirectContext = [];
+        if (!$loggedAtDate->isToday()) {
+            $redirectContext['date'] = $loggedAtDate->format('Y-m-d');
+        }
+
         return $this->redirectService->getRedirect(
-            'mobile-entry-foods',
+            'food_logs',
             'store',
             $request,
-            [],
+            $redirectContext,
             'Log entry added successfully!'
         );
     }
@@ -170,7 +182,7 @@ class FoodLogController extends Controller
             'meal_id' => 'required|exists:meals,id',
             'portion' => 'required|numeric|min:0.05',
             'logged_at_meal' => 'required|date_format:H:i',
-            'meal_date' => 'required|date',
+            'meal_date' => 'nullable|date',  // Make meal_date nullable to handle missing date
             'notes' => 'nullable|string',
         ]);
 
@@ -180,7 +192,10 @@ class FoodLogController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
-        $selectedDate = Carbon::parse($validated['meal_date']);
+        // If no meal_date provided, default to today (this handles the stale page fix)
+        $selectedDate = isset($validated['meal_date']) 
+            ? Carbon::parse($validated['meal_date'])
+            : Carbon::today();
         $loggedAt = $selectedDate->setTimeFromTimeString($validated['logged_at_meal']);
 
         foreach ($meal->ingredients as $ingredient) {
@@ -209,26 +224,38 @@ class FoodLogController extends Controller
                 auth()->id(),
                 'meal',
                 $validated['meal_id'],
-                Carbon::parse($validated['meal_date'])
+                $selectedDate
             );
 
             // Generate celebratory message for meal
             $celebratoryMessage = $this->generateMealCelebratoryMessage($meal, $validated['portion']);
 
+            // Only include date in redirect if it's not today
+            $redirectContext = [];
+            if (!$selectedDate->isToday()) {
+                $redirectContext['date'] = $selectedDate->format('Y-m-d');
+            }
+
             return $this->redirectService->getRedirect(
                 'food_logs',
                 'add_meal',
                 $request,
-                ['date' => $validated['meal_date']],
+                $redirectContext,
                 $celebratoryMessage
             );
+        }
+
+        // Only include date in redirect if it's not today
+        $redirectContext = [];
+        if (!$selectedDate->isToday()) {
+            $redirectContext['date'] = $selectedDate->format('Y-m-d');
         }
 
         return $this->redirectService->getRedirect(
             'food_logs',
             'add_meal',
             $request,
-            ['date' => $validated['meal_date']],
+            $redirectContext,
             'Meal added to log successfully!'
         );
     }

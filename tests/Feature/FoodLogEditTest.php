@@ -196,7 +196,7 @@ class FoodLogEditTest extends TestCase
         ]);
 
         $response->assertSessionHasNoErrors();
-        $response->assertRedirect(route('mobile-entry.foods', ['date' => $today->toDateString()]));
+        $response->assertRedirect(route('mobile-entry.foods'));
         
         // Verify food log was created
         $this->assertDatabaseHas('food_logs', [
@@ -305,5 +305,230 @@ class FoodLogEditTest extends TestCase
         ]);
 
         $response->assertForbidden();
+    }
+
+    /** @test */
+    public function user_can_log_ingredient_with_date_field()
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $ingredient = Ingredient::factory()->create(['user_id' => $user->id]);
+        $today = \Carbon\Carbon::today();
+
+        $response = $this->post(route('food-logs.store'), [
+            'ingredient_id' => $ingredient->id,
+            'quantity' => 150,
+            'logged_at' => '14:30',
+            'date' => $today->toDateString(),
+            'notes' => 'Afternoon snack',
+            'redirect_to' => 'mobile-entry-foods'
+        ]);
+
+        $response->assertSessionHasNoErrors();
+        $response->assertRedirect(route('mobile-entry.foods', ['date' => $today->toDateString()]));
+        
+        // Verify food log was created with correct date and time
+        $this->assertDatabaseHas('food_logs', [
+            'user_id' => $user->id,
+            'ingredient_id' => $ingredient->id,
+            'quantity' => 150,
+            'notes' => 'Afternoon snack',
+        ]);
+
+        $foodLog = FoodLog::where('user_id', $user->id)->first();
+        $this->assertEquals($today->format('Y-m-d'), $foodLog->logged_at->format('Y-m-d'));
+        $this->assertEquals('14:30', $foodLog->logged_at->format('H:i'));
+    }
+
+    /** @test */
+    public function user_can_log_ingredient_without_date_field_defaults_to_today()
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $ingredient = Ingredient::factory()->create(['user_id' => $user->id]);
+
+        $response = $this->post(route('food-logs.store'), [
+            'ingredient_id' => $ingredient->id,
+            'quantity' => 100,
+            'logged_at' => '12:00',
+            'notes' => 'Lunch',
+            'redirect_to' => 'mobile-entry-foods'
+            // No 'date' field - should default to today
+        ]);
+
+        $response->assertSessionHasNoErrors();
+        $response->assertRedirect(route('mobile-entry.foods'));
+        
+        // Verify food log was created with today's date
+        $this->assertDatabaseHas('food_logs', [
+            'user_id' => $user->id,
+            'ingredient_id' => $ingredient->id,
+            'quantity' => 100,
+            'notes' => 'Lunch',
+        ]);
+
+        $foodLog = FoodLog::where('user_id', $user->id)->first();
+        $this->assertEquals(\Carbon\Carbon::today()->format('Y-m-d'), $foodLog->logged_at->format('Y-m-d'));
+        $this->assertEquals('12:00', $foodLog->logged_at->format('H:i'));
+    }
+
+    /** @test */
+    public function user_can_log_ingredient_with_null_date_field_defaults_to_today()
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $ingredient = Ingredient::factory()->create(['user_id' => $user->id]);
+
+        $response = $this->post(route('food-logs.store'), [
+            'ingredient_id' => $ingredient->id,
+            'quantity' => 75,
+            'logged_at' => '09:15',
+            'date' => null, // Explicitly null
+            'redirect_to' => 'mobile-entry-foods'
+        ]);
+
+        $response->assertSessionHasNoErrors();
+        
+        // Verify food log was created with today's date
+        $this->assertDatabaseHas('food_logs', [
+            'user_id' => $user->id,
+            'ingredient_id' => $ingredient->id,
+            'quantity' => 75,
+        ]);
+
+        $foodLog = FoodLog::where('user_id', $user->id)->first();
+        $this->assertEquals(\Carbon\Carbon::today()->format('Y-m-d'), $foodLog->logged_at->format('Y-m-d'));
+        $this->assertEquals('09:15', $foodLog->logged_at->format('H:i'));
+    }
+
+    /** @test */
+    public function user_can_log_meal_without_meal_date_field_defaults_to_today()
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $ingredient = Ingredient::factory()->create(['user_id' => $user->id]);
+        $meal = \App\Models\Meal::factory()->create([
+            'user_id' => $user->id,
+            'name' => 'Test Meal'
+        ]);
+        $meal->ingredients()->attach($ingredient->id, ['quantity' => 100]);
+
+        $response = $this->post(route('food-logs.add-meal'), [
+            'meal_id' => $meal->id,
+            'portion' => 1.0,
+            'logged_at_meal' => '18:00',
+            'notes' => 'Dinner',
+            'redirect_to' => 'mobile-entry-foods'
+            // No 'meal_date' field - should default to today
+        ]);
+
+        $response->assertSessionHasNoErrors();
+        $response->assertRedirect(route('mobile-entry.foods'));
+        
+        // Verify food log was created with today's date
+        $this->assertDatabaseHas('food_logs', [
+            'user_id' => $user->id,
+            'ingredient_id' => $ingredient->id,
+        ]);
+
+        $foodLog = FoodLog::where('user_id', $user->id)->first();
+        $this->assertEquals(\Carbon\Carbon::today()->format('Y-m-d'), $foodLog->logged_at->format('Y-m-d'));
+        $this->assertEquals('18:00', $foodLog->logged_at->format('H:i'));
+        $this->assertStringContainsString('Test Meal', $foodLog->notes);
+        $this->assertStringContainsString('Dinner', $foodLog->notes);
+    }
+
+    /** @test */
+    public function user_can_log_meal_with_null_meal_date_field_defaults_to_today()
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $ingredient = Ingredient::factory()->create(['user_id' => $user->id]);
+        $meal = \App\Models\Meal::factory()->create([
+            'user_id' => $user->id,
+            'name' => 'Breakfast Bowl'
+        ]);
+        $meal->ingredients()->attach($ingredient->id, ['quantity' => 80]);
+
+        $response = $this->post(route('food-logs.add-meal'), [
+            'meal_id' => $meal->id,
+            'portion' => 0.5,
+            'logged_at_meal' => '08:30',
+            'meal_date' => null, // Explicitly null
+            'redirect_to' => 'mobile-entry-foods'
+        ]);
+
+        $response->assertSessionHasNoErrors();
+        
+        // Verify food log was created with today's date and correct portion
+        $this->assertDatabaseHas('food_logs', [
+            'user_id' => $user->id,
+            'ingredient_id' => $ingredient->id,
+            'quantity' => 40, // 80 * 0.5
+        ]);
+
+        $foodLog = FoodLog::where('user_id', $user->id)->first();
+        $this->assertEquals(\Carbon\Carbon::today()->format('Y-m-d'), $foodLog->logged_at->format('Y-m-d'));
+        $this->assertEquals('08:30', $foodLog->logged_at->format('H:i'));
+    }
+
+    /** @test */
+    public function ingredient_logging_without_redirect_to_parameter_works()
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $ingredient = Ingredient::factory()->create(['user_id' => $user->id]);
+
+        $response = $this->post(route('food-logs.store'), [
+            'ingredient_id' => $ingredient->id,
+            'quantity' => 50,
+            'logged_at' => '16:45',
+            // No date, no redirect_to
+        ]);
+
+        $response->assertSessionHasNoErrors();
+        $response->assertRedirect(route('mobile-entry.foods'));
+        
+        $this->assertDatabaseHas('food_logs', [
+            'user_id' => $user->id,
+            'ingredient_id' => $ingredient->id,
+            'quantity' => 50,
+        ]);
+    }
+
+    /** @test */
+    public function meal_logging_without_redirect_to_parameter_works()
+    {
+        $user = User::factory()->create();
+        $this->actingAs($user);
+
+        $ingredient = Ingredient::factory()->create(['user_id' => $user->id]);
+        $meal = \App\Models\Meal::factory()->create([
+            'user_id' => $user->id,
+            'name' => 'Simple Meal'
+        ]);
+        $meal->ingredients()->attach($ingredient->id, ['quantity' => 60]);
+
+        $response = $this->post(route('food-logs.add-meal'), [
+            'meal_id' => $meal->id,
+            'portion' => 2.0,
+            'logged_at_meal' => '13:15',
+            // No meal_date, no redirect_to
+        ]);
+
+        $response->assertSessionHasNoErrors();
+        $response->assertRedirect(route('mobile-entry.foods'));
+        
+        $this->assertDatabaseHas('food_logs', [
+            'user_id' => $user->id,
+            'ingredient_id' => $ingredient->id,
+            'quantity' => 120, // 60 * 2.0
+        ]);
     }
 }
