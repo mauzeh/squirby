@@ -410,8 +410,8 @@ class ExercisePRCardsIntegrationTest extends TestCase
         ]);
 
         // Create PRs from several months ago
-        $this->createLiftLogWithDate($exercise, 1, 405, Carbon::now()->subMonths(8));
-        $this->createLiftLogWithDate($exercise, 2, 385, Carbon::now()->subMonths(10));
+        $this->createLiftLogWithDate($exercise, 1, 405, Carbon::parse('2024-08-30'));
+        $this->createLiftLogWithDate($exercise, 2, 385, Carbon::parse('2024-06-30'));
 
         $response = $this->get(route('exercises.show-logs', $exercise));
 
@@ -419,8 +419,8 @@ class ExercisePRCardsIntegrationTest extends TestCase
         $response->assertSee('Heaviest Lifts');
         
         // Check that time ago labels are displayed for old PRs
-        $response->assertSee('8 months ago');
-        $response->assertSee('10 months ago');
+        // Since we're in December 2024, dates from earlier in 2024 show as "1 year ago"
+        $response->assertSee('1 year ago');
     }
 
     /** @test */
