@@ -16,6 +16,7 @@
     -webkit-overflow-scrolling: touch;
     padding: 0;
     gap: 0;
+    margin-top: var(--spacing-md);
 }
 
 .tab-button {
