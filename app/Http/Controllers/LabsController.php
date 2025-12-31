@@ -1198,7 +1198,7 @@ class LabsController extends Controller
                 ->build(),
         ];
         
-        // Components for the "Log Lift" tab (now third)
+        // Components for the "Log Now" tab (now third)
         $logLiftComponents = [
             // Form for logging the lift
             C::form('bench-press-log', 'Bench Press')
@@ -1246,10 +1246,10 @@ class LabsController extends Controller
                     }
                     
                     if (!session('success') && !$errors->any()) {
-                        $messagesBuilder->info('This demonstrates a tabbed interface with three tabs: Help, History, and Log Lift.')
+                        $messagesBuilder->info('This demonstrates a tabbed interface with three tabs: Help, History, and Log Now.')
                             ->tip('The Help tab explains how the tabs component works', 'New:')
                             ->tip('Use arrow keys to navigate between tabs', 'Accessibility:')
-                            ->tip('Form validation errors will automatically show the Log Lift tab', 'Demo:');
+                            ->tip('Form validation errors will automatically show the Log Now tab', 'Demo:');
                     }
                     
                     return $messagesBuilder->build();
@@ -1259,7 +1259,7 @@ class LabsController extends Controller
                 C::tabs('lift-tracker-tabs')
                     ->tab('help', 'Help', $helpComponents, 'fa-question-circle', $activeTab === 'help')
                     ->tab('history', 'History', $historyComponents, 'fa-chart-line', $activeTab === 'history')
-                    ->tab('log', 'Log Lift', $logLiftComponents, 'fa-plus', $activeTab === 'log')
+                    ->tab('log', 'Log Now', $logLiftComponents, 'fa-plus', $activeTab === 'log')
                     ->ariaLabels([
                         'section' => 'Lift tracking interface with component help',
                         'tabList' => 'Switch between help, history and logging views',
