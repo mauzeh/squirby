@@ -50,7 +50,7 @@ class LiftLogFormFactory
         }
         
         // Build form using ComponentBuilder
-        $formBuilder = C::form($formId, $exercise->title)
+        $formBuilder = C::form($formId)
             ->formAction(route('lift-logs.store'))
             ->cssClass('transparent')
             ->hiddenField('exercise_id', $exercise->id)

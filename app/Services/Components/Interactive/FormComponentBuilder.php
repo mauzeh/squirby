@@ -11,7 +11,7 @@ class FormComponentBuilder
     
     protected ?string $currentSection = null;
     
-    public function __construct(string $id, string $title)
+    public function __construct(string $id, string $title = '')
     {
         $this->data = [
             'id' => $id,

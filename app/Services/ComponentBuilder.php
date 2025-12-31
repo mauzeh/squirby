@@ -111,7 +111,7 @@ class ComponentBuilder
     /**
      * Create a form component
      */
-    public static function form(string $id, string $title): FormComponentBuilder
+    public static function form(string $id, string $title = ''): FormComponentBuilder
     {
         return new FormComponentBuilder($id, $title);
     }

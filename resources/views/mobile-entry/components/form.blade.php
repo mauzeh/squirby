@@ -1,7 +1,10 @@
 {{-- Form Component --}}
 <section class="component-form-section form{{ isset($data['cssClass']) ? ' ' . $data['cssClass'] : '' }}" aria-label="{{ $data['ariaLabels']['section'] }}"{{ $data['type'] ? ' data-form-type="' . $data['type'] . '"' : '' }} data-form-id="{{ $data['id'] }}"{{ isset($data['initialState']) ? ' data-initial-state="' . $data['initialState'] . '"' : '' }}>
+    @if($data['title'] || $data['deleteAction'])
     <div class="component-header">
+        @if($data['title'])
         <h2 class="component-heading">{{ $data['title'] }}</h2>
+        @endif
         @if($data['deleteAction'])
         <form class="delete-form" method="POST" action="{{ $data['deleteAction'] }}">
             @csrf
@@ -17,6 +20,7 @@
         </form>
         @endif
     </div>
+    @endif
     
     @if(!empty($data['messages']))
     <div class="component-messages">
