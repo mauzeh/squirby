@@ -1102,7 +1102,7 @@ class LabsController extends Controller
         // Components for the "Help" tab (first - simple help)
         $helpComponents = [
             C::markdown('
-## Bench Press Tracker
+## Getting Started
 
 Track your bench press progress with this simple tool.
 
