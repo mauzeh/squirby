@@ -15,7 +15,7 @@ class FormComponentBuilder
     {
         $this->data = [
             'id' => $id,
-            'type' => 'secondary',
+            'type' => null,
             'title' => $title,
             'itemName' => $title,
             'formAction' => '#',

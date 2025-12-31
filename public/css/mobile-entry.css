@@ -182,7 +182,7 @@
 
     .summary-item,
     .component-item,
-    .component-form-section {
+    .component-form-section[data-form-type] {
         border: 2px solid #ffffff;
     }
 

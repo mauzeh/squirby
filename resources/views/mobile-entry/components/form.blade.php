@@ -1,5 +1,5 @@
 {{-- Form Component --}}
-<section class="component-form-section form{{ isset($data['cssClass']) ? ' ' . $data['cssClass'] : '' }}" aria-label="{{ $data['ariaLabels']['section'] }}" data-form-type="{{ $data['type'] }}" data-form-id="{{ $data['id'] }}"{{ isset($data['initialState']) ? ' data-initial-state="' . $data['initialState'] . '"' : '' }}>
+<section class="component-form-section form{{ isset($data['cssClass']) ? ' ' . $data['cssClass'] : '' }}" aria-label="{{ $data['ariaLabels']['section'] }}"{{ $data['type'] ? ' data-form-type="' . $data['type'] . '"' : '' }} data-form-id="{{ $data['id'] }}"{{ isset($data['initialState']) ? ' data-initial-state="' . $data['initialState'] . '"' : '' }}>
     <div class="component-header">
         <h2 class="component-heading">{{ $data['title'] }}</h2>
         @if($data['deleteAction'])

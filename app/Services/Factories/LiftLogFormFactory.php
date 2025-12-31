@@ -51,7 +51,6 @@ class LiftLogFormFactory
         
         // Build form using ComponentBuilder
         $formBuilder = C::form($formId, $exercise->title)
-            ->type('primary')
             ->formAction(route('lift-logs.store'))
             ->hiddenField('exercise_id', $exercise->id)
             ->hiddenField('logged_at', now()->format('H:i'));
