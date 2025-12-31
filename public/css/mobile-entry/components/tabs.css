@@ -129,6 +129,15 @@
     
     .tab-button {
         min-width: 44px;
-        padding: var(--spacing-sm) var(--spacing-md);
+        padding: var(--spacing-md);
+    }
+    
+    .tab-button[data-tab="help"] {
+        font-size: 0;
+        gap: 0;
+    }
+    
+    .tab-button[data-tab="help"] i {
+        font-size: 1.5rem;
     }
 }
