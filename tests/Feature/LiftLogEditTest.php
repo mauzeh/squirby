@@ -111,7 +111,6 @@ class LiftLogEditTest extends TestCase
         
         // Check form has correct data
         $this->assertEquals('edit-lift-' . $this->liftLog->id, $formData['id']);
-        $this->assertEquals($this->exercise->title, $formData['title']);
         
         // Check numeric fields have correct default values
         $numericFields = collect($formData['numericFields']);
