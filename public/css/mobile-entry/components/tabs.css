@@ -71,7 +71,7 @@
 }
 
 .tab-panel {
-    padding: var(--spacing-lg);
+    padding: var(--spacing-lg) 0;
     animation: fadeIn 0.2s ease-in-out;
 }
 
@@ -108,7 +108,7 @@
     }
     
     .tab-panel {
-        padding: var(--spacing-md);
+        padding: var(--spacing-md) 0;
     }
 }
 
@@ -123,7 +123,5 @@
         padding: 8px 10px;
     }
     
-    .tab-button i {
-        display: none; /* Hide icons on very small screens */
-    }
+
 }
