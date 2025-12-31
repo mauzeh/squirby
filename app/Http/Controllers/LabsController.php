@@ -1099,57 +1099,10 @@ class LabsController extends Controller
             ]
         ];
         
-        // Components for the "Help" tab (first - explanation)
+        // Components for the "Help" tab (first - simple help)
         $helpComponents = [
-            // Explanation of the tabs component
             C::messages()
-                ->info('This is a demonstration of the Tabs Component from Flexible UI v1.6')
-                ->tip('Tabs provide a clean way to organize related content in separate panels', 'Purpose:')
-                ->tip('Each tab can contain any combination of other components', 'Flexibility:')
-                ->build(),
-            
-            // Features summary
-            C::summary()
-                ->item('tabs', '3', 'Tabs in this example')
-                ->item('components', '6+', 'Components per tab')
-                ->item('scripts', 'Auto', 'Script loading')
-                ->item('a11y', '✓', 'Accessibility ready')
-                ->build(),
-            
-            // Feature details table
-            C::table()
-                ->row(1, 'Tab Navigation', 'Click tabs or use arrow keys', 'Keyboard accessible')
-                    ->badge('Accessible', 'success')
-                    ->add()
-                ->row(2, 'Active State Management', 'Only one tab active at a time', 'Automatic state handling')
-                    ->badge('Automatic', 'info')
-                    ->add()
-                ->row(3, 'Component Nesting', 'Forms, charts, tables, messages', 'Any component type')
-                    ->badge('Flexible', 'neutral')
-                    ->add()
-                ->row(4, 'Script Collection', 'Auto-loads required JavaScript', 'Chart.js, form validation, etc.')
-                    ->badge('Smart', 'success')
-                    ->add()
-                ->row(5, 'ARIA Labels', 'Screen reader friendly', 'Customizable accessibility labels')
-                    ->badge('WCAG', 'success')
-                    ->add()
-                ->ariaLabel('Tab component features')
-                ->spacedRows()
-                ->build(),
-            
-            // Code example
-            C::form('code-example', 'Basic Usage Example')
-                ->type('info')
-                ->message('tip', 'This is how you create a tabbed interface:', 'Code:')
-                ->textareaField('example_code', '', 
-                    "C::tabs('my-tabs')\n" .
-                    "    ->tab('tab1', 'First Tab', \$components1, 'fa-home')\n" .
-                    "    ->tab('tab2', 'Second Tab', \$components2, 'fa-chart')\n" .
-                    "    ->activeTab('tab1')\n" .
-                    "    ->ariaLabels(['section' => 'My interface'])\n" .
-                    "    ->build()",
-                    'Copy this code pattern'
-                )
+                ->info('Track your bench press progress with this simple tool.')
                 ->build(),
         ];
 
@@ -1246,10 +1199,7 @@ class LabsController extends Controller
                     }
                     
                     if (!session('success') && !$errors->any()) {
-                        $messagesBuilder->info('This demonstrates a tabbed interface with three tabs: Help, My Metrics, and Log Now.')
-                            ->tip('The Help tab explains how the tabs component works', 'New:')
-                            ->tip('Use arrow keys to navigate between tabs', 'Accessibility:')
-                            ->tip('Form validation errors will automatically show the Log Now tab', 'Demo:');
+                        $messagesBuilder->info('This demonstrates a tabbed lift tracking interface with Help, My Metrics, and Log Now tabs. Use arrow keys to navigate between tabs. Form validation errors will automatically show the Log Now tab.');
                     }
                     
                     return $messagesBuilder->build();
