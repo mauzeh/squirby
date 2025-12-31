@@ -1050,13 +1050,13 @@ class LabsController extends Controller
         
         // Determine which tab should be active
         // If there are validation errors, show the log tab
-        // If there's a success message, show the history tab
+        // If there's a success message, show the metrics tab
         // Otherwise, default to help tab (explanation)
         $activeTab = 'help'; // Default to help tab
         if ($errors->any()) {
             $activeTab = 'log'; // Show form tab if there are errors
         } elseif (session('success')) {
-            $activeTab = 'history'; // Show history tab if successful submission
+            $activeTab = 'history'; // Show metrics tab if successful submission
         }
         
         // Generate sample chart data for the historical tab
@@ -1153,7 +1153,7 @@ class LabsController extends Controller
                 ->build(),
         ];
 
-        // Components for the "History" tab (now second)
+        // Components for the "My Metrics" tab (now second)
         $historyComponents = [
             // Progress chart
             C::chart('bench-progress-chart', 'Bench Press Progress')
@@ -1246,7 +1246,7 @@ class LabsController extends Controller
                     }
                     
                     if (!session('success') && !$errors->any()) {
-                        $messagesBuilder->info('This demonstrates a tabbed interface with three tabs: Help, History, and Log Now.')
+                        $messagesBuilder->info('This demonstrates a tabbed interface with three tabs: Help, My Metrics, and Log Now.')
                             ->tip('The Help tab explains how the tabs component works', 'New:')
                             ->tip('Use arrow keys to navigate between tabs', 'Accessibility:')
                             ->tip('Form validation errors will automatically show the Log Now tab', 'Demo:');
@@ -1258,7 +1258,7 @@ class LabsController extends Controller
                 // Tabbed interface - Help first, History second, Log third
                 C::tabs('lift-tracker-tabs')
                     ->tab('help', 'Help', $helpComponents, 'fa-question-circle', $activeTab === 'help', true)
-                    ->tab('history', 'History', $historyComponents, 'fa-chart-line', $activeTab === 'history')
+                    ->tab('history', 'My Metrics', $historyComponents, 'fa-chart-line', $activeTab === 'history')
                     ->tab('log', 'Log Now', $logLiftComponents, 'fa-plus', $activeTab === 'log')
                     ->ariaLabels([
                         'section' => 'Lift tracking interface with component help',
