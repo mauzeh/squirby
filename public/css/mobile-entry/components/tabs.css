@@ -23,7 +23,7 @@
     flex: 1;
     min-width: 60px;
     padding: var(--spacing-lg) var(--spacing-xl);
-    background: #2d2d30;
+    background: var(--bg-secondary);
     border: none;
     border-top: 3px solid transparent;
     color: #cccccc;
@@ -41,6 +41,10 @@
 
 .tab-button.compact {
     flex: 0 0 auto;
+}
+
+.tab-button:last-child {
+    border-right: none;
 }
 
 .tab-button:hover {
@@ -127,6 +131,4 @@
         min-width: 44px;
         padding: var(--spacing-sm) var(--spacing-md);
     }
-    
-
 }
