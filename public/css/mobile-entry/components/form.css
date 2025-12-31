@@ -8,6 +8,12 @@
     position: relative;
 }
 
+/* Transparent variant - removes background and shadow */
+.component-form-section.transparent {
+    background-color: transparent;
+    box-shadow: none;
+}
+
 /* Form Type Variants - Visual distinction for different form types */
 /* Primary (blue) - for main/important forms */
 .component-form-section[data-form-type="primary"] {
