@@ -169,7 +169,7 @@ class LiftLogService extends MobileEntryBaseService
         $components = [];
         
         // Add title with back button
-        $components[] = C::title('Log ' . $displayName)
+        $components[] = C::title($displayName)
             ->subtitle($selectedDate->format('l, F j, Y'))
             ->backButton('fa-arrow-left', $backUrl, 'Back')
             ->condensed()

@@ -4,20 +4,19 @@
     margin-bottom: var(--spacing-xl);
 }
 
-/* Condensed Title Container - reduces vertical spacing */
-.component-title-container.condensed {
-    margin-bottom: var(--spacing-md);
-}
-
-.component-title-container.condensed:first-child {
-    padding-top: var(--spacing-sm);
-    padding-bottom: var(--spacing-xs);
-}
-
 /* Add top padding when title is first component (no navigation above) */
 .mobile-entry-container > .component-title-container:first-child {
     padding-top: var(--spacing-lg);
     padding-bottom: var(--spacing-sm);
+}
+
+/* Condensed Title Container - reduces vertical spacing */
+.component-title-container.condensed {
+    margin-bottom: var(--spacing-xs);
+}
+.component-title-container.condensed:first-child {
+    padding-top: var(--spacing-sm);
+    padding-bottom: var(--spacing-xs);
 }
 
 /* Title Row - relative positioning for back button + centered title */
