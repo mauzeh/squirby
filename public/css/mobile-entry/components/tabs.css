@@ -19,7 +19,7 @@
 }
 
 .tab-button {
-    flex: 0 0 auto;
+    flex: 1;
     min-width: 60px;
     padding: var(--spacing-lg) var(--spacing-xl);
     background: #2d2d30;
@@ -36,6 +36,10 @@
     border-radius: 0;
     position: relative;
     border-right: 1px solid #3e3e42;
+}
+
+.tab-button.compact {
+    flex: 0 0 auto;
 }
 
 .tab-button:hover {

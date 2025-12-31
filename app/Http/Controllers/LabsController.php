@@ -1257,7 +1257,7 @@ class LabsController extends Controller
                 
                 // Tabbed interface - Help first, History second, Log third
                 C::tabs('lift-tracker-tabs')
-                    ->tab('help', 'Help', $helpComponents, 'fa-question-circle', $activeTab === 'help')
+                    ->tab('help', 'Help', $helpComponents, 'fa-question-circle', $activeTab === 'help', true)
                     ->tab('history', 'History', $historyComponents, 'fa-chart-line', $activeTab === 'history')
                     ->tab('log', 'Log Now', $logLiftComponents, 'fa-plus', $activeTab === 'log')
                     ->ariaLabels([

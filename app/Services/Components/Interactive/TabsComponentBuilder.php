@@ -34,15 +34,17 @@ class TabsComponentBuilder
      * @param array $components Array of component data for this tab
      * @param string|null $icon Optional FontAwesome icon class
      * @param bool $active Whether this tab should be active by default
+     * @param bool $compact Whether this tab should be compact (size to content)
      */
-    public function tab(string $id, string $label, array $components = [], ?string $icon = null, bool $active = false): self
+    public function tab(string $id, string $label, array $components = [], ?string $icon = null, bool $active = false, bool $compact = false): self
     {
         $tab = [
             'id' => $id,
             'label' => $label,
             'components' => $components,
             'icon' => $icon,
-            'active' => $active
+            'active' => $active,
+            'compact' => $compact
         ];
         
         // Set as active tab if this is the first tab or explicitly marked active

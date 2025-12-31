@@ -4,7 +4,7 @@
     <div class="tabs-nav" role="tablist" aria-label="{{ $data['ariaLabels']['tabList'] }}">
         @foreach($data['tabs'] as $tab)
             <button 
-                class="tab-button{{ $tab['active'] ? ' active' : '' }}" 
+                class="tab-button{{ $tab['active'] ? ' active' : '' }}{{ $tab['compact'] ? ' compact' : '' }}" 
                 role="tab" 
                 aria-selected="{{ $tab['active'] ? 'true' : 'false' }}"
                 aria-controls="tab-panel-{{ $data['id'] }}-{{ $tab['id'] }}"
