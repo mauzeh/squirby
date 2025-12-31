@@ -1212,7 +1212,7 @@ Track your bench press progress with this simple tool.
                     }
                     
                     if (!session('success') && !$errors->any()) {
-                        $messagesBuilder->info('This demonstrates a tabbed lift tracking interface with Help, My Metrics, and Log Now tabs. Use arrow keys to navigate between tabs. Form validation errors will automatically show the Log Now tab.');
+                        // No default message - keep component for validation/success messages only
                     }
                     
                     return $messagesBuilder->build();
