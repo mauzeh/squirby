@@ -1,5 +1,5 @@
 {{-- Title Component --}}
-<div class="component-title-container">
+<div class="component-title-container{{ !empty($data['classes']) ? ' ' . $data['classes'] : '' }}">
     <div class="component-title-row">
         @if(isset($data['backButton']))
             <a href="{{ $data['backButton']['url'] }}" class="component-title-back-button" aria-label="{{ $data['backButton']['ariaLabel'] }}">

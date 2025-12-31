@@ -172,6 +172,7 @@ class LiftLogService extends MobileEntryBaseService
         $components[] = C::title('Log ' . $displayName)
             ->subtitle($selectedDate->format('l, F j, Y'))
             ->backButton('fa-arrow-left', $backUrl, 'Back')
+            ->condensed()
             ->build();
         
         // Add the form

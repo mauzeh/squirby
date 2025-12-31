@@ -14,7 +14,8 @@ class TitleComponentBuilder
         $this->data = [
             'main' => $main,
             'subtitle' => $subtitle,
-            'backButton' => null
+            'backButton' => null,
+            'classes' => ''
         ];
     }
     
@@ -31,6 +32,18 @@ class TitleComponentBuilder
             'url' => $url,
             'ariaLabel' => $ariaLabel ?? 'Go back'
         ];
+        return $this;
+    }
+    
+    public function classes(string $classes): self
+    {
+        $this->data['classes'] = $classes;
+        return $this;
+    }
+    
+    public function condensed(): self
+    {
+        $this->data['classes'] = trim($this->data['classes'] . ' condensed');
         return $this;
     }
     
