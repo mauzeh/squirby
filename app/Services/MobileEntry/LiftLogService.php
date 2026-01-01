@@ -39,27 +39,40 @@ class LiftLogService extends MobileEntryBaseService
     }
 
     /**
-     * Generate a standalone form for a specific exercise
+     * Generate a form component for creating or editing a lift log
      * 
      * @param int $exerciseId The exercise ID
      * @param int $userId The user ID
      * @param Carbon $selectedDate The selected date
      * @param array $redirectParams Optional redirect parameters
+     * @param LiftLog|null $existingLiftLog Optional existing lift log for edit mode
+     * @param string|null $backUrl Optional back URL for create mode
      * @return array Form component data
      */
-    public function generateStandaloneForm(
+    public function generateFormComponent(
         int $exerciseId,
         int $userId,
         Carbon $selectedDate,
-        array $redirectParams = []
+        array $redirectParams = [],
+        ?LiftLog $existingLiftLog = null,
+        ?string $backUrl = null
     ) {
-        // Get the exercise
-        $exercise = Exercise::where('id', $exerciseId)
-            ->availableToUser($userId)
-            ->first();
+        $isEditMode = $existingLiftLog !== null;
         
-        if (!$exercise) {
-            throw new \Exception('Exercise not found or not accessible');
+        // Get the exercise
+        if ($isEditMode) {
+            $exercise = $existingLiftLog->exercise;
+            if (!$exercise) {
+                throw new \Exception('Exercise not found for lift log');
+            }
+        } else {
+            $exercise = Exercise::where('id', $exerciseId)
+                ->availableToUser($userId)
+                ->first();
+            
+            if (!$exercise) {
+                throw new \Exception('Exercise not found or not accessible');
+            }
         }
         
         // Get user
@@ -69,16 +82,48 @@ class LiftLogService extends MobileEntryBaseService
         $displayName = $this->aliasService->getDisplayName($exercise, $user);
         $exercise->title = $displayName;
         
-        // Get last session data
-        $lastSession = $this->getLastSessionData($exercise->id, $selectedDate, $userId);
+        // Prepare defaults and messages based on mode
+        if ($isEditMode) {
+            $defaults = $this->prepareEditDefaults($existingLiftLog);
+            $messages = $this->prepareEditMessages($existingLiftLog);
+            $mockForm = $this->createMockForm('edit-' . $existingLiftLog->id, $userId, $exerciseId);
+        } else {
+            $lastSession = $this->getLastSessionData($exerciseId, $selectedDate, $userId);
+            $defaults = $this->prepareCreateDefaults($exercise, $lastSession, $userId, $user);
+            $messages = $this->prepareCreateMessages($exercise, $lastSession, $user, $userId);
+            $mockForm = $this->createMockForm('standalone-' . $exerciseId, $userId, $exerciseId);
+        }
+
+        // Build the form using the factory
+        $formComponent = $this->liftLogFormFactory->buildForm(
+            $mockForm,
+            $exercise,
+            $user,
+            $defaults,
+            $messages,
+            $selectedDate,
+            $redirectParams
+        );
         
+        // Apply mode-specific overrides
+        if ($isEditMode) {
+            $this->applyEditModeOverrides($formComponent, $existingLiftLog, $redirectParams);
+        } else {
+            $this->applyCreateModeOverrides($formComponent);
+        }
+        
+        return $formComponent;
+    }
+
+    /**
+     * Prepare default values for create mode
+     */
+    private function prepareCreateDefaults(Exercise $exercise, ?array $lastSession, int $userId, User $user): array
+    {
         // Get progression suggestion
         $progressionSuggestion = null;
         if ($lastSession) {
-            $progressionSuggestion = $this->trainingProgressionService->getSuggestionDetails(
-                $userId, 
-                $exercise->id
-            );
+            $progressionSuggestion = $this->trainingProgressionService->getSuggestionDetails($userId, $exercise->id);
         }
         
         // Determine default weight, reps, and sets based on user preference
@@ -94,40 +139,113 @@ class LiftLogService extends MobileEntryBaseService
             $defaultSets = $lastSession['sets'] ?? 3;
         }
         
-        // Create a temporary MobileLiftForm for message generation
-        $tempForm = new MobileLiftForm();
-        $tempForm->id = 'standalone-' . $exerciseId;
-        $tempForm->user_id = $userId;
-        $tempForm->exercise_id = $exerciseId;
-        $tempForm->setRelation('exercise', $exercise);
-        
-        // Generate messages based on last session
-        $messages = $this->generateFormMessagesForMobileForms($tempForm, $lastSession, $user);
-        
-        // Prepare default values for the factory
-        $defaults = [
+        return [
             'weight' => $defaultWeight,
             'reps' => $defaultReps,
             'sets' => $defaultSets,
             'band_color' => $lastSession['band_color'] ?? 'red',
             'comments' => '',
         ];
+    }
 
-        // Use the factory to build the complete form
-        $formData = $this->liftLogFormFactory->buildForm(
-            $tempForm,
-            $exercise,
-            $user,
-            $defaults,
-            $messages,
-            $selectedDate,
-            $redirectParams
-        );
+    /**
+     * Prepare default values for edit mode
+     */
+    private function prepareEditDefaults(LiftLog $liftLog): array
+    {
+        $firstSet = $liftLog->liftSets->first();
         
+        return [
+            'weight' => $firstSet->weight ?? 0,
+            'reps' => $firstSet->reps ?? 0,
+            'sets' => $liftLog->liftSets->count(),
+            'band_color' => $firstSet->band_color ?? 'red',
+            'comments' => $liftLog->comments ?? '',
+        ];
+    }
+
+    /**
+     * Prepare messages for create mode
+     */
+    private function prepareCreateMessages(Exercise $exercise, ?array $lastSession, User $user, int $userId): array
+    {
+        // Create a temporary MobileLiftForm for message generation
+        $tempForm = new MobileLiftForm();
+        $tempForm->id = 'temp-form';
+        $tempForm->user_id = $userId;
+        $tempForm->exercise_id = $exercise->id;
+        $tempForm->setRelation('exercise', $exercise);
+        
+        return $this->generateFormMessagesForMobileForms($tempForm, $lastSession, $user);
+    }
+
+    /**
+     * Prepare messages for edit mode
+     */
+    private function prepareEditMessages(LiftLog $liftLog): array
+    {
+        $loggedDate = Carbon::parse($liftLog->logged_at);
+        $dateMessage = $this->generateFriendlyDateMessage($loggedDate);
+        
+        return [
+            [
+                'type' => 'info',
+                'prefix' => 'Date:',
+                'text' => $dateMessage
+            ]
+        ];
+    }
+
+    /**
+     * Create a mock MobileLiftForm for the factory
+     */
+    private function createMockForm(string $id, int $userId, int $exerciseId): MobileLiftForm
+    {
+        $mockForm = new MobileLiftForm();
+        $mockForm->id = $id;
+        $mockForm->user_id = $userId;
+        $mockForm->exercise_id = $exerciseId;
+        
+        return $mockForm;
+    }
+
+    /**
+     * Apply create mode specific overrides to the form component
+     */
+    private function applyCreateModeOverrides(array &$formComponent): void
+    {
         // Override the delete action since this is a standalone form (no MobileLiftForm to delete)
-        $formData['data']['deleteAction'] = null;
+        $formComponent['data']['deleteAction'] = null;
+    }
+
+    /**
+     * Apply edit mode specific overrides to the form component
+     */
+    private function applyEditModeOverrides(array &$formComponent, LiftLog $liftLog, array $redirectParams): void
+    {
+        // Override form settings for edit mode
+        $formComponent['data']['id'] = 'edit-lift-' . $liftLog->id;
+        $formComponent['data']['formAction'] = route('lift-logs.update', $liftLog->id);
+        $formComponent['data']['method'] = 'PUT';
+        $formComponent['data']['deleteAction'] = route('lift-logs.destroy', $liftLog->id);
+        // Pass redirect params and exercise_id to delete action
+        $formComponent['data']['deleteParams'] = array_merge($redirectParams, ['exercise_id' => $liftLog->exercise_id]);
         
-        return $formData;
+        // Update hidden fields for edit mode
+        $formComponent['data']['hiddenFields'] = [
+            '_method' => 'PUT',
+            'exercise_id' => $liftLog->exercise_id,
+            'date' => $liftLog->logged_at->toDateString(),
+            'logged_at' => $liftLog->logged_at->format('H:i'),
+        ];
+        
+        // Add redirect parameters if provided
+        if (!empty($redirectParams['redirect_to'])) {
+            $formComponent['data']['hiddenFields']['redirect_to'] = $redirectParams['redirect_to'];
+        }
+        
+        // Update button text
+        $formComponent['data']['buttons']['submit'] = 'Update ' . $liftLog->exercise->title;
     }
 
     /**
@@ -148,7 +266,7 @@ class LiftLogService extends MobileEntryBaseService
         array $redirectParams = []
     ) {
         // Generate the form (this will throw exception if exercise not found)
-        $formComponent = $this->generateStandaloneForm(
+        $formComponent = $this->generateFormComponent(
             $exerciseId,
             $userId,
             $selectedDate,
@@ -195,83 +313,13 @@ class LiftLogService extends MobileEntryBaseService
         // Load necessary relationships
         $liftLog->load(['exercise', 'liftSets']);
         
-        // Get user
-        $user = User::find($userId);
-        
-        // Apply alias to exercise title
-        if ($liftLog->exercise) {
-            $displayName = $this->aliasService->getDisplayName($liftLog->exercise, $user);
-            $liftLog->exercise->title = $displayName;
-        }
-        
-        // Extract data from the lift log
-        $firstSet = $liftLog->liftSets->first();
-        
-        // Prepare defaults from existing lift log data
-        $defaults = [
-            'weight' => $firstSet->weight ?? 0,
-            'reps' => $firstSet->reps ?? 0,
-            'sets' => $liftLog->liftSets->count(),
-            'band_color' => $firstSet->band_color ?? 'red',
-            'comments' => $liftLog->comments ?? '',
-        ];
-        
-        // Create a mock MobileLiftForm for the factory (it needs this for form ID generation)
-        $mockForm = new MobileLiftForm();
-        $mockForm->id = 'edit-' . $liftLog->id;
-        $mockForm->user_id = $userId;
-        $mockForm->exercise_id = $liftLog->exercise_id;
-        
-        // Add friendly date message for edit forms
-        $loggedDate = Carbon::parse($liftLog->logged_at);
-        $dateMessage = $this->generateFriendlyDateMessage($loggedDate);
-        
-        $messages = [
-            [
-                'type' => 'info',
-                'prefix' => 'Date:',
-                'text' => $dateMessage
-            ]
-        ];
-        
-        // Build the form using the factory, but override some settings for edit mode
-        $formComponent = $this->liftLogFormFactory->buildForm(
-            $mockForm,
-            $liftLog->exercise,
-            $user,
-            $defaults,
-            $messages,
+        return $this->generateFormComponent(
+            $liftLog->exercise_id,
+            $userId,
             Carbon::parse($liftLog->logged_at),
-            []
+            $redirectParams,
+            $liftLog
         );
-        
-        // Override form settings for edit mode
-        $formComponent['data']['id'] = 'edit-lift-' . $liftLog->id;
-        $formComponent['data']['formAction'] = route('lift-logs.update', $liftLog->id);
-        $formComponent['data']['method'] = 'PUT';
-        $formComponent['data']['deleteAction'] = route('lift-logs.destroy', $liftLog->id);
-        // Pass redirect params and exercise_id to delete action
-        $formComponent['data']['deleteParams'] = array_merge($redirectParams, ['exercise_id' => $liftLog->exercise_id]);
-        
-        // Update hidden fields for edit mode
-        $formComponent['data']['hiddenFields'] = [
-            '_method' => 'PUT',
-            'exercise_id' => $liftLog->exercise_id,
-            'date' => $liftLog->logged_at->toDateString(),
-            'logged_at' => $liftLog->logged_at->format('H:i'),
-        ];
-        
-        // Add redirect parameters if provided
-        if (!empty($redirectParams['redirect_to'])) {
-            $formComponent['data']['hiddenFields']['redirect_to'] = $redirectParams['redirect_to'];
-            // The 'date' field from the lift log will be used for the redirect
-        }
-        
-        // Update button text
-        $formComponent['data']['buttons']['submit'] = 'Update ' . $liftLog->exercise->title;
-        
-        // Return in the component structure expected by flexible view
-        return $formComponent;
     }
 
     /**

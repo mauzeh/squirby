@@ -44,8 +44,8 @@ class ShowExtraWeightPreferenceTest extends TestCase
 
     public function test_bodyweight_exercise_hides_weight_field_when_preference_disabled()
     {
-        // Generate a standalone form for bodyweight exercise (user has show_extra_weight = false by default)
-        $form = $this->service->generateStandaloneForm(
+        // Generate a form for bodyweight exercise (user has show_extra_weight = false by default)
+        $form = $this->service->generateFormComponent(
             $this->bodyweightExercise->id,
             $this->user->id,
             Carbon::today(),
@@ -68,8 +68,8 @@ class ShowExtraWeightPreferenceTest extends TestCase
         // Enable show extra weight preference
         $this->user->update(['show_extra_weight' => true]);
         
-        // Generate a standalone form for bodyweight exercise
-        $form = $this->service->generateStandaloneForm(
+        // Generate a form for bodyweight exercise
+        $form = $this->service->generateFormComponent(
             $this->bodyweightExercise->id,
             $this->user->id,
             Carbon::today(),
@@ -87,8 +87,8 @@ class ShowExtraWeightPreferenceTest extends TestCase
         // Disable show extra weight preference
         $this->user->update(['show_extra_weight' => false]);
         
-        // Generate a standalone form for weighted exercise
-        $form = $this->service->generateStandaloneForm(
+        // Generate a form for weighted exercise
+        $form = $this->service->generateFormComponent(
             $this->weightedExercise->id,
             $this->user->id,
             Carbon::today(),
