@@ -12,6 +12,7 @@ use App\Services\Factories\LiftLogFormFactory;
 use App\Services\LiftLogTableRowBuilder;
 use App\Services\ComponentBuilder as C;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use App\Services\MobileEntry\MobileEntryBaseService;
 
@@ -582,7 +583,7 @@ class LiftLogService extends MobileEntryBaseService
         // Get last performed dates for all exercises in a single query
         $lastPerformedDates = LiftLog::where('user_id', $userId)
             ->whereIn('exercise_id', $exercises->pluck('id'))
-            ->select('exercise_id', \DB::raw('MAX(logged_at) as last_logged_at'))
+            ->select('exercise_id', DB::raw('MAX(logged_at) as last_logged_at'))
             ->groupBy('exercise_id')
             ->pluck('last_logged_at', 'exercise_id');
 
@@ -850,7 +851,7 @@ class LiftLogService extends MobileEntryBaseService
         }
         
         // Find top 10 most logged exercises by non-admin users
-        $topExercises = LiftLog::select('exercise_id', \DB::raw('COUNT(*) as log_count'))
+        $topExercises = LiftLog::select('exercise_id', DB::raw('COUNT(*) as log_count'))
             ->whereIn('exercise_id', $availableExerciseIds)
             ->whereHas('user', function ($query) {
                 $query->whereDoesntHave('roles', function ($roleQuery) {
