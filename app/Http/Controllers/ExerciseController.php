@@ -42,7 +42,7 @@ class ExerciseController extends Controller
         // Only admins can access the exercise index
         $this->authorize('viewAny', Exercise::class);
         
-        $userId = auth()->id();
+        $userId = Auth::id();
         
         // Build components array
         $components = [
@@ -75,7 +75,7 @@ class ExerciseController extends Controller
 
         // Apply aliases to exercises
         $aliasService = app(\App\Services\ExerciseAliasService::class);
-        $user = auth()->user();
+        $user = Auth::user();
         $exercises = $aliasService->applyAliasesToExercises($exercises, $user);
         
         if ($exercises->isEmpty()) {
@@ -95,7 +95,7 @@ class ExerciseController extends Controller
                 if ($exercise->isGlobal()) {
                     $ownershipLabel = 'Everyone';
                 } else {
-                    $ownershipLabel = $exercise->user_id === auth()->id() ? 'You' : $exercise->user->name;
+                    $ownershipLabel = $exercise->user_id === Auth::id() ? 'You' : $exercise->user->name;
                 }
                 
                 $listBuilder->item(
@@ -121,7 +121,7 @@ class ExerciseController extends Controller
     public function create()
     {
         $exercise = new Exercise();
-        $user = auth()->user();
+        $user = Auth::user();
         
         $components = [
             \App\Services\ComponentBuilder::title('Create Exercise')->build(),
@@ -152,7 +152,7 @@ class ExerciseController extends Controller
      */
     public function store(Request $request)
     {
-        $exercise = $this->createExerciseAction->execute($request, auth()->user());
+        $exercise = $this->createExerciseAction->execute($request, Auth::user());
         
         return redirect()->route('exercises.index')->with('success', 'Exercise created successfully.');
     }
@@ -166,7 +166,7 @@ class ExerciseController extends Controller
     public function edit(Exercise $exercise)
     {
         $this->authorize('update', $exercise);
-        $user = auth()->user();
+        $user = Auth::user();
         
         $components = [
             \App\Services\ComponentBuilder::title('Edit Exercise')->build(),
@@ -354,7 +354,7 @@ class ExerciseController extends Controller
     {
         $this->authorize('update', $exercise);
         
-        $this->updateExerciseAction->execute($request, $exercise, auth()->user());
+        $this->updateExerciseAction->execute($request, $exercise, Auth::user());
 
         return redirect()->route('exercises.index')->with('success', 'Exercise updated successfully.');
     }
@@ -442,14 +442,14 @@ class ExerciseController extends Controller
         
         // Eager load aliases for the exercise
         $exercise->load(['aliases' => function ($query) {
-            $query->where('user_id', auth()->id());
+            $query->where('user_id', Auth::id());
         }]);
         
         $liftLogs = $exercise->liftLogs()
             ->with(['liftSets', 'exercise.aliases' => function ($query) {
-                $query->where('user_id', auth()->id());
+                $query->where('user_id', Auth::id());
             }])
-            ->where('user_id', auth()->id())
+            ->where('user_id', Auth::id())
             ->orderBy('logged_at', 'desc') // Most recent first
             ->get();
 
@@ -457,7 +457,7 @@ class ExerciseController extends Controller
 
         // Get display name (alias if exists, otherwise title)
         $aliasService = app(\App\Services\ExerciseAliasService::class);
-        $displayName = $aliasService->getDisplayName($exercise, auth()->user());
+        $displayName = $aliasService->getDisplayName($exercise, Auth::user());
 
         // Build components
         $components = [];
@@ -510,7 +510,7 @@ class ExerciseController extends Controller
         
         // PR Cards and Calculator Grid (if exercise supports it)
         if ($this->exercisePRService->supportsPRTracking($exercise)) {
-            $prData = $this->exercisePRService->getPRData($exercise, auth()->user(), 10);
+            $prData = $this->exercisePRService->getPRData($exercise, Auth::user(), 10);
             $estimated1RM = null;
             
             // Check if we have any actual 1-3 rep PRs
@@ -522,7 +522,7 @@ class ExerciseController extends Controller
             
             // If no actual PRs, get estimated 1RM from best lift
             if (!$hasActualPRs) {
-                $estimated1RM = $this->exercisePRService->getEstimated1RM($exercise, auth()->user());
+                $estimated1RM = $this->exercisePRService->getEstimated1RM($exercise, Auth::user());
             }
             
             if ($prData || $estimated1RM) {
@@ -691,7 +691,7 @@ class ExerciseController extends Controller
         $this->authorize('merge', $exercise);
 
         try {
-            $result = $this->mergeExerciseAction->execute($request, $exercise, auth()->user());
+            $result = $this->mergeExerciseAction->execute($request, $exercise, Auth::user());
             
             return redirect()->route('exercises.index')
                 ->with('success', $result['successMessage']);
