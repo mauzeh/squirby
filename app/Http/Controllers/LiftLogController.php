@@ -11,6 +11,11 @@ use App\Services\ExerciseService;
 use App\Services\ExerciseTypes\Exceptions\InvalidExerciseDataException;
 use App\Presenters\LiftLogTablePresenter;
 use App\Services\RedirectService;
+use App\Services\LiftLogTableRowBuilder;
+use App\Services\ExerciseListService;
+use App\Services\MobileEntry\LiftLogService;
+use App\Services\ExerciseAliasService;
+use App\Services\ComponentBuilder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -20,10 +25,12 @@ class LiftLogController extends Controller
         private ExerciseService $exerciseService,
         private LiftLogTablePresenter $liftLogTablePresenter,
         private RedirectService $redirectService,
-        private \App\Services\LiftLogTableRowBuilder $liftLogTableRowBuilder,
-        private \App\Services\ExerciseListService $exerciseListService,
+        private LiftLogTableRowBuilder $liftLogTableRowBuilder,
+        private ExerciseListService $exerciseListService,
         private CreateLiftLogAction $createLiftLogAction,
-        private UpdateLiftLogAction $updateLiftLogAction
+        private UpdateLiftLogAction $updateLiftLogAction,
+        private LiftLogService $liftLogService,
+        private ExerciseAliasService $exerciseAliasService
     ) {}
     
     /**
@@ -65,10 +72,8 @@ class LiftLogController extends Controller
         }
         
         // Generate the page using the service
-        $liftLogService = app(\App\Services\MobileEntry\LiftLogService::class);
-        
         try {
-            $components = $liftLogService->generateCreatePage(
+            $components = $this->liftLogService->generateCreatePage(
                 $exerciseId,
                 auth()->id(),
                 $date,
@@ -100,23 +105,23 @@ class LiftLogController extends Controller
 
         // Build components array
         $components = [
-            \App\Services\ComponentBuilder::title(
+            ComponentBuilder::title(
                 'Metrics',
                 'Select an exercise to view your training history, personal records, and 1RM calculator.'
             )->build(),
         ];
         
         // Add success/error messages if present
-        if ($sessionMessages = \App\Services\ComponentBuilder::messagesFromSession()) {
+        if ($sessionMessages = ComponentBuilder::messagesFromSession()) {
             $components[] = $sessionMessages;
         }
         
         // Build exercise list
         if ($exercises->isEmpty()) {
-            $components[] = \App\Services\ComponentBuilder::messages()
+            $components[] = ComponentBuilder::messages()
                 ->add('info', config('mobile_entry_messages.empty_states.metrics_getting_started'))
                 ->build();
-            $components[] = \App\Services\ComponentBuilder::button('Log Now')
+            $components[] = ComponentBuilder::button('Log Now')
                 ->asLink(route('mobile-entry.lifts', ['expand_selection' => true]))
                 ->build();
         } else {
@@ -168,8 +173,7 @@ class LiftLogController extends Controller
         }
         
         // Generate edit form component using the service
-        $liftLogService = app(\App\Services\MobileEntry\LiftLogService::class);
-        $formComponent = $liftLogService->generateEditFormComponent($liftLog, auth()->id(), $redirectParams);
+        $formComponent = $this->liftLogService->generateEditFormComponent($liftLog, auth()->id(), $redirectParams);
         
         $data = [
             'components' => [$formComponent],
@@ -214,8 +218,7 @@ class LiftLogController extends Controller
         
         // Generate a simple deletion message before deleting
         $exercise = $liftLog->exercise;
-        $aliasService = app(\App\Services\ExerciseAliasService::class);
-        $exerciseTitle = $aliasService->getDisplayName($exercise, auth()->user());
+        $exerciseTitle = $this->exerciseAliasService->getDisplayName($exercise, auth()->user());
         
         $isMobileEntry = in_array(request()->input('redirect_to'), ['mobile-entry', 'mobile-entry-lifts', 'workouts']);
         
@@ -235,7 +238,4 @@ class LiftLogController extends Controller
             $deletionMessage
         );
     }
-
-
-
 }
