@@ -1109,14 +1109,7 @@ Track your bench press progress with this simple tool.
 ## How to Use
 
 - **My Metrics**: View your progress charts and workout history
-- **Log Now**: Record a new workout with weight, reps, and sets
-
-## Tips
-
-- Use arrow keys to navigate between tabs
-- Form validation will automatically switch to the Log Now tab if there are errors
-- Your progress is saved and displayed in the metrics chart
-            ')->build(),
+- **Log Now**: Record a new workout with weight, reps, and sets')->build(),
         ];
 
         // Components for the "My Metrics" tab (now second)

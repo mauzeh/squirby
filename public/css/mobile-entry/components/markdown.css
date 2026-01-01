@@ -5,6 +5,7 @@
 }
 
 .markdown-content {
+    padding: 0 var(--spacing-sm);
     font-size: 0.85em;
     line-height: 1.6;
     color: #f2f2f2; /* Matches body text */
@@ -36,6 +37,12 @@
     margin-bottom: 0.5rem;
     line-height: 1.4;
     color: #f2f2f2;
+}
+
+.markdown-content h1:first-child,
+.markdown-content h2:first-child,
+.markdown-content h3:first-child {
+    margin-top: var(--spacing-xs);
 }
 
 .markdown-content p {
@@ -183,4 +190,12 @@
 
 .wod-display .markdown-content a:hover {
     text-decoration: underline;
+}
+
+.wod-display .markdown-content li {
+    line-height: 1.35em;
+}
+
+.wod-display .markdown-content ul {
+    margin-bottom: var(--spacing-xl);
 }
