@@ -5,27 +5,23 @@
 }
 
 .markdown-content {
-    background-color: #2a2a2a; /* Matches form-container */
-    padding: 1rem;
-    border-radius: 8px;
-    border: 1px solid #555;
+    font-size: 0.85em;
     line-height: 1.6;
     color: #f2f2f2; /* Matches body text */
-    font-size: 0.9em;
 }
 
 /* Typography */
 .markdown-content h1 {
-    font-size: 1.875rem;
+    font-size: 1.5em;
     font-weight: 700;
-    margin-top: 1.5rem;
+    margin-top: 1em;
     margin-bottom: 1rem;
     line-height: 1.2;
     color: #f2f2f2; /* Matches h1, h2 */
 }
 
 .markdown-content h2 {
-    font-size: 1.5rem;
+    font-size: 1.3em;
     font-weight: 600;
     margin-top: 1.25rem;
     margin-bottom: 0.75rem;
@@ -34,18 +30,12 @@
 }
 
 .markdown-content h3 {
-    font-size: 1.25rem;
+    font-size: 1.2em;
     font-weight: 600;
     margin-top: 1rem;
     margin-bottom: 0.5rem;
     line-height: 1.4;
     color: #f2f2f2;
-}
-
-.markdown-content h1:first-child,
-.markdown-content h2:first-child,
-.markdown-content h3:first-child {
-    margin-top: 0;
 }
 
 .markdown-content p {
@@ -169,26 +159,22 @@
 .wod-display .markdown-content {
     background-color: #1a1a1a; /* Darker, matches body background */
     border: 2px solid #555;
+    padding: 1rem;
+    border-radius: 8px;
     font-family: monospace;
     font-size: 0.95rem;
 }
 
 .wod-display .markdown-content h1 {
     font-size: 1.1rem;
-    margin-top: 1.5rem;
-    margin-bottom: 0;
 }
 
 .wod-display .markdown-content h2 {
     font-size: 1.05rem;
-    margin-top: 1.5rem;
-    margin-bottom: 0;
 }
 
 .wod-display .markdown-content h3 {
     font-size: 1rem;
-    margin-top: 0.5rem;
-    margin-bottom: 0.5rem;
 }
 
 .wod-display .markdown-content a {

@@ -1102,16 +1102,16 @@ class LabsController extends Controller
         // Components for the "Help" tab (first - simple help)
         $helpComponents = [
             C::markdown('
-## Getting Started
+# Getting Started
 
 Track your bench press progress with this simple tool.
 
-### How to Use
+## How to Use
 
 - **My Metrics**: View your progress charts and workout history
 - **Log Now**: Record a new workout with weight, reps, and sets
 
-### Tips
+## Tips
 
 - Use arrow keys to navigate between tabs
 - Form validation will automatically switch to the Log Now tab if there are errors
