@@ -16,6 +16,7 @@ use App\Services\ExerciseListService;
 use App\Services\MobileEntry\LiftLogService;
 use App\Services\ExerciseAliasService;
 use App\Services\ComponentBuilder;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -187,6 +188,9 @@ class LiftLogController extends Controller
             abort(403, 'Unauthorized action.');
         }
         
+        // Load necessary relationships
+        $liftLog->load(['exercise', 'liftSets']);
+        
         // Capture redirect parameters from the request
         $redirectParams = [];
         if ($request->has('redirect_to')) {
@@ -194,7 +198,13 @@ class LiftLogController extends Controller
         }
         
         // Generate edit form component using the service
-        $formComponent = $this->liftLogService->generateEditFormComponent($liftLog, Auth::id(), $redirectParams);
+        $formComponent = $this->liftLogService->generateFormComponent(
+            $liftLog->exercise_id,
+            Auth::id(),
+            Carbon::parse($liftLog->logged_at),
+            $redirectParams,
+            $liftLog
+        );
         
         $data = [
             'components' => [$formComponent],

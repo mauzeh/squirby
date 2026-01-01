@@ -249,28 +249,6 @@ class LiftLogService extends MobileEntryBaseService
     }
 
     /**
-     * Generate an edit form component for an existing lift log
-     * 
-     * @param LiftLog $liftLog The lift log to edit
-     * @param int $userId The user ID
-     * @param array $redirectParams Optional redirect parameters (redirect_to, date, etc.)
-     * @return array Form component data
-     */
-    public function generateEditFormComponent(LiftLog $liftLog, $userId, array $redirectParams = [])
-    {
-        // Load necessary relationships
-        $liftLog->load(['exercise', 'liftSets']);
-        
-        return $this->generateFormComponent(
-            $liftLog->exercise_id,
-            $userId,
-            Carbon::parse($liftLog->logged_at),
-            $redirectParams,
-            $liftLog
-        );
-    }
-
-    /**
      * Generate messages for a form based on mobile lift form and last session
      * 
      * @param MobileLiftForm $form
