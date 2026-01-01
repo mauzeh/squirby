@@ -11,7 +11,6 @@ use App\Services\ExerciseAliasService;
 use App\Services\Factories\LiftLogFormFactory;
 use App\Services\LiftLogTableRowBuilder;
 use App\Services\ComponentBuilder;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use App\Services\MobileEntry\MobileEntryBaseService;
