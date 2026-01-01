@@ -4,14 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Actions\LiftLogs\CreateLiftLogAction;
 use App\Actions\LiftLogs\UpdateLiftLogAction;
-use App\Models\Exercise;
 use App\Models\LiftLog;
 use App\Services\ExerciseTypes\Exceptions\InvalidExerciseDataException;
 use App\Services\RedirectService;
 use App\Services\ExerciseListService;
 use App\Services\MobileEntry\LiftLogService;
 use App\Services\ExerciseAliasService;
-use App\Services\ExerciseLogsPageService;
 use App\Services\ComponentBuilder;
 use App\Services\LiftLogCreatePageService;
 use Carbon\Carbon;
@@ -27,7 +25,6 @@ class LiftLogController extends Controller
         private UpdateLiftLogAction $updateLiftLogAction,
         private LiftLogService $liftLogService,
         private ExerciseAliasService $exerciseAliasService,
-        private ExerciseLogsPageService $exerciseLogsPageService,
         private LiftLogCreatePageService $liftLogCreatePageService
     ) {}
     
@@ -36,19 +33,19 @@ class LiftLogController extends Controller
      */
     public function create(Request $request)
     {
-        try {
-            $components = $this->liftLogCreatePageService->generatePage($request);
-            
-            $data = [
-                'components' => $components,
-                'autoscroll' => true
-            ];
-            
-            return view('mobile-entry.flexible', compact('data'));
-        } catch (\InvalidArgumentException $e) {
+        if (!$request->input('exercise_id')) {
             return redirect()->route('mobile-entry.lifts')
                 ->with('error', 'No exercise specified.');
         }
+        
+        $components = $this->liftLogCreatePageService->generatePage($request);
+        
+        $data = [
+            'components' => $components,
+            'autoscroll' => true
+        ];
+        
+        return view('mobile-entry.flexible', compact('data'));
     }
 
     /**

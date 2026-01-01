@@ -43,10 +43,6 @@ class LiftLogCreatePageService
             ? Carbon::parse($request->input('date'))
             : Carbon::today();
         
-        if (!$exerciseId) {
-            throw new \InvalidArgumentException('No exercise specified.');
-        }
-        
         $redirectParams = [];
         if ($request->has('redirect_to')) {
             $redirectParams['redirect_to'] = $request->input('redirect_to');
