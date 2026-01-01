@@ -1194,7 +1194,7 @@ Track your bench press progress with this simple tool.
         // Components for the "Log Now" tab (now third)
         $logLiftComponents = [
             // Form for logging the lift
-            C::form('bench-press-log', 'Bench Press')
+            C::form('bench-press-log')
                 ->type('primary')
                 ->cssClass('transparent')
                 ->formAction(route('labs.tabbed-lift-logger'))
