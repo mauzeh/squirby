@@ -1169,6 +1169,7 @@ Track your bench press progress with this simple tool.
             // Form for logging the lift
             C::form('bench-press-log', 'Bench Press')
                 ->type('primary')
+                ->cssClass('transparent')
                 ->formAction(route('labs.tabbed-lift-logger'))
                 ->message('info', '185 lbs × 8 reps × 3 sets', 'Last workout:')
                 ->message('tip', 'Try to increase weight or reps today!', 'Goal:')
@@ -1180,20 +1181,12 @@ Track your bench press progress with this simple tool.
                 ->hiddenField('date', now()->toDateString())
                 ->submitButton('Log Workout')
                 ->build(),
-            
-            // Quick stats summary
-            C::summary()
-                ->item('streak', '12 days', 'Current Streak')
-                ->item('this_week', '3', 'Workouts This Week')
-                ->item('pr', '185 lbs', 'Current PR')
-                ->item('volume', '4,440 lbs', 'Total Volume')
-                ->build(),
         ];
         
         $data = [
             'components' => [
                 // Page title with back button
-                C::title('Bench Press Tracker', 'Log workouts and view progress')
+                C::title('Bench Press', 'Log workouts and view progress')
                     ->backButton('fa-arrow-left', route('labs.with-nav'), 'Back to examples')
                     ->build(),
                 
