@@ -13,6 +13,7 @@ use App\Services\MobileEntry\LiftLogService;
 use App\Services\ExerciseAliasService;
 use App\Services\ExerciseLogsPageService;
 use App\Services\ComponentBuilder;
+use App\Services\LiftLogCreatePageService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -26,7 +27,8 @@ class LiftLogController extends Controller
         private UpdateLiftLogAction $updateLiftLogAction,
         private LiftLogService $liftLogService,
         private ExerciseAliasService $exerciseAliasService,
-        private ExerciseLogsPageService $exerciseLogsPageService
+        private ExerciseLogsPageService $exerciseLogsPageService,
+        private LiftLogCreatePageService $liftLogCreatePageService
     ) {}
     
     /**
@@ -34,152 +36,19 @@ class LiftLogController extends Controller
      */
     public function create(Request $request)
     {
-        $exerciseId = $request->input('exercise_id');
-        $date = $request->input('date') 
-            ? \Carbon\Carbon::parse($request->input('date'))
-            : \Carbon\Carbon::today();
-        
-        if (!$exerciseId) {
+        try {
+            $components = $this->liftLogCreatePageService->generatePage($request);
+            
+            $data = [
+                'components' => $components,
+                'autoscroll' => true
+            ];
+            
+            return view('mobile-entry.flexible', compact('data'));
+        } catch (\InvalidArgumentException $e) {
             return redirect()->route('mobile-entry.lifts')
                 ->with('error', 'No exercise specified.');
         }
-        
-        // Capture redirect parameters
-        $redirectParams = [];
-        if ($request->has('redirect_to')) {
-            $redirectParams['redirect_to'] = $request->input('redirect_to');
-        }
-        if ($request->has('workout_id')) {
-            $redirectParams['workout_id'] = $request->input('workout_id');
-        }
-        
-        // Determine back URL based on redirect parameters
-        $redirectTo = $request->input('redirect_to');
-        if ($redirectTo === 'workouts') {
-            $workoutId = $request->input('workout_id');
-            $backUrl = route('workouts.index', $workoutId ? ['workout_id' => $workoutId] : []);
-        } elseif ($redirectTo === 'mobile-entry-lifts') {
-            $backUrl = route('mobile-entry.lifts', ['date' => $date->toDateString()]);
-        } elseif ($redirectTo === 'exercises-logs') {
-            $backUrl = route('exercises.show-logs', ['exercise' => $exerciseId]);
-        } else {
-            // Default to mobile-entry lifts
-            $backUrl = route('mobile-entry.lifts', ['date' => $date->toDateString()]);
-        }
-        
-        // Get the exercise for the title (validate it exists and is accessible)
-        $exercise = Exercise::where('id', $exerciseId)
-            ->availableToUser(Auth::id())
-            ->first();
-            
-        if (!$exercise) {
-            // Throw exception to match expected test behavior (500 status)
-            throw new \Exception('Exercise not found or not accessible.');
-        }
-        
-        // Get user and apply alias to exercise title
-        $user = Auth::user();
-        $displayName = $this->exerciseAliasService->getDisplayName($exercise, $user);
-        
-        // Determine which tab should be active
-        // Default to help tab for first-time users, log tab for returning users
-        $activeTab = 'log'; // Default to help tab
-        
-        // Get validation errors from session
-        $errors = session()->get('errors', new \Illuminate\Support\MessageBag());
-        if ($errors->any()) {
-            $activeTab = 'log'; // Show form tab if there are errors
-        } elseif (session('success')) {
-            $activeTab = 'history'; // Show metrics tab if successful submission
-        }
-        
-        // Generate components for each tab
-        
-        // Help tab components
-        $helpComponents = [
-            ComponentBuilder::markdown('
-# Getting Started
-
-Track your ' . strtolower($displayName) . ' progress with this simple tool.
-
-## How to Use
-
-- **My Metrics**: View your progress charts and workout history
-- **Log Now**: Record a new workout with weight, reps, and sets')->build(),
-        ];
-        
-        // My Metrics tab components (using ExerciseLogsPageService)
-        try {
-            $metricsComponents = $this->exerciseLogsPageService->generatePage(
-                $exercise,
-                Auth::id(),
-                $redirectTo === 'mobile-entry-lifts' ? 'mobile-entry-lifts' : null,
-                $redirectTo === 'mobile-entry-lifts' ? $date->toDateString() : null
-            );
-            
-            // Remove the title component since we'll have our own title
-            $metricsComponents = array_filter($metricsComponents, function($component) {
-                return !isset($component['type']) || $component['type'] !== 'title';
-            });
-        } catch (\Exception $e) {
-            // If metrics generation fails, show a simple message
-            $metricsComponents = [
-                ComponentBuilder::messages()
-                    ->info('No training data yet. Use the "Log Now" tab to record your first workout for this exercise.')
-                    ->build()
-            ];
-        }
-        
-        // Log Now tab components (using existing form generation)
-        try {
-            $formComponent = $this->liftLogService->generateFormComponent(
-                $exerciseId,
-                Auth::id(),
-                $date,
-                $redirectParams
-            );
-            $logComponents = [$formComponent];
-        } catch (\Exception $e) {
-            $logComponents = [
-                ComponentBuilder::messages()
-                    ->error('Unable to load the logging form. Please try again.')
-                    ->build()
-            ];
-        }
-        
-        // Build the main page components
-        $components = [];
-        
-        // Add title with back button
-        $components[] = ComponentBuilder::title($displayName)
-            ->subtitle($date->format('l, F j, Y'))
-            ->backButton('fa-arrow-left', $backUrl, 'Back')
-            ->condensed()
-            ->build();
-        
-        // Add session messages if any
-        if ($sessionMessages = ComponentBuilder::messagesFromSession()) {
-            $components[] = $sessionMessages;
-        }
-        
-        // Add tabbed interface
-        $components[] = ComponentBuilder::tabs('lift-logger-tabs')
-            ->tab('help', 'Help', $helpComponents, 'fa-question-circle', $activeTab === 'help', true)
-            ->tab('history', 'My Metrics', $metricsComponents, 'fa-chart-line', $activeTab === 'history')
-            ->tab('log', 'Log Now', $logComponents, 'fa-plus', $activeTab === 'log')
-            ->ariaLabels([
-                'section' => 'Lift logging interface with help, metrics and logging views',
-                'tabList' => 'Switch between help, metrics and logging views',
-                'tabPanel' => 'Content for selected tab'
-            ])
-            ->build();
-        
-        $data = [
-            'components' => $components,
-            'autoscroll' => true
-        ];
-        
-        return view('mobile-entry.flexible', compact('data'));
     }
 
     /**
