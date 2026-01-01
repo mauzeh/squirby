@@ -1121,46 +1121,73 @@ Track your bench press progress with this simple tool.
 
         // Components for the "My Metrics" tab (now second)
         $historyComponents = [
-            // Progress chart
-            C::chart('bench-progress-chart', 'Bench Press Progress')
-                ->type('line')
-                ->datasets($chartData['datasets'])
-                ->timeScale('day')
-                ->beginAtZero()
-                ->showLegend()
-                ->ariaLabel('Bench press progress showing working weight and estimated 1RM over time')
+            // 1. Heaviest Lifts (PR Cards)
+            C::prCards('Heaviest Lifts')
+                ->scrollable()
+                ->card('1 × 1', 227, 'lbs', 'Nov 26')
+                ->card('1 × 2', 220, 'lbs', 'Nov 22')
+                ->card('1 × 3', 215, 'lbs', 'Nov 19')
+                ->card('1 × 4', 210, 'lbs', 'Nov 15')
+                ->card('1 × 5', 205, 'lbs', 'Nov 12')
+                ->card('1 × 6', null, 'lbs')
+                ->card('1 × 7', null, 'lbs')
+                ->card('1 × 8', 185, 'lbs', 'Nov 8')
+                ->card('1 × 9', null, 'lbs')
+                ->card('1 × 10', 175, 'lbs', 'Nov 1')
                 ->build(),
             
-            // Recent workouts table
-            C::table()
-                ->row(1, 'Nov 26, 2024', '170 lbs × 5 reps × 3 sets', '1RM: 227 lbs')
-                    ->badge('Today', 'success')
-                    ->badge('170 lbs', 'dark', true)
-                    ->badge('PR!', 'success')
-                    ->linkAction('fa-edit', route('labs.tabbed-lift-logger'), 'Edit')
-                    ->formAction('fa-trash', route('labs.tabbed-lift-logger'), 'DELETE', [], 'Delete', 'btn-danger', true)
-                    ->add()
-                ->row(2, 'Nov 22, 2024', '165 lbs × 6 reps × 3 sets', '1RM: 220 lbs')
-                    ->badge('4 days ago', 'info')
-                    ->badge('165 lbs', 'dark', true)
-                    ->linkAction('fa-edit', route('labs.tabbed-lift-logger'), 'Edit')
-                    ->formAction('fa-trash', route('labs.tabbed-lift-logger'), 'DELETE', [], 'Delete', 'btn-danger', true)
-                    ->add()
-                ->row(3, 'Nov 19, 2024', '160 lbs × 8 reps × 3 sets', '1RM: 213 lbs')
-                    ->badge('11/19', 'neutral')
-                    ->badge('160 lbs', 'dark', true)
-                    ->linkAction('fa-edit', route('labs.tabbed-lift-logger'), 'Edit')
-                    ->formAction('fa-trash', route('labs.tabbed-lift-logger'), 'DELETE', [], 'Delete', 'btn-danger', true)
-                    ->add()
-                ->row(4, 'Nov 15, 2024', '155 lbs × 8 reps × 3 sets', '1RM: 207 lbs')
-                    ->badge('11/15', 'neutral')
-                    ->badge('155 lbs', 'dark', true)
-                    ->linkAction('fa-edit', route('labs.tabbed-lift-logger'), 'Edit')
-                    ->formAction('fa-trash', route('labs.tabbed-lift-logger'), 'DELETE', [], 'Delete', 'btn-danger', true)
-                    ->add()
-                ->ariaLabel('Recent bench press workouts')
-                ->spacedRows()
-                ->confirmMessage('deleteItem', 'Are you sure you want to delete this workout?')
+            // 2. 1RM Percentages (Calculator Grid)
+            C::calculatorGrid('1-Rep Max Percentages')
+                ->columns([
+                    ['label' => '1 × 1', 'one_rep_max' => 227],
+                    ['label' => '1 × 2', 'one_rep_max' => 220],
+                ])
+                ->percentages([100, 95, 90, 85, 80, 75, 70, 65, 60, 55, 50, 45])
+                ->rows([
+                    ['percentage' => 100, 'weights' => [227, 220]],
+                    ['percentage' => 95, 'weights' => [216, 209]],
+                    ['percentage' => 90, 'weights' => [204, 198]],
+                    ['percentage' => 85, 'weights' => [193, 187]],
+                    ['percentage' => 80, 'weights' => [182, 176]],
+                    ['percentage' => 75, 'weights' => [170, 165]],
+                    ['percentage' => 70, 'weights' => [159, 154]],
+                    ['percentage' => 65, 'weights' => [148, 143]],
+                    ['percentage' => 60, 'weights' => [136, 132]],
+                    ['percentage' => 55, 'weights' => [125, 121]],
+                    ['percentage' => 50, 'weights' => [114, 110]],
+                    ['percentage' => 45, 'weights' => [102, 99]],
+                ])
+                ->build(),
+            
+            // 3. 1RM Progress Chart
+            C::chart('1rm-progress-chart', '1RM Progress')
+                ->type('line')
+                ->datasets([
+                    [
+                        'label' => '1RM Estimate (lbs)',
+                        'data' => [
+                            ['x' => '2024-11-01', 'y' => 180],
+                            ['x' => '2024-11-05', 'y' => 187],
+                            ['x' => '2024-11-08', 'y' => 193],
+                            ['x' => '2024-11-12', 'y' => 200],
+                            ['x' => '2024-11-15', 'y' => 207],
+                            ['x' => '2024-11-19', 'y' => 213],
+                            ['x' => '2024-11-22', 'y' => 220],
+                            ['x' => '2024-11-26', 'y' => 227],
+                        ],
+                        'borderColor' => 'rgb(255, 99, 132)',
+                        'backgroundColor' => 'rgba(255, 99, 132, 0.2)',
+                        'tension' => 0.1,
+                        'fill' => true,
+                    ]
+                ])
+                ->timeScale('day')
+                ->showLegend()
+                ->ariaLabel('Bench press 1RM progress over time')
+                ->containerClass('chart-container-styled')
+                ->height(300)
+                ->noAspectRatio()
+                ->labelColors()
                 ->build(),
         ];
         
