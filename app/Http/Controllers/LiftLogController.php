@@ -6,12 +6,8 @@ use App\Actions\LiftLogs\CreateLiftLogAction;
 use App\Actions\LiftLogs\UpdateLiftLogAction;
 use App\Models\Exercise;
 use App\Models\LiftLog;
-use App\Models\LiftSet;
-use App\Services\ExerciseService;
 use App\Services\ExerciseTypes\Exceptions\InvalidExerciseDataException;
-use App\Presenters\LiftLogTablePresenter;
 use App\Services\RedirectService;
-use App\Services\LiftLogTableRowBuilder;
 use App\Services\ExerciseListService;
 use App\Services\MobileEntry\LiftLogService;
 use App\Services\ExerciseAliasService;
@@ -23,10 +19,7 @@ use Illuminate\Support\Facades\Auth;
 class LiftLogController extends Controller
 {
     public function __construct(
-        private ExerciseService $exerciseService,
-        private LiftLogTablePresenter $liftLogTablePresenter,
         private RedirectService $redirectService,
-        private LiftLogTableRowBuilder $liftLogTableRowBuilder,
         private ExerciseListService $exerciseListService,
         private CreateLiftLogAction $createLiftLogAction,
         private UpdateLiftLogAction $updateLiftLogAction,
