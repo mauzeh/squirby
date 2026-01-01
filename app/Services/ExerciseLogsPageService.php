@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Models\Exercise;
-use App\Models\User;
 use App\Services\ChartService;
 use App\Services\ExercisePRService;
 use App\Services\ComponentBuilder;
