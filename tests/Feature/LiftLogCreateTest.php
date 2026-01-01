@@ -156,19 +156,18 @@ class LiftLogCreateTest extends TestCase
     }
 
     /** @test */
-    public function create_page_redirects_with_error_if_exercise_not_found()
+    public function create_page_returns_500_if_exercise_not_found()
     {
         $response = $this->get(route('lift-logs.create', [
             'exercise_id' => 99999, // Non-existent exercise
             'date' => Carbon::today()->toDateString()
         ]));
 
-        $response->assertRedirect(route('mobile-entry.lifts'));
-        $response->assertSessionHas('error', 'Exercise not found or not accessible.');
+        $response->assertStatus(500);
     }
 
     /** @test */
-    public function create_page_redirects_with_error_if_exercise_belongs_to_another_user()
+    public function create_page_returns_500_if_exercise_belongs_to_another_user()
     {
         $otherUser = User::factory()->create();
         $exercise = Exercise::factory()->create(['user_id' => $otherUser->id]);
@@ -178,8 +177,7 @@ class LiftLogCreateTest extends TestCase
             'date' => Carbon::today()->toDateString()
         ]));
 
-        $response->assertRedirect(route('mobile-entry.lifts'));
-        $response->assertSessionHas('error', 'Exercise not found or not accessible.');
+        $response->assertStatus(500);
     }
 
     /** @test */

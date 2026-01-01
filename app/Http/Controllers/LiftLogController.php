@@ -66,46 +66,41 @@ class LiftLogController extends Controller
         }
         
         // Generate the page using the service
-        try {
-            $formComponent = $this->liftLogService->generateFormComponent(
-                $exerciseId,
-                Auth::id(),
-                $date,
-                $redirectParams
-            );
-            
-            // Get the exercise for the title (we know it exists now since form generation succeeded)
-            $exercise = Exercise::where('id', $exerciseId)
-                ->availableToUser(Auth::id())
-                ->first();
-            
-            // Get user and apply alias to exercise title
-            $user = Auth::user();
-            $displayName = $this->exerciseAliasService->getDisplayName($exercise, $user);
-            
-            // Build components array with title and back button
-            $components = [];
-            
-            // Add title with back button
-            $components[] = ComponentBuilder::title($displayName)
-                ->subtitle($date->format('l, F j, Y'))
-                ->backButton('fa-arrow-left', $backUrl, 'Back')
-                ->condensed()
-                ->build();
-            
-            // Add the form
-            $components[] = $formComponent;
-            
-            $data = [
-                'components' => $components,
-                'autoscroll' => true
-            ];
-            
-            return view('mobile-entry.flexible', compact('data'));
-        } catch (\Exception $e) {
-            return redirect()->route('mobile-entry.lifts')
-                ->with('error', 'Exercise not found or not accessible.');
-        }
+        $formComponent = $this->liftLogService->generateFormComponent(
+            $exerciseId,
+            Auth::id(),
+            $date,
+            $redirectParams
+        );
+        
+        // Get the exercise for the title (we know it exists now since form generation succeeded)
+        $exercise = Exercise::where('id', $exerciseId)
+            ->availableToUser(Auth::id())
+            ->first();
+        
+        // Get user and apply alias to exercise title
+        $user = Auth::user();
+        $displayName = $this->exerciseAliasService->getDisplayName($exercise, $user);
+        
+        // Build components array with title and back button
+        $components = [];
+        
+        // Add title with back button
+        $components[] = ComponentBuilder::title($displayName)
+            ->subtitle($date->format('l, F j, Y'))
+            ->backButton('fa-arrow-left', $backUrl, 'Back')
+            ->condensed()
+            ->build();
+        
+        // Add the form
+        $components[] = $formComponent;
+        
+        $data = [
+            'components' => $components,
+            'autoscroll' => true
+        ];
+        
+        return view('mobile-entry.flexible', compact('data'));
     }
 
     /**
