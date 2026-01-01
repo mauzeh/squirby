@@ -10,7 +10,7 @@ use App\Services\TrainingProgressionService;
 use App\Services\ExerciseAliasService;
 use App\Services\Factories\LiftLogFormFactory;
 use App\Services\LiftLogTableRowBuilder;
-use App\Services\ComponentBuilder as C;
+use App\Services\ComponentBuilder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -246,58 +246,6 @@ class LiftLogService extends MobileEntryBaseService
         
         // Update button text
         $formComponent['data']['buttons']['submit'] = 'Update ' . $liftLog->exercise->title;
-    }
-
-    /**
-     * Generate a complete page with title and form for creating a lift log
-     * 
-     * @param int $exerciseId The exercise ID
-     * @param int $userId The user ID
-     * @param Carbon $selectedDate The selected date
-     * @param string $backUrl The URL to return to
-     * @param array $redirectParams Optional redirect parameters
-     * @return array Components array for the page
-     */
-    public function generateCreatePage(
-        int $exerciseId,
-        int $userId,
-        Carbon $selectedDate,
-        string $backUrl,
-        array $redirectParams = []
-    ) {
-        // Generate the form (this will throw exception if exercise not found)
-        $formComponent = $this->generateFormComponent(
-            $exerciseId,
-            $userId,
-            $selectedDate,
-            $redirectParams
-        );
-        
-        // Get the exercise for the title (we know it exists now)
-        $exercise = Exercise::where('id', $exerciseId)
-            ->availableToUser($userId)
-            ->first();
-        
-        // Get user
-        $user = User::find($userId);
-        
-        // Apply alias to exercise title
-        $displayName = $this->aliasService->getDisplayName($exercise, $user);
-        
-        // Build components array with title and back button
-        $components = [];
-        
-        // Add title with back button
-        $components[] = C::title($displayName)
-            ->subtitle($selectedDate->format('l, F j, Y'))
-            ->backButton('fa-arrow-left', $backUrl, 'Back')
-            ->condensed()
-            ->build();
-        
-        // Add the form
-        $components[] = $formComponent;
-        
-        return $components;
     }
 
     /**
@@ -541,7 +489,7 @@ class LiftLogService extends MobileEntryBaseService
             'selectedDate' => $selectedDate->toDateString(),
         ]);
 
-        $tableBuilder = C::table()
+        $tableBuilder = ComponentBuilder::table()
             ->rows($rows)
             ->emptyMessage(config('mobile_entry_messages.empty_states.no_workouts_logged'))
             ->confirmMessage('deleteItem', 'Are you sure you want to delete this lift log entry? This action cannot be undone.')

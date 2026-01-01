@@ -73,13 +73,34 @@ class LiftLogController extends Controller
         
         // Generate the page using the service
         try {
-            $components = $this->liftLogService->generateCreatePage(
+            $formComponent = $this->liftLogService->generateFormComponent(
                 $exerciseId,
                 Auth::id(),
                 $date,
-                $backUrl,
                 $redirectParams
             );
+            
+            // Get the exercise for the title (we know it exists now since form generation succeeded)
+            $exercise = Exercise::where('id', $exerciseId)
+                ->availableToUser(Auth::id())
+                ->first();
+            
+            // Get user and apply alias to exercise title
+            $user = Auth::user();
+            $displayName = $this->exerciseAliasService->getDisplayName($exercise, $user);
+            
+            // Build components array with title and back button
+            $components = [];
+            
+            // Add title with back button
+            $components[] = ComponentBuilder::title($displayName)
+                ->subtitle($date->format('l, F j, Y'))
+                ->backButton('fa-arrow-left', $backUrl, 'Back')
+                ->condensed()
+                ->build();
+            
+            // Add the form
+            $components[] = $formComponent;
             
             $data = [
                 'components' => $components,
