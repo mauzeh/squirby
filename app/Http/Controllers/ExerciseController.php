@@ -13,6 +13,7 @@ use App\Services\ChartService;
 use App\Services\ExercisePRService;
 use App\Services\ComponentBuilder;
 use App\Services\ExerciseFormService;
+use App\Services\ExerciseLogsPageService;
 use App\Presenters\LiftLogTablePresenter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -31,7 +32,8 @@ class ExerciseController extends Controller
         private CreateExerciseAction $createExerciseAction,
         private UpdateExerciseAction $updateExerciseAction,
         private MergeExerciseAction $mergeExerciseAction,
-        private ExerciseFormService $exerciseFormService
+        private ExerciseFormService $exerciseFormService,
+        private ExerciseLogsPageService $exerciseLogsPageService
     ) {}
 
     /**
@@ -440,214 +442,14 @@ class ExerciseController extends Controller
             abort(403, 'Unauthorized action.');
         }
         
-        // Eager load aliases for the exercise
-        $exercise->load(['aliases' => function ($query) {
-            $query->where('user_id', Auth::id());
-        }]);
+        $components = $this->exerciseLogsPageService->generatePage(
+            $exercise,
+            Auth::id(),
+            $request->query('from'),
+            $request->query('date')
+        );
         
-        $liftLogs = $exercise->liftLogs()
-            ->with(['liftSets', 'exercise.aliases' => function ($query) {
-                $query->where('user_id', Auth::id());
-            }])
-            ->where('user_id', Auth::id())
-            ->orderBy('logged_at', 'desc') // Most recent first
-            ->get();
-
-        $chartData = $this->chartService->generateProgressChart($liftLogs, $exercise);
-
-        // Get display name (alias if exists, otherwise title)
-        $aliasService = app(\App\Services\ExerciseAliasService::class);
-        $displayName = $aliasService->getDisplayName($exercise, Auth::user());
-
-        // Build components
-        $components = [];
-        
-        // Determine back URL based on where user came from
-        $from = $request->query('from');
-        $date = $request->query('date');
-        
-        if ($from === 'mobile-entry-lifts') {
-            $backUrl = route('mobile-entry.lifts', $date ? ['date' => $date] : []);
-        } elseif ($from === 'lift-logs-index') {
-            $backUrl = route('lift-logs.index');
-        } else {
-            // Default to lift-logs index if no 'from' parameter
-            $backUrl = route('lift-logs.index');
-        }
-        
-        // Title with back button
-        $components[] = \App\Services\ComponentBuilder::title($displayName)
-            ->backButton('fa-arrow-left', $backUrl, 'Back')
-            ->build();
-        
-        // Messages from session
-        if ($sessionMessages = \App\Services\ComponentBuilder::messagesFromSession()) {
-            $components[] = $sessionMessages;
-        }
-        
-        // Show friendly tip if no lift logs exist
-        if ($liftLogs->isEmpty()) {
-            $components[] = \App\Services\ComponentBuilder::messages()
-                ->tip('No training data yet. Click "Log now" to record your first workout for this exercise.')
-                ->build();
-        }
-        
-        // Log now button - determine redirect based on where user came from
-        $redirectTo = $from === 'mobile-entry-lifts' ? 'mobile-entry-lifts' : 'exercises-logs';
-        $logNowParams = [
-            'exercise_id' => $exercise->id,
-            'redirect_to' => $redirectTo
-        ];
-        
-        // Add date parameter if coming from mobile-entry-lifts
-        if ($from === 'mobile-entry-lifts' && $date) {
-            $logNowParams['date'] = $date;
-        }
-        
-        $components[] = \App\Services\ComponentBuilder::button('Log Now')
-            ->asLink(route('lift-logs.create', $logNowParams))
-            ->build();
-        
-        // PR Cards and Calculator Grid (if exercise supports it)
-        if ($this->exercisePRService->supportsPRTracking($exercise)) {
-            $prData = $this->exercisePRService->getPRData($exercise, Auth::user(), 10);
-            $estimated1RM = null;
-            
-            // Check if we have any actual 1-3 rep PRs
-            $hasActualPRs = $prData && (
-                ($prData['rep_1'] ?? null) !== null ||
-                ($prData['rep_2'] ?? null) !== null ||
-                ($prData['rep_3'] ?? null) !== null
-            );
-            
-            // If no actual PRs, get estimated 1RM from best lift
-            if (!$hasActualPRs) {
-                $estimated1RM = $this->exercisePRService->getEstimated1RM($exercise, Auth::user());
-            }
-            
-            if ($prData || $estimated1RM) {
-                // Build PR Cards component only if we have actual PR data
-                if ($prData) {
-                    $prCardsBuilder = \App\Services\ComponentBuilder::prCards('Heaviest Lifts')
-                        ->scrollable(); // Enable horizontal scrolling
-                    
-                    // Show PRs for 1-10 reps
-                    for ($reps = 1; $reps <= 10; $reps++) {
-                        $key = "rep_{$reps}";
-                        $label = "1 × {$reps}";
-                        
-                        if (isset($prData[$key]) && $prData[$key] !== null) {
-                            $prCardsBuilder->card($label, $prData[$key]['weight'], 'lbs', $prData[$key]['date']);
-                        } else {
-                            $prCardsBuilder->card($label, null, 'lbs');
-                        }
-                    }
-                    
-                    $components[] = $prCardsBuilder->build();
-                }
-                
-                // Build Calculator Grid component
-                $calculatorGrid = $this->exercisePRService->getCalculatorGrid(
-                    $exercise,
-                    $prData ?? [],
-                    $estimated1RM
-                );
-                
-                if ($calculatorGrid) {
-                    $gridTitle = $calculatorGrid['is_estimated'] 
-                        ? '1-Rep Max Percentages (Estimated)' 
-                        : '1-Rep Max Percentages';
-                    
-                    // Add info message if data is estimated
-                    if ($calculatorGrid['is_estimated']) {
-                        $components[] = \App\Services\ComponentBuilder::messages()
-                            ->info('This 1-rep max is estimated based on your previous lifts using a standard formula. For more accurate training percentages, test your actual 1, 2, or 3 rep max.')
-                            ->build();
-                    }
-                    // Add warning if PR data is stale (older than 6 months)
-                    elseif ($prData && $this->exercisePRService->isPRDataStale($prData)) {
-                        $components[] = \App\Services\ComponentBuilder::messages()
-                            ->warning('Your max lift data is over 6 months old. Consider retesting your 1, 2, or 3 rep max to ensure accurate training percentages.')
-                            ->build();
-                    }
-                    
-                    $components[] = \App\Services\ComponentBuilder::calculatorGrid($gridTitle)
-                        ->columns($calculatorGrid['columns'])
-                        ->percentages([100, 95, 90, 85, 80, 75, 70, 65, 60, 55, 50, 45])
-                        ->rows($calculatorGrid['rows'])
-                        ->build();
-                }
-            }
-        }
-        
-        // Add chart if we have data (only when lift logs exist)
-        if ($liftLogs->isNotEmpty() && !empty($chartData['datasets'])) {
-            $strategy = $exercise->getTypeStrategy();
-            $chartTitle = $strategy->getChartTitle();
-            
-            // Determine appropriate time scale and format based on data range
-            $oldestLog = $liftLogs->last();
-            $newestLog = $liftLogs->first();
-            $daysDiff = $oldestLog->logged_at->diffInDays($newestLog->logged_at);
-            
-            // Choose time unit and display format based on data span
-            if ($daysDiff > 730) { // More than 2 years
-                $timeUnit = 'month';
-                $displayFormat = 'MMM yyyy'; // "Jan 2023"
-            } elseif ($daysDiff > 365) { // More than 1 year
-                $timeUnit = 'month';
-                $displayFormat = 'MMM yy'; // "Jan 23"
-            } elseif ($daysDiff > 90) { // More than 3 months
-                $timeUnit = 'month';
-                $displayFormat = 'MMM d'; // "Jan 15"
-            } else {
-                $timeUnit = 'day';
-                $displayFormat = 'MMM d'; // "Jan 15"
-            }
-            
-            $chartBuilder = \App\Services\ComponentBuilder::chart('progressChart', $chartTitle)
-                ->type('line')
-                ->datasets($chartData['datasets'])
-                ->timeScale($timeUnit, $displayFormat)
-                ->showLegend()
-                ->ariaLabel($exercise->title . ' progress chart')
-                ->containerClass('chart-container-styled')
-                ->height(300)
-                ->noAspectRatio()
-                ->labelColors();
-            
-            // Only use beginAtZero for non-1RM charts
-            if ($chartTitle !== '1RM Progress') {
-                $chartBuilder->beginAtZero();
-            }
-            
-            $components[] = $chartBuilder->build();
-        }
-        
-        // Build table using shared service (only if we have data)
-        if ($liftLogs->isNotEmpty()) {
-            $liftLogTableRowBuilder = app(\App\Services\LiftLogTableRowBuilder::class);
-            
-            $rows = $liftLogTableRowBuilder->buildRows($liftLogs, [
-                'showDateBadge' => true,
-                'showCheckbox' => false,
-                'showViewLogsAction' => false, // Don't show "view logs" when already viewing logs
-                'showDeleteAction' => false,
-                'redirectContext' => 'exercises-logs', // For edit/delete redirects
-            ]);
-            
-            $tableBuilder = \App\Services\ComponentBuilder::table()
-                ->rows($rows)
-                ->emptyMessage('No lift logs found for this exercise.')
-                ->ariaLabel('Exercise logs')
-                ->spacedRows();
-
-            $components[] = $tableBuilder->build();
-        }
-        
-        $data = ['components' => $components];
-
-        return view('mobile-entry.flexible', compact('data'));
+        return view('mobile-entry.flexible', ['data' => ['components' => $components]]);
     }
 
     /**
