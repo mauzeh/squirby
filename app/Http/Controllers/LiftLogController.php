@@ -116,6 +116,41 @@ class LiftLogController extends Controller
     }
 
     /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit(LiftLog $liftLog, Request $request)
+    {
+        if ($liftLog->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized action.');
+        }
+        
+        // Load necessary relationships
+        $liftLog->load(['exercise', 'liftSets']);
+        
+        // Capture redirect parameters from the request
+        $redirectParams = [];
+        if ($request->has('redirect_to')) {
+            $redirectParams['redirect_to'] = $request->input('redirect_to');
+        }
+        
+        // Generate edit form component using the service
+        $formComponent = $this->liftLogService->generateFormComponent(
+            $liftLog->exercise_id,
+            Auth::id(),
+            Carbon::parse($liftLog->logged_at),
+            $redirectParams,
+            $liftLog
+        );
+        
+        $data = [
+            'components' => [$formComponent],
+            'autoscroll' => true
+        ];
+        
+        return view('mobile-entry.flexible', compact('data'));
+    }
+
+    /**
      * Display a listing of the resource.
      */
     public function index()
@@ -177,41 +212,6 @@ class LiftLogController extends Controller
         } catch (InvalidExerciseDataException $e) {
             return back()->withErrors(['exercise_data' => $e->getMessage()])->withInput();
         }
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(LiftLog $liftLog, Request $request)
-    {
-        if ($liftLog->user_id !== Auth::id()) {
-            abort(403, 'Unauthorized action.');
-        }
-        
-        // Load necessary relationships
-        $liftLog->load(['exercise', 'liftSets']);
-        
-        // Capture redirect parameters from the request
-        $redirectParams = [];
-        if ($request->has('redirect_to')) {
-            $redirectParams['redirect_to'] = $request->input('redirect_to');
-        }
-        
-        // Generate edit form component using the service
-        $formComponent = $this->liftLogService->generateFormComponent(
-            $liftLog->exercise_id,
-            Auth::id(),
-            Carbon::parse($liftLog->logged_at),
-            $redirectParams,
-            $liftLog
-        );
-        
-        $data = [
-            'components' => [$formComponent],
-            'autoscroll' => true
-        ];
-        
-        return view('mobile-entry.flexible', compact('data'));
     }
 
     /**
