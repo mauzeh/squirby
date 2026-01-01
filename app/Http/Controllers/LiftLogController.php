@@ -83,7 +83,7 @@ class LiftLogController extends Controller
         
         // Determine which tab should be active
         // Default to help tab for first-time users, log tab for returning users
-        $activeTab = 'help'; // Default to help tab
+        $activeTab = 'log'; // Default to help tab
         
         // Get validation errors from session
         $errors = session()->get('errors', new \Illuminate\Support\MessageBag());
