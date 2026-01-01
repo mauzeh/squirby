@@ -8,11 +8,17 @@ use App\Models\LiftLog;
 use App\Models\User;
 use App\Services\ExerciseTypes\ExerciseTypeFactory;
 use App\Services\ExerciseTypes\Exceptions\InvalidExerciseDataException;
+use App\Services\ExerciseAliasService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class CreateLiftLogAction
 {
+    public function __construct(
+        private ExerciseAliasService $exerciseAliasService
+    ) {}
+
     public function execute(Request $request, User $user): array
     {
         $exercise = Exercise::find($request->input('exercise_id'));
@@ -239,8 +245,7 @@ class CreateLiftLogAction
     private function generateSuccessMessage(Exercise $exercise, $weight, int $reps, int $rounds, ?string $bandColor = null, bool $isPR = false): string
     {
         // Get display name (alias if exists, otherwise title)
-        $aliasService = app(\App\Services\ExerciseAliasService::class);
-        $exerciseTitle = $aliasService->getDisplayName($exercise, auth()->user());
+        $exerciseTitle = $this->exerciseAliasService->getDisplayName($exercise, Auth::user());
         
         // Use strategy pattern to format workout description
         $strategy = $exercise->getTypeStrategy();

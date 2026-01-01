@@ -75,7 +75,7 @@ class LiftLogController extends Controller
         try {
             $components = $this->liftLogService->generateCreatePage(
                 $exerciseId,
-                auth()->id(),
+                Auth::id(),
                 $date,
                 $backUrl,
                 $redirectParams
@@ -98,7 +98,7 @@ class LiftLogController extends Controller
      */
     public function index()
     {
-        $userId = auth()->id();
+        $userId = Auth::id();
         
         // Get all exercises that the user has logged
         $exercises = $this->exerciseListService->getLoggedExercises($userId);
@@ -139,7 +139,7 @@ class LiftLogController extends Controller
     public function store(Request $request)
     {
         try {
-            $result = $this->createLiftLogAction->execute($request, auth()->user());
+            $result = $this->createLiftLogAction->execute($request, Auth::user());
             
             return $this->redirectService->getRedirect(
                 'lift_logs',
@@ -162,7 +162,7 @@ class LiftLogController extends Controller
      */
     public function edit(LiftLog $liftLog, Request $request)
     {
-        if ($liftLog->user_id !== auth()->id()) {
+        if ($liftLog->user_id !== Auth::id()) {
             abort(403, 'Unauthorized action.');
         }
         
@@ -173,7 +173,7 @@ class LiftLogController extends Controller
         }
         
         // Generate edit form component using the service
-        $formComponent = $this->liftLogService->generateEditFormComponent($liftLog, auth()->id(), $redirectParams);
+        $formComponent = $this->liftLogService->generateEditFormComponent($liftLog, Auth::id(), $redirectParams);
         
         $data = [
             'components' => [$formComponent],
@@ -189,7 +189,7 @@ class LiftLogController extends Controller
     public function update(Request $request, LiftLog $liftLog)
     {
         try {
-            $updatedLiftLog = $this->updateLiftLogAction->execute($request, $liftLog, auth()->user());
+            $updatedLiftLog = $this->updateLiftLogAction->execute($request, $liftLog, Auth::user());
             
             return $this->redirectService->getRedirect(
                 'lift_logs',
@@ -212,13 +212,13 @@ class LiftLogController extends Controller
      */
     public function destroy(LiftLog $liftLog)
     {
-        if ($liftLog->user_id !== auth()->id()) {
+        if ($liftLog->user_id !== Auth::id()) {
             abort(403, 'Unauthorized action.');
         }
         
         // Generate a simple deletion message before deleting
         $exercise = $liftLog->exercise;
-        $exerciseTitle = $this->exerciseAliasService->getDisplayName($exercise, auth()->user());
+        $exerciseTitle = $this->exerciseAliasService->getDisplayName($exercise, Auth::user());
         
         $isMobileEntry = in_array(request()->input('redirect_to'), ['mobile-entry', 'mobile-entry-lifts', 'workouts']);
         
