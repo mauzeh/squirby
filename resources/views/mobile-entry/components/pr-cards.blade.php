@@ -6,14 +6,7 @@
     
     <div class="pr-cards-container{{ isset($data['scrollable']) && $data['scrollable'] ? ' pr-cards-horizontal' : '' }}">
         @foreach($data['cards'] as $card)
-        @php
-            $isRecent = false;
-            if (isset($card['date']) && $card['date']) {
-                $prDate = \Carbon\Carbon::parse($card['date']);
-                $isRecent = $prDate->isAfter(now()->subDays(7));
-            }
-        @endphp
-        <div class="pr-card{{ $isRecent ? ' pr-card--recent' : '' }}">
+        <div class="pr-card{{ isset($card['is_recent']) && $card['is_recent'] ? ' pr-card--recent' : '' }}">
             <div class="pr-card-label">{{ $card['label'] }}</div>
             <div class="pr-card-value">
                 @if($card['value'] !== null)

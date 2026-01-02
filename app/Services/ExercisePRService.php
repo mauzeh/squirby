@@ -93,6 +93,33 @@ class ExercisePRService
     }
 
     /**
+     * Find the most recent PR across all rep ranges
+     * 
+     * @param array $prData PR data from getPRData()
+     * @return string|null Returns the rep key (e.g., 'rep_1') of the most recent PR, or null if no PRs exist
+     */
+    public function getMostRecentPRKey(array $prData): ?string
+    {
+        $mostRecentKey = null;
+        $mostRecentDate = null;
+
+        foreach ($prData as $key => $prInfo) {
+            if ($prInfo === null) {
+                continue;
+            }
+
+            $prDate = \Carbon\Carbon::parse($prInfo['date']);
+            
+            if ($mostRecentDate === null || $prDate->isAfter($mostRecentDate)) {
+                $mostRecentDate = $prDate;
+                $mostRecentKey = $key;
+            }
+        }
+
+        return $mostRecentKey;
+    }
+
+    /**
      * Check if PR data is stale (older than 6 months)
      * 
      * @param array $prData PR data from getPRData()

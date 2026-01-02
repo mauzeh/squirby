@@ -475,6 +475,116 @@ class ExercisePRServiceTest extends TestCase
     }
 
     /** @test */
+    public function getMostRecentPRKey_returns_null_when_no_prs_exist()
+    {
+        $prData = [
+            'rep_1' => null,
+            'rep_2' => null,
+            'rep_3' => null,
+        ];
+
+        $result = $this->service->getMostRecentPRKey($prData);
+
+        $this->assertNull($result);
+    }
+
+    /** @test */
+    public function getMostRecentPRKey_returns_single_pr_when_only_one_exists()
+    {
+        $prData = [
+            'rep_1' => [
+                'weight' => 242,
+                'lift_log_id' => 1,
+                'date' => now()->subDays(5)->format('Y-m-d'),
+                'is_estimated' => false,
+            ],
+            'rep_2' => null,
+            'rep_3' => null,
+        ];
+
+        $result = $this->service->getMostRecentPRKey($prData);
+
+        $this->assertEquals('rep_1', $result);
+    }
+
+    /** @test */
+    public function getMostRecentPRKey_returns_most_recent_pr_among_multiple()
+    {
+        $prData = [
+            'rep_1' => [
+                'weight' => 242,
+                'lift_log_id' => 1,
+                'date' => now()->subMonths(2)->format('Y-m-d'), // Older
+                'is_estimated' => false,
+            ],
+            'rep_2' => [
+                'weight' => 235,
+                'lift_log_id' => 2,
+                'date' => now()->subDays(3)->format('Y-m-d'), // Most recent
+                'is_estimated' => false,
+            ],
+            'rep_3' => [
+                'weight' => 230,
+                'lift_log_id' => 3,
+                'date' => now()->subWeeks(2)->format('Y-m-d'), // Middle
+                'is_estimated' => false,
+            ],
+        ];
+
+        $result = $this->service->getMostRecentPRKey($prData);
+
+        $this->assertEquals('rep_2', $result);
+    }
+
+    /** @test */
+    public function getMostRecentPRKey_handles_mixed_null_and_valid_prs()
+    {
+        $prData = [
+            'rep_1' => null,
+            'rep_2' => [
+                'weight' => 235,
+                'lift_log_id' => 2,
+                'date' => now()->subWeeks(1)->format('Y-m-d'),
+                'is_estimated' => false,
+            ],
+            'rep_3' => null,
+            'rep_4' => [
+                'weight' => 220,
+                'lift_log_id' => 4,
+                'date' => now()->subDays(2)->format('Y-m-d'), // Most recent
+                'is_estimated' => false,
+            ],
+        ];
+
+        $result = $this->service->getMostRecentPRKey($prData);
+
+        $this->assertEquals('rep_4', $result);
+    }
+
+    /** @test */
+    public function getMostRecentPRKey_works_regardless_of_pr_age()
+    {
+        $prData = [
+            'rep_1' => [
+                'weight' => 242,
+                'lift_log_id' => 1,
+                'date' => now()->subYears(2)->format('Y-m-d'), // Very old but most recent
+                'is_estimated' => false,
+            ],
+            'rep_2' => [
+                'weight' => 235,
+                'lift_log_id' => 2,
+                'date' => now()->subYears(3)->format('Y-m-d'), // Even older
+                'is_estimated' => false,
+            ],
+        ];
+
+        $result = $this->service->getMostRecentPRKey($prData);
+
+        $this->assertEquals('rep_1', $result);
+    }
+
+    /** @test */
     public function isPRDataStale_returns_true_when_all_prs_are_null()
     {
         $prData = [

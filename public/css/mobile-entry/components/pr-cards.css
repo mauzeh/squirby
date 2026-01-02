@@ -236,7 +236,7 @@
     outline-offset: 2px;
 }
 
-/* Recent PR Card - Special styling with pulsating halo effect (within 7 days) */
+/* Recent PR Card - Special styling with pulsating halo effect (most recent PR) */
 .pr-card--recent {
     background: radial-gradient(circle at center, #ff8a50 0%, #e65100 50%, #d84315 100%);
     border-color: rgba(216, 67, 21, 0.5);

@@ -28,15 +28,17 @@ class PRCardsComponentBuilder
      * @param mixed $value The value to display (weight or null for "—")
      * @param string|null $unit The unit to display (e.g., "lbs", "kg")
      * @param string|null $date The date when this PR was achieved (optional)
+     * @param bool $isRecent Whether this card should be highlighted as the most recent PR
      * @return self
      */
-    public function card(string $label, $value, ?string $unit = null, ?string $date = null): self
+    public function card(string $label, $value, ?string $unit = null, ?string $date = null, bool $isRecent = false): self
     {
         $this->data['cards'][] = [
             'label' => $label,
             'value' => $value,
             'unit' => $unit,
-            'date' => $date
+            'date' => $date,
+            'is_recent' => $isRecent
         ];
         
         return $this;

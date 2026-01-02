@@ -250,15 +250,19 @@ Track your ' . strtolower($displayName) . ' progress with this app.
             $prCardsBuilder = ComponentBuilder::prCards('Heaviest Lifts')
                 ->scrollable();
             
+            // Find the most recent PR to highlight
+            $mostRecentPRKey = $this->exercisePRService->getMostRecentPRKey($prData);
+            
             // Show PRs for 1-10 reps
             for ($reps = 1; $reps <= 10; $reps++) {
                 $key = "rep_{$reps}";
                 $label = "1 × {$reps}";
+                $isRecent = ($key === $mostRecentPRKey);
                 
                 if (isset($prData[$key]) && $prData[$key] !== null) {
-                    $prCardsBuilder->card($label, $prData[$key]['weight'], 'lbs', $prData[$key]['date']);
+                    $prCardsBuilder->card($label, $prData[$key]['weight'], 'lbs', $prData[$key]['date'], $isRecent);
                 } else {
-                    $prCardsBuilder->card($label, null, 'lbs');
+                    $prCardsBuilder->card($label, null, 'lbs', null, false);
                 }
             }
             

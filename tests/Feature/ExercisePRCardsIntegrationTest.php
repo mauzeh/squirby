@@ -517,4 +517,148 @@ class ExercisePRCardsIntegrationTest extends TestCase
         $response->assertSee('1 week ago');
         $response->assertSee('1 year ago');
     }
+
+    /** @test */
+    public function pr_cards_highlight_only_the_most_recent_pr_regardless_of_age()
+    {
+        $exercise = Exercise::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_type' => 'regular',
+            'title' => 'Bench Press',
+        ]);
+
+        // Create PRs with different dates - the most recent should be highlighted even if it's old
+        $this->createLiftLogWithDate($exercise, 1, 225, Carbon::now()->subYears(2)); // Oldest
+        $this->createLiftLogWithDate($exercise, 2, 215, Carbon::now()->subMonths(6)); // Middle  
+        $this->createLiftLogWithDate($exercise, 3, 205, Carbon::now()->subMonths(3)); // Most recent (should be highlighted)
+
+        $response = $this->get(route('exercises.show-logs', $exercise));
+
+        $response->assertStatus(200);
+        $response->assertSee('Heaviest Lifts');
+        
+        // Check that the page contains the pr-card--recent class exactly once
+        $content = $response->getContent();
+        $recentCardCount = substr_count($content, 'pr-card--recent');
+        $this->assertEquals(1, $recentCardCount, 'Expected exactly 1 PR card to be marked as recent');
+        
+        // Verify the most recent PR (3-rep) shows its date
+        $response->assertSee('3 months ago');
+    }
+
+    /** @test */
+    public function pr_cards_highlight_most_recent_pr_even_when_very_old()
+    {
+        $exercise = Exercise::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_type' => 'regular',
+            'title' => 'Squat',
+        ]);
+
+        // Create only one PR that's very old - it should still be highlighted as the "most recent"
+        $this->createLiftLogWithDate($exercise, 1, 315, Carbon::now()->subYears(5));
+
+        $response = $this->get(route('exercises.show-logs', $exercise));
+
+        $response->assertStatus(200);
+        $response->assertSee('Heaviest Lifts');
+        
+        // Even a 5-year-old PR should be highlighted if it's the only/most recent one
+        $content = $response->getContent();
+        $recentCardCount = substr_count($content, 'pr-card--recent');
+        $this->assertEquals(1, $recentCardCount, 'Expected the only PR to be marked as recent regardless of age');
+        
+        $response->assertSee('5 years ago');
+    }
+
+    /** @test */
+    public function pr_cards_do_not_highlight_when_no_prs_exist()
+    {
+        $exercise = Exercise::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_type' => 'regular',
+            'title' => 'Clean',
+        ]);
+
+        // No lift logs created
+
+        $response = $this->get(route('exercises.show-logs', $exercise));
+
+        $response->assertStatus(200);
+        
+        // Should not show PR cards at all when no data exists
+        $response->assertDontSee('Heaviest Lifts');
+        
+        // Should not contain any recent highlighting
+        $content = $response->getContent();
+        $recentCardCount = substr_count($content, 'pr-card--recent');
+        $this->assertEquals(0, $recentCardCount, 'Expected no recent highlighting when no PRs exist');
+    }
+
+    /** @test */
+    public function pr_cards_highlight_switches_when_new_pr_is_achieved()
+    {
+        $exercise = Exercise::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_type' => 'regular',
+            'title' => 'Deadlift',
+        ]);
+
+        // Create initial PRs
+        $this->createLiftLogWithDate($exercise, 1, 405, Carbon::now()->subMonths(6)); // Older
+        $this->createLiftLogWithDate($exercise, 2, 385, Carbon::now()->subMonths(3)); // Was most recent
+
+        // First check - 2-rep should be highlighted
+        $response = $this->get(route('exercises.show-logs', $exercise));
+        $response->assertStatus(200);
+        $response->assertSee('3 months ago'); // Most recent PR date should be visible
+
+        // Add a new, more recent PR
+        $this->createLiftLogWithDate($exercise, 3, 365, Carbon::now()->subDays(5)); // New most recent
+
+        // Second check - 3-rep should now be highlighted
+        $response = $this->get(route('exercises.show-logs', $exercise));
+        $response->assertStatus(200);
+        
+        // Should still have exactly one highlighted card
+        $content = $response->getContent();
+        $recentCardCount = substr_count($content, 'pr-card--recent');
+        $this->assertEquals(1, $recentCardCount, 'Expected exactly 1 PR card to be marked as recent after new PR');
+        
+        // Should show the new most recent date
+        $response->assertSee('5 days ago');
+    }
+
+    /** @test */
+    public function pr_cards_highlight_works_with_partial_pr_data()
+    {
+        $exercise = Exercise::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_type' => 'regular',
+            'title' => 'Overhead Press',
+        ]);
+
+        // Create PRs for only some rep ranges (gaps in data)
+        $this->createLiftLogWithDate($exercise, 1, 155, Carbon::now()->subMonths(4)); // Older
+        // No 2-rep PR
+        $this->createLiftLogWithDate($exercise, 3, 145, Carbon::now()->subWeeks(2)); // Most recent
+        // No 4-rep PR  
+        $this->createLiftLogWithDate($exercise, 5, 135, Carbon::now()->subMonths(2)); // Middle
+
+        $response = $this->get(route('exercises.show-logs', $exercise));
+
+        $response->assertStatus(200);
+        $response->assertSee('Heaviest Lifts');
+        
+        // Should highlight the 3-rep PR (most recent among existing PRs)
+        $content = $response->getContent();
+        $recentCardCount = substr_count($content, 'pr-card--recent');
+        $this->assertEquals(1, $recentCardCount, 'Expected exactly 1 PR card to be marked as recent with partial data');
+        
+        // Should show the most recent PR date
+        $response->assertSee('2 weeks ago');
+        
+        // Should still show empty cards for missing rep ranges
+        $response->assertSee('—');
+    }
 }
