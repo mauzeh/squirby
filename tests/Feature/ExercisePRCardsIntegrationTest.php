@@ -271,7 +271,7 @@ class ExercisePRCardsIntegrationTest extends TestCase
         $response->assertSee('Est. 1RM');
         
         // Should show helpful note about performing low rep tests
-        $response->assertSee('This 1-rep max is estimated based on your previous lifts');
+        $response->assertSee('The % table is estimated based on your previous lifts using a standard formula. For more accurate training percentages, test your actual 1, 2, or 3 rep max.');
         $response->assertSee('test your actual 1, 2, or 3 rep max');
         
         // Should show PR cards since we now track rep-specific PRs for 1-5 reps
@@ -308,7 +308,7 @@ class ExercisePRCardsIntegrationTest extends TestCase
         // Should show non-estimated calculator grid without the note
         $response->assertSee('1-Rep Max Percentages');
         $response->assertDontSee('1-Rep Max Percentages (Estimated)');
-        $response->assertDontSee('This 1-rep max is estimated based on your previous lifts');
+        $response->assertDontSee('The % table is estimated based on your previous lifts using a standard formula. For more accurate training percentages, test your actual 1, 2, or 3 rep max.');
     }
 
     /** @test */

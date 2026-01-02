@@ -284,7 +284,7 @@ Track your ' . strtolower($displayName) . ' progress with this app.
             // Add info message if data is estimated
             if ($calculatorGrid['is_estimated']) {
                 $components[] = ComponentBuilder::messages()
-                    ->info('This 1-rep max is estimated based on your previous lifts using a standard formula. For more accurate training percentages, test your actual 1, 2, or 3 rep max.')
+                    ->info('The % table is estimated based on your previous lifts using a standard formula. For more accurate training percentages, test your actual 1, 2, or 3 rep max.')
                     ->build();
             }
             // Add warning if PR data is stale (older than 6 months)
