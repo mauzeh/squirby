@@ -106,8 +106,8 @@ Track your ' . strtolower($displayName) . ' progress with this app.
 
 ## How to Use
 
-- **My Metrics**: View your progress charts and workout history
-- **Log Now**: Record a new workout with weight, reps, and sets')->build(),
+- **Log Now**: Record a new workout with weight, reps, and sets
+- **My Metrics**: View your progress charts and workout history')->build(),
         ];
     }
 
