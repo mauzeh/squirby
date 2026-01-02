@@ -33,6 +33,13 @@
     scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
     gap: var(--spacing-md);
     padding: 10px 10px 10px 0; /* Top/right/bottom padding for halo (10px), left handled by ::before */
+    
+    /* Smooth scrolling for better animation performance */
+    scroll-behavior: auto; /* We handle smooth scrolling via JS for better control */
+    
+    /* Performance optimizations */
+    will-change: scroll-position;
+    transform: translateZ(0); /* Force hardware acceleration */
 }
 
 /* Add invisible spacer before first card to prevent halo cutoff */
@@ -75,6 +82,10 @@
     transition: all var(--transition-fast);
     border: 1px solid rgba(255, 255, 255, 0.1);
     box-shadow: var(--shadow-light);
+    
+    /* Performance optimizations for smooth animations */
+    transform: translateZ(0); /* Force hardware acceleration */
+    backface-visibility: hidden; /* Prevent flickering */
 }
 
 @media (hover: hover) {

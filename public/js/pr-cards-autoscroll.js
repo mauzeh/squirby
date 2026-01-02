@@ -135,10 +135,10 @@ class PRCardsAutoScroll {
         );
 
         if (!isCardVisible) {
-            // Add a small delay to let the container settle, then start the casino scroll
+            // Use a shorter delay for more responsive feel
             setTimeout(() => {
                 this.performCasinoScroll(container, recentCard);
-            }, 500);
+            }, 300);
         }
     }
 
@@ -156,7 +156,6 @@ class PRCardsAutoScroll {
 
         // Calculate target scroll position (center the recent card)
         const containerRect = container.getBoundingClientRect();
-        const cardRect = recentCard.getBoundingClientRect();
         const cardOffsetLeft = recentCard.offsetLeft;
         const cardWidth = recentCard.offsetWidth;
         const containerWidth = container.clientWidth;
@@ -168,24 +167,31 @@ class PRCardsAutoScroll {
         const maxScrollLeft = container.scrollWidth - container.clientWidth;
         const finalTargetScrollLeft = Math.max(0, Math.min(targetScrollLeft, maxScrollLeft));
 
+        // Disable scroll-snap during animation for smoother scrolling
+        const originalScrollSnapType = container.style.scrollSnapType;
+        container.style.scrollSnapType = 'none';
+
         // Casino-style animation: overshoot then settle
-        this.animateCasinoScroll(container, recentCard, finalTargetScrollLeft);
+        this.animateCasinoScroll(container, recentCard, finalTargetScrollLeft, () => {
+            // Re-enable scroll-snap after animation
+            container.style.scrollSnapType = originalScrollSnapType;
+        });
     }
 
-    animateCasinoScroll(container, recentCard, targetScrollLeft) {
+    animateCasinoScroll(container, recentCard, targetScrollLeft, onComplete = null) {
         const startScrollLeft = container.scrollLeft;
         const distance = targetScrollLeft - startScrollLeft;
         
         // If already at target, no need to scroll
         if (Math.abs(distance) < 5) {
             this.isScrolling = false;
+            if (onComplete) onComplete();
             return;
         }
 
         // Casino-style animation parameters
-        const duration = 1200; // Total animation duration
-        const overshootFactor = 0.15; // How much to overshoot (15%)
-        const settleTime = 300; // Time to settle back from overshoot
+        const duration = 900; // Optimized duration
+        const overshootFactor = 0.1; // Reduced overshoot for smoother feel
         
         // Calculate overshoot position
         const overshootDistance = distance * (1 + overshootFactor);
@@ -196,26 +202,35 @@ class PRCardsAutoScroll {
         const clampedOvershootTarget = Math.max(0, Math.min(overshootTarget, maxScrollLeft));
         
         const startTime = performance.now();
+        let lastFrameTime = startTime;
 
         const animateStep = (currentTime) => {
+            // Throttle to 60fps for consistent performance
+            if (currentTime - lastFrameTime < 16.67) {
+                requestAnimationFrame(animateStep);
+                return;
+            }
+            lastFrameTime = currentTime;
+
             const elapsed = currentTime - startTime;
             const progress = Math.min(elapsed / duration, 1);
 
             let currentScrollLeft;
 
-            if (progress < 0.75) {
-                // First 75% of animation: accelerate to overshoot with easing
-                const overshootProgress = progress / 0.75;
-                const easedProgress = this.easeOutCubic(overshootProgress);
+            if (progress < 0.65) {
+                // First 65% of animation: accelerate to overshoot with smooth easing
+                const overshootProgress = progress / 0.65;
+                const easedProgress = this.easeOutQuart(overshootProgress);
                 currentScrollLeft = startScrollLeft + (clampedOvershootTarget - startScrollLeft) * easedProgress;
             } else {
-                // Last 25% of animation: settle back to target with bounce
-                const settleProgress = (progress - 0.75) / 0.25;
-                const bounceProgress = this.easeOutBounce(settleProgress);
-                currentScrollLeft = clampedOvershootTarget + (targetScrollLeft - clampedOvershootTarget) * bounceProgress;
+                // Last 35% of animation: settle back to target with elastic ease
+                const settleProgress = (progress - 0.65) / 0.35;
+                const elasticProgress = this.easeOutElastic(settleProgress);
+                currentScrollLeft = clampedOvershootTarget + (targetScrollLeft - clampedOvershootTarget) * elasticProgress;
             }
 
-            container.scrollLeft = currentScrollLeft;
+            // Round to prevent sub-pixel rendering issues
+            container.scrollLeft = Math.round(currentScrollLeft);
 
             if (progress < 1) {
                 requestAnimationFrame(animateStep);
@@ -223,6 +238,9 @@ class PRCardsAutoScroll {
                 // Ensure we end exactly at target
                 container.scrollLeft = targetScrollLeft;
                 this.isScrolling = false;
+                
+                // Execute completion callback
+                if (onComplete) onComplete();
                 
                 // Add a subtle flash effect to the recent card
                 this.flashRecentCard(recentCard);
@@ -247,6 +265,20 @@ class PRCardsAutoScroll {
     }
 
     // Easing functions for smooth animation
+    easeOutQuart(t) {
+        return 1 - Math.pow(1 - t, 4);
+    }
+
+    easeOutElastic(t) {
+        const c4 = (2 * Math.PI) / 3;
+        
+        return t === 0
+            ? 0
+            : t === 1
+            ? 1
+            : Math.pow(2, -10 * t) * Math.sin((t * 10 - 0.75) * c4) + 1;
+    }
+
     easeOutCubic(t) {
         return 1 - Math.pow(1 - t, 3);
     }
