@@ -102,7 +102,7 @@ class ExercisePageService
             ComponentBuilder::markdown('
 # Getting Started
 
-Track your ' . strtolower($displayName) . ' progress with this simple tool.
+Track your ' . strtolower($displayName) . ' progress with this app.
 
 ## How to Use
 
