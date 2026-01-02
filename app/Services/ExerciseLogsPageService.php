@@ -54,12 +54,9 @@ class ExerciseLogsPageService
         // Empty state message
         if ($liftLogs->isEmpty()) {
             $components[] = ComponentBuilder::messages()
-                ->tip('No training data yet. Click "Log now" to record your first workout for this exercise.')
+                ->tip('No training data yet for this exercise.')
                 ->build();
         }
-        
-        // Log Now button
-        $components[] = $this->buildLogNowButton($exercise, $from, $date);
         
         // PR Cards and Calculator (if supported)
         if ($this->exercisePRService->supportsPRTracking($exercise)) {
@@ -103,26 +100,6 @@ class ExerciseLogsPageService
         } else {
             return route('lift-logs.index');
         }
-    }
-
-    /**
-     * Build the Log Now button
-     */
-    private function buildLogNowButton(Exercise $exercise, ?string $from, ?string $date): array
-    {
-        $redirectTo = $from === 'mobile-entry-lifts' ? 'mobile-entry-lifts' : 'exercises-logs';
-        $logNowParams = [
-            'exercise_id' => $exercise->id,
-            'redirect_to' => $redirectTo
-        ];
-        
-        if ($from === 'mobile-entry-lifts' && $date) {
-            $logNowParams['date'] = $date;
-        }
-        
-        return ComponentBuilder::button('Log Now')
-            ->asLink(route('lift-logs.create', $logNowParams))
-            ->build();
     }
 
     /**

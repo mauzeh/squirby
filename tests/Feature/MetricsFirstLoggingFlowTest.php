@@ -176,29 +176,6 @@ class MetricsFirstLoggingFlowTest extends TestCase
     }
 
     /** @test */
-    public function exercise_logs_page_log_now_button_redirects_back_to_mobile_entry()
-    {
-        $this->actingAs($this->user);
-        
-        $date = now()->toDateString();
-        
-        // Visit exercise logs page with mobile-entry-lifts context
-        $response = $this->get(route('exercises.show-logs', [
-            'exercise' => $this->exercise->id,
-            'from' => 'mobile-entry-lifts',
-            'date' => $date
-        ]));
-        
-        $response->assertStatus(200);
-        
-        // Check that Log Now button has correct redirect_to parameter
-        $response->assertSee('lift-logs/create');
-        $response->assertSee('exercise_id=' . $this->exercise->id);
-        $response->assertSee('redirect_to=mobile-entry-lifts');
-        $response->assertSee('date=' . $date);
-    }
-
-    /** @test */
     public function user_can_update_metrics_first_preference()
     {
         $this->actingAs($this->user);
