@@ -14,20 +14,22 @@ return [
             'children' => [ // Lifts Sub-Menu Items
                 [
                     'label' => null,
-                    'icon' => 'fa-calendar-day',
+                    'icon' => 'fa-plus',
                     'route' => 'mobile-entry.lifts',
                     'title' => 'Direct Entry',
                     'patterns' => ['mobile-entry.lifts', 'lift-logs.create'],
                 ],
                 [
+                    'label' => null,
+                    'icon' => 'fa-chart-line',
+                    'route' => 'lift-logs.index',
+                    'title' => 'My Metrics',
+                    'patterns' => ['lift-logs.index', 'lift-logs.edit', 'exercises.show-logs'],
+                ],
+                [
                     'label' => 'Workouts',
                     'route' => 'workouts.index',
                     'patterns' => ['workouts.*'],
-                ],
-                [
-                    'label' => 'Metrics',
-                    'route' => 'lift-logs.index',
-                    'patterns' => ['lift-logs.index', 'lift-logs.edit', 'exercises.show-logs'],
                 ],
                 // Recommendations (conditional)
                 [
