@@ -1234,8 +1234,8 @@ Track your bench press progress with this simple tool.
                 // Tabbed interface - Help first, History second, Log third
                 C::tabs('lift-tracker-tabs')
                     ->tab('help', 'Help', $helpComponents, 'fa-question-circle', $activeTab === 'help', true)
-                    ->tab('history', 'My Metrics', $historyComponents, 'fa-chart-line', $activeTab === 'history')
                     ->tab('log', 'Log Now', $logLiftComponents, 'fa-plus', $activeTab === 'log')
+                    ->tab('history', 'My Metrics', $historyComponents, 'fa-chart-line', $activeTab === 'history')
                     ->ariaLabels([
                         'section' => 'Lift tracking interface with component help',
                         'tabList' => 'Switch between help, history and logging views',

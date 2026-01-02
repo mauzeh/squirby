@@ -65,9 +65,8 @@ class MobileEntryController extends Controller
             ->whereDate('logged_at', $selectedDate->toDateString())
             ->exists();
         
-        // Check if user has metrics-first flow enabled and no logs yet today
-        $shouldExpandSelection = $request->boolean('expand_selection') || 
-            (Auth::user()->shouldUseMetricsFirstLoggingFlow() && !$hasLogsToday);
+        // Check if user wants to expand selection manually
+        $shouldExpandSelection = $request->boolean('expand_selection');
         
         // Always add contextual help messages
         $contextualMessages = $formService->generateContextualHelpMessages(Auth::id(), $selectedDate, $shouldExpandSelection);

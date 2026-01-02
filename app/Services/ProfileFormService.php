@@ -58,12 +58,6 @@ class ProfileFormService
                 old('prefill_suggested_values', $user->prefill_suggested_values ?? true),
                 'When enabled, the lift log form will prefill with AI-suggested weight, reps, and sets based on your training progression. When disabled, the form will prefill with values from your last workout only.'
             )
-            ->checkboxField(
-                'metrics_first_logging_flow',
-                'View metrics before logging',
-                old('metrics_first_logging_flow', $user->metrics_first_logging_flow ?? false),
-                'When enabled, tapping an exercise will first show you its metrics and history. You can then tap "Log Now" to begin logging. When disabled, tapping an exercise takes you directly to the logging form.'
-            )
             ->submitButton('Save Preferences');
 
         // Add error messages if validation failed

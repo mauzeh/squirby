@@ -627,46 +627,18 @@ class LiftLogService extends MobileEntryBaseService
                 ];
             }
             
-            // Determine href based on user preference and exercise history
-            if ($user->shouldUseMetricsFirstLoggingFlow()) {
-                // Check if this exercise has any logs for this user
-                $hasLogs = isset($lastPerformedDates[$exercise->id]);
-                
-                if ($hasLogs) {
-                    // Metrics-first flow: go to exercise logs page first (only if exercise has history)
-                    $href = route('exercises.show-logs', [
-                        'exercise' => $exercise->id,
-                        'from' => 'mobile-entry-lifts',
-                        'date' => $selectedDate->toDateString()
-                    ]);
-                } else {
-                    // No history: skip metrics page and go directly to logging form
-                    $routeParams = [
-                        'exercise_id' => $exercise->id,
-                        'redirect_to' => 'mobile-entry-lifts'
-                    ];
-                    
-                    // Only include date if we're NOT viewing today
-                    if (!$selectedDate->isToday()) {
-                        $routeParams['date'] = $selectedDate->toDateString();
-                    }
-                    
-                    $href = route('lift-logs.create', $routeParams);
-                }
-            } else {
-                // Default flow: go directly to lift log creation
-                $routeParams = [
-                    'exercise_id' => $exercise->id,
-                    'redirect_to' => 'mobile-entry-lifts'
-                ];
-                
-                // Only include date if we're NOT viewing today
-                if (!$selectedDate->isToday()) {
-                    $routeParams['date'] = $selectedDate->toDateString();
-                }
-                
-                $href = route('lift-logs.create', $routeParams);
+            // Always use default flow: go directly to lift log creation
+            $routeParams = [
+                'exercise_id' => $exercise->id,
+                'redirect_to' => 'mobile-entry-lifts'
+            ];
+            
+            // Only include date if we're NOT viewing today
+            if (!$selectedDate->isToday()) {
+                $routeParams['date'] = $selectedDate->toDateString();
             }
+            
+            $href = route('lift-logs.create', $routeParams);
             
             $items[] = [
                 'id' => 'exercise-' . $exercise->id,

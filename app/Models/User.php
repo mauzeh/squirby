@@ -19,7 +19,7 @@ class User extends Authenticatable
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->logOnly(['name', 'email', 'show_global_exercises', 'show_extra_weight', 'prefill_suggested_values', 'metrics_first_logging_flow'])
+            ->logOnly(['name', 'email', 'show_global_exercises', 'show_extra_weight', 'prefill_suggested_values'])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }
@@ -37,7 +37,6 @@ class User extends Authenticatable
         'show_global_exercises',
         'show_extra_weight',
         'prefill_suggested_values',
-        'metrics_first_logging_flow',
     ];
 
     /**
@@ -63,7 +62,6 @@ class User extends Authenticatable
             'show_global_exercises' => 'boolean',
             'show_extra_weight' => 'boolean',
             'prefill_suggested_values' => 'boolean',
-            'metrics_first_logging_flow' => 'boolean',
             'deleted_at' => 'datetime',
         ];
     }
@@ -211,9 +209,12 @@ class User extends Authenticatable
 
 
 
+    /**
+     * @deprecated This method is deprecated and will be removed. The metrics-first logging flow has been removed.
+     */
     public function shouldUseMetricsFirstLoggingFlow(): bool
     {
-        return $this->metrics_first_logging_flow ?? false;
+        return false; // Always return false as this feature is deprecated
     }
 
     public function exercises()

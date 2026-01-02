@@ -17,8 +17,8 @@ use Tests\TestCase;
  *
  * The cancel button should only appear when the user manually clicks "Log Now"
  * to expand the selection list. When the system auto-expands the list (e.g.,
- * for metrics-first users with no logs today), the cancel button should be
- * hidden since there's no "previous state" to return to.
+ * via the expand_selection parameter), the cancel button should be hidden 
+ * since there's no "previous state" to return to.
  */
 class CancelButtonVisibilityTest extends TestCase
 {
@@ -88,78 +88,6 @@ class CancelButtonVisibilityTest extends TestCase
         $response->assertSee('btn-cancel', false);
         $response->assertSee('Cancel and go back', false);
         $response->assertSee('<span class="cancel-icon">×</span>', false);
-    }
-
-    /**
-     * Test that cancel button is hidden for metrics-first users with no logs today.
-     *
-     * Metrics-first users who haven't logged anything today should see the list
-     * auto-expanded, and therefore should not see the cancel button.
-     *
-     * @return void
-     */
-    #[\PHPUnit\Framework\Attributes\Test]
-    public function cancel_button_is_hidden_for_metrics_first_users_with_no_logs()
-    {
-        // Setup: Create a metrics-first user (with the preference enabled)
-        $user = User::factory()->create([
-            'metrics_first_logging_flow' => true
-        ]);
-
-        // Create an exercise but no lift logs for today
-        Exercise::factory()->create(['title' => 'Bench Press']);
-
-        // Act: Visit the page (should auto-expand for metrics-first users with no logs)
-        $response = $this->actingAs($user)->get(route('mobile-entry.lifts'));
-
-        // Assert: Page loads successfully
-        $response->assertOk();
-
-        // Assert: The list is auto-expanded
-        $response->assertSee('data-initial-state="expanded"', false);
-        $response->assertSee('class="component-list-section active"', false);
-
-        // Assert: The cancel button is NOT rendered
-        $response->assertDontSee('btn-cancel', false);
-        $response->assertDontSee('Cancel and go back', false);
-    }
-
-    /**
-     * Test that cancel button is shown for metrics-first users who already have logs today.
-     *
-     * Metrics-first users who have already logged something today should see the list
-     * in collapsed state by default, with the cancel button available.
-     *
-     * @return void
-     */
-    #[\PHPUnit\Framework\Attributes\Test]
-    public function cancel_button_is_shown_for_metrics_first_users_with_existing_logs()
-    {
-        // Setup: Create a metrics-first user
-        $user = User::factory()->create([
-            'metrics_first_logging_flow' => true
-        ]);
-
-        // Create an exercise and a lift log for today
-        $exercise = Exercise::factory()->create(['title' => 'Bench Press']);
-        LiftLog::factory()->create([
-            'user_id' => $user->id,
-            'exercise_id' => $exercise->id,
-            'logged_at' => now(),
-        ]);
-
-        // Act: Visit the page (should NOT auto-expand since user has logs today)
-        $response = $this->actingAs($user)->get(route('mobile-entry.lifts'));
-
-        // Assert: Page loads successfully
-        $response->assertOk();
-
-        // Assert: The list is collapsed by default
-        $response->assertSee('data-initial-state="collapsed"', false);
-
-        // Assert: The cancel button IS rendered
-        $response->assertSee('btn-cancel', false);
-        $response->assertSee('Cancel and go back', false);
     }
 
     /**

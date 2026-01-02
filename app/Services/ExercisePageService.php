@@ -209,8 +209,8 @@ Track your ' . strtolower($displayName) . ' progress with this app.
         // Add tabbed interface
         $components[] = ComponentBuilder::tabs('exercise-tabs')
             ->tab('help', 'Help', $tabComponents['help'], 'fa-question-circle', $activeTab === 'help', true)
-            ->tab('history', 'My Metrics', $tabComponents['history'], 'fa-chart-line', $activeTab === 'history')
             ->tab('log', 'Log Now', $tabComponents['log'], 'fa-plus', $activeTab === 'log')
+            ->tab('history', 'My Metrics', $tabComponents['history'], 'fa-chart-line', $activeTab === 'history')
             ->ariaLabels([
                 'section' => 'Exercise interface with help, metrics and logging views',
                 'tabList' => 'Switch between help, metrics and logging views',

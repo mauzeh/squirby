@@ -84,7 +84,6 @@ class RegistrationTest extends TestCase
         $this->assertTrue($user->show_global_exercises);
         $this->assertTrue($user->show_extra_weight);
         $this->assertFalse($user->prefill_suggested_values); // OFF for new users
-        $this->assertTrue($user->metrics_first_logging_flow);
     }
 
     public function test_new_users_are_assigned_athlete_role(): void

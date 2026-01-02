@@ -15,7 +15,6 @@ return [
         'show_global_exercises' => true,
         'show_extra_weight' => true,
         'prefill_suggested_values' => false,
-        'metrics_first_logging_flow' => true,
     ],
 
     /*
