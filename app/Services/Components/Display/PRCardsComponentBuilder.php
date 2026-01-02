@@ -74,9 +74,22 @@ class PRCardsComponentBuilder
      */
     public function build(): array
     {
-        return [
+        $component = [
             'type' => 'pr-cards',
             'data' => $this->data
         ];
+        
+        // Add auto-scroll script if this is a scrollable container with a recent card
+        if ($this->data['scrollable']) {
+            $hasRecentCard = collect($this->data['cards'])->contains(function($card) {
+                return isset($card['is_recent']) && $card['is_recent'];
+            });
+            
+            if ($hasRecentCard) {
+                $component['requiresScript'] = 'pr-cards-autoscroll';
+            }
+        }
+        
+        return $component;
     }
 }

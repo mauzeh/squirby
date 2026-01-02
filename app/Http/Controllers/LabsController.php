@@ -1114,59 +1114,63 @@ Track your bench press progress with this simple tool.
 
         // Components for the "My Metrics" tab (now second)
         $historyComponents = [
-            // 1. Heaviest Lifts (PR Cards)
-            C::prCards('Heaviest Lifts')
-                ->scrollable()
-                ->card('1 × 1', 227, 'lbs', 'Nov 26', true)  // Most recent - highlighted
-                ->card('1 × 2', 220, 'lbs', 'Nov 22', false)
-                ->card('1 × 3', 215, 'lbs', 'Nov 19', false)
-                ->card('1 × 4', 210, 'lbs', 'Nov 15', false)
-                ->card('1 × 5', 205, 'lbs', 'Nov 12', false)
-                ->card('1 × 6', null, 'lbs', null, false)
-                ->card('1 × 7', null, 'lbs', null, false)
-                ->card('1 × 8', 185, 'lbs', 'Nov 8', false)
-                ->card('1 × 9', null, 'lbs', null, false)
-                ->card('1 × 10', 175, 'lbs', 'Nov 1', false)
+            // Info message about auto-scroll feature
+            C::messages()
+                ->success('Casino-style auto-scroll demo! The most recent PR (1×8) will scroll into view automatically.')
                 ->build(),
             
-            // 2. 1RM Percentages (Calculator Grid)
+            // 1. Heaviest Lifts (PR Cards) - 8th card is recent and out of view
+            C::prCards('Heaviest Lifts')
+                ->scrollable()
+                ->card('1 × 1', 315, 'lbs', '2 months ago', false)
+                ->card('1 × 2', 295, 'lbs', '6 weeks ago', false)
+                ->card('1 × 3', 275, 'lbs', '1 month ago', false)
+                ->card('1 × 4', 255, 'lbs', '3 weeks ago', false)
+                ->card('1 × 5', 235, 'lbs', '2 weeks ago', false)
+                ->card('1 × 6', 215, 'lbs', '10 days ago', false)
+                ->card('1 × 7', 195, 'lbs', '1 week ago', false)
+                ->card('1 × 8', 175, 'lbs', '2 days ago', true)  // Most recent - will auto-scroll to this
+                ->card('1 × 9', 155, 'lbs', '1 week ago', false)
+                ->card('1 × 10', 135, 'lbs', '2 weeks ago', false)
+                ->build(),
+            
+            // 2. 1RM Percentages (Calculator Grid) - Updated to match new PR data
             C::calculatorGrid('1-Rep Max Percentages')
                 ->columns([
-                    ['label' => '1 × 1', 'one_rep_max' => 227],
-                    ['label' => '1 × 2', 'one_rep_max' => 220],
+                    ['label' => '1 × 1', 'one_rep_max' => 315],
+                    ['label' => '1 × 8', 'one_rep_max' => 175],
                 ])
                 ->percentages([100, 95, 90, 85, 80, 75, 70, 65, 60, 55, 50, 45])
                 ->rows([
-                    ['percentage' => 100, 'weights' => [227, 220]],
-                    ['percentage' => 95, 'weights' => [216, 209]],
-                    ['percentage' => 90, 'weights' => [204, 198]],
-                    ['percentage' => 85, 'weights' => [193, 187]],
-                    ['percentage' => 80, 'weights' => [182, 176]],
-                    ['percentage' => 75, 'weights' => [170, 165]],
-                    ['percentage' => 70, 'weights' => [159, 154]],
-                    ['percentage' => 65, 'weights' => [148, 143]],
-                    ['percentage' => 60, 'weights' => [136, 132]],
-                    ['percentage' => 55, 'weights' => [125, 121]],
-                    ['percentage' => 50, 'weights' => [114, 110]],
-                    ['percentage' => 45, 'weights' => [102, 99]],
+                    ['percentage' => 100, 'weights' => [315, 175]],
+                    ['percentage' => 95, 'weights' => [299, 166]],
+                    ['percentage' => 90, 'weights' => [284, 158]],
+                    ['percentage' => 85, 'weights' => [268, 149]],
+                    ['percentage' => 80, 'weights' => [252, 140]],
+                    ['percentage' => 75, 'weights' => [236, 131]],
+                    ['percentage' => 70, 'weights' => [221, 123]],
+                    ['percentage' => 65, 'weights' => [205, 114]],
+                    ['percentage' => 60, 'weights' => [189, 105]],
+                    ['percentage' => 55, 'weights' => [173, 96]],
+                    ['percentage' => 50, 'weights' => [158, 88]],
+                    ['percentage' => 45, 'weights' => [142, 79]],
                 ])
                 ->build(),
             
-            // 3. 1RM Progress Chart
+            // 3. 1RM Progress Chart - Updated data
             C::chart('1rm-progress-chart', '1RM Progress')
                 ->type('line')
                 ->datasets([
                     [
                         'label' => '1RM Estimate (lbs)',
                         'data' => [
-                            ['x' => '2024-11-01', 'y' => 180],
-                            ['x' => '2024-11-05', 'y' => 187],
-                            ['x' => '2024-11-08', 'y' => 193],
-                            ['x' => '2024-11-12', 'y' => 200],
-                            ['x' => '2024-11-15', 'y' => 207],
-                            ['x' => '2024-11-19', 'y' => 213],
-                            ['x' => '2024-11-22', 'y' => 220],
-                            ['x' => '2024-11-26', 'y' => 227],
+                            ['x' => '2024-09-01', 'y' => 275],
+                            ['x' => '2024-09-15', 'y' => 285],
+                            ['x' => '2024-10-01', 'y' => 295],
+                            ['x' => '2024-10-15', 'y' => 300],
+                            ['x' => '2024-11-01', 'y' => 305],
+                            ['x' => '2024-11-15', 'y' => 310],
+                            ['x' => '2024-11-26', 'y' => 315],
                         ],
                         'borderColor' => 'rgb(255, 99, 132)',
                         'backgroundColor' => 'rgba(255, 99, 132, 0.2)',
@@ -1181,6 +1185,13 @@ Track your bench press progress with this simple tool.
                 ->height(300)
                 ->noAspectRatio()
                 ->labelColors()
+                ->build(),
+            
+            // Additional info about the auto-scroll feature
+            C::messages()
+                ->info('The auto-scroll feature only activates when a recent PR card is outside the visible area')
+                ->tip('The animation includes overshoot and bounce-back for a casino-like feel', 'Animation:')
+                ->tip('After scrolling, the recent card flashes briefly to draw attention', 'Effect:')
                 ->build(),
         ];
         
@@ -1206,7 +1217,7 @@ Track your bench press progress with this simple tool.
         $data = [
             'components' => [
                 // Page title with back button
-                C::title('Bench Press', 'Log workouts and view progress')
+                C::title('Bench Press (Auto-Scroll Demo)', 'Casino-style scrolling to recent PRs')
                     ->backButton('fa-arrow-left', route('labs.with-nav'), 'Back to examples')
                     ->build(),
                 
@@ -1241,6 +1252,69 @@ Track your bench press progress with this simple tool.
                         'tabList' => 'Switch between help, history and logging views',
                         'tabPanel' => 'Content for selected tab'
                     ])
+                    ->build(),
+            ],
+        ];
+        
+        return view('mobile-entry.flexible', compact('data'));
+    }
+    
+    /**
+     * Example: PR Cards Auto-Scroll Demo
+     * Demonstrates the casino-style auto-scroll feature for PR cards
+     */
+    public function prCardsAutoScroll(Request $request)
+    {
+        $data = [
+            'components' => [
+                C::title('PR Cards Auto-Scroll Demo', 'Casino-style scrolling to recent PRs')
+                    ->backButton('fa-arrow-left', route('labs.with-nav'), 'Back to examples')
+                    ->build(),
+                
+                C::messages()
+                    ->success('The most recent PR (1×8) will automatically scroll into view with a casino-style animation!')
+                    ->info('This demo shows 10 PR cards with the 8th one highlighted as most recent')
+                    ->tip('The page will auto-scroll after 500ms to bring the recent PR into view', 'Timing:')
+                    ->tip('After scrolling, the recent card will flash briefly to draw attention', 'Effect:')
+                    ->build(),
+                
+                // PR Cards with auto-scroll (8th card is recent and out of view)
+                C::prCards('Heaviest Lifts')
+                    ->scrollable()
+                    ->card('1 × 1', 315, 'lbs', '2 months ago', false)
+                    ->card('1 × 2', 295, 'lbs', '6 weeks ago', false)
+                    ->card('1 × 3', 275, 'lbs', '1 month ago', false)
+                    ->card('1 × 4', 255, 'lbs', '3 weeks ago', false)
+                    ->card('1 × 5', 235, 'lbs', '2 weeks ago', false)
+                    ->card('1 × 6', 215, 'lbs', '10 days ago', false)
+                    ->card('1 × 7', 195, 'lbs', '1 week ago', false)
+                    ->card('1 × 8', 175, 'lbs', '2 days ago', true)  // Most recent - will be scrolled to
+                    ->card('1 × 9', 155, 'lbs', '1 week ago', false)
+                    ->card('1 × 10', 135, 'lbs', '2 weeks ago', false)
+                    ->build(),
+                
+                C::messages()
+                    ->info('The auto-scroll feature only activates when a recent PR card is outside the visible area')
+                    ->tip('Try refreshing the page to see the animation again', 'Demo:')
+                    ->tip('The animation includes overshoot and bounce-back for a casino-like feel', 'Animation:')
+                    ->build(),
+                
+                // Additional PR Cards section (no recent card - no auto-scroll)
+                C::prCards('Secondary Exercise (No Auto-Scroll)')
+                    ->scrollable()
+                    ->card('1 × 1', 225, 'lbs', '1 week ago', false)
+                    ->card('1 × 2', 215, 'lbs', '2 weeks ago', false)
+                    ->card('1 × 3', 205, 'lbs', '3 weeks ago', false)
+                    ->card('1 × 4', 195, 'lbs', '1 month ago', false)
+                    ->card('1 × 5', 185, 'lbs', '5 weeks ago', false)
+                    ->card('1 × 6', null, 'lbs', null, false)
+                    ->card('1 × 7', null, 'lbs', null, false)
+                    ->card('1 × 8', null, 'lbs', null, false)
+                    ->build(),
+                
+                C::messages()
+                    ->info('The section above has no recent PR cards, so no auto-scroll occurs')
+                    ->tip('Auto-scroll only happens when there\'s a .pr-card--recent element out of view', 'Logic:')
                     ->build(),
             ],
         ];

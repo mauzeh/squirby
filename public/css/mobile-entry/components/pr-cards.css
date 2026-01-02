@@ -274,3 +274,23 @@
         border-color: rgba(230, 81, 0, 0.8);
     }
 }
+
+/* Flash effect for recent PR card after auto-scroll */
+.pr-card--flash {
+    animation: pr-card-flash 0.6s ease-out;
+}
+
+@keyframes pr-card-flash {
+    0% {
+        box-shadow: 0 0 0 0 rgba(230, 81, 0, 1);
+        transform: scale(1);
+    }
+    50% {
+        box-shadow: 0 0 0 15px rgba(230, 81, 0, 0.4), 0 0 20px rgba(255, 138, 80, 0.6);
+        transform: scale(1.05);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(230, 81, 0, 0);
+        transform: scale(1);
+    }
+}
