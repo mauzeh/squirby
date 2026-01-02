@@ -13,7 +13,7 @@ use App\Services\ChartService;
 use App\Services\ExercisePRService;
 use App\Services\ComponentBuilder;
 use App\Services\ExerciseFormService;
-use App\Services\ExerciseLogsPageService;
+use App\Services\ExercisePageService;
 use App\Presenters\LiftLogTablePresenter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -33,7 +33,7 @@ class ExerciseController extends Controller
         private UpdateExerciseAction $updateExerciseAction,
         private MergeExerciseAction $mergeExerciseAction,
         private ExerciseFormService $exerciseFormService,
-        private ExerciseLogsPageService $exerciseLogsPageService
+        private ExercisePageService $exercisePageService
     ) {}
 
     /**
@@ -442,11 +442,13 @@ class ExerciseController extends Controller
             abort(403, 'Unauthorized action.');
         }
         
-        $components = $this->exerciseLogsPageService->generatePage(
+        $components = $this->exercisePageService->generatePage(
             $exercise,
             Auth::id(),
+            'history', // Default to history tab for exercises/{id}/logs
             $request->query('from'),
-            $request->query('date')
+            $request->query('date'),
+            [] // No redirect params for this context
         );
         
         return view('mobile-entry.flexible', ['data' => ['components' => $components]]);

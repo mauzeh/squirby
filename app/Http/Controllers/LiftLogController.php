@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Actions\LiftLogs\CreateLiftLogAction;
 use App\Actions\LiftLogs\UpdateLiftLogAction;
+use App\Models\Exercise;
 use App\Models\LiftLog;
 use App\Services\ExerciseTypes\Exceptions\InvalidExerciseDataException;
 use App\Services\RedirectService;
@@ -11,7 +12,7 @@ use App\Services\ExerciseListService;
 use App\Services\MobileEntry\LiftLogService;
 use App\Services\ExerciseAliasService;
 use App\Services\ComponentBuilder;
-use App\Services\LiftLogCreatePageService;
+use App\Services\ExercisePageService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -25,7 +26,7 @@ class LiftLogController extends Controller
         private UpdateLiftLogAction $updateLiftLogAction,
         private LiftLogService $liftLogService,
         private ExerciseAliasService $exerciseAliasService,
-        private LiftLogCreatePageService $liftLogCreatePageService
+        private ExercisePageService $exercisePageService
     ) {}
     
     /**
@@ -38,7 +39,32 @@ class LiftLogController extends Controller
                 ->with('error', 'No exercise specified.');
         }
         
-        $components = $this->liftLogCreatePageService->generatePage($request);
+        $exercise = Exercise::where('id', $request->input('exercise_id'))
+            ->availableToUser(Auth::id())
+            ->first();
+            
+        if (!$exercise) {
+            return redirect()->route('mobile-entry.lifts')
+                ->with('error', 'Exercise not found or not accessible.');
+        }
+        
+        // Extract redirect parameters
+        $redirectParams = [];
+        if ($request->has('redirect_to')) {
+            $redirectParams['redirect_to'] = $request->input('redirect_to');
+        }
+        if ($request->has('workout_id')) {
+            $redirectParams['workout_id'] = $request->input('workout_id');
+        }
+        
+        $components = $this->exercisePageService->generatePage(
+            $exercise,
+            Auth::id(),
+            'log', // Default to log tab for lift-logs/create
+            null, // No 'from' context
+            $request->input('date'),
+            $redirectParams
+        );
         
         $data = [
             'components' => $components,
