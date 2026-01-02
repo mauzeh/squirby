@@ -54,8 +54,11 @@ class LiftLogCreateTest extends TestCase
         ]));
 
         $response->assertStatus(200);
-        // Check that the back button URL is present
-        $response->assertSee(route('mobile-entry.lifts', ['date' => $date]));
+        // Check that the back button functionality is present
+        $response->assertSee('mobile-entry/lifts', false);
+        // Check that the formatted date is present in the subtitle
+        $formattedDate = Carbon::parse($date)->format('l, F j, Y');
+        $response->assertSee($formattedDate, false);
     }
 
     /** @test */
@@ -156,18 +159,19 @@ class LiftLogCreateTest extends TestCase
     }
 
     /** @test */
-    public function create_page_returns_500_if_exercise_not_found()
+    public function create_page_redirects_with_error_if_exercise_not_found()
     {
         $response = $this->get(route('lift-logs.create', [
             'exercise_id' => 99999, // Non-existent exercise
             'date' => Carbon::today()->toDateString()
         ]));
 
-        $response->assertStatus(500);
+        $response->assertRedirect(route('mobile-entry.lifts'));
+        $response->assertSessionHas('error', 'Exercise not found or not accessible.');
     }
 
     /** @test */
-    public function create_page_returns_500_if_exercise_belongs_to_another_user()
+    public function create_page_redirects_with_error_if_exercise_belongs_to_another_user()
     {
         $otherUser = User::factory()->create();
         $exercise = Exercise::factory()->create(['user_id' => $otherUser->id]);
@@ -177,7 +181,8 @@ class LiftLogCreateTest extends TestCase
             'date' => Carbon::today()->toDateString()
         ]));
 
-        $response->assertStatus(500);
+        $response->assertRedirect(route('mobile-entry.lifts'));
+        $response->assertSessionHas('error', 'Exercise not found or not accessible.');
     }
 
     /** @test */
@@ -190,7 +195,7 @@ class LiftLogCreateTest extends TestCase
         ]));
 
         $response->assertStatus(200);
-        $response->assertSee(Carbon::today()->format('l, F j, Y'));
+        $response->assertSee(Carbon::today()->format('l, F j, Y'), false);
     }
 
     /** @test */

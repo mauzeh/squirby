@@ -44,7 +44,7 @@ class ExerciseControllerTest extends TestCase
         $updateExerciseAction = $this->createMock(\App\Actions\Exercises\UpdateExerciseAction::class);
         $mergeExerciseAction = $this->createMock(\App\Actions\Exercises\MergeExerciseAction::class);
         $exerciseFormService = $this->createMock(\App\Services\ExerciseFormService::class);
-        $exerciseLogsPageService = $this->createMock(\App\Services\ExerciseLogsPageService::class);
+        $exercisePageService = $this->createMock(\App\Services\ExercisePageService::class);
         
         $this->controller = new ExerciseController(
             $exerciseService, 
@@ -56,7 +56,7 @@ class ExerciseControllerTest extends TestCase
             $updateExerciseAction,
             $mergeExerciseAction,
             $exerciseFormService,
-            $exerciseLogsPageService
+            $exercisePageService
         );
     }
 

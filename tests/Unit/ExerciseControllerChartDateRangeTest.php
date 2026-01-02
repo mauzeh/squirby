@@ -51,7 +51,16 @@ class ExerciseControllerChartDateRangeTest extends TestCase
         
         // Check that the chart component is rendered with correct time scale
         $components = $response->viewData('data')['components'];
-        $chartComponent = collect($components)->firstWhere('type', 'chart');
+        $tabsComponent = collect($components)->firstWhere('type', 'tabs');
+        
+        $this->assertNotNull($tabsComponent, 'Tabs component should exist');
+        
+        // Find the history tab content
+        $historyTab = collect($tabsComponent['data']['tabs'])->firstWhere('id', 'history');
+        $this->assertNotNull($historyTab, 'History tab should exist');
+        
+        // Find chart component within the history tab
+        $chartComponent = collect($historyTab['components'])->firstWhere('type', 'chart');
         
         $this->assertNotNull($chartComponent);
         $this->assertEquals('day', $chartComponent['data']['options']['scales']['x']['time']['unit']);
@@ -74,7 +83,16 @@ class ExerciseControllerChartDateRangeTest extends TestCase
         $response->assertOk();
         
         $components = $response->viewData('data')['components'];
-        $chartComponent = collect($components)->firstWhere('type', 'chart');
+        $tabsComponent = collect($components)->firstWhere('type', 'tabs');
+        
+        $this->assertNotNull($tabsComponent, 'Tabs component should exist');
+        
+        // Find the history tab content
+        $historyTab = collect($tabsComponent['data']['tabs'])->firstWhere('id', 'history');
+        $this->assertNotNull($historyTab, 'History tab should exist');
+        
+        // Find chart component within the history tab
+        $chartComponent = collect($historyTab['components'])->firstWhere('type', 'chart');
         
         $this->assertNotNull($chartComponent);
         $this->assertEquals('month', $chartComponent['data']['options']['scales']['x']['time']['unit']);
@@ -97,7 +115,16 @@ class ExerciseControllerChartDateRangeTest extends TestCase
         $response->assertOk();
         
         $components = $response->viewData('data')['components'];
-        $chartComponent = collect($components)->firstWhere('type', 'chart');
+        $tabsComponent = collect($components)->firstWhere('type', 'tabs');
+        
+        $this->assertNotNull($tabsComponent, 'Tabs component should exist');
+        
+        // Find the history tab content
+        $historyTab = collect($tabsComponent['data']['tabs'])->firstWhere('id', 'history');
+        $this->assertNotNull($historyTab, 'History tab should exist');
+        
+        // Find chart component within the history tab
+        $chartComponent = collect($historyTab['components'])->firstWhere('type', 'chart');
         
         $this->assertNotNull($chartComponent);
         $this->assertEquals('month', $chartComponent['data']['options']['scales']['x']['time']['unit']);
@@ -120,7 +147,16 @@ class ExerciseControllerChartDateRangeTest extends TestCase
         $response->assertOk();
         
         $components = $response->viewData('data')['components'];
-        $chartComponent = collect($components)->firstWhere('type', 'chart');
+        $tabsComponent = collect($components)->firstWhere('type', 'tabs');
+        
+        $this->assertNotNull($tabsComponent, 'Tabs component should exist');
+        
+        // Find the history tab content
+        $historyTab = collect($tabsComponent['data']['tabs'])->firstWhere('id', 'history');
+        $this->assertNotNull($historyTab, 'History tab should exist');
+        
+        // Find chart component within the history tab
+        $chartComponent = collect($historyTab['components'])->firstWhere('type', 'chart');
         
         $this->assertNotNull($chartComponent);
         $this->assertEquals('month', $chartComponent['data']['options']['scales']['x']['time']['unit']);
@@ -155,7 +191,16 @@ class ExerciseControllerChartDateRangeTest extends TestCase
         
         // Chart should not be rendered when no valid 1RM data exists
         $components = $response->viewData('data')['components'];
-        $chartComponent = collect($components)->firstWhere('type', 'chart');
+        $tabsComponent = collect($components)->firstWhere('type', 'tabs');
+        
+        $this->assertNotNull($tabsComponent, 'Tabs component should exist');
+        
+        // Find the history tab content
+        $historyTab = collect($tabsComponent['data']['tabs'])->firstWhere('id', 'history');
+        $this->assertNotNull($historyTab, 'History tab should exist');
+        
+        // Find chart component within the history tab - should be null
+        $chartComponent = collect($historyTab['components'])->firstWhere('type', 'chart');
         
         $this->assertNull($chartComponent);
     }

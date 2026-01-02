@@ -173,7 +173,7 @@ Track your ' . strtolower($displayName) . ' progress with this simple tool.
                 $redirectParams
             );
             return [$formComponent];
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             return [
                 ComponentBuilder::messages()
                     ->error('Unable to load the logging form. Please try again.')

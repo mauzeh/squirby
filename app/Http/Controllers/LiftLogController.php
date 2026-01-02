@@ -62,7 +62,7 @@ class LiftLogController extends Controller
             Auth::id(),
             'log', // Default to log tab for lift-logs/create
             null, // No 'from' context
-            $request->input('date'),
+            $request->input('date') ?: Carbon::today()->toDateString(),
             $redirectParams
         );
         
