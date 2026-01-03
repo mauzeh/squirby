@@ -39,7 +39,7 @@ return [
                     'route' => 'recommendations.index',
                     'title' => 'Recommendations',
                     'patterns' => ['recommendations.*'],
-                    'roles' => ['Admin', 'Impersonator'], // Custom property for conditional display
+                    'roles' => ['Admin'], // Custom property for conditional display
                 ],
 
             ],
