@@ -28,6 +28,7 @@ return [
                 ],
                 [
                     'label' => 'Workouts',
+                    'icon' => 'fa-running',
                     'route' => 'workouts.index',
                     'patterns' => ['workouts.*'],
                 ],
