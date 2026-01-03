@@ -44,7 +44,7 @@
                 <a @if(isset($item['id']))id="{{ $item['id'] }}"@endif 
                    href="{{ route($item['route']) }}" 
                    class="top-level-nav-item {{ $item['active'] ? 'active' : '' }}">
-                    <i class="fas {{ $item['icon'] }}"></i> {{ $item['label'] }}
+                    <i class="fas {{ $item['icon'] }} menu-icon"></i>{{ $item['label'] }}
                 </a>
             @endforeach
 
@@ -54,14 +54,14 @@
                         <form method="POST" action="{{ route('logout') }}" style="display: inline-block;">
                             @csrf
                             <button type="submit" style="background: none; border: none; color: #f2f2f2; text-align: center; padding: 14px 8px; text-decoration: none; font-size: 17px; cursor: pointer;">
-                                <i class="fas {{ $item['icon'] }}"></i>
+                                <i class="fas {{ $item['icon'] }} menu-icon"></i>
                             </button>
                         </form>
                     @else
                         <a href="{{ route($item['route']) }}" 
                            class="{{ $item['active'] ? 'active' : '' }}" 
                            @if(isset($item['style']))style="{{ $item['style'] }}"@endif>
-                            <i class="fas {{ $item['icon'] }}"></i>
+                            <i class="fas {{ $item['icon'] }} menu-icon"></i>
                         </a>
                     @endif
                 @endforeach
@@ -74,7 +74,7 @@
                 <a href="{{ isset($item['routeParams']) ? route($item['route'], $item['routeParams']) : route($item['route']) }}" 
                    class="{{ $item['active'] ? 'active' : '' }}"
                    @if(isset($item['title']))title="{{ $item['title'] }}"@endif>
-                    @if(isset($item['icon']))<i class="fas {{ $item['icon'] }}"></i>@endif
+                    @if(isset($item['icon']))<i class="fas {{ $item['icon'] }} menu-icon"></i>@endif
                     @if(isset($item['label'])){{ $item['label'] }}@endif
                 </a>
             @endforeach

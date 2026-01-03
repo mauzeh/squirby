@@ -125,6 +125,11 @@ a {
 .navbar a.top-level-nav-item i {
     margin-bottom: 5px;
 }
+
+/* Icon spacing for navbar menu items */
+.navbar i.menu-icon {
+    margin-right: 4px;
+}
 .env-bar {
     color: white;
     text-align: center;
