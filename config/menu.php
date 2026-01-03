@@ -28,7 +28,7 @@ return [
                 ],
                 [
                     'label' => 'Workouts',
-                    'icon' => 'fa-running',
+                    'icon' => 'fa-clipboard-list',
                     'route' => 'workouts.index',
                     'patterns' => ['workouts.*'],
                 ],
