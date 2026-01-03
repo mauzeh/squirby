@@ -130,6 +130,12 @@ a {
 .navbar i.menu-icon {
     margin-right: 4px;
 }
+
+/* Remove right margin when there's no label */
+.navbar a.icon-only i.menu-icon,
+.navbar button.icon-only i.menu-icon {
+    margin-right: 0;
+}
 .env-bar {
     color: white;
     text-align: center;

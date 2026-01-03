@@ -53,15 +53,16 @@
                     @if(isset($item['type']) && $item['type'] === 'logout')
                         <form method="POST" action="{{ route('logout') }}" style="display: inline-block;">
                             @csrf
-                            <button type="submit" style="background: none; border: none; color: #f2f2f2; text-align: center; padding: 14px 8px; text-decoration: none; font-size: 17px; cursor: pointer;">
+                            <button type="submit" class="icon-only" style="background: none; border: none; color: #f2f2f2; text-align: center; padding: 14px 8px; text-decoration: none; font-size: 17px; cursor: pointer;">
                                 <i class="fas {{ $item['icon'] }} menu-icon"></i>
                             </button>
                         </form>
                     @else
                         <a href="{{ route($item['route']) }}" 
-                           class="{{ $item['active'] ? 'active' : '' }}" 
+                           class="{{ $item['active'] ? 'active' : '' }}{{ !isset($item['label']) || empty($item['label']) ? ' icon-only' : '' }}" 
                            @if(isset($item['style']))style="{{ $item['style'] }}"@endif>
                             <i class="fas {{ $item['icon'] }} menu-icon"></i>
+                            @if(isset($item['label'])){{ $item['label'] }}@endif
                         </a>
                     @endif
                 @endforeach
@@ -72,7 +73,7 @@
         <div class="navbar sub-navbar @if($showNonProdHues) env-navbar-non-production @elseif($showAdminHues) env-navbar-admin-production @endif">
             @foreach($menuService->getSubMenu() as $item)
                 <a href="{{ isset($item['routeParams']) ? route($item['route'], $item['routeParams']) : route($item['route']) }}" 
-                   class="{{ $item['active'] ? 'active' : '' }}"
+                   class="{{ $item['active'] ? 'active' : '' }}{{ !isset($item['label']) || empty($item['label']) ? ' icon-only' : '' }}"
                    @if(isset($item['title']))title="{{ $item['title'] }}"@endif>
                     @if(isset($item['icon']))<i class="fas {{ $item['icon'] }} menu-icon"></i>@endif
                     @if(isset($item['label'])){{ $item['label'] }}@endif
