@@ -32,15 +32,6 @@ return [
                     'route' => 'workouts.index',
                     'patterns' => ['workouts.*'],
                 ],
-                // Recommendations (conditional)
-                [
-                    'label' => null,
-                    'icon' => 'fa-star',
-                    'route' => 'recommendations.index',
-                    'title' => 'Recommendations',
-                    'patterns' => ['recommendations.*'],
-                    'roles' => ['Admin'], // Custom property for conditional display
-                ],
 
             ],
         ],
@@ -130,7 +121,7 @@ return [
             'label' => null,
             'icon' => 'fa-cog',
             'route' => 'users.index', // Default route when clicking the main settings icon
-            'patterns' => ['users.*', 'exercises.index', 'exercises.create', 'exercises.edit', 'exercises.destroy'], // Admin exercise management only
+            'patterns' => ['users.*', 'exercises.index', 'exercises.create', 'exercises.edit', 'exercises.destroy', 'recommendations.*'], // Admin exercise management only
             'style' => 'padding: 14px 8px',
             'roles' => ['Admin'], // Only for Admin
             'children' => [ // Settings Sub-Menu Items
@@ -143,6 +134,14 @@ return [
                     'label' => 'Exercises',
                     'route' => 'exercises.index',
                     'patterns' => ['exercises.index', 'exercises.create', 'exercises.edit', 'exercises.destroy'],
+                ],
+                [
+                    'label' => null,
+                    'icon' => 'fa-star',
+                    'route' => 'recommendations.index',
+                    'title' => 'Recommendations',
+                    'patterns' => ['recommendations.*'],
+                    'roles' => ['Admin'],
                 ],
             ],
         ],
