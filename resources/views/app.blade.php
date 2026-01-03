@@ -36,7 +36,7 @@
         @auth
         @php
             $showAdminHues = request()->get('test_admin_hues') == '1' || 
-                            (app()->environment('production') && (auth()->user()->hasRole('Admin') || session()->has('impersonator_id')));
+                            (app()->environment('production') && auth()->user()->hasRole('Admin') && !session()->has('impersonator_id'));
             $showNonProdHues = !app()->environment('production') && request()->get('test_admin_hues') != '1';
         @endphp
         <div class="navbar @if($showNonProdHues) env-navbar-non-production @elseif($showAdminHues) env-navbar-admin-production @endif">
