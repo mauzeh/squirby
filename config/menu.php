@@ -13,14 +13,14 @@ return [
             ],
             'children' => [ // Lifts Sub-Menu Items
                 [
-                    'label' => null,
+                    'label' => 'Log now',
                     'icon' => 'fa-plus',
                     'route' => 'mobile-entry.lifts',
                     'title' => 'Direct Entry',
                     'patterns' => ['mobile-entry.lifts', 'lift-logs.create'],
                 ],
                 [
-                    'label' => null,
+                    'label' => 'Metrics',
                     'icon' => 'fa-chart-line',
                     'route' => 'lift-logs.index',
                     'title' => 'My Metrics',
