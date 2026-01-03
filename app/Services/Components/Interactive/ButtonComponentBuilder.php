@@ -16,7 +16,8 @@ class ButtonComponentBuilder
             'ariaLabel' => $text,
             'cssClass' => 'btn-primary',
             'type' => 'button',
-            'initialState' => 'visible'
+            'initialState' => 'visible',
+            'icon' => null
         ];
     }
     
@@ -66,6 +67,12 @@ class ButtonComponentBuilder
     public function initialState(string $state): self
     {
         $this->data['initialState'] = $state;
+        return $this;
+    }
+    
+    public function icon(string $iconClass): self
+    {
+        $this->data['icon'] = $iconClass;
         return $this;
     }
     

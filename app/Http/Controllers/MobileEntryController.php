@@ -117,6 +117,7 @@ class MobileEntryController extends Controller
             $components[] = \App\Services\ComponentBuilder::button('Log Now')
                 ->ariaLabel('Add new exercise')
                 ->addClass('btn-add-item')
+                ->icon('fa-plus')
                 ->build();
         }
         

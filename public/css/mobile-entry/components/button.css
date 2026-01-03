@@ -414,3 +414,8 @@
 .component-button.btn-secondary:hover {
     background-color: var(--color-secondary-hover);
 }
+
+/* Icon spacing for button components */
+.component-button i.button-icon {
+    margin-right: 6px;
+}
