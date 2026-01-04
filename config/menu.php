@@ -46,9 +46,10 @@ return [
             ],
             'children' => [ // Food Sub-Menu Items
                 [
-                    'label' => null,
-                    'icon' => 'fa-calendar-day',
+                    'label' => 'Log now',
+                    'icon' => 'fa-plus',
                     'route' => 'mobile-entry.foods',
+                    'title' => 'Direct Entry',
                     'patterns' => ['mobile-entry.foods', 'food-logs.*'],
                 ],
                 [
@@ -73,9 +74,10 @@ return [
             ],
             'children' => [ // Body Sub-Menu Items
                 [
-                    'label' => null,
-                    'icon' => 'fa-calendar-day',
+                    'label' => 'Log now',
+                    'icon' => 'fa-plus',
                     'route' => 'mobile-entry.measurements',
+                    'title' => 'Direct Entry',
                     'patterns' => ['mobile-entry.measurements'],  // Changed from getBodyRoutePatterns to be more specific to this item
                 ],
                 // Measurement Types (dynamic) - This will need special handling outside the config or in a post-processing step.
