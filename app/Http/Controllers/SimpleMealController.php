@@ -118,11 +118,14 @@ class SimpleMealController extends Controller
     /**
      * Show the form for editing an existing meal (meal builder interface)
      */
-    public function edit(Meal $meal)
+    public function edit(Request $request, Meal $meal)
     {
         if ($meal->user_id !== auth()->id()) {
             abort(403, 'Unauthorized action.');
         }
+
+        // Check if we should expand the list (from "Add ingredients" button)
+        $shouldExpandList = $request->query('expand') === 'true';
 
         $components = [];
         
@@ -152,22 +155,26 @@ class SimpleMealController extends Controller
             $components[] = $nutritionComponent;
         }
 
+        // Add Ingredient button - hidden if list should be expanded
+        $buttonBuilder = C::button('Add Ingredient')
+            ->ariaLabel('Add ingredient to meal')
+            ->addClass('btn-add-item');
+        
+        if ($shouldExpandList) {
+            $buttonBuilder->initialState('hidden');
+        }
+        
+        $components[] = $buttonBuilder->build();
+
+        // Ingredient selection list - expanded if coming from "Add ingredients" button
+        $ingredientSelectionList = $this->ingredientListService->generateIngredientSelectionList($meal, [
+            'initialState' => $shouldExpandList ? 'expanded' : 'collapsed'
+        ]);
+        $components[] = $ingredientSelectionList;
+
         // Current ingredients table
         $ingredientTable = $this->ingredientListService->generateIngredientListTable($meal);
         $components[] = $ingredientTable;
-
-        // Add ingredient button/section
-        $components[] = C::button('Add Ingredient')
-            ->ariaLabel('Add ingredient to meal')
-            ->addClass('btn-add-item')
-            ->asLink(route('meals.add-ingredient', $meal->id))
-            ->build();
-
-        // Ingredient selection list (collapsed by default)
-        $ingredientSelectionList = $this->ingredientListService->generateIngredientSelectionList($meal, [
-            'initialState' => 'collapsed'
-        ]);
-        $components[] = $ingredientSelectionList;
 
         $data = ['components' => $components];
         return view('mobile-entry.flexible', compact('data'));
