@@ -50,11 +50,12 @@ class FoodLogController extends Controller
         $form = $this->foodLogService->generateIngredientCreateForm($ingredient, auth()->id(), $selectedDate, $request->input('redirect_to'));
         
         // Add a title component with back button
-        $backUrl = $request->input('redirect_to') === 'mobile-entry.foods' 
-            ? route('mobile-entry.foods', $request->only('date'))
-            : route('mobile-entry.foods');
+        $backUrl = route('mobile-entry.foods');
+        if ($request->input('date')) {
+            $backUrl = route('mobile-entry.foods', ['date' => $request->input('date')]);
+        }
             
-        $title = \App\Services\ComponentBuilder::title('Log Ingredient')
+        $title = \App\Services\ComponentBuilder::title("Log Ingredient: {$ingredient->name}")
             ->backButton('fa-arrow-left', $backUrl, 'Back to Food Log')
             ->build();
         
@@ -90,11 +91,12 @@ class FoodLogController extends Controller
         $form = $this->foodLogService->generateMealCreateForm($meal, auth()->id(), $selectedDate, $request->input('redirect_to'));
         
         // Add a title component with back button
-        $backUrl = $request->input('redirect_to') === 'mobile-entry.foods' 
-            ? route('mobile-entry.foods', $request->only('date'))
-            : route('mobile-entry.foods');
+        $backUrl = route('mobile-entry.foods');
+        if ($request->input('date')) {
+            $backUrl = route('mobile-entry.foods', ['date' => $request->input('date')]);
+        }
             
-        $title = \App\Services\ComponentBuilder::title('Log Meal')
+        $title = \App\Services\ComponentBuilder::title("Log Meal: {$meal->name}")
             ->backButton('fa-arrow-left', $backUrl, 'Back to Food Log')
             ->build();
         

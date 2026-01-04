@@ -72,7 +72,8 @@ class FoodLogService extends MobileEntryBaseService
         $carbs = round($this->nutritionService->calculateTotalMacro($ingredient, 'carbs', 1), 1);
         $fats = round($this->nutritionService->calculateTotalMacro($ingredient, 'fats', 1), 1);
         
-        $nutritionText = "Per {$ingredient->baseUnit->name}: {$calories} cal, {$protein}g protein, {$carbs}g carbs, {$fats}g fats";
+        $unitName = $ingredient->baseUnit ? $ingredient->baseUnit->name : 'unit';
+        $nutritionText = "Per {$unitName}: {$calories} cal, {$protein}g protein, {$carbs}g carbs, {$fats}g fats";
         $messages[] = [
             'type' => 'info',
             'prefix' => 'Nutrition:',
