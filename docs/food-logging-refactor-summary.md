@@ -83,6 +83,38 @@ Refactored the food logging flow to match the lift logging UX pattern, removing 
 6. Verify no forms appear on main foods page
 7. Test edit functionality for existing food logs
 
+## Test Suite Impact Analysis
+
+**Critical Tests Requiring Updates:**
+
+**1. Mobile Entry Food Tests (3 files)**
+- `FoodsSummaryVisibilityTest.php` - Tests mobile-entry.foods page behavior, needs updates for no-forms flow
+- `FoodLogEditTest.php` - Tests mobile-entry.foods integration, edit/delete buttons, and meal logging redirects
+- `RedirectServiceTest.php` - Tests mobile-entry.foods redirects
+
+**2. Route & Navigation Tests**
+- Tests expecting old routes (`mobile-entry/add-food-form`, `mobile-entry/remove-food-form`) need updates to new routes (`food-logs/create/ingredient/{id}`, `food-logs/create/meal/{id}`)
+- Back button tests may need updates for new navigation flow
+
+**3. Form & Validation Tests**
+- Tests expecting forms on main mobile-entry.foods page need updates since forms are now on separate pages
+- Validation error display tests need updates for new page-level error handling pattern
+
+**4. Integration Tests**
+- Tests checking for form components on mobile-entry.foods page will fail (forms removed)
+- Tests verifying mobile food form database interactions need removal/updates
+- Meal logging workflow tests need updates for new direct navigation pattern
+
+**Key Changes Needed:**
+- Update assertions expecting forms on main foods page
+- Add tests for new ingredient/meal form pages
+- Update route expectations in existing tests
+- Verify validation error display at page level
+- Test new back button navigation
+- Remove tests for deprecated MobileFoodForm functionality
+
+**Estimated Impact:** ~15-20 tests need updates, mostly in mobile entry and food logging areas.
+
 ## Future Cleanup
 - Remove deprecated methods after confirming no usage
 - Update any remaining references to old form patterns
