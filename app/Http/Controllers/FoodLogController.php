@@ -58,9 +58,18 @@ class FoodLogController extends Controller
             ->backButton('fa-arrow-left', $backUrl, 'Back to Food Log')
             ->build();
         
+        $components = [$title];
+        
+        // Add session messages if any (including validation errors)
+        if ($sessionMessages = \App\Services\ComponentBuilder::messagesFromSession()) {
+            $components[] = $sessionMessages;
+        }
+        
+        $components[] = $form;
+        
         return view('mobile-entry.flexible', [
             'data' => [
-                'components' => [$title, $form]
+                'components' => $components
             ]
         ]);
     }
@@ -89,9 +98,18 @@ class FoodLogController extends Controller
             ->backButton('fa-arrow-left', $backUrl, 'Back to Food Log')
             ->build();
         
+        $components = [$title];
+        
+        // Add session messages if any (including validation errors)
+        if ($sessionMessages = \App\Services\ComponentBuilder::messagesFromSession()) {
+            $components[] = $sessionMessages;
+        }
+        
+        $components[] = $form;
+        
         return view('mobile-entry.flexible', [
             'data' => [
-                'components' => [$title, $form]
+                'components' => $components
             ]
         ]);
     }

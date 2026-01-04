@@ -179,9 +179,11 @@ class FoodLogService extends MobileEntryBaseService
         $formBuilder->hiddenField('logged_at', $formData['logged_at']); // Hidden time field
         $formBuilder->hiddenField('redirect_to', $formData['redirect_to']);
 
-        // Add messages
+        // Add informational messages only (not validation errors - those are handled at page level)
         foreach ($messages as $message) {
-            $formBuilder->message($message['type'], $message['text'], $message['prefix'] ?? null);
+            if ($message['type'] !== 'error') { // Skip error messages
+                $formBuilder->message($message['type'], $message['text'], $message['prefix'] ?? null);
+            }
         }
 
         // Quantity field
@@ -216,9 +218,11 @@ class FoodLogService extends MobileEntryBaseService
         $formBuilder->hiddenField('logged_at_meal', $formData['logged_at_meal']); // Hidden time field
         $formBuilder->hiddenField('redirect_to', $formData['redirect_to']);
 
-        // Add messages
+        // Add informational messages only (not validation errors - those are handled at page level)
         foreach ($messages as $message) {
-            $formBuilder->message($message['type'], $message['text'], $message['prefix'] ?? null);
+            if ($message['type'] !== 'error') { // Skip error messages
+                $formBuilder->message($message['type'], $message['text'], $message['prefix'] ?? null);
+            }
         }
 
         // Portion field
