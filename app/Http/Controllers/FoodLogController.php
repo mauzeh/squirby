@@ -54,7 +54,7 @@ class FoodLogController extends Controller
             ? route('mobile-entry.foods', $request->only('date'))
             : route('mobile-entry.foods');
             
-        $title = \App\Services\ComponentBuilder::title($ingredient->name, 'Log Ingredient')
+        $title = \App\Services\ComponentBuilder::title('Log Ingredient')
             ->backButton('fa-arrow-left', $backUrl, 'Back to Food Log')
             ->build();
         
@@ -94,7 +94,7 @@ class FoodLogController extends Controller
             ? route('mobile-entry.foods', $request->only('date'))
             : route('mobile-entry.foods');
             
-        $title = \App\Services\ComponentBuilder::title($meal->name, 'Log Meal')
+        $title = \App\Services\ComponentBuilder::title('Log Meal')
             ->backButton('fa-arrow-left', $backUrl, 'Back to Food Log')
             ->build();
         

@@ -44,6 +44,7 @@ class FoodLogService extends MobileEntryBaseService
             'action' => route('food-logs.store'),
             'method' => 'POST',
             'ingredient_id' => $ingredient->id,
+            'ingredient_name' => $ingredient->name,
             'date' => $selectedDate->toDateString(),
             'logged_at' => now()->format('H:i'), // Use current time
             'quantity' => $lastLog ? $lastLog->quantity : 1,
@@ -110,6 +111,7 @@ class FoodLogService extends MobileEntryBaseService
             'action' => route('food-logs.add-meal'),
             'method' => 'POST',
             'meal_id' => $meal->id,
+            'meal_name' => $meal->name,
             'meal_date' => $selectedDate->toDateString(),
             'logged_at_meal' => now()->format('H:i'), // Use current time
             'portion' => $defaultPortion,
@@ -169,7 +171,7 @@ class FoodLogService extends MobileEntryBaseService
      */
     protected function buildIngredientForm(array $formData, array $messages)
     {
-        $formBuilder = C::form($formData['ingredient_id'], $formData['unit']->name ?? 'Ingredient')
+        $formBuilder = C::form($formData['ingredient_id'], $formData['ingredient_name'])
             ->type('success')
             ->formAction($formData['action']);
 
@@ -208,7 +210,7 @@ class FoodLogService extends MobileEntryBaseService
      */
     protected function buildMealForm(array $formData, array $messages)
     {
-        $formBuilder = C::form($formData['meal_id'], 'Meal')
+        $formBuilder = C::form($formData['meal_id'], $formData['meal_name'])
             ->type('success')
             ->formAction($formData['action']);
 
