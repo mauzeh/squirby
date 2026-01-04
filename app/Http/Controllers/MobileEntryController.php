@@ -117,6 +117,7 @@ class MobileEntryController extends Controller
             $components[] = \App\Services\ComponentBuilder::button('Log Now')
                 ->ariaLabel('Add new exercise')
                 ->addClass('btn-add-item')
+                ->addClass('btn-log-now')
                 ->icon('fa-plus')
                 ->build();
         }
@@ -402,6 +403,7 @@ class MobileEntryController extends Controller
         $components[] = \App\Services\ComponentBuilder::button('Log Now')
             ->ariaLabel('Add new food item')
             ->addClass('btn-add-item')
+            ->addClass('btn-log-now')
             ->icon('fa-plus')
             ->build();
         
