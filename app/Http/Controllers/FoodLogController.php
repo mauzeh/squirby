@@ -35,6 +35,68 @@ class FoodLogController extends Controller
     }
 
     /**
+     * Show the form for creating a new ingredient food log.
+     */
+    public function createIngredientForm(Request $request, Ingredient $ingredient)
+    {
+        if ($ingredient->user_id !== auth()->id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $selectedDate = $request->input('date') 
+            ? Carbon::parse($request->input('date')) 
+            : Carbon::today();
+
+        $form = $this->foodLogService->generateIngredientCreateForm($ingredient, auth()->id(), $selectedDate, $request->input('redirect_to'));
+        
+        // Add a title component with back button
+        $backUrl = $request->input('redirect_to') === 'mobile-entry.foods' 
+            ? route('mobile-entry.foods', $request->only('date'))
+            : route('mobile-entry.foods');
+            
+        $title = \App\Services\ComponentBuilder::title($ingredient->name, 'Log Ingredient')
+            ->backButton($backUrl, 'Back to Food Log')
+            ->build();
+        
+        return view('mobile-entry.flexible', [
+            'data' => [
+                'components' => [$title, $form]
+            ]
+        ]);
+    }
+
+    /**
+     * Show the form for creating a new meal food log.
+     */
+    public function createMealForm(Request $request, Meal $meal)
+    {
+        if ($meal->user_id !== auth()->id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $selectedDate = $request->input('date') 
+            ? Carbon::parse($request->input('date')) 
+            : Carbon::today();
+
+        $form = $this->foodLogService->generateMealCreateForm($meal, auth()->id(), $selectedDate, $request->input('redirect_to'));
+        
+        // Add a title component with back button
+        $backUrl = $request->input('redirect_to') === 'mobile-entry.foods' 
+            ? route('mobile-entry.foods', $request->only('date'))
+            : route('mobile-entry.foods');
+            
+        $title = \App\Services\ComponentBuilder::title($meal->name, 'Log Meal')
+            ->backButton($backUrl, 'Back to Food Log')
+            ->build();
+        
+        return view('mobile-entry.flexible', [
+            'data' => [
+                'components' => [$title, $form]
+            ]
+        ]);
+    }
+
+    /**
      * Show the form for editing the specified resource.
      */
     public function edit(Request $request, FoodLog $foodLog)

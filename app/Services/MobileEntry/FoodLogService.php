@@ -6,7 +6,6 @@ use App\Models\FoodLog;
 use App\Models\Ingredient;
 use App\Models\Meal;
 use App\Models\Unit;
-use App\Models\MobileFoodForm;
 use App\Services\NutritionService;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
@@ -19,6 +18,223 @@ class FoodLogService extends MobileEntryBaseService
     public function __construct(NutritionService $nutritionService)
     {
         $this->nutritionService = $nutritionService;
+    }
+
+    /**
+     * Generate a form for creating a new ingredient food log
+     * 
+     * @param Ingredient $ingredient
+     * @param int $userId
+     * @param Carbon $selectedDate
+     * @param string|null $redirectTo
+     * @return array
+     */
+    public function generateIngredientCreateForm(Ingredient $ingredient, int $userId, Carbon $selectedDate, ?string $redirectTo = null)
+    {
+        // Get last logged data for this ingredient
+        $lastLog = FoodLog::where('user_id', $userId)
+            ->where('ingredient_id', $ingredient->id)
+            ->where('logged_at', '<', $selectedDate->toDateString())
+            ->with(['unit'])
+            ->orderBy('logged_at', 'desc')
+            ->first();
+
+        // Prepare form data
+        $formData = [
+            'action' => route('food-logs.store'),
+            'method' => 'POST',
+            'ingredient_id' => $ingredient->id,
+            'date' => $selectedDate->toDateString(),
+            'logged_at' => $selectedDate->format('H:i'),
+            'quantity' => $lastLog ? $lastLog->quantity : 1,
+            'notes' => '',
+            'unit' => $ingredient->baseUnit,
+            'redirect_to' => $redirectTo ?: 'mobile-entry.foods'
+        ];
+
+        // Generate messages
+        $messages = [];
+        
+        if ($lastLog) {
+            $lastQuantity = $lastLog->quantity . ' ' . $lastLog->unit->name;
+            $lastDate = $lastLog->logged_at->format('M j');
+            $messages[] = [
+                'type' => 'neutral',
+                'prefix' => 'Last logged:',
+                'text' => $lastQuantity . ' on ' . $lastDate
+            ];
+        }
+
+        // Add nutrition information
+        $calories = round($this->nutritionService->calculateTotalMacro($ingredient, 'calories', 1));
+        $protein = round($this->nutritionService->calculateTotalMacro($ingredient, 'protein', 1), 1);
+        $carbs = round($this->nutritionService->calculateTotalMacro($ingredient, 'carbs', 1), 1);
+        $fats = round($this->nutritionService->calculateTotalMacro($ingredient, 'fats', 1), 1);
+        
+        $nutritionText = "Per {$ingredient->baseUnit->name}: {$calories} cal, {$protein}g protein, {$carbs}g carbs, {$fats}g fats";
+        $messages[] = [
+            'type' => 'info',
+            'prefix' => 'Nutrition:',
+            'text' => $nutritionText
+        ];
+
+        return $this->buildIngredientForm($formData, $messages);
+    }
+
+    /**
+     * Generate a form for creating a new meal food log
+     * 
+     * @param Meal $meal
+     * @param int $userId
+     * @param Carbon $selectedDate
+     * @param string|null $redirectTo
+     * @return array
+     */
+    public function generateMealCreateForm(Meal $meal, int $userId, Carbon $selectedDate, ?string $redirectTo = null)
+    {
+        // Get last logged data for this meal (check for any ingredient from this meal)
+        $lastMealLog = FoodLog::where('user_id', $userId)
+            ->where('logged_at', '<', $selectedDate->toDateString())
+            ->where('notes', 'like', $meal->name . ' (Portion:%')
+            ->orderBy('logged_at', 'desc')
+            ->first();
+
+        // Extract portion from last log if available
+        $defaultPortion = 1;
+        if ($lastMealLog && preg_match('/Portion: ([\d.]+)\)/', $lastMealLog->notes, $matches)) {
+            $defaultPortion = (float) $matches[1];
+        }
+
+        // Prepare form data
+        $formData = [
+            'action' => route('food-logs.add-meal'),
+            'method' => 'POST',
+            'meal_id' => $meal->id,
+            'meal_date' => $selectedDate->toDateString(),
+            'logged_at_meal' => $selectedDate->format('H:i'),
+            'portion' => $defaultPortion,
+            'notes' => '',
+            'redirect_to' => $redirectTo ?: 'mobile-entry.foods'
+        ];
+
+        // Generate messages
+        $messages = [];
+        
+        if ($lastMealLog) {
+            $lastDate = $lastMealLog->logged_at->format('M j');
+            $messages[] = [
+                'type' => 'neutral',
+                'prefix' => 'Last logged:',
+                'text' => $defaultPortion . ' serving on ' . $lastDate
+            ];
+        }
+
+        // Calculate meal nutrition for 1 serving
+        $totalCalories = 0;
+        $totalProtein = 0;
+        $totalCarbs = 0;
+        $totalFats = 0;
+        $ingredientCount = $meal->ingredients->count();
+
+        foreach ($meal->ingredients as $ingredient) {
+            $quantity = $ingredient->pivot->quantity;
+            $totalCalories += $this->nutritionService->calculateTotalMacro($ingredient, 'calories', $quantity);
+            $totalProtein += $this->nutritionService->calculateTotalMacro($ingredient, 'protein', $quantity);
+            $totalCarbs += $this->nutritionService->calculateTotalMacro($ingredient, 'carbs', $quantity);
+            $totalFats += $this->nutritionService->calculateTotalMacro($ingredient, 'fats', $quantity);
+        }
+
+        $nutritionText = "Per serving: " . round($totalCalories) . " cal, " . round($totalProtein, 1) . "g protein, " . round($totalCarbs, 1) . "g carbs, " . round($totalFats, 1) . "g fats";
+        $messages[] = [
+            'type' => 'info',
+            'prefix' => 'Nutrition:',
+            'text' => $nutritionText
+        ];
+
+        $messages[] = [
+            'type' => 'info',
+            'prefix' => 'Contains:',
+            'text' => $ingredientCount . ' ingredients'
+        ];
+
+        return $this->buildMealForm($formData, $messages);
+    }
+
+    /**
+     * Build an ingredient form component
+     * 
+     * @param array $formData
+     * @param array $messages
+     * @return array
+     */
+    protected function buildIngredientForm(array $formData, array $messages)
+    {
+        $formBuilder = C::form($formData['ingredient_id'], $formData['unit']->name ?? 'Ingredient')
+            ->type('success')
+            ->formAction($formData['action']);
+
+        // Add hidden fields
+        $formBuilder->hiddenField('ingredient_id', $formData['ingredient_id']);
+        $formBuilder->hiddenField('date', $formData['date']);
+        $formBuilder->hiddenField('redirect_to', $formData['redirect_to']);
+
+        // Add messages
+        foreach ($messages as $message) {
+            $formBuilder->message($message['type'], $message['text'], $message['prefix'] ?? null);
+        }
+
+        // Time field (as text field since we don't have time field)
+        $formBuilder->textField('logged_at', 'Time', $formData['logged_at']);
+
+        // Quantity field
+        $unitName = $formData['unit']->name ?? 'unit';
+        $formBuilder->numericField('quantity', 'Quantity (' . $unitName . ')', $formData['quantity'], 0.1, 0.01);
+
+        // Notes field
+        $formBuilder->textareaField('notes', 'Notes (optional)', $formData['notes'], 'Optional notes');
+
+        // Submit button
+        $formBuilder->submitButton('Log Ingredient');
+
+        return $formBuilder->build();
+    }
+
+    /**
+     * Build a meal form component
+     * 
+     * @param array $formData
+     * @param array $messages
+     * @return array
+     */
+    protected function buildMealForm(array $formData, array $messages)
+    {
+        $formBuilder = C::form($formData['meal_id'], 'Meal')
+            ->type('success')
+            ->formAction($formData['action']);
+
+        // Add hidden fields
+        $formBuilder->hiddenField('meal_id', $formData['meal_id']);
+        $formBuilder->hiddenField('meal_date', $formData['meal_date']);
+        $formBuilder->hiddenField('redirect_to', $formData['redirect_to']);
+
+        // Add messages
+        foreach ($messages as $message) {
+            $formBuilder->message($message['type'], $message['text'], $message['prefix'] ?? null);
+        }
+
+        // Time field (as text field since we don't have time field)
+        $formBuilder->textField('logged_at_meal', 'Time', $formData['logged_at_meal']);
+
+        // Portion field
+        $formBuilder->numericField('portion', 'Servings', $formData['portion'], 0.1, 0.1, 10);
+
+        // Notes field
+        $formBuilder->textareaField('notes', 'Notes (optional)', $formData['notes'], 'Optional notes');
+
+        // Submit button
+        $formBuilder->submitButton('Log Meal');
+
+        return $formBuilder->build();
     }
 
     /**
@@ -181,19 +397,20 @@ class FoodLogService extends MobileEntryBaseService
         // Add meals first (they will have priority 1)
         foreach ($meals as $meal) {
             $routeParams = [
-                'type' => 'meal',
-                'id' => $meal->id
+                'meal' => $meal->id
             ];
             // Only include date if we're NOT viewing today
             if (!$selectedDate->isToday()) {
                 $routeParams['date'] = $selectedDate->toDateString();
             }
+            // Add redirect_to parameter for mobile entry context
+            $routeParams['redirect_to'] = 'mobile-entry.foods';
             
             $items[] = [
                 'id' => 'meal-' . $meal->id,
-                'name' => $meal->name . ' (Meal)',
+                'name' => $meal->name,
                 'type' => $this->getItemTypeConfig('meal'),
-                'href' => route('mobile-entry.add-food-form', $routeParams)
+                'href' => route('food-logs.create-meal', $routeParams)
             ];
         }
         
@@ -202,19 +419,20 @@ class FoodLogService extends MobileEntryBaseService
             $itemType = $this->determineIngredientType($ingredient, $userId);
 
             $routeParams = [
-                'type' => 'ingredient',
-                'id' => $ingredient->id
+                'ingredient' => $ingredient->id
             ];
             // Only include date if we're NOT viewing today
             if (!$selectedDate->isToday()) {
                 $routeParams['date'] = $selectedDate->toDateString();
             }
+            // Add redirect_to parameter for mobile entry context
+            $routeParams['redirect_to'] = 'mobile-entry.foods';
 
             $items[] = [
                 'id' => 'ingredient-' . $ingredient->id,
                 'name' => $ingredient->name,
                 'type' => $itemType,
-                'href' => route('mobile-entry.add-food-form', $routeParams)
+                'href' => route('food-logs.create-ingredient', $routeParams)
             ];
         }
 
@@ -302,6 +520,7 @@ class FoodLogService extends MobileEntryBaseService
     /**
      * Generate forms based on request parameters and database data
      * 
+     * @deprecated This method is deprecated. Food logging now uses direct navigation like lifts.
      * @param int $userId
      * @param Carbon $selectedDate
      * @param \Illuminate\Http\Request $request
@@ -309,31 +528,14 @@ class FoodLogService extends MobileEntryBaseService
      */
     public function generateForms($userId, Carbon $selectedDate, $request)
     {
-        $forms = [];
-        
-        // Get selected items from database
-        $selectedItems = MobileFoodForm::forUserAndDate($userId, $selectedDate)->get();
-        
-        foreach ($selectedItems as $item) {
-            if ($item->type === 'ingredient') {
-                $form = $this->generateIngredientForm($userId, $item->item_id, $selectedDate);
-                if ($form) {
-                    $forms[] = $form;
-                }
-            } elseif ($item->type === 'meal') {
-                $form = $this->generateMealForm($userId, $item->item_id, $selectedDate);
-                if ($form) {
-                    $forms[] = $form;
-                }
-            }
-        }
-        
-        return $forms;
+        // Deprecated: Return empty array as forms are no longer generated on the main page
+        return [];
     }
 
     /**
      * Generate a form for a specific ingredient
      * 
+     * @deprecated This method is deprecated. Use generateIngredientCreateForm instead.
      * @param int $userId
      * @param int $ingredientId
      * @param Carbon $selectedDate
@@ -341,101 +543,14 @@ class FoodLogService extends MobileEntryBaseService
      */
     public function generateIngredientForm($userId, $ingredientId, Carbon $selectedDate)
     {
-        $ingredient = Ingredient::where('id', $ingredientId)
-            ->where('user_id', $userId)
-            ->with('baseUnit')
-            ->first();
-            
-        if (!$ingredient || !$ingredient->baseUnit) {
-            return null;
-        }
-        
-        // Get last session data for this ingredient
-        $lastSession = $this->getLastIngredientSession($ingredient->id, $selectedDate, $userId);
-        
-        // Generate form ID
-        $formId = 'ingredient-' . $ingredient->id;
-        
-        // Determine default quantity
-        $defaultQuantity = $lastSession['quantity'] ?? 1;
-        
-        // Generate messages based on last session
-        $messages = $this->generateIngredientFormMessages($ingredient, $lastSession);
-        
-        // Build form using ComponentBuilder
-        $formBuilder = C::form($formId, $ingredient->name)
-            ->type('success')
-            ->formAction(route('food-logs.store'))
-            ->deleteAction(route('mobile-entry.remove-food-form', ['id' => $formId]));
-        
-        // Add messages
-        foreach ($messages as $message) {
-            $formBuilder->message($message['type'], $message['text'], $message['prefix'] ?? null);
-        }
-        
-        // Build and customize form data
-        $formData = $formBuilder->build();
-        $formData['data']['numericFields'] = [
-            [
-                'id' => $formId . '-quantity',
-                'name' => 'quantity',
-                'label' => 'Quantity (' . $ingredient->baseUnit->name . '):',
-                'defaultValue' => round($defaultQuantity, 2),
-                'increment' => $this->getQuantityIncrement($ingredient->baseUnit->name, $defaultQuantity),
-                'step' => 'any',
-                'min' => 0.01,
-                'max' => 1000,
-                'ariaLabels' => [
-                    'decrease' => 'Decrease quantity',
-                    'increase' => 'Increase quantity'
-                ]
-            ],
-            [
-                'id' => $formId . '-notes',
-                'name' => 'notes',
-                'label' => 'Notes:',
-                'type' => 'textarea',
-                'placeholder' => config('mobile_entry_messages.placeholders.food_notes'),
-                'defaultValue' => '',
-                'ariaLabels' => [
-                    'field' => 'Notes'
-                ]
-            ]
-        ];
-        $formData['data']['buttons'] = [
-            'decrement' => '-',
-            'increment' => '+',
-            'submit' => 'Log ' . $ingredient->name
-        ];
-        $formData['data']['ariaLabels'] = [
-            'section' => $ingredient->name . ' entry',
-            'deleteForm' => 'Remove this food form'
-        ];
-        $hiddenFields = [
-            'ingredient_id' => $ingredient->id,
-            'logged_at' => $this->getRoundedTime(),
-            'redirect_to' => 'mobile-entry-foods'
-        ];
-        // Only include date if we're NOT viewing today
-        if (!$selectedDate->isToday()) {
-            $hiddenFields['date'] = $selectedDate->toDateString();
-        }
-        
-        $deleteParams = [];
-        // Only include date if we're NOT viewing today
-        if (!$selectedDate->isToday()) {
-            $deleteParams['date'] = $selectedDate->toDateString();
-        }
-        
-        $formData['data']['hiddenFields'] = $hiddenFields;
-        $formData['data']['deleteParams'] = $deleteParams;
-        
-        return $formData;
+        // Deprecated: Return null
+        return null;
     }
 
     /**
      * Generate a form for a specific meal
      * 
+     * @deprecated This method is deprecated. Use generateMealCreateForm instead.
      * @param int $userId
      * @param int $mealId
      * @param Carbon $selectedDate
@@ -443,122 +558,9 @@ class FoodLogService extends MobileEntryBaseService
      */
     public function generateMealForm($userId, $mealId, Carbon $selectedDate)
     {
-        $meal = Meal::where('id', $mealId)
-            ->where('user_id', $userId)
-            ->with('ingredients.baseUnit')
-            ->first();
-            
-        if (!$meal || $meal->ingredients->isEmpty()) {
-            return null;
-        }
-        
-        // Generate form ID
-        $formId = 'meal-' . $meal->id;
-        
-        // Get nutrition info for the meal
-        $totalCalories = 0;
-        $totalProtein = 0;
-        
-        foreach ($meal->ingredients as $ingredient) {
-            $quantity = $ingredient->pivot->quantity;
-            $totalCalories += $this->nutritionService->calculateTotalMacro($ingredient, 'calories', $quantity);
-            $totalProtein += $this->nutritionService->calculateTotalMacro($ingredient, 'protein', $quantity);
-        }
-        
-        $messages = [
-            [
-                'type' => 'info',
-                'prefix' => config('mobile_entry_messages.form_guidance.meal_contains'),
-                'text' => $meal->ingredients->count() . ' ingredients'
-            ],
-            [
-                'type' => 'tip',
-                'prefix' => config('mobile_entry_messages.form_guidance.nutrition_info'),
-                'text' => round($totalCalories) . ' cal, ' . round($totalProtein, 1) . 'g protein per serving'
-            ]
-        ];
-        
-        if ($meal->comments) {
-            $messages[] = [
-                'type' => 'neutral',
-                'prefix' => 'Meal notes:',
-                'text' => $meal->comments
-            ];
-        }
-        
-        // Build form using ComponentBuilder
-        $formBuilder = C::form($formId, $meal->name . ' (Meal)')
-            ->type('success')
-            ->formAction(route('food-logs.add-meal'))
-            ->deleteAction(route('mobile-entry.remove-food-form', ['id' => $formId]));
-        
-        // Add messages
-        foreach ($messages as $message) {
-            $formBuilder->message($message['type'], $message['text'], $message['prefix'] ?? null);
-        }
-        
-        // Build and customize form data
-        $formData = $formBuilder->build();
-        $formData['data']['itemName'] = $meal->name;
-        $formData['data']['numericFields'] = [
-            [
-                'id' => $formId . '-portion',
-                'name' => 'portion',
-                'label' => 'Portion:',
-                'defaultValue' => 1.0,
-                'increment' => 0.25,
-                'step' => 'any',
-                'min' => 0.1,
-                'max' => 10,
-                'ariaLabels' => [
-                    'decrease' => 'Decrease portion',
-                    'increase' => 'Increase portion'
-                ]
-            ],
-            [
-                'id' => $formId . '-notes',
-                'name' => 'notes',
-                'label' => 'Notes:',
-                'type' => 'textarea',
-                'placeholder' => config('mobile_entry_messages.placeholders.food_notes'),
-                'defaultValue' => '',
-                'ariaLabels' => [
-                    'field' => 'Notes'
-                ]
-            ]
-        ];
-        $formData['data']['buttons'] = [
-            'decrement' => '-',
-            'increment' => '+',
-            'submit' => 'Log ' . $meal->name
-        ];
-        $formData['data']['ariaLabels'] = [
-            'section' => $meal->name . ' entry',
-            'deleteForm' => 'Remove this meal form'
-        ];
-        $hiddenFields = [
-            'meal_id' => $meal->id,
-            'logged_at_meal' => $this->getRoundedTime(),
-            'redirect_to' => 'mobile-entry-foods'
-        ];
-        // Only include date if we're NOT viewing today
-        if (!$selectedDate->isToday()) {
-            $hiddenFields['meal_date'] = $selectedDate->toDateString();
-        }
-        
-        $deleteParams = [];
-        // Only include date if we're NOT viewing today
-        if (!$selectedDate->isToday()) {
-            $deleteParams['date'] = $selectedDate->toDateString();
-        }
-        
-        $formData['data']['hiddenFields'] = $hiddenFields;
-        $formData['data']['deleteParams'] = $deleteParams;
-        
-        return $formData;
+        // Deprecated: Return null
+        return null;
     }
-
-
 
     /**
      * Get last session data for an ingredient
@@ -701,6 +703,7 @@ class FoodLogService extends MobileEntryBaseService
     /**
      * Add a food form by finding the ingredient/meal and storing it in database
      * 
+     * @deprecated This method is deprecated. Food logging now uses direct navigation like lifts.
      * @param int $userId
      * @param string $type 'ingredient' or 'meal'
      * @param int $id Ingredient or Meal ID
@@ -709,128 +712,10 @@ class FoodLogService extends MobileEntryBaseService
      */
     public function addFoodForm($userId, $type, $id, Carbon $selectedDate)
     {
-        if ($type === 'ingredient') {
-            $ingredient = Ingredient::where('id', $id)
-                ->where('user_id', $userId)
-                ->with('baseUnit')
-                ->first();
-            
-            if (!$ingredient) {
-                return [
-                    'success' => false,
-                    'message' => config('mobile_entry_messages.error.food_not_found')
-                ];
-            }
-            
-            if (!$ingredient->baseUnit) {
-                return [
-                    'success' => false,
-                    'message' => config('mobile_entry_messages.error.ingredient_no_unit')
-                ];
-            }
-            
-            // Check if already added
-            $existingForm = MobileFoodForm::where('user_id', $userId)
-                ->where('date', $selectedDate->toDateString())
-                ->where('type', $type)
-                ->where('item_id', $id)
-                ->first();
-            
-            if ($existingForm) {
-                return [
-                    'success' => false,
-                    'message' => str_replace(':food', $ingredient->name, config('mobile_entry_messages.error.food_already_in_forms'))
-                ];
-            }
-            
-            // Add to database
-            try {
-                MobileFoodForm::create([
-                    'user_id' => $userId,
-                    'date' => $selectedDate->toDateString(),
-                    'type' => $type,
-                    'item_id' => $id,
-                    'item_name' => $ingredient->name
-                ]);
-            } catch (\Illuminate\Database\QueryException $e) {
-                // Handle unique constraint violation
-                if ($e->getCode() === '23000') {
-                    return [
-                        'success' => false,
-                        'message' => "{$ingredient->name} is already added to your forms."
-                    ];
-                }
-                throw $e;
-            }
-            
-            return [
-                'success' => true,
-                'message' => ''
-            ];
-            
-        } elseif ($type === 'meal') {
-            $meal = Meal::where('id', $id)
-                ->where('user_id', $userId)
-                ->with('ingredients')
-                ->first();
-            
-            if (!$meal) {
-                return [
-                    'success' => false,
-                    'message' => config('mobile_entry_messages.error.food_not_found')
-                ];
-            }
-            
-            if ($meal->ingredients->isEmpty()) {
-                return [
-                    'success' => false,
-                    'message' => config('mobile_entry_messages.error.meal_no_ingredients')
-                ];
-            }
-            
-            // Check if already added
-            $existingForm = MobileFoodForm::where('user_id', $userId)
-                ->where('date', $selectedDate->toDateString())
-                ->where('type', $type)
-                ->where('item_id', $id)
-                ->first();
-            
-            if ($existingForm) {
-                return [
-                    'success' => false,
-                    'message' => str_replace(':food', $meal->name, config('mobile_entry_messages.error.food_already_in_forms'))
-                ];
-            }
-            
-            // Add to database
-            try {
-                MobileFoodForm::create([
-                    'user_id' => $userId,
-                    'date' => $selectedDate->toDateString(),
-                    'type' => $type,
-                    'item_id' => $id,
-                    'item_name' => $meal->name
-                ]);
-            } catch (\Illuminate\Database\QueryException $e) {
-                // Handle unique constraint violation
-                if ($e->getCode() === '23000') {
-                    return [
-                        'success' => false,
-                        'message' => "{$meal->name} is already added to your forms."
-                    ];
-                }
-                throw $e;
-            }
-            
-            return [
-                'success' => true,
-                'message' => ''
-            ];
-        }
-        
+        // Deprecated: Return error message
         return [
             'success' => false,
-            'message' => config('mobile_entry_messages.error.food_not_found')
+            'message' => 'This feature has been deprecated. Please use the direct navigation instead.'
         ];
     }
 
@@ -887,55 +772,37 @@ class FoodLogService extends MobileEntryBaseService
     /**
      * Remove a food form from the interface
      * 
+     * @deprecated This method is deprecated. Food logging now uses direct navigation like lifts.
      * @param int $userId
      * @param string $formId Form ID (format: ingredient-{id} or meal-{id})
      * @return array Result with success/error status and message
      */
     public function removeFoodForm($userId, $formId)
     {
-        // Extract type and id from formId (e.g., "ingredient-123" or "meal-456")
-        if (preg_match('/^(ingredient|meal)-(\d+)$/', $formId, $matches)) {
-            $type = $matches[1];
-            $id = $matches[2];
-            
-            $form = MobileFoodForm::where('user_id', $userId)
-                ->where('type', $type)
-                ->where('item_id', $id)
-                ->first();
-            
-            if ($form) {
-                $itemName = $form->item_name;
-                $form->delete();
-                
-                return [
-                    'success' => true,
-                    'message' => str_replace(':food', $itemName, config('mobile_entry_messages.success.food_form_removed'))
-                ];
-            }
-        }
-        
+        // Deprecated: Return error message
         return [
             'success' => false,
-            'message' => config('mobile_entry_messages.error.food_form_not_found')
+            'message' => 'This feature has been deprecated. Please use the direct navigation instead.'
         ];
     }
 
     /**
      * Clean up old mobile food forms for a user (keep only last 3 days)
      * 
+     * @deprecated This method is deprecated. Mobile food forms table has been removed.
      * @param int $userId
      * @param Carbon $currentDate
      */
     public function cleanupOldForms($userId, Carbon $currentDate)
     {
-        MobileFoodForm::where('user_id', $userId)
-            ->where('date', '<', $currentDate->copy()->subDays(3))
-            ->delete();
+        // Deprecated: Table no longer exists
+        return;
     }
 
     /**
      * Remove a specific form after successful logging
      * 
+     * @deprecated This method is deprecated. Mobile food forms table has been removed.
      * @param int $userId
      * @param string $type
      * @param int $itemId
@@ -944,33 +811,8 @@ class FoodLogService extends MobileEntryBaseService
      */
     public function removeFormAfterLogging($userId, $type, $itemId, Carbon $date)
     {
-        $form = MobileFoodForm::where('user_id', $userId)
-            ->where('type', $type)
-            ->where('item_id', $itemId)
-            ->whereDate('date', $date->toDateString())
-            ->first();
-            
-        if ($form) {
-            \Log::info("Removing mobile food form after successful logging", [
-                'user_id' => $userId,
-                'type' => $type,
-                'item_id' => $itemId,
-                'item_name' => $form->item_name,
-                'date' => $date->toDateString()
-            ]);
-            
-            $form->delete();
-            return true;
-        }
-        
-        \Log::warning("Mobile food form not found for removal", [
-            'user_id' => $userId,
-            'type' => $type,
-            'item_id' => $itemId,
-            'date' => $date->toDateString()
-        ]);
-        
-        return false;
+        // Deprecated: Table no longer exists
+        return true;
     }
 
     /**
@@ -984,41 +826,20 @@ class FoodLogService extends MobileEntryBaseService
     {
         $messages = [];
         
-        // Check if user has any food forms for today
-        $formCount = MobileFoodForm::forUserAndDate($userId, $selectedDate)->count();
-            
         // Check if user has logged any food today
         $loggedCount = FoodLog::where('user_id', $userId)
             ->whereDate('logged_at', $selectedDate->toDateString())
             ->count();
         
-        if ($formCount === 0 && $loggedCount === 0) {
-            // First time user or no food items added yet
+        if ($loggedCount === 0) {
+            // No food logged yet today
             $messages[] = [
                 'type' => 'info',
                 'prefix' => 'Getting started:',
                 'text' => config('mobile_entry_messages.contextual_help.getting_started_food')
             ];
-        } elseif ($formCount > 0 && $loggedCount === 0) {
-            // Has food items ready but hasn't logged anything
-            $plural = $formCount > 1 ? 's' : '';
-            $text = str_replace([':count', ':plural'], [$formCount, $plural], config('mobile_entry_messages.contextual_help.ready_to_log_food'));
-            $messages[] = [
-                'type' => 'tip',
-                'prefix' => 'Ready to log:',
-                'text' => $text
-            ];
-        } elseif ($formCount > 0 && $loggedCount > 0) {
-            // Has logged some but has more forms to complete
-            $plural = $formCount > 1 ? 's' : '';
-            $text = str_replace([':count', ':plural'], [$formCount, $plural], config('mobile_entry_messages.contextual_help.keep_logging_food'));
-            $messages[] = [
-                'type' => 'info',
-                'prefix' => 'Keep going:',
-                'text' => $text
-            ];
-        } elseif ($loggedCount > 0) {
-            // Has logged food but no pending forms
+        } else {
+            // Has logged food today
             $messages[] = [
                 'type' => 'success',
                 'prefix' => 'Great tracking:',

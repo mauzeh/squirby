@@ -117,8 +117,8 @@ Route::middleware('auth')->group(function () {
     
     // Food Entry Helper Routes
     Route::post('mobile-entry/create-ingredient', [MobileEntryController::class, 'createIngredient'])->name('mobile-entry.create-ingredient');
-    Route::get('mobile-entry/add-food-form/{type}/{id}', [MobileEntryController::class, 'addFoodForm'])->name('mobile-entry.add-food-form');
-    Route::delete('mobile-entry/remove-food-form/{id}', [MobileEntryController::class, 'removeFoodForm'])->name('mobile-entry.remove-food-form');
+    Route::get('food-logs/create/ingredient/{ingredient}', [FoodLogController::class, 'createIngredientForm'])->name('food-logs.create-ingredient');
+    Route::get('food-logs/create/meal/{meal}', [FoodLogController::class, 'createMealForm'])->name('food-logs.create-meal');
 
     // Labs - Component-Based Architecture Examples
     Route::get('labs/with-nav', [LabsController::class, 'withDateNavigation'])->name('labs.with-nav');

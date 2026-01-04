@@ -336,11 +336,10 @@ class MobileEntryController extends Controller
             }
         }
         
-        // Clean up old forms to prevent database bloat
+        // Clean up old forms to prevent database bloat (deprecated - will be removed)
         $formService->cleanupOldForms(Auth::id(), $selectedDate);
         
-        // Generate forms based on selected items or quick entries
-        $forms = $formService->generateForms(Auth::id(), $selectedDate, $request);
+        // No forms generated - users navigate directly to create forms like lifts
         
         // Generate logged items using the service
         $loggedItems = $formService->generateLoggedItems(Auth::id(), $selectedDate);
@@ -435,8 +434,7 @@ class MobileEntryController extends Controller
         
         $components[] = $itemListBuilder->build();
         
-        // Forms
-        $components = array_merge($components, $forms);
+        // No forms section - users navigate directly to create forms
         
         // Logged items
         $components[] = $loggedItems;
@@ -447,29 +445,6 @@ class MobileEntryController extends Controller
         ];
 
         return view('mobile-entry.flexible', compact('data'));
-    }
-
-    /**
-     * Add a form for a specific food item to the mobile interface
-     * 
-     * @param Request $request
-     * @param FoodLogService $formService
-     * @param string $type 'ingredient' or 'meal'
-     * @param int $id Food item ID
-     * @return \Illuminate\Http\RedirectResponse
-     */
-    public function addFoodForm(Request $request, FoodLogService $formService, $type, $id)
-    {
-        $selectedDate = $request->input('date') 
-            ? \Carbon\Carbon::parse($request->input('date')) 
-            : \Carbon\Carbon::today();
-        
-        $result = $formService->addFoodForm(Auth::id(), $type, $id, $selectedDate);
-        
-        $messageType = $result['success'] ? 'success' : 'error';
-        
-        return redirect()->route('mobile-entry.foods', ['date' => $selectedDate->toDateString()])
-            ->with($messageType, $result['message']);
     }
 
     /**
@@ -491,28 +466,6 @@ class MobileEntryController extends Controller
             : \Carbon\Carbon::today();
         
         $result = $formService->createIngredient(Auth::id(), $request->input('ingredient_name'), $selectedDate);
-        
-        $messageType = $result['success'] ? 'success' : 'error';
-        
-        return redirect()->route('mobile-entry.foods', ['date' => $selectedDate->toDateString()])
-            ->with($messageType, $result['message']);
-    }
-
-    /**
-     * Remove a food form from the mobile interface
-     * 
-     * @param Request $request
-     * @param FoodLogService $formService
-     * @param string $id Form ID
-     * @return \Illuminate\Http\RedirectResponse
-     */
-    public function removeFoodForm(Request $request, FoodLogService $formService, $id)
-    {
-        $selectedDate = $request->input('date') 
-            ? \Carbon\Carbon::parse($request->input('date')) 
-            : \Carbon\Carbon::today();
-        
-        $result = $formService->removeFoodForm(Auth::id(), $id);
         
         $messageType = $result['success'] ? 'success' : 'error';
         
