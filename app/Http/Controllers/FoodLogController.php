@@ -55,7 +55,7 @@ class FoodLogController extends Controller
             : route('mobile-entry.foods');
             
         $title = \App\Services\ComponentBuilder::title($ingredient->name, 'Log Ingredient')
-            ->backButton($backUrl, 'Back to Food Log')
+            ->backButton('fa-arrow-left', $backUrl, 'Back to Food Log')
             ->build();
         
         return view('mobile-entry.flexible', [
@@ -86,7 +86,7 @@ class FoodLogController extends Controller
             : route('mobile-entry.foods');
             
         $title = \App\Services\ComponentBuilder::title($meal->name, 'Log Meal')
-            ->backButton($backUrl, 'Back to Food Log')
+            ->backButton('fa-arrow-left', $backUrl, 'Back to Food Log')
             ->build();
         
         return view('mobile-entry.flexible', [
