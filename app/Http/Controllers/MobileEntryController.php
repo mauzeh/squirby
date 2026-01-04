@@ -399,9 +399,10 @@ class MobileEntryController extends Controller
         }
         
         // Add Food button
-        $components[] = \App\Services\ComponentBuilder::button('Add Food')
+        $components[] = \App\Services\ComponentBuilder::button('Log Now')
             ->ariaLabel('Add new food item')
             ->addClass('btn-add-item')
+            ->icon('fa-plus')
             ->build();
         
         // Item selection list

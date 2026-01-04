@@ -108,7 +108,7 @@ class LiftsRenderingTest extends TestCase
         // Test with expand_selection explicitly false
         $responseFalse = $this->actingAs($user)->get(route('mobile-entry.lifts', ['expand_selection' => false]));
         $responseFalse->assertOk();
-        $responseFalse->assertSee('to choose what you want to work out today.', false);
+        $responseFalse->assertSee('to begin!', false);
         $responseFalse->assertDontSee(config('mobile_entry_messages.contextual_help.pick_exercise'), false);
         $responseFalse->assertSee('Log Now');
         $responseFalse->assertSee('<div class="component-button-section"', false);
@@ -118,7 +118,7 @@ class LiftsRenderingTest extends TestCase
         $responseAbsent = $this->actingAs($user)->get(route('mobile-entry.lifts'));
         $responseAbsent->assertOk();
 
-        $responseAbsent->assertSee('to choose what you want to work out today.', false);
+        $responseAbsent->assertSee('to begin!', false);
         $responseAbsent->assertDontSee(config('mobile_entry_messages.contextual_help.pick_exercise'), false);
         $responseAbsent->assertSee('Log Now');
         $responseAbsent->assertSee('<div class="component-button-section"', false);

@@ -995,7 +995,7 @@ class FoodLogService extends MobileEntryBaseService
         if ($formCount === 0 && $loggedCount === 0) {
             // First time user or no food items added yet
             $messages[] = [
-                'type' => 'tip',
+                'type' => 'info',
                 'prefix' => 'Getting started:',
                 'text' => config('mobile_entry_messages.contextual_help.getting_started_food')
             ];

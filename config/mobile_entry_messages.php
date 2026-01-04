@@ -34,7 +34,7 @@ return [
         // Food-specific success messages
         'food_added' => ':food added! Now scroll down to log your intake - adjust the quantity and tap \'Log :food\' when ready.',
         'ingredient_created' => 'Created \':ingredient\'! Now scroll down to log your first entry - update the nutrition info and quantity as needed.',
-        'food_form_removed' => 'Removed :food. You can add it back anytime using \'Add Food\' below.',
+        'food_form_removed' => 'Removed :food. You can add it back anytime using \'Log Now\' below.',
         
         'food_logged' => [
             'Tasty! :food: :details logged!',
@@ -73,14 +73,14 @@ return [
     ],
 
     'empty_states' => [
-        'no_workouts_logged' => 'No workouts logged yet! Add lifts above to get started.',
+        'no_workouts_logged' => '',
         'no_exercises_found' => 'No exercises found',
         'metrics_getting_started' => 'This page will come alive with your training history, personal records, and 1RM calculations once you log your first lift. Let\'s get started!',
         'no_measurements_logged' => 'No measurements logged yet today!',
         'no_measurement_types_found' => 'No measurement types found. Create measurement types first.',
         
         // Food-specific empty states
-        'no_food_logged' => 'No food logged yet today! Add ingredients or meals above to get started.',
+        'no_food_logged' => '',
         'no_food_items_found' => 'No food items found',
     ],
 
@@ -100,17 +100,17 @@ return [
     ],
 
     'contextual_help' => [
-        'getting_started' => 'Tap "Log Now" below to choose what you want to work out today.',
+        'getting_started' => 'Tap "Log Now" below to begin!',
         'pick_exercise' => 'Choose an exercise from the list below to begin logging.',
         'ready_to_log' => 'You have :count exercise:plural ready to log below.',
         'keep_going' => 'Great progress! You have :count more exercise:plural to log.',
         'workout_complete' => 'All lifts completed! Tap "Log Now" below if you want to keep going.',
         
         // Food-specific contextual help
-        'getting_started_food' => 'Tap "Add Food" below to choose what you want to log today.',
+        'getting_started_food' => 'Tap "Log Now" below to begin!',
         'ready_to_log_food' => 'You have :count food item:plural ready to log below.',
         'keep_logging_food' => 'Great tracking! You have :count more food item:plural to log.',
-        'daily_logging_complete' => 'Nice work logging your food! Tap "Add Food" below to log more items.',
+        'daily_logging_complete' => 'Nice work logging your food! Tap "Log Now" below to log more items.',
     ],
 
     'placeholders' => [
