@@ -67,7 +67,10 @@ class MealIngredientListService
             $itemListBuilder->item(
                 $item['id'],
                 $item['name'],
-                $item['href']
+                $item['href'],
+                'Ingredient',
+                'ingredient',
+                3
             );
         }
 
@@ -117,7 +120,10 @@ class MealIngredientListService
             $itemListBuilder->item(
                 $item['id'],
                 $item['name'],
-                $item['href']
+                $item['href'],
+                'Ingredient',
+                'ingredient',
+                3
             );
         }
 
@@ -161,40 +167,29 @@ class MealIngredientListService
         }
 
         $formBuilder = C::form('quantity-form', $title)
-            ->action($action)
-            ->method($method);
+            ->formAction($action);
 
         // Add ingredient info
-        $formBuilder->info('Ingredient: ' . $ingredient->name);
+        $formBuilder->message('info', 'Ingredient: ' . $ingredient->name);
         
         if ($ingredient->baseUnit) {
-            $formBuilder->info('Base unit: ' . $ingredient->baseUnit->name);
+            $formBuilder->message('info', 'Base unit: ' . $ingredient->baseUnit->name);
         }
 
         // Hidden ingredient ID field
-        $formBuilder->hidden('ingredient_id', $ingredient->id);
+        $formBuilder->hiddenField('ingredient_id', $ingredient->id);
 
         // If creating a new meal, add meal name field
         if (!$meal) {
-            $formBuilder->text('meal_name', 'Meal Name')
-                ->placeholder('Enter meal name')
-                ->required();
+            $formBuilder->textField('meal_name', 'Meal Name', '', 'Enter meal name');
         }
 
         // Quantity field
-        $quantityField = $formBuilder->number('quantity', 'Quantity')
-            ->placeholder('Enter quantity')
-            ->step(0.01)
-            ->min(0.01)
-            ->required();
-
-        if ($currentQuantity) {
-            $quantityField->value($currentQuantity);
-        }
+        $formBuilder->numericField('quantity', 'Quantity', $currentQuantity ?: '', 0.01, 0.01);
 
         // Submit button
         $buttonText = $isEditing ? 'Update Quantity' : 'Add to Meal';
-        $formBuilder->submit($buttonText);
+        $formBuilder->submitButton($buttonText);
 
         return $formBuilder->build();
     }

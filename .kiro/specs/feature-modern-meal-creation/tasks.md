@@ -21,15 +21,15 @@ This implementation replaces the existing meal creation system with a modern, co
   - Test quantity form generation
   - _Requirements: 3.1, 3.2, 3.5_
 
-- [ ] 2. Create SimpleMealController
-- [ ] 2.1 Implement core CRUD methods
+- [x] 2. Create SimpleMealController
+- [x] 2.1 Implement core CRUD methods
   - Create `index()` method using flexible components (keep existing implementation from MealController)
   - Create `create()` method with ingredient selection using MealIngredientListService
   - Create `edit()` method with meal builder interface
   - Create `destroy()` method with proper authorization
   - _Requirements: 1.1, 4.1, 4.2_
 
-- [ ] 2.2 Implement ingredient management methods
+- [x] 2.2 Implement ingredient management methods
   - Create `addIngredient()` method to show quantity form
   - Create `storeIngredient()` method to add ingredient with quantity (handles meal creation for first ingredient)
   - Create `updateQuantity()` method for editing existing ingredient quantities
@@ -37,13 +37,13 @@ This implementation replaces the existing meal creation system with a modern, co
   - Handle duplicate ingredient prevention
   - _Requirements: 1.2, 1.3, 1.5, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 4.4_
 
-- [ ] 2.3 Add SimpleMealController routes to web.php
+- [x] 2.3 Add SimpleMealController routes to web.php
   - Add core meal routes (index, create, edit, destroy) pointing to SimpleMealController
   - Add ingredient management routes (add-ingredient, store-ingredient, edit-quantity, remove-ingredient)
   - Ensure route names maintain compatibility where possible
   - _Requirements: 5.4_
 
-- [ ] 2.4 Write unit tests for SimpleMealController
+- [x] 2.4 Write unit tests for SimpleMealController
   - Test CRUD methods
   - Test ingredient management methods
   - Test authorization and validation
