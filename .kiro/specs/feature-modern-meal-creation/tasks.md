@@ -62,21 +62,21 @@ This implementation replaces the existing meal creation system with a modern, co
   - Test display formatting and accuracy
   - _Requirements: 7.4_
 
-- [ ] 4. Remove old meal system components
-- [ ] 4.1 Delete old MealController and associated blade views
+- [x] 4. Remove old meal system components
+- [x] 4.1 Delete old MealController and associated blade views
   - Remove `app/Http/Controllers/MealController.php`
   - Remove `resources/views/meals/create.blade.php`
   - Remove `resources/views/meals/edit.blade.php`
   - Remove any other meal-related blade templates
   - _Requirements: 5.4_
 
-- [ ] 4.2 Remove tests for old meal system
+- [x] 4.2 Remove tests for old meal system
   - Remove any existing tests that test the old MealController
   - Remove any tests for the old blade views
   - Clean up test files that are no longer needed
   - _Requirements: 5.4_
 
-- [ ] 5. Checkpoint - Ensure all tests pass
+- [x] 5. Checkpoint - Ensure all tests pass
 - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 6. Final integration and testing
