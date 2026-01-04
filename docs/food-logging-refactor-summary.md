@@ -74,7 +74,9 @@ Refactored the food logging flow to match the lift logging UX pattern, removing 
 - Old routes removed but new routes provide equivalent functionality
 - **Breaking Change**: `mobile_food_forms` table and related functionality completely removed
 
-## Testing Recommendations
+## Testing Strategy
+
+### Manual Testing Checklist
 1. Test ingredient logging flow: select ingredient → form page → submit → redirect
 2. Test meal logging flow: select meal → form page → submit → redirect  
 3. Test date navigation with food logging
@@ -82,38 +84,60 @@ Refactored the food logging flow to match the lift logging UX pattern, removing 
 5. Test inline ingredient creation
 6. Verify no forms appear on main foods page
 7. Test edit functionality for existing food logs
+8. Test validation error display at page level
 
-## Test Suite Impact Analysis
+### Test Suite Updates Required
 
-**Critical Tests Requiring Updates:**
+**Existing Tests Needing Updates (~15-20 tests):**
 
-**1. Mobile Entry Food Tests (3 files)**
-- `FoodsSummaryVisibilityTest.php` - Tests mobile-entry.foods page behavior, needs updates for no-forms flow
-- `FoodLogEditTest.php` - Tests mobile-entry.foods integration, edit/delete buttons, and meal logging redirects
-- `RedirectServiceTest.php` - Tests mobile-entry.foods redirects
+**Mobile Entry Food Tests (3 files)**
+- `FoodsSummaryVisibilityTest.php` - Update for no-forms flow on main page
+- `FoodLogEditTest.php` - Update mobile-entry.foods integration and redirects
+- `RedirectServiceTest.php` - Update mobile-entry.foods redirect expectations
 
-**2. Route & Navigation Tests**
-- Tests expecting old routes (`mobile-entry/add-food-form`, `mobile-entry/remove-food-form`) need updates to new routes (`food-logs/create/ingredient/{id}`, `food-logs/create/meal/{id}`)
-- Back button tests may need updates for new navigation flow
+**Route & Navigation Tests**
+- Update tests expecting old routes (`mobile-entry/add-food-form`, `mobile-entry/remove-food-form`) to new routes (`food-logs/create/ingredient/{id}`, `food-logs/create/meal/{id}`)
+- Update back button tests for new navigation flow
 
-**3. Form & Validation Tests**
-- Tests expecting forms on main mobile-entry.foods page need updates since forms are now on separate pages
-- Validation error display tests need updates for new page-level error handling pattern
+**Form & Validation Tests**
+- Update tests expecting forms on main mobile-entry.foods page (forms now on separate pages)
+- Update validation error display tests for new page-level error handling pattern
 
-**4. Integration Tests**
-- Tests checking for form components on mobile-entry.foods page will fail (forms removed)
-- Tests verifying mobile food form database interactions need removal/updates
-- Meal logging workflow tests need updates for new direct navigation pattern
+**Integration Tests**
+- Remove assertions checking for form components on mobile-entry.foods page
+- Remove/update tests for deprecated MobileFoodForm database interactions
+- Update meal logging workflow tests for direct navigation pattern
 
-**Key Changes Needed:**
-- Update assertions expecting forms on main foods page
-- Add tests for new ingredient/meal form pages
-- Update route expectations in existing tests
-- Verify validation error display at page level
-- Test new back button navigation
-- Remove tests for deprecated MobileFoodForm functionality
+### New Test Coverage Needed
 
-**Estimated Impact:** ~15-20 tests need updates, mostly in mobile entry and food logging areas.
+**New Route Tests**
+- `food-logs/create/ingredient/{ingredient}` and `food-logs/create/meal/{meal}` page loading
+- Route parameter validation and authorization (invalid IDs, unauthorized access)
+
+**Direct Navigation Flow Tests**
+- Complete ingredient/meal logging workflows with date parameter preservation
+- redirect_to parameter handling through new navigation flow
+
+**Form Page Component Tests**
+- Correct title structure ("Log Ingredient/Meal" + item name)
+- Back button functionality and URL generation
+- Validation error display at page level
+- Form submission with hidden time fields
+
+**UX Consistency Tests**
+- No forms on main mobile-entry.foods page
+- Item selection list uses new direct navigation URLs
+- Form and page titles display correctly
+
+**Error Handling Tests**
+- 404/403 handling for non-existent or unauthorized items
+- Validation error display matches lift logging pattern
+- Graceful handling of missing ingredient base units
+
+**Recommended New Test Files:**
+- `tests/Feature/FoodLoggingDirectNavigationTest.php` - Complete workflow tests
+- `tests/Feature/FoodFormPageTest.php` - Individual form page tests
+- `tests/Unit/FoodLogServiceRefactorTest.php` - Service method tests
 
 ## Future Cleanup
 - Remove deprecated methods after confirming no usage
