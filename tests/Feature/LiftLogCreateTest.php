@@ -424,6 +424,99 @@ class LiftLogCreateTest extends TestCase
     }
 
     /** @test */
+    public function validation_errors_are_displayed_on_create_form()
+    {
+        $exercise = Exercise::factory()->create(['user_id' => $this->user->id]);
+
+        // Manually set up the session with validation errors to simulate the redirect
+        $errors = new \Illuminate\Support\MessageBag([
+            'reps' => 'The reps field must be at least 1',
+            'rounds' => 'The rounds field must be at least 1'
+        ]);
+        session(['errors' => $errors]);
+        
+        // Now get the form page which should display the errors
+        $response = $this->get(route('lift-logs.create', [
+            'exercise_id' => $exercise->id,
+            'date' => Carbon::today()->toDateString()
+        ]));
+
+        // Verify validation errors are displayed in the UI
+        $response->assertSee('The reps field must be at least 1');
+        $response->assertSee('The rounds field must be at least 1');
+    }
+
+    /** @test */
+    public function multiple_validation_errors_are_displayed_as_separate_messages()
+    {
+        $exercise = Exercise::factory()->create(['user_id' => $this->user->id]);
+
+        // Manually set up multiple validation errors
+        $errors = new \Illuminate\Support\MessageBag([
+            'reps' => 'The reps field is required',
+            'rounds' => 'The rounds field is required'
+        ]);
+        session(['errors' => $errors]);
+        
+        // Get the form page which should display the errors
+        $response = $this->get(route('lift-logs.create', [
+            'exercise_id' => $exercise->id,
+            'date' => Carbon::today()->toDateString()
+        ]));
+
+        // Should show each error as a separate message
+        $response->assertSee('The reps field is required');
+        $response->assertSee('The rounds field is required');
+    }
+
+    /** @test */
+    public function single_validation_error_is_displayed_as_single_message()
+    {
+        $exercise = Exercise::factory()->create(['user_id' => $this->user->id]);
+
+        // Manually set up a single validation error
+        $errors = new \Illuminate\Support\MessageBag([
+            'reps' => 'The reps field must be at least 1'
+        ]);
+        session(['errors' => $errors]);
+        
+        // Get the form page which should display the error
+        $response = $this->get(route('lift-logs.create', [
+            'exercise_id' => $exercise->id,
+            'date' => Carbon::today()->toDateString()
+        ]));
+
+        // Single error should be displayed
+        $response->assertSee('The reps field must be at least 1');
+    }
+
+    /** @test */
+    public function validation_errors_are_displayed_alongside_other_session_messages()
+    {
+        $exercise = Exercise::factory()->create(['user_id' => $this->user->id]);
+
+        // Set both an info message and validation errors
+        session(['info' => 'This is some helpful information']);
+        
+        $errors = new \Illuminate\Support\MessageBag([
+            'reps' => 'The reps field must be at least 1',
+            'rounds' => 'The rounds field must be at least 1'
+        ]);
+        session(['errors' => $errors]);
+        
+        // Get the form page which should display both messages and errors
+        $response = $this->get(route('lift-logs.create', [
+            'exercise_id' => $exercise->id,
+            'date' => Carbon::today()->toDateString()
+        ]));
+
+        // Should show both the info message and validation errors
+        $response->assertSee('This is some helpful information');
+        $response->assertSee('The reps field must be at least 1');
+        $response->assertSee('The rounds field must be at least 1');
+    }
+
+    /** @test */
     public function submitting_lift_log_validates_minimum_values()
     {
         $exercise = Exercise::factory()->create(['user_id' => $this->user->id]);

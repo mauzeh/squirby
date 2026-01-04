@@ -81,6 +81,17 @@ class ComponentBuilder
             $hasMessages = true;
         }
         
+        // Check for validation errors
+        if (session('errors') && session('errors')->any()) {
+            $errors = session('errors');
+            
+            // Add each validation error as a separate error message
+            foreach ($errors->all() as $error) {
+                $builder->error($error);
+                $hasMessages = true;
+            }
+        }
+        
         return $hasMessages ? $builder->build() : null;
     }
     
