@@ -37,70 +37,63 @@ This implementation replaces the existing meal creation system with a modern, co
   - Handle duplicate ingredient prevention
   - _Requirements: 1.2, 1.3, 1.5, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 4.4_
 
-- [ ] 2.3 Write unit tests for SimpleMealController
+- [ ] 2.3 Add SimpleMealController routes to web.php
+  - Add core meal routes (index, create, edit, destroy) pointing to SimpleMealController
+  - Add ingredient management routes (add-ingredient, store-ingredient, edit-quantity, remove-ingredient)
+  - Ensure route names maintain compatibility where possible
+  - _Requirements: 5.4_
+
+- [ ] 2.4 Write unit tests for SimpleMealController
   - Test CRUD methods
   - Test ingredient management methods
   - Test authorization and validation
   - Test meal deletion when last ingredient removed
   - _Requirements: 1.1, 1.2, 1.3, 2.1, 2.2, 2.3, 4.1, 4.2, 4.4_
 
-- [ ] 3. Update routing configuration
-- [ ] 3.1 Replace meal routes in web.php
-  - Remove existing MealController resource routes
-  - Add new SimpleMealController routes following SimpleWorkoutController pattern
-  - Ensure route names maintain compatibility where possible
-  - _Requirements: 5.4_
-
-- [ ] 3.2 Write integration tests for routing
-  - Test all new routes are accessible
-  - Test route parameter binding works correctly
-  - Test authorization middleware is applied
-  - _Requirements: 5.4_
-
-- [ ] 4. Implement nutritional information display
-- [ ] 4.1 Add nutritional information to meal views
+- [ ] 3. Implement nutritional information display
+- [ ] 3.1 Add nutritional information to meal views
   - Display nutritional totals in meal index (already exists in current MealController)
   - Show nutritional information in meal edit interface
   - Use existing NutritionService for calculations
   - _Requirements: 7.4_
 
-- [ ] 4.2 Write unit tests for nutritional display
+- [ ] 3.2 Write unit tests for nutritional display
   - Test nutritional calculation integration
   - Test display formatting and accuracy
   - _Requirements: 7.4_
 
-- [ ] 5. Remove old meal system components
-- [ ] 5.1 Delete old MealController and associated blade views
+- [ ] 4. Remove old meal system components
+- [ ] 4.1 Delete old MealController and associated blade views
   - Remove `app/Http/Controllers/MealController.php`
   - Remove `resources/views/meals/create.blade.php`
   - Remove `resources/views/meals/edit.blade.php`
   - Remove any other meal-related blade templates
   - _Requirements: 5.4_
 
-- [ ] 5.2 Remove tests for old meal system
+- [ ] 4.2 Remove tests for old meal system
   - Remove any existing tests that test the old MealController
   - Remove any tests for the old blade views
   - Clean up test files that are no longer needed
   - _Requirements: 5.4_
 
-- [ ] 6. Checkpoint - Ensure all tests pass
+- [ ] 5. Checkpoint - Ensure all tests pass
 - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 7. Final integration and testing
-- [ ] 7.1 Test complete user workflows
+- [ ] 6. Final integration and testing
+- [ ] 6.1 Test complete user workflows
   - Test meal creation from start to finish
   - Test meal editing and ingredient management
   - Test meal deletion and cleanup
   - Verify compatibility with existing addMealToLog functionality
   - _Requirements: 1.1, 1.2, 1.3, 2.1, 2.2, 2.3, 4.1, 4.2, 5.1, 5.2, 5.5_
 
-- [ ] 7.2 Write integration tests for complete workflows
+- [ ] 6.2 Write integration tests for complete workflows
   - Test end-to-end meal creation process
   - Test meal editing with multiple ingredients
   - Test compatibility with existing meal logging
   - _Requirements: 5.2_
 
-- [ ] 8. Final checkpoint - Ensure all tests pass
+- [ ] 7. Final checkpoint - Ensure all tests pass
 - Ensure all tests pass, ask the user if questions arise.
 
 ## Notes
