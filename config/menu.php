@@ -54,13 +54,13 @@ return [
                 ],
                 [
                     'label' => 'Meals',
-                    'icon' => 'fa-plate-wheat',
+                    'icon' => 'fa-list',
                     'route' => 'meals.index',
                     'patterns' => ['meals.*'],
                 ],
                 [
                     'label' => 'Ingredients',
-                    'icon' => 'fa-carrot',
+                    'icon' => 'fa-apple-alt',
                     'route' => 'ingredients.index',
                     'patterns' => ['ingredients.*'],
                 ],
