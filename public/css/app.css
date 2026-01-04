@@ -136,6 +136,11 @@ a {
 .navbar button.icon-only i.menu-icon {
     margin-right: 0;
 }
+
+/* Remove right margin for top-level nav items (icons are above text, not beside) */
+.navbar a.top-level-nav-item i.menu-icon {
+    margin-right: 0;
+}
 .env-bar {
     color: white;
     text-align: center;
