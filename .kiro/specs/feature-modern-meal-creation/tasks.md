@@ -26,10 +26,6 @@ This implementation replaces the existing meal creation system with a modern, co
   - Implement ingredient list table generation for meals
   - _Requirements: 6.2, 6.3_
 
-- [ ] 2.2 Write property test for ingredient list generation
-  - **Property 3: Ingredient list display and filtering**
-  - **Validates: Requirements 3.1, 3.2, 3.5**
-
 - [ ] 2.3 Write unit tests for MealIngredientListService
   - Test component generation methods
   - Test ingredient filtering and sorting
@@ -57,13 +53,9 @@ This implementation replaces the existing meal creation system with a modern, co
   - Handle duplicate ingredient prevention
   - _Requirements: 1.2, 1.3, 1.5, 2.1, 2.2, 2.3_
 
-- [ ] 4.2 Write property test for duplicate prevention
-  - **Property 2: Duplicate ingredient prevention**
-  - **Validates: Requirements 1.5**
 
-- [ ] 4.3 Write property test for data consistency
-  - **Property 1: Data consistency across ingredient operations**
-  - **Validates: Requirements 1.4, 2.5, 4.3, 4.5**
+
+
 
 - [ ] 4.4 Create updateQuantity and removeIngredient methods
   - Implement quantity editing with pre-filled forms
@@ -100,13 +92,9 @@ This implementation replaces the existing meal creation system with a modern, co
   - Maintain all existing meal fields and relationships
   - _Requirements: 5.1, 5.2, 5.5_
 
-- [ ]* 7.2 Write property test for system compatibility
-  - **Property 5: System compatibility preservation**
-  - **Validates: Requirements 5.1, 5.2, 5.3, 5.4, 5.5**
 
-- [ ] 7.3 Write property test for edit interface consistency
-  - **Property 4: Edit interface consistency**
-  - **Validates: Requirements 4.1, 4.2**
+
+
 
 - [ ] 8. Implement nutritional information display
 - [ ] 8.1 Add nutritional information to meal views
@@ -115,9 +103,7 @@ This implementation replaces the existing meal creation system with a modern, co
   - Use existing NutritionService for calculations
   - _Requirements: 7.4_
 
-- [ ]* 8.2 Write property test for nutritional information
-  - **Property 6: Nutritional information display**
-  - **Validates: Requirements 7.4**
+
 
 - [ ]* 8.3 Write unit tests for nutritional display
   - Test nutritional calculation integration
@@ -145,6 +131,5 @@ This implementation replaces the existing meal creation system with a modern, co
 - Tasks marked with `*` are optional and can be skipped for faster MVP
 - Each task references specific requirements for traceability
 - Checkpoints ensure incremental validation
-- Property tests validate universal correctness properties
 - Unit tests validate specific examples and edge cases
 - The implementation completely replaces the existing meal system rather than extending it
