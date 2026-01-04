@@ -41,6 +41,45 @@ class SimpleMealControllerTest extends TestCase
     }
 
     /** @test */
+    public function index_displays_nutritional_information_for_meals()
+    {
+        $ingredient = Ingredient::factory()->create([
+            'user_id' => $this->user->id,
+            'base_unit_id' => $this->unit->id,
+            'protein' => 15,
+            'carbs' => 30,
+            'fats' => 8,
+            'cost_per_unit' => 3.00,
+            'base_quantity' => 100
+        ]);
+
+        $meal = Meal::factory()->create([
+            'user_id' => $this->user->id,
+            'name' => 'Nutritious Meal'
+        ]);
+        $meal->ingredients()->attach($ingredient->id, ['quantity' => 100]);
+
+        $response = $this->get(route('meals.index'));
+
+        $response->assertOk();
+        
+        $data = $response->viewData('data');
+        
+        // Check for table component with nutritional badges
+        $tableComponent = collect($data['components'])->firstWhere('type', 'table');
+        $this->assertNotNull($tableComponent);
+        
+        // The table should contain nutritional information as badges
+        // Calories = (15*4) + (30*4) + (8*9) = 60 + 120 + 72 = 252
+        $tableData = json_encode($tableComponent);
+        $this->assertStringContainsString('252 cal', $tableData);
+        $this->assertStringContainsString('15g P', $tableData);
+        $this->assertStringContainsString('30g C', $tableData);
+        $this->assertStringContainsString('8g F', $tableData);
+        $this->assertStringContainsString('$3.00', $tableData);
+    }
+
+    /** @test */
     public function create_displays_ingredient_selection_interface()
     {
         $ingredient = Ingredient::factory()->create([
@@ -97,6 +136,70 @@ class SimpleMealControllerTest extends TestCase
         $titleComponent = collect($data['components'])->firstWhere('type', 'title');
         $this->assertNotNull($titleComponent);
         $this->assertStringContainsString('Edit Meal: Test Meal', $titleComponent['data']['main']);
+    }
+
+    /** @test */
+    public function edit_displays_nutritional_information_when_meal_has_ingredients()
+    {
+        $ingredient = Ingredient::factory()->create([
+            'user_id' => $this->user->id,
+            'base_unit_id' => $this->unit->id,
+            'protein' => 10,
+            'carbs' => 20,
+            'fats' => 5,
+            'cost_per_unit' => 2.50,
+            'base_quantity' => 100
+        ]);
+
+        $meal = Meal::factory()->create([
+            'user_id' => $this->user->id,
+            'name' => 'Test Meal'
+        ]);
+        $meal->ingredients()->attach($ingredient->id, ['quantity' => 100]);
+
+        $response = $this->get(route('meals.edit', $meal->id));
+
+        $response->assertOk();
+        
+        $data = $response->viewData('data');
+        
+        // Check for nutritional information message component
+        $nutritionComponent = collect($data['components'])->firstWhere('type', 'messages');
+        $this->assertNotNull($nutritionComponent);
+        
+        $nutritionMessage = $nutritionComponent['data']['messages'][0]['text'];
+        $this->assertStringContainsString('Nutritional Information:', $nutritionMessage);
+        // Calories = (10*4) + (20*4) + (5*9) = 40 + 80 + 45 = 165
+        $this->assertStringContainsString('165 cal', $nutritionMessage);
+        $this->assertStringContainsString('10g protein', $nutritionMessage);
+        $this->assertStringContainsString('20g carbs', $nutritionMessage);
+        $this->assertStringContainsString('5g fat', $nutritionMessage);
+        $this->assertStringContainsString('$2.50 cost', $nutritionMessage);
+    }
+
+    /** @test */
+    public function edit_does_not_display_nutritional_information_when_meal_has_no_ingredients()
+    {
+        $meal = Meal::factory()->create([
+            'user_id' => $this->user->id,
+            'name' => 'Empty Meal'
+        ]);
+
+        $response = $this->get(route('meals.edit', $meal->id));
+
+        $response->assertOk();
+        
+        $data = $response->viewData('data');
+        
+        // Check that there's no nutritional information message
+        $components = collect($data['components']);
+        $nutritionComponents = $components->filter(function ($component) {
+            return $component['type'] === 'messages' && 
+                   isset($component['data']['messages'][0]['text']) &&
+                   str_contains($component['data']['messages'][0]['text'], 'Nutritional Information:');
+        });
+        
+        $this->assertTrue($nutritionComponents->isEmpty());
     }
 
     /** @test */

@@ -50,14 +50,14 @@ This implementation replaces the existing meal creation system with a modern, co
   - Test meal deletion when last ingredient removed
   - _Requirements: 1.1, 1.2, 1.3, 2.1, 2.2, 2.3, 4.1, 4.2, 4.4_
 
-- [ ] 3. Implement nutritional information display
-- [ ] 3.1 Add nutritional information to meal views
+- [x] 3. Implement nutritional information display
+- [x] 3.1 Add nutritional information to meal views
   - Display nutritional totals in meal index (already exists in current MealController)
   - Show nutritional information in meal edit interface
   - Use existing NutritionService for calculations
   - _Requirements: 7.4_
 
-- [ ] 3.2 Write unit tests for nutritional display
+- [x] 3.2 Write unit tests for nutritional display
   - Test nutritional calculation integration
   - Test display formatting and accuracy
   - _Requirements: 7.4_

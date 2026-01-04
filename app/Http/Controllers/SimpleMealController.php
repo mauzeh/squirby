@@ -135,6 +135,23 @@ class SimpleMealController extends Controller
             $components[] = $messagesComponent;
         }
 
+        // Calculate and display nutritional information if meal has ingredients
+        $meal->load('ingredients');
+        if ($meal->ingredients->isNotEmpty()) {
+            $totalMacros = $this->nutritionService->calculateFoodLogTotals($meal->ingredients);
+            
+            $nutritionComponent = C::messages()
+                ->info('Nutritional Information: ' . 
+                    round($totalMacros['calories']) . ' cal, ' .
+                    round($totalMacros['protein']) . 'g protein, ' .
+                    round($totalMacros['carbs']) . 'g carbs, ' .
+                    round($totalMacros['fats']) . 'g fat, ' .
+                    '$' . number_format($totalMacros['cost'], 2) . ' cost'
+                )
+                ->build();
+            $components[] = $nutritionComponent;
+        }
+
         // Current ingredients table
         $ingredientTable = $this->ingredientListService->generateIngredientListTable($meal);
         $components[] = $ingredientTable;
