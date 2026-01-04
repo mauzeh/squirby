@@ -58,7 +58,6 @@
 @media (max-width: 768px) {
     .interface-messages {
         margin-bottom: var(--spacing-md);
-        padding: 0 var(--spacing-sm);
     }
 
     .interface-message {
@@ -69,8 +68,7 @@
 
 @media (max-width: 480px) {
     .interface-messages {
-        margin-bottom: var(--spacing-sm);
-        padding: 0 var(--spacing-xs);
+        padding: 0;
     }
 
     .interface-message {
