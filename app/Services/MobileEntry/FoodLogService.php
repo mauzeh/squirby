@@ -45,7 +45,7 @@ class FoodLogService extends MobileEntryBaseService
             'method' => 'POST',
             'ingredient_id' => $ingredient->id,
             'date' => $selectedDate->toDateString(),
-            'logged_at' => $selectedDate->format('H:i'),
+            'logged_at' => now()->format('H:i'), // Use current time
             'quantity' => $lastLog ? $lastLog->quantity : 1,
             'notes' => '',
             'unit' => $ingredient->baseUnit,
@@ -111,7 +111,7 @@ class FoodLogService extends MobileEntryBaseService
             'method' => 'POST',
             'meal_id' => $meal->id,
             'meal_date' => $selectedDate->toDateString(),
-            'logged_at_meal' => $selectedDate->format('H:i'),
+            'logged_at_meal' => now()->format('H:i'), // Use current time
             'portion' => $defaultPortion,
             'notes' => '',
             'redirect_to' => $redirectTo ?: 'mobile-entry.foods'
@@ -173,18 +173,16 @@ class FoodLogService extends MobileEntryBaseService
             ->type('success')
             ->formAction($formData['action']);
 
-        // Add hidden fields
+        // Add hidden fields (including time)
         $formBuilder->hiddenField('ingredient_id', $formData['ingredient_id']);
         $formBuilder->hiddenField('date', $formData['date']);
+        $formBuilder->hiddenField('logged_at', $formData['logged_at']); // Hidden time field
         $formBuilder->hiddenField('redirect_to', $formData['redirect_to']);
 
         // Add messages
         foreach ($messages as $message) {
             $formBuilder->message($message['type'], $message['text'], $message['prefix'] ?? null);
         }
-
-        // Time field (as text field since we don't have time field)
-        $formBuilder->textField('logged_at', 'Time', $formData['logged_at']);
 
         // Quantity field
         $unitName = $formData['unit']->name ?? 'unit';
@@ -212,18 +210,16 @@ class FoodLogService extends MobileEntryBaseService
             ->type('success')
             ->formAction($formData['action']);
 
-        // Add hidden fields
+        // Add hidden fields (including time)
         $formBuilder->hiddenField('meal_id', $formData['meal_id']);
         $formBuilder->hiddenField('meal_date', $formData['meal_date']);
+        $formBuilder->hiddenField('logged_at_meal', $formData['logged_at_meal']); // Hidden time field
         $formBuilder->hiddenField('redirect_to', $formData['redirect_to']);
 
         // Add messages
         foreach ($messages as $message) {
             $formBuilder->message($message['type'], $message['text'], $message['prefix'] ?? null);
         }
-
-        // Time field (as text field since we don't have time field)
-        $formBuilder->textField('logged_at_meal', 'Time', $formData['logged_at_meal']);
 
         // Portion field
         $formBuilder->numericField('portion', 'Servings', $formData['portion'], 0.1, 0.1, 10);
