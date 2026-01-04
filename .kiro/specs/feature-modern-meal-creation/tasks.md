@@ -6,8 +6,8 @@ This implementation replaces the existing meal creation system with a modern, co
 
 ## Tasks
 
-- [ ] 1. Create MealIngredientListService
-- [ ] 1.1 Implement MealIngredientListService class
+- [x] 1. Create MealIngredientListService
+- [x] 1.1 Implement MealIngredientListService class
   - Create service class following WorkoutExerciseListService pattern
   - Implement `generateIngredientSelectionList()` method for existing meals
   - Implement `generateIngredientSelectionListForNew()` method for new meal creation
@@ -15,7 +15,7 @@ This implementation replaces the existing meal creation system with a modern, co
   - Implement `generateIngredientListTable()` method for meal editing interface
   - _Requirements: 3.1, 3.2, 3.5, 6.2, 6.3_
 
-- [ ] 1.2 Write unit tests for MealIngredientListService
+- [x] 1.2 Write unit tests for MealIngredientListService
   - Test component generation methods
   - Test ingredient filtering and sorting
   - Test quantity form generation
