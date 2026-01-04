@@ -336,8 +336,7 @@ class MobileEntryController extends Controller
             }
         }
         
-        // Clean up old forms to prevent database bloat (deprecated - will be removed)
-        $formService->cleanupOldForms(Auth::id(), $selectedDate);
+        // No cleanup needed - forms are no longer persisted in database
         
         // No forms generated - users navigate directly to create forms like lifts
         

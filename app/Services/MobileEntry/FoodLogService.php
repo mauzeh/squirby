@@ -521,51 +521,6 @@ class FoodLogService extends MobileEntryBaseService
     }
 
     /**
-     * Generate forms based on request parameters and database data
-     * 
-     * @deprecated This method is deprecated. Food logging now uses direct navigation like lifts.
-     * @param int $userId
-     * @param Carbon $selectedDate
-     * @param \Illuminate\Http\Request $request
-     * @return array
-     */
-    public function generateForms($userId, Carbon $selectedDate, $request)
-    {
-        // Deprecated: Return empty array as forms are no longer generated on the main page
-        return [];
-    }
-
-    /**
-     * Generate a form for a specific ingredient
-     * 
-     * @deprecated This method is deprecated. Use generateIngredientCreateForm instead.
-     * @param int $userId
-     * @param int $ingredientId
-     * @param Carbon $selectedDate
-     * @return array|null
-     */
-    public function generateIngredientForm($userId, $ingredientId, Carbon $selectedDate)
-    {
-        // Deprecated: Return null
-        return null;
-    }
-
-    /**
-     * Generate a form for a specific meal
-     * 
-     * @deprecated This method is deprecated. Use generateMealCreateForm instead.
-     * @param int $userId
-     * @param int $mealId
-     * @param Carbon $selectedDate
-     * @return array|null
-     */
-    public function generateMealForm($userId, $mealId, Carbon $selectedDate)
-    {
-        // Deprecated: Return null
-        return null;
-    }
-
-    /**
      * Get last session data for an ingredient
      * 
      * @param int $ingredientId
@@ -704,25 +659,6 @@ class FoodLogService extends MobileEntryBaseService
     }
 
     /**
-     * Add a food form by finding the ingredient/meal and storing it in database
-     * 
-     * @deprecated This method is deprecated. Food logging now uses direct navigation like lifts.
-     * @param int $userId
-     * @param string $type 'ingredient' or 'meal'
-     * @param int $id Ingredient or Meal ID
-     * @param Carbon $selectedDate
-     * @return array Result with success/error status and message
-     */
-    public function addFoodForm($userId, $type, $id, Carbon $selectedDate)
-    {
-        // Deprecated: Return error message
-        return [
-            'success' => false,
-            'message' => 'This feature has been deprecated. Please use the direct navigation instead.'
-        ];
-    }
-
-    /**
      * Create a new ingredient
      * 
      * @param int $userId
@@ -770,52 +706,6 @@ class FoodLogService extends MobileEntryBaseService
             'success' => true,
             'message' => str_replace(':ingredient', $ingredient->name, config('mobile_entry_messages.success.ingredient_created'))
         ];
-    }
-
-    /**
-     * Remove a food form from the interface
-     * 
-     * @deprecated This method is deprecated. Food logging now uses direct navigation like lifts.
-     * @param int $userId
-     * @param string $formId Form ID (format: ingredient-{id} or meal-{id})
-     * @return array Result with success/error status and message
-     */
-    public function removeFoodForm($userId, $formId)
-    {
-        // Deprecated: Return error message
-        return [
-            'success' => false,
-            'message' => 'This feature has been deprecated. Please use the direct navigation instead.'
-        ];
-    }
-
-    /**
-     * Clean up old mobile food forms for a user (keep only last 3 days)
-     * 
-     * @deprecated This method is deprecated. Mobile food forms table has been removed.
-     * @param int $userId
-     * @param Carbon $currentDate
-     */
-    public function cleanupOldForms($userId, Carbon $currentDate)
-    {
-        // Deprecated: Table no longer exists
-        return;
-    }
-
-    /**
-     * Remove a specific form after successful logging
-     * 
-     * @deprecated This method is deprecated. Mobile food forms table has been removed.
-     * @param int $userId
-     * @param string $type
-     * @param int $itemId
-     * @param Carbon $date
-     * @return bool
-     */
-    public function removeFormAfterLogging($userId, $type, $itemId, Carbon $date)
-    {
-        // Deprecated: Table no longer exists
-        return true;
     }
 
     /**

@@ -169,14 +169,6 @@ class FoodLogController extends Controller
 
         // Handle mobile entry redirects
         if ($request->has('redirect_to') && in_array($request->input('redirect_to'), ['mobile-entry', 'mobile-entry-foods'])) {
-            // Remove the mobile food form after successful logging
-            $this->foodLogService->removeFormAfterLogging(
-                auth()->id(),
-                'ingredient',
-                $validated['ingredient_id'],
-                $loggedAtDate
-            );
-
             // Generate celebratory message
             $celebratoryMessage = $this->generateCelebratoryMessage($logEntry);
 
@@ -301,14 +293,6 @@ class FoodLogController extends Controller
 
         // Handle mobile entry redirects
         if ($request->has('redirect_to') && in_array($request->input('redirect_to'), ['mobile-entry', 'mobile-entry-foods'])) {
-            // Remove the mobile food form after successful logging
-            $this->foodLogService->removeFormAfterLogging(
-                auth()->id(),
-                'meal',
-                $validated['meal_id'],
-                $selectedDate
-            );
-
             // Generate celebratory message for meal
             $celebratoryMessage = $this->generateMealCelebratoryMessage($meal, $validated['portion']);
 
