@@ -601,4 +601,146 @@ class SimpleMealControllerTest extends TestCase
         $response->assertRedirect();
         $response->assertSessionHas('error', 'Ingredient not found.');
     }
+
+    /** @test */
+    public function ingredient_creation_redirects_back_to_meal_edit_when_coming_from_meal_ingredient_selection()
+    {
+        $meal = Meal::factory()->create(['user_id' => $this->user->id]);
+
+        // Simulate creating an ingredient from the meal ingredient selection tool
+        $ingredientData = [
+            'name' => 'New Test Ingredient',
+            'protein' => 20,
+            'carbs' => 5,
+            'fats' => 10,
+            'base_quantity' => 100,
+            'base_unit_id' => $this->unit->id,
+            'cost_per_unit' => 2.50,
+            // These are the redirect parameters that would be sent from the meal ingredient selection
+            'redirect_to' => 'meals.edit',
+            'meal_id' => $meal->id,
+        ];
+
+        $response = $this->post(route('ingredients.store'), $ingredientData);
+
+        // Should redirect to the quantity form to add the ingredient to the meal
+        $ingredient = Ingredient::where('name', 'New Test Ingredient')->first();
+        $response->assertRedirect(route('meals.add-ingredient', [
+            'meal' => $meal->id,
+            'ingredient' => $ingredient->id
+        ]));
+        $response->assertSessionHas('success', 'Ingredient created successfully! Now specify the quantity to add to your meal.');
+
+        // Verify the ingredient was actually created
+        $this->assertDatabaseHas('ingredients', [
+            'name' => 'New Test Ingredient',
+            'user_id' => $this->user->id,
+            'protein' => 20,
+            'carbs' => 5,
+            'fats' => 10,
+        ]);
+    }
+
+    /** @test */
+    public function ingredient_creation_redirects_to_ingredients_index_when_not_coming_from_meal_selection()
+    {
+        // Create ingredient without redirect parameters (normal ingredient creation)
+        $ingredientData = [
+            'name' => 'Regular Test Ingredient',
+            'protein' => 15,
+            'carbs' => 8,
+            'fats' => 12,
+            'base_quantity' => 100,
+            'base_unit_id' => $this->unit->id,
+            'cost_per_unit' => 1.75,
+        ];
+
+        $response = $this->post(route('ingredients.store'), $ingredientData);
+
+        // Should redirect to ingredients index with normal success message
+        $response->assertRedirect(route('ingredients.index'));
+        $response->assertSessionHas('success', 'Ingredient created successfully.');
+
+        // Verify the ingredient was actually created
+        $this->assertDatabaseHas('ingredients', [
+            'name' => 'Regular Test Ingredient',
+            'user_id' => $this->user->id,
+            'protein' => 15,
+            'carbs' => 8,
+            'fats' => 12,
+        ]);
+    }
+
+    /** @test */
+    public function complete_ingredient_creation_workflow_from_meal_ingredient_selection()
+    {
+        $meal = Meal::factory()->create(['user_id' => $this->user->id]);
+
+        // Step 1: User goes to meal edit page
+        $response = $this->get(route('meals.edit', $meal->id));
+        $response->assertOk();
+
+        // Step 2: User clicks "Create New Ingredient Name" from ingredient selection
+        $response = $this->get(route('ingredients.create', [
+            'name' => 'Test New Ingredient',
+            'redirect_to' => 'meals.edit',
+            'meal_id' => $meal->id
+        ]));
+        $response->assertOk();
+        $response->assertViewIs('mobile-entry.flexible');
+
+        // Step 3: User fills out and submits the ingredient creation form
+        $ingredientData = [
+            'name' => 'Test New Ingredient',
+            'protein' => 25,
+            'carbs' => 10,
+            'fats' => 15,
+            'base_quantity' => 100,
+            'base_unit_id' => $this->unit->id,
+            'cost_per_unit' => 3.50,
+            'redirect_to' => 'meals.edit',
+            'meal_id' => $meal->id,
+        ];
+
+        $response = $this->post(route('ingredients.store'), $ingredientData);
+
+        // Step 4: User should be redirected to quantity form to add ingredient to meal
+        $ingredient = Ingredient::where('name', 'Test New Ingredient')->first();
+        $response->assertRedirect(route('meals.add-ingredient', [
+            'meal' => $meal->id,
+            'ingredient' => $ingredient->id
+        ]));
+        $response->assertSessionHas('success', 'Ingredient created successfully! Now specify the quantity to add to your meal.');
+
+        // Step 5: Verify the ingredient was created
+        $this->assertDatabaseHas('ingredients', [
+            'name' => 'Test New Ingredient',
+            'user_id' => $this->user->id,
+            'protein' => 25,
+            'carbs' => 10,
+            'fats' => 15,
+        ]);
+
+        // Step 6: User fills out quantity form and adds ingredient to meal
+        $response = $this->post(route('meals.store-ingredient', $meal->id), [
+            'ingredient_id' => $ingredient->id,
+            'quantity' => 150
+        ]);
+
+        // Step 7: User should be redirected back to meal edit page
+        $response->assertRedirect(route('meals.edit', $meal->id));
+        $response->assertSessionHas('success', 'Ingredient added!');
+
+        // Step 8: Verify the ingredient was added to the meal
+        $this->assertDatabaseHas('meal_ingredients', [
+            'meal_id' => $meal->id,
+            'ingredient_id' => $ingredient->id,
+            'quantity' => 150
+        ]);
+
+        // Step 9: Verify user can see the ingredient in the meal
+        $response = $this->get(route('meals.edit', $meal->id));
+        $response->assertOk();
+        $response->assertSee('Test New Ingredient');
+    }
 }

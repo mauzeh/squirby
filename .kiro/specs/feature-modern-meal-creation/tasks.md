@@ -114,6 +114,30 @@ This implementation replaces the existing meal creation system with a modern, co
   - Updated routes to remove "new meal" ingredient routes
   - All 33 tests now passing with new simplified flow
 
+- [x] 9. **AUTO-EXPAND INGREDIENT LIST**: Enhanced UX for empty meals
+- **UX IMPROVEMENT**: Automatically expand ingredient selection list when meals have no ingredients
+  - Modified SimpleMealController edit method to check if meal is empty
+  - Combined auto-expand logic with existing manual expand functionality
+  - Empty meals now show expanded ingredient list immediately for better UX
+  - Meals with ingredients keep collapsed list (user must click "Add Ingredient")
+  - All 35 tests passing with new auto-expand functionality
+
+- [x] 10. **IMPROVED MESSAGING**: Better user guidance
+- **UX IMPROVEMENT**: Made messages more user-friendly and action-oriented
+  - Changed "No ingredients in this meal yet." to "Add ingredients above to build your meal."
+  - Only show ingredient table when meal has ingredients (removed redundant empty table)
+  - Message now appears contextually and guides user action
+  - All tests updated and passing
+
+- [x] 11. **INGREDIENT CREATION BUG FIX**: Fixed redirect issue in ingredient selection tool
+- **BUG FIX**: Fixed ingredient creation not working from meal ingredient selection
+  - **Root Cause**: IngredientController::store was ignoring redirect parameters from meal ingredient selection
+  - **Solution**: Modified store method to check for redirect_to and meal_id parameters
+  - **Behavior**: When creating ingredient from meal selection, redirects back to meal edit page with success message
+  - **Fallback**: Normal ingredient creation (without redirect params) still goes to ingredients.index
+  - **Testing**: Added comprehensive tests to verify both redirect scenarios work correctly
+  - All 37 SimpleMeal tests passing, including 2 new tests for ingredient creation redirect functionality
+
 ## Notes
 
 - All tasks are now completed with the new simplified meal creation flow
@@ -124,3 +148,4 @@ This implementation replaces the existing meal creation system with a modern, co
 - Current MealController index() method already uses flexible components and can be preserved
 - Follow WorkoutExerciseListService and SimpleWorkoutController patterns for consistency
 - **NEW FLOW**: Users now create meals with just a name first, then add ingredients on the edit page - much more intuitive!
+- **INGREDIENT CREATION**: Fixed the ingredient selection tool so users can create new ingredients directly from meal editing interface

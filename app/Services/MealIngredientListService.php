@@ -76,11 +76,11 @@ class MealIngredientListService
 
         // Add create form for new ingredients
         $itemListBuilder->createForm(
-            route('ingredients.store'),
+            route('ingredients.create', ['redirect_to' => 'meals.edit', 'meal_id' => $meal->id]),
             'name',
-            ['redirect_to' => 'meals.edit', 'meal_id' => $meal->id],
+            [],
             'Create "{term}"',
-            'POST'
+            'GET'
         );
 
         return $itemListBuilder->build();
