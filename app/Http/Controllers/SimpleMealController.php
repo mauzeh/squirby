@@ -222,6 +222,20 @@ class SimpleMealController extends Controller
         
         $components = [];
         
+        // Title with back button
+        if ($meal) {
+            // Adding to existing meal
+            $components[] = C::title('Add ' . $ingredient->name)
+                ->subtitle('to ' . $meal->name)
+                ->backButton('fa-arrow-left', route('meals.edit', $meal->id), 'Back to meal')
+                ->build();
+        } else {
+            // Creating new meal
+            $components[] = C::title('Create Meal')
+                ->backButton('fa-arrow-left', route('meals.create'), 'Back to ingredient selection')
+                ->build();
+        }
+        
         // Add session messages if they exist
         $messagesComponent = C::messagesFromSession();
         if ($messagesComponent) {
@@ -348,6 +362,12 @@ class SimpleMealController extends Controller
 
         // Generate quantity form with current value
         $components = [];
+        
+        // Title with back button
+        $components[] = C::title('Edit ' . $ingredient->name)
+            ->subtitle('in ' . $meal->name)
+            ->backButton('fa-arrow-left', route('meals.edit', $meal->id), 'Back to meal')
+            ->build();
         
         // Add session messages if they exist
         $messagesComponent = C::messagesFromSession();
