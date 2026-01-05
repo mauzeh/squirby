@@ -426,58 +426,6 @@ class SimpleMealControllerTest extends TestCase
     }
 
     /** @test */
-    public function update_quantity_shows_form_on_get_request()
-    {
-        $ingredient = Ingredient::factory()->create([
-            'user_id' => $this->user->id,
-            'base_unit_id' => $this->unit->id
-        ]);
-
-        $meal = Meal::factory()->create([
-            'user_id' => $this->user->id,
-            'name' => 'Test Meal'
-        ]);
-        $meal->ingredients()->attach($ingredient->id, ['quantity' => 100]);
-
-        $response = $this->get(route('meals.edit-quantity', [$meal->id, $ingredient->id]));
-
-        $response->assertOk();
-        $response->assertViewIs('mobile-entry.flexible');
-        
-        $data = $response->viewData('data');
-        $formComponent = collect($data['components'])->firstWhere('type', 'form');
-        $this->assertNotNull($formComponent);
-    }
-
-    /** @test */
-    public function update_quantity_updates_on_post_request()
-    {
-        $ingredient = Ingredient::factory()->create([
-            'user_id' => $this->user->id,
-            'base_unit_id' => $this->unit->id
-        ]);
-
-        $meal = Meal::factory()->create([
-            'user_id' => $this->user->id,
-            'name' => 'Test Meal'
-        ]);
-        $meal->ingredients()->attach($ingredient->id, ['quantity' => 100]);
-
-        $response = $this->post(route('meals.edit-quantity', [$meal->id, $ingredient->id]), [
-            'quantity' => 250
-        ]);
-
-        $this->assertDatabaseHas('meal_ingredients', [
-            'meal_id' => $meal->id,
-            'ingredient_id' => $ingredient->id,
-            'quantity' => 250
-        ]);
-
-        $response->assertRedirect(route('meals.edit', $meal->id));
-        $response->assertSessionHas('success', 'Quantity updated!');
-    }
-
-    /** @test */
     public function remove_ingredient_removes_from_meal()
     {
         $ingredient1 = Ingredient::factory()->create([

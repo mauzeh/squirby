@@ -70,8 +70,6 @@ Route::middleware('auth')->group(function () {
         ->name('meals.add-ingredient');
     Route::post('meals/{meal}/store-ingredient', [SimpleMealController::class, 'storeIngredient'])
         ->name('meals.store-ingredient');
-    Route::match(['get', 'post'], 'meals/{meal}/ingredients/{ingredient}/edit-quantity', [SimpleMealController::class, 'updateQuantity'])
-        ->name('meals.edit-quantity');
     Route::delete('meals/{meal}/ingredients/{ingredient}', [SimpleMealController::class, 'removeIngredient'])
         ->name('meals.remove-ingredient');
 

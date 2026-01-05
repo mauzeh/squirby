@@ -95,7 +95,7 @@
                     {{-- Legacy format: edit/delete only --}}
                     @if(!empty($row['editAction']))
                     <a href="{{ $row['editAction'] }}" class="btn-table-edit" aria-label="{{ $data['ariaLabels']['editItem'] ?? 'Edit item' }}">
-                        <i class="fas fa-edit"></i>
+                        <i class="fas fa-pencil"></i>
                     </a>
                     @endif
                     @if(!empty($row['deleteAction']))
@@ -190,7 +190,7 @@
                             {{-- Legacy format --}}
                             @if(!empty($subItem['editAction']))
                             <a href="{{ $subItem['editAction'] }}" class="btn-table-edit" aria-label="{{ $data['ariaLabels']['editItem'] ?? 'Edit item' }}">
-                                <i class="fas fa-edit"></i>
+                                <i class="fas fa-pencil"></i>
                             </a>
                             @endif
                             @if(!empty($subItem['deleteAction']))

@@ -250,16 +250,24 @@ class SimpleMealIntegrationTest extends TestCase
         ]);
         $response->assertRedirect(route('meals.edit', $meal->id));
 
-        // Modify existing ingredient quantities
-        // Increase chicken
-        $response = $this->post(route('meals.edit-quantity', [$meal->id, $protein->id]), [
+        // Modify existing ingredient quantities using remove-and-re-add workflow
+        // Increase chicken (remove and re-add with new quantity)
+        $response = $this->delete(route('meals.remove-ingredient', [$meal->id, $protein->id]));
+        $response->assertRedirect(route('meals.edit', $meal->id));
+        
+        $response = $this->post(route('meals.store-ingredient', $meal->id), [
+            'ingredient_id' => $protein->id,
             'quantity' => 180
         ]);
         $response->assertRedirect(route('meals.edit', $meal->id));
-        $response->assertSessionHas('success', 'Quantity updated!');
+        $response->assertSessionHas('success', 'Ingredient added!');
 
-        // Decrease rice
-        $response = $this->post(route('meals.edit-quantity', [$meal->id, $carb->id]), [
+        // Decrease rice (remove and re-add with new quantity)
+        $response = $this->delete(route('meals.remove-ingredient', [$meal->id, $carb->id]));
+        $response->assertRedirect(route('meals.edit', $meal->id));
+        
+        $response = $this->post(route('meals.store-ingredient', $meal->id), [
+            'ingredient_id' => $carb->id,
             'quantity' => 60
         ]);
         $response->assertRedirect(route('meals.edit', $meal->id));
@@ -537,11 +545,6 @@ class SimpleMealIntegrationTest extends TestCase
             'name' => 'Edge Case Meal'
         ]);
 
-        // Test updating quantity for non-existent ingredient in meal
-        $response = $this->get(route('meals.edit-quantity', [$meal->id, $ingredient->id]));
-        $response->assertRedirect(route('meals.edit', $meal->id));
-        $response->assertSessionHas('error', 'Ingredient not found in meal.');
-
         // Test removing non-existent ingredient from meal
         $response = $this->delete(route('meals.remove-ingredient', [$meal->id, $ingredient->id]));
         $response->assertRedirect(route('meals.edit', $meal->id));
@@ -591,8 +594,12 @@ class SimpleMealIntegrationTest extends TestCase
             'quantity' => 50
         ]);
 
-        // Update quantities
-        $response = $this->post(route('meals.edit-quantity', [$meal->id, $ingredients[0]->id]), [
+        // Update quantities using remove-and-re-add workflow
+        $response = $this->delete(route('meals.remove-ingredient', [$meal->id, $ingredients[0]->id]));
+        $response->assertRedirect(route('meals.edit', $meal->id));
+        
+        $response = $this->post(route('meals.store-ingredient', $meal->id), [
+            'ingredient_id' => $ingredients[0]->id,
             'quantity' => 75
         ]);
         $response->assertRedirect(route('meals.edit', $meal->id));

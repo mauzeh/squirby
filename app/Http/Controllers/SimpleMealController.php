@@ -204,7 +204,10 @@ class SimpleMealController extends Controller
 
         // Current ingredients table - only show if meal has ingredients
         if ($meal->ingredients->isNotEmpty()) {
-            $ingredientTable = $this->ingredientListService->generateIngredientListTable($meal);
+            $ingredientTable = $this->ingredientListService->generateIngredientListTable($meal, [
+                'showDeleteButtons' => true,
+                'compactMode' => true,
+            ]);
             $components[] = $ingredientTable;
         }
 
@@ -333,89 +336,6 @@ class SimpleMealController extends Controller
         return redirect()
             ->route('meals.edit', $meal->id)
             ->with('success', 'Ingredient added!');
-    }
-
-    /**
-     * Show form for editing existing ingredient quantity
-     */
-    public function updateQuantity(Request $request, Meal $meal, $ingredientId)
-    {
-        if ($meal->user_id !== Auth::id()) {
-            abort(403, 'Unauthorized action.');
-        }
-
-        $ingredient = Ingredient::where('id', $ingredientId)
-            ->where('user_id', Auth::id())
-            ->first();
-        
-        if (!$ingredient) {
-            return redirect()->back()->with('error', 'Ingredient not found.');
-        }
-
-        // Get current quantity from pivot table
-        $mealIngredient = $meal->ingredients()->where('ingredient_id', $ingredient->id)->first();
-        
-        if (!$mealIngredient) {
-            return redirect()
-                ->route('meals.edit', $meal->id)
-                ->with('error', 'Ingredient not found in meal.');
-        }
-
-        $currentQuantity = $mealIngredient->pivot->quantity;
-
-        // If this is a POST request, update the quantity
-        if ($request->isMethod('post')) {
-            $validated = $request->validate([
-                'quantity' => 'required|numeric|min:0.01',
-            ]);
-
-            $meal->ingredients()->updateExistingPivot($ingredient->id, [
-                'quantity' => $validated['quantity']
-            ]);
-
-            return redirect()
-                ->route('meals.edit', $meal->id)
-                ->with('success', 'Quantity updated!');
-        }
-
-        // Generate quantity form with current value
-        $components = [];
-        
-        // Title with back button
-        $components[] = C::title('Edit ' . $ingredient->name)
-            ->subtitle('in ' . $meal->name)
-            ->backButton('fa-arrow-left', route('meals.edit', $meal->id), 'Back to meal')
-            ->build();
-        
-        // Add helpful info message
-        $components[] = C::messages()
-            ->info('Update the quantity of ' . $ingredient->name . ' in your meal. Current amount: ' . $currentQuantity . ' ' . ($ingredient->baseUnit ? $ingredient->baseUnit->name : 'units') . '.')
-            ->build();
-        
-        // Add session messages if they exist
-        $messagesComponent = C::messagesFromSession();
-        if ($messagesComponent) {
-            $components[] = $messagesComponent;
-        }
-        
-        // Add validation error messages as individual messages
-        if ($errors = session('errors')) {
-            $errorMessages = C::messages();
-            
-            if ($errors->has('quantity')) {
-                $errorMessages->error($errors->first('quantity'));
-            }
-            
-            // Only add if there are validation errors
-            if ($errors->has('quantity')) {
-                $components[] = $errorMessages->build();
-            }
-        }
-        
-        $form = $this->ingredientListService->generateQuantityForm($ingredient, $meal, $currentQuantity);
-        $components[] = $form;
-        
-        return view('mobile-entry.flexible', ['data' => ['components' => $components]]);
     }
 
     /**

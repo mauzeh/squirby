@@ -91,27 +91,17 @@ class MealIngredientListService
     }
 
     /**
-     * Generate quantity form component for ingredient quantity input
+     * Generate quantity form component for adding ingredient to meal
      * 
      * @param Ingredient $ingredient
-     * @param Meal|null $meal
-     * @param float|null $currentQuantity
+     * @param Meal $meal
      * @return array Form component data
      */
-    public function generateQuantityForm(Ingredient $ingredient, Meal $meal, ?float $currentQuantity = null): array
+    public function generateQuantityForm(Ingredient $ingredient, Meal $meal): array
     {
-        $isEditing = $currentQuantity !== null;
-        
-        // Determine form action
-        if ($isEditing) {
-            $action = route('meals.edit-quantity', [$meal->id, $ingredient->id]);
-        } else {
-            $action = route('meals.store-ingredient', $meal->id);
-        }
-
         // Create form without title
         $formBuilder = C::form('quantity-form', '')
-            ->formAction($action);
+            ->formAction(route('meals.store-ingredient', $meal->id));
 
         // Hidden ingredient ID field
         $formBuilder->hiddenField('ingredient_id', $ingredient->id);
@@ -124,11 +114,10 @@ class MealIngredientListService
         if ($ingredient->baseUnit) {
             $quantityLabel .= ' (' . $ingredient->baseUnit->name . ')';
         }
-        $formBuilder->numericField('quantity', $quantityLabel, $currentQuantity ?: '', 0.01, 0.01);
+        $formBuilder->numericField('quantity', $quantityLabel, '', 0.01, 0.01);
 
         // Submit button
-        $buttonText = $isEditing ? 'Update Quantity' : 'Add to Meal';
-        $formBuilder->submitButton($buttonText);
+        $formBuilder->submitButton('Add to Meal');
 
         return $formBuilder->build();
     }
@@ -144,7 +133,6 @@ class MealIngredientListService
     {
         // Default options
         $options = array_merge([
-            'showEditButtons' => true,
             'showDeleteButtons' => true,
             'compactMode' => true,
         ], $options);
@@ -180,16 +168,6 @@ class MealIngredientListService
             
             if ($options['compactMode']) {
                 $rowBuilder->compact();
-            }
-            
-            // Add edit button if enabled
-            if ($options['showEditButtons']) {
-                $rowBuilder->linkAction(
-                    'fa-edit',
-                    route('meals.edit-quantity', [$meal->id, $ingredient->id]),
-                    'Edit quantity',
-                    'btn-transparent'
-                );
             }
             
             // Add delete button if enabled

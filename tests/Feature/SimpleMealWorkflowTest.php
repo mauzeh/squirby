@@ -212,17 +212,33 @@ class SimpleMealWorkflowTest extends TestCase
         ]);
         $response->assertRedirect(route('meals.edit', $meal->id));
 
-        // Step 3: Update quantity of existing ingredient
-        $response = $this->get(route('meals.edit-quantity', [$meal->id, $ingredient1->id]));
+        // Step 3: Change quantity by removing and re-adding ingredient (new workflow)
+        // Remove the ingredient first
+        $response = $this->delete(route('meals.remove-ingredient', [$meal->id, $ingredient1->id]));
+        $response->assertRedirect(route('meals.edit', $meal->id));
+        $response->assertSessionHas('success', 'Ingredient removed from meal.');
+
+        // Verify ingredient was removed
+        $this->assertDatabaseMissing('meal_ingredients', [
+            'meal_id' => $meal->id,
+            'ingredient_id' => $ingredient1->id
+        ]);
+
+        // Re-add the ingredient with new quantity
+        $response = $this->get(route('meals.add-ingredient', [
+            'meal' => $meal->id,
+            'ingredient' => $ingredient1->id
+        ]));
         $response->assertOk();
 
-        $response = $this->post(route('meals.edit-quantity', [$meal->id, $ingredient1->id]), [
+        $response = $this->post(route('meals.store-ingredient', $meal->id), [
+            'ingredient_id' => $ingredient1->id,
             'quantity' => 200
         ]);
         $response->assertRedirect(route('meals.edit', $meal->id));
-        $response->assertSessionHas('success', 'Quantity updated!');
+        $response->assertSessionHas('success', 'Ingredient added!');
 
-        // Verify quantity was updated
+        // Verify ingredient was re-added with new quantity
         $this->assertDatabaseHas('meal_ingredients', [
             'meal_id' => $meal->id,
             'ingredient_id' => $ingredient1->id,
