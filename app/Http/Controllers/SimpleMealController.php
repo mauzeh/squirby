@@ -220,10 +220,39 @@ class SimpleMealController extends Controller
                 ->with('warning', 'Ingredient already in meal.');
         }
         
+        $components = [];
+        
+        // Add session messages if they exist
+        $messagesComponent = C::messagesFromSession();
+        if ($messagesComponent) {
+            $components[] = $messagesComponent;
+        }
+        
+        // Add validation error messages as individual messages
+        if ($errors = session('errors')) {
+            $errorMessages = C::messages();
+            
+            if ($errors->has('ingredient_id')) {
+                $errorMessages->error($errors->first('ingredient_id'));
+            }
+            if ($errors->has('quantity')) {
+                $errorMessages->error($errors->first('quantity'));
+            }
+            if ($errors->has('meal_name')) {
+                $errorMessages->error($errors->first('meal_name'));
+            }
+            
+            // Only add if there are validation errors
+            if ($errors->has('ingredient_id') || $errors->has('quantity') || $errors->has('meal_name')) {
+                $components[] = $errorMessages->build();
+            }
+        }
+        
         // Generate quantity form
         $form = $this->ingredientListService->generateQuantityForm($ingredient, $meal);
+        $components[] = $form;
         
-        return view('mobile-entry.flexible', ['data' => ['components' => [$form]]]);
+        return view('mobile-entry.flexible', ['data' => ['components' => $components]]);
     }
 
     /**
@@ -318,9 +347,32 @@ class SimpleMealController extends Controller
         }
 
         // Generate quantity form with current value
-        $form = $this->ingredientListService->generateQuantityForm($ingredient, $meal, $currentQuantity);
+        $components = [];
         
-        return view('mobile-entry.flexible', ['data' => ['components' => [$form]]]);
+        // Add session messages if they exist
+        $messagesComponent = C::messagesFromSession();
+        if ($messagesComponent) {
+            $components[] = $messagesComponent;
+        }
+        
+        // Add validation error messages as individual messages
+        if ($errors = session('errors')) {
+            $errorMessages = C::messages();
+            
+            if ($errors->has('quantity')) {
+                $errorMessages->error($errors->first('quantity'));
+            }
+            
+            // Only add if there are validation errors
+            if ($errors->has('quantity')) {
+                $components[] = $errorMessages->build();
+            }
+        }
+        
+        $form = $this->ingredientListService->generateQuantityForm($ingredient, $meal, $currentQuantity);
+        $components[] = $form;
+        
+        return view('mobile-entry.flexible', ['data' => ['components' => $components]]);
     }
 
     /**
