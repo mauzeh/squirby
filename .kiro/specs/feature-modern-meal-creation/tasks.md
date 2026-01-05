@@ -99,6 +99,10 @@ This implementation replaces the existing meal creation system with a modern, co
 - UX improvement: Moved base unit display from separate message to quantity field label (e.g., "Quantity (grams)")
 - UX improvement: Added ingredient name directly in form titles ("Add [Ingredient]" or "Edit [Ingredient]")
 - UX improvement: Added proper page titles and back buttons to addIngredient and updateQuantity forms following SimpleWorkoutController pattern
+- UX improvement: Added user-friendly info messages explaining the meal creation process:
+  - For new meals: "You're creating a new meal with [Ingredient]. First, give your meal a name, then specify how much [Ingredient] to include."
+  - For existing meals: "Enter the quantity of [Ingredient] to add to your meal. The quantity should be in [base unit]."
+  - For editing quantities: "Update the quantity of [Ingredient] in your meal. Current amount: [current quantity] [unit]."
 
 ## Notes
 

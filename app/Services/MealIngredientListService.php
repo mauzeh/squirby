@@ -147,16 +147,9 @@ class MealIngredientListService
      * @param float|null $currentQuantity
      * @return array Form component data
      */
-    public function generateQuantityForm(Ingredient $ingredient, Meal $meal = null, float $currentQuantity = null): array
+    public function generateQuantityForm(Ingredient $ingredient, ?Meal $meal = null, ?float $currentQuantity = null): array
     {
         $isEditing = $currentQuantity !== null;
-        
-        // Create title with ingredient name
-        if ($isEditing) {
-            $title = 'Edit ' . $ingredient->name;
-        } else {
-            $title = 'Add ' . $ingredient->name;
-        }
         
         // Determine form action and method
         if ($meal) {
@@ -172,17 +165,22 @@ class MealIngredientListService
             $method = 'POST';
         }
 
-        $formBuilder = C::form('quantity-form', $title)
+        // Create form without title
+        $formBuilder = C::form('quantity-form', '')
             ->formAction($action);
 
         // Hidden ingredient ID field
         $formBuilder->hiddenField('ingredient_id', $ingredient->id);
 
-        // If creating a new meal, add meal name field
+        // If creating a new meal, add meal name section
         if (!$meal) {
-            $formBuilder->textField('meal_name', 'Meal Name', '', 'Enter meal name');
+            $formBuilder->section('Meal Details')
+                ->textField('meal_name', 'Meal Name', '', 'Enter meal name');
         }
 
+        // Ingredient section with ingredient name as title
+        $formBuilder->section($ingredient->name);
+        
         // Quantity field with base unit in label
         $quantityLabel = 'Quantity';
         if ($ingredient->baseUnit) {

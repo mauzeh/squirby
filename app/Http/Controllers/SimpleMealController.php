@@ -236,6 +236,19 @@ class SimpleMealController extends Controller
                 ->build();
         }
         
+        // Add helpful info message
+        if ($meal) {
+            // For existing meals
+            $components[] = C::messages()
+                ->info('Enter the quantity of ' . $ingredient->name . ' to add to your meal. The quantity should be in ' . ($ingredient->baseUnit ? $ingredient->baseUnit->name : 'the base unit') . '.')
+                ->build();
+        } else {
+            // For new meals
+            $components[] = C::messages()
+                ->info('You\'re creating a new meal with ' . $ingredient->name . '. First, give your meal a name, then specify how much ' . $ingredient->name . ' to include.')
+                ->build();
+        }
+        
         // Add session messages if they exist
         $messagesComponent = C::messagesFromSession();
         if ($messagesComponent) {
@@ -367,6 +380,11 @@ class SimpleMealController extends Controller
         $components[] = C::title('Edit ' . $ingredient->name)
             ->subtitle('in ' . $meal->name)
             ->backButton('fa-arrow-left', route('meals.edit', $meal->id), 'Back to meal')
+            ->build();
+        
+        // Add helpful info message
+        $components[] = C::messages()
+            ->info('Update the quantity of ' . $ingredient->name . ' in your meal. Current amount: ' . $currentQuantity . ' ' . ($ingredient->baseUnit ? $ingredient->baseUnit->name : 'units') . '.')
             ->build();
         
         // Add session messages if they exist
