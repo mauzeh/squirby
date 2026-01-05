@@ -55,10 +55,11 @@
 /* Form section container */
 .form-section {
     margin-bottom: var(--spacing-lg);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    padding: var(--spacing-md);
-    background: var(--bg-secondary);
+    /* Removed border, padding, and background for cleaner look */
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    background: transparent;
 }
 
 /* Form section header */

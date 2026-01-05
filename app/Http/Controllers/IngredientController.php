@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Ingredient;
+use App\Models\Meal;
 use App\Models\Unit;
 use App\Services\IngredientService;
 use Illuminate\Http\Request;
@@ -88,6 +89,8 @@ class IngredientController extends Controller
     public function create(Request $request)
     {
         $prefilledName = $request->query('name', '');
+        $redirectTo = $request->query('redirect_to', '');
+        $mealId = $request->query('meal_id', '');
         
         $units = Unit::all();
         $unitOptions = $this->ingredientService->buildUnitOptions($units);
@@ -95,7 +98,7 @@ class IngredientController extends Controller
         $data = [
             'components' => [
                 $this->ingredientService->generateCreateFormComponent($prefilledName),
-                $this->ingredientService->buildFormComponent($unitOptions, null, $prefilledName),
+                $this->ingredientService->buildFormComponent($unitOptions, null, $prefilledName, $redirectTo, $mealId),
             ],
         ];
         
@@ -125,7 +128,26 @@ class IngredientController extends Controller
         ]);
 
         $data = $request->except('calories');
-        Ingredient::create(array_merge($data, ['user_id' => auth()->id()]));
+        $ingredient = Ingredient::create(array_merge($data, ['user_id' => auth()->id()]));
+
+        // Handle redirect parameters from meal ingredient selection
+        if ($request->has('redirect_to') && $request->has('meal_id')) {
+            $redirectTo = $request->input('redirect_to');
+            $mealId = $request->input('meal_id');
+            
+            if ($redirectTo === 'meals.edit') {
+                // Verify the meal exists and belongs to the user
+                $meal = Meal::where('id', $mealId)->where('user_id', auth()->id())->first();
+                
+                if ($meal) {
+                    // Redirect to the quantity form to add the ingredient to the meal
+                    return redirect()->route('meals.add-ingredient', [
+                        'meal' => $meal->id,
+                        'ingredient' => $ingredient->id
+                    ])->with('success', 'Ingredient created successfully! Now specify the quantity to add to your meal.');
+                }
+            }
+        }
 
         return redirect()->route('ingredients.index')
                          ->with('success', 'Ingredient created successfully.');

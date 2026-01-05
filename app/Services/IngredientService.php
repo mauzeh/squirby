@@ -48,7 +48,7 @@ class IngredientService
      * @param string $prefilledName
      * @return array
      */
-    public function buildFormComponent(array $unitOptions, ?Ingredient $ingredient = null, string $prefilledName = ''): array
+    public function buildFormComponent(array $unitOptions, ?Ingredient $ingredient = null, string $prefilledName = '', string $redirectTo = '', string $mealId = ''): array
     {
         $isEdit = $ingredient !== null;
         
@@ -60,6 +60,12 @@ class IngredientService
             $formBuilder->hiddenField('_method', 'PUT');
             $formBuilder->deleteAction(route('ingredients.destroy', $ingredient));
             $formBuilder->confirmMessage('Are you sure you want to delete this ingredient?');
+        }
+        
+        // Add redirect parameters as hidden fields if provided
+        if (!$isEdit && $redirectTo && $mealId) {
+            $formBuilder->hiddenField('redirect_to', $redirectTo);
+            $formBuilder->hiddenField('meal_id', $mealId);
         }
         
         // Section 1: General Information (required)

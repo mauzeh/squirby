@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Auth;
 // Custom Controllers
 use App\Http\Controllers\FoodLogController;
 use App\Http\Controllers\IngredientController;
-use App\Http\Controllers\MealController;
+use App\Http\Controllers\SimpleMealController;
 use App\Http\Controllers\MobileEntryController;
 
 use App\Http\Controllers\ExerciseController;
@@ -53,9 +53,25 @@ Route::middleware('auth')->group(function () {
         'show'
     ]);
 
-    Route::resource('meals', MealController::class)->except([
-        'show'
-    ]);
+    // Core meal routes (replacing existing MealController routes)
+    Route::get('meals', [SimpleMealController::class, 'index'])
+        ->name('meals.index');
+    Route::get('meals/create', [SimpleMealController::class, 'create'])
+        ->name('meals.create');
+    Route::post('meals', [SimpleMealController::class, 'store'])
+        ->name('meals.store');
+    Route::get('meals/{meal}/edit', [SimpleMealController::class, 'edit'])
+        ->name('meals.edit');
+    Route::delete('meals/{meal}', [SimpleMealController::class, 'destroy'])
+        ->name('meals.destroy');
+
+    // Ingredient management routes
+    Route::get('meals/{meal}/add-ingredient', [SimpleMealController::class, 'addIngredient'])
+        ->name('meals.add-ingredient');
+    Route::post('meals/{meal}/store-ingredient', [SimpleMealController::class, 'storeIngredient'])
+        ->name('meals.store-ingredient');
+    Route::delete('meals/{meal}/ingredients/{ingredient}', [SimpleMealController::class, 'removeIngredient'])
+        ->name('meals.remove-ingredient');
 
 
 
