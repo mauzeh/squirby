@@ -197,6 +197,64 @@ class SimpleMealControllerTest extends TestCase
     }
 
     /** @test */
+    public function edit_automatically_expands_ingredient_list_when_meal_has_no_ingredients()
+    {
+        $meal = Meal::factory()->create([
+            'user_id' => $this->user->id,
+            'name' => 'Empty Meal'
+        ]);
+
+        $response = $this->get(route('meals.edit', $meal->id));
+
+        $response->assertOk();
+        
+        $data = $response->viewData('data');
+        $components = collect($data['components']);
+        
+        // Check that the "Add Ingredient" button is hidden (because list should be expanded)
+        $buttonComponent = $components->firstWhere('type', 'button');
+        $this->assertNotNull($buttonComponent);
+        $this->assertEquals('hidden', $buttonComponent['data']['initialState']);
+        
+        // Check that the ingredient selection list is expanded
+        $listComponent = $components->firstWhere('type', 'item-list');
+        $this->assertNotNull($listComponent);
+        $this->assertEquals('expanded', $listComponent['data']['initialState']);
+    }
+
+    /** @test */
+    public function edit_keeps_ingredient_list_collapsed_when_meal_has_ingredients()
+    {
+        $ingredient = Ingredient::factory()->create([
+            'user_id' => $this->user->id,
+            'base_unit_id' => $this->unit->id
+        ]);
+
+        $meal = Meal::factory()->create([
+            'user_id' => $this->user->id,
+            'name' => 'Meal with Ingredients'
+        ]);
+        $meal->ingredients()->attach($ingredient->id, ['quantity' => 100]);
+
+        $response = $this->get(route('meals.edit', $meal->id));
+
+        $response->assertOk();
+        
+        $data = $response->viewData('data');
+        $components = collect($data['components']);
+        
+        // Check that the "Add Ingredient" button is visible (because list should be collapsed)
+        $buttonComponent = $components->firstWhere('type', 'button');
+        $this->assertNotNull($buttonComponent);
+        $this->assertNotEquals('hidden', $buttonComponent['data']['initialState'] ?? null);
+        
+        // Check that the ingredient selection list is collapsed
+        $listComponent = $components->firstWhere('type', 'item-list');
+        $this->assertNotNull($listComponent);
+        $this->assertEquals('collapsed', $listComponent['data']['initialState']);
+    }
+
+    /** @test */
     public function edit_prevents_unauthorized_access()
     {
         $otherUser = User::factory()->create();

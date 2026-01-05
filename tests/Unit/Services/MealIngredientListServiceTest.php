@@ -39,7 +39,7 @@ class MealIngredientListServiceTest extends TestCase
         $result = $this->service->generateIngredientListTable($meal);
 
         $this->assertEquals('messages', $result['type']);
-        $this->assertEquals('No ingredients in this meal yet.', $result['data']['messages'][0]['text']);
+        $this->assertEquals('Add ingredients above to build your meal.', $result['data']['messages'][0]['text']);
     }
 
     public function test_ingredient_list_table_handles_disabled_buttons()

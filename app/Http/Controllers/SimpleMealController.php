@@ -152,9 +152,6 @@ class SimpleMealController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
-        // Check if we should expand the list (from "Add ingredients" button)
-        $shouldExpandList = $request->query('expand') === 'true';
-
         $components = [];
         
         // Title
@@ -166,8 +163,13 @@ class SimpleMealController extends Controller
             $components[] = $messagesComponent;
         }
 
-        // Calculate and display nutritional information if meal has ingredients
+        // Load ingredients to check if meal is empty
         $meal->load('ingredients');
+        
+        // Check if we should expand the list (from "Add ingredients" button OR if meal has no ingredients)
+        $shouldExpandList = $request->query('expand') === 'true' || $meal->ingredients->isEmpty();
+
+        // Calculate and display nutritional information if meal has ingredients
         if ($meal->ingredients->isNotEmpty()) {
             $totalMacros = $this->nutritionService->calculateFoodLogTotals($meal->ingredients);
             
@@ -183,7 +185,7 @@ class SimpleMealController extends Controller
             $components[] = $nutritionComponent;
         }
 
-        // Add Ingredient button - hidden if list should be expanded
+        // Add Ingredient button - hidden if list should be expanded (either manually or automatically for empty meals)
         $buttonBuilder = C::button('Add Ingredient')
             ->ariaLabel('Add ingredient to meal')
             ->addClass('btn-add-item');
@@ -194,15 +196,17 @@ class SimpleMealController extends Controller
         
         $components[] = $buttonBuilder->build();
 
-        // Ingredient selection list - expanded if coming from "Add ingredients" button
+        // Ingredient selection list - expanded if coming from "Add ingredients" button OR if meal has no ingredients
         $ingredientSelectionList = $this->ingredientListService->generateIngredientSelectionList($meal, [
             'initialState' => $shouldExpandList ? 'expanded' : 'collapsed'
         ]);
         $components[] = $ingredientSelectionList;
 
-        // Current ingredients table
-        $ingredientTable = $this->ingredientListService->generateIngredientListTable($meal);
-        $components[] = $ingredientTable;
+        // Current ingredients table - only show if meal has ingredients
+        if ($meal->ingredients->isNotEmpty()) {
+            $ingredientTable = $this->ingredientListService->generateIngredientListTable($meal);
+            $components[] = $ingredientTable;
+        }
 
         $data = ['components' => $components];
         return view('mobile-entry.flexible', compact('data'));

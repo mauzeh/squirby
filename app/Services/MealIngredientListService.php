@@ -155,7 +155,7 @@ class MealIngredientListService
                     'messages' => [
                         [
                             'type' => 'info',
-                            'text' => 'No ingredients in this meal yet.'
+                            'text' => 'Add ingredients above to build your meal.'
                         ]
                     ]
                 ]
