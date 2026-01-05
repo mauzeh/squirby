@@ -75,10 +75,14 @@ class MealIngredientListService
         }
 
         // Add create form for new ingredients
+        // Use base route without query parameters and add redirect params as hidden fields
         $itemListBuilder->createForm(
-            route('ingredients.create', ['redirect_to' => 'meals.edit', 'meal_id' => $meal->id]),
+            route('ingredients.create'),
             'name',
-            [],
+            [
+                'redirect_to' => 'meals.edit',
+                'meal_id' => $meal->id,
+            ],
             'Create "{term}"',
             'GET'
         );
