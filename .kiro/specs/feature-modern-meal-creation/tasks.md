@@ -96,6 +96,7 @@ This implementation replaces the existing meal creation system with a modern, co
 - [x] 7. Final checkpoint - Ensure all tests pass
 - Bug fix: Fixed "Add Ingredient" button incorrectly submitting form instead of opening selection list
 - Bug fix: Added validation error display as individual messages above forms in addIngredient and updateQuantity methods
+- UX improvement: Moved base unit display from separate message to quantity field label (e.g., "Quantity (grams)")
 
 ## Notes
 

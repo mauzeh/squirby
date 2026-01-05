@@ -150,7 +150,13 @@ class MealIngredientListService
     public function generateQuantityForm(Ingredient $ingredient, Meal $meal = null, float $currentQuantity = null): array
     {
         $isEditing = $currentQuantity !== null;
-        $title = $isEditing ? 'Edit Quantity' : 'Add Ingredient';
+        
+        // Create title with ingredient name
+        if ($isEditing) {
+            $title = 'Edit ' . $ingredient->name;
+        } else {
+            $title = 'Add ' . $ingredient->name;
+        }
         
         // Determine form action and method
         if ($meal) {
@@ -169,13 +175,6 @@ class MealIngredientListService
         $formBuilder = C::form('quantity-form', $title)
             ->formAction($action);
 
-        // Add ingredient info
-        $formBuilder->message('info', 'Ingredient: ' . $ingredient->name);
-        
-        if ($ingredient->baseUnit) {
-            $formBuilder->message('info', 'Base unit: ' . $ingredient->baseUnit->name);
-        }
-
         // Hidden ingredient ID field
         $formBuilder->hiddenField('ingredient_id', $ingredient->id);
 
@@ -184,8 +183,12 @@ class MealIngredientListService
             $formBuilder->textField('meal_name', 'Meal Name', '', 'Enter meal name');
         }
 
-        // Quantity field
-        $formBuilder->numericField('quantity', 'Quantity', $currentQuantity ?: '', 0.01, 0.01);
+        // Quantity field with base unit in label
+        $quantityLabel = 'Quantity';
+        if ($ingredient->baseUnit) {
+            $quantityLabel .= ' (' . $ingredient->baseUnit->name . ')';
+        }
+        $formBuilder->numericField('quantity', $quantityLabel, $currentQuantity ?: '', 0.01, 0.01);
 
         // Submit button
         $buttonText = $isEditing ? 'Update Quantity' : 'Add to Meal';
