@@ -87,59 +87,6 @@ class MealIngredientListService
     }
 
     /**
-     * Generate ingredient selection list for new meal creation (no meal exists yet)
-     * 
-     * @param int $userId
-     * @return array Item list component data
-     */
-    public function generateIngredientSelectionListForNew(int $userId): array
-    {
-        // Get user's ingredients
-        $ingredients = Ingredient::where('user_id', $userId)
-            ->orderBy('name', 'asc')
-            ->get();
-
-        $items = [];
-        
-        foreach ($ingredients as $ingredient) {
-            $items[] = [
-                'id' => 'ingredient-' . $ingredient->id,
-                'name' => $ingredient->name,
-                'href' => route('meals.add-ingredient-new', [
-                    'ingredient' => $ingredient->id
-                ])
-            ];
-        }
-
-        $itemListBuilder = C::itemList()
-            ->filterPlaceholder('Search ingredients...')
-            ->noResultsMessage('No ingredients found.')
-            ->initialState('expanded');
-
-        foreach ($items as $item) {
-            $itemListBuilder->item(
-                $item['id'],
-                $item['name'],
-                $item['href'],
-                'Ingredient',
-                'ingredient',
-                3
-            );
-        }
-
-        // Add create form for new ingredients
-        $itemListBuilder->createForm(
-            route('ingredients.store'),
-            'name',
-            ['redirect_to' => 'meals.create'],
-            'Create "{term}"',
-            'POST'
-        );
-
-        return $itemListBuilder->build();
-    }
-
-    /**
      * Generate quantity form component for ingredient quantity input
      * 
      * @param Ingredient $ingredient
@@ -147,22 +94,15 @@ class MealIngredientListService
      * @param float|null $currentQuantity
      * @return array Form component data
      */
-    public function generateQuantityForm(Ingredient $ingredient, ?Meal $meal = null, ?float $currentQuantity = null): array
+    public function generateQuantityForm(Ingredient $ingredient, Meal $meal, ?float $currentQuantity = null): array
     {
         $isEditing = $currentQuantity !== null;
         
-        // Determine form action and method
-        if ($meal) {
-            if ($isEditing) {
-                $action = route('meals.edit-quantity', [$meal->id, $ingredient->id]);
-                $method = 'POST';
-            } else {
-                $action = route('meals.store-ingredient', $meal->id);
-                $method = 'POST';
-            }
+        // Determine form action
+        if ($isEditing) {
+            $action = route('meals.edit-quantity', [$meal->id, $ingredient->id]);
         } else {
-            $action = route('meals.store-ingredient-new');
-            $method = 'POST';
+            $action = route('meals.store-ingredient', $meal->id);
         }
 
         // Create form without title
@@ -171,12 +111,6 @@ class MealIngredientListService
 
         // Hidden ingredient ID field
         $formBuilder->hiddenField('ingredient_id', $ingredient->id);
-
-        // If creating a new meal, add meal name section
-        if (!$meal) {
-            $formBuilder->section('Meal Details')
-                ->textField('meal_name', 'Meal Name', '', 'Enter meal name');
-        }
 
         // Ingredient section with ingredient name as title
         $formBuilder->section($ingredient->name);

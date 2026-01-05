@@ -58,16 +58,14 @@ Route::middleware('auth')->group(function () {
         ->name('meals.index');
     Route::get('meals/create', [SimpleMealController::class, 'create'])
         ->name('meals.create');
+    Route::post('meals', [SimpleMealController::class, 'store'])
+        ->name('meals.store');
     Route::get('meals/{meal}/edit', [SimpleMealController::class, 'edit'])
         ->name('meals.edit');
     Route::delete('meals/{meal}', [SimpleMealController::class, 'destroy'])
         ->name('meals.destroy');
 
     // Ingredient management routes
-    Route::get('meals/new/add-ingredient', [SimpleMealController::class, 'addIngredient'])
-        ->name('meals.add-ingredient-new');
-    Route::post('meals/new/store-ingredient', [SimpleMealController::class, 'storeIngredient'])
-        ->name('meals.store-ingredient-new');
     Route::get('meals/{meal}/add-ingredient', [SimpleMealController::class, 'addIngredient'])
         ->name('meals.add-ingredient');
     Route::post('meals/{meal}/store-ingredient', [SimpleMealController::class, 'storeIngredient'])

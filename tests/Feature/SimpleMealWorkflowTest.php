@@ -62,21 +62,37 @@ class SimpleMealWorkflowTest extends TestCase
         $response->assertOk();
         $response->assertViewIs('mobile-entry.flexible');
 
-        // Step 2: Select first ingredient
-        $response = $this->get(route('meals.add-ingredient-new', ['ingredient' => $ingredient1->id]));
-        $response->assertOk();
-        $response->assertViewIs('mobile-entry.flexible');
-
-        // Step 3: Add first ingredient with quantity (creates meal)
-        $response = $this->post(route('meals.store-ingredient-new'), [
-            'ingredient_id' => $ingredient1->id,
-            'quantity' => 200,
-            'meal_name' => 'Protein Bowl'
+        // Step 2: Create meal with name
+        $response = $this->post(route('meals.store'), [
+            'name' => 'Protein Bowl',
+            'comments' => 'Healthy meal'
         ]);
 
         // Verify meal was created
         $meal = Meal::where('user_id', $this->user->id)->where('name', 'Protein Bowl')->first();
         $this->assertNotNull($meal);
+        $response->assertRedirect(route('meals.edit', $meal->id));
+        $response->assertSessionHas('success', 'Meal created successfully! Now add some ingredients.');
+
+        // Step 3: Visit meal edit page
+        $response = $this->get(route('meals.edit', $meal->id));
+        $response->assertOk();
+        $response->assertViewIs('mobile-entry.flexible');
+
+        // Step 4: Add first ingredient
+        $response = $this->get(route('meals.add-ingredient', [
+            'meal' => $meal->id,
+            'ingredient' => $ingredient1->id
+        ]));
+        $response->assertOk();
+        $response->assertViewIs('mobile-entry.flexible');
+
+        // Step 5: Store first ingredient with quantity
+        $response = $this->post(route('meals.store-ingredient', $meal->id), [
+            'ingredient_id' => $ingredient1->id,
+            'quantity' => 200
+        ]);
+
         $this->assertDatabaseHas('meal_ingredients', [
             'meal_id' => $meal->id,
             'ingredient_id' => $ingredient1->id,
@@ -86,12 +102,7 @@ class SimpleMealWorkflowTest extends TestCase
         $response->assertRedirect(route('meals.edit', $meal->id));
         $response->assertSessionHas('success', 'Ingredient added!');
 
-        // Step 4: Visit meal edit page
-        $response = $this->get(route('meals.edit', $meal->id));
-        $response->assertOk();
-        $response->assertViewIs('mobile-entry.flexible');
-
-        // Step 5: Add second ingredient
+        // Step 6: Add second ingredient
         $response = $this->get(route('meals.add-ingredient', [
             'meal' => $meal->id,
             'ingredient' => $ingredient2->id
@@ -113,7 +124,7 @@ class SimpleMealWorkflowTest extends TestCase
         $response->assertRedirect(route('meals.edit', $meal->id));
         $response->assertSessionHas('success', 'Ingredient added!');
 
-        // Step 6: Verify meal appears in index with correct nutritional info
+        // Step 7: Verify meal appears in index with correct nutritional info
         $response = $this->get(route('meals.index'));
         $response->assertOk();
         
@@ -485,31 +496,47 @@ class SimpleMealWorkflowTest extends TestCase
             'name' => 'Valid Ingredient'
         ]);
 
+        $meal = Meal::factory()->create([
+            'user_id' => $this->user->id,
+            'name' => 'Test Meal'
+        ]);
+
         // Test invalid quantities
         $invalidQuantities = [0, -5, 'invalid', null, ''];
         
         foreach ($invalidQuantities as $invalidQuantity) {
-            $response = $this->post(route('meals.store-ingredient-new'), [
+            $response = $this->post(route('meals.store-ingredient', $meal->id), [
                 'ingredient_id' => $ingredient->id,
-                'quantity' => $invalidQuantity,
-                'meal_name' => 'Test Meal'
+                'quantity' => $invalidQuantity
             ]);
             $response->assertSessionHasErrors('quantity');
         }
 
         // Test missing ingredient_id
-        $response = $this->post(route('meals.store-ingredient-new'), [
-            'quantity' => 100,
-            'meal_name' => 'Test Meal'
+        $response = $this->post(route('meals.store-ingredient', $meal->id), [
+            'quantity' => 100
         ]);
         $response->assertSessionHasErrors('ingredient_id');
 
         // Test non-existent ingredient_id
-        $response = $this->post(route('meals.store-ingredient-new'), [
+        $response = $this->post(route('meals.store-ingredient', $meal->id), [
             'ingredient_id' => 99999,
-            'quantity' => 100,
-            'meal_name' => 'Test Meal'
+            'quantity' => 100
         ]);
         $response->assertSessionHasErrors('ingredient_id');
+
+        // Test meal creation validation
+        $response = $this->post(route('meals.store'), [
+            'name' => '', // Empty name should fail
+            'comments' => 'Test comments'
+        ]);
+        $response->assertSessionHasErrors('name');
+
+        // Test valid meal creation
+        $response = $this->post(route('meals.store'), [
+            'name' => 'Valid Meal Name',
+            'comments' => 'Test comments'
+        ]);
+        $response->assertSessionMissing('errors');
     }
 }

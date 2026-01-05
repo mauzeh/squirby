@@ -80,14 +80,8 @@ class SimpleMealControllerTest extends TestCase
     }
 
     /** @test */
-    public function create_displays_ingredient_selection_interface()
+    public function create_displays_simple_meal_creation_form()
     {
-        $ingredient = Ingredient::factory()->create([
-            'user_id' => $this->user->id,
-            'base_unit_id' => $this->unit->id,
-            'name' => 'Test Ingredient'
-        ]);
-
         $response = $this->get(route('meals.create'));
 
         $response->assertOk();
@@ -105,9 +99,9 @@ class SimpleMealControllerTest extends TestCase
         $messagesComponent = collect($data['components'])->firstWhere('type', 'messages');
         $this->assertNotNull($messagesComponent);
         
-        // Check for ingredient list
-        $itemListComponent = collect($data['components'])->firstWhere('type', 'item-list');
-        $this->assertNotNull($itemListComponent);
+        // Check for form component
+        $formComponent = collect($data['components'])->firstWhere('type', 'form');
+        $this->assertNotNull($formComponent);
     }
 
     /** @test */
@@ -297,33 +291,22 @@ class SimpleMealControllerTest extends TestCase
     }
 
     /** @test */
-    public function store_ingredient_creates_new_meal_when_none_exists()
+    public function store_creates_new_meal_with_name_and_comments()
     {
-        $ingredient = Ingredient::factory()->create([
-            'user_id' => $this->user->id,
-            'base_unit_id' => $this->unit->id
-        ]);
-
-        $response = $this->post(route('meals.store-ingredient-new'), [
-            'ingredient_id' => $ingredient->id,
-            'quantity' => 150,
-            'meal_name' => 'New Test Meal'
+        $response = $this->post(route('meals.store'), [
+            'name' => 'New Test Meal',
+            'comments' => 'Test comments'
         ]);
 
         $this->assertDatabaseHas('meals', [
             'user_id' => $this->user->id,
-            'name' => 'New Test Meal'
+            'name' => 'New Test Meal',
+            'comments' => 'Test comments'
         ]);
 
         $meal = Meal::where('user_id', $this->user->id)->where('name', 'New Test Meal')->first();
-        $this->assertDatabaseHas('meal_ingredients', [
-            'meal_id' => $meal->id,
-            'ingredient_id' => $ingredient->id,
-            'quantity' => 150
-        ]);
-
         $response->assertRedirect(route('meals.edit', $meal->id));
-        $response->assertSessionHas('success', 'Ingredient added!');
+        $response->assertSessionHas('success', 'Meal created successfully! Now add some ingredients.');
     }
 
     /** @test */
@@ -507,29 +490,31 @@ class SimpleMealControllerTest extends TestCase
             'base_unit_id' => $this->unit->id
         ]);
 
+        $meal = Meal::factory()->create([
+            'user_id' => $this->user->id,
+            'name' => 'Test Meal'
+        ]);
+
         // Test invalid quantity (too small)
-        $response = $this->post(route('meals.store-ingredient-new'), [
+        $response = $this->post(route('meals.store-ingredient', $meal->id), [
             'ingredient_id' => $ingredient->id,
-            'quantity' => 0,
-            'meal_name' => 'Test Meal'
+            'quantity' => 0
         ]);
 
         $response->assertSessionHasErrors('quantity');
 
         // Test invalid quantity (negative)
-        $response = $this->post(route('meals.store-ingredient-new'), [
+        $response = $this->post(route('meals.store-ingredient', $meal->id), [
             'ingredient_id' => $ingredient->id,
-            'quantity' => -5,
-            'meal_name' => 'Test Meal'
+            'quantity' => -5
         ]);
 
         $response->assertSessionHasErrors('quantity');
 
         // Test invalid quantity (non-numeric)
-        $response = $this->post(route('meals.store-ingredient-new'), [
+        $response = $this->post(route('meals.store-ingredient', $meal->id), [
             'ingredient_id' => $ingredient->id,
-            'quantity' => 'invalid',
-            'meal_name' => 'Test Meal'
+            'quantity' => 'invalid'
         ]);
 
         $response->assertSessionHasErrors('quantity');

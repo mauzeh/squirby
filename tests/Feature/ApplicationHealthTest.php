@@ -159,7 +159,6 @@ class ApplicationHealthTest extends TestCase
             'exercise-aliases.create', // Requires alias_name query parameter
             'exercise-aliases.store', // Requires exercise_id and alias_name query parameters
             'simple-workouts.add-exercise-new', // Requires exercise query parameter
-            'meals.add-ingredient-new', // Requires ingredient query parameter
             
             // API/utility routes
             'sanctum.csrf-cookie',

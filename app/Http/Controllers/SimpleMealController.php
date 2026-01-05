@@ -93,7 +93,7 @@ class SimpleMealController extends Controller
     }
 
     /**
-     * Show the form for creating a new meal (ingredient selection interface)
+     * Show the form for creating a new meal (simple name input form)
      */
     public function create()
     {
@@ -104,15 +104,43 @@ class SimpleMealController extends Controller
         
         // Info message
         $components[] = C::messages()
-            ->info('Select ingredients below to add them to your meal.')
+            ->info('Enter a name for your new meal. You can add ingredients after creating it.')
             ->build();
         
-        // Ingredient selection list - always expanded on create page
-        $ingredientSelectionList = $this->ingredientListService->generateIngredientSelectionListForNew(Auth::id());
-        $components[] = $ingredientSelectionList;
+        // Simple form for meal name
+        $formBuilder = C::form('create-meal-form', 'Create New Meal')
+            ->formAction(route('meals.store'));
+        
+        $formBuilder->textField('name', 'Meal Name', '', 'Enter meal name');
+        
+        $formBuilder->textareaField('comments', 'Comments (Optional)', '', 'Optional comments about this meal');
+        
+        $formBuilder->submitButton('Create Meal', 'btn-primary');
+        
+        $components[] = $formBuilder->build();
         
         $data = ['components' => $components];
         return view('mobile-entry.flexible', compact('data'));
+    }
+
+    /**
+     * Store a newly created meal
+     */
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'comments' => 'nullable|string|max:1000',
+        ]);
+
+        $meal = Meal::create([
+            'name' => $validated['name'],
+            'comments' => $validated['comments'] ?? '',
+            'user_id' => auth()->id(),
+        ]);
+
+        return redirect()->route('meals.edit', $meal)
+            ->with('success', 'Meal created successfully! Now add some ingredients.');
     }
 
     /**
@@ -197,8 +225,13 @@ class SimpleMealController extends Controller
     /**
      * Show quantity form for adding an ingredient to a meal
      */
-    public function addIngredient(Request $request, Meal $meal = null)
+    public function addIngredient(Request $request, Meal $meal)
     {
+        // Check authorization
+        if ($meal->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
         $ingredientId = $request->input('ingredient');
         
         if (!$ingredientId) {
@@ -213,8 +246,8 @@ class SimpleMealController extends Controller
             return redirect()->back()->with('error', 'Ingredient not found.');
         }
         
-        // Check for duplicates if meal exists
-        if ($meal && $meal->ingredients()->where('ingredient_id', $ingredient->id)->exists()) {
+        // Check for duplicates
+        if ($meal->ingredients()->where('ingredient_id', $ingredient->id)->exists()) {
             return redirect()
                 ->route('meals.edit', $meal->id)
                 ->with('warning', 'Ingredient already in meal.');
@@ -223,31 +256,12 @@ class SimpleMealController extends Controller
         $components = [];
         
         // Title with back button
-        if ($meal) {
-            // Adding to existing meal
-            $components[] = C::title('Add ' . $ingredient->name)
-                ->subtitle('to ' . $meal->name)
-                ->backButton('fa-arrow-left', route('meals.edit', $meal->id), 'Back to meal')
-                ->build();
-        } else {
-            // Creating new meal
-            $components[] = C::title('Create Meal')
-                ->backButton('fa-arrow-left', route('meals.create'), 'Back to ingredient selection')
-                ->build();
-        }
+        $components[] = C::title('Add ' . $ingredient->name)
+            ->subtitle('to ' . $meal->name)
+            ->backButton('fa-arrow-left', route('meals.edit', $meal->id), 'Back to meal')
+            ->build();
         
         // Add helpful info message
-        if ($meal) {
-            // For existing meals
-            $components[] = C::messages()
-                ->info('Enter the quantity of ' . $ingredient->name . ' to add to your meal. The quantity should be in ' . ($ingredient->baseUnit ? $ingredient->baseUnit->name : 'the base unit') . '.')
-                ->build();
-        } else {
-            // For new meals
-            $components[] = C::messages()
-                ->info('You\'re creating a new meal with ' . $ingredient->name . '. First, give your meal a name, then specify how much ' . $ingredient->name . ' to include.')
-                ->build();
-        }
         
         // Add session messages if they exist
         $messagesComponent = C::messagesFromSession();
@@ -265,12 +279,9 @@ class SimpleMealController extends Controller
             if ($errors->has('quantity')) {
                 $errorMessages->error($errors->first('quantity'));
             }
-            if ($errors->has('meal_name')) {
-                $errorMessages->error($errors->first('meal_name'));
-            }
             
             // Only add if there are validation errors
-            if ($errors->has('ingredient_id') || $errors->has('quantity') || $errors->has('meal_name')) {
+            if ($errors->has('ingredient_id') || $errors->has('quantity')) {
                 $components[] = $errorMessages->build();
             }
         }
@@ -283,14 +294,18 @@ class SimpleMealController extends Controller
     }
 
     /**
-     * Store ingredient with quantity (handles meal creation for first ingredient)
+     * Store ingredient with quantity (meal must already exist)
      */
-    public function storeIngredient(Request $request, Meal $meal = null)
+    public function storeIngredient(Request $request, Meal $meal)
     {
+        // Check authorization
+        if ($meal->user_id !== Auth::id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
         $validated = $request->validate([
             'ingredient_id' => 'required|exists:ingredients,id',
             'quantity' => 'required|numeric|min:0.01',
-            'meal_name' => 'nullable|string|max:255',
         ]);
         
         $ingredient = Ingredient::where('id', $validated['ingredient_id'])
@@ -299,20 +314,6 @@ class SimpleMealController extends Controller
         
         if (!$ingredient) {
             return redirect()->back()->with('error', 'Ingredient not found.');
-        }
-        
-        // Create meal if it doesn't exist (first ingredient being added)
-        if (!$meal) {
-            $meal = Meal::create([
-                'user_id' => Auth::id(),
-                'name' => $validated['meal_name'] ?: 'New Meal',
-                'comments' => null,
-            ]);
-        } else {
-            // Check authorization for existing meal
-            if ($meal->user_id !== Auth::id()) {
-                abort(403, 'Unauthorized action.');
-            }
         }
         
         // Check for duplicates

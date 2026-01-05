@@ -10,7 +10,6 @@ This implementation replaces the existing meal creation system with a modern, co
 - [x] 1.1 Implement MealIngredientListService class
   - Create service class following WorkoutExerciseListService pattern
   - Implement `generateIngredientSelectionList()` method for existing meals
-  - Implement `generateIngredientSelectionListForNew()` method for new meal creation
   - Implement `generateQuantityForm()` method for ingredient quantity input
   - Implement `generateIngredientListTable()` method for meal editing interface
   - _Requirements: 3.1, 3.2, 3.5, 6.2, 6.3_
@@ -24,21 +23,22 @@ This implementation replaces the existing meal creation system with a modern, co
 - [x] 2. Create SimpleMealController
 - [x] 2.1 Implement core CRUD methods
   - Create `index()` method using flexible components (keep existing implementation from MealController)
-  - Create `create()` method with ingredient selection using MealIngredientListService
+  - Create `create()` method with simple meal name form
+  - Create `store()` method to create meal and redirect to edit page
   - Create `edit()` method with meal builder interface
   - Create `destroy()` method with proper authorization
   - _Requirements: 1.1, 4.1, 4.2_
 
 - [x] 2.2 Implement ingredient management methods
   - Create `addIngredient()` method to show quantity form
-  - Create `storeIngredient()` method to add ingredient with quantity (handles meal creation for first ingredient)
+  - Create `storeIngredient()` method to add ingredient with quantity (meal must exist)
   - Create `updateQuantity()` method for editing existing ingredient quantities
   - Create `removeIngredient()` method with meal deletion logic for last ingredient
   - Handle duplicate ingredient prevention
   - _Requirements: 1.2, 1.3, 1.5, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 4.4_
 
 - [x] 2.3 Add SimpleMealController routes to web.php
-  - Add core meal routes (index, create, edit, destroy) pointing to SimpleMealController
+  - Add core meal routes (index, create, store, edit, destroy) pointing to SimpleMealController
   - Add ingredient management routes (add-ingredient, store-ingredient, edit-quantity, remove-ingredient)
   - Ensure route names maintain compatibility where possible
   - _Requirements: 5.4_
@@ -104,12 +104,23 @@ This implementation replaces the existing meal creation system with a modern, co
   - For existing meals: "Enter the quantity of [Ingredient] to add to your meal. The quantity should be in [base unit]."
   - For editing quantities: "Update the quantity of [Ingredient] in your meal. Current amount: [current quantity] [unit]."
 
+- [x] 8. **UPDATED FLOW**: Simplified meal creation workflow
+- **BREAKING CHANGE**: Changed meal creation flow to be more intuitive:
+  - Create meal button now opens a simple form where users enter meal name and optional comments
+  - After creating meal, users are redirected to the meal edit page to add ingredients
+  - Removed complex ingredient-first creation flow
+  - Updated all tests to reflect new workflow
+  - Removed `generateIngredientSelectionListForNew()` method from service
+  - Updated routes to remove "new meal" ingredient routes
+  - All 33 tests now passing with new simplified flow
+
 ## Notes
 
-- All tasks are now required for comprehensive implementation from the start
+- All tasks are now completed with the new simplified meal creation flow
 - Each task references specific requirements for traceability
 - Checkpoints ensure incremental validation
 - Unit tests validate specific examples and edge cases
 - The implementation completely replaces the existing meal system rather than extending it
 - Current MealController index() method already uses flexible components and can be preserved
 - Follow WorkoutExerciseListService and SimpleWorkoutController patterns for consistency
+- **NEW FLOW**: Users now create meals with just a name first, then add ingredients on the edit page - much more intuitive!

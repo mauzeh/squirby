@@ -82,18 +82,28 @@ class SimpleMealIntegrationTest extends TestCase
         $response = $this->get(route('meals.create'));
         $response->assertOk();
 
-        // Add first ingredient (creates meal)
-        $response = $this->get(route('meals.add-ingredient-new', ['ingredient' => $ingredients[0]->id]));
-        $response->assertOk();
-
-        $response = $this->post(route('meals.store-ingredient-new'), [
-            'ingredient_id' => $ingredients[0]->id,
-            'quantity' => 150,
-            'meal_name' => 'Complete Balanced Meal'
+        // Create meal with name
+        $response = $this->post(route('meals.store'), [
+            'name' => 'Complete Balanced Meal',
+            'comments' => 'A nutritious meal'
         ]);
 
         $meal = Meal::where('user_id', $this->user->id)->where('name', 'Complete Balanced Meal')->first();
         $this->assertNotNull($meal);
+        $response->assertRedirect(route('meals.edit', $meal->id));
+
+        // Add first ingredient
+        $response = $this->get(route('meals.add-ingredient', [
+            'meal' => $meal->id,
+            'ingredient' => $ingredients[0]->id
+        ]));
+        $response->assertOk();
+
+        $response = $this->post(route('meals.store-ingredient', $meal->id), [
+            'ingredient_id' => $ingredients[0]->id,
+            'quantity' => 150
+        ]);
+
         $response->assertRedirect(route('meals.edit', $meal->id));
 
         // Add remaining ingredients one by one
@@ -502,13 +512,22 @@ class SimpleMealIntegrationTest extends TestCase
         $response = $this->get(route('meals.edit', 99999));
         $response->assertStatus(404);
 
+        // Create meal for testing
+        $testMeal = Meal::factory()->create([
+            'user_id' => $this->user->id,
+            'name' => 'Test Meal'
+        ]);
+
         // Test accessing non-existent ingredient
-        $response = $this->get(route('meals.add-ingredient-new', ['ingredient' => 99999]));
+        $response = $this->get(route('meals.add-ingredient', [
+            'meal' => $testMeal->id,
+            'ingredient' => 99999
+        ]));
         $response->assertRedirect();
         $response->assertSessionHas('error', 'Ingredient not found.');
 
         // Test missing ingredient parameter
-        $response = $this->get(route('meals.add-ingredient-new'));
+        $response = $this->get(route('meals.add-ingredient', ['meal' => $testMeal->id]));
         $response->assertRedirect();
         $response->assertSessionHas('error', 'No ingredient specified.');
 
@@ -529,22 +548,16 @@ class SimpleMealIntegrationTest extends TestCase
         $response->assertSessionHas('error', 'Ingredient not found in meal.');
 
         // Test very small valid quantity (boundary condition)
-        $response = $this->post(route('meals.store-ingredient-new'), [
+        $response = $this->post(route('meals.store-ingredient', $testMeal->id), [
             'ingredient_id' => $ingredient->id,
-            'quantity' => 0.01, // Minimum valid quantity
-            'meal_name' => 'Tiny Portion Meal'
+            'quantity' => 0.01 // Minimum valid quantity
         ]);
-        $response->assertRedirect();
+        $response->assertRedirect(route('meals.edit', $testMeal->id));
         $response->assertSessionMissing('errors');
 
-        // Verify meal was created with tiny quantity
-        $this->assertDatabaseHas('meals', [
-            'user_id' => $this->user->id,
-            'name' => 'Tiny Portion Meal'
-        ]);
-        $tinyMeal = Meal::where('name', 'Tiny Portion Meal')->first();
+        // Verify ingredient was added with tiny quantity
         $this->assertDatabaseHas('meal_ingredients', [
-            'meal_id' => $tinyMeal->id,
+            'meal_id' => $testMeal->id,
             'ingredient_id' => $ingredient->id,
             'quantity' => 0.01
         ]);
