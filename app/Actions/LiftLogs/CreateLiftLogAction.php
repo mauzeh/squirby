@@ -188,8 +188,8 @@ class CreateLiftLogAction
                         $currentBest1RM = $estimated1RM;
                     }
                     
-                    // For low-rep sets (1-5 reps), check if this is a rep-specific PR
-                    if ($set->reps <= 5) {
+                    // For sets up to 10 reps, check if this is a rep-specific PR
+                    if ($set->reps <= 10) {
                         $maxWeightForReps = 0;
                         
                         // Find the max weight previously lifted for this rep count

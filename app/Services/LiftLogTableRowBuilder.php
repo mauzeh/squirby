@@ -217,7 +217,7 @@ class LiftLogTableRowBuilder
      * A PR is determined at the time it was achieved - meaning it beat all previous lifts
      * This is done once upfront to avoid N+1 queries
      * 
-     * For lifts with 1-5 reps, a PR is marked if EITHER:
+     * For lifts with 1-10 reps, a PR is marked if EITHER:
      * 1. It's the heaviest weight ever lifted for that specific rep count (rep-specific PR)
      * 2. OR it beats the overall estimated 1RM
      * 
@@ -266,8 +266,8 @@ class LiftLogTableRowBuilder
                                 $logMaxEstimated1RM = $estimated1RM;
                             }
                             
-                            // For low-rep sets (1-5 reps), check if this is a rep-specific PR
-                            if ($set->reps <= 5) {
+                            // For sets up to 10 reps, check if this is a rep-specific PR
+                            if ($set->reps <= 10) {
                                 $repCount = $set->reps;
                                 $previousMaxForReps = $maxWeightByReps[$repCount] ?? 0;
                                 

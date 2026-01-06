@@ -839,5 +839,71 @@ class LiftLogLoggingTest extends TestCase {
         }
     }
 
+    /** @test */
+    public function rep_specific_pr_detection_works_for_medium_rep_ranges()
+    {
+        $exercise = \App\Models\Exercise::factory()->create(['user_id' => $this->user->id]);
+
+        // Log initial lifts for 6-10 rep ranges
+        $initialLogs = [
+            ['weight' => 135, 'reps' => 6],
+            ['weight' => 130, 'reps' => 7],
+            ['weight' => 125, 'reps' => 8],
+            ['weight' => 120, 'reps' => 9],
+            ['weight' => 115, 'reps' => 10],
+        ];
+
+        foreach ($initialLogs as $logData) {
+            $log = \App\Models\LiftLog::factory()->create([
+                'user_id' => $this->user->id,
+                'exercise_id' => $exercise->id,
+                'logged_at' => now()->subWeek(),
+            ]);
+            $log->liftSets()->create(['weight' => $logData['weight'], 'reps' => $logData['reps'], 'notes' => '']);
+        }
+
+        // Test 6-rep PR detection (like user 26's case)
+        $liftLogData = [
+            'exercise_id' => $exercise->id,
+            'weight' => 145, // 10 lbs heavier than previous 6-rep max of 135
+            'reps' => 6,
+            'rounds' => 1,
+            'comments' => 'New 6-rep PR',
+            'date' => now()->format('Y-m-d'),
+            'logged_at' => '14:30',
+        ];
+
+        $response = $this->post(route('lift-logs.store'), $liftLogData);
+
+        // Should be marked as PR because it's the heaviest 6-rep lift
+        $response->assertSessionHas('is_pr', true);
+        
+        $successMessage = session('success');
+        $this->assertStringContainsString('NEW PR!', $successMessage);
+
+        // Test that other rep ranges (7-10) also work
+        $newPRs = [
+            ['weight' => 140, 'reps' => 7],
+            ['weight' => 135, 'reps' => 8],
+            ['weight' => 130, 'reps' => 9],
+            ['weight' => 125, 'reps' => 10],
+        ];
+
+        foreach ($newPRs as $logData) {
+            $liftLogData = [
+                'exercise_id' => $exercise->id,
+                'weight' => $logData['weight'],
+                'reps' => $logData['reps'],
+                'rounds' => 1,
+                'comments' => "New {$logData['reps']}-rep PR",
+                'date' => now()->format('Y-m-d'),
+                'logged_at' => '15:00',
+            ];
+
+            $response = $this->post(route('lift-logs.store'), $liftLogData);
+            $response->assertSessionHas('is_pr', true);
+        }
+    }
+
 
 }
