@@ -6,7 +6,7 @@
         <div class="welcome-overlay__header">
             <h2 class="welcome-overlay__title">
                 <span class="welcome-overlay__user-name">{{ $data['userName'] ?? 'Friend' }}<span class="welcome-overlay__comma">,</span></span><br>
-                {{ $data['title'] ?? 'Welcome to Your Fitness Journey!' }}
+                {{ $data['title'] ?? 'Let\'s Get Strong!' }}
             </h2>
             <button type="button" class="welcome-overlay__close" onclick="closeWelcomeOverlay()" aria-label="Close welcome message">
                 <i class="fas fa-times"></i>

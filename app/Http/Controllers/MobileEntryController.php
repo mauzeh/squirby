@@ -105,7 +105,7 @@ class MobileEntryController extends Controller
                 'data' => [
                     'show' => true,
                     'userName' => Auth::user()->name,
-                    'title' => 'Welcome to Your Fitness Journey!',
+                    'title' => 'Let\'s Get Strong!',
                     'message' => 'Congratulations on signing up! This is where you\'ll track your workouts and watch your strength grow over time.',
                     'ctaText' => 'Start Logging Now!'
                 ]
