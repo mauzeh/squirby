@@ -68,6 +68,10 @@ class MobileEntryController extends Controller
         // Check if user wants to expand selection manually
         $shouldExpandSelection = $request->boolean('expand_selection');
         
+        // Check if user is first-time (has 0 lift logs total)
+        $totalLiftLogs = \App\Models\LiftLog::where('user_id', Auth::id())->count();
+        $isFirstTimeUser = $totalLiftLogs === 0;
+        
         // Always add contextual help messages
         $contextualMessages = $formService->generateContextualHelpMessages(Auth::id(), $selectedDate, $shouldExpandSelection);
         if (!empty($contextualMessages)) {
@@ -92,6 +96,21 @@ class MobileEntryController extends Controller
             $dateTitleData['main'],
             $dateTitleData['subtitle'] ?? null
         )->build();
+        
+        // Welcome overlay for first-time users
+        if ($isFirstTimeUser) {
+            $components[] = [
+                'type' => 'welcome-overlay',
+                'requiresScript' => 'welcome-overlay',
+                'data' => [
+                    'show' => true,
+                    'userName' => Auth::user()->name,
+                    'title' => 'Welcome to Your Fitness Journey!',
+                    'message' => 'Congratulations on signing up! This is where you\'ll track your workouts and watch your strength grow over time.',
+                    'ctaText' => 'Start Logging Now!'
+                ]
+            ];
+        }
         
         // Interface messages
         if ($interfaceMessages['hasMessages']) {

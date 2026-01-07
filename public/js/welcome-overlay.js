@@ -1,0 +1,1 @@
+function closeWelcomeOverlay(){document.getElementById('welcomeOverlay').style.display='none'}
