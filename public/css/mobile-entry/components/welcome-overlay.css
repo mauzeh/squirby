@@ -111,6 +111,9 @@
     flex-direction: column;
     gap: var(--spacing-md);
     margin-bottom: var(--spacing-xl);
+    max-width: 200px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .welcome-feature {
