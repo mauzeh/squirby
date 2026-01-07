@@ -194,20 +194,19 @@ class LiftLogTableRowBuilder
             'cssClass' => $isPR ? 'row-pr' : null,
         ];
         
-        // Always show comments in subitem if they exist
-        if (!empty($liftLog->comments)) {
-            $row['subItems'] = [[
-                'line1' => null,
-                'messages' => [[
-                    'type' => 'neutral',
-                    'prefix' => 'Your notes:',
-                    'text' => $liftLog->comments
-                ]],
-                'actions' => []
-            ]];
-            $row['collapsible'] = false; // Always show comments
-            $row['initialState'] = 'expanded';
-        }
+        // Always show comments in subitem (with N/A if empty)
+        $notesText = !empty(trim($liftLog->comments)) ? $liftLog->comments : 'N/A';
+        $row['subItems'] = [[
+            'line1' => null,
+            'messages' => [[
+                'type' => 'neutral',
+                'prefix' => 'Your notes:',
+                'text' => $notesText
+            ]],
+            'actions' => []
+        ]];
+        $row['collapsible'] = false; // Always show comments
+        $row['initialState'] = 'expanded';
         
         return $row;
     }

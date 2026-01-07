@@ -216,6 +216,15 @@ able Component - Tabular CRUD list optimized for narrow screens */
     word-wrap: break-word;
 }
 
+/* Remove styling from notes in table cells */
+.component-table-cell .component-message--neutral {
+    padding: 0;
+    margin-bottom: 0;
+    border-left: none;
+    background-color: transparent;
+    border-radius: 0;
+}
+
 .cell-title {
     font-size: 1em;
     font-weight: bold;

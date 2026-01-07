@@ -65,7 +65,7 @@ class LiftLogTableRowBuilderTest extends TestCase
         $this->assertTrue($rows[0]['wrapActions']);
         $this->assertTrue($rows[0]['wrapText']);
         
-        // Comments should be in subitem
+        // Comments should always be in subitem now
         $this->assertNotEmpty($rows[0]['subItems']);
         $this->assertEquals('neutral', $rows[0]['subItems'][0]['messages'][0]['type']);
         $this->assertEquals('Your notes:', $rows[0]['subItems'][0]['messages'][0]['prefix']);
@@ -267,7 +267,7 @@ class LiftLogTableRowBuilderTest extends TestCase
     }
 
     /** @test */
-    public function it_shows_no_subitem_when_no_comments()
+    public function it_shows_na_in_subitem_when_no_comments()
     {
         $user = User::factory()->create();
         $exercise = Exercise::factory()->create(['exercise_type' => 'weighted']);
@@ -289,8 +289,89 @@ class LiftLogTableRowBuilderTest extends TestCase
         $this->actingAs($user);
         $rows = $this->builder->buildRows(collect([$liftLog]));
 
-        // Should have no subitems when no comments
-        $this->assertArrayNotHasKey('subItems', $rows[0]);
+        // Should always have subitems now (even when no comments)
+        $this->assertNotEmpty($rows[0]['subItems']);
+        $subItem = $rows[0]['subItems'][0];
+        
+        // Should have 1 message: N/A for comments
+        $this->assertCount(1, $subItem['messages']);
+        
+        // Message should show N/A
+        $this->assertEquals('neutral', $subItem['messages'][0]['type']);
+        $this->assertEquals('Your notes:', $subItem['messages'][0]['prefix']);
+        $this->assertEquals('N/A', $subItem['messages'][0]['text']);
+    }
+
+    /** @test */
+    public function it_shows_na_for_empty_string_comments()
+    {
+        $user = User::factory()->create();
+        $exercise = Exercise::factory()->create(['exercise_type' => 'weighted']);
+        $liftLog = LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'comments' => ''
+        ]);
+        LiftSet::factory()->create([
+            'lift_log_id' => $liftLog->id,
+            'weight' => 135,
+            'reps' => 5
+        ]);
+
+        $this->aliasService->shouldReceive('getDisplayName')
+            ->once()
+            ->andReturn($exercise->title);
+
+        $this->actingAs($user);
+        $rows = $this->builder->buildRows(collect([$liftLog]));
+
+        // Should always have subitems now (even when empty string)
+        $this->assertNotEmpty($rows[0]['subItems']);
+        $subItem = $rows[0]['subItems'][0];
+        
+        // Should have 1 message: N/A for empty comments
+        $this->assertCount(1, $subItem['messages']);
+        
+        // Message should show N/A
+        $this->assertEquals('neutral', $subItem['messages'][0]['type']);
+        $this->assertEquals('Your notes:', $subItem['messages'][0]['prefix']);
+        $this->assertEquals('N/A', $subItem['messages'][0]['text']);
+    }
+
+    /** @test */
+    public function it_shows_na_for_whitespace_only_comments()
+    {
+        $user = User::factory()->create();
+        $exercise = Exercise::factory()->create(['exercise_type' => 'weighted']);
+        $liftLog = LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'comments' => '   '
+        ]);
+        LiftSet::factory()->create([
+            'lift_log_id' => $liftLog->id,
+            'weight' => 135,
+            'reps' => 5
+        ]);
+
+        $this->aliasService->shouldReceive('getDisplayName')
+            ->once()
+            ->andReturn($exercise->title);
+
+        $this->actingAs($user);
+        $rows = $this->builder->buildRows(collect([$liftLog]));
+
+        // Should always have subitems now (even when whitespace only)
+        $this->assertNotEmpty($rows[0]['subItems']);
+        $subItem = $rows[0]['subItems'][0];
+        
+        // Should have 1 message: N/A for whitespace-only comments
+        $this->assertCount(1, $subItem['messages']);
+        
+        // Message should show N/A
+        $this->assertEquals('neutral', $subItem['messages'][0]['type']);
+        $this->assertEquals('Your notes:', $subItem['messages'][0]['prefix']);
+        $this->assertEquals('N/A', $subItem['messages'][0]['text']);
     }
 
     /** @test */
