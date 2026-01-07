@@ -253,34 +253,41 @@ When adding new features:
 
 - **v1.5** (December 24, 2025) - Incremental improvements with Quick Actions component
   - New component: Quick Actions for standardized action button grids
-  - Enhanced FormComponentBuilder with checkbox array support
-  - Enhanced ButtonComponentBuilder with style mappings and url() method
+  - Enhanced FormComponentBuilder with checkbox array support and checkboxArrayField() method
+  - Enhanced ButtonComponentBuilder with style mappings, url() method, and predefined style mappings
   - Continued adoption of component-based architecture patterns
+  - Exercise management pages with promote/unpromote, merge, and delete actions
+  - User management interfaces with standardized action patterns
   - 59 commits with focused improvements
 
 - **v1.4** (December 13, 2025) - Major expansion with 4 new components and enhanced UX
-  - New components: PR Cards, Calculator Grid, Code Editor, Markdown
-  - Enhanced existing components with better mobile UX
-  - Component-based CSS architecture
-  - Automatic script loading system
+  - New components: PR Cards (personal record tracking with visual highlights), Calculator Grid (interactive calculation display), Code Editor (IDE-like syntax editor with highlighting), Markdown (rich text rendering with custom styling)
+  - Enhanced existing components with better mobile UX, badge support, bulk selection, action button wrapping
+  - Component-based CSS architecture with organized component structure
+  - Automatic script loading system for component dependencies
+  - Chart component enhancements with font sizing and label color styling
+  - Table component enhancements with badges, bulk selection, chevron icons, HTML subtitle support
+  - Form component enhancements with customizable submit button styling, numeric input mode, text selection on focus
+  - Mobile entry UX improvements with search icons, metrics-first logging flow, improved empty state messaging
   - 328 commits with significant improvements
 
 - **v1.3** (November 13, 2025) - Table component enhancements
-  - Clickable sub-items (entire row tappable for single actions)
+  - Clickable sub-items (entire row tappable for single actions with automatic detection)
   - Compact button mode (75% size for secondary actions)
-  - Additional button styles (transparent, info-circle, log-now)
-  - Table row initial state (expanded/collapsed)
-  - Sub-item inline messages (success, info, tip, warning, error)
-  - Large title class for prominent rows
-  - Non-collapsible sub-items option
+  - Additional button styles (transparent, info-circle, log-now) for different use cases
+  - Table row initial state (expanded/collapsed) with programmatic control
+  - Sub-item inline messages (success, info, tip, warning, error, neutral) for status and context
+  - Large title class for prominent rows (1.4em instead of 1em)
+  - Non-collapsible sub-items option for always-visible content
+  - Enhanced mobile UX with better touch targets and visual feedback
 
 - **v1.2** (November 11, 2025) - Enhanced features and improvements
-  - Added back button support to title component
-  - Multiple independent item lists on same page
-  - Auto-scroll and focus for initially expanded lists
-  - Context-aware initial states (e.g., expand parameter)
-  - Submenu wrapping for better navigation
-  - Additional examples in FlexibleWorkflowController
+  - Added back button support to title component with icon-only button and 44px touch target
+  - Multiple independent item lists on same page with automatic linking by proximity
+  - Auto-scroll and focus for initially expanded lists with smooth scroll behavior
+  - Context-aware initial states (e.g., expand parameter) for conditional expansion
+  - Submenu wrapping for better navigation with flex-wrap support
+  - Additional examples in FlexibleWorkflowController with multiple lists and title back button demos
 
 - **v1.1** (November 11, 2025) - Initial state configuration added
   - Added `initialState()` method to Button and ItemList components
