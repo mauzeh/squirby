@@ -25,7 +25,7 @@
     <script>
         window.mobileEntryConfig = {
             autoscroll: {{ isset($data['autoscroll']) && $data['autoscroll'] ? 'true' : 'false' }},
-            allPRs: {{ isset($data['all_prs']) && $data['all_prs'] ? 'true' : 'false' }}
+            hasPRs: {{ isset($data['has_prs']) && $data['has_prs'] ? 'true' : 'false' }}
         };
         
         // Exercise names for autocomplete (if available)

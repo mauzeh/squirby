@@ -686,12 +686,12 @@ class LiftLogLoggingTest extends TestCase {
 
         $response->assertStatus(200);
         $response->assertViewHas('data', function ($data) {
-            return isset($data['all_prs']) && $data['all_prs'] === true;
+            return isset($data['has_prs']) && $data['has_prs'] === true;
         });
     }
 
     /** @test */
-    public function mobile_entry_lifts_page_does_not_set_all_prs_flag_when_some_lifts_are_not_prs()
+    public function mobile_entry_lifts_page_sets_all_prs_flag_when_at_least_one_lift_is_pr()
     {
         $exercise1 = \App\Models\Exercise::factory()->create(['user_id' => $this->user->id]);
         $exercise2 = \App\Models\Exercise::factory()->create(['user_id' => $this->user->id]);
@@ -731,7 +731,7 @@ class LiftLogLoggingTest extends TestCase {
 
         $response->assertStatus(200);
         $response->assertViewHas('data', function ($data) {
-            return isset($data['all_prs']) && $data['all_prs'] === false;
+            return isset($data['has_prs']) && $data['has_prs'] === true; // Changed: now true because at least one is a PR
         });
     }
 
@@ -743,7 +743,37 @@ class LiftLogLoggingTest extends TestCase {
 
         $response->assertStatus(200);
         $response->assertViewHas('data', function ($data) {
-            return isset($data['all_prs']) && $data['all_prs'] === false;
+            return isset($data['has_prs']) && $data['has_prs'] === false;
+        });
+    }
+
+    /** @test */
+    public function mobile_entry_lifts_page_does_not_set_all_prs_flag_when_no_lifts_are_prs()
+    {
+        $exercise = \App\Models\Exercise::factory()->create(['user_id' => $this->user->id]);
+
+        // Log a previous lift
+        $prevLog = \App\Models\LiftLog::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => now()->subWeek(),
+        ]);
+        $prevLog->liftSets()->create(['weight' => 200, 'reps' => 5, 'notes' => '']);
+
+        // Log a non-PR today (lighter weight)
+        $nonPrLog = \App\Models\LiftLog::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => now(),
+        ]);
+        $nonPrLog->liftSets()->create(['weight' => 180, 'reps' => 5, 'notes' => '']);
+
+        // Visit mobile-entry lifts page
+        $response = $this->get(route('mobile-entry.lifts'));
+
+        $response->assertStatus(200);
+        $response->assertViewHas('data', function ($data) {
+            return isset($data['has_prs']) && $data['has_prs'] === false;
         });
     }
 

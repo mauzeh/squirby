@@ -163,7 +163,7 @@ class MobileEntryController extends Controller
             ->with(['exercise', 'liftSets'])
             ->get();
         
-        $allPRs = false;
+        $hasPRs = false;
         if ($todaysLogs->isNotEmpty()) {
             // Get all exercise IDs from today
             $exerciseIds = $todaysLogs->pluck('exercise_id')->unique();
@@ -182,15 +182,15 @@ class MobileEntryController extends Controller
             $method->setAccessible(true);
             $prLogIds = $method->invoke($tableRowBuilder, $allLogs);
             
-            // Check if all today's logs are PRs
+            // Check if at least one of today's logs is a PR
             $todaysLogIds = $todaysLogs->pluck('id')->toArray();
-            $allPRs = !empty($todaysLogIds) && count(array_intersect($todaysLogIds, $prLogIds)) === count($todaysLogIds);
+            $hasPRs = !empty($todaysLogIds) && count(array_intersect($todaysLogIds, $prLogIds)) > 0;
         }
         
         $data = [
             'components' => $components,
             'autoscroll' => true,
-            'all_prs' => $allPRs
+            'has_prs' => $hasPRs
         ];
 
         return view('mobile-entry.flexible', compact('data'));

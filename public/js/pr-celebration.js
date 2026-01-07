@@ -116,8 +116,8 @@
         // Check if this page load is after a PR was logged
         const isPR = sessionStorage.getItem('is_pr');
         
-        // Check if all logged items on this page are PRs
-        const allPRs = window.mobileEntryConfig && window.mobileEntryConfig.allPRs;
+        // Check if at least one logged item on this page is a PR
+        const hasPRs = window.mobileEntryConfig && window.mobileEntryConfig.hasPRs;
         
         if (isPR === 'true') {
             // Clear the flag so it doesn't trigger again
@@ -125,8 +125,8 @@
             
             // Trigger celebration
             celebrateWithConfetti();
-        } else if (allPRs) {
-            // All items on the page are PRs - celebrate!
+        } else if (hasPRs) {
+            // At least one item on the page is a PR - celebrate!
             celebrateWithConfetti();
         }
     }
