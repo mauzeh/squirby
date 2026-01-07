@@ -129,7 +129,8 @@ class SimpleMealControllerTest extends TestCase
         // Check for title component
         $titleComponent = collect($data['components'])->firstWhere('type', 'title');
         $this->assertNotNull($titleComponent);
-        $this->assertStringContainsString('Edit Meal: Test Meal', $titleComponent['data']['main']);
+        $this->assertEquals('Test Meal', $titleComponent['data']['main']);
+        $this->assertEquals('Edit Meal', $titleComponent['data']['subtitle']);
     }
 
     /** @test */
@@ -157,18 +158,23 @@ class SimpleMealControllerTest extends TestCase
         
         $data = $response->viewData('data');
         
-        // Check for nutritional information message component
-        $nutritionComponent = collect($data['components'])->firstWhere('type', 'messages');
+        // Check for nutritional information summary component
+        $nutritionComponent = collect($data['components'])->firstWhere('type', 'summary');
         $this->assertNotNull($nutritionComponent);
         
-        $nutritionMessage = $nutritionComponent['data']['messages'][0]['text'];
-        $this->assertStringContainsString('Nutritional Information:', $nutritionMessage);
+        $items = collect($nutritionComponent['data']['items']);
+        
         // Calories = (10*4) + (20*4) + (5*9) = 40 + 80 + 45 = 165
-        $this->assertStringContainsString('165 cal', $nutritionMessage);
-        $this->assertStringContainsString('10g protein', $nutritionMessage);
-        $this->assertStringContainsString('20g carbs', $nutritionMessage);
-        $this->assertStringContainsString('5g fat', $nutritionMessage);
-        $this->assertStringContainsString('$2.50 cost', $nutritionMessage);
+        $this->assertEquals(165, $items->firstWhere('key', 'calories')['value']);
+        $this->assertEquals(10, $items->firstWhere('key', 'protein')['value']);
+        $this->assertEquals(20, $items->firstWhere('key', 'carbs')['value']);
+        $this->assertEquals(5, $items->firstWhere('key', 'fats')['value']);
+        
+        // Check labels
+        $this->assertEquals('Calories', $items->firstWhere('key', 'calories')['label']);
+        $this->assertEquals('Protein (g)', $items->firstWhere('key', 'protein')['label']);
+        $this->assertEquals('Carbs (g)', $items->firstWhere('key', 'carbs')['label']);
+        $this->assertEquals('Fat (g)', $items->firstWhere('key', 'fats')['label']);
     }
 
     /** @test */
@@ -185,15 +191,9 @@ class SimpleMealControllerTest extends TestCase
         
         $data = $response->viewData('data');
         
-        // Check that there's no nutritional information message
-        $components = collect($data['components']);
-        $nutritionComponents = $components->filter(function ($component) {
-            return $component['type'] === 'messages' && 
-                   isset($component['data']['messages'][0]['text']) &&
-                   str_contains($component['data']['messages'][0]['text'], 'Nutritional Information:');
-        });
-        
-        $this->assertTrue($nutritionComponents->isEmpty());
+        // Check that there's no summary component (since meal has no ingredients)
+        $summaryComponent = collect($data['components'])->firstWhere('type', 'summary');
+        $this->assertNull($summaryComponent);
     }
 
     /** @test */

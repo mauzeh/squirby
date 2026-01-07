@@ -73,13 +73,13 @@ class FoodsSummaryVisibilityTest extends TestCase
         // Verify the HTML contains summary section
         $response->assertSee('class="summary"', false);
         
-        // Check for the updated label - need to find the item with key 'average'
-        $averageItem = collect($summaryComponent['data']['items'])->firstWhere('key', 'average');
-        $this->assertEquals('7-Day Avg', $averageItem['label']);
+        // Check for the updated label - need to find the item with key 'calories'
+        $caloriesItem = collect($summaryComponent['data']['items'])->firstWhere('key', 'calories');
+        $this->assertEquals('Calories', $caloriesItem['label']);
     }
 
     /** @test */
-    public function summary_shows_correct_labels_including_seven_day_average()
+    public function summary_shows_correct_macro_labels()
     {
         // Create ingredient and unit
         $ingredient = Ingredient::factory()->create([
@@ -105,10 +105,10 @@ class FoodsSummaryVisibilityTest extends TestCase
         
         $items = collect($summaryComponent['data']['items']);
         
-        // Check all expected labels
-        $this->assertEquals('Calories', $items->firstWhere('key', 'total')['label']);
-        $this->assertEquals('Entries', $items->firstWhere('key', 'completed')['label']);
-        $this->assertEquals('7-Day Avg', $items->firstWhere('key', 'average')['label']);
-        $this->assertEquals('Protein (g)', $items->firstWhere('key', 'today')['label']);
+        // Check all expected labels for the new macro format
+        $this->assertEquals('Calories', $items->firstWhere('key', 'calories')['label']);
+        $this->assertEquals('Protein (g)', $items->firstWhere('key', 'protein')['label']);
+        $this->assertEquals('Carbs (g)', $items->firstWhere('key', 'carbs')['label']);
+        $this->assertEquals('Fat (g)', $items->firstWhere('key', 'fats')['label']);
     }
 }

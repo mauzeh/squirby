@@ -190,13 +190,9 @@ class SimpleMealWorkflowTest extends TestCase
         $response = $this->get(route('meals.edit', $meal->id));
         $response->assertOk();
         
-        // Verify nutritional information is displayed
+        // Verify nutritional information is displayed as summary component
         $data = $response->viewData('data');
-        $nutritionComponent = collect($data['components'])->firstWhere(function ($component) {
-            return $component['type'] === 'messages' && 
-                   isset($component['data']['messages'][0]['text']) &&
-                   str_contains($component['data']['messages'][0]['text'], 'Nutritional Information:');
-        });
+        $nutritionComponent = collect($data['components'])->firstWhere('type', 'summary');
         $this->assertNotNull($nutritionComponent);
 
         // Step 2: Add third ingredient

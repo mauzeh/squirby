@@ -155,7 +155,9 @@ class SimpleMealController extends Controller
         $components = [];
         
         // Title
-        $components[] = C::title('Edit Meal: ' . $meal->name)->build();
+        $components[] = C::title($meal->name)
+            ->subtitle('Edit Meal')
+            ->build();
         
         // Add session messages if they exist
         $messagesComponent = C::messagesFromSession();
@@ -173,14 +175,12 @@ class SimpleMealController extends Controller
         if ($meal->ingredients->isNotEmpty()) {
             $totalMacros = $this->nutritionService->calculateFoodLogTotals($meal->ingredients);
             
-            $nutritionComponent = C::messages()
-                ->info('Nutritional Information: ' . 
-                    round($totalMacros['calories']) . ' cal, ' .
-                    round($totalMacros['protein']) . 'g protein, ' .
-                    round($totalMacros['carbs']) . 'g carbs, ' .
-                    round($totalMacros['fats']) . 'g fat, ' .
-                    '$' . number_format($totalMacros['cost'], 2) . ' cost'
-                )
+            $nutritionComponent = C::summary()
+                ->ariaLabel('Meal nutritional information')
+                ->item('calories', round($totalMacros['calories']), 'Calories')
+                ->item('protein', round($totalMacros['protein']), 'Protein (g)')
+                ->item('carbs', round($totalMacros['carbs']), 'Carbs (g)')
+                ->item('fats', round($totalMacros['fats']), 'Fat (g)')
                 ->build();
             $components[] = $nutritionComponent;
         }

@@ -263,53 +263,24 @@ class FoodLogService extends MobileEntryBaseService
         }
 
         $dailyTotals = $this->nutritionService->calculateFoodLogTotals($foodLogs);
-        
-        // Get average daily calories over last 7 days for comparison
-        $avgCalories = $this->getAverageDailyCalories($userId, $selectedDate);
 
         return [
             'values' => [
-                'total' => round($dailyTotals['calories']),
-                'completed' => $entriesCount,
-                'average' => round($avgCalories),
-                'today' => round($dailyTotals['protein'], 1)
+                'calories' => round($dailyTotals['calories']),
+                'protein' => round($dailyTotals['protein']),
+                'carbs' => round($dailyTotals['carbs']),
+                'fats' => round($dailyTotals['fats'])
             ],
             'labels' => [
-                'total' => 'Calories',
-                'completed' => 'Entries',
-                'average' => '7-Day Avg',
-                'today' => 'Protein (g)'
+                'calories' => 'Calories',
+                'protein' => 'Protein (g)',
+                'carbs' => 'Carbs (g)',
+                'fats' => 'Fat (g)'
             ],
             'ariaLabels' => [
                 'section' => 'Daily nutrition summary'
             ]
         ];
-    }
-
-    /**
-     * Get average daily calories over the last 7 days
-     * 
-     * @param int $userId
-     * @param Carbon $selectedDate
-     * @return float
-     */
-    protected function getAverageDailyCalories($userId, Carbon $selectedDate)
-    {
-        $startDate = $selectedDate->copy()->subDays(7);
-        $endDate = $selectedDate->copy()->subDay(); // Exclude today
-        
-        $dailyCalories = FoodLog::with(['ingredient'])
-            ->where('user_id', $userId)
-            ->whereBetween('logged_at', [$startDate, $endDate])
-            ->get()
-            ->groupBy(function ($log) {
-                return $log->logged_at->format('Y-m-d');
-            })
-            ->map(function ($dayLogs) {
-                return $this->nutritionService->calculateFoodLogTotals($dayLogs)['calories'];
-            });
-        
-        return $dailyCalories->count() > 0 ? $dailyCalories->avg() : 0;
     }
 
     /**
