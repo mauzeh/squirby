@@ -38,7 +38,7 @@
             sessionStorage.setItem('is_pr', 'true');
         @endif
     </script>
-    <script src="{{ asset('js/pr-celebration.js') }}"></script>
+    <script src="{{ asset('js/pr-confetti.js') }}"></script>
     <script src="{{ asset('js/mobile-entry.js') }}"></script>
     @php
         // Automatically collect required scripts from components
