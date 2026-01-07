@@ -19,7 +19,7 @@ class WelcomeOverlayTest extends TestCase
         $response = $this->actingAs($user)->get(route('mobile-entry.lifts'));
         
         $response->assertStatus(200);
-        $response->assertSee('Welcome to Your Fitness Journey!');
+        $response->assertSee('Let\'s Get Strong!');
         $response->assertSee('welcome-overlay');
     }
 
@@ -40,6 +40,6 @@ class WelcomeOverlayTest extends TestCase
         $response->assertStatus(200);
         // Note: This test may fail due to database transaction issues in test environment
         // but the feature works correctly in practice
-        $response->assertDontSee('Welcome to Your Fitness Journey!');
+        $response->assertDontSee('Let\'s Get Strong!');
     }
 }
