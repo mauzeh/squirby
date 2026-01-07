@@ -156,11 +156,18 @@ return [
             'route' => 'profile.edit',
             'patterns' => ['profile.edit'],
             'style' => 'padding: 14px 8px',
-        ],
-        // Logout
-        [
-            'type' => 'logout',
-            'icon' => 'fa-sign-out-alt',
+            'children' => [
+                [
+                    'label' => 'Edit Profile',
+                    'route' => 'profile.edit',
+                    'patterns' => ['profile.edit'],
+                ],
+                [
+                    'label' => 'Logout',
+                    'route' => 'logout.get',
+                    'icon' => 'fa-sign-out-alt',
+                ],
+            ],
         ],
     ],
 ];

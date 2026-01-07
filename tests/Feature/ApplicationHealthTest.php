@@ -139,6 +139,7 @@ class ApplicationHealthTest extends TestCase
             'verification.verify',
             'verification.resend',
             'logout',
+            'logout.get', // GET logout route - redirects and logs out user
             
             // OAuth routes that redirect
             'auth.google',
