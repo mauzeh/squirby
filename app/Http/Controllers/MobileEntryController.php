@@ -195,11 +195,8 @@ class MobileEntryController extends Controller
                 ->get();
             
             // Calculate PR log IDs
-            $tableRowBuilder = app(\App\Services\LiftLogTableRowBuilder::class);
-            $reflection = new \ReflectionClass($tableRowBuilder);
-            $method = $reflection->getMethod('calculatePRLogIds');
-            $method->setAccessible(true);
-            $prLogIds = $method->invoke($tableRowBuilder, $allLogs);
+            $prDetectionService = app(\App\Services\PRDetectionService::class);
+            $prLogIds = $prDetectionService->calculatePRLogIds($allLogs);
             
             // Check if at least one of today's logs is a PR
             $todaysLogIds = $todaysLogs->pluck('id')->toArray();

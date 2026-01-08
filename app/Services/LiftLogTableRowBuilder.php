@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\LiftLog;
 use App\Services\ExerciseAliasService;
+use App\Services\PRDetectionService;
 use Illuminate\Support\Collection;
 use Carbon\Carbon;
 
@@ -14,10 +15,14 @@ use Carbon\Carbon;
 class LiftLogTableRowBuilder
 {
     protected ExerciseAliasService $aliasService;
+    protected PRDetectionService $prDetectionService;
 
-    public function __construct(ExerciseAliasService $aliasService)
-    {
+    public function __construct(
+        ExerciseAliasService $aliasService,
+        PRDetectionService $prDetectionService
+    ) {
         $this->aliasService = $aliasService;
+        $this->prDetectionService = $prDetectionService;
     }
 
     /**
@@ -57,7 +62,7 @@ class LiftLogTableRowBuilder
             $logsForPRCalculation = $liftLogs;
         }
         
-        $prLogIds = $this->calculatePRLogIds($logsForPRCalculation);
+        $prLogIds = $this->prDetectionService->calculatePRLogIds($logsForPRCalculation);
         $config['prLogIds'] = $prLogIds;
         
         return $liftLogs->map(function ($liftLog) use ($config) {
@@ -209,96 +214,6 @@ class LiftLogTableRowBuilder
         $row['initialState'] = 'expanded';
         
         return $row;
-    }
-
-    /**
-     * Calculate which lift logs contain PRs based on estimated 1RM
-     * A PR is determined at the time it was achieved - meaning it beat all previous lifts
-     * This is done once upfront to avoid N+1 queries
-     * 
-     * For lifts with 1-10 reps, a PR is marked if EITHER:
-     * 1. It's the heaviest weight ever lifted for that specific rep count (rep-specific PR)
-     * 2. OR it beats the overall estimated 1RM
-     * 
-     * @param Collection $liftLogs Collection of lift logs to analyze (should include ALL historical logs for accurate PR detection)
-     * @return array Array of lift log IDs that contain PRs
-     */
-    protected function calculatePRLogIds(Collection $liftLogs): array
-    {
-        if ($liftLogs->isEmpty()) {
-            return [];
-        }
-
-        $prLogIds = [];
-        
-        // Group logs by exercise to process each exercise independently
-        $logsByExercise = $liftLogs->groupBy('exercise_id');
-        
-        foreach ($logsByExercise as $exerciseId => $exerciseLogs) {
-            // Only process if this is an exercise that supports 1RM calculation
-            $firstLog = $exerciseLogs->first();
-            $strategy = $firstLog->exercise->getTypeStrategy();
-            
-            if (!$strategy->canCalculate1RM()) {
-                continue;
-            }
-
-            // Sort logs by date (oldest first) to process chronologically
-            $sortedLogs = $exerciseLogs->sortBy('logged_at');
-            
-            $maxEstimated1RMSoFar = 0;
-            $maxWeightByReps = []; // Track max weight for each rep count (1-5 reps)
-            $tolerance = 0.1; // Small tolerance for floating point comparison
-            
-            // Process each log chronologically for this exercise
-            foreach ($sortedLogs as $log) {
-                $logMaxEstimated1RM = 0;
-                $isRepSpecificPR = false;
-                
-                // Find the best estimated 1RM in this log and check for rep-specific PRs
-                foreach ($log->liftSets as $set) {
-                    if ($set->weight > 0 && $set->reps > 0) {
-                        try {
-                            $estimated1RM = $strategy->calculate1RM($set->weight, $set->reps, $log);
-                            
-                            if ($estimated1RM > $logMaxEstimated1RM) {
-                                $logMaxEstimated1RM = $estimated1RM;
-                            }
-                            
-                            // For sets up to 10 reps, check if this is a rep-specific PR
-                            if ($set->reps <= 10) {
-                                $repCount = $set->reps;
-                                $previousMaxForReps = $maxWeightByReps[$repCount] ?? 0;
-                                
-                                if ($set->weight > $previousMaxForReps + $tolerance) {
-                                    $isRepSpecificPR = true;
-                                    $maxWeightByReps[$repCount] = $set->weight;
-                                }
-                            }
-                        } catch (\Exception $e) {
-                            // Skip sets that can't be calculated
-                            continue;
-                        }
-                    }
-                }
-                
-                // Mark as PR if EITHER:
-                // 1. It's a rep-specific PR (for 1-5 reps)
-                // 2. OR it beats the overall estimated 1RM
-                $beats1RM = $logMaxEstimated1RM > $maxEstimated1RMSoFar + $tolerance;
-                
-                if ($isRepSpecificPR || $beats1RM) {
-                    $prLogIds[] = $log->id;
-                    
-                    // Update max 1RM if this beats it
-                    if ($beats1RM) {
-                        $maxEstimated1RMSoFar = $logMaxEstimated1RM;
-                    }
-                }
-            }
-        }
-        
-        return $prLogIds;
     }
 
     /**

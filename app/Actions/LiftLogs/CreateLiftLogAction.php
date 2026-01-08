@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Services\ExerciseTypes\ExerciseTypeFactory;
 use App\Services\ExerciseTypes\Exceptions\InvalidExerciseDataException;
 use App\Services\ExerciseAliasService;
+use App\Services\PRDetectionService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -16,7 +17,8 @@ use Illuminate\Support\Facades\Auth;
 class CreateLiftLogAction
 {
     public function __construct(
-        private ExerciseAliasService $exerciseAliasService
+        private ExerciseAliasService $exerciseAliasService,
+        private PRDetectionService $prDetectionService
     ) {}
 
     public function execute(Request $request, User $user): array
@@ -160,86 +162,7 @@ class CreateLiftLogAction
     
     private function checkIfPR(LiftLog $liftLog, Exercise $exercise, User $user): bool
     {
-        $strategy = $exercise->getTypeStrategy();
-        
-        // Only exercises that support 1RM calculation can have PRs
-        if (!$strategy->canCalculate1RM()) {
-            return false;
-        }
-        
-        // Get all previous lift logs for this exercise (before this one)
-        $previousLogs = LiftLog::where('exercise_id', $exercise->id)
-            ->where('user_id', $user->id)
-            ->where('logged_at', '<', $liftLog->logged_at)
-            ->with('liftSets')
-            ->orderBy('logged_at', 'asc')
-            ->get();
-        
-        // Calculate the best estimated 1RM from the current log
-        $currentBest1RM = 0;
-        $isRepSpecificPR = false;
-        $tolerance = 0.1;
-        
-        foreach ($liftLog->liftSets as $set) {
-            if ($set->weight > 0 && $set->reps > 0) {
-                try {
-                    $estimated1RM = $strategy->calculate1RM($set->weight, $set->reps, $liftLog);
-                    if ($estimated1RM > $currentBest1RM) {
-                        $currentBest1RM = $estimated1RM;
-                    }
-                    
-                    // For sets up to 10 reps, check if this is a rep-specific PR
-                    if ($set->reps <= 10) {
-                        $maxWeightForReps = 0;
-                        
-                        // Find the max weight previously lifted for this rep count
-                        foreach ($previousLogs as $prevLog) {
-                            foreach ($prevLog->liftSets as $prevSet) {
-                                if ($prevSet->reps == $set->reps && $prevSet->weight > $maxWeightForReps) {
-                                    $maxWeightForReps = $prevSet->weight;
-                                }
-                            }
-                        }
-                        
-                        // Check if current weight beats previous max for this rep count
-                        if ($set->weight > $maxWeightForReps + $tolerance) {
-                            $isRepSpecificPR = true;
-                        }
-                    }
-                } catch (\Exception $e) {
-                    continue;
-                }
-            }
-        }
-        
-        // If this is the first log, it's a PR
-        if ($previousLogs->isEmpty()) {
-            return $currentBest1RM > 0;
-        }
-        
-        // Find the best estimated 1RM from all previous logs
-        $previousBest1RM = 0;
-        foreach ($previousLogs as $log) {
-            foreach ($log->liftSets as $set) {
-                if ($set->weight > 0 && $set->reps > 0) {
-                    try {
-                        $estimated1RM = $strategy->calculate1RM($set->weight, $set->reps, $log);
-                        if ($estimated1RM > $previousBest1RM) {
-                            $previousBest1RM = $estimated1RM;
-                        }
-                    } catch (\Exception $e) {
-                        continue;
-                    }
-                }
-            }
-        }
-        
-        // This is a PR if EITHER:
-        // 1. It's a rep-specific PR (for 1-5 reps)
-        // 2. OR it beats the overall estimated 1RM
-        $beats1RM = $currentBest1RM > $previousBest1RM + $tolerance;
-        
-        return $isRepSpecificPR || $beats1RM;
+        return $this->prDetectionService->isLiftLogPR($liftLog, $exercise, $user);
     }
     
     private function generateSuccessMessage(Exercise $exercise, $weight, int $reps, int $rounds, ?string $bandColor = null, bool $isPR = false): string

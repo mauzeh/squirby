@@ -9,6 +9,7 @@ use App\Models\LiftLog;
 use App\Models\LiftSet;
 use App\Services\LiftLogTableRowBuilder;
 use App\Services\ExerciseAliasService;
+use App\Services\PRDetectionService;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Mockery;
@@ -19,13 +20,21 @@ class LiftLogTableRowBuilderTest extends TestCase
 
     protected LiftLogTableRowBuilder $builder;
     protected $aliasService;
+    protected $prDetectionService;
 
     protected function setUp(): void
     {
         parent::setUp();
         
         $this->aliasService = Mockery::mock(ExerciseAliasService::class);
-        $this->builder = new LiftLogTableRowBuilder($this->aliasService);
+        $this->prDetectionService = Mockery::mock(PRDetectionService::class);
+        
+        // Default mock - return empty array (no PRs) unless specifically overridden
+        $this->prDetectionService->shouldReceive('calculatePRLogIds')
+            ->andReturn([])
+            ->byDefault();
+            
+        $this->builder = new LiftLogTableRowBuilder($this->aliasService, $this->prDetectionService);
     }
 
     protected function tearDown(): void
@@ -555,6 +564,11 @@ class LiftLogTableRowBuilderTest extends TestCase
             ->times(3)
             ->andReturn($exercise->title);
 
+        // Mock PR detection to return log1 and log2 as PRs
+        $this->prDetectionService->shouldReceive('calculatePRLogIds')
+            ->once()
+            ->andReturn([$log1->id, $log2->id]);
+
         $this->actingAs($user);
         $rows = $this->builder->buildRows(collect([$log1, $log2, $log3]));
 
@@ -622,6 +636,11 @@ class LiftLogTableRowBuilderTest extends TestCase
             ->times(3)
             ->andReturn($exercise->title);
 
+        // Mock PR detection to return all three as PRs
+        $this->prDetectionService->shouldReceive('calculatePRLogIds')
+            ->once()
+            ->andReturn([$log1->id, $log2->id, $log3->id]);
+
         $this->actingAs($user);
         $rows = $this->builder->buildRows(collect([$log1, $log2, $log3]));
 
@@ -650,6 +669,11 @@ class LiftLogTableRowBuilderTest extends TestCase
         $this->aliasService->shouldReceive('getDisplayName')
             ->once()
             ->andReturn($exercise->title);
+
+        // Mock PR detection to return empty array (no PRs for bodyweight exercises)
+        $this->prDetectionService->shouldReceive('calculatePRLogIds')
+            ->once()
+            ->andReturn([]);
 
         $this->actingAs($user);
         $rows = $this->builder->buildRows(collect([$log]));
@@ -697,6 +721,11 @@ class LiftLogTableRowBuilderTest extends TestCase
             ->times(2)
             ->andReturn($exercise->title);
 
+        // Mock PR detection to return both as PRs
+        $this->prDetectionService->shouldReceive('calculatePRLogIds')
+            ->once()
+            ->andReturn([$log1->id, $log2->id]);
+
         $this->actingAs($user);
         $rows = $this->builder->buildRows(collect([$log1, $log2]));
 
@@ -741,6 +770,11 @@ class LiftLogTableRowBuilderTest extends TestCase
             ->times(2)
             ->andReturn($exercise->title);
 
+        // Mock PR detection to return only log1 as PR (ties don't count)
+        $this->prDetectionService->shouldReceive('calculatePRLogIds')
+            ->once()
+            ->andReturn([$log1->id]);
+
         $this->actingAs($user);
         $rows = $this->builder->buildRows(collect([$log1, $log2]));
 
@@ -781,6 +815,11 @@ class LiftLogTableRowBuilderTest extends TestCase
         $this->aliasService->shouldReceive('getDisplayName')
             ->once()
             ->andReturn($exercise->title);
+
+        // Mock PR detection to return this log as PR
+        $this->prDetectionService->shouldReceive('calculatePRLogIds')
+            ->once()
+            ->andReturn([$log->id]);
 
         $this->actingAs($user);
         $rows = $this->builder->buildRows(collect([$log]));
