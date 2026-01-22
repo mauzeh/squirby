@@ -632,35 +632,35 @@ $prsPerMonth = PersonalRecord::where('user_id', $userId)
 
 Once PRs are first-class data, new features become possible:
 
-### 1. PR Dashboard
+### PR Dashboard
 - "You've set 47 PRs this year!"
 - PR frequency chart
 - Longest PR drought
 - PR streak tracking
 
-### 2. PR Notifications
+### PR Notifications
 - Email: "Congrats on your new PR!"
 - Push notifications
 - Weekly PR summary
 
-### 3. PR Analytics
+### PR Analytics
 - "You set most PRs on Mondays"
 - "Average time between PRs: 12 days"
 - PR prediction: "You're on track for a PR next week"
 - Correlation with other metrics (sleep, nutrition, etc.)
 
-### 4. PR History Timeline
+### PR History Timeline
 - Visual timeline of all PRs
 - See progression over time
 - Compare PR rates across exercises
 
-### 5. Social Features
+### Social Features
 - Share PR achievements
 - Compare with friends
 - Gym leaderboards
 - PR challenges
 
-### 6. Training Insights
+### Training Insights
 - Which exercises you PR most frequently
 - Optimal training frequency for PRs
 - PR patterns by time of day, day of week
@@ -689,26 +689,19 @@ Once PRs are first-class data, new features become possible:
 - [ ] Create `PRRecalculationService`
 - [ ] Write tests for edge cases
 
-### Phase 4: Historical Migration (Week 2-3)
-- [ ] Create `prs:calculate-historical` command
-- [ ] Test on development data
-- [ ] Run on staging environment
-- [ ] Verify data integrity
-- [ ] Run on production (off-peak hours)
-
-### Phase 5: Update Read Path (Week 3)
+### Phase 4: Update Read Path (Week 3)
 - [ ] Update `LiftLogTableRowBuilder` to use PR records
 - [ ] Remove old O(n²) calculation code
 - [ ] Update tests
 - [ ] Performance testing
 - [ ] Deploy to production
 
-### Phase 6: New Features (Week 4+)
-- [ ] PR dashboard page
-- [ ] PR history timeline
-- [ ] PR notifications
-- [ ] PR analytics
-- [ ] Social features
+### Phase 5: Historical Migration (Week 3-4)
+- [ ] Create `prs:calculate-historical` command
+- [ ] Test on development data
+- [ ] Run on staging environment
+- [ ] Verify data integrity
+- [ ] Run on production (off-peak hours)
 
 ## Testing Strategy
 
