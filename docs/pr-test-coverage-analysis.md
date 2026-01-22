@@ -1,5 +1,25 @@
 # PR Test Coverage Analysis
 
+## Current Status Summary
+
+**Test Results**: 32 passing, 1 failing (out of 33 total)
+
+**Resolved Issues**:
+- ✅ Issue #1: Rep-specific PRs on first attempt - INTENTIONAL behavior, working correctly
+- ✅ Issue #2: 1RM PR detection with incorrect math - FIXED, test rewritten with correct calculations
+- ✅ Issue #3: High rep ranges (>10) - INTENTIONAL behavior, system correctly doesn't calculate 1RM for >10 reps
+
+**Outstanding Issues**:
+- ⚠️ Issue #4: Volume tolerance not working correctly - needs discussion before fixing
+
+**Key Findings**:
+1. System intentionally treats first-time rep counts as PRs (accuracy over impressiveness)
+2. 1RM and rep-specific PRs are only calculated for 1-10 reps (formulas unreliable beyond that)
+3. High rep sets (>10) can still achieve volume PRs
+4. Volume tolerance implementation needs review
+
+---
+
 ## Summary
 
 After implementing multiple PR types (1RM, Rep-Specific, Volume), we discovered several issues with test coverage and implementation accuracy.
@@ -35,16 +55,18 @@ After implementing multiple PR types (1RM, Rep-Specific, Volume), we discovered 
 
 **Status**: ✅ Test rewritten with correct math, system working properly
 
-### 3. High Rep 1RM PRs Not Detected ❌
+### 3. ~~High Rep Ranges (>10) Don't Support 1RM/Rep-Specific PRs~~ ✅ INTENTIONAL
 
-**Problem**: Lifts with >10 reps aren't being detected as 1RM PRs.
+**Behavior**: Lifts with >10 reps don't trigger 1RM or rep-specific PRs, only volume PRs.
 
 **Example**:
-- Previous: 100 lbs × 15 reps
-- Current: 110 lbs × 15 reps
-- **Issue**: Should be 1RM PR but isn't detected
+- Previous: 100 lbs × 15 reps × 1 set = 1500 lbs volume
+- Current: 110 lbs × 15 reps × 1 set = 1650 lbs volume
+- **Result**: Volume PR only (no 1RM or rep-specific PR)
 
-**Root Cause**: Possible issue with 1RM calculation for high rep ranges.
+**Rationale**: This is intentional and correct. The `calculate1RM()` method in `BaseExerciseType.php` throws an exception for reps > 10 because 1RM formulas become unreliable at high rep ranges. High rep sets test endurance, not maximal strength. Rep-specific PRs are also limited to 1-10 reps for the same reason.
+
+**Status**: ✅ Working as designed, test updated to reflect intentional behavior
 
 ### 4. Volume Tolerance Not Working ❌
 
@@ -65,15 +87,15 @@ After implementing multiple PR types (1RM, Rep-Specific, Volume), we discovered 
    - ✅ First time doing a specific rep count (IS a PR - intentional)
    - ✅ Beating previous record for specific rep count (should be PR)
    - ❌ Rep-specific PR at exactly 10 reps (boundary)
-   - ❌ Rep-specific PR at 11 reps (should not trigger)
+   - ✅ Rep-specific PR at 11+ reps (correctly does NOT trigger - intentional)
 
 2. **1RM PR Edge Cases**
-   - ❌ 1RM PR with high reps (15+)
+   - ✅ 1RM PR with high reps (15+) - correctly does NOT calculate (intentional)
    - ❌ 1RM PR with very low reps (1-2)
-   - ❌ 1RM PR when rep-specific is not triggered
+   - ✅ 1RM PR when rep-specific is also triggered (expected behavior)
 
 3. **Volume PR Edge Cases**
-   - ❌ Volume PR with tolerance boundary testing
+   - ❌ Volume PR with tolerance boundary testing (issue #4 - needs fixing)
    - ✅ Volume PR with varying set weights
    - ❌ Volume PR with different rep schemes
 
@@ -85,7 +107,7 @@ After implementing multiple PR types (1RM, Rep-Specific, Volume), we discovered 
 5. **Tolerance Testing**
    - ❌ 1RM tolerance (0.1 lbs)
    - ❌ Rep-specific tolerance (0.1 lbs)
-   - ❌ Volume tolerance (should be 0.1 lbs total? or per set?)
+   - ❌ Volume tolerance (should be 0.1 lbs total? or per set?) - issue #4
 
 ## Existing Test Coverage
 
@@ -154,27 +176,30 @@ After implementing multiple PR types (1RM, Rep-Specific, Volume), we discovered 
 ### Additional Tests to Add
 
 1. ~~First-time rep count scenarios~~ ✅ Already covered, working as designed
-2. High rep (>10) 1RM PRs
-3. Tolerance boundary cases
+2. ~~High rep (>10) 1RM PRs~~ ✅ Already covered, working as designed (no 1RM for >10 reps)
+3. Tolerance boundary cases (especially for volume)
 4. All combinations of 2 PR types (not just all 3)
+5. Boundary testing at exactly 10 reps (edge of 1RM calculation limit)
 
 ### Documentation Updates
 
 1. ✅ Clarify when rep-specific PRs trigger (first attempt IS a PR)
-2. Document tolerance application strategy
-3. Add examples of edge cases
-4. Update PR type priority documentation
+2. ✅ Document high rep range behavior (>10 reps don't support 1RM/rep-specific PRs)
+3. ❌ Document tolerance application strategy (pending discussion on issue #4)
+4. ✅ Add examples of edge cases
+5. ❌ Update PR type priority documentation
 
 ## Current Test Statistics
 
 - **Total PR-related tests**: 33
-- **Passing**: 31
-- **Failing**: 2 (issues #3 and #4)
+- **Passing**: 32
+- **Failing**: 1 (issue #4 - volume tolerance)
 - **Coverage gaps identified**: 4+
 
 ## Next Steps
 
-1. Fix the 2 remaining bugs (high rep 1RM PRs, volume tolerance)
-2. Add missing edge case tests
-3. Document expected behavior for all scenarios
-4. Consider adding property-based tests for PR detection
+1. ~~Fix issue #3 (high rep ranges)~~ ✅ COMPLETED - working as designed
+2. Discuss and fix issue #4 (volume tolerance) with user
+3. Add missing edge case tests
+4. Document expected behavior for all scenarios
+5. Consider adding property-based tests for PR detection

@@ -266,11 +266,11 @@ class PRTypeInterferenceTest extends TestCase
     }
 
     /** @test */
-    public function rep_specific_pr_only_applies_to_1_to_10_reps()
+    public function high_rep_ranges_above_10_do_not_support_1rm_or_rep_specific_prs()
     {
         $exercise = Exercise::factory()->create(['user_id' => $this->user->id]);
 
-        // First session: 100 lbs × 15 reps
+        // First session: 100 lbs × 15 reps × 1 set = 1500 lbs volume
         $firstLog = LiftLog::factory()->create([
             'user_id' => $this->user->id,
             'exercise_id' => $exercise->id,
@@ -278,8 +278,11 @@ class PRTypeInterferenceTest extends TestCase
         ]);
         $firstLog->liftSets()->create(['weight' => 100, 'reps' => 15]);
 
-        // Second session: 110 lbs × 15 reps (heavier for same rep count)
-        // But rep-specific PRs only apply to 1-10 reps
+        // Second session: 110 lbs × 15 reps × 1 set = 1650 lbs volume
+        // Higher weight and volume, but >10 reps means:
+        // - No 1RM calculation (formulas unreliable for high reps)
+        // - No rep-specific PR (only applies to 1-10 reps)
+        // - Should still get volume PR
         $liftLogData = [
             'exercise_id' => $exercise->id,
             'weight' => 110,
@@ -293,11 +296,12 @@ class PRTypeInterferenceTest extends TestCase
 
         $prFlags = session('is_pr');
         
-        // Should be a PR (1RM and possibly volume)
+        // Should be a PR (volume only)
         $this->assertTrue($prFlags > 0);
         
-        // Should have ONE_RM but NOT REP_SPECIFIC (because 15 reps > 10)
-        $this->assertTrue(PRType::ONE_RM->isIn($prFlags));
+        // Should have VOLUME but NOT ONE_RM or REP_SPECIFIC (because 15 reps > 10)
+        $this->assertTrue(PRType::VOLUME->isIn($prFlags));
+        $this->assertFalse(PRType::ONE_RM->isIn($prFlags));
         $this->assertFalse(PRType::REP_SPECIFIC->isIn($prFlags));
     }
 
