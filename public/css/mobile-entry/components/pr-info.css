@@ -1,0 +1,149 @@
+/* PR Info Component Styles */
+
+.component-pr-info {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 16px;
+    margin: 16px 0;
+}
+
+.pr-info-header {
+    margin-bottom: 12px;
+}
+
+.pr-info-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #495057;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.pr-info-title i {
+    color: #ffc107;
+    font-size: 18px;
+}
+
+.pr-info-content {
+    margin-top: 12px;
+}
+
+.pr-info-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.pr-info-table thead {
+    background: #e9ecef;
+}
+
+.pr-info-table th {
+    padding: 10px 12px;
+    text-align: left;
+    font-size: 13px;
+    font-weight: 600;
+    color: #495057;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.pr-info-table td {
+    padding: 12px;
+    border-top: 1px solid #dee2e6;
+    font-size: 14px;
+}
+
+.pr-info-row {
+    transition: background-color 0.2s ease;
+}
+
+.pr-info-row:hover {
+    background-color: #f8f9fa;
+}
+
+.pr-info-type {
+    width: 30%;
+}
+
+.pr-info-value {
+    width: 40%;
+    font-weight: 500;
+    color: #212529;
+}
+
+.pr-info-date {
+    width: 30%;
+    color: #6c757d;
+    font-size: 13px;
+}
+
+.pr-info-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.pr-info-badge--one_rm {
+    background: #e3f2fd;
+    color: #1976d2;
+}
+
+.pr-info-badge--volume {
+    background: #f3e5f5;
+    color: #7b1fa2;
+}
+
+.pr-info-badge--rep_specific {
+    background: #e8f5e9;
+    color: #388e3c;
+}
+
+.pr-info-link {
+    color: #007bff;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.pr-info-link:hover {
+    color: #0056b3;
+    text-decoration: underline;
+}
+
+.pr-info-empty {
+    text-align: center;
+    color: #6c757d;
+    font-style: italic;
+    padding: 20px;
+    margin: 0;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 600px) {
+    .pr-info-table {
+        font-size: 13px;
+    }
+    
+    .pr-info-table th,
+    .pr-info-table td {
+        padding: 8px 6px;
+    }
+    
+    .pr-info-badge {
+        font-size: 11px;
+        padding: 3px 8px;
+    }
+    
+    .pr-info-date {
+        font-size: 12px;
+    }
+}

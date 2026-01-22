@@ -217,4 +217,25 @@ class ComponentBuilder
     {
         return new TabsComponentBuilder($id);
     }
+    
+    /**
+     * Create a PR info component
+     * 
+     * @param string $title The title for the PR info section
+     * @param array $records Array of PR records with keys: type, label, value, date, lift_log_id
+     * @param string|null $emptyMessage Message to show when no records exist
+     * @return array Component data
+     */
+    public static function prInfo(string $title = 'Previous Records', array $records = [], ?string $emptyMessage = null): array
+    {
+        return [
+            'type' => 'pr-info',
+            'data' => [
+                'title' => $title,
+                'records' => $records,
+                'emptyMessage' => $emptyMessage ?? 'No previous records found. This will be your first!',
+                'ariaLabel' => 'Personal Record Information'
+            ]
+        ];
+    }
 }
