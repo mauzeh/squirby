@@ -354,15 +354,20 @@ $prRecords = $prs->map(function ($pr) {
 
 **Solution:**
 ```php
-// In LiftLogController@update
+// In UpdateLiftLogAction
 DB::transaction(function () use ($liftLog, $validated) {
     $liftLog->update($validated);
     
-    // Re-trigger PR detection
-    event(new LiftLogged($liftLog, isUpdate: true));
+    // Update lift sets
+    $this->updateLiftSets($request, $liftLog, $exercise);
     
-    // May need to recalculate subsequent PRs
-    $this->recalculateSubsequentPRs($liftLog);
+    // Re-trigger PR detection
+    LiftLogCompleted::dispatch($liftLog, isUpdate: true);
+    
+    // May need to recalculate subsequent PRs if this was a PR
+    if ($liftLog->wasChanged('logged_at')) {
+        $this->recalculateSubsequentPRs($liftLog);
+    }
 });
 ```
 
@@ -372,17 +377,18 @@ DB::transaction(function () use ($liftLog, $validated) {
 
 **Solution:**
 ```php
-// In LiftLogController@destroy
+// In DeleteLiftLogAction
 DB::transaction(function () use ($liftLog) {
+    // Store info before deletion
+    $userId = $liftLog->user_id;
+    $exerciseId = $liftLog->exercise_id;
+    $loggedAt = $liftLog->logged_at;
+    
     // Soft delete cascades to personal_records (via foreign key)
     $liftLog->delete();
     
     // Recalculate PRs for this exercise (in case deleted log was a PR)
-    $this->recalculatePRsForExercise(
-        $liftLog->user_id,
-        $liftLog->exercise_id,
-        $liftLog->logged_at
-    );
+    $this->recalculatePRsForExercise($userId, $exerciseId, $loggedAt);
 });
 ```
 
@@ -396,7 +402,7 @@ DB::transaction(function () use ($liftLog) {
 **Solution:**
 ```php
 // In DetectAndRecordPRs listener
-public function handle(LiftLogged $event): void
+public function handle(LiftLogCompleted $event): void
 {
     $liftLog = $event->liftLog;
     
@@ -408,7 +414,7 @@ public function handle(LiftLogged $event): void
     
     if ($hasSubsequentLogs) {
         // Recalculate all PRs for this exercise from this date forward
-        $this->recalculatePRsFromDate(
+        app(PRRecalculationService::class)->recalculatePRsFromDate(
             $liftLog->user_id,
             $liftLog->exercise_id,
             $liftLog->logged_at
@@ -424,6 +430,12 @@ public function handle(LiftLogged $event): void
 
 ```php
 namespace App\Services;
+
+use App\Events\LiftLogCompleted;
+use App\Models\LiftLog;
+use App\Models\PersonalRecord;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class PRRecalculationService
 {
@@ -453,9 +465,17 @@ class PRRecalculationService
             
             // Recalculate PRs for each log
             foreach ($logs as $log) {
-                event(new LiftLogged($log, isUpdate: true));
+                LiftLogCompleted::dispatch($log, isUpdate: true);
             }
         });
+    }
+    
+    public function recalculatePRsFromDate(
+        int $userId,
+        int $exerciseId,
+        Carbon $fromDate
+    ): void {
+        $this->recalculatePRsForExercise($userId, $exerciseId, $fromDate);
     }
 }
 ```
@@ -535,7 +555,7 @@ class CalculateHistoricalPRs extends Command
             }
             
             foreach ($logs as $log) {
-                event(new LiftLogged($log));
+                LiftLogCompleted::dispatch($log);
             }
         }
     }
@@ -730,11 +750,13 @@ Once PRs are first-class data, new features become possible:
 - [ ] Write unit tests for models
 
 ### Phase 2: Event System (Week 1-2)
-- [ ] Create `LiftLogged` event
-- [ ] Create `DetectAndRecordPRs` listener
+- [ ] Create `LiftLogCompleted` event in `app/Events/`
+- [ ] Create `DetectAndRecordPRs` listener in `app/Listeners/`
 - [ ] Update `PRDetectionService` with `detectPRsWithDetails()` method
-- [ ] Register event listener
+- [ ] Update `CreateLiftLogAction` to dispatch event after creating sets
+- [ ] Update `UpdateLiftLogAction` to dispatch event after updating sets
 - [ ] Write integration tests
+- [ ] Verify auto-discovery works (Laravel 12 automatically registers events)
 
 ### Phase 3: Edge Cases (Week 2)
 - [ ] Handle lift log updates
