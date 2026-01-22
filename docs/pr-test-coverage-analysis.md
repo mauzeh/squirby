@@ -19,17 +19,21 @@ After implementing multiple PR types (1RM, Rep-Specific, Volume), we discovered 
 
 **Status**: ✅ Working as designed
 
-### 2. 1RM PR Not Detected in Some Cases ❌
+### 2. ~~1RM PR Not Detected in Some Cases~~ ✅ FIXED
 
-**Problem**: When a lift has a higher estimated 1RM but is NOT a rep-specific PR, it's not being detected.
+**Previous Problem**: Test case had incorrect math expectations.
 
-**Example**:
-- Previous: 180 lbs × 5 reps (est. 1RM ~202 lbs)
-- Previous: 185 lbs × 6 reps (heavier 6-rep)
-- Current: 175 lbs × 6 reps (est. 1RM ~209 lbs)
-- **Issue**: Should be 1RM PR but isn't detected
+**Solution**: Rewrote test with correct Epley formula calculations:
+- 150 lbs × 8 reps → Est. 1RM = 189.96 lbs
+- 165 lbs × 7 reps → Est. 1RM = 203.46 lbs  
+- 168 lbs × 7 reps → Est. 1RM = 207.16 lbs ← 1RM PR!
 
-**Root Cause**: Need to verify the 1RM calculation logic is working correctly.
+**Note**: In practice, 1RM PRs almost always come with rep-specific PRs because:
+- Heavier weight at same reps = rep-specific PR
+- New rep count = rep-specific PR (by design)
+- Lighter weight at same reps = usually not a 1RM PR
+
+**Status**: ✅ Test rewritten with correct math, system working properly
 
 ### 3. High Rep 1RM PRs Not Detected ❌
 
@@ -163,14 +167,14 @@ After implementing multiple PR types (1RM, Rep-Specific, Volume), we discovered 
 
 ## Current Test Statistics
 
-- **Total PR-related tests**: 32
-- **Passing**: 30 (after fixing intentional behavior tests)
-- **Failing**: 3 (real bugs)
-- **Coverage gaps identified**: 6+
+- **Total PR-related tests**: 33
+- **Passing**: 31
+- **Failing**: 2 (issues #3 and #4)
+- **Coverage gaps identified**: 4+
 
 ## Next Steps
 
-1. Fix the 3 remaining bugs (1RM detection, high rep PRs, volume tolerance)
+1. Fix the 2 remaining bugs (high rep 1RM PRs, volume tolerance)
 2. Add missing edge case tests
 3. Document expected behavior for all scenarios
 4. Consider adding property-based tests for PR detection

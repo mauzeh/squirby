@@ -151,29 +151,61 @@ class PRTypeInterferenceTest extends TestCase
     {
         $exercise = Exercise::factory()->create(['user_id' => $this->user->id]);
 
-        // First session: 180 lbs × 5 reps (estimated 1RM ~202 lbs)
+        // First session: 150 lbs × 8 reps (estimated 1RM = 150 × 1.2664 = 189.96 lbs)
         $firstLog = LiftLog::factory()->create([
             'user_id' => $this->user->id,
             'exercise_id' => $exercise->id,
-            'logged_at' => now()->subDay(),
+            'logged_at' => now()->subDays(3),
         ]);
-        $firstLog->liftSets()->create(['weight' => 180, 'reps' => 5]);
+        $firstLog->liftSets()->create(['weight' => 150, 'reps' => 8]);
 
-        // Second session: 175 lbs × 6 reps (estimated 1RM ~209 lbs - HIGHER)
-        // But NOT a rep-specific PR for 6 reps if we had a heavier 6-rep before
-        // Let's add a previous 6-rep lift
+        // Second session: 165 lbs × 7 reps (estimated 1RM = 165 × 1.2331 = 203.46 lbs - HIGHER)
+        // This establishes a 7-rep baseline
         $secondLog = LiftLog::factory()->create([
             'user_id' => $this->user->id,
             'exercise_id' => $exercise->id,
             'logged_at' => now()->subDays(2),
         ]);
-        $secondLog->liftSets()->create(['weight' => 185, 'reps' => 6]);
+        $secondLog->liftSets()->create(['weight' => 165, 'reps' => 7]);
 
-        // Now log 175 lbs × 6 reps
+        // Third session: 155 lbs × 9 reps (estimated 1RM = 155 × 1.2997 = 201.45 lbs)
+        // Lower than 203.46, so NOT a 1RM PR
+        // But establishes 9-rep baseline
+        $thirdLog = LiftLog::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => now()->subDay(),
+        ]);
+        $thirdLog->liftSets()->create(['weight' => 155, 'reps' => 9]);
+
+        // Fourth session: 170 lbs × 7 reps (estimated 1RM = 170 × 1.2331 = 209.63 lbs - HIGHER than 203.46)
+        // But NOT a rep-specific PR because 165 lbs × 7 was already done and 170 > 165
+        // Wait, that WOULD be a rep-specific PR...
+        
+        // Let's try: 163 lbs × 7 reps (estimated 1RM = 163 × 1.2331 = 200.99 lbs)
+        // This is LOWER than 203.46, so not a 1RM PR either
+        
+        // Actually, we need: heavier weight at LOWER reps to get higher 1RM without beating the rep-specific
+        // Fourth session: 175 lbs × 6 reps (estimated 1RM = 175 × 1.1998 = 209.97 lbs - HIGHER than 203.46)
+        // First time doing 6 reps, so this IS a rep-specific PR by design
+        
+        // The only way: do a rep count we've done before, with LIGHTER weight, but enough reps to boost 1RM
+        // Fourth session: 160 lbs × 7 reps (estimated 1RM = 160 × 1.2331 = 197.30 lbs)
+        // This is LIGHTER than 165 lbs × 7, so NOT a rep-specific PR
+        // But 197.30 < 203.46, so NOT a 1RM PR either
+        
+        // CONCLUSION: It's mathematically impossible to get 1RM PR without rep-specific PR
+        // because if you increase 1RM, you either:
+        // 1. Do a new rep count (rep-specific PR by design)
+        // 2. Do more weight at existing rep count (rep-specific PR)
+        // 3. Do less weight at existing rep count (usually lower 1RM)
+        
+        // Let's test a realistic scenario: 1RM increases with MULTIPLE PR types
+        // Fourth session: 168 lbs × 7 reps (estimated 1RM = 168 × 1.2331 = 207.16 lbs - HIGHER than 203.46)
         $liftLogData = [
             'exercise_id' => $exercise->id,
-            'weight' => 175,
-            'reps' => 6,
+            'weight' => 168,
+            'reps' => 7,
             'rounds' => 1,
             'date' => now()->format('Y-m-d'),
             'logged_at' => '14:30',
@@ -183,12 +215,15 @@ class PRTypeInterferenceTest extends TestCase
 
         $prFlags = session('is_pr');
         
-        // Should be a PR (1RM only)
+        // Should be a PR (1RM increased from 203.46 to 207.16)
         $this->assertTrue($prFlags > 0);
         
-        // Should have ONE_RM but NOT REP_SPECIFIC (because 185×6 was heavier)
+        // Should have ONE_RM
         $this->assertTrue(PRType::ONE_RM->isIn($prFlags));
-        $this->assertFalse(PRType::REP_SPECIFIC->isIn($prFlags));
+        
+        // Will ALSO have REP_SPECIFIC because 168 > 165 for 7 reps
+        // This is expected and correct - in practice, 1RM PRs usually come with rep-specific PRs
+        $this->assertTrue(PRType::REP_SPECIFIC->isIn($prFlags));
     }
 
     /** @test */
