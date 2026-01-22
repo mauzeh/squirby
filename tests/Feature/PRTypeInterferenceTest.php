@@ -415,7 +415,8 @@ class PRTypeInterferenceTest extends TestCase
         ]);
 
         // Second session: 100.05 lbs × 5 reps × 3 sets = 1501.5 lbs volume
-        // Only 1.5 lbs more - within tolerance (0.1 lbs per comparison)
+        // Only 1.5 lbs more (0.1% increase) - within 1% tolerance
+        // 1% of 1500 = 15 lbs, so need >1515 lbs to trigger PR
         $liftLogData = [
             'exercise_id' => $exercise->id,
             'weight' => 100.05,
@@ -429,7 +430,7 @@ class PRTypeInterferenceTest extends TestCase
 
         $prFlags = session('is_pr');
         
-        // Should NOT be a PR (within tolerance)
+        // Should NOT be a PR (within 1% tolerance)
         $this->assertEquals(0, $prFlags);
     }
 }

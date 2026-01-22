@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Collection;
 class PRDetectionService
 {
     private const TOLERANCE = 0.1;
+    private const VOLUME_TOLERANCE_PERCENT = 0.01; // 1% relative tolerance for volume PRs
     private const MAX_REP_COUNT_FOR_PR = 10;
 
     /**
@@ -153,8 +154,10 @@ class PRDetectionService
         }
         
         // Check for Volume PR (total weight lifted in a single session for this exercise)
+        // Use percentage-based tolerance that scales with workout volume
         $previousBestVolume = $this->getBestVolume($previousLogs);
-        if ($currentTotalVolume > $previousBestVolume + self::TOLERANCE) {
+        $volumeTolerance = $previousBestVolume * self::VOLUME_TOLERANCE_PERCENT;
+        if ($currentTotalVolume > $previousBestVolume + $volumeTolerance) {
             $prFlags |= PRType::VOLUME->value;
         }
         
