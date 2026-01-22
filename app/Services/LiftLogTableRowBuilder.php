@@ -254,12 +254,15 @@ class LiftLogTableRowBuilder
      */
     protected function formatWeight(float $weight): string
     {
-        // Check if the weight is a whole number
-        if ($weight == floor($weight)) {
-            return number_format($weight, 0);
+        // Round to 1 decimal place first
+        $rounded = round($weight, 1);
+        
+        // Check if the rounded weight is a whole number
+        if ($rounded == floor($rounded)) {
+            return number_format($rounded, 0);
         }
         
-        return number_format($weight, 1);
+        return number_format($rounded, 1);
     }
     
     /**
