@@ -1,5 +1,5 @@
 {{-- PR Records Table Component - Displays PR records in a clean table format --}}
-<div class="pr-records-table">
+<div class="pr-records-table {{ $data['cssClass'] ?? '' }}">
     <table class="pr-records-grid">
         @php
             $hasComparison = collect($data['records'])->contains(fn($r) => isset($r['comparison']) && $r['comparison']);

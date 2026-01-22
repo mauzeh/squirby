@@ -68,13 +68,17 @@
     text-decoration: underline;
 }
 
-/* PR beaten variant (green theme) */
+/* PR beaten variant (orange theme) */
 .pr-records-table.pr-records-table--beaten {
-    background: rgba(76, 175, 80, 0.1);
+    background: rgba(249, 115, 22, 0.1);
 }
 
 .pr-records-table.pr-records-table--beaten .pr-record-value {
-    color: #a5d6a7;
+    color: #fb923c;
+}
+
+.pr-records-table.pr-records-table--beaten .pr-record-footer-link {
+    color: #fb923c;
 }
 
 /* Current records variant (blue theme) */
