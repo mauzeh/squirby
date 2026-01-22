@@ -476,4 +476,176 @@ class PRInfoDisplayTest extends TestCase
         $response->assertSee('Today'); // Column header
         $response->assertSee('200 lbs'); // The record they need to beat
     }
+
+    /** @test */
+    public function hypertrophy_pr_shows_best_at_weight_progression()
+    {
+        // Create a previous lift log with 10 reps at 200 lbs
+        $oldLog = LiftLog::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $this->exercise->id,
+            'logged_at' => Carbon::now()->subDays(7)
+        ]);
+        $oldLog->liftSets()->create(['weight' => 200, 'reps' => 10, 'notes' => '']);
+        
+        // Create a new PR lift log with 12 reps at 200 lbs (hypertrophy progression)
+        $newLog = LiftLog::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $this->exercise->id,
+            'logged_at' => Carbon::now()
+        ]);
+        $newLog->liftSets()->create(['weight' => 200, 'reps' => 12, 'notes' => '']);
+        
+        $response = $this->actingAs($this->user)->get(route('mobile-entry.lifts'));
+        
+        $response->assertStatus(200);
+        
+        // Should see PR badge
+        $response->assertSee('🏆 PR');
+        
+        // Should see "Best @ 200 lbs" row showing rep progression
+        $response->assertSee('Best @ 200 lbs');
+        $response->assertSee('10');
+        $response->assertSee('12');
+    }
+
+    /** @test */
+    public function hypertrophy_pr_uses_heaviest_weight_from_todays_lift()
+    {
+        // Create a previous lift log with 8 reps at 205 lbs
+        $oldLog = LiftLog::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $this->exercise->id,
+            'logged_at' => Carbon::now()->subDays(7)
+        ]);
+        $oldLog->liftSets()->create(['weight' => 205, 'reps' => 8, 'notes' => '']);
+        
+        // Create a new PR lift log with multiple sets, heaviest is 205 lbs with 10 reps
+        $newLog = LiftLog::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $this->exercise->id,
+            'logged_at' => Carbon::now()
+        ]);
+        $newLog->liftSets()->create(['weight' => 195, 'reps' => 12, 'notes' => '']);
+        $newLog->liftSets()->create(['weight' => 200, 'reps' => 11, 'notes' => '']);
+        $newLog->liftSets()->create(['weight' => 205, 'reps' => 10, 'notes' => '']); // Heaviest
+        
+        $response = $this->actingAs($this->user)->get(route('mobile-entry.lifts'));
+        
+        $response->assertStatus(200);
+        
+        // Should see PR badge
+        $response->assertSee('🏆 PR');
+        
+        // Should show "Best @ 205 lbs" (the heaviest weight)
+        $response->assertSee('Best @ 205 lbs');
+        $response->assertSee('8');
+        $response->assertSee('10');
+    }
+
+    /** @test */
+    public function hypertrophy_pr_matches_weights_within_tolerance()
+    {
+        // Create a previous lift log with 9 reps at 200.5 lbs (kg conversion)
+        $oldLog = LiftLog::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $this->exercise->id,
+            'logged_at' => Carbon::now()->subDays(7)
+        ]);
+        $oldLog->liftSets()->create(['weight' => 200.5, 'reps' => 9, 'notes' => '']);
+        
+        // Create a new PR lift log with 11 reps at 200.0 lbs (should match within tolerance)
+        $newLog = LiftLog::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $this->exercise->id,
+            'logged_at' => Carbon::now()
+        ]);
+        $newLog->liftSets()->create(['weight' => 200.0, 'reps' => 11, 'notes' => '']);
+        
+        $response = $this->actingAs($this->user)->get(route('mobile-entry.lifts'));
+        
+        $response->assertStatus(200);
+        
+        // Should see PR badge
+        $response->assertSee('🏆 PR');
+        
+        // Should show "Best @ 200 lbs" (matched within tolerance)
+        $response->assertSee('Best @ 200 lbs');
+        $response->assertSee('9');
+        $response->assertSee('11');
+    }
+
+    /** @test */
+    public function hypertrophy_pr_and_rep_specific_pr_can_both_show()
+    {
+        // Create previous lift logs
+        // First: 8 reps at 205 lbs
+        $oldLog1 = LiftLog::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $this->exercise->id,
+            'logged_at' => Carbon::now()->subDays(14)
+        ]);
+        $oldLog1->liftSets()->create(['weight' => 205, 'reps' => 8, 'notes' => '']);
+        
+        // Second: 10 reps at 200 lbs (best for 10 reps so far)
+        $oldLog2 = LiftLog::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $this->exercise->id,
+            'logged_at' => Carbon::now()->subDays(7)
+        ]);
+        $oldLog2->liftSets()->create(['weight' => 200, 'reps' => 10, 'notes' => '']);
+        
+        // Create a new PR: 10 reps at 205 lbs
+        // This is both:
+        // - A rep-specific PR (10 reps at heavier weight than before: 200 → 205)
+        // - A hypertrophy PR (best reps at 205 lbs: 8 → 10)
+        $newLog = LiftLog::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $this->exercise->id,
+            'logged_at' => Carbon::now()
+        ]);
+        $newLog->liftSets()->create(['weight' => 205, 'reps' => 10, 'notes' => '']);
+        
+        $response = $this->actingAs($this->user)->get(route('mobile-entry.lifts'));
+        
+        $response->assertStatus(200);
+        
+        // Should see PR badge
+        $response->assertSee('🏆 PR');
+        
+        // Should see BOTH the rep-specific PR and the hypertrophy PR
+        $response->assertSee('10 Reps'); // Rep-specific PR (200 → 205 lbs)
+        $response->assertSee('Best @ 205 lbs'); // Hypertrophy PR (8 → 10 reps)
+        $response->assertSee('8'); // Previous best at 205 lbs
+    }
+
+    /** @test */
+    public function hypertrophy_pr_not_shown_if_no_previous_lift_at_same_weight()
+    {
+        // Create a previous lift log at different weight
+        $oldLog = LiftLog::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $this->exercise->id,
+            'logged_at' => Carbon::now()->subDays(7)
+        ]);
+        $oldLog->liftSets()->create(['weight' => 195, 'reps' => 10, 'notes' => '']);
+        
+        // Create a new PR lift log at 200 lbs (first time at this weight)
+        $newLog = LiftLog::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $this->exercise->id,
+            'logged_at' => Carbon::now()
+        ]);
+        $newLog->liftSets()->create(['weight' => 200, 'reps' => 10, 'notes' => '']);
+        
+        $response = $this->actingAs($this->user)->get(route('mobile-entry.lifts'));
+        
+        $response->assertStatus(200);
+        
+        // Should see PR badge
+        $response->assertSee('🏆 PR');
+        
+        // Should NOT see "Best @ 200 lbs" since this is the first time at this weight
+        $response->assertDontSee('Best @ 200 lbs');
+    }
 }

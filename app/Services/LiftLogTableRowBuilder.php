@@ -213,7 +213,7 @@ class LiftLogTableRowBuilder
         ];
         
         // Always show comments first
-        $notesText = !empty(trim($liftLog->comments)) ? $liftLog->comments : 'N/A';
+        $notesText = !empty(trim($liftLog->comments ?? '')) ? $liftLog->comments : 'N/A';
         $subItem['messages'][] = [
             'type' => 'neutral',
             'prefix' => 'Your notes:',
@@ -433,6 +433,34 @@ class LiftLogTableRowBuilder
                     ];
                     break; // Only show one rep-specific PR to keep it clean
                 }
+            }
+        }
+        
+        // Check for "Best at this weight" PR (hypertrophy progression)
+        // Find the heaviest weight from today's lift
+        $heaviestSet = $liftLog->liftSets->sortByDesc('weight')->first();
+        if ($heaviestSet && $heaviestSet->weight > 0 && $heaviestSet->reps > 0) {
+            $targetWeight = $heaviestSet->weight;
+            $todayReps = $heaviestSet->reps;
+            $weightTolerance = 0.5; // Allow small variance for kg/lb conversions
+            
+            // Find previous best reps at this weight (within tolerance)
+            $previousBestReps = 0;
+            foreach ($previousLogs as $log) {
+                foreach ($log->liftSets as $prevSet) {
+                    // Check if weight matches within tolerance
+                    if (abs($prevSet->weight - $targetWeight) <= $weightTolerance && $prevSet->reps > $previousBestReps) {
+                        $previousBestReps = $prevSet->reps;
+                    }
+                }
+            }
+            
+            // If today's reps beat the previous best at this weight, show it
+            if ($previousBestReps > 0 && $todayReps > $previousBestReps) {
+                $records[] = [
+                    'label' => sprintf('Best @ %s lbs', $this->formatWeight($targetWeight)),
+                    'value' => sprintf('%d → %d reps', $previousBestReps, $todayReps)
+                ];
             }
         }
         
