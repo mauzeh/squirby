@@ -399,19 +399,19 @@ class LiftLogLoggingTest extends TestCase {
     {
         $exercise = \App\Models\Exercise::factory()->create(['user_id' => $this->user->id]);
 
-        // Log first lift at 120 lbs
+        // Log first lift at 120 lbs × 5 reps × 3 sets = 1800 lbs volume
         $firstLiftLog = \App\Models\LiftLog::factory()->create([
             'user_id' => $this->user->id,
             'exercise_id' => $exercise->id,
             'logged_at' => now()->subDay(),
         ]);
-        $firstLiftLog->liftSets()->create([
-            'weight' => 120,
-            'reps' => 5,
-            'notes' => 'Heavy lift',
+        $firstLiftLog->liftSets()->createMany([
+            ['weight' => 120, 'reps' => 5, 'notes' => 'Heavy lift set 1'],
+            ['weight' => 120, 'reps' => 5, 'notes' => 'Heavy lift set 2'],
+            ['weight' => 120, 'reps' => 5, 'notes' => 'Heavy lift set 3'],
         ]);
 
-        // Log second lift at 100 lbs (lighter = not a PR)
+        // Log second lift at 100 lbs × 5 reps × 3 sets = 1500 lbs volume (lighter weight, less volume = not a PR)
         $liftLogData = [
             'exercise_id' => $exercise->id,
             'weight' => 100,
@@ -424,12 +424,12 @@ class LiftLogLoggingTest extends TestCase {
 
         $response = $this->post(route('lift-logs.store'), $liftLogData);
 
-        // Lighter lift should NOT be marked as PR
-        $response->assertSessionHas('is_pr', false);
+        // Lighter lift with less volume should NOT be marked as PR
+        $response->assertSessionHas('is_pr', 0);
         
         // Success message should NOT contain PR indicator
         $successMessage = session('success');
-        $this->assertStringNotContainsString('NEW PR!', $successMessage);
+        $this->assertStringNotContainsString('PR!', $successMessage);
     }
 
     /** @test */
@@ -437,37 +437,37 @@ class LiftLogLoggingTest extends TestCase {
     {
         $exercise = \App\Models\Exercise::factory()->create(['user_id' => $this->user->id]);
 
-        // Log first lift at 100 lbs
+        // Log first lift at 100 lbs × 5 reps × 3 sets = 1500 lbs volume
         $firstLiftLog = \App\Models\LiftLog::factory()->create([
             'user_id' => $this->user->id,
             'exercise_id' => $exercise->id,
             'logged_at' => now()->subDay(),
         ]);
-        $firstLiftLog->liftSets()->create([
-            'weight' => 100,
-            'reps' => 5,
-            'notes' => 'First lift',
+        $firstLiftLog->liftSets()->createMany([
+            ['weight' => 100, 'reps' => 5, 'notes' => 'First lift set 1'],
+            ['weight' => 100, 'reps' => 5, 'notes' => 'First lift set 2'],
+            ['weight' => 100, 'reps' => 5, 'notes' => 'First lift set 3'],
         ]);
 
-        // Log second lift at same weight (equal = not a PR)
+        // Log second lift at same weight and volume (equal = not a PR)
         $liftLogData = [
             'exercise_id' => $exercise->id,
             'weight' => 100,
             'reps' => 5,
             'rounds' => 3,
-            'comments' => 'Same weight',
+            'comments' => 'Same weight and volume',
             'date' => now()->format('Y-m-d'),
             'logged_at' => '14:30',
         ];
 
         $response = $this->post(route('lift-logs.store'), $liftLogData);
 
-        // Equal weight should NOT be marked as PR
-        $response->assertSessionHas('is_pr', false);
+        // Equal weight and volume should NOT be marked as PR
+        $response->assertSessionHas('is_pr', 0);
         
         // Success message should NOT contain PR indicator
         $successMessage = session('success');
-        $this->assertStringNotContainsString('NEW PR!', $successMessage);
+        $this->assertStringNotContainsString('PR!', $successMessage);
     }
 
     /** @test */
@@ -490,12 +490,12 @@ class LiftLogLoggingTest extends TestCase {
 
         $response = $this->post(route('lift-logs.store'), $liftLogData);
 
-        // Bodyweight exercises should NOT be marked as PR
-        $response->assertSessionHas('is_pr', false);
+        // Bodyweight exercises should NOT be marked as PR (they don't support 1RM calculation)
+        $response->assertSessionHas('is_pr', 0);
         
         // Success message should NOT contain PR indicator
         $successMessage = session('success');
-        $this->assertStringNotContainsString('NEW PR!', $successMessage);
+        $this->assertStringNotContainsString('PR!', $successMessage);
     }
 
     /** @test */
@@ -515,19 +515,19 @@ class LiftLogLoggingTest extends TestCase {
             'notes' => 'First lift',
         ]);
 
-        // Log second lift at 120 lbs today (PR)
+        // Log second lift at 120 lbs × 5 reps × 3 sets today (PR in both 1RM and volume)
         $secondLiftLog = \App\Models\LiftLog::factory()->create([
             'user_id' => $this->user->id,
             'exercise_id' => $exercise->id,
             'logged_at' => now(),
         ]);
-        $secondLiftLog->liftSets()->create([
-            'weight' => 120,
-            'reps' => 5,
-            'notes' => 'PR lift',
+        $secondLiftLog->liftSets()->createMany([
+            ['weight' => 120, 'reps' => 5, 'notes' => 'PR lift set 1'],
+            ['weight' => 120, 'reps' => 5, 'notes' => 'PR lift set 2'],
+            ['weight' => 120, 'reps' => 5, 'notes' => 'PR lift set 3'],
         ]);
 
-        // Log third lift at 110 lbs tomorrow (not a PR, even though it's heavier than first)
+        // Log third lift at 110 lbs × 5 reps × 3 sets tomorrow (not a PR - less weight and less volume)
         $liftLogData = [
             'exercise_id' => $exercise->id,
             'weight' => 110,
@@ -540,8 +540,8 @@ class LiftLogLoggingTest extends TestCase {
 
         $response = $this->post(route('lift-logs.store'), $liftLogData);
 
-        // Should NOT be marked as PR because 120 lbs was already logged
-        $response->assertSessionHas('is_pr', false);
+        // Should NOT be marked as PR because 120 lbs × 3 sets was already logged
+        $response->assertSessionHas('is_pr', 0);
     }
 
     /** @test */
@@ -791,7 +791,7 @@ class LiftLogLoggingTest extends TestCase {
         $log410x4->liftSets()->create(['weight' => 410, 'reps' => 4, 'notes' => '']);
 
         // Log 430 lbs x 1 rep (actual 1RM = 430, which is less than estimated 464)
-        // But this should still be a PR because it's the heaviest 1-rep lift
+        // But this should still be a PR because it's the heaviest 1-rep lift (rep-specific PR)
         $liftLogData = [
             'exercise_id' => $exercise->id,
             'weight' => 430,
@@ -808,7 +808,7 @@ class LiftLogLoggingTest extends TestCase {
         $response->assertSessionHas('is_pr', true);
         
         $successMessage = session('success');
-        $this->assertStringContainsString('NEW PR!', $successMessage);
+        $this->assertStringContainsString('PR!', $successMessage);
     }
 
     /** @test */

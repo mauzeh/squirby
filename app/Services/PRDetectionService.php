@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\PRType;
 use App\Models\Exercise;
 use App\Models\LiftLog;
 use App\Models\User;
@@ -14,19 +15,24 @@ class PRDetectionService
 
     /**
      * Check if a single lift log is a PR compared to previous lifts
+     * Returns bitwise flags indicating which types of PRs were achieved
+     * 
+     * BACKWARD COMPATIBLE: Returns int that evaluates to true/false in boolean context
+     * - 0 (PRType::NONE) = no PR = false
+     * - >0 (any PR flags) = PR achieved = true
      * 
      * @param LiftLog $liftLog The lift log to check
      * @param Exercise $exercise The exercise being performed
      * @param User $user The user who performed the lift
-     * @return bool True if this lift is a PR
+     * @return int Bitwise flags of PR types (0 if no PR)
      */
-    public function isLiftLogPR(LiftLog $liftLog, Exercise $exercise, User $user): bool
+    public function isLiftLogPR(LiftLog $liftLog, Exercise $exercise, User $user): int
     {
         $strategy = $exercise->getTypeStrategy();
         
         // Only exercises that support 1RM calculation can have PRs
         if (!$strategy->canCalculate1RM()) {
-            return false;
+            return PRType::NONE->value;
         }
         
         // Get all previous lift logs for this exercise (before this one)
@@ -45,7 +51,7 @@ class PRDetectionService
      * Processes logs chronologically to determine which were PRs "at the time they happened"
      * 
      * @param Collection $liftLogs Collection of lift logs to analyze
-     * @return array Array of lift log IDs that contain PRs
+     * @return array Array of lift log IDs that contain PRs (any type)
      */
     public function calculatePRLogIds(Collection $liftLogs): array
     {
@@ -75,8 +81,9 @@ class PRDetectionService
                 // Get all previous logs for this exercise (logs before current one)
                 $previousLogs = $sortedLogs->take($index);
                 
-                // Check if this log was a PR at the time it happened
-                if ($this->checkIfPRAgainstPreviousLogs($log, $previousLogs, $strategy)) {
+                // Check if this log was a PR at the time it happened (returns flags)
+                $prFlags = $this->checkIfPRAgainstPreviousLogs($log, $previousLogs, $strategy);
+                if ($prFlags > 0) {
                     $prLogIds[] = $log->id;
                 }
             }
@@ -87,20 +94,26 @@ class PRDetectionService
 
     /**
      * Check if a lift log is a PR against a collection of previous logs
+     * Returns bitwise flags indicating which types of PRs were achieved
      * 
      * @param LiftLog $liftLog The lift log to check
      * @param Collection $previousLogs Previous lift logs to compare against
      * @param mixed $strategy Exercise type strategy for 1RM calculation
-     * @return bool True if this lift is a PR
+     * @return int Bitwise flags of PR types (0 if no PR)
      */
-    private function checkIfPRAgainstPreviousLogs(LiftLog $liftLog, Collection $previousLogs, $strategy): bool
+    private function checkIfPRAgainstPreviousLogs(LiftLog $liftLog, Collection $previousLogs, $strategy): int
     {
+        $prFlags = PRType::NONE->value;
+        
         // Calculate the best estimated 1RM from the current log
         $currentBest1RM = 0;
-        $isRepSpecificPR = false;
+        $currentTotalVolume = 0;
         
         foreach ($liftLog->liftSets as $set) {
             if ($set->weight > 0 && $set->reps > 0) {
+                // Calculate volume for this set
+                $currentTotalVolume += ($set->weight * $set->reps);
+                
                 try {
                     $estimated1RM = $strategy->calculate1RM($set->weight, $set->reps, $liftLog);
                     if ($estimated1RM > $currentBest1RM) {
@@ -113,7 +126,7 @@ class PRDetectionService
                         
                         // Check if current weight beats previous max for this rep count
                         if ($set->weight > $maxWeightForReps + self::TOLERANCE) {
-                            $isRepSpecificPR = true;
+                            $prFlags |= PRType::REP_SPECIFIC->value;
                         }
                     }
                 } catch (\Exception $e) {
@@ -124,18 +137,28 @@ class PRDetectionService
         
         // If this is the first log, it's a PR if it has valid data
         if ($previousLogs->isEmpty()) {
-            return $currentBest1RM > 0;
+            if ($currentBest1RM > 0) {
+                $prFlags |= PRType::ONE_RM->value;
+            }
+            if ($currentTotalVolume > 0) {
+                $prFlags |= PRType::VOLUME->value;
+            }
+            return $prFlags;
         }
         
-        // Find the best estimated 1RM from all previous logs
+        // Check for 1RM PR
         $previousBest1RM = $this->getBestEstimated1RM($previousLogs, $strategy);
+        if ($currentBest1RM > $previousBest1RM + self::TOLERANCE) {
+            $prFlags |= PRType::ONE_RM->value;
+        }
         
-        // This is a PR if EITHER:
-        // 1. It's a rep-specific PR (for 1-10 reps)
-        // 2. OR it beats the overall estimated 1RM
-        $beats1RM = $currentBest1RM > $previousBest1RM + self::TOLERANCE;
+        // Check for Volume PR (total weight lifted in a single session for this exercise)
+        $previousBestVolume = $this->getBestVolume($previousLogs);
+        if ($currentTotalVolume > $previousBestVolume + self::TOLERANCE) {
+            $prFlags |= PRType::VOLUME->value;
+        }
         
-        return $isRepSpecificPR || $beats1RM;
+        return $prFlags;
     }
 
     /**
@@ -187,5 +210,31 @@ class PRDetectionService
         }
         
         return $best1RM;
+    }
+
+    /**
+     * Get the best total volume from a collection of lift logs
+     * Volume = sum of (weight × reps) for all sets in a single session
+     * 
+     * @param Collection $logs Lift logs to analyze
+     * @return float Best total volume found
+     */
+    private function getBestVolume(Collection $logs): float
+    {
+        $bestVolume = 0;
+        
+        foreach ($logs as $log) {
+            $logVolume = 0;
+            foreach ($log->liftSets as $set) {
+                if ($set->weight > 0 && $set->reps > 0) {
+                    $logVolume += ($set->weight * $set->reps);
+                }
+            }
+            if ($logVolume > $bestVolume) {
+                $bestVolume = $logVolume;
+            }
+        }
+        
+        return $bestVolume;
     }
 }

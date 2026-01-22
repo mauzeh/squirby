@@ -2,6 +2,7 @@
 
 namespace App\Actions\LiftLogs;
 
+use App\Enums\PRType;
 use App\Events\LiftLogged;
 use App\Models\Exercise;
 use App\Models\LiftLog;
@@ -41,18 +42,18 @@ class CreateLiftLogAction
         $this->createLiftSets($request, $liftLog, $exercise);
         
         // Check if this is a PR
-        $isPR = $this->checkIfPR($liftLog, $exercise, $user);
+        $prFlags = $this->checkIfPR($liftLog, $exercise, $user);
         
         return [
             'liftLog' => $liftLog,
-            'isPR' => $isPR,
+            'isPR' => $prFlags, // Backward compatible: int works as bool (0=false, >0=true)
             'successMessage' => $this->generateSuccessMessage(
                 $exercise, 
                 $request->input('weight'), 
                 $request->input('reps'), 
                 $request->input('rounds'), 
                 $request->input('band_color'), 
-                $isPR
+                $prFlags
             )
         ];
     }
@@ -160,12 +161,12 @@ class CreateLiftLogAction
         }
     }
     
-    private function checkIfPR(LiftLog $liftLog, Exercise $exercise, User $user): bool
+    private function checkIfPR(LiftLog $liftLog, Exercise $exercise, User $user): int
     {
         return $this->prDetectionService->isLiftLogPR($liftLog, $exercise, $user);
     }
     
-    private function generateSuccessMessage(Exercise $exercise, $weight, int $reps, int $rounds, ?string $bandColor = null, bool $isPR = false): string
+    private function generateSuccessMessage(Exercise $exercise, $weight, int $reps, int $rounds, ?string $bandColor = null, int $prFlags = 0): string
     {
         // Get display name (alias if exists, otherwise title)
         $exerciseTitle = $this->exerciseAliasService->getDisplayName($exercise, Auth::user());
@@ -182,8 +183,8 @@ class CreateLiftLogAction
         $message = str_replace([':exercise', ':details'], [$exerciseTitle, $workoutDescription], $randomTemplate);
         
         // Add PR indicator if this is a personal record
-        if ($isPR) {
-            $message .= ' 🎉 NEW PR!';
+        if ($prFlags > 0) {
+            $message .= ' ' . PRType::getBestLabel($prFlags);
         }
         
         return $message;
