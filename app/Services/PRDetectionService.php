@@ -152,7 +152,8 @@ class PRDetectionService
                     
                     // For sets up to 10 reps, check if this is a rep-specific PR
                     if ($set->reps <= self::MAX_REP_COUNT_FOR_PR) {
-                        $maxWeightForReps = $this->getMaxWeightForReps($previousLogs, $set->reps);
+                        $repSpecificResult = $this->getMaxWeightForRepsWithLog($previousLogs, $set->reps);
+                        $maxWeightForReps = $repSpecificResult['weight'];
                         
                         // Check if current weight beats previous max for this rep count
                         if ($set->weight > $maxWeightForReps + self::TOLERANCE) {
@@ -161,6 +162,7 @@ class PRDetectionService
                                 'reps' => $set->reps,
                                 'weight' => $set->weight,
                                 'previous_max' => $maxWeightForReps,
+                                'previous_lift_log_id' => $repSpecificResult['lift_log_id'],
                             ];
                         }
                     }
@@ -204,36 +206,43 @@ class PRDetectionService
         }
         
         // Check for 1RM PR
-        $previousBest1RM = $this->getBestEstimated1RM($previousLogs, $strategy);
+        $best1RMResult = $this->getBestEstimated1RMWithLog($previousLogs, $strategy);
+        $previousBest1RM = $best1RMResult['value'];
+        
         $snapshot['previous_bests']['one_rm'] = [
             'value' => $previousBest1RM,
+            'lift_log_id' => $best1RMResult['lift_log_id'],
             'tolerance' => self::TOLERANCE,
         ];
         
         if ($currentBest1RM > $previousBest1RM + self::TOLERANCE) {
             $prFlags |= PRType::ONE_RM->value;
             $snapshot['pr_reasons']['one_rm'] = sprintf(
-                '%.2f > %.2f + %.2f',
+                '%.2f > %.2f + %.2f (previous: lift #%d)',
                 $currentBest1RM,
                 $previousBest1RM,
-                self::TOLERANCE
+                self::TOLERANCE,
+                $best1RMResult['lift_log_id']
             );
         } else {
             $snapshot['why_not_pr']['one_rm'] = sprintf(
-                '%.2f <= %.2f + %.2f',
+                '%.2f <= %.2f + %.2f (previous best: lift #%d)',
                 $currentBest1RM,
                 $previousBest1RM,
-                self::TOLERANCE
+                self::TOLERANCE,
+                $best1RMResult['lift_log_id']
             );
         }
         
         // Check for Volume PR (total weight lifted in a single session for this exercise)
         // Use percentage-based tolerance that scales with workout volume
-        $previousBestVolume = $this->getBestVolume($previousLogs);
+        $bestVolumeResult = $this->getBestVolumeWithLog($previousLogs);
+        $previousBestVolume = $bestVolumeResult['value'];
         $volumeTolerance = $previousBestVolume * self::VOLUME_TOLERANCE_PERCENT;
         
         $snapshot['previous_bests']['volume'] = [
             'value' => $previousBestVolume,
+            'lift_log_id' => $bestVolumeResult['lift_log_id'],
             'tolerance_percent' => self::VOLUME_TOLERANCE_PERCENT * 100,
             'tolerance_absolute' => $volumeTolerance,
         ];
@@ -241,17 +250,19 @@ class PRDetectionService
         if ($currentTotalVolume > $previousBestVolume + $volumeTolerance) {
             $prFlags |= PRType::VOLUME->value;
             $snapshot['pr_reasons']['volume'] = sprintf(
-                '%.2f > %.2f + %.2f',
+                '%.2f > %.2f + %.2f (previous: lift #%d)',
                 $currentTotalVolume,
                 $previousBestVolume,
-                $volumeTolerance
+                $volumeTolerance,
+                $bestVolumeResult['lift_log_id']
             );
         } else {
             $snapshot['why_not_pr']['volume'] = sprintf(
-                '%.2f <= %.2f + %.2f',
+                '%.2f <= %.2f + %.2f (previous best: lift #%d)',
                 $currentTotalVolume,
                 $previousBestVolume,
-                $volumeTolerance
+                $volumeTolerance,
+                $bestVolumeResult['lift_log_id']
             );
         }
         
@@ -268,6 +279,34 @@ class PRDetectionService
 
     /**
      * Get the maximum weight lifted for a specific rep count from previous logs
+     * Returns both the weight and the lift log ID
+     * 
+     * @param Collection $previousLogs Previous lift logs to search
+     * @param int $targetReps The rep count to find max weight for
+     * @return array ['weight' => float, 'lift_log_id' => int|null]
+     */
+    private function getMaxWeightForRepsWithLog(Collection $previousLogs, int $targetReps): array
+    {
+        $maxWeight = 0;
+        $liftLogId = null;
+        
+        foreach ($previousLogs as $log) {
+            foreach ($log->liftSets as $set) {
+                if ($set->reps == $targetReps && $set->weight > $maxWeight) {
+                    $maxWeight = $set->weight;
+                    $liftLogId = $log->id;
+                }
+            }
+        }
+        
+        return [
+            'weight' => $maxWeight,
+            'lift_log_id' => $liftLogId,
+        ];
+    }
+
+    /**
+     * Get the maximum weight lifted for a specific rep count from previous logs
      * 
      * @param Collection $previousLogs Previous lift logs to search
      * @param int $targetReps The rep count to find max weight for
@@ -275,17 +314,42 @@ class PRDetectionService
      */
     private function getMaxWeightForReps(Collection $previousLogs, int $targetReps): float
     {
-        $maxWeight = 0;
+        return $this->getMaxWeightForRepsWithLog($previousLogs, $targetReps)['weight'];
+    }
+
+    /**
+     * Get the best estimated 1RM from a collection of lift logs
+     * Returns both the 1RM value and the lift log ID
+     * 
+     * @param Collection $logs Lift logs to analyze
+     * @param mixed $strategy Exercise type strategy for 1RM calculation
+     * @return array ['value' => float, 'lift_log_id' => int|null]
+     */
+    private function getBestEstimated1RMWithLog(Collection $logs, $strategy): array
+    {
+        $best1RM = 0;
+        $liftLogId = null;
         
-        foreach ($previousLogs as $log) {
+        foreach ($logs as $log) {
             foreach ($log->liftSets as $set) {
-                if ($set->reps == $targetReps && $set->weight > $maxWeight) {
-                    $maxWeight = $set->weight;
+                if ($set->weight > 0 && $set->reps > 0) {
+                    try {
+                        $estimated1RM = $strategy->calculate1RM($set->weight, $set->reps, $log);
+                        if ($estimated1RM > $best1RM) {
+                            $best1RM = $estimated1RM;
+                            $liftLogId = $log->id;
+                        }
+                    } catch (\Exception $e) {
+                        continue;
+                    }
                 }
             }
         }
         
-        return $maxWeight;
+        return [
+            'value' => $best1RM,
+            'lift_log_id' => $liftLogId,
+        ];
     }
 
     /**
@@ -297,24 +361,39 @@ class PRDetectionService
      */
     private function getBestEstimated1RM(Collection $logs, $strategy): float
     {
-        $best1RM = 0;
+        return $this->getBestEstimated1RMWithLog($logs, $strategy)['value'];
+    }
+
+    /**
+     * Get the best total volume from a collection of lift logs
+     * Returns both the volume and the lift log ID
+     * Volume = sum of (weight × reps) for all sets in a single session
+     * 
+     * @param Collection $logs Lift logs to analyze
+     * @return array ['value' => float, 'lift_log_id' => int|null]
+     */
+    private function getBestVolumeWithLog(Collection $logs): array
+    {
+        $bestVolume = 0;
+        $liftLogId = null;
         
         foreach ($logs as $log) {
+            $logVolume = 0;
             foreach ($log->liftSets as $set) {
                 if ($set->weight > 0 && $set->reps > 0) {
-                    try {
-                        $estimated1RM = $strategy->calculate1RM($set->weight, $set->reps, $log);
-                        if ($estimated1RM > $best1RM) {
-                            $best1RM = $estimated1RM;
-                        }
-                    } catch (\Exception $e) {
-                        continue;
-                    }
+                    $logVolume += ($set->weight * $set->reps);
                 }
+            }
+            if ($logVolume > $bestVolume) {
+                $bestVolume = $logVolume;
+                $liftLogId = $log->id;
             }
         }
         
-        return $best1RM;
+        return [
+            'value' => $bestVolume,
+            'lift_log_id' => $liftLogId,
+        ];
     }
 
     /**
@@ -326,20 +405,6 @@ class PRDetectionService
      */
     private function getBestVolume(Collection $logs): float
     {
-        $bestVolume = 0;
-        
-        foreach ($logs as $log) {
-            $logVolume = 0;
-            foreach ($log->liftSets as $set) {
-                if ($set->weight > 0 && $set->reps > 0) {
-                    $logVolume += ($set->weight * $set->reps);
-                }
-            }
-            if ($logVolume > $bestVolume) {
-                $bestVolume = $logVolume;
-            }
-        }
-        
-        return $bestVolume;
+        return $this->getBestVolumeWithLog($logs)['value'];
     }
 }

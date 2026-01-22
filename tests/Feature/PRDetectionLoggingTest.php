@@ -228,4 +228,61 @@ class PRDetectionLoggingTest extends TestCase
         $this->assertNotEmpty($prTypes);
         $this->assertGreaterThan(1, count($prTypes));
     }
+
+    /** @test */
+    public function it_captures_lift_log_ids_for_previous_bests()
+    {
+        $this->actingAs($this->user);
+
+        // Create first lift (will be the previous best) - explicitly set timestamp
+        $firstLiftLog = LiftLog::factory()->create([
+            'exercise_id' => $this->exercise->id,
+            'user_id' => $this->user->id,
+            'logged_at' => now()->subHour(),
+        ]);
+        
+        $firstLiftLog->liftSets()->create([
+            'weight' => 225,
+            'reps' => 5,
+        ]);
+        $firstLiftLog->liftSets()->create([
+            'weight' => 225,
+            'reps' => 5,
+        ]);
+        $firstLiftLog->liftSets()->create([
+            'weight' => 225,
+            'reps' => 5,
+        ]);
+
+        // Create second lift (lighter AND less volume - definitely not a PR)
+        $this->post(route('lift-logs.store'), [
+            'exercise_id' => $this->exercise->id,
+            'weight' => 200,
+            'reps' => 4, // Different reps to avoid rep-specific PR
+            'rounds' => 2,
+        ]);
+
+        $logs = PRDetectionLog::orderBy('id', 'desc')->get();
+        $secondLog = $logs->first(); // Only one log since we manually created the first lift
+
+        $snapshot = $secondLog->calculation_snapshot;
+
+        // Verify previous_bests includes lift_log_id
+        $this->assertArrayHasKey('previous_bests', $snapshot);
+        $this->assertArrayHasKey('one_rm', $snapshot['previous_bests']);
+        $this->assertArrayHasKey('lift_log_id', $snapshot['previous_bests']['one_rm']);
+        $this->assertEquals($firstLiftLog->id, $snapshot['previous_bests']['one_rm']['lift_log_id']);
+
+        $this->assertArrayHasKey('volume', $snapshot['previous_bests']);
+        $this->assertArrayHasKey('lift_log_id', $snapshot['previous_bests']['volume']);
+        $this->assertEquals($firstLiftLog->id, $snapshot['previous_bests']['volume']['lift_log_id']);
+
+        // Verify why_not_pr messages include lift log ID
+        $this->assertArrayHasKey('why_not_pr', $snapshot);
+        $this->assertArrayHasKey('one_rm', $snapshot['why_not_pr']);
+        $this->assertStringContainsString('lift #' . $firstLiftLog->id, $snapshot['why_not_pr']['one_rm']);
+        
+        $this->assertArrayHasKey('volume', $snapshot['why_not_pr']);
+        $this->assertStringContainsString('lift #' . $firstLiftLog->id, $snapshot['why_not_pr']['volume']);
+    }
 }
