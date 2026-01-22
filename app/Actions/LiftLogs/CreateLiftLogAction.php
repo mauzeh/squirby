@@ -6,6 +6,7 @@ use App\Enums\PRType;
 use App\Events\LiftLogged;
 use App\Models\Exercise;
 use App\Models\LiftLog;
+use App\Models\PRDetectionLog;
 use App\Models\User;
 use App\Services\ExerciseTypes\ExerciseTypeFactory;
 use App\Services\ExerciseTypes\Exceptions\InvalidExerciseDataException;
@@ -163,7 +164,20 @@ class CreateLiftLogAction
     
     private function checkIfPR(LiftLog $liftLog, Exercise $exercise, User $user): int
     {
-        return $this->prDetectionService->isLiftLogPR($liftLog, $exercise, $user);
+        $prFlags = $this->prDetectionService->isLiftLogPR($liftLog, $exercise, $user);
+        
+        // Log the PR detection result for debugging and support
+        PRDetectionLog::create([
+            'lift_log_id' => $liftLog->id,
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'pr_types_detected' => PRType::toArray($prFlags),
+            'calculation_snapshot' => $this->prDetectionService->getLastCalculationSnapshot() ?? [],
+            'trigger_event' => 'created',
+            'detected_at' => now(),
+        ]);
+        
+        return $prFlags;
     }
     
     private function generateSuccessMessage(Exercise $exercise, $weight, int $reps, int $rounds, ?string $bandColor = null, int $prFlags = 0): string

@@ -15,6 +15,12 @@ class PRDetectionService
     private const MAX_REP_COUNT_FOR_PR = 10;
 
     /**
+     * Store the last calculation snapshot for debugging purposes
+     * This is populated during PR detection and can be retrieved for logging
+     */
+    private ?array $lastCalculationSnapshot = null;
+
+    /**
      * Check if a single lift log is a PR compared to previous lifts
      * Returns bitwise flags indicating which types of PRs were achieved
      * 
@@ -33,6 +39,10 @@ class PRDetectionService
         
         // Only exercises that support 1RM calculation can have PRs
         if (!$strategy->canCalculate1RM()) {
+            $this->lastCalculationSnapshot = [
+                'can_calculate_1rm' => false,
+                'reason' => 'Exercise type does not support 1RM calculation',
+            ];
             return PRType::NONE->value;
         }
         
@@ -45,6 +55,17 @@ class PRDetectionService
             ->get();
         
         return $this->checkIfPRAgainstPreviousLogs($liftLog, $previousLogs, $strategy);
+    }
+
+    /**
+     * Get the last calculation snapshot for logging purposes
+     * Returns null if no calculation has been performed yet
+     * 
+     * @return array|null
+     */
+    public function getLastCalculationSnapshot(): ?array
+    {
+        return $this->lastCalculationSnapshot;
     }
 
     /**
@@ -109,6 +130,8 @@ class PRDetectionService
         // Calculate the best estimated 1RM from the current log
         $currentBest1RM = 0;
         $currentTotalVolume = 0;
+        $currentSets = [];
+        $repSpecificPRs = [];
         
         foreach ($liftLog->liftSets as $set) {
             if ($set->weight > 0 && $set->reps > 0) {
@@ -121,6 +144,12 @@ class PRDetectionService
                         $currentBest1RM = $estimated1RM;
                     }
                     
+                    $currentSets[] = [
+                        'weight' => $set->weight,
+                        'reps' => $set->reps,
+                        'estimated_1rm' => $estimated1RM,
+                    ];
+                    
                     // For sets up to 10 reps, check if this is a rep-specific PR
                     if ($set->reps <= self::MAX_REP_COUNT_FOR_PR) {
                         $maxWeightForReps = $this->getMaxWeightForReps($previousLogs, $set->reps);
@@ -128,6 +157,11 @@ class PRDetectionService
                         // Check if current weight beats previous max for this rep count
                         if ($set->weight > $maxWeightForReps + self::TOLERANCE) {
                             $prFlags |= PRType::REP_SPECIFIC->value;
+                            $repSpecificPRs[] = [
+                                'reps' => $set->reps,
+                                'weight' => $set->weight,
+                                'previous_max' => $maxWeightForReps,
+                            ];
                         }
                     }
                 } catch (\Exception $e) {
@@ -136,30 +170,98 @@ class PRDetectionService
             }
         }
         
+        // Initialize snapshot data
+        $snapshot = [
+            'current_lift' => [
+                'lift_log_id' => $liftLog->id,
+                'logged_at' => $liftLog->logged_at->toIso8601String(),
+                'sets' => $currentSets,
+                'best_1rm' => $currentBest1RM,
+                'total_volume' => $currentTotalVolume,
+            ],
+            'previous_logs_count' => $previousLogs->count(),
+            'previous_bests' => [],
+            'pr_reasons' => [],
+            'why_not_pr' => [],
+        ];
+        
         // If this is the first log, it's a PR if it has valid data
         if ($previousLogs->isEmpty()) {
             if ($currentBest1RM > 0) {
                 $prFlags |= PRType::ONE_RM->value;
+                $snapshot['pr_reasons']['one_rm'] = 'First lift for this exercise';
             }
             if ($currentTotalVolume > 0) {
                 $prFlags |= PRType::VOLUME->value;
+                $snapshot['pr_reasons']['volume'] = 'First lift for this exercise';
             }
+            
+            $snapshot['is_first_log'] = true;
+            $snapshot['pr_types_detected'] = PRType::toArray($prFlags);
+            $this->lastCalculationSnapshot = $snapshot;
+            
             return $prFlags;
         }
         
         // Check for 1RM PR
         $previousBest1RM = $this->getBestEstimated1RM($previousLogs, $strategy);
+        $snapshot['previous_bests']['one_rm'] = [
+            'value' => $previousBest1RM,
+            'tolerance' => self::TOLERANCE,
+        ];
+        
         if ($currentBest1RM > $previousBest1RM + self::TOLERANCE) {
             $prFlags |= PRType::ONE_RM->value;
+            $snapshot['pr_reasons']['one_rm'] = sprintf(
+                '%.2f > %.2f + %.2f',
+                $currentBest1RM,
+                $previousBest1RM,
+                self::TOLERANCE
+            );
+        } else {
+            $snapshot['why_not_pr']['one_rm'] = sprintf(
+                '%.2f <= %.2f + %.2f',
+                $currentBest1RM,
+                $previousBest1RM,
+                self::TOLERANCE
+            );
         }
         
         // Check for Volume PR (total weight lifted in a single session for this exercise)
         // Use percentage-based tolerance that scales with workout volume
         $previousBestVolume = $this->getBestVolume($previousLogs);
         $volumeTolerance = $previousBestVolume * self::VOLUME_TOLERANCE_PERCENT;
+        
+        $snapshot['previous_bests']['volume'] = [
+            'value' => $previousBestVolume,
+            'tolerance_percent' => self::VOLUME_TOLERANCE_PERCENT * 100,
+            'tolerance_absolute' => $volumeTolerance,
+        ];
+        
         if ($currentTotalVolume > $previousBestVolume + $volumeTolerance) {
             $prFlags |= PRType::VOLUME->value;
+            $snapshot['pr_reasons']['volume'] = sprintf(
+                '%.2f > %.2f + %.2f',
+                $currentTotalVolume,
+                $previousBestVolume,
+                $volumeTolerance
+            );
+        } else {
+            $snapshot['why_not_pr']['volume'] = sprintf(
+                '%.2f <= %.2f + %.2f',
+                $currentTotalVolume,
+                $previousBestVolume,
+                $volumeTolerance
+            );
         }
+        
+        // Add rep-specific PR info if any
+        if (!empty($repSpecificPRs)) {
+            $snapshot['pr_reasons']['rep_specific'] = $repSpecificPRs;
+        }
+        
+        $snapshot['pr_types_detected'] = PRType::toArray($prFlags);
+        $this->lastCalculationSnapshot = $snapshot;
         
         return $prFlags;
     }

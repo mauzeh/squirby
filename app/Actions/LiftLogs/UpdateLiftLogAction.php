@@ -2,16 +2,23 @@
 
 namespace App\Actions\LiftLogs;
 
+use App\Enums\PRType;
 use App\Models\Exercise;
 use App\Models\LiftLog;
+use App\Models\PRDetectionLog;
 use App\Models\User;
 use App\Services\ExerciseTypes\ExerciseTypeFactory;
 use App\Services\ExerciseTypes\Exceptions\InvalidExerciseDataException;
+use App\Services\PRDetectionService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class UpdateLiftLogAction
 {
+    public function __construct(
+        private PRDetectionService $prDetectionService
+    ) {}
+
     public function execute(Request $request, LiftLog $liftLog, User $user): LiftLog
     {
         // Authorize the user can update this lift log
@@ -36,6 +43,9 @@ class UpdateLiftLogAction
 
         // Delete existing lift sets and create new ones
         $this->updateLiftSets($request, $liftLog, $exercise);
+        
+        // Re-check PR status after update and log it
+        $this->checkAndLogPR($liftLog, $exercise, $user);
         
         return $liftLog->fresh();
     }
@@ -111,5 +121,21 @@ class UpdateLiftLogAction
                 'band_color' => $liftData['band_color'],
             ]);
         }
+    }
+    
+    private function checkAndLogPR(LiftLog $liftLog, Exercise $exercise, User $user): void
+    {
+        $prFlags = $this->prDetectionService->isLiftLogPR($liftLog, $exercise, $user);
+        
+        // Log the PR detection result for debugging and support
+        PRDetectionLog::create([
+            'lift_log_id' => $liftLog->id,
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'pr_types_detected' => PRType::toArray($prFlags),
+            'calculation_snapshot' => $this->prDetectionService->getLastCalculationSnapshot() ?? [],
+            'trigger_event' => 'updated',
+            'detected_at' => now(),
+        ]);
     }
 }

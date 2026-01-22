@@ -112,4 +112,24 @@ enum PRType: int
     {
         return $type->isIn($flags);
     }
+
+    /**
+     * Convert flags to array of PR type names (for JSON storage)
+     * Returns array of lowercase string names: ["one_rm", "volume"]
+     */
+    public static function toArray(int $flags): array
+    {
+        if ($flags === 0) {
+            return [];
+        }
+
+        $names = [];
+        foreach (self::cases() as $case) {
+            if ($case !== self::NONE && $case->isIn($flags)) {
+                $names[] = strtolower($case->name);
+            }
+        }
+
+        return $names;
+    }
 }
