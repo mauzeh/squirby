@@ -324,11 +324,40 @@ class LiftLogTableRowBuilder
             }
         }
         
+        // Check for rep-specific PRs first to see if we have a 1 rep PR
+        $hasOneRepPR = false;
+        $oneRepWeight = 0;
+        foreach ($liftLog->liftSets as $set) {
+            if ($set->reps === 1 && $set->weight > 0) {
+                $previousMaxForReps = 0;
+                
+                foreach ($previousLogs as $log) {
+                    foreach ($log->liftSets as $prevSet) {
+                        if ($prevSet->reps === 1 && $prevSet->weight > $previousMaxForReps) {
+                            $previousMaxForReps = $prevSet->weight;
+                        }
+                    }
+                }
+                
+                if ($set->weight > $previousMaxForReps + 0.1) {
+                    $hasOneRepPR = true;
+                    $oneRepWeight = $set->weight;
+                    break;
+                }
+            }
+        }
+        
+        // Only show 1RM if it's different from the 1 Rep weight (i.e., it's an estimated 1RM)
         if ($current1RM > $previous1RM + 0.1) {
-            $records[] = [
-                'label' => '1RM',
-                'value' => sprintf('%s → %s lbs', $this->formatWeight($previous1RM), $this->formatWeight($current1RM))
-            ];
+            // If we have a 1 rep PR and the 1RM equals the 1 rep weight, skip the 1RM row
+            $shouldShow1RM = !($hasOneRepPR && abs($current1RM - $oneRepWeight) < 0.1);
+            
+            if ($shouldShow1RM) {
+                $records[] = [
+                    'label' => '1RM',
+                    'value' => sprintf('%s → %s lbs', $this->formatWeight($previous1RM), $this->formatWeight($current1RM))
+                ];
+            }
         }
         
         // Check for Volume PR

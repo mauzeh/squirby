@@ -277,4 +277,117 @@ class PRInfoDisplayTest extends TestCase
         $response->assertDontSee('Current records');
         $response->assertDontSee('PRs beaten');
     }
+
+    /** @test */
+    public function true_one_rm_pr_shows_only_one_rep_row_not_estimated_one_rm()
+    {
+        // Create a previous lift log with a lower 1 rep max
+        $oldLog = LiftLog::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $this->exercise->id,
+            'logged_at' => Carbon::now()->subDays(7)
+        ]);
+        $oldLog->liftSets()->create(['weight' => 200, 'reps' => 1, 'notes' => '']);
+        
+        // Create a new PR lift log with a true 1RM (1 rep)
+        $newLog = LiftLog::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $this->exercise->id,
+            'logged_at' => Carbon::now()
+        ]);
+        $newLog->liftSets()->create(['weight' => 225, 'reps' => 1, 'notes' => '']);
+        
+        $response = $this->actingAs($this->user)->get(route('mobile-entry.lifts'));
+        
+        $response->assertStatus(200);
+        
+        // Should see PR badge
+        $response->assertSee('🏆 PR');
+        
+        // Should see "Records beaten"
+        $response->assertSee('Records beaten');
+        
+        // Should see "1 Rep" row
+        $response->assertSee('1 Rep');
+        $response->assertSee('200');
+        $response->assertSee('225');
+        
+        // Should NOT see "1RM" label since it would be the same as "1 Rep"
+        $response->assertDontSee('1RM');
+    }
+
+    /** @test */
+    public function estimated_one_rm_pr_shows_both_one_rm_and_rep_specific_rows()
+    {
+        // Create a previous lift log with lower weights
+        $oldLog = LiftLog::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $this->exercise->id,
+            'logged_at' => Carbon::now()->subDays(7)
+        ]);
+        $oldLog->liftSets()->create(['weight' => 180, 'reps' => 5, 'notes' => '']);
+        
+        // Create a new PR lift log with 5 reps (estimated 1RM will be higher than actual weight)
+        $newLog = LiftLog::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $this->exercise->id,
+            'logged_at' => Carbon::now()
+        ]);
+        $newLog->liftSets()->create(['weight' => 200, 'reps' => 5, 'notes' => '']);
+        
+        $response = $this->actingAs($this->user)->get(route('mobile-entry.lifts'));
+        
+        $response->assertStatus(200);
+        
+        // Should see PR badge
+        $response->assertSee('🏆 PR');
+        
+        // Should see "Records beaten"
+        $response->assertSee('Records beaten');
+        
+        // Should see BOTH "1RM" (estimated) and "5 Reps" rows
+        $response->assertSee('1RM');
+        $response->assertSee('5 Reps');
+        
+        // Should see the rep-specific PR
+        $response->assertSee('180');
+        $response->assertSee('200');
+    }
+
+    /** @test */
+    public function estimated_one_rm_close_to_true_one_rm_shows_both_rows()
+    {
+        // Create a previous lift log with a true 1RM
+        $oldLog = LiftLog::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $this->exercise->id,
+            'logged_at' => Carbon::now()->subDays(7)
+        ]);
+        $oldLog->liftSets()->create(['weight' => 200, 'reps' => 1, 'notes' => '']);
+        
+        // Create a new lift log with 3 reps that estimates to ~220 lbs 1RM
+        // This is close to but not the same as a true 1RM
+        $newLog = LiftLog::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $this->exercise->id,
+            'logged_at' => Carbon::now()
+        ]);
+        $newLog->liftSets()->create(['weight' => 205, 'reps' => 3, 'notes' => '']);
+        
+        $response = $this->actingAs($this->user)->get(route('mobile-entry.lifts'));
+        
+        $response->assertStatus(200);
+        
+        // Should see PR badge
+        $response->assertSee('🏆 PR');
+        
+        // Should see "Records beaten"
+        $response->assertSee('Records beaten');
+        
+        // Should see BOTH "1RM" (estimated from 3 reps) and "3 Reps" rows
+        // Even though the estimated 1RM might be close to a previous true 1RM,
+        // they are different values and should both be shown
+        $response->assertSee('1RM');
+        $response->assertSee('3 Reps');
+    }
 }
