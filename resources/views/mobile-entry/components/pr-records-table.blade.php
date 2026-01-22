@@ -26,5 +26,18 @@
         </tr>
         @endforeach
         </tbody>
+        
+        @if(isset($data['footerLink']) && $data['footerLink'])
+        <tfoot>
+            <tr class="pr-record-footer-row">
+                <td colspan="3" class="pr-record-footer">
+                    <a href="{{ $data['footerLink'] }}" class="pr-record-footer-link">
+                        <i class="fas fa-chart-line"></i>
+                        {{ $data['footerText'] ?? 'View history' }}
+                    </a>
+                </td>
+            </tr>
+        </tfoot>
+        @endif
     </table>
 </div>

@@ -43,6 +43,31 @@
     font-style: italic;
 }
 
+.pr-record-footer-row {
+    border-bottom: none;
+}
+
+.pr-record-footer {
+    padding: 12px 0 4px;
+    text-align: center;
+}
+
+.pr-record-footer-link {
+    color: #90caf9;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.9em;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 12px 20px;
+    margin: -12px -20px;
+}
+
+.pr-record-footer-link:hover {
+    text-decoration: underline;
+}
+
 /* PR beaten variant (green theme) */
 .pr-records-table.pr-records-table--beaten {
     background: rgba(76, 175, 80, 0.1);

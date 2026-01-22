@@ -18,7 +18,9 @@ class PRRecordsTableComponentBuilder
             'title' => $title,
             'icon' => null,
             'records' => [],
-            'cssClass' => null
+            'cssClass' => null,
+            'footerLink' => null,
+            'footerText' => null
         ];
     }
     
@@ -102,6 +104,20 @@ class PRRecordsTableComponentBuilder
     public function current(): self
     {
         return $this->cssClass('pr-records-table--current');
+    }
+    
+    /**
+     * Add a footer link to view more details
+     * 
+     * @param string $url The URL to link to
+     * @param string $text The link text (default: "View history")
+     * @return self
+     */
+    public function footerLink(string $url, string $text = 'View history'): self
+    {
+        $this->data['footerLink'] = $url;
+        $this->data['footerText'] = $text;
+        return $this;
     }
     
     /**

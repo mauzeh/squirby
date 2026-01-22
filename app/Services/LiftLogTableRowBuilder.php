@@ -220,9 +220,12 @@ class LiftLogTableRowBuilder
             // For PRs, show what was beaten
             $prRecords = $this->getPRRecordsForBeatenPRs($liftLog);
             if (!empty($prRecords)) {
+                $viewLogsUrl = route('exercises.show-logs', $liftLog->exercise);
+                
                 $builder = (new PRRecordsTableComponentBuilder('Records beaten'))
                     ->records($prRecords)
-                    ->beaten();
+                    ->beaten()
+                    ->footerLink($viewLogsUrl, 'View history');
                 
                 $subItem['component'] = $builder->build();
             }
@@ -230,9 +233,12 @@ class LiftLogTableRowBuilder
             // For non-PRs, show current records
             $currentRecords = $this->getCurrentRecordsTable($liftLog);
             if (!empty($currentRecords)) {
+                $viewLogsUrl = route('exercises.show-logs', $liftLog->exercise);
+                
                 $builder = (new PRRecordsTableComponentBuilder('Current records'))
                     ->records($currentRecords)
-                    ->current();
+                    ->current()
+                    ->footerLink($viewLogsUrl, 'View history');
                 
                 $subItem['component'] = $builder->build();
             }
