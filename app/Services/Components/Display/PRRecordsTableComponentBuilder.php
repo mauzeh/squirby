@@ -39,13 +39,15 @@ class PRRecordsTableComponentBuilder
      * 
      * @param string $label The label for the record (e.g., "1RM", "Volume", "5 Reps")
      * @param string $value The value to display (e.g., "200.0 lbs", "150.0 → 160.0 lbs")
+     * @param string|null $comparison Optional comparison value (e.g., "180 lbs" for current lift)
      * @return self
      */
-    public function record(string $label, string $value): self
+    public function record(string $label, string $value, ?string $comparison = null): self
     {
         $this->data['records'][] = [
             'label' => $label,
-            'value' => $value
+            'value' => $value,
+            'comparison' => $comparison
         ];
         
         return $this;
@@ -54,13 +56,17 @@ class PRRecordsTableComponentBuilder
     /**
      * Add multiple records at once
      * 
-     * @param array $records Array of ['label' => string, 'value' => string]
+     * @param array $records Array of ['label' => string, 'value' => string, 'comparison' => string|null]
      * @return self
      */
     public function records(array $records): self
     {
         foreach ($records as $record) {
-            $this->record($record['label'], $record['value']);
+            $this->record(
+                $record['label'], 
+                $record['value'],
+                $record['comparison'] ?? null
+            );
         }
         
         return $this;

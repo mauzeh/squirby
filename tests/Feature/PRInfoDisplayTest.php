@@ -57,7 +57,6 @@ class PRInfoDisplayTest extends TestCase
         
         // Should see current records component
         $response->assertSee('pr-records-table', false);
-        $response->assertSee('Current records');
         $response->assertSee('200 lbs'); // The record they need to beat
     }
 
@@ -87,8 +86,7 @@ class PRInfoDisplayTest extends TestCase
         // Should see PR badge
         $response->assertSee('🏆 PR');
         
-        // Should see what was beaten
-        $response->assertSee('Records beaten');
+        // Should see what was beaten (no title, just the data)
         $response->assertSee('180');
         $response->assertSee('200');
     }
@@ -118,7 +116,6 @@ class PRInfoDisplayTest extends TestCase
         $response = $this->actingAs($this->user)->get(route('mobile-entry.lifts'));
         
         $response->assertStatus(200);
-        $response->assertSee('Current records:');
         $response->assertSee('Volume');
         $response->assertSee('3,000 lbs'); // The volume record to beat
     }
@@ -145,7 +142,6 @@ class PRInfoDisplayTest extends TestCase
         $response = $this->actingAs($this->user)->get(route('mobile-entry.lifts'));
         
         $response->assertStatus(200);
-        $response->assertSee('Current records:');
         $response->assertSee('5 Reps');
         $response->assertSee('200 lbs'); // The record to beat
     }
@@ -201,8 +197,7 @@ class PRInfoDisplayTest extends TestCase
         // Should see PR badge
         $response->assertSee('🏆 PR');
         
-        // Should see "Records beaten" not "Current records"
-        $response->assertSee('Records beaten');
+        // Should see the data (no title needed)
         $response->assertDontSee('Current records');
         
         // Should show the progression
@@ -236,7 +231,6 @@ class PRInfoDisplayTest extends TestCase
         $response->assertStatus(200);
         
         // Should see current records with multiple types
-        $response->assertSee('Current records');
         $response->assertSee('Est 1RM');
         $response->assertSee('Volume');
         $response->assertSee('5 Rep');
@@ -304,9 +298,6 @@ class PRInfoDisplayTest extends TestCase
         // Should see PR badge
         $response->assertSee('🏆 PR');
         
-        // Should see "Records beaten"
-        $response->assertSee('Records beaten');
-        
         // Should see "1 Rep" row
         $response->assertSee('1 Rep');
         $response->assertSee('200');
@@ -343,9 +334,6 @@ class PRInfoDisplayTest extends TestCase
         // Should see PR badge
         $response->assertSee('🏆 PR');
         
-        // Should see "Records beaten"
-        $response->assertSee('Records beaten');
-        
         // Should see BOTH "Est 1RM" (estimated) and "5 Reps" rows
         $response->assertSee('Est 1RM');
         $response->assertSee('5 Reps');
@@ -381,9 +369,6 @@ class PRInfoDisplayTest extends TestCase
         
         // Should see PR badge
         $response->assertSee('🏆 PR');
-        
-        // Should see "Records beaten"
-        $response->assertSee('Records beaten');
         
         // Should see BOTH "Est 1RM" (estimated from 3 reps) and "3 Reps" rows
         // Even though the estimated 1RM might be close to a previous true 1RM,

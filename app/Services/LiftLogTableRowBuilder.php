@@ -452,9 +452,11 @@ class LiftLogTableRowBuilder
         
         $records = [];
         
-        // Get best 1RM
+        // Get best 1RM and current lift's 1RM
         $best1RM = 0;
         $best1RMIsTrueMax = false;
+        $current1RM = 0;
+        
         foreach ($allLogs as $log) {
             foreach ($log->liftSets as $set) {
                 if ($set->weight > 0 && $set->reps > 0) {
@@ -471,17 +473,34 @@ class LiftLogTableRowBuilder
             }
         }
         
+        // Calculate current lift's 1RM
+        foreach ($liftLog->liftSets as $set) {
+            if ($set->weight > 0 && $set->reps > 0) {
+                try {
+                    $estimated1RM = $strategy->calculate1RM($set->weight, $set->reps, $liftLog);
+                    if ($estimated1RM > $current1RM) {
+                        $current1RM = $estimated1RM;
+                    }
+                } catch (\Exception $e) {
+                    continue;
+                }
+            }
+        }
+        
         if ($best1RM > 0) {
             // Use "1RM" if it's a true max, otherwise "Est 1RM"
             $label = $best1RMIsTrueMax ? '1RM' : 'Est 1RM';
             $records[] = [
                 'label' => $label,
-                'value' => sprintf('%s lbs', $this->formatWeight($best1RM))
+                'value' => sprintf('%s lbs', $this->formatWeight($best1RM)),
+                'comparison' => sprintf('%s lbs', $this->formatWeight($current1RM))
             ];
         }
         
-        // Get best Volume
+        // Get best Volume and current lift's volume
         $bestVolume = 0;
+        $currentVolume = 0;
+        
         foreach ($allLogs as $log) {
             $logVolume = 0;
             foreach ($log->liftSets as $set) {
@@ -494,10 +513,17 @@ class LiftLogTableRowBuilder
             }
         }
         
+        foreach ($liftLog->liftSets as $set) {
+            if ($set->weight > 0 && $set->reps > 0) {
+                $currentVolume += ($set->weight * $set->reps);
+            }
+        }
+        
         if ($bestVolume > 0) {
             $records[] = [
                 'label' => 'Volume',
-                'value' => sprintf('%s lbs', number_format($bestVolume, 0))
+                'value' => sprintf('%s lbs', number_format($bestVolume, 0)),
+                'comparison' => sprintf('%s lbs', number_format($currentVolume, 0))
             ];
         }
         
@@ -508,6 +534,7 @@ class LiftLogTableRowBuilder
         
         foreach ($currentReps as $targetReps) {
             $bestWeightForReps = 0;
+            $currentWeightForReps = 0;
             
             foreach ($allLogs as $log) {
                 foreach ($log->liftSets as $set) {
@@ -517,11 +544,18 @@ class LiftLogTableRowBuilder
                 }
             }
             
+            foreach ($liftLog->liftSets as $set) {
+                if ($set->reps === $targetReps && $set->weight > $currentWeightForReps) {
+                    $currentWeightForReps = $set->weight;
+                }
+            }
+            
             if ($bestWeightForReps > 0) {
                 $repLabel = $targetReps . ' Rep' . ($targetReps > 1 ? 's' : '');
                 $records[] = [
                     'label' => $repLabel,
-                    'value' => sprintf('%s lbs', $this->formatWeight($bestWeightForReps))
+                    'value' => sprintf('%s lbs', $this->formatWeight($bestWeightForReps)),
+                    'comparison' => sprintf('%s lbs', $this->formatWeight($currentWeightForReps))
                 ];
             }
         }

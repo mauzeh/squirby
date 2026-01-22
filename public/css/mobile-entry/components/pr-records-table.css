@@ -8,23 +8,6 @@
     font-size: 0.85em;
 }
 
-.pr-records-header {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    margin-bottom: 8px;
-    font-weight: 600;
-    color: #a0a0a0;
-    letter-spacing: 0.5px;
-}
-
-.pr-records-icon {
-}
-
-.pr-records-title {
-    flex: 1;
-}
-
 .pr-records-grid {
     width: 100%;
     border-collapse: collapse;
@@ -43,7 +26,6 @@
     color: #b0b0b0;
     font-weight: 500;
     white-space: nowrap;
-    width: 35%;
 }
 
 .pr-record-value {
@@ -53,13 +35,17 @@
     text-align: right;
 }
 
+.pr-record-comparison {
+    padding: 8px 16px 8px 12px;
+    color: #90caf9;
+    font-weight: 300;
+    text-align: right;
+    font-style: italic;
+}
+
 /* PR beaten variant (green theme) */
 .pr-records-table.pr-records-table--beaten {
     background: rgba(76, 175, 80, 0.1);
-}
-
-.pr-records-table.pr-records-table--beaten .pr-records-header {
-    color: #81c784;
 }
 
 .pr-records-table.pr-records-table--beaten .pr-record-value {
@@ -69,10 +55,6 @@
 /* Current records variant (blue theme) */
 .pr-records-table.pr-records-table--current {
     background: rgba(74, 158, 255, 0.08);
-}
-
-.pr-records-table.pr-records-table--current .pr-records-header {
-    color: #90caf9;
 }
 
 /* Compact spacing for mobile */
