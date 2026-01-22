@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\LiftLog;
 use App\Services\ExerciseAliasService;
 use App\Services\PRDetectionService;
+use App\Services\Components\Display\PRRecordsTableComponentBuilder;
 use Illuminate\Support\Collection;
 use Carbon\Carbon;
 
@@ -199,45 +200,45 @@ class LiftLogTableRowBuilder
             'cssClass' => $isPR ? 'row-pr' : null,
         ];
         
-        // Build subitem messages
-        $subItemMessages = [];
+        // Build subitem with notes and PR records
+        $subItem = [
+            'line1' => null,
+            'messages' => [],
+            'actions' => []
+        ];
         
         // Always show comments first
         $notesText = !empty(trim($liftLog->comments)) ? $liftLog->comments : 'N/A';
-        $subItemMessages[] = [
+        $subItem['messages'][] = [
             'type' => 'neutral',
             'prefix' => 'Your notes:',
             'text' => $notesText
         ];
         
-        // Add PR information - show what records exist (for non-PRs) or what was beaten (for PRs)
+        // Add PR records component
         if ($isPR) {
             // For PRs, show what was beaten
-            $prInfo = $this->getPRInfoForLiftLog($liftLog);
-            if (!empty($prInfo)) {
-                $subItemMessages[] = [
-                    'type' => 'success',
-                    'prefix' => '🏆 PRs beaten:',
-                    'text' => $prInfo
-                ];
+            $prRecords = $this->getPRRecordsForBeatenPRs($liftLog);
+            if (!empty($prRecords)) {
+                $builder = (new PRRecordsTableComponentBuilder('Records beaten'))
+                    ->records($prRecords)
+                    ->beaten();
+                
+                $subItem['component'] = $builder->build();
             }
         } else {
-            // For non-PRs, show what the current records are (what they need to beat)
-            $recordsInfo = $this->getCurrentRecordsForExercise($liftLog);
-            if (!empty($recordsInfo)) {
-                $subItemMessages[] = [
-                    'type' => 'info',
-                    'prefix' => 'Current records:',
-                    'text' => $recordsInfo
-                ];
+            // For non-PRs, show current records
+            $currentRecords = $this->getCurrentRecordsTable($liftLog);
+            if (!empty($currentRecords)) {
+                $builder = (new PRRecordsTableComponentBuilder('Current records'))
+                    ->records($currentRecords)
+                    ->current();
+                
+                $subItem['component'] = $builder->build();
             }
         }
         
-        $row['subItems'] = [[
-            'line1' => null,
-            'messages' => $subItemMessages,
-            'actions' => []
-        ]];
+        $row['subItems'] = [$subItem];
         $row['collapsible'] = false; // Always show comments
         $row['initialState'] = 'expanded';
         
@@ -245,12 +246,137 @@ class LiftLogTableRowBuilder
     }
     
     /**
-     * Get current records for an exercise (to show what needs to be beaten)
+     * Get PR records for beaten PRs in table format
      * 
      * @param LiftLog $liftLog
-     * @return string
+     * @return array
      */
-    protected function getCurrentRecordsForExercise(LiftLog $liftLog): string
+    protected function getPRRecordsForBeatenPRs(LiftLog $liftLog): array
+    {
+        // Get all previous lift logs for this exercise
+        $previousLogs = \App\Models\LiftLog::where('exercise_id', $liftLog->exercise_id)
+            ->where('user_id', $liftLog->user_id)
+            ->where('logged_at', '<', $liftLog->logged_at)
+            ->with('liftSets')
+            ->orderBy('logged_at', 'asc')
+            ->get();
+        
+        if ($previousLogs->isEmpty()) {
+            return [[
+                'label' => 'Achievement',
+                'value' => 'First time!'
+            ]];
+        }
+        
+        $strategy = $liftLog->exercise->getTypeStrategy();
+        if (!$strategy->canCalculate1RM()) {
+            return [];
+        }
+        
+        $records = [];
+        
+        // Check for 1RM PR
+        $current1RM = 0;
+        $previous1RM = 0;
+        
+        foreach ($liftLog->liftSets as $set) {
+            if ($set->weight > 0 && $set->reps > 0) {
+                try {
+                    $estimated1RM = $strategy->calculate1RM($set->weight, $set->reps, $liftLog);
+                    if ($estimated1RM > $current1RM) {
+                        $current1RM = $estimated1RM;
+                    }
+                } catch (\Exception $e) {
+                    continue;
+                }
+            }
+        }
+        
+        foreach ($previousLogs as $log) {
+            foreach ($log->liftSets as $set) {
+                if ($set->weight > 0 && $set->reps > 0) {
+                    try {
+                        $estimated1RM = $strategy->calculate1RM($set->weight, $set->reps, $log);
+                        if ($estimated1RM > $previous1RM) {
+                            $previous1RM = $estimated1RM;
+                        }
+                    } catch (\Exception $e) {
+                        continue;
+                    }
+                }
+            }
+        }
+        
+        if ($current1RM > $previous1RM + 0.1) {
+            $records[] = [
+                'label' => '1RM',
+                'value' => sprintf('%.1f → %.1f lbs', $previous1RM, $current1RM)
+            ];
+        }
+        
+        // Check for Volume PR
+        $currentVolume = 0;
+        $previousVolume = 0;
+        
+        foreach ($liftLog->liftSets as $set) {
+            if ($set->weight > 0 && $set->reps > 0) {
+                $currentVolume += ($set->weight * $set->reps);
+            }
+        }
+        
+        foreach ($previousLogs as $log) {
+            $logVolume = 0;
+            foreach ($log->liftSets as $set) {
+                if ($set->weight > 0 && $set->reps > 0) {
+                    $logVolume += ($set->weight * $set->reps);
+                }
+            }
+            if ($logVolume > $previousVolume) {
+                $previousVolume = $logVolume;
+            }
+        }
+        
+        if ($currentVolume > $previousVolume * 1.01) {
+            $records[] = [
+                'label' => 'Volume',
+                'value' => sprintf('%s → %s lbs', number_format($previousVolume, 0), number_format($currentVolume, 0))
+            ];
+        }
+        
+        // Check for rep-specific PRs
+        foreach ($liftLog->liftSets as $set) {
+            if ($set->reps > 0 && $set->reps <= 10) {
+                $previousMaxForReps = 0;
+                
+                foreach ($previousLogs as $log) {
+                    foreach ($log->liftSets as $prevSet) {
+                        if ($prevSet->reps === $set->reps && $prevSet->weight > $previousMaxForReps) {
+                            $previousMaxForReps = $prevSet->weight;
+                        }
+                    }
+                }
+                
+                if ($set->weight > $previousMaxForReps + 0.1) {
+                    $repLabel = $set->reps . ' Rep' . ($set->reps > 1 ? 's' : '');
+                    $records[] = [
+                        'label' => $repLabel,
+                        'value' => sprintf('%.1f → %.1f lbs', $previousMaxForReps, $set->weight)
+                    ];
+                    break; // Only show one rep-specific PR to keep it clean
+                }
+            }
+        }
+        
+        return $records;
+    }
+    
+    /**
+     * Get current records for an exercise in table format
+     * 
+     * @param LiftLog $liftLog
+     * @return array
+     */
+    protected function getCurrentRecordsTable(LiftLog $liftLog): array
     {
         // Get all previous lift logs for this exercise (including this one)
         $allLogs = \App\Models\LiftLog::where('exercise_id', $liftLog->exercise_id)
@@ -261,12 +387,12 @@ class LiftLogTableRowBuilder
             ->get();
         
         if ($allLogs->count() <= 1) {
-            return ''; // First lift, no records to show
+            return []; // First lift, no records to show
         }
         
         $strategy = $liftLog->exercise->getTypeStrategy();
         if (!$strategy->canCalculate1RM()) {
-            return '';
+            return [];
         }
         
         $records = [];
@@ -289,7 +415,10 @@ class LiftLogTableRowBuilder
         }
         
         if ($best1RM > 0) {
-            $records[] = sprintf('1RM: %.1f lbs', $best1RM);
+            $records[] = [
+                'label' => '1RM',
+                'value' => sprintf('%.1f lbs', $best1RM)
+            ];
         }
         
         // Get best Volume
@@ -307,13 +436,16 @@ class LiftLogTableRowBuilder
         }
         
         if ($bestVolume > 0) {
-            $records[] = sprintf('Volume: %s lbs', number_format($bestVolume, 0));
+            $records[] = [
+                'label' => 'Volume',
+                'value' => sprintf('%s lbs', number_format($bestVolume, 0))
+            ];
         }
         
         // Get rep-specific records (for reps in current lift)
         $currentReps = $liftLog->liftSets->pluck('reps')->unique()->filter(function($reps) {
             return $reps > 0 && $reps <= 10;
-        });
+        })->take(2); // Limit to 2 rep counts to keep it clean
         
         foreach ($currentReps as $targetReps) {
             $bestWeightForReps = 0;
@@ -328,15 +460,14 @@ class LiftLogTableRowBuilder
             
             if ($bestWeightForReps > 0) {
                 $repLabel = $targetReps . ' Rep' . ($targetReps > 1 ? 's' : '');
-                $records[] = sprintf('%s: %.1f lbs', $repLabel, $bestWeightForReps);
+                $records[] = [
+                    'label' => $repLabel,
+                    'value' => sprintf('%.1f lbs', $bestWeightForReps)
+                ];
             }
         }
         
-        if (empty($records)) {
-            return '';
-        }
-        
-        return implode(' • ', $records);
+        return $records;
     }
     
     /**

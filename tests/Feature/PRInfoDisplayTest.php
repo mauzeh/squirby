@@ -55,8 +55,9 @@ class PRInfoDisplayTest extends TestCase
         // Should NOT see PR badge
         $response->assertDontSee('🏆 PR');
         
-        // Should see current records
-        $response->assertSee('Current records:');
+        // Should see current records component
+        $response->assertSee('pr-records-table', false);
+        $response->assertSee('Current records');
         $response->assertSee('200.0 lbs'); // The record they need to beat
     }
 
@@ -87,9 +88,9 @@ class PRInfoDisplayTest extends TestCase
         $response->assertSee('🏆 PR');
         
         // Should see what was beaten
-        $response->assertSee('PRs beaten:');
-        $response->assertSee('180.0 lbs');
-        $response->assertSee('200.0 lbs');
+        $response->assertSee('Records beaten');
+        $response->assertSee('180.0');
+        $response->assertSee('200.0');
     }
 
     /** @test */
@@ -168,10 +169,10 @@ class PRInfoDisplayTest extends TestCase
         $response->assertSee('🏆 PR');
         
         // Should see first time message
-        $response->assertSee('First time logging this exercise!');
+        $response->assertSee('First time!');
         
         // Should NOT see "Current records"
-        $response->assertDontSee('Current records:');
+        $response->assertDontSee('Current records');
     }
 
     /** @test */
@@ -200,13 +201,13 @@ class PRInfoDisplayTest extends TestCase
         // Should see PR badge
         $response->assertSee('🏆 PR');
         
-        // Should see "PRs beaten" not "Current records"
-        $response->assertSee('PRs beaten:');
-        $response->assertDontSee('Current records:');
+        // Should see "Records beaten" not "Current records"
+        $response->assertSee('Records beaten');
+        $response->assertDontSee('Current records');
         
         // Should show the progression
-        $response->assertSee('150.0 lbs');
-        $response->assertSee('160.0 lbs');
+        $response->assertSee('150.0');
+        $response->assertSee('160.0');
     }
 
     /** @test */
@@ -235,10 +236,10 @@ class PRInfoDisplayTest extends TestCase
         $response->assertStatus(200);
         
         // Should see current records with multiple types
-        $response->assertSee('Current records:');
+        $response->assertSee('Current records');
         $response->assertSee('1RM');
         $response->assertSee('Volume');
-        $response->assertSee('5 Reps');
+        $response->assertSee('5 Rep');
     }
 
     /** @test */
@@ -273,7 +274,7 @@ class PRInfoDisplayTest extends TestCase
         
         // Should not see PR badge or records for bodyweight exercises
         $response->assertDontSee('🏆 PR');
-        $response->assertDontSee('Current records:');
-        $response->assertDontSee('PRs beaten:');
+        $response->assertDontSee('Current records');
+        $response->assertDontSee('PRs beaten');
     }
 }

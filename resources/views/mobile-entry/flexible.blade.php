@@ -21,6 +21,7 @@
     <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/tabs.css') }}">
     <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/welcome-overlay.css') }}">
     <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/pr-info.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/pr-records-table.css') }}">
 @endsection
 
 @section('scripts')

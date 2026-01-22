@@ -1,0 +1,92 @@
+/* PR Records Table Component */
+
+.pr-records-table {
+    margin-top: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    padding: 12px;
+}
+
+.pr-records-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #a0a0a0;
+    letter-spacing: 0.5px;
+}
+
+.pr-records-icon {
+    font-size: 14px;
+}
+
+.pr-records-title {
+    flex: 1;
+}
+
+.pr-records-grid {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.pr-record-row {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.pr-record-row:last-child {
+    border-bottom: none;
+}
+
+.pr-record-label {
+    padding: 8px 12px 8px 0;
+    font-size: 14px;
+    color: #b0b0b0;
+    font-weight: 500;
+    white-space: nowrap;
+    width: 35%;
+}
+
+.pr-record-value {
+    padding: 8px 0 8px 12px;
+    font-size: 14px;
+    color: #ffffff;
+    font-weight: 600;
+    text-align: right;
+}
+
+/* PR beaten variant (green theme) */
+.pr-records-table.pr-records-table--beaten {
+    background: rgba(76, 175, 80, 0.1);
+}
+
+.pr-records-table.pr-records-table--beaten .pr-records-header {
+    color: #81c784;
+}
+
+.pr-records-table.pr-records-table--beaten .pr-record-value {
+    color: #a5d6a7;
+}
+
+/* Current records variant (blue theme) */
+.pr-records-table.pr-records-table--current {
+    background: rgba(74, 158, 255, 0.08);
+}
+
+.pr-records-table.pr-records-table--current .pr-records-header {
+    color: #90caf9;
+}
+
+/* Compact spacing for mobile */
+@media (max-width: 600px) {
+    .pr-records-table {
+        padding: 10px;
+    }
+    
+    .pr-record-label,
+    .pr-record-value {
+        padding: 6px 8px;
+        font-size: 13px;
+    }
+}
