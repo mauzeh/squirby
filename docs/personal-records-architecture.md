@@ -165,9 +165,9 @@ User submits form
   ↓
 Create/Update LiftLog + LiftSets (in transaction)
   ↓
-Dispatch LiftLogged event
+Dispatch LiftLogCompleted event
   ↓
-DetectAndRecordPRs listener
+DetectAndRecordPRs listener (synchronous)
   ↓
 Detect PRs (compare against previous logs)
   ↓
@@ -189,7 +189,7 @@ use App\Models\LiftLog;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class LiftLogged
+class LiftLogCompleted
 {
     use Dispatchable, SerializesModels;
     
@@ -200,12 +200,17 @@ class LiftLogged
 }
 ```
 
+**Note:** We use a new `LiftLogCompleted` event instead of the existing `LiftLogged` event. This ensures:
+- The event is dispatched AFTER lift sets are created
+- No conflicts with existing `LiftLogged` listeners
+- Clear semantic meaning: the lift log is fully complete with all sets
+
 **Listener:**
 
 ```php
 namespace App\Listeners;
 
-use App\Events\LiftLogged;
+use App\Events\LiftLogCompleted;
 use App\Services\PRDetectionService;
 use App\Models\PersonalRecord;
 use Illuminate\Support\Facades\DB;
@@ -216,10 +221,13 @@ class DetectAndRecordPRs
         protected PRDetectionService $prDetectionService
     ) {}
     
-    public function handle(LiftLogged $event): void
+    public function handle(LiftLogCompleted $event): void
     {
         DB::transaction(function () use ($event) {
             $liftLog = $event->liftLog;
+            
+            // Eager load relationships needed for PR detection
+            $liftLog->load(['exercise', 'liftSets']);
             
             // If this is an update, delete old PR records
             if ($event->isUpdate) {
@@ -255,15 +263,61 @@ class DetectAndRecordPRs
 }
 ```
 
-**Register in EventServiceProvider:**
+**Event Registration:**
+
+Laravel 12 uses **automatic event discovery**. Simply place:
+- Event in `app/Events/LiftLogCompleted.php`
+- Listener in `app/Listeners/DetectAndRecordPRs.php`
+
+Laravel automatically discovers and registers them based on the type hint in the listener's `handle()` method. No manual registration needed.
+
+**Dispatching the Event:**
+
+In `CreateLiftLogAction` (after creating lift sets):
 
 ```php
-protected $listen = [
-    LiftLogged::class => [
-        DetectAndRecordPRs::class,
-        // Future: SendPRNotification::class,
-    ],
-];
+// Create the lift log
+$liftLog = $this->createLiftLog($request, $user, $loggedAt);
+
+// Create lift sets
+$this->createLiftSets($request, $liftLog, $exercise);
+
+// Dispatch event for PR detection (synchronous)
+LiftLogCompleted::dispatch($liftLog, isUpdate: false);
+```
+
+In `UpdateLiftLogAction` (after updating lift sets):
+
+```php
+// Update the lift log
+$liftLog->update($validated);
+
+// Update lift sets
+$this->updateLiftSets($request, $liftLog, $exercise);
+
+// Dispatch event for PR recalculation (synchronous)
+LiftLogCompleted::dispatch($liftLog, isUpdate: true);
+```
+
+**Why Synchronous (No Queue)?**
+
+The listener does NOT implement `ShouldQueue`, meaning:
+- ✅ PR detection runs immediately (blocks response)
+- ✅ PRs are available right away when page loads
+- ✅ Simpler debugging and testing
+- ✅ No queue configuration needed
+- ✅ Acceptable performance (~5-15ms overhead)
+
+Future enhancement: Add a separate queued listener for notifications:
+
+```php
+class SendPRNotification implements ShouldQueue
+{
+    public function handle(LiftLogCompleted $event): void
+    {
+        // Send emails/push notifications in background
+    }
+}
 ```
 
 ### Read Path
