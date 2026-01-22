@@ -5,6 +5,7 @@
     background: rgba(255, 255, 255, 0.05);
     border-radius: 8px;
     padding: 12px;
+    font-size: 0.85em;
 }
 
 .pr-records-header {
@@ -12,14 +13,12 @@
     align-items: center;
     gap: 6px;
     margin-bottom: 8px;
-    font-size: 13px;
     font-weight: 600;
     color: #a0a0a0;
     letter-spacing: 0.5px;
 }
 
 .pr-records-icon {
-    font-size: 14px;
 }
 
 .pr-records-title {
@@ -41,7 +40,6 @@
 
 .pr-record-label {
     padding: 8px 12px 8px 0;
-    font-size: 14px;
     color: #b0b0b0;
     font-weight: 500;
     white-space: nowrap;
@@ -50,7 +48,6 @@
 
 .pr-record-value {
     padding: 8px 0 8px 12px;
-    font-size: 14px;
     color: #ffffff;
     font-weight: 600;
     text-align: right;
@@ -87,6 +84,5 @@
     .pr-record-label,
     .pr-record-value {
         padding: 6px 8px;
-        font-size: 13px;
     }
 }

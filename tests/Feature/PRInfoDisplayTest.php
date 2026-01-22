@@ -58,7 +58,7 @@ class PRInfoDisplayTest extends TestCase
         // Should see current records component
         $response->assertSee('pr-records-table', false);
         $response->assertSee('Current records');
-        $response->assertSee('200.0 lbs'); // The record they need to beat
+        $response->assertSee('200 lbs'); // The record they need to beat
     }
 
     /** @test */
@@ -89,8 +89,8 @@ class PRInfoDisplayTest extends TestCase
         
         // Should see what was beaten
         $response->assertSee('Records beaten');
-        $response->assertSee('180.0');
-        $response->assertSee('200.0');
+        $response->assertSee('180');
+        $response->assertSee('200');
     }
 
     /** @test */
@@ -147,7 +147,7 @@ class PRInfoDisplayTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('Current records:');
         $response->assertSee('5 Reps');
-        $response->assertSee('200.0 lbs'); // The record to beat
+        $response->assertSee('200 lbs'); // The record to beat
     }
 
     /** @test */
@@ -206,8 +206,8 @@ class PRInfoDisplayTest extends TestCase
         $response->assertDontSee('Current records');
         
         // Should show the progression
-        $response->assertSee('150.0');
-        $response->assertSee('160.0');
+        $response->assertSee('150');
+        $response->assertSee('160');
     }
 
     /** @test */

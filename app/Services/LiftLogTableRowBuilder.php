@@ -246,6 +246,23 @@ class LiftLogTableRowBuilder
     }
     
     /**
+     * Format weight value for display
+     * Shows integer if whole number, otherwise shows decimal
+     * 
+     * @param float $weight
+     * @return string
+     */
+    protected function formatWeight(float $weight): string
+    {
+        // Check if the weight is a whole number
+        if ($weight == floor($weight)) {
+            return number_format($weight, 0);
+        }
+        
+        return number_format($weight, 1);
+    }
+    
+    /**
      * Get PR records for beaten PRs in table format
      * 
      * @param LiftLog $liftLog
@@ -310,7 +327,7 @@ class LiftLogTableRowBuilder
         if ($current1RM > $previous1RM + 0.1) {
             $records[] = [
                 'label' => '1RM',
-                'value' => sprintf('%.1f → %.1f lbs', $previous1RM, $current1RM)
+                'value' => sprintf('%s → %s lbs', $this->formatWeight($previous1RM), $this->formatWeight($current1RM))
             ];
         }
         
@@ -360,7 +377,7 @@ class LiftLogTableRowBuilder
                     $repLabel = $set->reps . ' Rep' . ($set->reps > 1 ? 's' : '');
                     $records[] = [
                         'label' => $repLabel,
-                        'value' => sprintf('%.1f → %.1f lbs', $previousMaxForReps, $set->weight)
+                        'value' => sprintf('%s → %s lbs', $this->formatWeight($previousMaxForReps), $this->formatWeight($set->weight))
                     ];
                     break; // Only show one rep-specific PR to keep it clean
                 }
@@ -417,7 +434,7 @@ class LiftLogTableRowBuilder
         if ($best1RM > 0) {
             $records[] = [
                 'label' => '1RM',
-                'value' => sprintf('%.1f lbs', $best1RM)
+                'value' => sprintf('%s lbs', $this->formatWeight($best1RM))
             ];
         }
         
@@ -462,7 +479,7 @@ class LiftLogTableRowBuilder
                 $repLabel = $targetReps . ' Rep' . ($targetReps > 1 ? 's' : '');
                 $records[] = [
                     'label' => $repLabel,
-                    'value' => sprintf('%.1f lbs', $bestWeightForReps)
+                    'value' => sprintf('%s lbs', $this->formatWeight($bestWeightForReps))
                 ];
             }
         }
