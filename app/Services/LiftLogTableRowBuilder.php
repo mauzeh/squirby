@@ -295,6 +295,8 @@ class LiftLogTableRowBuilder
         // Check for 1RM PR
         $current1RM = 0;
         $previous1RM = 0;
+        $current1RMIsTrueMax = false; // Track if current 1RM is from a 1 rep lift
+        $previous1RMIsTrueMax = false; // Track if previous 1RM is from a 1 rep lift
         
         foreach ($liftLog->liftSets as $set) {
             if ($set->weight > 0 && $set->reps > 0) {
@@ -302,6 +304,7 @@ class LiftLogTableRowBuilder
                     $estimated1RM = $strategy->calculate1RM($set->weight, $set->reps, $liftLog);
                     if ($estimated1RM > $current1RM) {
                         $current1RM = $estimated1RM;
+                        $current1RMIsTrueMax = ($set->reps === 1);
                     }
                 } catch (\Exception $e) {
                     continue;
@@ -316,6 +319,7 @@ class LiftLogTableRowBuilder
                         $estimated1RM = $strategy->calculate1RM($set->weight, $set->reps, $log);
                         if ($estimated1RM > $previous1RM) {
                             $previous1RM = $estimated1RM;
+                            $previous1RMIsTrueMax = ($set->reps === 1);
                         }
                     } catch (\Exception $e) {
                         continue;
@@ -353,8 +357,10 @@ class LiftLogTableRowBuilder
             $shouldShow1RM = !($hasOneRepPR && abs($current1RM - $oneRepWeight) < 0.1);
             
             if ($shouldShow1RM) {
+                // Use "1RM" if both current and previous are true maxes, otherwise "Est 1RM"
+                $label = ($current1RMIsTrueMax && $previous1RMIsTrueMax) ? '1RM' : 'Est 1RM';
                 $records[] = [
-                    'label' => '1RM',
+                    'label' => $label,
                     'value' => sprintf('%s → %s lbs', $this->formatWeight($previous1RM), $this->formatWeight($current1RM))
                 ];
             }
@@ -445,6 +451,7 @@ class LiftLogTableRowBuilder
         
         // Get best 1RM
         $best1RM = 0;
+        $best1RMIsTrueMax = false;
         foreach ($allLogs as $log) {
             foreach ($log->liftSets as $set) {
                 if ($set->weight > 0 && $set->reps > 0) {
@@ -452,6 +459,7 @@ class LiftLogTableRowBuilder
                         $estimated1RM = $strategy->calculate1RM($set->weight, $set->reps, $log);
                         if ($estimated1RM > $best1RM) {
                             $best1RM = $estimated1RM;
+                            $best1RMIsTrueMax = ($set->reps === 1);
                         }
                     } catch (\Exception $e) {
                         continue;
@@ -461,8 +469,10 @@ class LiftLogTableRowBuilder
         }
         
         if ($best1RM > 0) {
+            // Use "1RM" if it's a true max, otherwise "Est 1RM"
+            $label = $best1RMIsTrueMax ? '1RM' : 'Est 1RM';
             $records[] = [
-                'label' => '1RM',
+                'label' => $label,
                 'value' => sprintf('%s lbs', $this->formatWeight($best1RM))
             ];
         }

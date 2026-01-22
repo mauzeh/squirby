@@ -237,7 +237,7 @@ class PRInfoDisplayTest extends TestCase
         
         // Should see current records with multiple types
         $response->assertSee('Current records');
-        $response->assertSee('1RM');
+        $response->assertSee('Est 1RM');
         $response->assertSee('Volume');
         $response->assertSee('5 Rep');
     }
@@ -312,7 +312,8 @@ class PRInfoDisplayTest extends TestCase
         $response->assertSee('200');
         $response->assertSee('225');
         
-        // Should NOT see "1RM" label since it would be the same as "1 Rep"
+        // Should NOT see "Est 1RM" or "1RM" label since it would be the same as "1 Rep"
+        $response->assertDontSee('Est 1RM');
         $response->assertDontSee('1RM');
     }
 
@@ -345,8 +346,8 @@ class PRInfoDisplayTest extends TestCase
         // Should see "Records beaten"
         $response->assertSee('Records beaten');
         
-        // Should see BOTH "1RM" (estimated) and "5 Reps" rows
-        $response->assertSee('1RM');
+        // Should see BOTH "Est 1RM" (estimated) and "5 Reps" rows
+        $response->assertSee('Est 1RM');
         $response->assertSee('5 Reps');
         
         // Should see the rep-specific PR
@@ -384,10 +385,10 @@ class PRInfoDisplayTest extends TestCase
         // Should see "Records beaten"
         $response->assertSee('Records beaten');
         
-        // Should see BOTH "1RM" (estimated from 3 reps) and "3 Reps" rows
+        // Should see BOTH "Est 1RM" (estimated from 3 reps) and "3 Reps" rows
         // Even though the estimated 1RM might be close to a previous true 1RM,
         // they are different values and should both be shown
-        $response->assertSee('1RM');
+        $response->assertSee('Est 1RM');
         $response->assertSee('3 Reps');
     }
 }
