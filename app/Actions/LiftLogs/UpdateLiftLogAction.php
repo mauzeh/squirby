@@ -3,6 +3,7 @@
 namespace App\Actions\LiftLogs;
 
 use App\Enums\PRType;
+use App\Events\LiftLogCompleted;
 use App\Models\Exercise;
 use App\Models\LiftLog;
 use App\Models\PRDetectionLog;
@@ -43,6 +44,9 @@ class UpdateLiftLogAction
 
         // Delete existing lift sets and create new ones
         $this->updateLiftSets($request, $liftLog, $exercise);
+        
+        // Dispatch event for PR recalculation (synchronous)
+        LiftLogCompleted::dispatch($liftLog, isUpdate: true);
         
         // Re-check PR status after update and log it
         $this->checkAndLogPR($liftLog, $exercise, $user);

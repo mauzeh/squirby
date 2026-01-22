@@ -4,6 +4,7 @@ namespace App\Actions\LiftLogs;
 
 use App\Enums\PRType;
 use App\Events\LiftLogged;
+use App\Events\LiftLogCompleted;
 use App\Models\Exercise;
 use App\Models\LiftLog;
 use App\Models\PRDetectionLog;
@@ -41,6 +42,9 @@ class CreateLiftLogAction
         
         // Process and create lift sets
         $this->createLiftSets($request, $liftLog, $exercise);
+        
+        // Dispatch event for PR detection (synchronous)
+        LiftLogCompleted::dispatch($liftLog, isUpdate: false);
         
         // Check if this is a PR
         $prFlags = $this->checkIfPR($liftLog, $exercise, $user);

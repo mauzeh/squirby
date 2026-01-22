@@ -749,14 +749,14 @@ Once PRs are first-class data, new features become possible:
 - [x] Update `LiftLog` model with PR relationships
 - [x] Write unit tests for models
 
-### Phase 2: Event System (Week 1-2)
-- [ ] Create `LiftLogCompleted` event in `app/Events/`
-- [ ] Create `DetectAndRecordPRs` listener in `app/Listeners/`
-- [ ] Update `PRDetectionService` with `detectPRsWithDetails()` method
-- [ ] Update `CreateLiftLogAction` to dispatch event after creating sets
-- [ ] Update `UpdateLiftLogAction` to dispatch event after updating sets
-- [ ] Write integration tests
-- [ ] Verify auto-discovery works (Laravel 12 automatically registers events)
+### Phase 2: Event System (Week 1-2) ✅ COMPLETE
+- [x] Create `LiftLogCompleted` event in `app/Events/`
+- [x] Create `DetectAndRecordPRs` listener in `app/Listeners/`
+- [x] Update `PRDetectionService` with `detectPRsWithDetails()` method
+- [x] Update `CreateLiftLogAction` to dispatch event after creating sets
+- [x] Update `UpdateLiftLogAction` to dispatch event after updating sets
+- [x] Write integration tests
+- [x] Verify auto-discovery works (Laravel 12 automatically registers events)
 
 ### Phase 3: Edge Cases (Week 2)
 - [ ] Handle lift log updates
