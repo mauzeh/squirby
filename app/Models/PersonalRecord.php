@@ -1,0 +1,74 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
+class PersonalRecord extends Model
+{
+    use HasFactory, SoftDeletes;
+
+    protected $fillable = [
+        'user_id',
+        'exercise_id',
+        'lift_log_id',
+        'pr_type',
+        'rep_count',
+        'weight',
+        'value',
+        'previous_pr_id',
+        'previous_value',
+        'achieved_at',
+    ];
+
+    protected $casts = [
+        'value' => 'decimal:2',
+        'previous_value' => 'decimal:2',
+        'weight' => 'decimal:2',
+        'achieved_at' => 'datetime',
+    ];
+
+    // Relationships
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function exercise()
+    {
+        return $this->belongsTo(Exercise::class);
+    }
+
+    public function liftLog()
+    {
+        return $this->belongsTo(LiftLog::class);
+    }
+
+    public function previousPR()
+    {
+        return $this->belongsTo(PersonalRecord::class, 'previous_pr_id');
+    }
+
+    public function supersededBy()
+    {
+        return $this->hasOne(PersonalRecord::class, 'previous_pr_id');
+    }
+
+    // Scopes
+    public function scopeCurrent($query)
+    {
+        return $query->whereDoesntHave('supersededBy');
+    }
+
+    public function scopeForExercise($query, $exerciseId)
+    {
+        return $query->where('exercise_id', $exerciseId);
+    }
+
+    public function scopeOfType($query, $type)
+    {
+        return $query->where('pr_type', $type);
+    }
+}

@@ -30,6 +30,8 @@ class LiftLog extends Model
         'logged_at',
         'user_id',
         'workout_id',
+        'is_pr',
+        'pr_count',
     ];
 
     protected $casts = [
@@ -142,5 +144,20 @@ class LiftLog extends Model
     public function workout()
     {
         return $this->belongsTo(Workout::class);
+    }
+
+    public function personalRecords()
+    {
+        return $this->hasMany(PersonalRecord::class);
+    }
+
+    public function isPR(): bool
+    {
+        return $this->is_pr;
+    }
+
+    public function getPRCount(): int
+    {
+        return $this->pr_count;
     }
 }

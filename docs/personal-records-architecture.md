@@ -742,12 +742,12 @@ Once PRs are first-class data, new features become possible:
 
 ## Implementation Plan
 
-### Phase 1: Foundation (Week 1)
-- [ ] Create migration for `personal_records` table
-- [ ] Add `is_pr` and `pr_count` columns to `lift_logs`
-- [ ] Create `PersonalRecord` model with relationships
-- [ ] Update `LiftLog` model with PR relationships
-- [ ] Write unit tests for models
+### Phase 1: Foundation (Week 1) ✅ COMPLETE
+- [x] Create migration for `personal_records` table
+- [x] Add `is_pr` and `pr_count` columns to `lift_logs`
+- [x] Create `PersonalRecord` model with relationships
+- [x] Update `LiftLog` model with PR relationships
+- [x] Write unit tests for models
 
 ### Phase 2: Event System (Week 1-2)
 - [ ] Create `LiftLogCompleted` event in `app/Events/`
