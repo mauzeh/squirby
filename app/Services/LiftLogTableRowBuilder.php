@@ -44,6 +44,7 @@ class LiftLogTableRowBuilder
             'includeEncouragingMessage' => false,
             'redirectContext' => null,
             'selectedDate' => null,
+            'showPRRecordsTable' => false, // Only show on mobile-entry/lifts by default
         ];
         
         $config = array_merge($defaults, $options);
@@ -59,8 +60,12 @@ class LiftLogTableRowBuilder
                 ->with(['exercise', 'liftSets'])
                 ->orderBy('logged_at', 'asc')
                 ->get();
+            
+            // Group historical logs by exercise_id for efficient lookup
+            $config['historicalLogsByExercise'] = $logsForPRCalculation->groupBy('exercise_id');
         } else {
             $logsForPRCalculation = $liftLogs;
+            $config['historicalLogsByExercise'] = collect();
         }
         
         $prLogIds = $this->prDetectionService->calculatePRLogIds($logsForPRCalculation);
@@ -216,31 +221,33 @@ class LiftLogTableRowBuilder
         ];
         
         // Add PR records component
-        if ($isPR) {
-            // For PRs, show what was beaten
-            $prRecords = $this->getPRRecordsForBeatenPRs($liftLog);
-            if (!empty($prRecords)) {
-                $viewLogsUrl = route('exercises.show-logs', $liftLog->exercise);
-                
-                $builder = (new PRRecordsTableComponentBuilder('Records beaten'))
-                    ->records($prRecords)
-                    ->beaten()
-                    ->footerLink($viewLogsUrl, 'View history');
-                
-                $subItem['component'] = $builder->build();
-            }
-        } else {
-            // For non-PRs, show current records
-            $currentRecords = $this->getCurrentRecordsTable($liftLog);
-            if (!empty($currentRecords)) {
-                $viewLogsUrl = route('exercises.show-logs', $liftLog->exercise);
-                
-                $builder = (new PRRecordsTableComponentBuilder('Current records'))
-                    ->records($currentRecords)
-                    ->current()
-                    ->footerLink($viewLogsUrl, 'View history');
-                
-                $subItem['component'] = $builder->build();
+        if ($config['showPRRecordsTable']) {
+            if ($isPR) {
+                // For PRs, show what was beaten
+                $prRecords = $this->getPRRecordsForBeatenPRs($liftLog, $config);
+                if (!empty($prRecords)) {
+                    $viewLogsUrl = route('exercises.show-logs', $liftLog->exercise);
+                    
+                    $builder = (new PRRecordsTableComponentBuilder('Records beaten'))
+                        ->records($prRecords)
+                        ->beaten()
+                        ->footerLink($viewLogsUrl, 'View history');
+                    
+                    $subItem['component'] = $builder->build();
+                }
+            } else {
+                // For non-PRs, show current records
+                $currentRecords = $this->getCurrentRecordsTable($liftLog, $config);
+                if (!empty($currentRecords)) {
+                    $viewLogsUrl = route('exercises.show-logs', $liftLog->exercise);
+                    
+                    $builder = (new PRRecordsTableComponentBuilder('Current records'))
+                        ->records($currentRecords)
+                        ->current()
+                        ->footerLink($viewLogsUrl, 'View history');
+                    
+                    $subItem['component'] = $builder->build();
+                }
             }
         }
         
@@ -275,17 +282,18 @@ class LiftLogTableRowBuilder
      * Get PR records for beaten PRs in table format
      * 
      * @param LiftLog $liftLog
+     * @param array $config
      * @return array
      */
-    protected function getPRRecordsForBeatenPRs(LiftLog $liftLog): array
+    protected function getPRRecordsForBeatenPRs(LiftLog $liftLog, array $config): array
     {
+        // Use pre-fetched historical logs to avoid N+1 queries
+        $historicalLogs = $config['historicalLogsByExercise'][$liftLog->exercise_id] ?? collect();
+        
         // Get all previous lift logs for this exercise
-        $previousLogs = \App\Models\LiftLog::where('exercise_id', $liftLog->exercise_id)
-            ->where('user_id', $liftLog->user_id)
-            ->where('logged_at', '<', $liftLog->logged_at)
-            ->with('liftSets')
-            ->orderBy('logged_at', 'asc')
-            ->get();
+        $previousLogs = $historicalLogs->filter(function ($log) use ($liftLog) {
+            return $log->logged_at < $liftLog->logged_at;
+        });
         
         if ($previousLogs->isEmpty()) {
             return [[
@@ -435,17 +443,18 @@ class LiftLogTableRowBuilder
      * Get current records for an exercise in table format
      * 
      * @param LiftLog $liftLog
+     * @param array $config
      * @return array
      */
-    protected function getCurrentRecordsTable(LiftLog $liftLog): array
+    protected function getCurrentRecordsTable(LiftLog $liftLog, array $config): array
     {
-        // Get all previous lift logs for this exercise (including this one)
-        $allLogs = \App\Models\LiftLog::where('exercise_id', $liftLog->exercise_id)
-            ->where('user_id', $liftLog->user_id)
-            ->where('logged_at', '<=', $liftLog->logged_at)
-            ->with('liftSets')
-            ->orderBy('logged_at', 'asc')
-            ->get();
+        // Use pre-fetched historical logs to avoid N+1 queries
+        $historicalLogs = $config['historicalLogsByExercise'][$liftLog->exercise_id] ?? collect();
+        
+        // Get all lift logs for this exercise (including this one)
+        $allLogs = $historicalLogs->filter(function ($log) use ($liftLog) {
+            return $log->logged_at <= $liftLog->logged_at;
+        });
         
         if ($allLogs->count() <= 1) {
             return []; // First lift, no records to show

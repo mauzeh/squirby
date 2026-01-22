@@ -714,6 +714,7 @@ class LiftLogService extends MobileEntryBaseService
             'includeEncouragingMessage' => true, // Show encouraging messages
             'redirectContext' => 'mobile-entry-lifts',
             'selectedDate' => $selectedDate->toDateString(),
+            'showPRRecordsTable' => true, // Show PR records table on mobile-entry/lifts
         ]);
 
         $tableBuilder = ComponentBuilder::table()

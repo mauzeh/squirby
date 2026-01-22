@@ -376,4 +376,104 @@ class PRInfoDisplayTest extends TestCase
         $response->assertSee('Est 1RM');
         $response->assertSee('3 Reps');
     }
+
+    /** @test */
+    public function pr_records_table_not_shown_on_exercises_logs_page()
+    {
+        // Create a previous lift log with lower weight
+        $oldLog = LiftLog::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $this->exercise->id,
+            'logged_at' => Carbon::now()->subDays(5)
+        ]);
+        $oldLog->liftSets()->create(['weight' => 180, 'reps' => 1, 'notes' => '']);
+        
+        // Create a new PR lift log with higher weight
+        $newLog = LiftLog::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $this->exercise->id,
+            'logged_at' => Carbon::now()
+        ]);
+        $newLog->liftSets()->create(['weight' => 200, 'reps' => 1, 'notes' => '']);
+        
+        // Visit exercises/{id}/logs page (not mobile-entry/lifts)
+        $response = $this->actingAs($this->user)->get(route('exercises.show-logs', $this->exercise));
+        
+        $response->assertStatus(200);
+        
+        // Should see PR badge
+        $response->assertSee('🏆 PR');
+        
+        // Should see comments but NOT see PR records table component
+        $response->assertSee('Your notes:');
+        $response->assertDontSee('pr-records-table--beaten', false);
+        $response->assertDontSee('pr-records-table--current', false);
+    }
+
+    /** @test */
+    public function pr_records_table_shown_on_mobile_entry_lifts_page()
+    {
+        // Create a previous lift log with lower weight
+        $oldLog = LiftLog::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $this->exercise->id,
+            'logged_at' => Carbon::now()->subDays(5)
+        ]);
+        $oldLog->liftSets()->create(['weight' => 180, 'reps' => 1, 'notes' => '']);
+        
+        // Create a new PR lift log with higher weight
+        $newLog = LiftLog::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $this->exercise->id,
+            'logged_at' => Carbon::now()
+        ]);
+        $newLog->liftSets()->create(['weight' => 200, 'reps' => 1, 'notes' => '']);
+        
+        // Visit mobile-entry/lifts page
+        $response = $this->actingAs($this->user)->get(route('mobile-entry.lifts'));
+        
+        $response->assertStatus(200);
+        
+        // Should see PR badge
+        $response->assertSee('🏆 PR');
+        
+        // Should see PR records table component
+        $response->assertSee('pr-records-table', false);
+        $response->assertSee('180');
+        $response->assertSee('200');
+    }
+
+    /** @test */
+    public function current_records_table_shown_for_non_pr_lifts_on_mobile_entry()
+    {
+        // Create a previous PR lift log
+        $oldLog = LiftLog::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $this->exercise->id,
+            'logged_at' => Carbon::now()->subDays(7)
+        ]);
+        $oldLog->liftSets()->create(['weight' => 200, 'reps' => 5, 'notes' => '']);
+        
+        // Create a new lift log that's NOT a PR (lighter weight)
+        $newLog = LiftLog::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $this->exercise->id,
+            'logged_at' => Carbon::now()
+        ]);
+        $newLog->liftSets()->create(['weight' => 180, 'reps' => 5, 'notes' => '']);
+        
+        // Visit mobile-entry/lifts page
+        $response = $this->actingAs($this->user)->get(route('mobile-entry.lifts'));
+        
+        $response->assertStatus(200);
+        
+        // Should NOT see PR badge
+        $response->assertDontSee('🏆 PR');
+        
+        // Should see current records table with comparison
+        $response->assertSee('pr-records-table', false);
+        $response->assertSee('Record'); // Column header
+        $response->assertSee('Today'); // Column header
+        $response->assertSee('200 lbs'); // The record they need to beat
+    }
 }

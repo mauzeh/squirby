@@ -914,4 +914,214 @@ class LiftLogTableRowBuilderTest extends TestCase
         $this->assertStringNotContainsString('from=', $viewLogsAction['url']);
         $this->assertStringNotContainsString('date=', $viewLogsAction['url']);
     }
+
+    /** @test */
+    public function it_does_not_show_pr_records_table_by_default()
+    {
+        $user = User::factory()->create();
+        $exercise = Exercise::factory()->create(['exercise_type' => 'regular']);
+        
+        // Create a previous lift
+        $oldLog = LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => now()->subDays(5)
+        ]);
+        LiftSet::factory()->create([
+            'lift_log_id' => $oldLog->id,
+            'weight' => 200,
+            'reps' => 5
+        ]);
+        
+        // Create a PR lift
+        $newLog = LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => now()
+        ]);
+        LiftSet::factory()->create([
+            'lift_log_id' => $newLog->id,
+            'weight' => 220,
+            'reps' => 5
+        ]);
+
+        $this->aliasService->shouldReceive('getDisplayName')
+            ->once()
+            ->andReturn($exercise->title);
+
+        $this->prDetectionService->shouldReceive('calculatePRLogIds')
+            ->once()
+            ->andReturn([$oldLog->id, $newLog->id]);
+
+        $this->actingAs($user);
+        $rows = $this->builder->buildRows(collect([$newLog]));
+
+        // Should have subItems with comments
+        $this->assertNotEmpty($rows[0]['subItems']);
+        $subItem = $rows[0]['subItems'][0];
+        
+        // Should have comments message but NO component (PR records table)
+        $this->assertCount(1, $subItem['messages']);
+        $this->assertArrayNotHasKey('component', $subItem);
+    }
+
+    /** @test */
+    public function it_shows_pr_records_table_when_flag_is_enabled_for_pr_lifts()
+    {
+        $user = User::factory()->create();
+        $exercise = Exercise::factory()->create(['exercise_type' => 'regular']);
+        
+        // Create a previous lift
+        $oldLog = LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => now()->subDays(5)
+        ]);
+        LiftSet::factory()->create([
+            'lift_log_id' => $oldLog->id,
+            'weight' => 200,
+            'reps' => 5
+        ]);
+        
+        // Create a PR lift
+        $newLog = LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => now()
+        ]);
+        LiftSet::factory()->create([
+            'lift_log_id' => $newLog->id,
+            'weight' => 220,
+            'reps' => 5
+        ]);
+
+        $this->aliasService->shouldReceive('getDisplayName')
+            ->once()
+            ->andReturn($exercise->title);
+
+        $this->prDetectionService->shouldReceive('calculatePRLogIds')
+            ->once()
+            ->andReturn([$oldLog->id, $newLog->id]);
+
+        $this->actingAs($user);
+        $rows = $this->builder->buildRows(collect([$newLog]), [
+            'showPRRecordsTable' => true
+        ]);
+
+        // Should have subItems with comments AND component
+        $this->assertNotEmpty($rows[0]['subItems']);
+        $subItem = $rows[0]['subItems'][0];
+        
+        // Should have comments message AND PR records table component
+        $this->assertCount(1, $subItem['messages']);
+        $this->assertArrayHasKey('component', $subItem);
+        $this->assertEquals('pr-records-table', $subItem['component']['type']);
+        $this->assertEquals('pr-records-table--beaten', $subItem['component']['data']['cssClass']);
+    }
+
+    /** @test */
+    public function it_shows_pr_records_table_when_flag_is_enabled_for_non_pr_lifts()
+    {
+        $user = User::factory()->create();
+        $exercise = Exercise::factory()->create(['exercise_type' => 'regular']);
+        
+        // Create a previous PR lift
+        $oldLog = LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => now()->subDays(5)
+        ]);
+        LiftSet::factory()->create([
+            'lift_log_id' => $oldLog->id,
+            'weight' => 220,
+            'reps' => 5
+        ]);
+        
+        // Create a non-PR lift (lighter weight)
+        $newLog = LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => now()
+        ]);
+        LiftSet::factory()->create([
+            'lift_log_id' => $newLog->id,
+            'weight' => 200,
+            'reps' => 5
+        ]);
+
+        $this->aliasService->shouldReceive('getDisplayName')
+            ->once()
+            ->andReturn($exercise->title);
+
+        $this->prDetectionService->shouldReceive('calculatePRLogIds')
+            ->once()
+            ->andReturn([$oldLog->id]); // Only oldLog is PR
+
+        $this->actingAs($user);
+        $rows = $this->builder->buildRows(collect([$newLog]), [
+            'showPRRecordsTable' => true
+        ]);
+
+        // Should have subItems with comments AND component
+        $this->assertNotEmpty($rows[0]['subItems']);
+        $subItem = $rows[0]['subItems'][0];
+        
+        // Should have comments message AND current records table component
+        $this->assertCount(1, $subItem['messages']);
+        $this->assertArrayHasKey('component', $subItem);
+        $this->assertEquals('pr-records-table', $subItem['component']['type']);
+        $this->assertEquals('pr-records-table--current', $subItem['component']['data']['cssClass']);
+    }
+
+    /** @test */
+    public function it_does_not_show_pr_records_table_when_flag_is_explicitly_disabled()
+    {
+        $user = User::factory()->create();
+        $exercise = Exercise::factory()->create(['exercise_type' => 'regular']);
+        
+        // Create a previous lift
+        $oldLog = LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => now()->subDays(5)
+        ]);
+        LiftSet::factory()->create([
+            'lift_log_id' => $oldLog->id,
+            'weight' => 200,
+            'reps' => 5
+        ]);
+        
+        // Create a PR lift
+        $newLog = LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => now()
+        ]);
+        LiftSet::factory()->create([
+            'lift_log_id' => $newLog->id,
+            'weight' => 220,
+            'reps' => 5
+        ]);
+
+        $this->aliasService->shouldReceive('getDisplayName')
+            ->once()
+            ->andReturn($exercise->title);
+
+        $this->prDetectionService->shouldReceive('calculatePRLogIds')
+            ->once()
+            ->andReturn([$oldLog->id, $newLog->id]);
+
+        $this->actingAs($user);
+        $rows = $this->builder->buildRows(collect([$newLog]), [
+            'showPRRecordsTable' => false
+        ]);
+
+        // Should have subItems with comments but NO component
+        $this->assertNotEmpty($rows[0]['subItems']);
+        $subItem = $rows[0]['subItems'][0];
+        
+        // Should have comments message but NO component
+        $this->assertCount(1, $subItem['messages']);
+        $this->assertArrayNotHasKey('component', $subItem);
+    }
 }
