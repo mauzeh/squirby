@@ -208,7 +208,7 @@ class LiftLogTableRowBuilder
                 $prRecords = $this->getPRRecordsForBeatenPRs($liftLog, $config);
                 $currentRecords = $this->getCurrentRecordsTable($liftLog, $config);
                 
-                // First table: Records beaten (no footer link)
+                // First table: Records beaten
                 if (!empty($prRecords)) {
                     $builder = (new PRRecordsTableComponentBuilder('Records beaten:'))
                         ->records($prRecords)
@@ -217,12 +217,11 @@ class LiftLogTableRowBuilder
                     $components[] = $builder->build();
                 }
                 
-                // Second table: Current records (with footer link)
+                // Second table: Current records (no footer link anymore)
                 if (!empty($currentRecords)) {
                     $builder = (new PRRecordsTableComponentBuilder('Not beaten:'))
                         ->records($currentRecords)
-                        ->current()
-                        ->footerLink($viewLogsUrl, 'View history');
+                        ->current();
                     
                     $components[] = $builder->build();
                 }
@@ -232,12 +231,19 @@ class LiftLogTableRowBuilder
                 if (!empty($currentRecords)) {
                     $builder = (new PRRecordsTableComponentBuilder('History:'))
                         ->records($currentRecords)
-                        ->current()
-                        ->footerLink($viewLogsUrl, 'View history');
+                        ->current();
                     
                     $components[] = $builder->build();
                 }
             }
+            
+            // Always add a third table with just the "View history" link
+            $builder = (new PRRecordsTableComponentBuilder(''))
+                ->records([]) // Empty records
+                ->current()
+                ->footerLink($viewLogsUrl, 'View history');
+            
+            $components[] = $builder->build();
             
             if (!empty($components)) {
                 $subItem['components'] = $components;

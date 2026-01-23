@@ -3,12 +3,13 @@
     <table class="pr-records-grid">
         @php
             $hasComparison = collect($data['records'])->contains(fn($r) => isset($r['comparison']) && $r['comparison']);
+            $hasRecords = !empty($data['records']);
             // Determine if this is showing beaten PRs (use "Previous") or current records (use "Record")
             $isPRTable = isset($data['isPRTable']) && $data['isPRTable'];
             $title = $data['title'] ?? '';
         @endphp
         
-        @if($hasComparison)
+        @if($hasComparison && $hasRecords)
         <thead>
             <tr class="pr-record-row">
                 <th class="pr-record-label pr-record-title">{{ $title }}</th>
@@ -18,6 +19,7 @@
         </thead>
         @endif
         
+        @if($hasRecords)
         <tbody>
         @foreach($data['records'] as $record)
         <tr class="pr-record-row">
@@ -29,6 +31,7 @@
         </tr>
         @endforeach
         </tbody>
+        @endif
         
         @if(isset($data['footerLink']) && $data['footerLink'])
         <tfoot>
