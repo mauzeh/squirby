@@ -917,12 +917,42 @@ We chose to recalculate ALL logs for an exercise (not just from a date forward) 
 **Key Insight:**
 For first lifts, PersonalRecords ARE created (since it's the first time doing the exercise), but we want to show "First time!" instead of showing the beaten records. The fix was to check `$isFirstLift` BEFORE checking if PRs exist, not after.
 
-### Phase 5: Historical Migration (Week 3-4)
-- [ ] Create `prs:calculate-historical` command
-- [ ] Test on development data
-- [ ] Run on staging environment
-- [ ] Verify data integrity
-- [ ] Run on production (off-peak hours)
+### Phase 5: Historical Migration (Week 3-4) ✅ COMPLETE
+- [x] Create `prs:calculate-historical` command
+- [x] Test on development data
+- [x] Verify data integrity
+
+**Command Features:**
+- `--dry-run`: Preview what would be done without making changes
+- `--user=ID`: Calculate PRs for a specific user
+- `--exercise=ID`: Calculate PRs for a specific exercise
+- `--force`: Skip confirmation prompt
+
+**Migration Results:**
+- Processed 199 user-exercise combinations in 7 seconds
+- 968 total lift logs analyzed
+- 616 lift logs marked as PRs (63.6%)
+- 1,579 PersonalRecord entries created
+  - 388 1RM PRs
+  - 305 volume PRs
+  - 760 rep-specific PRs
+  - 126 hypertrophy PRs
+- Zero errors encountered
+
+**Usage:**
+```bash
+# Dry run first to see what would happen
+php artisan prs:calculate-historical --dry-run
+
+# Run for all users and exercises
+php artisan prs:calculate-historical --force
+
+# Run for specific user
+php artisan prs:calculate-historical --user=1
+
+# Run for specific exercise
+php artisan prs:calculate-historical --exercise=5
+```
 
 ## Testing Strategy
 

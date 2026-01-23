@@ -157,6 +157,11 @@
                         @if(isset($subItem['component']) && !empty($subItem['component']))
                             @include("mobile-entry.components.{$subItem['component']['type']}", ['data' => $subItem['component']['data']])
                         @endif
+                        @if(isset($subItem['components']) && !empty($subItem['components']))
+                            @foreach($subItem['components'] as $component)
+                                @include("mobile-entry.components.{$component['type']}", ['data' => $component['data']])
+                            @endforeach
+                        @endif
                     </div>
                     <div class="component-table-actions{{ isset($subItem['compact']) && $subItem['compact'] ? ' actions-compact' : '' }}">
                         @if(isset($subItem['actions']) && !empty($subItem['actions']))

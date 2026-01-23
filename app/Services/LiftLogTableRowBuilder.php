@@ -200,32 +200,48 @@ class LiftLogTableRowBuilder
         
         // Add PR records component
         if ($config['showPRRecordsTable']) {
+            $components = [];
+            $viewLogsUrl = route('exercises.show-logs', $liftLog->exercise);
+            
             if ($isPR) {
-                // For PRs, show what was beaten
+                // For PRs, show TWO tables: what was beaten AND what wasn't
                 $prRecords = $this->getPRRecordsForBeatenPRs($liftLog, $config);
+                $currentRecords = $this->getCurrentRecordsTable($liftLog, $config);
+                
+                // First table: Records beaten
                 if (!empty($prRecords)) {
-                    $viewLogsUrl = route('exercises.show-logs', $liftLog->exercise);
-                    
                     $builder = (new PRRecordsTableComponentBuilder('Records beaten'))
                         ->records($prRecords)
                         ->beaten()
                         ->footerLink($viewLogsUrl, 'View history');
                     
-                    $subItem['component'] = $builder->build();
+                    $components[] = $builder->build();
                 }
-            } else {
-                // For non-PRs, show current records
-                $currentRecords = $this->getCurrentRecordsTable($liftLog, $config);
+                
+                // Second table: Current records (not beaten)
                 if (!empty($currentRecords)) {
-                    $viewLogsUrl = route('exercises.show-logs', $liftLog->exercise);
-                    
                     $builder = (new PRRecordsTableComponentBuilder('Current records'))
                         ->records($currentRecords)
                         ->current()
                         ->footerLink($viewLogsUrl, 'View history');
                     
-                    $subItem['component'] = $builder->build();
+                    $components[] = $builder->build();
                 }
+            } else {
+                // For non-PRs, show current records
+                $currentRecords = $this->getCurrentRecordsTable($liftLog, $config);
+                if (!empty($currentRecords)) {
+                    $builder = (new PRRecordsTableComponentBuilder('Current records'))
+                        ->records($currentRecords)
+                        ->current()
+                        ->footerLink($viewLogsUrl, 'View history');
+                    
+                    $components[] = $builder->build();
+                }
+            }
+            
+            if (!empty($components)) {
+                $subItem['components'] = $components;
             }
         }
         
@@ -275,17 +291,14 @@ class LiftLogTableRowBuilder
         if ($isFirstLift) {
             return [[
                 'label' => 'Achievement',
-                'value' => 'First time!'
+                'value' => 'First time!',
+                'comparison' => ''
             ]];
         }
         
         // NEW: Use PersonalRecord database records
         $prs = \App\Models\PersonalRecord::where('lift_log_id', $liftLog->id)
             ->get();
-        
-        if ($prs->isEmpty()) {
-            return [];
-        }
         
         $records = [];
         
@@ -301,17 +314,13 @@ class LiftLogTableRowBuilder
                 return $set->reps === 1 && $set->weight > 0;
             });
             
-            // For true 1RM (1 rep), don't show it separately since it will be shown as "1 Rep"
             // Only show "Est 1RM" for estimated 1RMs (from multiple reps)
+            // For true 1RMs, it will show as a rep-specific PR instead
             if (!$hasOneRepSet) {
-                $label = 'Est 1RM';
-                $value = $oneRmPR->previous_value 
-                    ? sprintf('%s → %s lbs', $this->formatWeight($oneRmPR->previous_value), $this->formatWeight($oneRmPR->value))
-                    : sprintf('%s lbs', $this->formatWeight($oneRmPR->value));
-                
                 $records[] = [
-                    'label' => $label,
-                    'value' => $value
+                    'label' => 'Est 1RM',
+                    'value' => $oneRmPR->previous_value ? $this->formatWeight($oneRmPR->previous_value) . ' lbs' : '—',
+                    'comparison' => $this->formatWeight($oneRmPR->value) . ' lbs'
                 ];
             }
         }
@@ -319,13 +328,11 @@ class LiftLogTableRowBuilder
         // Process Volume PRs
         if ($prsByType->has('volume')) {
             $volumePR = $prsByType['volume']->first();
-            $value = $volumePR->previous_value
-                ? sprintf('%s → %s lbs', number_format($volumePR->previous_value, 0), number_format($volumePR->value, 0))
-                : sprintf('%s lbs', number_format($volumePR->value, 0));
             
             $records[] = [
                 'label' => 'Volume',
-                'value' => $value
+                'value' => $volumePR->previous_value ? number_format($volumePR->previous_value, 0) . ' lbs' : '—',
+                'comparison' => number_format($volumePR->value, 0) . ' lbs'
             ];
         }
         
@@ -333,27 +340,23 @@ class LiftLogTableRowBuilder
         if ($prsByType->has('rep_specific')) {
             $repPR = $prsByType['rep_specific']->first();
             $repLabel = $repPR->rep_count . ' Rep' . ($repPR->rep_count > 1 ? 's' : '');
-            $value = $repPR->previous_value
-                ? sprintf('%s → %s lbs', $this->formatWeight($repPR->previous_value), $this->formatWeight($repPR->value))
-                : sprintf('%s lbs', $this->formatWeight($repPR->value));
             
             $records[] = [
                 'label' => $repLabel,
-                'value' => $value
+                'value' => $repPR->previous_value ? $this->formatWeight($repPR->previous_value) . ' lbs' : '—',
+                'comparison' => $this->formatWeight($repPR->value) . ' lbs'
             ];
         }
         
         // Process Hypertrophy PRs (best at weight)
         if ($prsByType->has('hypertrophy')) {
             $hypertrophyPR = $prsByType['hypertrophy']->first();
-            $label = sprintf('Best @ %s lbs', $this->formatWeight($hypertrophyPR->weight));
-            $value = $hypertrophyPR->previous_value
-                ? sprintf('%d → %d reps', (int)$hypertrophyPR->previous_value, (int)$hypertrophyPR->value)
-                : sprintf('%d reps', (int)$hypertrophyPR->value);
+            $label = 'Best @ ' . $this->formatWeight($hypertrophyPR->weight) . ' lbs';
             
             $records[] = [
                 'label' => $label,
-                'value' => $value
+                'value' => $hypertrophyPR->previous_value ? (int)$hypertrophyPR->previous_value . ' reps' : '—',
+                'comparison' => (int)$hypertrophyPR->value . ' reps'
             ];
         }
         
@@ -415,11 +418,30 @@ class LiftLogTableRowBuilder
             }
         }
         
+        // Get PRs that were beaten by THIS lift (to exclude from current records)
+        $beatenPRs = \App\Models\PersonalRecord::where('lift_log_id', $liftLog->id)
+            ->get();
+        
+        // Create a map of beaten PR types with their specific details
+        $beatenPRMap = [];
+        foreach ($beatenPRs as $pr) {
+            if ($pr->pr_type === 'rep_specific') {
+                // For rep-specific, track which rep count was beaten
+                $beatenPRMap['rep_specific_' . $pr->rep_count] = true;
+            } elseif ($pr->pr_type === 'hypertrophy') {
+                // For hypertrophy, track which weight was beaten
+                $beatenPRMap['hypertrophy_' . $pr->weight] = true;
+            } else {
+                // For other types, just track the type
+                $beatenPRMap[$pr->pr_type] = true;
+            }
+        }
+        
         // Group PRs by type
         $prsByType = $currentPRs->groupBy('pr_type');
         
-        // Process 1RM PRs
-        if ($prsByType->has('one_rm')) {
+        // Process 1RM PRs (only if NOT beaten by this lift)
+        if ($prsByType->has('one_rm') && !isset($beatenPRMap['one_rm'])) {
             $oneRmPR = $prsByType['one_rm']->first();
             
             // Check if the PR is a true 1RM (from a 1 rep lift)
@@ -428,17 +450,27 @@ class LiftLogTableRowBuilder
                 return $set->reps === 1 && $set->weight > 0;
             });
             
-            $label = $isTrueMax ? '1RM' : 'Est 1RM';
-            $records[] = [
-                'label' => $label,
-                'value' => sprintf('%s lbs', $this->formatWeight($oneRmPR->value)),
-                'comparison' => sprintf('%s lbs', $this->formatWeight($current1RM))
-            ];
+            // Check if current lift is also a true 1RM
+            $currentIsTrueMax = $liftLog->liftSets->contains(function ($set) {
+                return $set->reps === 1 && $set->weight > 0;
+            });
+            
+            // Only show if both are estimated OR if we have a current estimated to compare
+            if (!$isTrueMax || !$currentIsTrueMax) {
+                $label = $isTrueMax ? '1RM' : 'Est 1RM';
+                
+                $records[] = [
+                    'label' => $label,
+                    'value' => sprintf('%s lbs', $this->formatWeight($oneRmPR->value)),
+                    'comparison' => sprintf('%s lbs', $this->formatWeight($current1RM))
+                ];
+            }
         }
         
-        // Process Volume PRs
-        if ($prsByType->has('volume')) {
+        // Process Volume PRs (only if NOT beaten by this lift)
+        if ($prsByType->has('volume') && !isset($beatenPRMap['volume'])) {
             $volumePR = $prsByType['volume']->first();
+            
             $records[] = [
                 'label' => 'Volume',
                 'value' => sprintf('%s lbs', number_format($volumePR->value, 0)),
@@ -446,11 +478,12 @@ class LiftLogTableRowBuilder
             ];
         }
         
-        // Process Rep-Specific PRs (only for reps in current lift, limit to 2)
+        // Process Rep-Specific PRs (only for reps in current lift, limit to 2, exclude beaten)
         if ($prsByType->has('rep_specific')) {
             $repPRs = $prsByType['rep_specific']
-                ->filter(function ($pr) use ($currentRepWeights) {
-                    return isset($currentRepWeights[$pr->rep_count]);
+                ->filter(function ($pr) use ($currentRepWeights, $beatenPRMap) {
+                    // Only show if we have this rep count in current lift AND it wasn't beaten
+                    return isset($currentRepWeights[$pr->rep_count]) && !isset($beatenPRMap['rep_specific_' . $pr->rep_count]);
                 })
                 ->take(2);
             

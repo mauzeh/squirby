@@ -3,13 +3,15 @@
     <table class="pr-records-grid">
         @php
             $hasComparison = collect($data['records'])->contains(fn($r) => isset($r['comparison']) && $r['comparison']);
+            // Determine if this is showing beaten PRs (use "Previous") or current records (use "Record")
+            $isPRTable = isset($data['isPRTable']) && $data['isPRTable'];
         @endphp
         
         @if($hasComparison)
         <thead>
             <tr class="pr-record-row">
                 <th class="pr-record-label"></th>
-                <th class="pr-record-value">Record</th>
+                <th class="pr-record-value">{{ $isPRTable ? 'Previous' : 'Record' }}</th>
                 <th class="pr-record-comparison">Today</th>
             </tr>
         </thead>

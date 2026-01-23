@@ -93,6 +93,7 @@ class PRRecordsTableComponentBuilder
      */
     public function beaten(): self
     {
+        $this->data['isPRTable'] = true;
         return $this->cssClass('pr-records-table--beaten');
     }
     
@@ -103,6 +104,7 @@ class PRRecordsTableComponentBuilder
      */
     public function current(): self
     {
+        $this->data['isPRTable'] = false;
         return $this->cssClass('pr-records-table--current');
     }
     
