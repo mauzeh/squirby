@@ -7,9 +7,9 @@ use App\Models\User;
 use App\Models\Exercise;
 use App\Models\LiftLog;
 use App\Models\LiftSet;
+use App\Models\PersonalRecord;
 use App\Services\LiftLogTableRowBuilder;
 use App\Services\ExerciseAliasService;
-use App\Services\PRDetectionService;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Mockery;
@@ -20,21 +20,14 @@ class LiftLogTableRowBuilderTest extends TestCase
 
     protected LiftLogTableRowBuilder $builder;
     protected $aliasService;
-    protected $prDetectionService;
 
     protected function setUp(): void
     {
         parent::setUp();
         
         $this->aliasService = Mockery::mock(ExerciseAliasService::class);
-        $this->prDetectionService = Mockery::mock(PRDetectionService::class);
         
-        // Default mock - return empty array (no PRs) unless specifically overridden
-        $this->prDetectionService->shouldReceive('calculatePRLogIds')
-            ->andReturn([])
-            ->byDefault();
-            
-        $this->builder = new LiftLogTableRowBuilder($this->aliasService, $this->prDetectionService);
+        $this->builder = new LiftLogTableRowBuilder($this->aliasService);
     }
 
     protected function tearDown(): void
@@ -530,7 +523,9 @@ class LiftLogTableRowBuilderTest extends TestCase
         $log1 = LiftLog::factory()->create([
             'user_id' => $user->id,
             'exercise_id' => $exercise->id,
-            'logged_at' => now()->subDays(3)
+            'logged_at' => now()->subDays(3),
+            'is_pr' => true, // Set PR flag
+            'pr_count' => 1
         ]);
         LiftSet::factory()->create([
             'lift_log_id' => $log1->id,
@@ -541,7 +536,9 @@ class LiftLogTableRowBuilderTest extends TestCase
         $log2 = LiftLog::factory()->create([
             'user_id' => $user->id,
             'exercise_id' => $exercise->id,
-            'logged_at' => now()->subDays(2)
+            'logged_at' => now()->subDays(2),
+            'is_pr' => true, // Set PR flag
+            'pr_count' => 1
         ]);
         LiftSet::factory()->create([
             'lift_log_id' => $log2->id,
@@ -552,7 +549,9 @@ class LiftLogTableRowBuilderTest extends TestCase
         $log3 = LiftLog::factory()->create([
             'user_id' => $user->id,
             'exercise_id' => $exercise->id,
-            'logged_at' => now()->subDays(1)
+            'logged_at' => now()->subDays(1),
+            'is_pr' => false, // Not a PR
+            'pr_count' => 0
         ]);
         LiftSet::factory()->create([
             'lift_log_id' => $log3->id,
@@ -563,11 +562,6 @@ class LiftLogTableRowBuilderTest extends TestCase
         $this->aliasService->shouldReceive('getDisplayName')
             ->times(3)
             ->andReturn($exercise->title);
-
-        // Mock PR detection to return log1 and log2 as PRs
-        $this->prDetectionService->shouldReceive('calculatePRLogIds')
-            ->once()
-            ->andReturn([$log1->id, $log2->id]);
 
         $this->actingAs($user);
         $rows = $this->builder->buildRows(collect([$log1, $log2, $log3]));
@@ -600,7 +594,9 @@ class LiftLogTableRowBuilderTest extends TestCase
         $log1 = LiftLog::factory()->create([
             'user_id' => $user->id,
             'exercise_id' => $exercise->id,
-            'logged_at' => now()->subDays(3)
+            'logged_at' => now()->subDays(3),
+            'is_pr' => true,
+            'pr_count' => 1
         ]);
         LiftSet::factory()->create([
             'lift_log_id' => $log1->id,
@@ -612,7 +608,9 @@ class LiftLogTableRowBuilderTest extends TestCase
         $log2 = LiftLog::factory()->create([
             'user_id' => $user->id,
             'exercise_id' => $exercise->id,
-            'logged_at' => now()->subDays(2)
+            'logged_at' => now()->subDays(2),
+            'is_pr' => true,
+            'pr_count' => 1
         ]);
         LiftSet::factory()->create([
             'lift_log_id' => $log2->id,
@@ -624,7 +622,9 @@ class LiftLogTableRowBuilderTest extends TestCase
         $log3 = LiftLog::factory()->create([
             'user_id' => $user->id,
             'exercise_id' => $exercise->id,
-            'logged_at' => now()->subDays(1)
+            'logged_at' => now()->subDays(1),
+            'is_pr' => true,
+            'pr_count' => 1
         ]);
         LiftSet::factory()->create([
             'lift_log_id' => $log3->id,
@@ -635,11 +635,6 @@ class LiftLogTableRowBuilderTest extends TestCase
         $this->aliasService->shouldReceive('getDisplayName')
             ->times(3)
             ->andReturn($exercise->title);
-
-        // Mock PR detection to return all three as PRs
-        $this->prDetectionService->shouldReceive('calculatePRLogIds')
-            ->once()
-            ->andReturn([$log1->id, $log2->id, $log3->id]);
 
         $this->actingAs($user);
         $rows = $this->builder->buildRows(collect([$log1, $log2, $log3]));
@@ -658,7 +653,9 @@ class LiftLogTableRowBuilderTest extends TestCase
         
         $log = LiftLog::factory()->create([
             'user_id' => $user->id,
-            'exercise_id' => $exercise->id
+            'exercise_id' => $exercise->id,
+            'is_pr' => false, // Bodyweight exercises don't get PR flags
+            'pr_count' => 0
         ]);
         LiftSet::factory()->create([
             'lift_log_id' => $log->id,
@@ -669,11 +666,6 @@ class LiftLogTableRowBuilderTest extends TestCase
         $this->aliasService->shouldReceive('getDisplayName')
             ->once()
             ->andReturn($exercise->title);
-
-        // Mock PR detection to return empty array (no PRs for bodyweight exercises)
-        $this->prDetectionService->shouldReceive('calculatePRLogIds')
-            ->once()
-            ->andReturn([]);
 
         $this->actingAs($user);
         $rows = $this->builder->buildRows(collect([$log]));
@@ -696,7 +688,9 @@ class LiftLogTableRowBuilderTest extends TestCase
         $log1 = LiftLog::factory()->create([
             'user_id' => $user->id,
             'exercise_id' => $exercise->id,
-            'logged_at' => now()->subDays(2)
+            'logged_at' => now()->subDays(2),
+            'is_pr' => true,
+            'pr_count' => 1
         ]);
         LiftSet::factory()->create([
             'lift_log_id' => $log1->id,
@@ -709,7 +703,9 @@ class LiftLogTableRowBuilderTest extends TestCase
         $log2 = LiftLog::factory()->create([
             'user_id' => $user->id,
             'exercise_id' => $exercise->id,
-            'logged_at' => now()->subDays(1)
+            'logged_at' => now()->subDays(1),
+            'is_pr' => true,
+            'pr_count' => 1
         ]);
         LiftSet::factory()->create([
             'lift_log_id' => $log2->id,
@@ -720,11 +716,6 @@ class LiftLogTableRowBuilderTest extends TestCase
         $this->aliasService->shouldReceive('getDisplayName')
             ->times(2)
             ->andReturn($exercise->title);
-
-        // Mock PR detection to return both as PRs
-        $this->prDetectionService->shouldReceive('calculatePRLogIds')
-            ->once()
-            ->andReturn([$log1->id, $log2->id]);
 
         $this->actingAs($user);
         $rows = $this->builder->buildRows(collect([$log1, $log2]));
@@ -746,7 +737,9 @@ class LiftLogTableRowBuilderTest extends TestCase
         $log1 = LiftLog::factory()->create([
             'user_id' => $user->id,
             'exercise_id' => $exercise->id,
-            'logged_at' => now()->subDays(2)
+            'logged_at' => now()->subDays(2),
+            'is_pr' => true,
+            'pr_count' => 1
         ]);
         LiftSet::factory()->create([
             'lift_log_id' => $log1->id,
@@ -758,7 +751,9 @@ class LiftLogTableRowBuilderTest extends TestCase
         $log2 = LiftLog::factory()->create([
             'user_id' => $user->id,
             'exercise_id' => $exercise->id,
-            'logged_at' => now()->subDays(1)
+            'logged_at' => now()->subDays(1),
+            'is_pr' => false,
+            'pr_count' => 0
         ]);
         LiftSet::factory()->create([
             'lift_log_id' => $log2->id,
@@ -769,11 +764,6 @@ class LiftLogTableRowBuilderTest extends TestCase
         $this->aliasService->shouldReceive('getDisplayName')
             ->times(2)
             ->andReturn($exercise->title);
-
-        // Mock PR detection to return only log1 as PR (ties don't count)
-        $this->prDetectionService->shouldReceive('calculatePRLogIds')
-            ->once()
-            ->andReturn([$log1->id]);
 
         $this->actingAs($user);
         $rows = $this->builder->buildRows(collect([$log1, $log2]));
@@ -792,7 +782,9 @@ class LiftLogTableRowBuilderTest extends TestCase
         
         $log = LiftLog::factory()->create([
             'user_id' => $user->id,
-            'exercise_id' => $exercise->id
+            'exercise_id' => $exercise->id,
+            'is_pr' => true,
+            'pr_count' => 1
         ]);
         
         // Multiple sets, one is a PR
@@ -815,11 +807,6 @@ class LiftLogTableRowBuilderTest extends TestCase
         $this->aliasService->shouldReceive('getDisplayName')
             ->once()
             ->andReturn($exercise->title);
-
-        // Mock PR detection to return this log as PR
-        $this->prDetectionService->shouldReceive('calculatePRLogIds')
-            ->once()
-            ->andReturn([$log->id]);
 
         $this->actingAs($user);
         $rows = $this->builder->buildRows(collect([$log]));
@@ -925,7 +912,9 @@ class LiftLogTableRowBuilderTest extends TestCase
         $oldLog = LiftLog::factory()->create([
             'user_id' => $user->id,
             'exercise_id' => $exercise->id,
-            'logged_at' => now()->subDays(5)
+            'logged_at' => now()->subDays(5),
+            'is_pr' => true,
+            'pr_count' => 1
         ]);
         LiftSet::factory()->create([
             'lift_log_id' => $oldLog->id,
@@ -937,7 +926,9 @@ class LiftLogTableRowBuilderTest extends TestCase
         $newLog = LiftLog::factory()->create([
             'user_id' => $user->id,
             'exercise_id' => $exercise->id,
-            'logged_at' => now()
+            'logged_at' => now(),
+            'is_pr' => true,
+            'pr_count' => 1
         ]);
         LiftSet::factory()->create([
             'lift_log_id' => $newLog->id,
@@ -948,10 +939,6 @@ class LiftLogTableRowBuilderTest extends TestCase
         $this->aliasService->shouldReceive('getDisplayName')
             ->once()
             ->andReturn($exercise->title);
-
-        $this->prDetectionService->shouldReceive('calculatePRLogIds')
-            ->once()
-            ->andReturn([$oldLog->id, $newLog->id]);
 
         $this->actingAs($user);
         $rows = $this->builder->buildRows(collect([$newLog]));
@@ -975,7 +962,9 @@ class LiftLogTableRowBuilderTest extends TestCase
         $oldLog = LiftLog::factory()->create([
             'user_id' => $user->id,
             'exercise_id' => $exercise->id,
-            'logged_at' => now()->subDays(5)
+            'logged_at' => now()->subDays(5),
+            'is_pr' => true,
+            'pr_count' => 1
         ]);
         LiftSet::factory()->create([
             'lift_log_id' => $oldLog->id,
@@ -987,21 +976,30 @@ class LiftLogTableRowBuilderTest extends TestCase
         $newLog = LiftLog::factory()->create([
             'user_id' => $user->id,
             'exercise_id' => $exercise->id,
-            'logged_at' => now()
+            'logged_at' => now(),
+            'is_pr' => true,
+            'pr_count' => 1
         ]);
         LiftSet::factory()->create([
             'lift_log_id' => $newLog->id,
             'weight' => 220,
             'reps' => 5
         ]);
+        
+        // Create PersonalRecord entry for the new PR
+        PersonalRecord::create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'lift_log_id' => $newLog->id,
+            'pr_type' => 'one_rm',
+            'value' => 250.0,
+            'previous_value' => 230.0,
+            'achieved_at' => now(),
+        ]);
 
         $this->aliasService->shouldReceive('getDisplayName')
             ->once()
             ->andReturn($exercise->title);
-
-        $this->prDetectionService->shouldReceive('calculatePRLogIds')
-            ->once()
-            ->andReturn([$oldLog->id, $newLog->id]);
 
         $this->actingAs($user);
         $rows = $this->builder->buildRows(collect([$newLog]), [
@@ -1029,7 +1027,9 @@ class LiftLogTableRowBuilderTest extends TestCase
         $oldLog = LiftLog::factory()->create([
             'user_id' => $user->id,
             'exercise_id' => $exercise->id,
-            'logged_at' => now()->subDays(5)
+            'logged_at' => now()->subDays(5),
+            'is_pr' => true,
+            'pr_count' => 1
         ]);
         LiftSet::factory()->create([
             'lift_log_id' => $oldLog->id,
@@ -1037,11 +1037,23 @@ class LiftLogTableRowBuilderTest extends TestCase
             'reps' => 5
         ]);
         
+        // Create PersonalRecord for the old PR (current unbeaten PR)
+        PersonalRecord::create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'lift_log_id' => $oldLog->id,
+            'pr_type' => 'one_rm',
+            'value' => 250.0,
+            'achieved_at' => now()->subDays(5),
+        ]);
+        
         // Create a non-PR lift (lighter weight)
         $newLog = LiftLog::factory()->create([
             'user_id' => $user->id,
             'exercise_id' => $exercise->id,
-            'logged_at' => now()
+            'logged_at' => now(),
+            'is_pr' => false,
+            'pr_count' => 0
         ]);
         LiftSet::factory()->create([
             'lift_log_id' => $newLog->id,
@@ -1052,10 +1064,6 @@ class LiftLogTableRowBuilderTest extends TestCase
         $this->aliasService->shouldReceive('getDisplayName')
             ->once()
             ->andReturn($exercise->title);
-
-        $this->prDetectionService->shouldReceive('calculatePRLogIds')
-            ->once()
-            ->andReturn([$oldLog->id]); // Only oldLog is PR
 
         $this->actingAs($user);
         $rows = $this->builder->buildRows(collect([$newLog]), [
@@ -1083,7 +1091,9 @@ class LiftLogTableRowBuilderTest extends TestCase
         $oldLog = LiftLog::factory()->create([
             'user_id' => $user->id,
             'exercise_id' => $exercise->id,
-            'logged_at' => now()->subDays(5)
+            'logged_at' => now()->subDays(5),
+            'is_pr' => true,
+            'pr_count' => 1
         ]);
         LiftSet::factory()->create([
             'lift_log_id' => $oldLog->id,
@@ -1095,7 +1105,9 @@ class LiftLogTableRowBuilderTest extends TestCase
         $newLog = LiftLog::factory()->create([
             'user_id' => $user->id,
             'exercise_id' => $exercise->id,
-            'logged_at' => now()
+            'logged_at' => now(),
+            'is_pr' => true,
+            'pr_count' => 1
         ]);
         LiftSet::factory()->create([
             'lift_log_id' => $newLog->id,
@@ -1106,10 +1118,6 @@ class LiftLogTableRowBuilderTest extends TestCase
         $this->aliasService->shouldReceive('getDisplayName')
             ->once()
             ->andReturn($exercise->title);
-
-        $this->prDetectionService->shouldReceive('calculatePRLogIds')
-            ->once()
-            ->andReturn([$oldLog->id, $newLog->id]);
 
         $this->actingAs($user);
         $rows = $this->builder->buildRows(collect([$newLog]), [

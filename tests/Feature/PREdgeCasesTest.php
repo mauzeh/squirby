@@ -156,10 +156,10 @@ class PREdgeCasesTest extends TestCase
 
         $secondLift->refresh();
         
-        // Should still be a PR (it's the first/only time at 200 lbs)
-        // Even though it's lighter, it's still a record for that specific weight
-        $this->assertTrue($secondLift->is_pr);
-        $this->assertGreaterThan(0, $secondLift->pr_count);
+        // Should NOT be a PR anymore (lighter weight, same reps, lower volume, lower 1RM)
+        // All metrics are worse than the first lift
+        $this->assertFalse($secondLift->is_pr);
+        $this->assertEquals(0, $secondLift->pr_count);
     }
 
     /** @test */
@@ -233,12 +233,13 @@ class PREdgeCasesTest extends TestCase
             ->orderBy('logged_at', 'asc')
             ->first();
 
-        // Earlier lift should be a PR
+        // Earlier lift should be a PR (heavier)
         $this->assertTrue($earlierLift->is_pr);
         
-        // Later lift should still be a PR (it was a PR at the time)
+        // Later lift should NO LONGER be a PR (lighter than the backdated lift)
+        // Data accuracy over time is the priority - we don't preserve "was a PR at the time"
         $laterLift->refresh();
-        $this->assertTrue($laterLift->is_pr);
+        $this->assertFalse($laterLift->is_pr);
         
         // The 315 lbs lift should be the current 1RM PR
         $oneRmPR = PersonalRecord::where('exercise_id', $this->exercise->id)

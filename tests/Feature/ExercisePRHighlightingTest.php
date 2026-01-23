@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use Tests\TestCase;
+use Tests\Helpers\TriggersPRDetection;
 use App\Models\User;
 use App\Models\Exercise;
 use App\Models\LiftLog;
@@ -11,7 +12,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class ExercisePRHighlightingTest extends TestCase
 {
-    use RefreshDatabase;
+    use RefreshDatabase, TriggersPRDetection;
 
     /** @test */
     public function it_displays_pr_badge_and_styling_for_pr_logs()
@@ -22,19 +23,7 @@ class ExercisePRHighlightingTest extends TestCase
             'user_id' => $user->id
         ]);
 
-        // Create a PR log
-        $prLog = LiftLog::factory()->create([
-            'user_id' => $user->id,
-            'exercise_id' => $exercise->id,
-            'logged_at' => now()->subDays(1)
-        ]);
-        LiftSet::factory()->create([
-            'lift_log_id' => $prLog->id,
-            'weight' => 275,
-            'reps' => 1
-        ]);
-
-        // Create a non-PR log
+        // Create a non-PR log (older, lighter)
         $nonPrLog = LiftLog::factory()->create([
             'user_id' => $user->id,
             'exercise_id' => $exercise->id,
@@ -45,6 +34,20 @@ class ExercisePRHighlightingTest extends TestCase
             'weight' => 250,
             'reps' => 1
         ]);
+        $this->triggerPRDetection($nonPrLog);
+
+        // Create a PR log (newer, heavier)
+        $prLog = LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => now()->subDays(1)
+        ]);
+        LiftSet::factory()->create([
+            'lift_log_id' => $prLog->id,
+            'weight' => 275,
+            'reps' => 1
+        ]);
+        $this->triggerPRDetection($prLog);
 
         $response = $this->actingAs($user)
             ->get(route('exercises.show-logs', $exercise));
@@ -78,6 +81,7 @@ class ExercisePRHighlightingTest extends TestCase
             'weight' => 275,
             'reps' => 1
         ]);
+        $this->triggerPRDetection($log1);
 
         // 260 lbs × 2 reps = 277.3 lbs estimated 1RM (PR at the time - beats log1)
         $log2 = LiftLog::factory()->create([
@@ -90,6 +94,7 @@ class ExercisePRHighlightingTest extends TestCase
             'weight' => 260,
             'reps' => 2
         ]);
+        $this->triggerPRDetection($log2);
 
         // 255 lbs × 3 reps = 280.5 lbs estimated 1RM (PR at the time - beats log2)
         $log3 = LiftLog::factory()->create([
@@ -102,6 +107,7 @@ class ExercisePRHighlightingTest extends TestCase
             'weight' => 255,
             'reps' => 3
         ]);
+        $this->triggerPRDetection($log3);
 
         $response = $this->actingAs($user)
             ->get(route('exercises.show-logs', $exercise));
@@ -192,6 +198,7 @@ class ExercisePRHighlightingTest extends TestCase
             'weight' => 300,
             'reps' => 5
         ]);
+        $this->triggerPRDetection($log1);
 
         // 250 lbs × 1 rep = 250 lbs estimated 1RM (NOT a PR - doesn't beat log1)
         $log2 = LiftLog::factory()->create([
@@ -204,6 +211,7 @@ class ExercisePRHighlightingTest extends TestCase
             'weight' => 250,
             'reps' => 1
         ]);
+        $this->triggerPRDetection($log2);
 
         $response = $this->actingAs($user)
             ->get(route('exercises.show-logs', $exercise));
@@ -277,6 +285,7 @@ class ExercisePRHighlightingTest extends TestCase
             'weight' => 275,
             'reps' => 1
         ]);
+        $this->triggerPRDetection($log1);
 
         $log2 = LiftLog::factory()->create([
             'user_id' => $user->id,
@@ -288,6 +297,7 @@ class ExercisePRHighlightingTest extends TestCase
             'weight' => 275,
             'reps' => 1
         ]);
+        $this->triggerPRDetection($log2);
 
         $response = $this->actingAs($user)
             ->get(route('exercises.show-logs', $exercise));
@@ -318,6 +328,7 @@ class ExercisePRHighlightingTest extends TestCase
             'weight' => 275,
             'reps' => 1
         ]);
+        $this->triggerPRDetection($log);
 
         $response = $this->actingAs($user)
             ->get(route('exercises.show-logs', $exercise));

@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Models\LiftLog;
 use App\Services\ExerciseAliasService;
-use App\Services\PRDetectionService;
 use App\Services\Components\Display\PRRecordsTableComponentBuilder;
 use Illuminate\Support\Collection;
 use Carbon\Carbon;
@@ -16,14 +15,11 @@ use Carbon\Carbon;
 class LiftLogTableRowBuilder
 {
     protected ExerciseAliasService $aliasService;
-    protected PRDetectionService $prDetectionService;
 
     public function __construct(
-        ExerciseAliasService $aliasService,
-        PRDetectionService $prDetectionService
+        ExerciseAliasService $aliasService
     ) {
         $this->aliasService = $aliasService;
-        $this->prDetectionService = $prDetectionService;
     }
 
     /**
@@ -49,27 +45,9 @@ class LiftLogTableRowBuilder
         
         $config = array_merge($defaults, $options);
         
-        // Calculate PRs once upfront
-        // Fetch all historical logs for accurate PR calculation
-        if ($liftLogs->isNotEmpty()) {
-            $userId = $liftLogs->first()->user_id;
-            $exerciseIds = $liftLogs->pluck('exercise_id')->unique();
-            
-            $logsForPRCalculation = \App\Models\LiftLog::where('user_id', $userId)
-                ->whereIn('exercise_id', $exerciseIds)
-                ->with(['exercise', 'liftSets'])
-                ->orderBy('logged_at', 'asc')
-                ->get();
-            
-            // Group historical logs by exercise_id for efficient lookup
-            $config['historicalLogsByExercise'] = $logsForPRCalculation->groupBy('exercise_id');
-        } else {
-            $logsForPRCalculation = $liftLogs;
-            $config['historicalLogsByExercise'] = collect();
-        }
-        
-        $prLogIds = $this->prDetectionService->calculatePRLogIds($logsForPRCalculation);
-        $config['prLogIds'] = $prLogIds;
+        // NEW: Use database PR flags instead of O(n²) calculation
+        // The is_pr flag is already set on each lift log by the event system
+        // No need to fetch historical logs or calculate PRs!
         
         return $liftLogs->map(function ($liftLog) use ($config) {
             return $this->buildRow($liftLog, $config);
@@ -92,8 +70,8 @@ class LiftLogTableRowBuilder
         // Get display name with alias
         $displayName = $this->aliasService->getDisplayName($liftLog->exercise, $user);
         
-        // Check if this lift log is a PR (using pre-calculated list)
-        $isPR = in_array($liftLog->id, $config['prLogIds'] ?? []);
+        // NEW: Check if this lift log is a PR using the database flag
+        $isPR = $liftLog->is_pr;
         
         // Build badges
         $badges = [];
@@ -280,6 +258,7 @@ class LiftLogTableRowBuilder
     
     /**
      * Get PR records for beaten PRs in table format
+     * Uses PersonalRecord database records instead of calculating on-the-fly
      * 
      * @param LiftLog $liftLog
      * @param array $config
@@ -287,181 +266,95 @@ class LiftLogTableRowBuilder
      */
     protected function getPRRecordsForBeatenPRs(LiftLog $liftLog, array $config): array
     {
-        // Use pre-fetched historical logs to avoid N+1 queries
-        $historicalLogs = $config['historicalLogsByExercise'][$liftLog->exercise_id] ?? collect();
+        // Check if this is the first lift for this exercise
+        $isFirstLift = !\App\Models\LiftLog::where('exercise_id', $liftLog->exercise_id)
+            ->where('user_id', $liftLog->user_id)
+            ->where('id', '!=', $liftLog->id)
+            ->exists();
         
-        // Get all previous lift logs for this exercise
-        $previousLogs = $historicalLogs->filter(function ($log) use ($liftLog) {
-            return $log->logged_at < $liftLog->logged_at;
-        });
-        
-        if ($previousLogs->isEmpty()) {
+        if ($isFirstLift) {
             return [[
                 'label' => 'Achievement',
                 'value' => 'First time!'
             ]];
         }
         
-        $strategy = $liftLog->exercise->getTypeStrategy();
-        if (!$strategy->canCalculate1RM()) {
+        // NEW: Use PersonalRecord database records
+        $prs = \App\Models\PersonalRecord::where('lift_log_id', $liftLog->id)
+            ->get();
+        
+        if ($prs->isEmpty()) {
             return [];
         }
         
         $records = [];
         
-        // Check for 1RM PR
-        $current1RM = 0;
-        $previous1RM = 0;
-        $current1RMIsTrueMax = false; // Track if current 1RM is from a 1 rep lift
-        $previous1RMIsTrueMax = false; // Track if previous 1RM is from a 1 rep lift
+        // Group PRs by type to avoid duplicates
+        $prsByType = $prs->groupBy('pr_type');
         
-        foreach ($liftLog->liftSets as $set) {
-            if ($set->weight > 0 && $set->reps > 0) {
-                try {
-                    $estimated1RM = $strategy->calculate1RM($set->weight, $set->reps, $liftLog);
-                    if ($estimated1RM > $current1RM) {
-                        $current1RM = $estimated1RM;
-                        $current1RMIsTrueMax = ($set->reps === 1);
-                    }
-                } catch (\Exception $e) {
-                    continue;
-                }
-            }
-        }
-        
-        foreach ($previousLogs as $log) {
-            foreach ($log->liftSets as $set) {
-                if ($set->weight > 0 && $set->reps > 0) {
-                    try {
-                        $estimated1RM = $strategy->calculate1RM($set->weight, $set->reps, $log);
-                        if ($estimated1RM > $previous1RM) {
-                            $previous1RM = $estimated1RM;
-                            $previous1RMIsTrueMax = ($set->reps === 1);
-                        }
-                    } catch (\Exception $e) {
-                        continue;
-                    }
-                }
-            }
-        }
-        
-        // Check for rep-specific PRs first to see if we have a 1 rep PR
-        $hasOneRepPR = false;
-        $oneRepWeight = 0;
-        foreach ($liftLog->liftSets as $set) {
-            if ($set->reps === 1 && $set->weight > 0) {
-                $previousMaxForReps = 0;
-                
-                foreach ($previousLogs as $log) {
-                    foreach ($log->liftSets as $prevSet) {
-                        if ($prevSet->reps === 1 && $prevSet->weight > $previousMaxForReps) {
-                            $previousMaxForReps = $prevSet->weight;
-                        }
-                    }
-                }
-                
-                if ($set->weight > $previousMaxForReps + 0.1) {
-                    $hasOneRepPR = true;
-                    $oneRepWeight = $set->weight;
-                    break;
-                }
-            }
-        }
-        
-        // Only show 1RM if it's different from the 1 Rep weight (i.e., it's an estimated 1RM)
-        if ($current1RM > $previous1RM + 0.1) {
-            // If we have a 1 rep PR and the 1RM equals the 1 rep weight, skip the 1RM row
-            $shouldShow1RM = !($hasOneRepPR && abs($current1RM - $oneRepWeight) < 0.1);
+        // Process 1RM PRs
+        if ($prsByType->has('one_rm')) {
+            $oneRmPR = $prsByType['one_rm']->first();
             
-            if ($shouldShow1RM) {
-                // Use "1RM" if both current and previous are true maxes, otherwise "Est 1RM"
-                $label = ($current1RMIsTrueMax && $previous1RMIsTrueMax) ? '1RM' : 'Est 1RM';
+            // Check if this is a true 1RM (from a 1 rep lift)
+            $hasOneRepSet = $liftLog->liftSets->contains(function ($set) {
+                return $set->reps === 1 && $set->weight > 0;
+            });
+            
+            // For true 1RM (1 rep), don't show it separately since it will be shown as "1 Rep"
+            // Only show "Est 1RM" for estimated 1RMs (from multiple reps)
+            if (!$hasOneRepSet) {
+                $label = 'Est 1RM';
+                $value = $oneRmPR->previous_value 
+                    ? sprintf('%s → %s lbs', $this->formatWeight($oneRmPR->previous_value), $this->formatWeight($oneRmPR->value))
+                    : sprintf('%s lbs', $this->formatWeight($oneRmPR->value));
+                
                 $records[] = [
                     'label' => $label,
-                    'value' => sprintf('%s → %s lbs', $this->formatWeight($previous1RM), $this->formatWeight($current1RM))
+                    'value' => $value
                 ];
             }
         }
         
-        // Check for Volume PR
-        $currentVolume = 0;
-        $previousVolume = 0;
-        
-        foreach ($liftLog->liftSets as $set) {
-            if ($set->weight > 0 && $set->reps > 0) {
-                $currentVolume += ($set->weight * $set->reps);
-            }
-        }
-        
-        foreach ($previousLogs as $log) {
-            $logVolume = 0;
-            foreach ($log->liftSets as $set) {
-                if ($set->weight > 0 && $set->reps > 0) {
-                    $logVolume += ($set->weight * $set->reps);
-                }
-            }
-            if ($logVolume > $previousVolume) {
-                $previousVolume = $logVolume;
-            }
-        }
-        
-        if ($currentVolume > $previousVolume * 1.01) {
+        // Process Volume PRs
+        if ($prsByType->has('volume')) {
+            $volumePR = $prsByType['volume']->first();
+            $value = $volumePR->previous_value
+                ? sprintf('%s → %s lbs', number_format($volumePR->previous_value, 0), number_format($volumePR->value, 0))
+                : sprintf('%s lbs', number_format($volumePR->value, 0));
+            
             $records[] = [
                 'label' => 'Volume',
-                'value' => sprintf('%s → %s lbs', number_format($previousVolume, 0), number_format($currentVolume, 0))
+                'value' => $value
             ];
         }
         
-        // Check for rep-specific PRs
-        foreach ($liftLog->liftSets as $set) {
-            if ($set->reps > 0 && $set->reps <= 10) {
-                $previousMaxForReps = 0;
-                
-                foreach ($previousLogs as $log) {
-                    foreach ($log->liftSets as $prevSet) {
-                        if ($prevSet->reps === $set->reps && $prevSet->weight > $previousMaxForReps) {
-                            $previousMaxForReps = $prevSet->weight;
-                        }
-                    }
-                }
-                
-                if ($set->weight > $previousMaxForReps + 0.1) {
-                    $repLabel = $set->reps . ' Rep' . ($set->reps > 1 ? 's' : '');
-                    $records[] = [
-                        'label' => $repLabel,
-                        'value' => sprintf('%s → %s lbs', $this->formatWeight($previousMaxForReps), $this->formatWeight($set->weight))
-                    ];
-                    break; // Only show one rep-specific PR to keep it clean
-                }
-            }
+        // Process Rep-Specific PRs (limit to first one to keep it clean)
+        if ($prsByType->has('rep_specific')) {
+            $repPR = $prsByType['rep_specific']->first();
+            $repLabel = $repPR->rep_count . ' Rep' . ($repPR->rep_count > 1 ? 's' : '');
+            $value = $repPR->previous_value
+                ? sprintf('%s → %s lbs', $this->formatWeight($repPR->previous_value), $this->formatWeight($repPR->value))
+                : sprintf('%s lbs', $this->formatWeight($repPR->value));
+            
+            $records[] = [
+                'label' => $repLabel,
+                'value' => $value
+            ];
         }
         
-        // Check for "Best at this weight" PR (hypertrophy progression)
-        // Find the heaviest weight from today's lift
-        $heaviestSet = $liftLog->liftSets->sortByDesc('weight')->first();
-        if ($heaviestSet && $heaviestSet->weight > 0 && $heaviestSet->reps > 0) {
-            $targetWeight = $heaviestSet->weight;
-            $todayReps = $heaviestSet->reps;
-            $weightTolerance = 0.5; // Allow small variance for kg/lb conversions
+        // Process Hypertrophy PRs (best at weight)
+        if ($prsByType->has('hypertrophy')) {
+            $hypertrophyPR = $prsByType['hypertrophy']->first();
+            $label = sprintf('Best @ %s lbs', $this->formatWeight($hypertrophyPR->weight));
+            $value = $hypertrophyPR->previous_value
+                ? sprintf('%d → %d reps', (int)$hypertrophyPR->previous_value, (int)$hypertrophyPR->value)
+                : sprintf('%d reps', (int)$hypertrophyPR->value);
             
-            // Find previous best reps at this weight (within tolerance)
-            $previousBestReps = 0;
-            foreach ($previousLogs as $log) {
-                foreach ($log->liftSets as $prevSet) {
-                    // Check if weight matches within tolerance
-                    if (abs($prevSet->weight - $targetWeight) <= $weightTolerance && $prevSet->reps > $previousBestReps) {
-                        $previousBestReps = $prevSet->reps;
-                    }
-                }
-            }
-            
-            // If today's reps beat the previous best at this weight, show it
-            if ($previousBestReps > 0 && $todayReps > $previousBestReps) {
-                $records[] = [
-                    'label' => sprintf('Best @ %s lbs', $this->formatWeight($targetWeight)),
-                    'value' => sprintf('%d → %d reps', $previousBestReps, $todayReps)
-                ];
-            }
+            $records[] = [
+                'label' => $label,
+                'value' => $value
+            ];
         }
         
         return $records;
@@ -469,6 +362,7 @@ class LiftLogTableRowBuilder
     
     /**
      * Get current records for an exercise in table format
+     * Uses PersonalRecord database records instead of calculating on-the-fly
      * 
      * @param LiftLog $liftLog
      * @param array $config
@@ -476,16 +370,15 @@ class LiftLogTableRowBuilder
      */
     protected function getCurrentRecordsTable(LiftLog $liftLog, array $config): array
     {
-        // Use pre-fetched historical logs to avoid N+1 queries
-        $historicalLogs = $config['historicalLogsByExercise'][$liftLog->exercise_id] ?? collect();
+        // NEW: Use PersonalRecord database records to get current PRs
+        // Get all current (unbeaten) PRs for this exercise
+        $currentPRs = \App\Models\PersonalRecord::where('user_id', $liftLog->user_id)
+            ->where('exercise_id', $liftLog->exercise_id)
+            ->current() // Only unbeaten PRs
+            ->get();
         
-        // Get all lift logs for this exercise (including this one)
-        $allLogs = $historicalLogs->filter(function ($log) use ($liftLog) {
-            return $log->logged_at <= $liftLog->logged_at;
-        });
-        
-        if ($allLogs->count() <= 1) {
-            return []; // First lift, no records to show
+        if ($currentPRs->isEmpty()) {
+            return []; // No PRs yet
         }
         
         $strategy = $liftLog->exercise->getTypeStrategy();
@@ -495,110 +388,80 @@ class LiftLogTableRowBuilder
         
         $records = [];
         
-        // Get best 1RM and current lift's 1RM
-        $best1RM = 0;
-        $best1RMIsTrueMax = false;
+        // Calculate current lift's values for comparison
         $current1RM = 0;
+        $currentVolume = 0;
+        $currentRepWeights = []; // [reps => weight]
         
-        foreach ($allLogs as $log) {
-            foreach ($log->liftSets as $set) {
-                if ($set->weight > 0 && $set->reps > 0) {
-                    try {
-                        $estimated1RM = $strategy->calculate1RM($set->weight, $set->reps, $log);
-                        if ($estimated1RM > $best1RM) {
-                            $best1RM = $estimated1RM;
-                            $best1RMIsTrueMax = ($set->reps === 1);
-                        }
-                    } catch (\Exception $e) {
-                        continue;
-                    }
-                }
-            }
-        }
-        
-        // Calculate current lift's 1RM
         foreach ($liftLog->liftSets as $set) {
             if ($set->weight > 0 && $set->reps > 0) {
+                // Calculate 1RM
                 try {
                     $estimated1RM = $strategy->calculate1RM($set->weight, $set->reps, $liftLog);
                     if ($estimated1RM > $current1RM) {
                         $current1RM = $estimated1RM;
                     }
                 } catch (\Exception $e) {
-                    continue;
+                    // Skip if calculation fails
+                }
+                
+                // Calculate volume
+                $currentVolume += ($set->weight * $set->reps);
+                
+                // Track rep-specific weights
+                if (!isset($currentRepWeights[$set->reps]) || $set->weight > $currentRepWeights[$set->reps]) {
+                    $currentRepWeights[$set->reps] = $set->weight;
                 }
             }
         }
         
-        if ($best1RM > 0) {
-            // Use "1RM" if it's a true max, otherwise "Est 1RM"
-            $label = $best1RMIsTrueMax ? '1RM' : 'Est 1RM';
+        // Group PRs by type
+        $prsByType = $currentPRs->groupBy('pr_type');
+        
+        // Process 1RM PRs
+        if ($prsByType->has('one_rm')) {
+            $oneRmPR = $prsByType['one_rm']->first();
+            
+            // Check if the PR is a true 1RM (from a 1 rep lift)
+            $prLiftLog = \App\Models\LiftLog::find($oneRmPR->lift_log_id);
+            $isTrueMax = $prLiftLog && $prLiftLog->liftSets->contains(function ($set) {
+                return $set->reps === 1 && $set->weight > 0;
+            });
+            
+            $label = $isTrueMax ? '1RM' : 'Est 1RM';
             $records[] = [
                 'label' => $label,
-                'value' => sprintf('%s lbs', $this->formatWeight($best1RM)),
+                'value' => sprintf('%s lbs', $this->formatWeight($oneRmPR->value)),
                 'comparison' => sprintf('%s lbs', $this->formatWeight($current1RM))
             ];
         }
         
-        // Get best Volume and current lift's volume
-        $bestVolume = 0;
-        $currentVolume = 0;
-        
-        foreach ($allLogs as $log) {
-            $logVolume = 0;
-            foreach ($log->liftSets as $set) {
-                if ($set->weight > 0 && $set->reps > 0) {
-                    $logVolume += ($set->weight * $set->reps);
-                }
-            }
-            if ($logVolume > $bestVolume) {
-                $bestVolume = $logVolume;
-            }
-        }
-        
-        foreach ($liftLog->liftSets as $set) {
-            if ($set->weight > 0 && $set->reps > 0) {
-                $currentVolume += ($set->weight * $set->reps);
-            }
-        }
-        
-        if ($bestVolume > 0) {
+        // Process Volume PRs
+        if ($prsByType->has('volume')) {
+            $volumePR = $prsByType['volume']->first();
             $records[] = [
                 'label' => 'Volume',
-                'value' => sprintf('%s lbs', number_format($bestVolume, 0)),
+                'value' => sprintf('%s lbs', number_format($volumePR->value, 0)),
                 'comparison' => sprintf('%s lbs', number_format($currentVolume, 0))
             ];
         }
         
-        // Get rep-specific records (for reps in current lift)
-        $currentReps = $liftLog->liftSets->pluck('reps')->unique()->filter(function($reps) {
-            return $reps > 0 && $reps <= 10;
-        })->take(2); // Limit to 2 rep counts to keep it clean
-        
-        foreach ($currentReps as $targetReps) {
-            $bestWeightForReps = 0;
-            $currentWeightForReps = 0;
+        // Process Rep-Specific PRs (only for reps in current lift, limit to 2)
+        if ($prsByType->has('rep_specific')) {
+            $repPRs = $prsByType['rep_specific']
+                ->filter(function ($pr) use ($currentRepWeights) {
+                    return isset($currentRepWeights[$pr->rep_count]);
+                })
+                ->take(2);
             
-            foreach ($allLogs as $log) {
-                foreach ($log->liftSets as $set) {
-                    if ($set->reps === $targetReps && $set->weight > $bestWeightForReps) {
-                        $bestWeightForReps = $set->weight;
-                    }
-                }
-            }
-            
-            foreach ($liftLog->liftSets as $set) {
-                if ($set->reps === $targetReps && $set->weight > $currentWeightForReps) {
-                    $currentWeightForReps = $set->weight;
-                }
-            }
-            
-            if ($bestWeightForReps > 0) {
-                $repLabel = $targetReps . ' Rep' . ($targetReps > 1 ? 's' : '');
+            foreach ($repPRs as $repPR) {
+                $repLabel = $repPR->rep_count . ' Rep' . ($repPR->rep_count > 1 ? 's' : '');
+                $currentWeight = $currentRepWeights[$repPR->rep_count] ?? 0;
+                
                 $records[] = [
                     'label' => $repLabel,
-                    'value' => sprintf('%s lbs', $this->formatWeight($bestWeightForReps)),
-                    'comparison' => sprintf('%s lbs', $this->formatWeight($currentWeightForReps))
+                    'value' => sprintf('%s lbs', $this->formatWeight($repPR->value)),
+                    'comparison' => sprintf('%s lbs', $this->formatWeight($currentWeight))
                 ];
             }
         }
@@ -606,129 +469,6 @@ class LiftLogTableRowBuilder
         return $records;
     }
     
-    /**
-     * Get PR information for a specific lift log
-     * Returns a formatted string describing which PRs were beaten
-     * 
-     * @param LiftLog $liftLog
-     * @return string
-     */
-    protected function getPRInfoForLiftLog(LiftLog $liftLog): string
-    {
-        // Get all previous lift logs for this exercise
-        $previousLogs = \App\Models\LiftLog::where('exercise_id', $liftLog->exercise_id)
-            ->where('user_id', $liftLog->user_id)
-            ->where('logged_at', '<', $liftLog->logged_at)
-            ->with('liftSets')
-            ->orderBy('logged_at', 'asc')
-            ->get();
-        
-        if ($previousLogs->isEmpty()) {
-            return 'First time logging this exercise!';
-        }
-        
-        $strategy = $liftLog->exercise->getTypeStrategy();
-        if (!$strategy->canCalculate1RM()) {
-            return '';
-        }
-        
-        $prTypes = [];
-        
-        // Check for 1RM PR
-        $current1RM = 0;
-        $previous1RM = 0;
-        
-        foreach ($liftLog->liftSets as $set) {
-            if ($set->weight > 0 && $set->reps > 0) {
-                try {
-                    $estimated1RM = $strategy->calculate1RM($set->weight, $set->reps, $liftLog);
-                    if ($estimated1RM > $current1RM) {
-                        $current1RM = $estimated1RM;
-                    }
-                } catch (\Exception $e) {
-                    continue;
-                }
-            }
-        }
-        
-        foreach ($previousLogs as $log) {
-            foreach ($log->liftSets as $set) {
-                if ($set->weight > 0 && $set->reps > 0) {
-                    try {
-                        $estimated1RM = $strategy->calculate1RM($set->weight, $set->reps, $log);
-                        if ($estimated1RM > $previous1RM) {
-                            $previous1RM = $estimated1RM;
-                        }
-                    } catch (\Exception $e) {
-                        continue;
-                    }
-                }
-            }
-        }
-        
-        if ($current1RM > $previous1RM + 0.1) {
-            $prTypes[] = sprintf('1RM (%.1f lbs → %.1f lbs)', $previous1RM, $current1RM);
-        }
-        
-        // Check for Volume PR
-        $currentVolume = 0;
-        $previousVolume = 0;
-        
-        foreach ($liftLog->liftSets as $set) {
-            if ($set->weight > 0 && $set->reps > 0) {
-                $currentVolume += ($set->weight * $set->reps);
-            }
-        }
-        
-        foreach ($previousLogs as $log) {
-            $logVolume = 0;
-            foreach ($log->liftSets as $set) {
-                if ($set->weight > 0 && $set->reps > 0) {
-                    $logVolume += ($set->weight * $set->reps);
-                }
-            }
-            if ($logVolume > $previousVolume) {
-                $previousVolume = $logVolume;
-            }
-        }
-        
-        if ($currentVolume > $previousVolume * 1.01) { // 1% tolerance
-            $prTypes[] = sprintf('Volume (%s lbs → %s lbs)', number_format($previousVolume, 0), number_format($currentVolume, 0));
-        }
-        
-        // Check for rep-specific PRs
-        $repPRs = [];
-        foreach ($liftLog->liftSets as $set) {
-            if ($set->reps > 0 && $set->reps <= 10) {
-                $previousMaxForReps = 0;
-                
-                foreach ($previousLogs as $log) {
-                    foreach ($log->liftSets as $prevSet) {
-                        if ($prevSet->reps === $set->reps && $prevSet->weight > $previousMaxForReps) {
-                            $previousMaxForReps = $prevSet->weight;
-                        }
-                    }
-                }
-                
-                if ($set->weight > $previousMaxForReps + 0.1) {
-                    $repLabel = $set->reps . ' Rep' . ($set->reps > 1 ? 's' : '');
-                    $repPRs[$set->reps] = sprintf('%s (%.1f lbs → %.1f lbs)', $repLabel, $previousMaxForReps, $set->weight);
-                }
-            }
-        }
-        
-        // Add rep PRs to the list
-        foreach ($repPRs as $repPR) {
-            $prTypes[] = $repPR;
-        }
-        
-        if (empty($prTypes)) {
-            return '';
-        }
-        
-        return implode(' • ', $prTypes);
-    }
-
     /**
      * Get date badge data for a lift log
      */

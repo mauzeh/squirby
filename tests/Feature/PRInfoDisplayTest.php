@@ -8,10 +8,11 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
+use Tests\Helpers\TriggersPRDetection;
 
 class PRInfoDisplayTest extends TestCase
 {
-    use RefreshDatabase;
+    use RefreshDatabase, TriggersPRDetection;
 
     private User $user;
     private Exercise $exercise;
@@ -38,6 +39,7 @@ class PRInfoDisplayTest extends TestCase
             'logged_at' => Carbon::now()->subDays(7)
         ]);
         $oldLog->liftSets()->create(['weight' => 200, 'reps' => 5, 'notes' => '']);
+        $this->triggerPRDetection($oldLog);
         
         // Create a new lift log that's NOT a PR (lighter weight)
         $newLog = LiftLog::factory()->create([
@@ -46,6 +48,7 @@ class PRInfoDisplayTest extends TestCase
             'logged_at' => Carbon::now()
         ]);
         $newLog->liftSets()->create(['weight' => 180, 'reps' => 5, 'notes' => '']);
+        $this->triggerPRDetection($newLog);
         
         // Visit the mobile-entry lifts page
         $response = $this->actingAs($this->user)->get(route('mobile-entry.lifts'));
@@ -70,6 +73,7 @@ class PRInfoDisplayTest extends TestCase
             'logged_at' => Carbon::now()->subDays(5)
         ]);
         $oldLog->liftSets()->create(['weight' => 180, 'reps' => 1, 'notes' => '']);
+        $this->triggerPRDetection($oldLog);
         
         // Create a new PR lift log with higher weight
         $newLog = LiftLog::factory()->create([
@@ -78,6 +82,7 @@ class PRInfoDisplayTest extends TestCase
             'logged_at' => Carbon::now()
         ]);
         $newLog->liftSets()->create(['weight' => 200, 'reps' => 1, 'notes' => '']);
+        $this->triggerPRDetection($newLog);
         
         $response = $this->actingAs($this->user)->get(route('mobile-entry.lifts'));
         
@@ -103,6 +108,7 @@ class PRInfoDisplayTest extends TestCase
         $oldLog->liftSets()->create(['weight' => 100, 'reps' => 10, 'notes' => '']);
         $oldLog->liftSets()->create(['weight' => 100, 'reps' => 10, 'notes' => '']);
         $oldLog->liftSets()->create(['weight' => 100, 'reps' => 10, 'notes' => '']);
+        $this->triggerPRDetection($oldLog);
         
         // Create a new lift log with lower volume
         $newLog = LiftLog::factory()->create([
@@ -112,6 +118,7 @@ class PRInfoDisplayTest extends TestCase
         ]);
         $newLog->liftSets()->create(['weight' => 100, 'reps' => 10, 'notes' => '']);
         $newLog->liftSets()->create(['weight' => 100, 'reps' => 10, 'notes' => '']);
+        $this->triggerPRDetection($newLog);
         
         $response = $this->actingAs($this->user)->get(route('mobile-entry.lifts'));
         
@@ -130,6 +137,7 @@ class PRInfoDisplayTest extends TestCase
             'logged_at' => Carbon::now()->subDays(10)
         ]);
         $oldLog->liftSets()->create(['weight' => 200, 'reps' => 5, 'notes' => '']);
+        $this->triggerPRDetection($oldLog);
         
         // Create a new lift log with lower weight for 5 reps
         $newLog = LiftLog::factory()->create([
@@ -138,6 +146,7 @@ class PRInfoDisplayTest extends TestCase
             'logged_at' => Carbon::now()
         ]);
         $newLog->liftSets()->create(['weight' => 180, 'reps' => 5, 'notes' => '']);
+        $this->triggerPRDetection($newLog);
         
         $response = $this->actingAs($this->user)->get(route('mobile-entry.lifts'));
         
@@ -156,6 +165,7 @@ class PRInfoDisplayTest extends TestCase
             'logged_at' => Carbon::now()
         ]);
         $log->liftSets()->create(['weight' => 135, 'reps' => 5, 'notes' => '']);
+        $this->triggerPRDetection($log);
         
         $response = $this->actingAs($this->user)->get(route('mobile-entry.lifts'));
         
@@ -181,6 +191,7 @@ class PRInfoDisplayTest extends TestCase
             'logged_at' => Carbon::now()->subDays(5)
         ]);
         $oldLog->liftSets()->create(['weight' => 150, 'reps' => 5, 'notes' => '']);
+        $this->triggerPRDetection($oldLog);
         
         // Create a new PR lift log
         $newLog = LiftLog::factory()->create([
@@ -189,6 +200,7 @@ class PRInfoDisplayTest extends TestCase
             'logged_at' => Carbon::now()
         ]);
         $newLog->liftSets()->create(['weight' => 160, 'reps' => 5, 'notes' => '']);
+        $this->triggerPRDetection($newLog);
         
         $response = $this->actingAs($this->user)->get(route('mobile-entry.lifts'));
         
@@ -217,6 +229,7 @@ class PRInfoDisplayTest extends TestCase
         $oldLog->liftSets()->create(['weight' => 150, 'reps' => 5, 'notes' => '']);
         $oldLog->liftSets()->create(['weight' => 150, 'reps' => 5, 'notes' => '']);
         $oldLog->liftSets()->create(['weight' => 150, 'reps' => 5, 'notes' => '']);
+        $this->triggerPRDetection($oldLog);
         
         // Create a new lift log that doesn't beat any records
         $newLog = LiftLog::factory()->create([
@@ -225,6 +238,7 @@ class PRInfoDisplayTest extends TestCase
             'logged_at' => Carbon::now()
         ]);
         $newLog->liftSets()->create(['weight' => 140, 'reps' => 5, 'notes' => '']);
+        $this->triggerPRDetection($newLog);
         
         $response = $this->actingAs($this->user)->get(route('mobile-entry.lifts'));
         
@@ -253,6 +267,7 @@ class PRInfoDisplayTest extends TestCase
             'logged_at' => Carbon::now()->subDays(5)
         ]);
         $oldLog->liftSets()->create(['weight' => 0, 'reps' => 20, 'notes' => '']);
+        $this->triggerPRDetection($oldLog);
         
         // Create new log
         $newLog = LiftLog::factory()->create([
@@ -261,6 +276,7 @@ class PRInfoDisplayTest extends TestCase
             'logged_at' => Carbon::now()
         ]);
         $newLog->liftSets()->create(['weight' => 0, 'reps' => 15, 'notes' => '']);
+        $this->triggerPRDetection($newLog);
         
         $response = $this->actingAs($this->user)->get(route('mobile-entry.lifts'));
         
@@ -282,6 +298,7 @@ class PRInfoDisplayTest extends TestCase
             'logged_at' => Carbon::now()->subDays(7)
         ]);
         $oldLog->liftSets()->create(['weight' => 200, 'reps' => 1, 'notes' => '']);
+        $this->triggerPRDetection($oldLog);
         
         // Create a new PR lift log with a true 1RM (1 rep)
         $newLog = LiftLog::factory()->create([
@@ -290,6 +307,7 @@ class PRInfoDisplayTest extends TestCase
             'logged_at' => Carbon::now()
         ]);
         $newLog->liftSets()->create(['weight' => 225, 'reps' => 1, 'notes' => '']);
+        $this->triggerPRDetection($newLog);
         
         $response = $this->actingAs($this->user)->get(route('mobile-entry.lifts'));
         
@@ -318,6 +336,7 @@ class PRInfoDisplayTest extends TestCase
             'logged_at' => Carbon::now()->subDays(7)
         ]);
         $oldLog->liftSets()->create(['weight' => 180, 'reps' => 5, 'notes' => '']);
+        $this->triggerPRDetection($oldLog);
         
         // Create a new PR lift log with 5 reps (estimated 1RM will be higher than actual weight)
         $newLog = LiftLog::factory()->create([
@@ -326,6 +345,7 @@ class PRInfoDisplayTest extends TestCase
             'logged_at' => Carbon::now()
         ]);
         $newLog->liftSets()->create(['weight' => 200, 'reps' => 5, 'notes' => '']);
+        $this->triggerPRDetection($newLog);
         
         $response = $this->actingAs($this->user)->get(route('mobile-entry.lifts'));
         
@@ -353,6 +373,7 @@ class PRInfoDisplayTest extends TestCase
             'logged_at' => Carbon::now()->subDays(7)
         ]);
         $oldLog->liftSets()->create(['weight' => 200, 'reps' => 1, 'notes' => '']);
+        $this->triggerPRDetection($oldLog);
         
         // Create a new lift log with 3 reps that estimates to ~220 lbs 1RM
         // This is close to but not the same as a true 1RM
@@ -362,6 +383,7 @@ class PRInfoDisplayTest extends TestCase
             'logged_at' => Carbon::now()
         ]);
         $newLog->liftSets()->create(['weight' => 205, 'reps' => 3, 'notes' => '']);
+        $this->triggerPRDetection($newLog);
         
         $response = $this->actingAs($this->user)->get(route('mobile-entry.lifts'));
         
@@ -387,6 +409,7 @@ class PRInfoDisplayTest extends TestCase
             'logged_at' => Carbon::now()->subDays(5)
         ]);
         $oldLog->liftSets()->create(['weight' => 180, 'reps' => 1, 'notes' => '']);
+        $this->triggerPRDetection($oldLog);
         
         // Create a new PR lift log with higher weight
         $newLog = LiftLog::factory()->create([
@@ -395,6 +418,7 @@ class PRInfoDisplayTest extends TestCase
             'logged_at' => Carbon::now()
         ]);
         $newLog->liftSets()->create(['weight' => 200, 'reps' => 1, 'notes' => '']);
+        $this->triggerPRDetection($newLog);
         
         // Visit exercises/{id}/logs page (not mobile-entry/lifts)
         $response = $this->actingAs($this->user)->get(route('exercises.show-logs', $this->exercise));
@@ -420,6 +444,7 @@ class PRInfoDisplayTest extends TestCase
             'logged_at' => Carbon::now()->subDays(5)
         ]);
         $oldLog->liftSets()->create(['weight' => 180, 'reps' => 1, 'notes' => '']);
+        $this->triggerPRDetection($oldLog);
         
         // Create a new PR lift log with higher weight
         $newLog = LiftLog::factory()->create([
@@ -428,6 +453,7 @@ class PRInfoDisplayTest extends TestCase
             'logged_at' => Carbon::now()
         ]);
         $newLog->liftSets()->create(['weight' => 200, 'reps' => 1, 'notes' => '']);
+        $this->triggerPRDetection($newLog);
         
         // Visit mobile-entry/lifts page
         $response = $this->actingAs($this->user)->get(route('mobile-entry.lifts'));
@@ -453,6 +479,7 @@ class PRInfoDisplayTest extends TestCase
             'logged_at' => Carbon::now()->subDays(7)
         ]);
         $oldLog->liftSets()->create(['weight' => 200, 'reps' => 5, 'notes' => '']);
+        $this->triggerPRDetection($oldLog);
         
         // Create a new lift log that's NOT a PR (lighter weight)
         $newLog = LiftLog::factory()->create([
@@ -461,6 +488,7 @@ class PRInfoDisplayTest extends TestCase
             'logged_at' => Carbon::now()
         ]);
         $newLog->liftSets()->create(['weight' => 180, 'reps' => 5, 'notes' => '']);
+        $this->triggerPRDetection($newLog);
         
         // Visit mobile-entry/lifts page
         $response = $this->actingAs($this->user)->get(route('mobile-entry.lifts'));
@@ -487,6 +515,7 @@ class PRInfoDisplayTest extends TestCase
             'logged_at' => Carbon::now()->subDays(7)
         ]);
         $oldLog->liftSets()->create(['weight' => 200, 'reps' => 10, 'notes' => '']);
+        $this->triggerPRDetection($oldLog);
         
         // Create a new PR lift log with 12 reps at 200 lbs (hypertrophy progression)
         $newLog = LiftLog::factory()->create([
@@ -495,6 +524,7 @@ class PRInfoDisplayTest extends TestCase
             'logged_at' => Carbon::now()
         ]);
         $newLog->liftSets()->create(['weight' => 200, 'reps' => 12, 'notes' => '']);
+        $this->triggerPRDetection($newLog);
         
         $response = $this->actingAs($this->user)->get(route('mobile-entry.lifts'));
         
@@ -519,6 +549,7 @@ class PRInfoDisplayTest extends TestCase
             'logged_at' => Carbon::now()->subDays(7)
         ]);
         $oldLog->liftSets()->create(['weight' => 205, 'reps' => 8, 'notes' => '']);
+        $this->triggerPRDetection($oldLog);
         
         // Create a new PR lift log with multiple sets, heaviest is 205 lbs with 10 reps
         $newLog = LiftLog::factory()->create([
@@ -529,6 +560,7 @@ class PRInfoDisplayTest extends TestCase
         $newLog->liftSets()->create(['weight' => 195, 'reps' => 12, 'notes' => '']);
         $newLog->liftSets()->create(['weight' => 200, 'reps' => 11, 'notes' => '']);
         $newLog->liftSets()->create(['weight' => 205, 'reps' => 10, 'notes' => '']); // Heaviest
+        $this->triggerPRDetection($newLog);
         
         $response = $this->actingAs($this->user)->get(route('mobile-entry.lifts'));
         
@@ -553,6 +585,7 @@ class PRInfoDisplayTest extends TestCase
             'logged_at' => Carbon::now()->subDays(7)
         ]);
         $oldLog->liftSets()->create(['weight' => 200.5, 'reps' => 9, 'notes' => '']);
+        $this->triggerPRDetection($oldLog);
         
         // Create a new PR lift log with 11 reps at 200.0 lbs (should match within tolerance)
         $newLog = LiftLog::factory()->create([
@@ -561,6 +594,7 @@ class PRInfoDisplayTest extends TestCase
             'logged_at' => Carbon::now()
         ]);
         $newLog->liftSets()->create(['weight' => 200.0, 'reps' => 11, 'notes' => '']);
+        $this->triggerPRDetection($newLog);
         
         $response = $this->actingAs($this->user)->get(route('mobile-entry.lifts'));
         
@@ -586,6 +620,7 @@ class PRInfoDisplayTest extends TestCase
             'logged_at' => Carbon::now()->subDays(14)
         ]);
         $oldLog1->liftSets()->create(['weight' => 205, 'reps' => 8, 'notes' => '']);
+        $this->triggerPRDetection($oldLog1);
         
         // Second: 10 reps at 200 lbs (best for 10 reps so far)
         $oldLog2 = LiftLog::factory()->create([
@@ -594,6 +629,7 @@ class PRInfoDisplayTest extends TestCase
             'logged_at' => Carbon::now()->subDays(7)
         ]);
         $oldLog2->liftSets()->create(['weight' => 200, 'reps' => 10, 'notes' => '']);
+        $this->triggerPRDetection($oldLog2);
         
         // Create a new PR: 10 reps at 205 lbs
         // This is both:
@@ -605,6 +641,7 @@ class PRInfoDisplayTest extends TestCase
             'logged_at' => Carbon::now()
         ]);
         $newLog->liftSets()->create(['weight' => 205, 'reps' => 10, 'notes' => '']);
+        $this->triggerPRDetection($newLog);
         
         $response = $this->actingAs($this->user)->get(route('mobile-entry.lifts'));
         
@@ -629,6 +666,7 @@ class PRInfoDisplayTest extends TestCase
             'logged_at' => Carbon::now()->subDays(7)
         ]);
         $oldLog->liftSets()->create(['weight' => 195, 'reps' => 10, 'notes' => '']);
+        $this->triggerPRDetection($oldLog);
         
         // Create a new PR lift log at 200 lbs (first time at this weight)
         $newLog = LiftLog::factory()->create([
@@ -637,6 +675,7 @@ class PRInfoDisplayTest extends TestCase
             'logged_at' => Carbon::now()
         ]);
         $newLog->liftSets()->create(['weight' => 200, 'reps' => 10, 'notes' => '']);
+        $this->triggerPRDetection($newLog);
         
         $response = $this->actingAs($this->user)->get(route('mobile-entry.lifts'));
         

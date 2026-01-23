@@ -5,9 +5,11 @@ namespace Tests\Feature;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
+use Tests\Helpers\TriggersPRDetection;
 use App\Models\User;
 
 class LiftLogLoggingTest extends TestCase {
+    use TriggersPRDetection;
 
     protected function setUp(): void
     {
@@ -625,6 +627,7 @@ class LiftLogLoggingTest extends TestCase {
             'logged_at' => now(),
         ]);
         $squatPR->liftSets()->create(['weight' => 300, 'reps' => 5, 'notes' => '']);
+        $this->triggerPRDetection($squatPR);
 
         $pressPR = \App\Models\LiftLog::factory()->create([
             'user_id' => $this->user->id,
@@ -632,6 +635,7 @@ class LiftLogLoggingTest extends TestCase {
             'logged_at' => now(),
         ]);
         $pressPR->liftSets()->create(['weight' => 100, 'reps' => 5, 'notes' => '']);
+        $this->triggerPRDetection($pressPR);
 
         // Use the table row builder to generate rows (simulating mobile-entry page)
         $todaysLogs = \App\Models\LiftLog::where('user_id', $this->user->id)
@@ -832,6 +836,7 @@ class LiftLogLoggingTest extends TestCase {
                 'logged_at' => now()->subWeek(),
             ]);
             $log->liftSets()->create(['weight' => $logData['weight'], 'reps' => $logData['reps'], 'notes' => '']);
+            $this->triggerPRDetection($log);
         }
 
         // Now log heavier weights for each rep range - all should be PRs
@@ -850,6 +855,7 @@ class LiftLogLoggingTest extends TestCase {
                 'logged_at' => now(),
             ]);
             $log->liftSets()->create(['weight' => $logData['weight'], 'reps' => $logData['reps'], 'notes' => '']);
+            $this->triggerPRDetection($log);
         }
 
         // Use the table row builder to check PR detection

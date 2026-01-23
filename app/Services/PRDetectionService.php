@@ -574,7 +574,9 @@ class PRDetectionService
                     }
                 }
                 
-                if ($currentMaxReps > $previousBestReps) {
+                // Only award hypertrophy PR if there was a previous lift at this weight
+                // (i.e., we're improving reps at a weight we've done before)
+                if ($currentMaxReps > $previousBestReps && $previousBestReps > 0) {
                     // Find the PersonalRecord ID for the previous hypertrophy PR at this weight
                     $previousPRId = null;
                     if ($previousLiftLogId) {
@@ -590,7 +592,7 @@ class PRDetectionService
                         'weight' => $weight,
                         'value' => $currentMaxReps,
                         'previous_pr_id' => $previousPRId,
-                        'previous_value' => $previousBestReps > 0 ? $previousBestReps : null,
+                        'previous_value' => $previousBestReps,
                     ];
                 }
             }
