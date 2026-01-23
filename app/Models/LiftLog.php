@@ -36,6 +36,8 @@ class LiftLog extends Model
 
     protected $casts = [
         'logged_at' => 'datetime',
+        'is_pr' => 'boolean',
+        'pr_count' => 'integer',
     ];
 
     protected static function boot()

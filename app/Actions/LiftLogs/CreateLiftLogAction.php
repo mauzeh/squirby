@@ -44,7 +44,7 @@ class CreateLiftLogAction
         $this->createLiftSets($request, $liftLog, $exercise);
         
         // Dispatch event for PR detection (synchronous)
-        LiftLogCompleted::dispatch($liftLog, isUpdate: false);
+        LiftLogCompleted::dispatch($liftLog, false);
         
         // Check if this is a PR
         $prFlags = $this->checkIfPR($liftLog, $exercise, $user);

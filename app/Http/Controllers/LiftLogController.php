@@ -217,7 +217,20 @@ class LiftLogController extends Controller
             $deletionMessage = str_replace(':exercise', $exerciseTitle, config('mobile_entry_messages.success.lift_deleted'));
         }
         
+        // Store info before deletion for PR recalculation
+        $userId = $liftLog->user_id;
+        $exerciseId = $liftLog->exercise_id;
+        $wasPR = $liftLog->is_pr;
+        
         $liftLog->delete();
+        
+        // If this was a PR, recalculate all PRs for this exercise
+        if ($wasPR) {
+            app(\App\Services\PRRecalculationService::class)->recalculateAllPRsForExercise(
+                $userId,
+                $exerciseId
+            );
+        }
 
         return $this->redirectService->getRedirect(
             'lift_logs',

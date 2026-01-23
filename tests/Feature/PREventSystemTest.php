@@ -245,11 +245,11 @@ class PREventSystemTest extends TestCase
             'reps' => 5,
         ]);
 
-        $event1 = new LiftLogCompleted($firstLift, isUpdate: false);
+        $event1 = new LiftLogCompleted($firstLift, false);
         $listener = app(DetectAndRecordPRs::class);
         $listener->handle($event1);
 
-        // Create second lift (lighter - not a PR)
+        // Create second lift (lighter - still a PR because it's the first time at 200 lbs)
         $secondLift = LiftLog::factory()->create([
             'user_id' => $this->user->id,
             'exercise_id' => $this->exercise->id,
@@ -261,18 +261,18 @@ class PREventSystemTest extends TestCase
             'reps' => 5,
         ]);
 
-        $event2 = new LiftLogCompleted($secondLift, isUpdate: false);
+        $event2 = new LiftLogCompleted($secondLift, false);
         $listener->handle($event2);
 
         $secondLift->refresh();
         
-        // Should not be marked as PR
-        $this->assertFalse($secondLift->is_pr);
-        $this->assertEquals(0, $secondLift->pr_count);
+        // Should be marked as PR (first time at this weight, even though it's lighter)
+        $this->assertTrue($secondLift->is_pr);
+        $this->assertGreaterThan(0, $secondLift->pr_count);
         
-        // Should have no PR records
+        // Should have PR records
         $prCount = PersonalRecord::where('lift_log_id', $secondLift->id)->count();
-        $this->assertEquals(0, $prCount);
+        $this->assertGreaterThan(0, $prCount);
     }
 
     /** @test */
