@@ -342,7 +342,7 @@ class LiftLogTableRowBuilder
             
             $records[] = [
                 'label' => $repLabel,
-                'value' => $repPR->previous_value ? $this->formatWeight($repPR->previous_value) . ' lbs' : '—',
+                'value' => ($repPR->previous_value && $repPR->previous_value > 0) ? $this->formatWeight($repPR->previous_value) . ' lbs' : '—',
                 'comparison' => $this->formatWeight($repPR->value) . ' lbs'
             ];
         }

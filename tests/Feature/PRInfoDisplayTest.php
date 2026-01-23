@@ -734,5 +734,44 @@ class PRInfoDisplayTest extends TestCase
         $response->assertSee('Previous');
         $response->assertSee('Record');
     }
+
+    /** @test */
+    public function first_time_rep_count_shows_dash_for_previous_value()
+    {
+        // Create a previous lift log with 5 reps
+        $oldLog = LiftLog::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $this->exercise->id,
+            'logged_at' => Carbon::now()->subDays(7)
+        ]);
+        $oldLog->liftSets()->create(['weight' => 180, 'reps' => 5, 'notes' => '']);
+        $this->triggerPRDetection($oldLog);
+        
+        // Create a new lift log with 8 reps (first time doing 8 reps)
+        $newLog = LiftLog::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $this->exercise->id,
+            'logged_at' => Carbon::now()
+        ]);
+        $newLog->liftSets()->create(['weight' => 150, 'reps' => 8, 'notes' => '']);
+        $this->triggerPRDetection($newLog);
+        
+        $response = $this->actingAs($this->user)->get(route('mobile-entry.lifts'));
+        
+        $response->assertStatus(200);
+        
+        // Should see PR badge
+        $response->assertSee('🏆 PR');
+        
+        // Should see "8 Reps" in the records beaten table
+        $response->assertSee('8 Reps');
+        
+        // Should see "—" for the previous value (first time doing 8 reps)
+        // The HTML entity for em dash is &#8212; or the actual character —
+        $response->assertSee('—');
+        
+        // Should see the current value
+        $response->assertSee('150');
+    }
 }
 
