@@ -37,8 +37,11 @@ class PRDetectionService
     {
         $strategy = $exercise->getTypeStrategy();
         
-        // Only exercises that support 1RM calculation can have PRs
-        if (!$strategy->canCalculate1RM()) {
+        // Bodyweight exercises support PRs (volume and rep-specific only)
+        // Regular exercises support all PR types (need 1RM calculation)
+        $isBodyweight = $exercise->exercise_type === 'bodyweight';
+        
+        if (!$isBodyweight && !$strategy->canCalculate1RM()) {
             $this->lastCalculationSnapshot = [
                 'can_calculate_1rm' => false,
                 'reason' => 'Exercise type does not support 1RM calculation',
@@ -54,7 +57,7 @@ class PRDetectionService
             ->orderBy('logged_at', 'asc')
             ->get();
         
-        return $this->checkIfPRAgainstPreviousLogs($liftLog, $previousLogs, $strategy);
+        return $this->checkIfPRAgainstPreviousLogs($liftLog, $previousLogs, $strategy, $isBodyweight);
     }
 
     /**
@@ -87,11 +90,12 @@ class PRDetectionService
         $logsByExercise = $liftLogs->groupBy('exercise_id');
         
         foreach ($logsByExercise as $exerciseId => $exerciseLogs) {
-            // Only process if this is an exercise that supports 1RM calculation
             $firstLog = $exerciseLogs->first();
             $strategy = $firstLog->exercise->getTypeStrategy();
+            $isBodyweight = $firstLog->exercise->exercise_type === 'bodyweight';
             
-            if (!$strategy->canCalculate1RM()) {
+            // Skip exercises that don't support PRs
+            if (!$isBodyweight && !$strategy->canCalculate1RM()) {
                 continue;
             }
 
@@ -104,7 +108,7 @@ class PRDetectionService
                 $previousLogs = $sortedLogs->take($index);
                 
                 // Check if this log was a PR at the time it happened (returns flags)
-                $prFlags = $this->checkIfPRAgainstPreviousLogs($log, $previousLogs, $strategy);
+                $prFlags = $this->checkIfPRAgainstPreviousLogs($log, $previousLogs, $strategy, $isBodyweight);
                 if ($prFlags > 0) {
                     $prLogIds[] = $log->id;
                 }
@@ -121,54 +125,70 @@ class PRDetectionService
      * @param LiftLog $liftLog The lift log to check
      * @param Collection $previousLogs Previous lift logs to compare against
      * @param mixed $strategy Exercise type strategy for 1RM calculation
+     * @param bool $isBodyweight Whether this is a bodyweight exercise
      * @return int Bitwise flags of PR types (0 if no PR)
      */
-    private function checkIfPRAgainstPreviousLogs(LiftLog $liftLog, Collection $previousLogs, $strategy): int
+    private function checkIfPRAgainstPreviousLogs(LiftLog $liftLog, Collection $previousLogs, $strategy, bool $isBodyweight = false): int
     {
         $prFlags = PRType::NONE->value;
         
-        // Calculate the best estimated 1RM from the current log
+        // Calculate the best estimated 1RM from the current log (skip for bodyweight)
         $currentBest1RM = 0;
         $currentTotalVolume = 0;
+        $currentTotalReps = 0;
         $currentSets = [];
         $repSpecificPRs = [];
+        $hasExtraWeight = false;
         
         foreach ($liftLog->liftSets as $set) {
             if ($set->weight > 0 && $set->reps > 0) {
+                // Track if any extra weight is used (for bodyweight exercises)
+                if ($isBodyweight && $set->weight > 0) {
+                    $hasExtraWeight = true;
+                }
+                
                 // Calculate volume for this set
                 $currentTotalVolume += ($set->weight * $set->reps);
+                $currentTotalReps += $set->reps;
                 
-                try {
-                    $estimated1RM = $strategy->calculate1RM($set->weight, $set->reps, $liftLog);
-                    if ($estimated1RM > $currentBest1RM) {
-                        $currentBest1RM = $estimated1RM;
-                    }
-                    
-                    $currentSets[] = [
-                        'weight' => $set->weight,
-                        'reps' => $set->reps,
-                        'estimated_1rm' => $estimated1RM,
-                    ];
-                    
-                    // For sets up to 10 reps, check if this is a rep-specific PR
-                    if ($set->reps <= self::MAX_REP_COUNT_FOR_PR) {
-                        $repSpecificResult = $this->getMaxWeightForRepsWithLog($previousLogs, $set->reps);
-                        $maxWeightForReps = $repSpecificResult['weight'];
-                        
-                        // Check if current weight beats previous max for this rep count
-                        if ($set->weight > $maxWeightForReps + self::TOLERANCE) {
-                            $prFlags |= PRType::REP_SPECIFIC->value;
-                            $repSpecificPRs[] = [
-                                'reps' => $set->reps,
-                                'weight' => $set->weight,
-                                'previous_max' => $maxWeightForReps,
-                                'previous_lift_log_id' => $repSpecificResult['lift_log_id'],
-                            ];
+                // Only calculate 1RM for non-bodyweight exercises
+                if (!$isBodyweight) {
+                    try {
+                        $estimated1RM = $strategy->calculate1RM($set->weight, $set->reps, $liftLog);
+                        if ($estimated1RM > $currentBest1RM) {
+                            $currentBest1RM = $estimated1RM;
                         }
+                        
+                        $currentSets[] = [
+                            'weight' => $set->weight,
+                            'reps' => $set->reps,
+                            'estimated_1rm' => $estimated1RM,
+                        ];
+                    } catch (\Exception $e) {
+                        continue;
                     }
-                } catch (\Exception $e) {
-                    continue;
                 }
+                
+                // For sets up to 10 reps, check if this is a rep-specific PR
+                // For bodyweight: only check if extra weight is used
+                if ($set->reps <= self::MAX_REP_COUNT_FOR_PR && (!$isBodyweight || $hasExtraWeight)) {
+                    $repSpecificResult = $this->getMaxWeightForRepsWithLog($previousLogs, $set->reps);
+                    $maxWeightForReps = $repSpecificResult['weight'];
+                    
+                    // Check if current weight beats previous max for this rep count
+                    if ($set->weight > $maxWeightForReps + self::TOLERANCE) {
+                        $prFlags |= PRType::REP_SPECIFIC->value;
+                        $repSpecificPRs[] = [
+                            'reps' => $set->reps,
+                            'weight' => $set->weight,
+                            'previous_max' => $maxWeightForReps,
+                            'previous_lift_log_id' => $repSpecificResult['lift_log_id'],
+                        ];
+                    }
+                }
+            } elseif ($isBodyweight && $set->reps > 0) {
+                // For pure bodyweight (weight = 0), still count reps
+                $currentTotalReps += $set->reps;
             }
         }
         
@@ -180,6 +200,9 @@ class PRDetectionService
                 'sets' => $currentSets,
                 'best_1rm' => $currentBest1RM,
                 'total_volume' => $currentTotalVolume,
+                'total_reps' => $currentTotalReps,
+                'is_bodyweight' => $isBodyweight,
+                'has_extra_weight' => $hasExtraWeight,
             ],
             'previous_logs_count' => $previousLogs->count(),
             'previous_bests' => [],
@@ -189,11 +212,17 @@ class PRDetectionService
         
         // If this is the first log, it's a PR if it has valid data
         if ($previousLogs->isEmpty()) {
-            if ($currentBest1RM > 0) {
+            // 1RM PR only for non-bodyweight exercises
+            if (!$isBodyweight && $currentBest1RM > 0) {
                 $prFlags |= PRType::ONE_RM->value;
                 $snapshot['pr_reasons']['one_rm'] = 'First lift for this exercise';
             }
-            if ($currentTotalVolume > 0) {
+            
+            // Volume PR: use total reps for pure bodyweight, volume for weighted
+            if ($isBodyweight && !$hasExtraWeight && $currentTotalReps > 0) {
+                $prFlags |= PRType::VOLUME->value;
+                $snapshot['pr_reasons']['volume'] = 'First lift for this exercise (total reps)';
+            } elseif ($currentTotalVolume > 0) {
                 $prFlags |= PRType::VOLUME->value;
                 $snapshot['pr_reasons']['volume'] = 'First lift for this exercise';
             }
@@ -205,65 +234,95 @@ class PRDetectionService
             return $prFlags;
         }
         
-        // Check for 1RM PR
-        $best1RMResult = $this->getBestEstimated1RMWithLog($previousLogs, $strategy);
-        $previousBest1RM = $best1RMResult['value'];
-        
-        $snapshot['previous_bests']['one_rm'] = [
-            'value' => $previousBest1RM,
-            'lift_log_id' => $best1RMResult['lift_log_id'],
-            'tolerance' => self::TOLERANCE,
-        ];
-        
-        if ($currentBest1RM > $previousBest1RM + self::TOLERANCE) {
-            $prFlags |= PRType::ONE_RM->value;
-            $snapshot['pr_reasons']['one_rm'] = sprintf(
-                '%.2f > %.2f + %.2f (previous: lift #%d)',
-                $currentBest1RM,
-                $previousBest1RM,
-                self::TOLERANCE,
-                $best1RMResult['lift_log_id']
-            );
-        } else {
-            $snapshot['why_not_pr']['one_rm'] = sprintf(
-                '%.2f <= %.2f + %.2f (previous best: lift #%d)',
-                $currentBest1RM,
-                $previousBest1RM,
-                self::TOLERANCE,
-                $best1RMResult['lift_log_id']
-            );
+        // Check for 1RM PR (skip for bodyweight)
+        if (!$isBodyweight) {
+            $best1RMResult = $this->getBestEstimated1RMWithLog($previousLogs, $strategy);
+            $previousBest1RM = $best1RMResult['value'];
+            
+            $snapshot['previous_bests']['one_rm'] = [
+                'value' => $previousBest1RM,
+                'lift_log_id' => $best1RMResult['lift_log_id'],
+                'tolerance' => self::TOLERANCE,
+            ];
+            
+            if ($currentBest1RM > $previousBest1RM + self::TOLERANCE) {
+                $prFlags |= PRType::ONE_RM->value;
+                $snapshot['pr_reasons']['one_rm'] = sprintf(
+                    '%.2f > %.2f + %.2f (previous: lift #%d)',
+                    $currentBest1RM,
+                    $previousBest1RM,
+                    self::TOLERANCE,
+                    $best1RMResult['lift_log_id']
+                );
+            } else {
+                $snapshot['why_not_pr']['one_rm'] = sprintf(
+                    '%.2f <= %.2f + %.2f (previous best: lift #%d)',
+                    $currentBest1RM,
+                    $previousBest1RM,
+                    self::TOLERANCE,
+                    $best1RMResult['lift_log_id']
+                );
+            }
         }
         
-        // Check for Volume PR (total weight lifted in a single session for this exercise)
-        // Use percentage-based tolerance that scales with workout volume
-        $bestVolumeResult = $this->getBestVolumeWithLog($previousLogs);
-        $previousBestVolume = $bestVolumeResult['value'];
-        $volumeTolerance = $previousBestVolume * self::VOLUME_TOLERANCE_PERCENT;
-        
-        $snapshot['previous_bests']['volume'] = [
-            'value' => $previousBestVolume,
-            'lift_log_id' => $bestVolumeResult['lift_log_id'],
-            'tolerance_percent' => self::VOLUME_TOLERANCE_PERCENT * 100,
-            'tolerance_absolute' => $volumeTolerance,
-        ];
-        
-        if ($currentTotalVolume > $previousBestVolume + $volumeTolerance) {
-            $prFlags |= PRType::VOLUME->value;
-            $snapshot['pr_reasons']['volume'] = sprintf(
-                '%.2f > %.2f + %.2f (previous: lift #%d)',
-                $currentTotalVolume,
-                $previousBestVolume,
-                $volumeTolerance,
-                $bestVolumeResult['lift_log_id']
-            );
+        // Check for Volume PR
+        // For pure bodyweight (no extra weight), use total reps instead of volume
+        if ($isBodyweight && !$hasExtraWeight) {
+            $bestRepsResult = $this->getBestTotalRepsWithLog($previousLogs);
+            $previousBestReps = $bestRepsResult['value'];
+            
+            $snapshot['previous_bests']['total_reps'] = [
+                'value' => $previousBestReps,
+                'lift_log_id' => $bestRepsResult['lift_log_id'],
+            ];
+            
+            if ($currentTotalReps > $previousBestReps) {
+                $prFlags |= PRType::VOLUME->value;
+                $snapshot['pr_reasons']['volume'] = sprintf(
+                    '%d reps > %d reps (previous: lift #%d)',
+                    $currentTotalReps,
+                    $previousBestReps,
+                    $bestRepsResult['lift_log_id']
+                );
+            } else {
+                $snapshot['why_not_pr']['volume'] = sprintf(
+                    '%d reps <= %d reps (previous best: lift #%d)',
+                    $currentTotalReps,
+                    $previousBestReps,
+                    $bestRepsResult['lift_log_id']
+                );
+            }
         } else {
-            $snapshot['why_not_pr']['volume'] = sprintf(
-                '%.2f <= %.2f + %.2f (previous best: lift #%d)',
-                $currentTotalVolume,
-                $previousBestVolume,
-                $volumeTolerance,
-                $bestVolumeResult['lift_log_id']
-            );
+            // Use standard volume calculation (weight × reps)
+            $bestVolumeResult = $this->getBestVolumeWithLog($previousLogs);
+            $previousBestVolume = $bestVolumeResult['value'];
+            $volumeTolerance = $previousBestVolume * self::VOLUME_TOLERANCE_PERCENT;
+            
+            $snapshot['previous_bests']['volume'] = [
+                'value' => $previousBestVolume,
+                'lift_log_id' => $bestVolumeResult['lift_log_id'],
+                'tolerance_percent' => self::VOLUME_TOLERANCE_PERCENT * 100,
+                'tolerance_absolute' => $volumeTolerance,
+            ];
+            
+            if ($currentTotalVolume > $previousBestVolume + $volumeTolerance) {
+                $prFlags |= PRType::VOLUME->value;
+                $snapshot['pr_reasons']['volume'] = sprintf(
+                    '%.2f > %.2f + %.2f (previous: lift #%d)',
+                    $currentTotalVolume,
+                    $previousBestVolume,
+                    $volumeTolerance,
+                    $bestVolumeResult['lift_log_id']
+                );
+            } else {
+                $snapshot['why_not_pr']['volume'] = sprintf(
+                    '%.2f <= %.2f + %.2f (previous best: lift #%d)',
+                    $currentTotalVolume,
+                    $previousBestVolume,
+                    $volumeTolerance,
+                    $bestVolumeResult['lift_log_id']
+                );
+            }
         }
         
         // Add rep-specific PR info if any
@@ -409,6 +468,50 @@ class PRDetectionService
     }
 
     /**
+     * Get the best total reps from a collection of lift logs
+     * Returns both the total reps and the lift log ID
+     * Used for pure bodyweight exercises (no extra weight)
+     * 
+     * @param Collection $logs Lift logs to analyze
+     * @return array ['value' => int, 'lift_log_id' => int|null]
+     */
+    private function getBestTotalRepsWithLog(Collection $logs): array
+    {
+        $bestReps = 0;
+        $liftLogId = null;
+        
+        foreach ($logs as $log) {
+            $logReps = 0;
+            foreach ($log->liftSets as $set) {
+                if ($set->reps > 0) {
+                    $logReps += $set->reps;
+                }
+            }
+            if ($logReps > $bestReps) {
+                $bestReps = $logReps;
+                $liftLogId = $log->id;
+            }
+        }
+        
+        return [
+            'value' => $bestReps,
+            'lift_log_id' => $liftLogId,
+        ];
+    }
+
+    /**
+     * Get the best total reps from a collection of lift logs
+     * Used for pure bodyweight exercises (no extra weight)
+     * 
+     * @param Collection $logs Lift logs to analyze
+     * @return int Best total reps found
+     */
+    private function getBestTotalReps(Collection $logs): int
+    {
+        return $this->getBestTotalRepsWithLog($logs)['value'];
+    }
+
+    /**
      * Detect PRs for a lift log and return detailed information for database storage
      * Returns an array of PR records with all necessary data for PersonalRecord model
      * 
@@ -419,9 +522,10 @@ class PRDetectionService
     {
         $exercise = $liftLog->exercise;
         $strategy = $exercise->getTypeStrategy();
+        $isBodyweight = $exercise->exercise_type === 'bodyweight';
         
-        // Only exercises that support 1RM calculation can have PRs
-        if (!$strategy->canCalculate1RM()) {
+        // Skip exercises that don't support PRs
+        if (!$isBodyweight && !$strategy->canCalculate1RM()) {
             return [];
         }
         
@@ -434,46 +538,61 @@ class PRDetectionService
             ->get();
         
         $prs = [];
+        $hasExtraWeight = $liftLog->liftSets->max('weight') > 0;
         
-        // If this is the first log, it's a PR for all types
+        // If this is the first log, it's a PR for applicable types
         if ($previousLogs->isEmpty()) {
-            // Calculate current metrics
-            $current1RM = $this->getBestEstimated1RM(new Collection([$liftLog]), $strategy);
-            $currentVolume = $this->getBestVolume(new Collection([$liftLog]));
-            
-            // Add 1RM PR
-            if ($current1RM > 0) {
-                $prs[] = [
-                    'type' => 'one_rm',
-                    'value' => $current1RM,
-                    'previous_pr_id' => null,
-                    'previous_value' => null,
-                ];
+            // 1RM PR only for non-bodyweight exercises
+            if (!$isBodyweight) {
+                $current1RM = $this->getBestEstimated1RM(new Collection([$liftLog]), $strategy);
+                if ($current1RM > 0) {
+                    $prs[] = [
+                        'type' => 'one_rm',
+                        'value' => $current1RM,
+                        'previous_pr_id' => null,
+                        'previous_value' => null,
+                    ];
+                }
             }
             
-            // Add Volume PR
-            if ($currentVolume > 0) {
-                $prs[] = [
-                    'type' => 'volume',
-                    'value' => $currentVolume,
-                    'previous_pr_id' => null,
-                    'previous_value' => null,
-                ];
+            // Volume PR: use total reps for pure bodyweight, volume for weighted
+            if ($isBodyweight && !$hasExtraWeight) {
+                $currentTotalReps = $liftLog->liftSets->sum('reps');
+                if ($currentTotalReps > 0) {
+                    $prs[] = [
+                        'type' => 'volume',
+                        'value' => $currentTotalReps,
+                        'previous_pr_id' => null,
+                        'previous_value' => null,
+                    ];
+                }
+            } else {
+                $currentVolume = $this->getBestVolume(new Collection([$liftLog]));
+                if ($currentVolume > 0) {
+                    $prs[] = [
+                        'type' => 'volume',
+                        'value' => $currentVolume,
+                        'previous_pr_id' => null,
+                        'previous_value' => null,
+                    ];
+                }
             }
             
-            // Add rep-specific PRs for each unique rep count
-            $repCounts = $liftLog->liftSets->pluck('reps')->unique();
-            foreach ($repCounts as $reps) {
-                if ($reps <= self::MAX_REP_COUNT_FOR_PR) {
-                    $maxWeight = $liftLog->liftSets->where('reps', $reps)->max('weight');
-                    if ($maxWeight > 0) {
-                        $prs[] = [
-                            'type' => 'rep_specific',
-                            'rep_count' => $reps,
-                            'value' => $maxWeight,
-                            'previous_pr_id' => null,
-                            'previous_value' => null,
-                        ];
+            // Add rep-specific PRs for each unique rep count (only if weighted for bodyweight)
+            if (!$isBodyweight || $hasExtraWeight) {
+                $repCounts = $liftLog->liftSets->pluck('reps')->unique();
+                foreach ($repCounts as $reps) {
+                    if ($reps <= self::MAX_REP_COUNT_FOR_PR) {
+                        $maxWeight = $liftLog->liftSets->where('reps', $reps)->max('weight');
+                        if ($maxWeight > 0) {
+                            $prs[] = [
+                                'type' => 'rep_specific',
+                                'rep_count' => $reps,
+                                'value' => $maxWeight,
+                                'previous_pr_id' => null,
+                                'previous_value' => null,
+                            ];
+                        }
                     }
                 }
             }
@@ -481,119 +600,149 @@ class PRDetectionService
             return $prs;
         }
         
-        // Check for 1RM PR
-        $current1RM = $this->getBestEstimated1RM(new Collection([$liftLog]), $strategy);
-        $best1RMResult = $this->getBestEstimated1RMWithLog($previousLogs, $strategy);
-        
-        if ($current1RM > $best1RMResult['value'] + self::TOLERANCE) {
-            // Find the PersonalRecord ID for the previous 1RM PR
-            $previousPRId = null;
-            if ($best1RMResult['lift_log_id']) {
-                $previousPR = \App\Models\PersonalRecord::where('lift_log_id', $best1RMResult['lift_log_id'])
-                    ->where('pr_type', 'one_rm')
-                    ->first();
-                $previousPRId = $previousPR?->id;
-            }
+        // Check for 1RM PR (skip for bodyweight)
+        if (!$isBodyweight) {
+            $current1RM = $this->getBestEstimated1RM(new Collection([$liftLog]), $strategy);
+            $best1RMResult = $this->getBestEstimated1RMWithLog($previousLogs, $strategy);
             
-            $prs[] = [
-                'type' => 'one_rm',
-                'value' => $current1RM,
-                'previous_pr_id' => $previousPRId,
-                'previous_value' => $best1RMResult['value'],
-            ];
+            if ($current1RM > $best1RMResult['value'] + self::TOLERANCE) {
+                // Find the PersonalRecord ID for the previous 1RM PR
+                $previousPRId = null;
+                if ($best1RMResult['lift_log_id']) {
+                    $previousPR = \App\Models\PersonalRecord::where('lift_log_id', $best1RMResult['lift_log_id'])
+                        ->where('pr_type', 'one_rm')
+                        ->first();
+                    $previousPRId = $previousPR?->id;
+                }
+                
+                $prs[] = [
+                    'type' => 'one_rm',
+                    'value' => $current1RM,
+                    'previous_pr_id' => $previousPRId,
+                    'previous_value' => $best1RMResult['value'],
+                ];
+            }
         }
         
         // Check for Volume PR
-        $currentVolume = $this->getBestVolume(new Collection([$liftLog]));
-        $bestVolumeResult = $this->getBestVolumeWithLog($previousLogs);
-        $volumeTolerance = $bestVolumeResult['value'] * self::VOLUME_TOLERANCE_PERCENT;
-        
-        if ($currentVolume > $bestVolumeResult['value'] + $volumeTolerance) {
-            // Find the PersonalRecord ID for the previous volume PR
-            $previousPRId = null;
-            if ($bestVolumeResult['lift_log_id']) {
-                $previousPR = \App\Models\PersonalRecord::where('lift_log_id', $bestVolumeResult['lift_log_id'])
-                    ->where('pr_type', 'volume')
-                    ->first();
-                $previousPRId = $previousPR?->id;
-            }
+        // For pure bodyweight (no extra weight), use total reps instead of volume
+        if ($isBodyweight && !$hasExtraWeight) {
+            $currentTotalReps = $liftLog->liftSets->sum('reps');
+            $bestRepsResult = $this->getBestTotalRepsWithLog($previousLogs);
             
-            $prs[] = [
-                'type' => 'volume',
-                'value' => $currentVolume,
-                'previous_pr_id' => $previousPRId,
-                'previous_value' => $bestVolumeResult['value'],
-            ];
+            if ($currentTotalReps > $bestRepsResult['value']) {
+                // Find the PersonalRecord ID for the previous total reps PR
+                $previousPRId = null;
+                if ($bestRepsResult['lift_log_id']) {
+                    $previousPR = \App\Models\PersonalRecord::where('lift_log_id', $bestRepsResult['lift_log_id'])
+                        ->where('pr_type', 'volume')
+                        ->first();
+                    $previousPRId = $previousPR?->id;
+                }
+                
+                $prs[] = [
+                    'type' => 'volume',
+                    'value' => $currentTotalReps,
+                    'previous_pr_id' => $previousPRId,
+                    'previous_value' => $bestRepsResult['value'],
+                ];
+            }
+        } else {
+            // Use standard volume calculation (weight × reps)
+            $currentVolume = $this->getBestVolume(new Collection([$liftLog]));
+            $bestVolumeResult = $this->getBestVolumeWithLog($previousLogs);
+            $volumeTolerance = $bestVolumeResult['value'] * self::VOLUME_TOLERANCE_PERCENT;
+            
+            if ($currentVolume > $bestVolumeResult['value'] + $volumeTolerance) {
+                // Find the PersonalRecord ID for the previous volume PR
+                $previousPRId = null;
+                if ($bestVolumeResult['lift_log_id']) {
+                    $previousPR = \App\Models\PersonalRecord::where('lift_log_id', $bestVolumeResult['lift_log_id'])
+                        ->where('pr_type', 'volume')
+                        ->first();
+                    $previousPRId = $previousPR?->id;
+                }
+                
+                $prs[] = [
+                    'type' => 'volume',
+                    'value' => $currentVolume,
+                    'previous_pr_id' => $previousPRId,
+                    'previous_value' => $bestVolumeResult['value'],
+                ];
+            }
         }
         
-        // Check for rep-specific PRs
-        $repCounts = $liftLog->liftSets->pluck('reps')->unique();
-        foreach ($repCounts as $reps) {
-            if ($reps <= self::MAX_REP_COUNT_FOR_PR) {
-                $currentMaxWeight = $liftLog->liftSets->where('reps', $reps)->max('weight');
-                $previousMaxResult = $this->getMaxWeightForRepsWithLog($previousLogs, $reps);
-                
-                if ($currentMaxWeight > $previousMaxResult['weight'] + self::TOLERANCE) {
-                    // Find the PersonalRecord ID for the previous rep-specific PR
-                    $previousPRId = null;
-                    if ($previousMaxResult['lift_log_id']) {
-                        $previousPR = \App\Models\PersonalRecord::where('lift_log_id', $previousMaxResult['lift_log_id'])
-                            ->where('pr_type', 'rep_specific')
-                            ->where('rep_count', $reps)
-                            ->first();
-                        $previousPRId = $previousPR?->id;
-                    }
+        // Check for rep-specific PRs (only if weighted for bodyweight)
+        if (!$isBodyweight || $hasExtraWeight) {
+            $repCounts = $liftLog->liftSets->pluck('reps')->unique();
+            foreach ($repCounts as $reps) {
+                if ($reps <= self::MAX_REP_COUNT_FOR_PR) {
+                    $currentMaxWeight = $liftLog->liftSets->where('reps', $reps)->max('weight');
+                    $previousMaxResult = $this->getMaxWeightForRepsWithLog($previousLogs, $reps);
                     
-                    $prs[] = [
-                        'type' => 'rep_specific',
-                        'rep_count' => $reps,
-                        'value' => $currentMaxWeight,
-                        'previous_pr_id' => $previousPRId,
-                        'previous_value' => $previousMaxResult['weight'],
-                    ];
+                    if ($currentMaxWeight > $previousMaxResult['weight'] + self::TOLERANCE) {
+                        // Find the PersonalRecord ID for the previous rep-specific PR
+                        $previousPRId = null;
+                        if ($previousMaxResult['lift_log_id']) {
+                            $previousPR = \App\Models\PersonalRecord::where('lift_log_id', $previousMaxResult['lift_log_id'])
+                                ->where('pr_type', 'rep_specific')
+                                ->where('rep_count', $reps)
+                                ->first();
+                            $previousPRId = $previousPR?->id;
+                        }
+                        
+                        $prs[] = [
+                            'type' => 'rep_specific',
+                            'rep_count' => $reps,
+                            'value' => $currentMaxWeight,
+                            'previous_pr_id' => $previousPRId,
+                            'previous_value' => $previousMaxResult['weight'],
+                        ];
+                    }
                 }
             }
         }
         
         // Check for hypertrophy PR (best reps at a given weight)
-        // For each unique weight in today's lift, check if we did more reps than before
-        $weights = $liftLog->liftSets->pluck('weight')->unique();
-        foreach ($weights as $weight) {
-            if ($weight > 0) {
-                $currentMaxReps = $liftLog->liftSets->where('weight', $weight)->max('reps');
-                
-                // Find previous best reps at this weight (within tolerance)
-                $previousBestReps = 0;
-                $previousLiftLogId = null;
-                foreach ($previousLogs as $prevLog) {
-                    foreach ($prevLog->liftSets as $set) {
-                        if (abs($set->weight - $weight) <= 0.5 && $set->reps > $previousBestReps) {
-                            $previousBestReps = $set->reps;
-                            $previousLiftLogId = $prevLog->id;
+        // Skip for bodyweight exercises (not meaningful)
+        if (!$isBodyweight) {
+            $weights = $liftLog->liftSets->pluck('weight')->unique();
+            foreach ($weights as $weight) {
+                if ($weight > 0) {
+                    $currentMaxReps = $liftLog->liftSets->where('weight', $weight)->max('reps');
+                    
+                    // Find previous best reps at this weight (within tolerance)
+                    $previousBestReps = 0;
+                    $previousLiftLogId = null;
+                    foreach ($previousLogs as $prevLog) {
+                        foreach ($prevLog->liftSets as $set) {
+                            if (abs($set->weight - $weight) <= 0.5 && $set->reps > $previousBestReps) {
+                                $previousBestReps = $set->reps;
+                                $previousLiftLogId = $prevLog->id;
+                            }
                         }
                     }
-                }
-                
-                // Only award hypertrophy PR if there was a previous lift at this weight
-                // (i.e., we're improving reps at a weight we've done before)
-                if ($currentMaxReps > $previousBestReps && $previousBestReps > 0) {
-                    // Find the PersonalRecord ID for the previous hypertrophy PR at this weight
-                    $previousPRId = null;
-                    if ($previousLiftLogId) {
-                        $previousPR = \App\Models\PersonalRecord::where('lift_log_id', $previousLiftLogId)
-                            ->where('pr_type', 'hypertrophy')
-                            ->where('weight', $weight)
-                            ->first();
-                        $previousPRId = $previousPR?->id;
-                    }
                     
-                    $prs[] = [
-                        'type' => 'hypertrophy',
-                        'weight' => $weight,
-                        'value' => $currentMaxReps,
-                        'previous_pr_id' => $previousPRId,
-                        'previous_value' => $previousBestReps,
-                    ];
+                    // Only award hypertrophy PR if there was a previous lift at this weight
+                    if ($currentMaxReps > $previousBestReps && $previousBestReps > 0) {
+                        // Find the PersonalRecord ID for the previous hypertrophy PR at this weight
+                        $previousPRId = null;
+                        if ($previousLiftLogId) {
+                            $previousPR = \App\Models\PersonalRecord::where('lift_log_id', $previousLiftLogId)
+                                ->where('pr_type', 'hypertrophy')
+                                ->where('weight', $weight)
+                                ->first();
+                            $previousPRId = $previousPR?->id;
+                        }
+                        
+                        $prs[] = [
+                            'type' => 'hypertrophy',
+                            'weight' => $weight,
+                            'value' => $currentMaxReps,
+                            'previous_pr_id' => $previousPRId,
+                            'previous_value' => $previousBestReps,
+                        ];
+                    }
                 }
             }
         }

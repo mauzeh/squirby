@@ -251,7 +251,7 @@ class PRInfoDisplayTest extends TestCase
     }
 
     /** @test */
-    public function bodyweight_exercises_show_no_records()
+    public function bodyweight_exercises_show_volume_pr_records()
     {
         // Create a bodyweight exercise
         $bodyweightExercise = Exercise::factory()->create([
@@ -260,7 +260,7 @@ class PRInfoDisplayTest extends TestCase
             'exercise_type' => 'bodyweight'
         ]);
         
-        // Create previous log
+        // Create previous log with 20 reps
         $oldLog = LiftLog::factory()->create([
             'user_id' => $this->user->id,
             'exercise_id' => $bodyweightExercise->id,
@@ -269,23 +269,25 @@ class PRInfoDisplayTest extends TestCase
         $oldLog->liftSets()->create(['weight' => 0, 'reps' => 20, 'notes' => '']);
         $this->triggerPRDetection($oldLog);
         
-        // Create new log
+        // Create new log with 25 reps (Volume PR)
         $newLog = LiftLog::factory()->create([
             'user_id' => $this->user->id,
             'exercise_id' => $bodyweightExercise->id,
             'logged_at' => Carbon::now()
         ]);
-        $newLog->liftSets()->create(['weight' => 0, 'reps' => 15, 'notes' => '']);
+        $newLog->liftSets()->create(['weight' => 0, 'reps' => 25, 'notes' => '']);
         $this->triggerPRDetection($newLog);
         
         $response = $this->actingAs($this->user)->get(route('mobile-entry.lifts'));
         
         $response->assertStatus(200);
         
-        // Should not see PR badge or records for bodyweight exercises
-        $response->assertDontSee('🏆 PR');
-        $response->assertDontSee('Current records');
-        $response->assertDontSee('PRs beaten');
+        // Should see PR badge and records for bodyweight exercises (Volume PR)
+        $response->assertSee('🏆 PR');
+        $response->assertSee('Records beaten:');
+        $response->assertSee('Total Reps'); // Volume PR type for pure bodyweight
+        $response->assertSee('20 reps'); // Previous value
+        $response->assertSee('25 reps'); // Current value
     }
 
     /** @test */

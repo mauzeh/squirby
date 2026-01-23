@@ -121,7 +121,7 @@ class ExercisePRHighlightingTest extends TestCase
     }
 
     /** @test */
-    public function it_does_not_display_pr_for_bodyweight_exercises()
+    public function it_displays_pr_for_bodyweight_exercises_with_volume_pr()
     {
         $user = User::factory()->create();
         $exercise = Exercise::factory()->create([
@@ -138,15 +138,17 @@ class ExercisePRHighlightingTest extends TestCase
             'weight' => 0,
             'reps' => 20
         ]);
+        
+        // Trigger PR detection
+        event(new \App\Events\LiftLogCompleted($log));
 
         $response = $this->actingAs($user)
             ->get(route('exercises.show-logs', $exercise));
 
         $response->assertStatus(200);
         
-        // Bodyweight exercises may or may not support PRs depending on implementation
-        // For now, we just verify the page loads successfully
-        // The actual PR behavior depends on whether bodyweight exercises support 1RM calculation
+        // Bodyweight exercises support Volume PRs (using total reps)
+        $response->assertSee('🏆 PR');
     }
 
     /** @test */

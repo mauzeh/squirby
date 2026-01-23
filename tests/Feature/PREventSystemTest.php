@@ -341,12 +341,18 @@ class PREventSystemTest extends TestCase
         $listener = app(DetectAndRecordPRs::class);
         $listener->handle($event);
 
-        // Bodyweight exercises don't support PRs
+        // Bodyweight exercises support Volume PRs (using total reps for pure bodyweight)
         $prCount = PersonalRecord::where('lift_log_id', $liftLog->id)->count();
-        $this->assertEquals(0, $prCount);
+        $this->assertEquals(1, $prCount, 'First bodyweight lift should create a Volume PR');
+        
+        // Verify it's a volume PR
+        $pr = PersonalRecord::where('lift_log_id', $liftLog->id)->first();
+        $this->assertEquals('volume', $pr->pr_type);
+        $this->assertEquals(10, $pr->value); // Total reps
         
         $liftLog->refresh();
-        $this->assertFalse($liftLog->is_pr);
+        $this->assertTrue($liftLog->is_pr);
+        $this->assertEquals(1, $liftLog->pr_count);
     }
 
     /** @test */

@@ -300,12 +300,14 @@ class LiftLogTableRowBuilder
             ->get();
         
         $records = [];
+        $isBodyweight = $liftLog->exercise->exercise_type === 'bodyweight';
+        $hasExtraWeight = $liftLog->liftSets->max('weight') > 0;
         
         // Group PRs by type to avoid duplicates
         $prsByType = $prs->groupBy('pr_type');
         
-        // Process 1RM PRs
-        if ($prsByType->has('one_rm')) {
+        // Process 1RM PRs (skip for bodyweight)
+        if ($prsByType->has('one_rm') && !$isBodyweight) {
             $oneRmPR = $prsByType['one_rm']->first();
             
             // Check if this is a true 1RM (from a 1 rep lift)
@@ -325,17 +327,29 @@ class LiftLogTableRowBuilder
         }
         
         // Process Volume PRs
+        // For pure bodyweight (no extra weight), show as "Total Reps"
         if ($prsByType->has('volume')) {
             $volumePR = $prsByType['volume']->first();
             
-            $records[] = [
-                'label' => 'Volume',
-                'value' => $volumePR->previous_value ? number_format($volumePR->previous_value, 0) . ' lbs' : '—',
-                'comparison' => number_format($volumePR->value, 0) . ' lbs'
-            ];
+            if ($isBodyweight && !$hasExtraWeight) {
+                // Pure bodyweight: show total reps
+                $records[] = [
+                    'label' => 'Total Reps',
+                    'value' => $volumePR->previous_value ? (int)$volumePR->previous_value . ' reps' : '—',
+                    'comparison' => (int)$volumePR->value . ' reps'
+                ];
+            } else {
+                // Weighted: show volume in lbs
+                $records[] = [
+                    'label' => 'Volume',
+                    'value' => $volumePR->previous_value ? number_format($volumePR->previous_value, 0) . ' lbs' : '—',
+                    'comparison' => number_format($volumePR->value, 0) . ' lbs'
+                ];
+            }
         }
         
         // Process Rep-Specific PRs (limit to first one to keep it clean)
+        // Only shown for weighted exercises or bodyweight with extra weight
         if ($prsByType->has('rep_specific')) {
             $repPR = $prsByType['rep_specific']->first();
             $repLabel = $repPR->rep_count . ' Rep' . ($repPR->rep_count > 1 ? 's' : '');
@@ -347,8 +361,8 @@ class LiftLogTableRowBuilder
             ];
         }
         
-        // Process Hypertrophy PRs (best at weight)
-        if ($prsByType->has('hypertrophy')) {
+        // Process Hypertrophy PRs (best at weight) - skip for bodyweight
+        if ($prsByType->has('hypertrophy') && !$isBodyweight) {
             $hypertrophyPR = $prsByType['hypertrophy']->first();
             $label = 'Best @ ' . $this->formatWeight($hypertrophyPR->weight) . ' lbs';
             
@@ -383,8 +397,12 @@ class LiftLogTableRowBuilder
             return []; // No PRs yet
         }
         
+        $isBodyweight = $liftLog->exercise->exercise_type === 'bodyweight';
+        $hasExtraWeight = $liftLog->liftSets->max('weight') > 0;
         $strategy = $liftLog->exercise->getTypeStrategy();
-        if (!$strategy->canCalculate1RM()) {
+        
+        // Skip 1RM calculation for bodyweight exercises
+        if (!$isBodyweight && !$strategy->canCalculate1RM()) {
             return [];
         }
         
@@ -393,27 +411,34 @@ class LiftLogTableRowBuilder
         // Calculate current lift's values for comparison
         $current1RM = 0;
         $currentVolume = 0;
+        $currentTotalReps = 0;
         $currentRepWeights = []; // [reps => weight]
         
         foreach ($liftLog->liftSets as $set) {
             if ($set->weight > 0 && $set->reps > 0) {
-                // Calculate 1RM
-                try {
-                    $estimated1RM = $strategy->calculate1RM($set->weight, $set->reps, $liftLog);
-                    if ($estimated1RM > $current1RM) {
-                        $current1RM = $estimated1RM;
+                // Calculate 1RM (skip for bodyweight)
+                if (!$isBodyweight) {
+                    try {
+                        $estimated1RM = $strategy->calculate1RM($set->weight, $set->reps, $liftLog);
+                        if ($estimated1RM > $current1RM) {
+                            $current1RM = $estimated1RM;
+                        }
+                    } catch (\Exception $e) {
+                        // Skip if calculation fails
                     }
-                } catch (\Exception $e) {
-                    // Skip if calculation fails
                 }
                 
                 // Calculate volume
                 $currentVolume += ($set->weight * $set->reps);
+                $currentTotalReps += $set->reps;
                 
                 // Track rep-specific weights
                 if (!isset($currentRepWeights[$set->reps]) || $set->weight > $currentRepWeights[$set->reps]) {
                     $currentRepWeights[$set->reps] = $set->weight;
                 }
+            } elseif ($isBodyweight && $set->reps > 0) {
+                // For pure bodyweight (weight = 0), still count reps
+                $currentTotalReps += $set->reps;
             }
         }
         
@@ -439,8 +464,8 @@ class LiftLogTableRowBuilder
         // Group PRs by type
         $prsByType = $currentPRs->groupBy('pr_type');
         
-        // Process 1RM PRs (only if NOT beaten by this lift)
-        if ($prsByType->has('one_rm') && !isset($beatenPRMap['one_rm'])) {
+        // Process 1RM PRs (only if NOT beaten by this lift, skip for bodyweight)
+        if (!$isBodyweight && $prsByType->has('one_rm') && !isset($beatenPRMap['one_rm'])) {
             $oneRmPR = $prsByType['one_rm']->first();
             
             // Check if the PR is a true 1RM (from a 1 rep lift)
@@ -467,18 +492,30 @@ class LiftLogTableRowBuilder
         }
         
         // Process Volume PRs (only if NOT beaten by this lift)
+        // For pure bodyweight (no extra weight), show as "Total Reps"
         if ($prsByType->has('volume') && !isset($beatenPRMap['volume'])) {
             $volumePR = $prsByType['volume']->first();
             
-            $records[] = [
-                'label' => 'Volume',
-                'value' => sprintf('%s lbs', number_format($volumePR->value, 0)),
-                'comparison' => sprintf('%s lbs', number_format($currentVolume, 0))
-            ];
+            if ($isBodyweight && !$hasExtraWeight) {
+                // Pure bodyweight: show total reps
+                $records[] = [
+                    'label' => 'Total Reps',
+                    'value' => sprintf('%d reps', (int)$volumePR->value),
+                    'comparison' => sprintf('%d reps', $currentTotalReps)
+                ];
+            } else {
+                // Weighted: show volume in lbs
+                $records[] = [
+                    'label' => 'Volume',
+                    'value' => sprintf('%s lbs', number_format($volumePR->value, 0)),
+                    'comparison' => sprintf('%s lbs', number_format($currentVolume, 0))
+                ];
+            }
         }
         
         // Process Rep-Specific PRs (only for reps in current lift, limit to 2, exclude beaten)
-        if ($prsByType->has('rep_specific')) {
+        // Only shown for weighted exercises or bodyweight with extra weight
+        if ($prsByType->has('rep_specific') && (!$isBodyweight || $hasExtraWeight)) {
             $repPRs = $prsByType['rep_specific']
                 ->filter(function ($pr) use ($currentRepWeights, $beatenPRMap) {
                     // Only show if we have this rep count in current lift AND it wasn't beaten

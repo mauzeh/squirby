@@ -473,7 +473,7 @@ class LiftLogLoggingTest extends TestCase {
     }
 
     /** @test */
-    public function bodyweight_exercises_are_not_marked_as_pr()
+    public function bodyweight_exercises_are_marked_as_pr_for_volume()
     {
         $exercise = \App\Models\Exercise::factory()->create([
             'user_id' => $this->user->id,
@@ -492,12 +492,15 @@ class LiftLogLoggingTest extends TestCase {
 
         $response = $this->post(route('lift-logs.store'), $liftLogData);
 
-        // Bodyweight exercises should NOT be marked as PR (they don't support 1RM calculation)
-        $response->assertSessionHas('is_pr', 0);
+        // Bodyweight exercises support Volume PRs (using total reps)
+        // First lift should be a Volume PR (flag value 4)
+        $response->assertSessionHas('is_pr');
+        $prFlags = session('is_pr');
+        $this->assertGreaterThan(0, $prFlags, 'First bodyweight lift should be a PR');
         
-        // Success message should NOT contain PR indicator
+        // Success message should contain PR indicator
         $successMessage = session('success');
-        $this->assertStringNotContainsString('PR!', $successMessage);
+        $this->assertStringContainsString('PR!', $successMessage);
     }
 
     /** @test */
