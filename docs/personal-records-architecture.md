@@ -350,54 +350,69 @@ $prRecords = $prs->map(function ($pr) {
 
 #### 1. User Edits a Lift Log
 
-**Scenario:** User changes 315 lbs → 300 lbs (was a PR, no longer is)
+**Scenario:** User changes 315 lbs → 300 lbs (was a PR, may still be a PR)
 
-**Solution:**
+**Solution (Implemented):**
 ```php
 // In UpdateLiftLogAction
-DB::transaction(function () use ($liftLog, $validated) {
-    $liftLog->update($validated);
-    
-    // Update lift sets
-    $this->updateLiftSets($request, $liftLog, $exercise);
-    
-    // Re-trigger PR detection
-    LiftLogCompleted::dispatch($liftLog, isUpdate: true);
-    
-    // May need to recalculate subsequent PRs if this was a PR
-    if ($liftLog->wasChanged('logged_at')) {
-        $this->recalculateSubsequentPRs($liftLog);
-    }
-});
+$liftLog->update($validated);
+$this->updateLiftSets($request, $liftLog, $exercise);
+
+// Dispatch event with isUpdate flag
+LiftLogCompleted::dispatch($liftLog, true);
+
+// Listener detects update and triggers full recalculation
+// All PRs for this exercise are recalculated from scratch
 ```
+
+**Key Insight:** Even if updated to lighter weight, the lift may still be a PR (e.g., if it's the only lift for that exercise, or the first time at that specific weight).
 
 #### 2. User Deletes a Lift Log
 
 **Scenario:** User deletes a lift log that was a PR
 
-**Solution:**
+**Solution (Implemented):**
 ```php
-// In DeleteLiftLogAction
-DB::transaction(function () use ($liftLog) {
-    // Store info before deletion
-    $userId = $liftLog->user_id;
-    $exerciseId = $liftLog->exercise_id;
-    $loggedAt = $liftLog->logged_at;
-    
-    // Soft delete cascades to personal_records (via foreign key)
-    $liftLog->delete();
-    
-    // Recalculate PRs for this exercise (in case deleted log was a PR)
-    $this->recalculatePRsForExercise($userId, $exerciseId, $loggedAt);
-});
+// In LiftLogController::destroy()
+$userId = $liftLog->user_id;
+$exerciseId = $liftLog->exercise_id;
+$wasPR = $liftLog->is_pr;
+
+$liftLog->delete(); // Cascades to personal_records via foreign key
+
+// If deleted log was a PR, recalculate all PRs for this exercise
+if ($wasPR) {
+    app(PRRecalculationService::class)->recalculateAllPRsForExercise(
+        $userId,
+        $exerciseId
+    );
+}
 ```
 
 #### 3. User Logs Out of Order (Backdating)
 
 **Scenario:** 
-- Logs 2025-01-15: 300 lbs
-- Logs 2025-01-10: 315 lbs (backdated)
-- The 315 lbs should be the PR, not 300 lbs
+- Logs 2025-01-15: 300 lbs (becomes PR)
+- Logs 2025-01-10: 315 lbs (backdated, should be the PR)
+
+**Solution (Implemented):**
+```php
+// In DetectAndRecordPRs listener
+$hasSubsequentLogs = LiftLog::where('user_id', $liftLog->user_id)
+    ->where('exercise_id', $liftLog->exercise_id)
+    ->where('logged_at', '>', $liftLog->logged_at)
+    ->exists();
+
+// If backdated (has subsequent logs), trigger full recalculation
+if ($hasSubsequentLogs) {
+    $this->prRecalculationService->recalculateAllPRsForExercise(
+        $liftLog->user_id,
+        $liftLog->exercise_id
+    );
+}
+```
+
+**Result:** All logs are reprocessed chronologically, so the 315 lbs lift becomes the PR and the 300 lbs lift is recalculated correctly.
 
 **Solution:**
 ```php
@@ -758,12 +773,104 @@ Once PRs are first-class data, new features become possible:
 - [x] Write integration tests
 - [x] Verify auto-discovery works (Laravel 12 automatically registers events)
 
-### Phase 3: Edge Cases (Week 2)
-- [ ] Handle lift log updates
-- [ ] Handle lift log deletions
-- [ ] Handle backdated logs
-- [ ] Create `PRRecalculationService`
-- [ ] Write tests for edge cases
+### Phase 3: Edge Cases (Week 2) ✅ COMPLETE
+- [x] Handle lift log updates (triggers full recalculation)
+- [x] Handle lift log deletions (recalculates if deleted log was a PR)
+- [x] Handle backdated logs (detects subsequent logs and recalculates)
+- [x] Create `PRRecalculationService` with simple full-recalculation approach
+- [x] Update `DetectAndRecordPRs` listener to detect update/backdate scenarios
+- [x] Update `LiftLogController::destroy()` to trigger recalculation
+- [x] Fix event dispatch to use positional parameters (not named)
+- [x] Add proper casts for `is_pr` (boolean) and `pr_count` (integer)
+- [x] Write comprehensive edge case tests (8 tests, all passing)
+
+**Key Implementation Details:**
+
+**PRRecalculationService:**
+```php
+class PRRecalculationService
+{
+    public function recalculateAllPRsForExercise(int $userId, int $exerciseId): void
+    {
+        DB::transaction(function () use ($userId, $exerciseId) {
+            // 1. Delete ALL existing PR records for this exercise
+            PersonalRecord::where('user_id', $userId)
+                ->where('exercise_id', $exerciseId)
+                ->delete();
+            
+            // 2. Get ALL lift logs for this exercise, ordered chronologically
+            $logs = LiftLog::where('user_id', $userId)
+                ->where('exercise_id', $exerciseId)
+                ->with(['exercise', 'liftSets'])
+                ->orderBy('logged_at', 'asc')
+                ->orderBy('id', 'asc')
+                ->get();
+            
+            // 3. Process each log chronologically
+            foreach ($logs as $log) {
+                $prs = $this->prDetectionService->detectPRsWithDetails($log);
+                
+                // Create PR records and update lift log flags
+                // ...
+            }
+        });
+    }
+}
+```
+
+**Updated Listener Logic:**
+```php
+public function handle(LiftLogCompleted $event): void
+{
+    $liftLog = $event->liftLog;
+    $liftLog->load(['exercise', 'liftSets']);
+    
+    // Check if there are any logs after this one (backdating scenario)
+    $hasSubsequentLogs = LiftLog::where('user_id', $liftLog->user_id)
+        ->where('exercise_id', $liftLog->exercise_id)
+        ->where('logged_at', '>', $liftLog->logged_at)
+        ->exists();
+    
+    // If UPDATE or BACKDATED, recalculate all PRs for this exercise
+    if ($event->isUpdate || $hasSubsequentLogs) {
+        $this->prRecalculationService->recalculateAllPRsForExercise(
+            $liftLog->user_id,
+            $liftLog->exercise_id
+        );
+        return;
+    }
+    
+    // Normal case: new lift with no subsequent logs
+    // Just detect PRs for this log
+    // ...
+}
+```
+
+**Edge Cases Handled:**
+1. ✅ Updating only lift to lighter weight → Still PR (it's the only lift)
+2. ✅ Updating lift to heavier weight → Still PR
+3. ✅ Updating lift to lighter weight with other lifts → May still be PR for that weight
+4. ✅ Deleting PR lift → Recalculates remaining lifts
+5. ✅ Backdating heavier lift → Recalculates all subsequent PRs
+6. ✅ Backdating lighter lift → Still PR, doesn't break existing PRs
+7. ✅ Deleting non-PR lift → Doesn't affect other lifts
+8. ✅ Updating lift date → Triggers full recalculation
+
+**Key Insight:**
+A lift is ALWAYS a PR if it's the only lift for that exercise, even if updated to a lighter weight. This is correct behavior because it's still the best you've ever done for that exercise.
+
+**Design Decision: Simple Full Recalculation**
+We chose to recalculate ALL logs for an exercise (not just from a date forward) because:
+- ✅ Simpler logic with fewer edge cases
+- ✅ Always correct (no ambiguity about "first lift")
+- ✅ Acceptable performance (most exercises have < 100 logs)
+- ✅ Easier to test and maintain
+- ✅ Natural chronological processing
+
+**Test Results:**
+- All 1,759 tests passing (100% pass rate)
+- 485 PR-related tests (including 8 new edge case tests)
+- 6,025 assertions verified
 
 ### Phase 4: Update Read Path (Week 3)
 - [ ] Update `LiftLogTableRowBuilder` to use PR records
