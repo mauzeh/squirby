@@ -687,4 +687,52 @@ class PRInfoDisplayTest extends TestCase
         // Should NOT see "Best @ 200 lbs" since this is the first time at this weight
         $response->assertDontSee('Best @ 200 lbs');
     }
+
+    /** @test */
+    public function pr_lift_shows_both_beaten_and_current_records_tables()
+    {
+        // Create a previous lift log with 5 reps
+        $oldLog = LiftLog::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $this->exercise->id,
+            'logged_at' => Carbon::now()->subDays(7)
+        ]);
+        $oldLog->liftSets()->create(['weight' => 180, 'reps' => 5, 'notes' => '']);
+        $oldLog->liftSets()->create(['weight' => 180, 'reps' => 5, 'notes' => '']);
+        $oldLog->liftSets()->create(['weight' => 180, 'reps' => 5, 'notes' => '']);
+        $this->triggerPRDetection($oldLog);
+        
+        // Create a new PR lift log that beats the 5-rep record but not volume
+        // 200 lbs x 5 reps = 1000 lbs (less than previous 2700 lbs volume)
+        $newLog = LiftLog::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $this->exercise->id,
+            'logged_at' => Carbon::now()
+        ]);
+        $newLog->liftSets()->create(['weight' => 200, 'reps' => 5, 'notes' => '']);
+        $this->triggerPRDetection($newLog);
+        
+        $response = $this->actingAs($this->user)->get(route('mobile-entry.lifts'));
+        
+        $response->assertStatus(200);
+        
+        // Should see PR badge
+        $response->assertSee('🏆 PR');
+        
+        // Should see "Records beaten" table with the 5-rep and Est 1RM PRs
+        $response->assertSee('5 Reps');
+        $response->assertSee('Est 1RM');
+        $response->assertSee('180'); // Previous 5-rep value
+        $response->assertSee('200'); // New 5-rep value
+        
+        // Should also see "Current records" table with Volume (not beaten)
+        $response->assertSee('Volume');
+        $response->assertSee('2,700'); // Previous volume we didn't beat
+        $response->assertSee('1,000'); // Current volume
+        
+        // Should see both "Previous" (for beaten records) and "Record" (for current records) headers
+        $response->assertSee('Previous');
+        $response->assertSee('Record');
+    }
 }
+

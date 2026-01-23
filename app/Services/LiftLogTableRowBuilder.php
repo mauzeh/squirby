@@ -208,19 +208,18 @@ class LiftLogTableRowBuilder
                 $prRecords = $this->getPRRecordsForBeatenPRs($liftLog, $config);
                 $currentRecords = $this->getCurrentRecordsTable($liftLog, $config);
                 
-                // First table: Records beaten
+                // First table: Records beaten (no footer link)
                 if (!empty($prRecords)) {
-                    $builder = (new PRRecordsTableComponentBuilder('Records beaten'))
+                    $builder = (new PRRecordsTableComponentBuilder('Records beaten:'))
                         ->records($prRecords)
-                        ->beaten()
-                        ->footerLink($viewLogsUrl, 'View history');
+                        ->beaten();
                     
                     $components[] = $builder->build();
                 }
                 
-                // Second table: Current records (not beaten)
+                // Second table: Current records (with footer link)
                 if (!empty($currentRecords)) {
-                    $builder = (new PRRecordsTableComponentBuilder('Current records'))
+                    $builder = (new PRRecordsTableComponentBuilder('Not beaten:'))
                         ->records($currentRecords)
                         ->current()
                         ->footerLink($viewLogsUrl, 'View history');
@@ -231,7 +230,7 @@ class LiftLogTableRowBuilder
                 // For non-PRs, show current records
                 $currentRecords = $this->getCurrentRecordsTable($liftLog, $config);
                 if (!empty($currentRecords)) {
-                    $builder = (new PRRecordsTableComponentBuilder('Current records'))
+                    $builder = (new PRRecordsTableComponentBuilder('History:'))
                         ->records($currentRecords)
                         ->current()
                         ->footerLink($viewLogsUrl, 'View history');

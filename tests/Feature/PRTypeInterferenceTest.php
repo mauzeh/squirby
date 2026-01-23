@@ -266,11 +266,12 @@ class PRTypeInterferenceTest extends TestCase
     }
 
     /** @test */
-    public function high_rep_ranges_above_10_do_not_support_1rm_or_rep_specific_prs()
+    public function high_rep_ranges_above_10_calculate_1rm_capped_at_10_reps()
     {
         $exercise = Exercise::factory()->create(['user_id' => $this->user->id]);
 
         // First session: 100 lbs × 15 reps × 1 set = 1500 lbs volume
+        // Est 1RM will be calculated as if it were 10 reps (capped)
         $firstLog = LiftLog::factory()->create([
             'user_id' => $this->user->id,
             'exercise_id' => $exercise->id,
@@ -279,10 +280,9 @@ class PRTypeInterferenceTest extends TestCase
         $firstLog->liftSets()->create(['weight' => 100, 'reps' => 15]);
 
         // Second session: 110 lbs × 15 reps × 1 set = 1650 lbs volume
-        // Higher weight and volume, but >10 reps means:
-        // - No 1RM calculation (formulas unreliable for high reps)
-        // - No rep-specific PR (only applies to 1-10 reps)
-        // - Should still get volume PR
+        // Higher weight and volume
+        // 1RM calculation will be capped at 10 reps due to diminishing returns
+        // Should get: Volume PR, 1RM PR (capped calculation), but NO rep-specific PR (>10 reps)
         $liftLogData = [
             'exercise_id' => $exercise->id,
             'weight' => 110,
@@ -296,13 +296,13 @@ class PRTypeInterferenceTest extends TestCase
 
         $prFlags = session('is_pr');
         
-        // Should be a PR (volume only)
+        // Should be a PR
         $this->assertTrue($prFlags > 0);
         
-        // Should have VOLUME but NOT ONE_RM or REP_SPECIFIC (because 15 reps > 10)
+        // Should have VOLUME and ONE_RM (capped at 10 reps), but NOT REP_SPECIFIC (because 15 reps > 10)
         $this->assertTrue(PRType::VOLUME->isIn($prFlags));
-        $this->assertFalse(PRType::ONE_RM->isIn($prFlags));
-        $this->assertFalse(PRType::REP_SPECIFIC->isIn($prFlags));
+        $this->assertTrue(PRType::ONE_RM->isIn($prFlags)); // Now calculated with cap
+        $this->assertFalse(PRType::REP_SPECIFIC->isIn($prFlags)); // Still not tracked for >10 reps
     }
 
     /** @test */

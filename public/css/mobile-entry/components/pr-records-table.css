@@ -30,6 +30,13 @@
     width: 40%;
 }
 
+.pr-record-title {
+    font-weight: 600;
+    color: #ffffff;
+    font-size: 1.05em;
+    text-align: left;
+}
+
 .pr-record-value {
     padding: 8px 0 8px 12px;
     color: #ffffff;
@@ -78,7 +85,15 @@
 }
 
 .pr-records-table.pr-records-table--beaten .pr-record-value {
+    color: #90caf9;
+    font-weight: 400;
+    font-style: italic;
+}
+
+.pr-records-table.pr-records-table--beaten .pr-record-comparison {
     color: #fb923c;
+    font-weight: 700;
+    font-style: normal;
 }
 
 .pr-records-table.pr-records-table--beaten .pr-record-footer-link {

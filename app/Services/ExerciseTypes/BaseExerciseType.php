@@ -95,13 +95,11 @@ abstract class BaseExerciseType implements ExerciseTypeInterface
             return $weight;
         }
         
-        // 1RM formulas are unreliable above 10 reps
-        // High rep sets test endurance, not maximal strength
-        if ($reps > 10) {
-            throw new \InvalidArgumentException('1RM calculation not supported for sets above 10 reps');
-        }
+        // 1RM formulas are unreliable above 10 reps due to diminishing returns
+        // Cap at 10 reps for calculation purposes
+        $effectiveReps = min($reps, 10);
         
-        return $weight * (1 + (0.0333 * $reps));
+        return $weight * (1 + (0.0333 * $effectiveReps));
     }
     
     /**
