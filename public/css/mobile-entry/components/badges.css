@@ -17,13 +17,18 @@
 }
 
 .table-badge {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     color: white;
-    padding: 4px 8px;
+    padding: 4px 10px;
     border-radius: 12px;
     font-size: 0.85em;
     margin-right: 8px;
     margin-bottom: 4px;
+    min-height: 33px;
+    font-size: 1em;
+    box-sizing: border-box;
 }
 
 .table-badge--emphasized {
