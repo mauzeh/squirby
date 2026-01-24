@@ -226,7 +226,7 @@ able Component - Tabular CRUD list optimized for narrow screens */
 }
 
 .cell-title {
-    font-size: 1em;
+    font-size: 1.25em;
     font-weight: bold;
     color: var(--text-primary);
 }
@@ -521,10 +521,6 @@ button.btn-table-delete:disabled {
         padding-left: var(--spacing-md);
     }
 
-    .cell-title {
-        font-size: 0.95em;
-    }
-
     .cell-content {
         font-size: 0.85em;
     }
@@ -544,10 +540,6 @@ button.btn-table-delete:disabled {
         padding: var(--spacing-md) var(--spacing-sm);
         padding-left: var(--spacing-sm);
         gap: 0;
-    }
-
-    .cell-title {
-        font-size: 0.9em;
     }
 
     .cell-content {
