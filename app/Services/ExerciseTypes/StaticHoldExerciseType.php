@@ -499,4 +499,231 @@ class StaticHoldExerciseType extends BaseExerciseType
             'band_color' => null, // not applicable for static holds
         ];
     }
+    
+    // ========================================================================
+    // PR DETECTION METHODS
+    // ========================================================================
+    
+    /**
+     * Get supported PR types for static hold exercises
+     * 
+     * Static hold exercises support:
+     * - TIME: Longest single hold duration (best hold regardless of weight)
+     * - REP_SPECIFIC: Best duration at specific weight (for weighted holds)
+     * 
+     * Note: We use REP_SPECIFIC to track "best duration at X lbs" where rep_count
+     * stores the weight and value stores the duration. This reuses existing PR
+     * infrastructure while maintaining semantic meaning for static holds.
+     */
+    public function getSupportedPRTypes(): array
+    {
+        return [
+            \App\Enums\PRType::TIME,
+            \App\Enums\PRType::REP_SPECIFIC,
+        ];
+    }
+    
+    /**
+     * Calculate current metrics from a lift log
+     * 
+     * For static hold exercises:
+     * - best_hold: Longest single hold duration (max reps field = duration in seconds)
+     * - weighted_holds: Map of weight => best duration at that weight
+     */
+    public function calculateCurrentMetrics(LiftLog $liftLog): array
+    {
+        $bestHold = 0;
+        $weightedHolds = []; // [weight => duration]
+        
+        foreach ($liftLog->liftSets as $set) {
+            if ($set->reps > 0) { // reps = duration in seconds
+                // Track best overall hold
+                $bestHold = max($bestHold, $set->reps);
+                
+                // Track best hold at each weight (including bodyweight = 0)
+                $weight = $set->weight ?? 0;
+                if (!isset($weightedHolds[$weight]) || $set->reps > $weightedHolds[$weight]) {
+                    $weightedHolds[$weight] = $set->reps;
+                }
+            }
+        }
+        
+        return [
+            'best_hold' => $bestHold,
+            'weighted_holds' => $weightedHolds,
+        ];
+    }
+    
+    /**
+     * Compare current metrics to previous logs and detect PRs
+     * 
+     * For static holds:
+     * - TIME PR: Longest hold duration (regardless of weight)
+     * - REP_SPECIFIC PR: Best duration at specific weight
+     */
+    public function compareToPrevious(array $currentMetrics, \Illuminate\Database\Eloquent\Collection $previousLogs, LiftLog $currentLog): array
+    {
+        $prs = [];
+        
+        // If no previous logs, all non-zero metrics are PRs
+        if ($previousLogs->isEmpty()) {
+            if ($currentMetrics['best_hold'] > 0) {
+                $prs[] = [
+                    'type' => 'time',
+                    'value' => $currentMetrics['best_hold'],
+                    'previous_value' => null,
+                    'previous_lift_log_id' => null,
+                ];
+            }
+            
+            // Create rep-specific PRs for each weight
+            foreach ($currentMetrics['weighted_holds'] as $weight => $duration) {
+                if ($duration > 0) {
+                    $prs[] = [
+                        'type' => 'rep_specific',
+                        'rep_count' => $weight, // Store weight in rep_count field
+                        'value' => $duration,
+                        'previous_value' => null,
+                        'previous_lift_log_id' => null,
+                    ];
+                }
+            }
+            
+            return $prs;
+        }
+        
+        // Check TIME PR (longest hold)
+        $bestTimeResult = $this->getBestHoldDuration($previousLogs);
+        if ($currentMetrics['best_hold'] > $bestTimeResult['value']) {
+            $prs[] = [
+                'type' => 'time',
+                'value' => $currentMetrics['best_hold'],
+                'previous_value' => $bestTimeResult['value'],
+                'previous_lift_log_id' => $bestTimeResult['lift_log_id'],
+            ];
+        }
+        
+        // Check REP_SPECIFIC PRs (best duration at each weight)
+        foreach ($currentMetrics['weighted_holds'] as $weight => $duration) {
+            $previousBestResult = $this->getBestDurationAtWeight($previousLogs, $weight);
+            if ($duration > $previousBestResult['duration']) {
+                $prs[] = [
+                    'type' => 'rep_specific',
+                    'rep_count' => $weight, // Store weight in rep_count field
+                    'value' => $duration,
+                    'previous_value' => $previousBestResult['duration'],
+                    'previous_lift_log_id' => $previousBestResult['lift_log_id'],
+                ];
+            }
+        }
+        
+        return $prs;
+    }
+    
+    /**
+     * Format PR display for beaten PRs table
+     */
+    public function formatPRDisplay(\App\Models\PersonalRecord $pr, LiftLog $liftLog): array
+    {
+        return match($pr->pr_type) {
+            'time' => [
+                'label' => 'Best Hold',
+                'value' => $pr->previous_value ? $this->formatDuration((int)$pr->previous_value) : '—',
+                'comparison' => $this->formatDuration((int)$pr->value),
+            ],
+            'rep_specific' => [
+                'label' => $this->formatWeightLabel($pr->rep_count),
+                'value' => $pr->previous_value ? $this->formatDuration((int)$pr->previous_value) : '—',
+                'comparison' => $this->formatDuration((int)$pr->value),
+            ],
+            default => [
+                'label' => ucfirst(str_replace('_', ' ', $pr->pr_type)),
+                'value' => $pr->previous_value ? (string)$pr->previous_value : '—',
+                'comparison' => (string)$pr->value,
+            ],
+        };
+    }
+    
+    /**
+     * Format PR display for current records table
+     */
+    public function formatCurrentPRDisplay(\App\Models\PersonalRecord $pr, LiftLog $liftLog, bool $isCurrent): array
+    {
+        return match($pr->pr_type) {
+            'time' => [
+                'label' => 'Best Hold',
+                'value' => $this->formatDuration((int)$pr->value),
+                'is_current' => $isCurrent,
+            ],
+            'rep_specific' => [
+                'label' => $this->formatWeightLabel($pr->rep_count),
+                'value' => $this->formatDuration((int)$pr->value),
+                'is_current' => $isCurrent,
+            ],
+            default => [
+                'label' => ucfirst(str_replace('_', ' ', $pr->pr_type)),
+                'value' => (string)$pr->value,
+                'is_current' => $isCurrent,
+            ],
+        };
+    }
+    
+    // ========================================================================
+    // HELPER METHODS
+    // ========================================================================
+    
+    /**
+     * Get best hold duration from previous logs (for TIME PR)
+     */
+    private function getBestHoldDuration(\Illuminate\Database\Eloquent\Collection $logs): array
+    {
+        $bestDuration = 0;
+        $liftLogId = null;
+        
+        foreach ($logs as $log) {
+            foreach ($log->liftSets as $set) {
+                if ($set->reps > $bestDuration) {
+                    $bestDuration = $set->reps;
+                    $liftLogId = $log->id;
+                }
+            }
+        }
+        
+        return ['value' => $bestDuration, 'lift_log_id' => $liftLogId];
+    }
+    
+    /**
+     * Get best duration at specific weight from previous logs
+     */
+    private function getBestDurationAtWeight(\Illuminate\Database\Eloquent\Collection $logs, float $targetWeight): array
+    {
+        $bestDuration = 0;
+        $liftLogId = null;
+        $tolerance = 0.5; // Weight tolerance for matching
+        
+        foreach ($logs as $log) {
+            foreach ($log->liftSets as $set) {
+                $setWeight = $set->weight ?? 0;
+                if (abs($setWeight - $targetWeight) <= $tolerance && $set->reps > $bestDuration) {
+                    $bestDuration = $set->reps;
+                    $liftLogId = $log->id;
+                }
+            }
+        }
+        
+        return ['duration' => $bestDuration, 'lift_log_id' => $liftLogId];
+    }
+    
+    /**
+     * Format weight label for PR display
+     */
+    private function formatWeightLabel(float $weight): string
+    {
+        if ($weight == 0) {
+            return 'Bodyweight';
+        }
+        
+        $formattedWeight = $weight == floor($weight) ? number_format($weight, 0) : number_format($weight, 1);
+        return "Best @ {$formattedWeight} lbs";
+    }
 }
