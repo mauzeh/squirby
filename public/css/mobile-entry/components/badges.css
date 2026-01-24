@@ -8,6 +8,14 @@
     padding-top: var(--spacing-sm);
 }
 
+/* When badges are direct children of row, make them span full width */
+.component-table-row > .table-badges {
+    width: 100%;
+    margin-top: 0;
+    padding-top: 0;
+    order: 10; /* Ensure badges appear after cell and actions */
+}
+
 .table-badge {
     display: inline-block;
     color: white;

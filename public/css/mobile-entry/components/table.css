@@ -15,6 +15,7 @@ able Component - Tabular CRUD list optimized for narrow screens */
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
+    flex-wrap: wrap;
     padding: var(--spacing-md);
     background-color: var(--tertiary-bg);
     border-bottom: 1px solid var(--secondary-bg);

@@ -32,18 +32,6 @@
                 @if(isset($row['line2']) && !empty($row['line2']))
                 <div class="cell-content">{!! $row['line2'] !!}</div>
                 @endif
-                @if(isset($row['badges']) && !empty($row['badges']))
-                <div class="table-badges">
-                    @foreach($row['badges'] as $badge)
-                        @php
-                            $colorClass = isset($badge['colorClass']) ? 'table-badge--' . $badge['colorClass'] : '';
-                            $emphasizedClass = (isset($badge['emphasized']) && $badge['emphasized']) ? 'table-badge--emphasized' : '';
-                            $customStyle = isset($badge['customColor']) ? 'background-color: ' . $badge['customColor'] . ';' : '';
-                        @endphp
-                        <span class="table-badge {{ $colorClass }} {{ $emphasizedClass }}" @if($customStyle) style="{{ $customStyle }}" @endif>{{ $badge['text'] }}</span>
-                    @endforeach
-                </div>
-                @endif
                 @if(isset($row['messages']) && !empty($row['messages']))
                     @foreach($row['messages'] as $message)
                     <div class="component-message component-message--{{ $message['type'] }}">
@@ -114,6 +102,18 @@
                     @endif
                 @endif
             </div>
+            @if(isset($row['badges']) && !empty($row['badges']))
+            <div class="table-badges">
+                @foreach($row['badges'] as $badge)
+                    @php
+                        $colorClass = isset($badge['colorClass']) ? 'table-badge--' . $badge['colorClass'] : '';
+                        $emphasizedClass = (isset($badge['emphasized']) && $badge['emphasized']) ? 'table-badge--emphasized' : '';
+                        $customStyle = isset($badge['customColor']) ? 'background-color: ' . $badge['customColor'] . ';' : '';
+                    @endphp
+                    <span class="table-badge {{ $colorClass }} {{ $emphasizedClass }}" @if($customStyle) style="{{ $customStyle }}" @endif>{{ $badge['text'] }}</span>
+                @endforeach
+            </div>
+            @endif
         </div>
         
         {{-- Sub-items --}}
