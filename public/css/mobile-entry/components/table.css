@@ -543,6 +543,7 @@ button.btn-table-delete:disabled {
     .component-table-subitem {
         padding: var(--spacing-md) var(--spacing-sm);
         padding-left: var(--spacing-sm);
+        gap: 0;
     }
 
     .cell-title {
