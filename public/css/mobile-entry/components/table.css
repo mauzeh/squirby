@@ -482,15 +482,6 @@ button.btn-table-delete:disabled {
     }
 }
 
-/* PR Badge Styling */
-.table-badge--pr {
-    background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
-    color: white;
-    font-weight: 700;
-    box-shadow: 0 2px 8px rgba(249, 115, 22, 0.3);
-    animation: pr-pulse 2s ease-in-out infinite;
-}
-
 @keyframes pr-pulse {
     0%, 100% {
         box-shadow: 0 2px 8px rgba(249, 115, 22, 0.3);
