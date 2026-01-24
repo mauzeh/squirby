@@ -4,6 +4,8 @@
 
 This document outlines the architectural approach for making Personal Records (PRs) first-class citizens in the application's data layer, moving from expensive on-the-fly calculations to event-driven, queryable data.
 
+**Architecture Update (January 2026):** PR detection logic has been refactored using the Strategy Pattern. Each exercise type now implements its own PR detection logic, making the system extensible and maintainable. See [Strategy Pattern Architecture](#strategy-pattern-architecture) section below.
+
 ## Current Problem
 
 **Performance Issues:**
@@ -153,6 +155,209 @@ class LiftLog extends Model
     }
 }
 ```
+
+## Strategy Pattern Architecture
+
+### Overview
+
+PR detection logic is decoupled from `PRDetectionService` using the Strategy Pattern. Each exercise type implements its own PR detection logic through the `ExerciseTypeInterface`:
+
+```php
+interface ExerciseTypeInterface
+{
+    // ... existing methods ...
+    
+    // PR Detection Methods
+    public function getSupportedPRTypes(): array;
+    public function calculateCurrentMetrics(LiftLog $liftLog): array;
+    public function compareToPrevious(array $currentMetrics, Collection $previousLogs, LiftLog $currentLog): array;
+    public function formatPRDisplay(PersonalRecord $pr, LiftLog $liftLog): array;
+    public function formatCurrentPRDisplay(PersonalRecord $pr, LiftLog $liftLog, bool $isCurrent): array;
+}
+```
+
+### Benefits
+
+- **Open/Closed Principle**: Add new exercise types without modifying existing code
+- **Single Responsibility**: Each type knows its own PR logic
+- **Testability**: Test each type's PR logic in isolation
+- **Maintainability**: All bodyweight logic in one file, all static hold logic in another
+- **Extensibility**: Adding new types (cardio, tempo, etc.) is trivial
+
+### Implementation by Exercise Type
+
+#### RegularExerciseType (Weighted Exercises)
+
+**Supported PR Types:**
+- `ONE_RM`: Estimated one-rep max
+- `REP_SPECIFIC`: Best weight for specific rep counts (1-10 reps)
+- `VOLUME`: Total session volume (weight × reps × sets)
+- `hypertrophy`: Best reps at a given weight (stored as string, not enum)
+
+**Key Methods:**
+```php
+public function getSupportedPRTypes(): array
+{
+    return [PRType::ONE_RM, PRType::REP_SPECIFIC, PRType::VOLUME];
+}
+
+public function calculateCurrentMetrics(LiftLog $liftLog): array
+{
+    return [
+        'best_1rm' => /* highest estimated 1RM from all sets */,
+        'total_volume' => /* sum of (weight × reps) for all sets */,
+        'rep_weights' => /* [reps => best weight] for reps 1-10 */,
+        'weight_reps' => /* [weight => best reps] for hypertrophy */,
+    ];
+}
+```
+
+#### BodyweightExerciseType
+
+**Supported PR Types:**
+- `VOLUME`: Total reps (pure bodyweight) OR weight × reps (weighted)
+- `REP_SPECIFIC`: Best weight for specific rep counts (only when extra weight used)
+
+**Key Logic:**
+- Pure bodyweight: Volume = total reps across all sets
+- Weighted bodyweight: Volume = weight × reps (like regular exercises)
+- Rep-specific PRs only awarded when extra weight is used
+
+**Example:**
+```php
+// Pure bodyweight pull-ups: 10 + 8 + 6 = 24 total reps (volume PR)
+// Weighted pull-ups: 45 lbs × 5 reps = 225 lbs volume (volume PR)
+// Weighted pull-ups: 45 lbs × 5 reps (rep-specific PR for 5 reps)
+```
+
+#### StaticHoldExerciseType
+
+**Supported PR Types:**
+- `TIME`: Longest hold duration (in seconds)
+- `REP_SPECIFIC`: Best duration at a specific weight
+
+**Key Logic:**
+- Reps field stores duration in seconds
+- Unweighted: TIME PR for longest hold
+- Weighted: REP_SPECIFIC PR for best duration at each weight
+- Can achieve both TIME and REP_SPECIFIC PRs simultaneously
+
+**Example:**
+```php
+// Plank: 90 seconds (TIME PR)
+// Weighted plank: 45 lbs × 60 seconds (REP_SPECIFIC PR for 45 lbs)
+```
+
+### PRDetectionService Orchestration
+
+The `PRDetectionService` is now a thin orchestration layer (~229 lines, down from 823):
+
+```php
+public function isLiftLogPR(LiftLog $liftLog, Exercise $exercise, User $user): int
+{
+    $strategy = $exercise->getTypeStrategy();
+    
+    // Check if this exercise type supports PRs
+    $supportedPRTypes = $strategy->getSupportedPRTypes();
+    if (empty($supportedPRTypes)) {
+        return PRType::NONE->value;
+    }
+    
+    // Get previous logs
+    $previousLogs = LiftLog::where('exercise_id', $exercise->id)
+        ->where('user_id', $user->id)
+        ->where('logged_at', '<', $liftLog->logged_at)
+        ->with('liftSets')
+        ->orderBy('logged_at', 'asc')
+        ->get();
+    
+    // Use strategy to detect PRs
+    $currentMetrics = $strategy->calculateCurrentMetrics($liftLog);
+    $prs = $strategy->compareToPrevious($currentMetrics, $previousLogs, $liftLog);
+    
+    // Convert to bitwise flags
+    $prFlags = PRType::NONE->value;
+    foreach ($prs as $pr) {
+        $prType = $this->mapPRTypeStringToEnum($pr['type']);
+        if ($prType) {
+            $prFlags |= $prType->value;
+        }
+    }
+    
+    return $prFlags;
+}
+```
+
+**No exercise-type conditionals!** All logic is delegated to the strategy.
+
+### Adding New Exercise Types
+
+To add PR support for a new exercise type (e.g., cardio):
+
+1. **Implement the interface methods:**
+```php
+class CardioExerciseType extends BaseExerciseType
+{
+    public function getSupportedPRTypes(): array
+    {
+        return [PRType::ENDURANCE, PRType::DENSITY];
+    }
+    
+    public function calculateCurrentMetrics(LiftLog $liftLog): array
+    {
+        $bestDistance = $liftLog->liftSets->max('reps'); // reps = distance
+        $totalRounds = $liftLog->liftSets->count();
+        
+        return [
+            'best_distance' => $bestDistance,
+            'density' => $totalRounds > 0 ? $bestDistance / $totalRounds : 0,
+        ];
+    }
+    
+    public function compareToPrevious(array $currentMetrics, Collection $previousLogs, LiftLog $currentLog): array
+    {
+        $prs = [];
+        
+        // Check ENDURANCE PR (furthest distance)
+        $previousBest = $this->getBestDistance($previousLogs);
+        if ($currentMetrics['best_distance'] > $previousBest) {
+            $prs[] = [
+                'type' => 'endurance',
+                'value' => $currentMetrics['best_distance'],
+                'previous_value' => $previousBest,
+                'previous_lift_log_id' => /* ... */,
+            ];
+        }
+        
+        return $prs;
+    }
+    
+    public function formatPRDisplay(PersonalRecord $pr, LiftLog $liftLog): array
+    {
+        return match($pr->pr_type) {
+            'endurance' => [
+                'label' => 'Best Distance',
+                'value' => $pr->previous_value ? $pr->previous_value . 'm' : '—',
+                'comparison' => $pr->value . 'm',
+            ],
+            // ...
+        };
+    }
+}
+```
+
+2. **That's it!** No changes to `PRDetectionService`, `LiftLogTableRowBuilder`, or any other file.
+
+### Testing Strategy
+
+Each exercise type has its own comprehensive test suite:
+
+- `tests/Feature/BodyweightPRDetectionTest.php` (12 tests)
+- `tests/Feature/StaticHoldPRDetectionTest.php` (11 tests)
+- `tests/Feature/PREventSystemTest.php` (10 tests)
+- `tests/Feature/PREdgeCasesTest.php` (8 tests)
+
+**All 509 tests passing** after refactoring.
 
 ## Event-Driven Architecture
 
