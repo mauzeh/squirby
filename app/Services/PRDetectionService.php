@@ -522,6 +522,76 @@ class PRDetectionService
     {
         $exercise = $liftLog->exercise;
         $strategy = $exercise->getTypeStrategy();
+        
+        // Check if this exercise type supports PRs
+        $supportedPRTypes = $strategy->getSupportedPRTypes();
+        if (empty($supportedPRTypes)) {
+            return [];
+        }
+        
+        // Get all previous lift logs for this exercise (before this one)
+        $previousLogs = LiftLog::where('exercise_id', $exercise->id)
+            ->where('user_id', $liftLog->user_id)
+            ->where('logged_at', '<', $liftLog->logged_at)
+            ->with('liftSets')
+            ->orderBy('logged_at', 'asc')
+            ->get();
+        
+        // Use strategy to calculate current metrics and compare to previous
+        $currentMetrics = $strategy->calculateCurrentMetrics($liftLog);
+        $prs = $strategy->compareToPrevious($currentMetrics, $previousLogs, $liftLog);
+        
+        // Enrich PRs with previous_pr_id references
+        return $this->enrichPRsWithPreviousPRIds($prs, $liftLog);
+    }
+    
+    /**
+     * Enrich PR records with previous_pr_id references
+     * 
+     * @param array $prs Array of PR records from strategy
+     * @param LiftLog $liftLog The current lift log
+     * @return array Enriched PR records with previous_pr_id set
+     */
+    private function enrichPRsWithPreviousPRIds(array $prs, LiftLog $liftLog): array
+    {
+        $enrichedPRs = [];
+        
+        foreach ($prs as $pr) {
+            $previousPRId = null;
+            
+            // Find the PersonalRecord ID for the previous PR
+            if (isset($pr['previous_lift_log_id']) && $pr['previous_lift_log_id']) {
+                $query = \App\Models\PersonalRecord::where('lift_log_id', $pr['previous_lift_log_id'])
+                    ->where('pr_type', $pr['type']);
+                
+                // Add type-specific filters
+                if ($pr['type'] === 'rep_specific' && isset($pr['rep_count'])) {
+                    $query->where('rep_count', $pr['rep_count']);
+                } elseif ($pr['type'] === 'hypertrophy' && isset($pr['weight'])) {
+                    $query->where('weight', $pr['weight']);
+                }
+                
+                $previousPR = $query->first();
+                $previousPRId = $previousPR?->id;
+            }
+            
+            $enrichedPRs[] = array_merge($pr, [
+                'previous_pr_id' => $previousPRId,
+            ]);
+        }
+        
+        return $enrichedPRs;
+    }
+    
+    /**
+     * DEPRECATED: Old detectPRsWithDetails implementation
+     * Kept temporarily for bodyweight exercises until Phase 4 migration
+     * TODO: Remove after Phase 4 complete
+     */
+    private function detectPRsWithDetailsLegacy(LiftLog $liftLog): array
+    {
+        $exercise = $liftLog->exercise;
+        $strategy = $exercise->getTypeStrategy();
         $isBodyweight = $exercise->exercise_type === 'bodyweight';
         
         // Skip exercises that don't support PRs
