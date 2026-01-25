@@ -512,18 +512,16 @@ class StaticHoldExerciseType extends BaseExerciseType
      * Get supported PR types for static hold exercises
      * 
      * Static hold exercises support:
-     * - TIME: Longest single hold duration (best hold regardless of weight)
-     * - REP_SPECIFIC: Best duration at specific weight (for weighted holds)
+     * - TIME: Longest single hold duration
+     * - DENSITY: Most sets at a specific duration
      * 
-     * Note: We use REP_SPECIFIC to track "best duration at X lbs" where rep_count
-     * stores the weight and value stores the duration. This reuses existing PR
-     * infrastructure while maintaining semantic meaning for static holds.
+     * Note: Static holds are always bodyweight, so no weight-specific PRs
      */
     public function getSupportedPRTypes(): array
     {
         return [
             \App\Enums\PRType::TIME,
-            \App\Enums\PRType::REP_SPECIFIC,
+            \App\Enums\PRType::DENSITY,
         ];
     }
     
@@ -532,29 +530,32 @@ class StaticHoldExerciseType extends BaseExerciseType
      * 
      * For static hold exercises:
      * - best_hold: Longest single hold duration (from time field)
-     * - weighted_holds: Map of weight => best duration at that weight
+     * - duration_sets: Map of duration => number of sets (for density PR)
+     * 
+     * Note: Static holds are always bodyweight (weight field is always 0)
      */
     public function calculateCurrentMetrics(LiftLog $liftLog): array
     {
         $bestHold = 0;
-        $weightedHolds = []; // [weight => duration]
+        $durationSets = []; // [duration => set_count] for density PR
         
         foreach ($liftLog->liftSets as $set) {
             if ($set->time > 0) {
                 // Track best overall hold
                 $bestHold = max($bestHold, $set->time);
                 
-                // Track best hold at each weight (including bodyweight = 0)
-                $weight = $set->weight ?? 0;
-                if (!isset($weightedHolds[$weight]) || $set->time > $weightedHolds[$weight]) {
-                    $weightedHolds[$weight] = $set->time;
+                // Track number of sets at each duration for density PR
+                $duration = $set->time;
+                if (!isset($durationSets[$duration])) {
+                    $durationSets[$duration] = 0;
                 }
+                $durationSets[$duration]++;
             }
         }
         
         return [
             'best_hold' => $bestHold,
-            'weighted_holds' => $weightedHolds,
+            'duration_sets' => $durationSets,
         ];
     }
     
@@ -562,8 +563,10 @@ class StaticHoldExerciseType extends BaseExerciseType
      * Compare current metrics to previous logs and detect PRs
      * 
      * For static holds:
-     * - TIME PR: Longest hold duration (regardless of weight)
-     * - REP_SPECIFIC PR: Best duration at specific weight
+     * - TIME PR: Longest hold duration
+     * - DENSITY PR: Most sets at specific duration
+     * 
+     * Note: Static holds are always bodyweight, so no weight-specific PRs
      */
     public function compareToPrevious(array $currentMetrics, \Illuminate\Database\Eloquent\Collection $previousLogs, LiftLog $currentLog): array
     {
@@ -580,19 +583,6 @@ class StaticHoldExerciseType extends BaseExerciseType
                 ];
             }
             
-            // Create rep-specific PRs for each weight
-            foreach ($currentMetrics['weighted_holds'] as $weight => $duration) {
-                if ($duration > 0) {
-                    $prs[] = [
-                        'type' => 'rep_specific',
-                        'rep_count' => $weight, // Store weight in rep_count field
-                        'value' => $duration,
-                        'previous_value' => null,
-                        'previous_lift_log_id' => null,
-                    ];
-                }
-            }
-            
             return $prs;
         }
         
@@ -607,15 +597,17 @@ class StaticHoldExerciseType extends BaseExerciseType
             ];
         }
         
-        // Check REP_SPECIFIC PRs (best duration at each weight)
-        foreach ($currentMetrics['weighted_holds'] as $weight => $duration) {
-            $previousBestResult = $this->getBestDurationAtWeight($previousLogs, $weight);
-            if ($duration > $previousBestResult['duration']) {
+        // Check DENSITY PRs (most sets at each duration)
+        foreach ($currentMetrics['duration_sets'] as $duration => $sets) {
+            $previousBestResult = $this->getBestSetsAtDuration($previousLogs, $duration);
+            // Only award density PR if there was a previous lift at this duration
+            if ($sets > $previousBestResult['sets'] && $previousBestResult['sets'] > 0) {
                 $prs[] = [
-                    'type' => 'rep_specific',
-                    'rep_count' => $weight, // Store weight in rep_count field
-                    'value' => $duration,
-                    'previous_value' => $previousBestResult['duration'],
+                    'type' => 'density',
+                    'weight' => 0, // Always bodyweight
+                    'rep_count' => $duration, // Store duration in rep_count for display purposes
+                    'value' => $sets,
+                    'previous_value' => $previousBestResult['sets'],
                     'previous_lift_log_id' => $previousBestResult['lift_log_id'],
                 ];
             }
@@ -635,10 +627,10 @@ class StaticHoldExerciseType extends BaseExerciseType
                 'value' => $pr->previous_value ? $this->formatDuration((int)$pr->previous_value) : '—',
                 'comparison' => $this->formatDuration((int)$pr->value),
             ],
-            'rep_specific' => [
-                'label' => $this->formatWeightLabel($pr->rep_count),
-                'value' => $pr->previous_value ? $this->formatDuration((int)$pr->previous_value) : '—',
-                'comparison' => $this->formatDuration((int)$pr->value),
+            'density' => [
+                'label' => $this->formatDensityPRLabel($pr),
+                'value' => $pr->previous_value ? ((int)$pr->previous_value == 1 ? '1 set' : (int)$pr->previous_value . ' sets') : '—',
+                'comparison' => (int)$pr->value == 1 ? '1 set' : (int)$pr->value . ' sets',
             ],
             default => [
                 'label' => ucfirst(str_replace('_', ' ', $pr->pr_type)),
@@ -659,9 +651,9 @@ class StaticHoldExerciseType extends BaseExerciseType
                 'value' => $this->formatDuration((int)$pr->value),
                 'is_current' => $isCurrent,
             ],
-            'rep_specific' => [
-                'label' => $this->formatWeightLabel($pr->rep_count),
-                'value' => $this->formatDuration((int)$pr->value),
+            'density' => [
+                'label' => $this->formatDensityPRLabel($pr),
+                'value' => (int)$pr->value == 1 ? '1 set' : (int)$pr->value . ' sets',
                 'is_current' => $isCurrent,
             ],
             default => [
@@ -697,37 +689,41 @@ class StaticHoldExerciseType extends BaseExerciseType
     }
     
     /**
-     * Get best duration at specific weight from previous logs
+     * Get best number of sets at specific duration from previous logs (for DENSITY PR)
+     * Static holds are always bodyweight, so we only track by duration
      */
-    private function getBestDurationAtWeight(\Illuminate\Database\Eloquent\Collection $logs, float $targetWeight): array
+    private function getBestSetsAtDuration(\Illuminate\Database\Eloquent\Collection $logs, int $targetDuration): array
     {
-        $bestDuration = 0;
+        $bestSets = 0;
         $liftLogId = null;
-        $tolerance = 0.5; // Weight tolerance for matching
         
         foreach ($logs as $log) {
+            $setsAtDuration = 0;
             foreach ($log->liftSets as $set) {
-                $setWeight = $set->weight ?? 0;
-                if (abs($setWeight - $targetWeight) <= $tolerance && $set->time > $bestDuration) {
-                    $bestDuration = $set->time;
-                    $liftLogId = $log->id;
+                // Match duration (static holds are always bodyweight)
+                if ($set->time == $targetDuration) {
+                    $setsAtDuration++;
                 }
+            }
+            
+            if ($setsAtDuration > $bestSets) {
+                $bestSets = $setsAtDuration;
+                $liftLogId = $log->id;
             }
         }
         
-        return ['duration' => $bestDuration, 'lift_log_id' => $liftLogId];
+        return ['sets' => $bestSets, 'lift_log_id' => $liftLogId];
     }
     
     /**
-     * Format weight label for PR display
+     * Format density PR label for static holds
+     * Static holds are always bodyweight, so just show the duration
      */
-    private function formatWeightLabel(float $weight): string
+    private function formatDensityPRLabel(\App\Models\PersonalRecord $pr): string
     {
-        if ($weight == 0) {
-            return 'Bodyweight';
-        }
+        $duration = $pr->rep_count; // Duration is stored in rep_count field
+        $durationDisplay = $this->formatDuration((int)$duration);
         
-        $formattedWeight = $weight == floor($weight) ? number_format($weight, 0) : number_format($weight, 1);
-        return "Best @ {$formattedWeight} lbs";
+        return "Sets of {$durationDisplay}";
     }
 }

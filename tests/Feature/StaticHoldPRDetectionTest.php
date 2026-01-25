@@ -155,16 +155,16 @@ class StaticHoldPRDetectionTest extends TestCase
     }
 
     /** @test */
-    public function weighted_static_hold_creates_rep_specific_pr()
+    public function weighted_static_hold_creates_time_pr()
     {
         $user = User::factory()->create();
         $exercise = Exercise::factory()->create([
             'user_id' => $user->id,
             'exercise_type' => 'static_hold',
-            'title' => 'Weighted Plank',
+            'title' => 'L-sit', // Note: Static holds are always bodyweight
         ]);
 
-        // First weighted hold: 30 seconds with 25 lbs
+        // First hold: 30 seconds bodyweight (weight field ignored)
         $liftLog = LiftLog::factory()->create([
             'user_id' => $user->id,
             'exercise_id' => $exercise->id,
@@ -173,35 +173,33 @@ class StaticHoldPRDetectionTest extends TestCase
 
         LiftSet::factory()->create([
             'lift_log_id' => $liftLog->id,
-            'weight' => 25,
+            'weight' => 0, // Static holds are always bodyweight
             'reps' => 1,
             'time' => 30,
         ]);
 
         event(new \App\Events\LiftLogCompleted($liftLog));
 
-        // Should create REP_SPECIFIC PR (weight stored in rep_count)
-        $repSpecificPR = PersonalRecord::where('lift_log_id', $liftLog->id)
-            ->where('pr_type', 'rep_specific')
-            ->where('rep_count', 25)
+        // Should create TIME PR
+        $timePR = PersonalRecord::where('lift_log_id', $liftLog->id)
+            ->where('pr_type', 'time')
             ->first();
 
-        $this->assertNotNull($repSpecificPR);
-        $this->assertEquals(30, $repSpecificPR->value); // duration
-        $this->assertEquals(25, $repSpecificPR->rep_count); // weight
+        $this->assertNotNull($timePR);
+        $this->assertEquals(30, $timePR->value); // duration
     }
 
     /** @test */
-    public function longer_weighted_hold_creates_rep_specific_pr()
+    public function longer_hold_creates_time_pr_regardless_of_weight_field()
     {
         $user = User::factory()->create();
         $exercise = Exercise::factory()->create([
             'user_id' => $user->id,
             'exercise_type' => 'static_hold',
-            'title' => 'Weighted L-sit',
+            'title' => 'L-sit',
         ]);
 
-        // First hold: 20 seconds with 10 lbs
+        // First hold: 20 seconds
         $firstLog = LiftLog::factory()->create([
             'user_id' => $user->id,
             'exercise_id' => $exercise->id,
@@ -210,14 +208,14 @@ class StaticHoldPRDetectionTest extends TestCase
 
         LiftSet::factory()->create([
             'lift_log_id' => $firstLog->id,
-            'weight' => 10,
+            'weight' => 0,
             'reps' => 1,
             'time' => 20,
         ]);
 
         event(new \App\Events\LiftLogCompleted($firstLog));
 
-        // Second hold: 30 seconds with 10 lbs (PR!)
+        // Second hold: 30 seconds (PR!)
         $secondLog = LiftLog::factory()->create([
             'user_id' => $user->id,
             'exercise_id' => $exercise->id,
@@ -226,26 +224,25 @@ class StaticHoldPRDetectionTest extends TestCase
 
         LiftSet::factory()->create([
             'lift_log_id' => $secondLog->id,
-            'weight' => 10,
+            'weight' => 0, // Static holds are always bodyweight
             'reps' => 1,
             'time' => 30,
         ]);
 
         event(new \App\Events\LiftLogCompleted($secondLog));
 
-        // Should create REP_SPECIFIC PR
-        $repSpecificPR = PersonalRecord::where('lift_log_id', $secondLog->id)
-            ->where('pr_type', 'rep_specific')
-            ->where('rep_count', 10)
+        // Should create TIME PR
+        $timePR = PersonalRecord::where('lift_log_id', $secondLog->id)
+            ->where('pr_type', 'time')
             ->first();
 
-        $this->assertNotNull($repSpecificPR);
-        $this->assertEquals(30, $repSpecificPR->value);
-        $this->assertEquals(20, $repSpecificPR->previous_value);
+        $this->assertNotNull($timePR);
+        $this->assertEquals(30, $timePR->value);
+        $this->assertEquals(20, $timePR->previous_value);
     }
 
     /** @test */
-    public function static_hold_can_achieve_both_time_and_rep_specific_pr_simultaneously()
+    public function static_hold_can_achieve_both_time_and_density_pr_in_same_session()
     {
         $user = User::factory()->create();
         $exercise = Exercise::factory()->create([
@@ -270,7 +267,7 @@ class StaticHoldPRDetectionTest extends TestCase
 
         event(new \App\Events\LiftLogCompleted($firstLog));
 
-        // Second hold: 45 seconds with 5 lbs (both TIME and REP_SPECIFIC PR!)
+        // Second hold: 45 seconds (TIME PR) + 2 sets of 30s (DENSITY PR)
         $secondLog = LiftLog::factory()->create([
             'user_id' => $user->id,
             'exercise_id' => $exercise->id,
@@ -279,27 +276,40 @@ class StaticHoldPRDetectionTest extends TestCase
 
         LiftSet::factory()->create([
             'lift_log_id' => $secondLog->id,
-            'weight' => 5,
+            'weight' => 0,
             'reps' => 1,
-            'time' => 45,
+            'time' => 45, // TIME PR
+        ]);
+        
+        LiftSet::factory()->create([
+            'lift_log_id' => $secondLog->id,
+            'weight' => 0,
+            'reps' => 1,
+            'time' => 30, // DENSITY PR (2 sets at 30s)
+        ]);
+        
+        LiftSet::factory()->create([
+            'lift_log_id' => $secondLog->id,
+            'weight' => 0,
+            'reps' => 1,
+            'time' => 30,
         ]);
 
         event(new \App\Events\LiftLogCompleted($secondLog));
 
-        // Should create both TIME and REP_SPECIFIC PRs
+        // Should create both TIME and DENSITY PRs
         $timePR = PersonalRecord::where('lift_log_id', $secondLog->id)
             ->where('pr_type', 'time')
             ->first();
 
-        $repSpecificPR = PersonalRecord::where('lift_log_id', $secondLog->id)
-            ->where('pr_type', 'rep_specific')
-            ->where('rep_count', 5)
+        $densityPR = PersonalRecord::where('lift_log_id', $secondLog->id)
+            ->where('pr_type', 'density')
             ->first();
 
         $this->assertNotNull($timePR);
-        $this->assertNotNull($repSpecificPR);
+        $this->assertNotNull($densityPR);
         $this->assertEquals(45, $timePR->value);
-        $this->assertEquals(45, $repSpecificPR->value);
+        $this->assertEquals(2, $densityPR->value); // 2 sets at 30s
     }
 
     /** @test */
@@ -352,16 +362,16 @@ class StaticHoldPRDetectionTest extends TestCase
     }
 
     /** @test */
-    public function different_weights_create_separate_rep_specific_prs()
+    public function multiple_sets_at_different_durations_tracks_each_separately()
     {
         $user = User::factory()->create();
         $exercise = Exercise::factory()->create([
             'user_id' => $user->id,
             'exercise_type' => 'static_hold',
-            'title' => 'Weighted Planche',
+            'title' => 'Planche',
         ]);
 
-        // First session: bodyweight and 10 lbs
+        // First session: 1 set at 20s, 1 set at 25s
         $firstLog = LiftLog::factory()->create([
             'user_id' => $user->id,
             'exercise_id' => $exercise->id,
@@ -377,14 +387,14 @@ class StaticHoldPRDetectionTest extends TestCase
 
         LiftSet::factory()->create([
             'lift_log_id' => $firstLog->id,
-            'weight' => 10,
+            'weight' => 0,
             'reps' => 1,
-            'time' => 15,
+            'time' => 25,
         ]);
 
         event(new \App\Events\LiftLogCompleted($firstLog));
 
-        // Second session: improved both weights
+        // Second session: 2 sets at 20s, 2 sets at 25s (both are density PRs)
         $secondLog = LiftLog::factory()->create([
             'user_id' => $user->id,
             'exercise_id' => $exercise->id,
@@ -395,33 +405,42 @@ class StaticHoldPRDetectionTest extends TestCase
             'lift_log_id' => $secondLog->id,
             'weight' => 0,
             'reps' => 1,
-            'time' => 25, // PR at bodyweight
+            'time' => 20,
         ]);
 
         LiftSet::factory()->create([
             'lift_log_id' => $secondLog->id,
-            'weight' => 10,
+            'weight' => 0,
             'reps' => 1,
-            'time' => 20, // PR at 10 lbs
+            'time' => 20,
+        ]);
+
+        LiftSet::factory()->create([
+            'lift_log_id' => $secondLog->id,
+            'weight' => 0,
+            'reps' => 1,
+            'time' => 25,
+        ]);
+
+        LiftSet::factory()->create([
+            'lift_log_id' => $secondLog->id,
+            'weight' => 0,
+            'reps' => 1,
+            'time' => 25,
         ]);
 
         event(new \App\Events\LiftLogCompleted($secondLog));
 
-        // Should create separate REP_SPECIFIC PRs for each weight
-        $bodyweightPR = PersonalRecord::where('lift_log_id', $secondLog->id)
-            ->where('pr_type', 'rep_specific')
-            ->where('rep_count', 0)
-            ->first();
+        // Should create separate density PRs for each duration
+        $densityPRs = PersonalRecord::where('lift_log_id', $secondLog->id)
+            ->where('pr_type', 'density')
+            ->get();
 
-        $weightedPR = PersonalRecord::where('lift_log_id', $secondLog->id)
-            ->where('pr_type', 'rep_specific')
-            ->where('rep_count', 10)
-            ->first();
-
-        $this->assertNotNull($bodyweightPR);
-        $this->assertNotNull($weightedPR);
-        $this->assertEquals(25, $bodyweightPR->value);
-        $this->assertEquals(20, $weightedPR->value);
+        $this->assertCount(2, $densityPRs);
+        
+        // Check we have PRs for both durations
+        $durations = $densityPRs->pluck('rep_count')->sort()->values();
+        $this->assertEquals([20, 25], $durations->toArray());
     }
 
     /** @test */
@@ -669,5 +688,218 @@ class StaticHoldPRDetectionTest extends TestCase
         $response->assertSee('Last workout');
         $response->assertSee('1m 30s hold');
         $response->assertSee('+25 lbs');
+    }
+
+    /** @test */
+    public function static_hold_density_pr_more_sets_at_same_weight()
+    {
+        $user = User::factory()->create();
+        $exercise = Exercise::factory()->create([
+            'user_id' => $user->id,
+            'exercise_type' => 'static_hold',
+            'title' => 'L-sit',
+        ]);
+
+        // First session: 1 set of 30s bodyweight hold
+        $firstLog = LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => now()->subWeek(),
+        ]);
+        LiftSet::factory()->create([
+            'lift_log_id' => $firstLog->id,
+            'weight' => 0,
+            'reps' => 1,
+            'time' => 30,
+        ]);
+        event(new \App\Events\LiftLogCompleted($firstLog));
+
+        // Second session: 2 sets of 30s bodyweight hold (more sets = density PR)
+        $secondLog = LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => now(),
+        ]);
+        LiftSet::factory()->createMany([
+            [
+                'lift_log_id' => $secondLog->id,
+                'weight' => 0,
+                'reps' => 1,
+                'time' => 30,
+            ],
+            [
+                'lift_log_id' => $secondLog->id,
+                'weight' => 0,
+                'reps' => 1,
+                'time' => 30,
+            ],
+        ]);
+        event(new \App\Events\LiftLogCompleted($secondLog));
+
+        // Should create DENSITY PR
+        $densityPR = PersonalRecord::where('lift_log_id', $secondLog->id)
+            ->where('pr_type', 'density')
+            ->first();
+
+        $this->assertNotNull($densityPR);
+        $this->assertEquals(0, $densityPR->weight); // Bodyweight
+        $this->assertEquals(2, $densityPR->value); // 2 sets
+        $this->assertEquals(1, $densityPR->previous_value); // previously 1 set
+    }
+
+    /** @test */
+    public function static_hold_density_pr_tracks_by_duration_only()
+    {
+        $user = User::factory()->create();
+        $exercise = Exercise::factory()->create([
+            'user_id' => $user->id,
+            'exercise_type' => 'static_hold',
+            'title' => 'L-sit',
+        ]);
+
+        // First session: 1 set of 60s
+        $firstLog = LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => now()->subWeek(),
+        ]);
+        LiftSet::factory()->create([
+            'lift_log_id' => $firstLog->id,
+            'weight' => 0,
+            'reps' => 1,
+            'time' => 60,
+        ]);
+        event(new \App\Events\LiftLogCompleted($firstLog));
+
+        // Second session: 3 sets of 60s (more sets = density PR)
+        // Note: Weight field is ignored for static holds
+        $secondLog = LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => now(),
+        ]);
+        LiftSet::factory()->createMany([
+            [
+                'lift_log_id' => $secondLog->id,
+                'weight' => 0,
+                'reps' => 1,
+                'time' => 60,
+            ],
+            [
+                'lift_log_id' => $secondLog->id,
+                'weight' => 0,
+                'reps' => 1,
+                'time' => 60,
+            ],
+            [
+                'lift_log_id' => $secondLog->id,
+                'weight' => 0,
+                'reps' => 1,
+                'time' => 60,
+            ],
+        ]);
+        event(new \App\Events\LiftLogCompleted($secondLog));
+
+        // Should create DENSITY PR (tracked by duration only)
+        $densityPR = PersonalRecord::where('lift_log_id', $secondLog->id)
+            ->where('pr_type', 'density')
+            ->first();
+
+        $this->assertNotNull($densityPR);
+        $this->assertEquals(0, $densityPR->weight); // Always bodyweight
+        $this->assertEquals(60, $densityPR->rep_count); // Duration stored in rep_count
+        $this->assertEquals(3, $densityPR->value); // 3 sets
+        $this->assertEquals(1, $densityPR->previous_value); // previously 1 set
+    }
+
+    /** @test */
+    public function static_hold_density_pr_not_created_for_same_number_of_sets()
+    {
+        $user = User::factory()->create();
+        $exercise = Exercise::factory()->create([
+            'user_id' => $user->id,
+            'exercise_type' => 'static_hold',
+            'title' => 'L-sit',
+        ]);
+
+        // First session: 2 sets of 30s
+        $firstLog = LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => now()->subWeek(),
+        ]);
+        LiftSet::factory()->createMany([
+            ['lift_log_id' => $firstLog->id, 'weight' => 0, 'reps' => 1, 'time' => 30],
+            ['lift_log_id' => $firstLog->id, 'weight' => 0, 'reps' => 1, 'time' => 30],
+        ]);
+        event(new \App\Events\LiftLogCompleted($firstLog));
+
+        // Second session: 2 sets of 30s (same = not a PR)
+        $secondLog = LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => now(),
+        ]);
+        LiftSet::factory()->createMany([
+            ['lift_log_id' => $secondLog->id, 'weight' => 0, 'reps' => 1, 'time' => 30],
+            ['lift_log_id' => $secondLog->id, 'weight' => 0, 'reps' => 1, 'time' => 30],
+        ]);
+        event(new \App\Events\LiftLogCompleted($secondLog));
+
+        // Should NOT create DENSITY PR
+        $densityPR = PersonalRecord::where('lift_log_id', $secondLog->id)
+            ->where('pr_type', 'density')
+            ->first();
+
+        $this->assertNull($densityPR);
+    }
+
+    /** @test */
+    public function static_hold_can_achieve_both_time_and_density_pr()
+    {
+        $user = User::factory()->create();
+        $exercise = Exercise::factory()->create([
+            'user_id' => $user->id,
+            'exercise_type' => 'static_hold',
+            'title' => 'L-sit',
+        ]);
+
+        // First session: 1 set of 30s
+        $firstLog = LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => now()->subWeek(),
+        ]);
+        LiftSet::factory()->create([
+            'lift_log_id' => $firstLog->id,
+            'weight' => 0,
+            'reps' => 1,
+            'time' => 30,
+        ]);
+        event(new \App\Events\LiftLogCompleted($firstLog));
+
+        // Second session: 2 sets of 30s (same duration, more sets) + 1 set of 45s (longer hold)
+        // This should create both TIME PR (45s) and DENSITY PR (2 sets @ 30s)
+        $secondLog = LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => now(),
+        ]);
+        LiftSet::factory()->createMany([
+            ['lift_log_id' => $secondLog->id, 'weight' => 0, 'reps' => 1, 'time' => 30],
+            ['lift_log_id' => $secondLog->id, 'weight' => 0, 'reps' => 1, 'time' => 30],
+            ['lift_log_id' => $secondLog->id, 'weight' => 0, 'reps' => 1, 'time' => 45],
+        ]);
+        event(new \App\Events\LiftLogCompleted($secondLog));
+
+        // Should have both TIME and DENSITY PRs
+        $prs = PersonalRecord::where('lift_log_id', $secondLog->id)->get();
+        
+        $this->assertTrue($prs->contains('pr_type', 'time'));
+        $this->assertTrue($prs->contains('pr_type', 'density'));
+        
+        $secondLog->refresh();
+        $this->assertTrue($secondLog->is_pr);
+        $this->assertGreaterThanOrEqual(2, $secondLog->pr_count);
     }
 }
