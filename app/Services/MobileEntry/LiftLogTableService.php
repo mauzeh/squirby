@@ -39,9 +39,9 @@ class LiftLogTableService
         $rows = $this->tableRowBuilder->buildRows($logs, [
             'showDateBadge' => false, // Don't show date badge on mobile-entry (same day)
             'showCheckbox' => false,
-            'showViewLogsAction' => true, // Show view logs action
+            'showViewLogsAction' => false, // Removed: "View history" link is available in PR records table footer
             'showDeleteAction' => true, // Show delete button on mobile-entry
-            'wrapActions' => false, // Keep all 3 buttons on same line
+            'wrapActions' => false, // Keep all 2 buttons on same line
             'includeEncouragingMessage' => true, // Show encouraging messages
             'redirectContext' => 'mobile-entry-lifts',
             'selectedDate' => $selectedDate->toDateString(),

@@ -37,7 +37,7 @@ class LiftLogTableRowBuilder
         $defaults = [
             'showDateBadge' => true,
             'showCheckbox' => false,
-            'showViewLogsAction' => true,
+            'showViewLogsAction' => false, // Removed: "View history" link is available in PR records table footer
             'showDeleteAction' => false,
             'wrapActions' => true,
             'includeEncouragingMessage' => false,

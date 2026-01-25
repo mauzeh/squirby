@@ -356,8 +356,8 @@ class RegularExerciseType extends BaseExerciseType
             ],
             'density' => [
                 'label' => 'Sets @ ' . $this->formatWeight($pr->weight) . ' lbs',
-                'value' => $pr->previous_value ? (int)$pr->previous_value . ' set' . ((int)$pr->previous_value > 1 ? 's' : '') : '—',
-                'comparison' => (int)$pr->value . ' set' . ((int)$pr->value > 1 ? 's' : ''),
+                'value' => $pr->previous_value ? intval($pr->previous_value) . ' set' . (intval($pr->previous_value) > 1 ? 's' : '') : '—',
+                'comparison' => intval($pr->value) . ' set' . (intval($pr->value) > 1 ? 's' : ''),
             ],
             default => [
                 'label' => ucfirst(str_replace('_', ' ', $pr->pr_type)),
@@ -395,7 +395,7 @@ class RegularExerciseType extends BaseExerciseType
             ],
             'density' => [
                 'label' => 'Sets @ ' . $this->formatWeight($pr->weight) . ' lbs',
-                'value' => (int)$pr->value . ' set' . ((int)$pr->value > 1 ? 's' : ''),
+                'value' => intval($pr->value) . ' set' . (intval($pr->value) > 1 ? 's' : ''),
                 'is_current' => $isCurrent,
             ],
             default => [

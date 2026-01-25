@@ -16,7 +16,7 @@ class PRRecordsComponentAssembler
     public static function assemble(LiftLog $liftLog, RowConfig $config): array
     {
         $components = [];
-        $viewLogsUrl = route('exercises.show-logs', $liftLog->exercise);
+        $viewLogsUrl = self::buildViewLogsUrl($liftLog, $config);
         
         if ($liftLog->is_pr) {
             $components = array_merge(
@@ -250,5 +250,27 @@ class PRRecordsComponentAssembler
         }
         
         return number_format($rounded, 1);
+    }
+    
+    /**
+     * Build view logs URL with context parameters
+     */
+    private static function buildViewLogsUrl(LiftLog $liftLog, RowConfig $config): string
+    {
+        $url = route('exercises.show-logs', $liftLog->exercise);
+        
+        // Add context parameters if coming from mobile-entry-lifts
+        if ($config->redirectContext === 'mobile-entry-lifts') {
+            $params = array_filter([
+                'from' => $config->redirectContext,
+                'date' => $config->selectedDate,
+            ]);
+            
+            if (!empty($params)) {
+                $url .= '?' . http_build_query($params);
+            }
+        }
+        
+        return $url;
     }
 }

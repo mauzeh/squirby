@@ -629,8 +629,8 @@ class StaticHoldExerciseType extends BaseExerciseType
             ],
             'density' => [
                 'label' => $this->formatDensityPRLabel($pr),
-                'value' => $pr->previous_value ? ((int)$pr->previous_value == 1 ? '1 set' : (int)$pr->previous_value . ' sets') : '—',
-                'comparison' => (int)$pr->value == 1 ? '1 set' : (int)$pr->value . ' sets',
+                'value' => $pr->previous_value ? (intval($pr->previous_value) == 1 ? '1 set' : intval($pr->previous_value) . ' sets') : '—',
+                'comparison' => intval($pr->value) == 1 ? '1 set' : intval($pr->value) . ' sets',
             ],
             default => [
                 'label' => ucfirst(str_replace('_', ' ', $pr->pr_type)),
@@ -653,7 +653,7 @@ class StaticHoldExerciseType extends BaseExerciseType
             ],
             'density' => [
                 'label' => $this->formatDensityPRLabel($pr),
-                'value' => (int)$pr->value == 1 ? '1 set' : (int)$pr->value . ' sets',
+                'value' => intval($pr->value) == 1 ? '1 set' : intval($pr->value) . ' sets',
                 'is_current' => $isCurrent,
             ],
             default => [
