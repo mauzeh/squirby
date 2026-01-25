@@ -334,6 +334,111 @@ class LiftLogLoggingTest extends TestCase {
     }
 
     /** @test */
+    public function a_user_can_create_a_static_hold_lift_log()
+    {
+        $exercise = \App\Models\Exercise::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_type' => 'static_hold',
+            'title' => 'L-sit'
+        ]);
+
+        $now = now();
+        $testTime = '10:00';
+
+        $liftLogData = [
+            'exercise_id' => $exercise->id,
+            'time' => 45, // 45 seconds hold
+            'weight' => 0, // Bodyweight
+            'rounds' => 3,
+            'comments' => 'Static hold comments',
+            'date' => $now->format('Y-m-d'),
+            'logged_at' => $testTime,
+        ];
+
+        $response = $this->post(route('lift-logs.store'), $liftLogData);
+
+        $this->assertDatabaseHas('lift_logs', [
+            'user_id' => $this->user->id,
+            'exercise_id' => $exercise->id,
+            'comments' => 'Static hold comments',
+            'logged_at' => \Carbon\Carbon::parse($now->format('Y-m-d') . ' ' . $testTime)->format('Y-m-d H:i:s'),
+        ]);
+
+        $liftLog = \App\Models\LiftLog::where('exercise_id', $exercise->id)->first();
+
+        $this->assertDatabaseCount('lift_sets', 3);
+        $this->assertDatabaseHas('lift_sets', [
+            'lift_log_id' => $liftLog->id,
+            'weight' => 0,
+            'reps' => 1, // Always 1 for static holds
+            'time' => 45, // Duration stored in time field
+            'notes' => 'Static hold comments',
+        ]);
+
+        $response->assertRedirect(route('exercises.show-logs', ['exercise' => $exercise->id]));
+        
+        // Check success message contains exercise name and duration
+        $successMessage = session('success');
+        $this->assertStringContainsString($exercise->title, $successMessage);
+        $this->assertStringContainsString('45s hold', $successMessage);
+    }
+
+    /** @test */
+    public function a_user_can_update_a_static_hold_lift_log()
+    {
+        $exercise = \App\Models\Exercise::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_type' => 'static_hold',
+            'title' => 'Plank'
+        ]);
+        
+        $liftLog = \App\Models\LiftLog::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $exercise->id,
+            'comments' => 'Original hold',
+        ]);
+        
+        $liftLog->liftSets()->create([
+            'weight' => 0,
+            'reps' => 1,
+            'time' => 30,
+            'notes' => 'Original hold',
+        ]);
+
+        $now = now();
+        $updatedLiftLogData = [
+            'exercise_id' => $exercise->id,
+            'time' => 60, // Updated to 60 seconds
+            'weight' => 10, // Added weight
+            'rounds' => 4,
+            'comments' => 'Updated hold',
+            'date' => $now->format('Y-m-d'),
+            'logged_at' => '11:00',
+        ];
+
+        $response = $this->put(route('lift-logs.update', $liftLog->id), $updatedLiftLogData);
+
+        $this->assertDatabaseHas('lift_logs', [
+            'id' => $liftLog->id,
+            'exercise_id' => $exercise->id,
+            'comments' => 'Updated hold',
+        ]);
+
+        // Old sets should be soft-deleted, new ones created
+        $this->assertCount(4, $liftLog->liftSets()->get());
+        $this->assertCount(5, $liftLog->liftSets()->withTrashed()->get());
+        $this->assertDatabaseHas('lift_sets', [
+            'lift_log_id' => $liftLog->id,
+            'weight' => 10,
+            'reps' => 1,
+            'time' => 60,
+            'notes' => 'Updated hold',
+        ]);
+
+        $response->assertRedirect(route('exercises.show-logs', ['exercise' => $exercise->id]));
+    }
+
+    /** @test */
     public function first_lift_log_is_marked_as_pr()
     {
         $exercise = \App\Models\Exercise::factory()->create(['user_id' => $this->user->id]);
