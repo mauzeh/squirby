@@ -114,6 +114,7 @@ class RegularExerciseType extends BaseExerciseType
      * - ONE_RM: Estimated one-rep max
      * - REP_SPECIFIC: Best weight for specific rep counts (1-10 reps)
      * - VOLUME: Total session volume (weight × reps × sets)
+     * - DENSITY: Most sets completed at a specific weight
      * 
      * Note: Hypertrophy PRs (best reps at weight) are also supported but stored
      * separately in the database with pr_type='hypertrophy' string, not as an enum flag.
@@ -124,6 +125,7 @@ class RegularExerciseType extends BaseExerciseType
             \App\Enums\PRType::ONE_RM,
             \App\Enums\PRType::REP_SPECIFIC,
             \App\Enums\PRType::VOLUME,
+            \App\Enums\PRType::DENSITY,
         ];
     }
     
@@ -135,13 +137,16 @@ class RegularExerciseType extends BaseExerciseType
      * - total_volume: Sum of (weight × reps) for all sets
      * - rep_weights: Map of rep count => best weight for that rep count
      * - weight_reps: Map of weight => best reps at that weight
+     * - weight_sets: Map of weight => number of sets at that weight
      */
     public function calculateCurrentMetrics(LiftLog $liftLog): array
     {
         $best1RM = 0;
         $totalVolume = 0;
         $repWeights = []; // [reps => weight]
-        $weightReps = []; // [weight => reps]
+        $weightReps = []; // [weight_string => reps]
+        $weightSets = []; // [weight_string => set_count]
+        $weightMinReps = []; // [weight_string => min_reps] - for density PR
         
         foreach ($liftLog->liftSets as $set) {
             if ($set->weight > 0 && $set->reps > 0) {
@@ -163,10 +168,20 @@ class RegularExerciseType extends BaseExerciseType
                     }
                 }
                 
-                // Track hypertrophy (best reps at weight)
-                if (!isset($weightReps[$set->weight]) || $set->reps > $weightReps[$set->weight]) {
-                    $weightReps[$set->weight] = $set->reps;
+                // Track hypertrophy (best reps at weight) - use string key to preserve float precision
+                $weightKey = (string)$set->weight;
+                if (!isset($weightReps[$weightKey]) || $set->reps > $weightReps[$weightKey]) {
+                    $weightReps[$weightKey] = $set->reps;
                 }
+                
+                // Track density (number of sets at weight) - use string key to preserve float precision
+                if (!isset($weightSets[$weightKey])) {
+                    $weightSets[$weightKey] = 0;
+                    $weightMinReps[$weightKey] = $set->reps; // Initialize with first set's reps
+                }
+                $weightSets[$weightKey]++;
+                // Track minimum reps at this weight for density PR comparison
+                $weightMinReps[$weightKey] = min($weightMinReps[$weightKey], $set->reps);
             }
         }
         
@@ -175,6 +190,8 @@ class RegularExerciseType extends BaseExerciseType
             'total_volume' => $totalVolume,
             'rep_weights' => $repWeights,
             'weight_reps' => $weightReps,
+            'weight_sets' => $weightSets,
+            'weight_min_reps' => $weightMinReps,
         ];
     }
     
@@ -262,7 +279,8 @@ class RegularExerciseType extends BaseExerciseType
         }
         
         // Check Hypertrophy PRs (best reps at a given weight)
-        foreach ($currentMetrics['weight_reps'] as $weight => $reps) {
+        foreach ($currentMetrics['weight_reps'] as $weightKey => $reps) {
+            $weight = (float)$weightKey; // Convert string key back to float
             $previousBestResult = $this->getBestRepsAtWeight($previousLogs, $weight);
             // Only award hypertrophy PR if there was a previous lift at this weight
             if ($reps > $previousBestResult['reps'] && $previousBestResult['reps'] > 0) {
@@ -271,6 +289,24 @@ class RegularExerciseType extends BaseExerciseType
                     'weight' => $weight,
                     'value' => $reps,
                     'previous_value' => $previousBestResult['reps'],
+                    'previous_lift_log_id' => $previousBestResult['lift_log_id'],
+                ];
+            }
+        }
+        
+        // Check Density PRs (most sets at a given weight)
+        foreach ($currentMetrics['weight_sets'] as $weightKey => $sets) {
+            $weight = (float)$weightKey; // Convert string key back to float
+            $minReps = $currentMetrics['weight_min_reps'][$weightKey]; // Get minimum reps at this weight
+            $previousBestResult = $this->getBestSetsAtWeight($previousLogs, $weight, $minReps);
+            // Only award density PR if there was a previous lift at this weight (within tolerance)
+            // The getBestSetsAtWeight method already applies 0.5 lb tolerance
+            if ($sets > $previousBestResult['sets'] && $previousBestResult['sets'] > 0) {
+                $prs[] = [
+                    'type' => 'density',
+                    'weight' => $weight, // Store the actual weight used in current lift
+                    'value' => $sets,
+                    'previous_value' => $previousBestResult['sets'],
                     'previous_lift_log_id' => $previousBestResult['lift_log_id'],
                 ];
             }
@@ -318,6 +354,11 @@ class RegularExerciseType extends BaseExerciseType
                 'value' => $pr->previous_value ? (int)$pr->previous_value . ' reps' : '—',
                 'comparison' => (int)$pr->value . ' reps',
             ],
+            'density' => [
+                'label' => 'Sets @ ' . $this->formatWeight($pr->weight) . ' lbs',
+                'value' => $pr->previous_value ? (int)$pr->previous_value . ' set' . ((int)$pr->previous_value > 1 ? 's' : '') : '—',
+                'comparison' => (int)$pr->value . ' set' . ((int)$pr->value > 1 ? 's' : ''),
+            ],
             default => [
                 'label' => ucfirst(str_replace('_', ' ', $pr->pr_type)),
                 'value' => $pr->previous_value ? (string)$pr->previous_value : '—',
@@ -350,6 +391,11 @@ class RegularExerciseType extends BaseExerciseType
             'hypertrophy' => [
                 'label' => 'Best @ ' . $this->formatWeight($pr->weight) . ' lbs',
                 'value' => (int)$pr->value . ' reps',
+                'is_current' => $isCurrent,
+            ],
+            'density' => [
+                'label' => 'Sets @ ' . $this->formatWeight($pr->weight) . ' lbs',
+                'value' => (int)$pr->value . ' set' . ((int)$pr->value > 1 ? 's' : ''),
                 'is_current' => $isCurrent,
             ],
             default => [
@@ -454,6 +500,38 @@ class RegularExerciseType extends BaseExerciseType
         }
         
         return ['reps' => $maxReps, 'lift_log_id' => $liftLogId];
+    }
+    
+    /**
+     * Get best number of sets at specific weight from previous logs
+     * Only counts sets that meet or exceed the minimum rep threshold
+     * 
+     * @param Collection $logs Previous lift logs
+     * @param float $targetWeight Weight to match (with tolerance)
+     * @param int $minReps Minimum reps required for a set to count
+     * @return array ['sets' => int, 'lift_log_id' => int|null]
+     */
+    private function getBestSetsAtWeight(\Illuminate\Database\Eloquent\Collection $logs, float $targetWeight, int $minReps = 1): array
+    {
+        $maxSets = 0;
+        $liftLogId = null;
+        $tolerance = 0.5; // Weight tolerance for matching
+        
+        foreach ($logs as $log) {
+            $setsAtWeight = 0;
+            foreach ($log->liftSets as $set) {
+                // Count sets that match weight (within tolerance) AND meet minimum rep threshold
+                if (abs($set->weight - $targetWeight) <= $tolerance && $set->reps >= $minReps) {
+                    $setsAtWeight++;
+                }
+            }
+            if ($setsAtWeight > $maxSets) {
+                $maxSets = $setsAtWeight;
+                $liftLogId = $log->id;
+            }
+        }
+        
+        return ['sets' => $maxSets, 'lift_log_id' => $liftLogId];
     }
     
     /**

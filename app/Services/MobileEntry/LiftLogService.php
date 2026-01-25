@@ -395,6 +395,7 @@ class LiftLogService extends MobileEntryBaseService
         return [
             'weight' => $firstSet->weight,
             'reps' => $firstSet->reps,
+            'time' => $firstSet->time,
             'sets' => $lastLog->liftSets->count(),
             'date' => $lastLog->logged_at->format('M j'),
             'comments' => $lastLog->comments,

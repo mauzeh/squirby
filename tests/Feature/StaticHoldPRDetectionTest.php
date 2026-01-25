@@ -593,4 +593,81 @@ class StaticHoldPRDetectionTest extends TestCase
         $response->assertDontSee('1s hold');
         $response->assertSee('Weighted Plank');
     }
+
+    /** @test */
+    public function static_hold_last_workout_message_shows_correct_duration()
+    {
+        $user = User::factory()->create();
+        $exercise = Exercise::factory()->create([
+            'user_id' => $user->id,
+            'exercise_type' => 'static_hold',
+            'title' => 'L-sit',
+        ]);
+
+        // Create a previous lift log with 45 second hold
+        $previousLog = LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => now()->subDay(),
+        ]);
+
+        LiftSet::factory()->create([
+            'lift_log_id' => $previousLog->id,
+            'weight' => 0,
+            'reps' => 1,
+            'time' => 45, // 45 seconds
+        ]);
+
+        // Visit the lift log create page for today
+        $response = $this->actingAs($user)->get(route('lift-logs.create', [
+            'exercise_id' => $exercise->id,
+            'date' => now()->toDateString(),
+        ]));
+
+        $response->assertStatus(200);
+        
+        // Should show "Last workout" message with correct duration
+        $response->assertSee('Last workout');
+        $response->assertSee('45s hold');
+        $response->assertDontSee('0s hold'); // Bug was showing 0s
+        $response->assertDontSee('1s hold'); // Should not show reps value
+    }
+
+    /** @test */
+    public function static_hold_last_workout_message_shows_correct_duration_with_weight()
+    {
+        $user = User::factory()->create();
+        $exercise = Exercise::factory()->create([
+            'user_id' => $user->id,
+            'exercise_type' => 'static_hold',
+            'title' => 'Weighted Plank',
+        ]);
+
+        // Create a previous lift log with 90 second hold and 25 lbs
+        $previousLog = LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => now()->subDay(),
+        ]);
+
+        LiftSet::factory()->create([
+            'lift_log_id' => $previousLog->id,
+            'weight' => 25,
+            'reps' => 1,
+            'time' => 90, // 90 seconds = 1m 30s
+        ]);
+
+        // Visit the lift log create page for today
+        $response = $this->actingAs($user)->get(route('lift-logs.create', [
+            'exercise_id' => $exercise->id,
+            'date' => now()->toDateString(),
+        ]));
+
+        $response->assertStatus(200);
+        
+        // Should show "Last workout" message with correct duration and weight
+        $response->assertSee('Last workout');
+        $response->assertSee('1m 30s hold');
+        $response->assertSee('+25 lbs');
+    }
 }
