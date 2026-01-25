@@ -104,23 +104,27 @@ class UpdateLiftLogAction
         $liftLog->liftSets()->delete();
 
         // Create new lift sets
-        $reps = $request->input('reps');
         $rounds = $request->input('rounds');
 
         // Use exercise type strategy to process lift data
         $exerciseTypeStrategy = ExerciseTypeFactory::create($exercise);
         
-        $liftData = $exerciseTypeStrategy->processLiftData([
+        // Build lift data from request - include all possible fields
+        $liftDataInput = [
             'weight' => $request->input('weight'),
             'band_color' => $request->input('band_color'),
-            'reps' => $reps,
+            'reps' => $request->input('reps'),
+            'time' => $request->input('time'), // For static holds
             'notes' => $request->input('comments'),
-        ]);
+        ];
+        
+        $liftData = $exerciseTypeStrategy->processLiftData($liftDataInput);
 
         for ($i = 0; $i < $rounds; $i++) {
             $liftLog->liftSets()->create([
                 'weight' => $liftData['weight'] ?? 0,
                 'reps' => $liftData['reps'],
+                'time' => $liftData['time'] ?? null,
                 'notes' => $liftData['notes'],
                 'band_color' => $liftData['band_color'],
             ]);

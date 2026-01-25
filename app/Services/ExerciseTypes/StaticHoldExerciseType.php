@@ -63,10 +63,11 @@ class StaticHoldExerciseType extends BaseExerciseType
      * Process lift data according to static hold exercise rules
      * 
      * For static hold exercises:
-     * - Reps field represents hold duration in seconds and must be validated
+     * - Time field stores hold duration in seconds and must be validated
      * - Weight field is optional (0 for bodyweight, or added weight)
      * - Band color is always nullified (not applicable)
      * - Duration must be between 1 second and 5 minutes
+     * - Reps is always set to 1 (semantic: "1 hold performed")
      */
     public function processLiftData(array $data): array
     {
@@ -75,26 +76,29 @@ class StaticHoldExerciseType extends BaseExerciseType
         // Nullify band_color for static hold exercises
         $processedData['band_color'] = null;
         
-        // Validate duration (stored in reps field)
-        if (!isset($processedData['reps'])) {
-            throw InvalidExerciseDataException::missingField('reps', $this->getTypeName());
+        // Validate duration (stored in time field)
+        if (!isset($processedData['time'])) {
+            throw InvalidExerciseDataException::missingField('time', $this->getTypeName());
         }
         
-        if (!is_numeric($processedData['reps'])) {
-            throw InvalidExerciseDataException::forField('reps', $this->getTypeName(), 'hold duration must be a number');
+        if (!is_numeric($processedData['time'])) {
+            throw InvalidExerciseDataException::forField('time', $this->getTypeName(), 'hold duration must be a number');
         }
         
-        $duration = (int) $processedData['reps'];
+        $duration = (int) $processedData['time'];
         
         if ($duration < self::MIN_DURATION) {
-            throw InvalidExerciseDataException::forField('reps', $this->getTypeName(), 'hold duration must be at least ' . self::MIN_DURATION . ' second');
+            throw InvalidExerciseDataException::forField('time', $this->getTypeName(), 'hold duration must be at least ' . self::MIN_DURATION . ' second');
         }
         
         if ($duration > self::MAX_DURATION) {
-            throw InvalidExerciseDataException::forField('reps', $this->getTypeName(), 'hold duration cannot exceed ' . self::MAX_DURATION . ' seconds');
+            throw InvalidExerciseDataException::forField('time', $this->getTypeName(), 'hold duration cannot exceed ' . self::MAX_DURATION . ' seconds');
         }
         
-        $processedData['reps'] = $duration;
+        $processedData['time'] = $duration;
+        
+        // Set reps to 1 (semantic: "1 hold performed")
+        $processedData['reps'] = 1;
         
         // Validate weight if provided
         if (isset($processedData['weight'])) {
@@ -129,18 +133,18 @@ class StaticHoldExerciseType extends BaseExerciseType
      * Format weight display for static hold exercises
      * 
      * For static hold exercises, we display duration and optional weight.
-     * The duration is stored in the reps field.
+     * The duration is stored in the time field.
      */
     public function formatWeightDisplay(LiftLog $liftLog): string
     {
-        $duration = $liftLog->display_reps;
+        $duration = $liftLog->liftSets->first()?->time ?? 0;
         $weight = $liftLog->display_weight;
         
         if (!is_numeric($duration) || $duration <= 0) {
             return '0s hold';
         }
         
-        $durationDisplay = $this->formatDuration($duration);
+        $durationDisplay = $this->formatDuration((int)$duration);
         
         // If there's added weight, include it in the display
         if (is_numeric($weight) && $weight > 0) {
@@ -180,7 +184,7 @@ class StaticHoldExerciseType extends BaseExerciseType
      */
     public function formatCompleteDisplay(LiftLog $liftLog): string
     {
-        $duration = $liftLog->display_reps;
+        $duration = $liftLog->liftSets->first()?->time ?? 0;
         $weight = $liftLog->display_weight;
         $sets = $liftLog->display_rounds;
         
@@ -192,7 +196,7 @@ class StaticHoldExerciseType extends BaseExerciseType
             $sets = 1;
         }
         
-        $durationDisplay = $this->formatDuration($duration);
+        $durationDisplay = $this->formatDuration((int)$duration);
         
         // Add weight if present
         if (is_numeric($weight) && $weight > 0) {
@@ -214,7 +218,7 @@ class StaticHoldExerciseType extends BaseExerciseType
      */
     public function formatProgressionSuggestion(LiftLog $liftLog): ?string
     {
-        $duration = $liftLog->display_reps;
+        $duration = $liftLog->liftSets->first()?->time ?? 0;
         $weight = $liftLog->display_weight;
         $sets = $liftLog->liftSets->count();
         
@@ -227,19 +231,19 @@ class StaticHoldExerciseType extends BaseExerciseType
             // Very conservative progression: 1-2 seconds
             $increment = $duration < 30 ? 1 : 2;
             $newDuration = $duration + $increment;
-            $newDurationDisplay = $this->formatDuration($newDuration);
+            $newDurationDisplay = $this->formatDuration((int)$newDuration);
             return "Try {$newDurationDisplay} × {$sets} sets";
         }
         
         // For longer holds (60s+), suggest adding weight or sets
         if (!is_numeric($weight) || $weight == 0) {
             // Suggest adding weight
-            $durationDisplay = $this->formatDuration($duration);
+            $durationDisplay = $this->formatDuration((int)$duration);
             return "Try {$durationDisplay} +5 lbs × {$sets} sets";
         } else {
             // Suggest adding more sets
             $newSets = $sets + 1;
-            $durationDisplay = $this->formatDuration($duration);
+            $durationDisplay = $this->formatDuration((int)$duration);
             $weightFormatted = $weight == floor($weight) ? number_format($weight, 0) : number_format($weight, 1);
             return "Try {$durationDisplay} +{$weightFormatted} lbs × {$newSets} sets";
         }
@@ -247,7 +251,7 @@ class StaticHoldExerciseType extends BaseExerciseType
     
     /**
      * Get form field definitions for static hold exercises
-     * Static hold exercises show duration (reps) and optional weight
+     * Static hold exercises show duration (time) and optional weight
      */
     public function getFormFieldDefinitions(array $defaults = [], ?User $user = null): array
     {
@@ -256,11 +260,11 @@ class StaticHoldExerciseType extends BaseExerciseType
         
         return [
             [
-                'name' => 'reps',
-                'label' => $labels['reps'],
+                'name' => 'time',
+                'label' => $labels['time'],
                 'type' => 'numeric',
-                'defaultValue' => $defaults['reps'] ?? 30,
-                'increment' => $increments['reps'],
+                'defaultValue' => $defaults['time'] ?? 30,
+                'increment' => $increments['time'],
                 'min' => self::MIN_DURATION,
                 'max' => self::MAX_DURATION,
             ],
@@ -309,7 +313,7 @@ class StaticHoldExerciseType extends BaseExerciseType
      */
     public function formatFormMessageDisplay(array $lastSession): string
     {
-        $duration = $lastSession['reps'] ?? 0;
+        $duration = $lastSession['time'] ?? 0;
         $weight = $lastSession['weight'] ?? 0;
         $sets = $lastSession['sets'] ?? 1;
         
@@ -317,7 +321,7 @@ class StaticHoldExerciseType extends BaseExerciseType
         if (!is_numeric($duration) || $duration <= 0) {
             $durationDisplay = '0s hold';
         } else {
-            $durationDisplay = $this->formatDuration($duration);
+            $durationDisplay = $this->formatDuration((int)$duration);
         }
         
         // Add weight if present
@@ -337,7 +341,7 @@ class StaticHoldExerciseType extends BaseExerciseType
      */
     public function formatTableCellDisplay(LiftLog $liftLog): array
     {
-        $duration = $liftLog->display_reps;
+        $duration = $liftLog->liftSets->first()?->time ?? 0;
         $weight = $liftLog->display_weight;
         $sets = $liftLog->display_rounds;
         
@@ -391,7 +395,7 @@ class StaticHoldExerciseType extends BaseExerciseType
      */
     public function formatMobileSummaryDisplay(LiftLog $liftLog): array
     {
-        $duration = $liftLog->display_reps;
+        $duration = $liftLog->liftSets->first()?->time ?? 0;
         $weight = $liftLog->display_weight;
         $sets = $liftLog->display_rounds;
         
@@ -416,10 +420,10 @@ class StaticHoldExerciseType extends BaseExerciseType
      * Format success message description for static hold exercises
      * Uses duration and sets terminology instead of weight/reps/sets
      */
-    public function formatSuccessMessageDescription(?float $weight, int $reps, int $rounds, ?string $bandColor = null): string
+    public function formatSuccessMessageDescription(?float $weight, int $reps, int $rounds, ?string $bandColor = null, ?int $time = null): string
     {
-        // For static holds, reps represents duration in seconds
-        $duration = $reps;
+        // For static holds, time parameter contains duration in seconds
+        $duration = $time ?? $reps;
         
         $durationDisplay = $this->formatDuration($duration);
         
@@ -440,7 +444,7 @@ class StaticHoldExerciseType extends BaseExerciseType
      */
     public function getProgressionSuggestion(\App\Models\LiftLog $lastLog, int $userId, int $exerciseId, ?\Carbon\Carbon $forDate = null): ?object
     {
-        $lastDuration = $lastLog->display_reps; // reps field stores duration in seconds
+        $lastDuration = $lastLog->liftSets->first()?->time ?? 0;
         $lastWeight = $lastLog->display_weight;
         $lastSets = $lastLog->liftSets->count();
         
@@ -459,7 +463,7 @@ class StaticHoldExerciseType extends BaseExerciseType
             
             return (object)[
                 'sets' => $lastSets,
-                'reps' => $suggestedDuration, // duration stored in reps field
+                'time' => $suggestedDuration,
                 'weight' => 0, // No weight until 60s hold
                 'band_color' => null, // not applicable for static holds
             ];
@@ -470,7 +474,7 @@ class StaticHoldExerciseType extends BaseExerciseType
             // Suggest adding weight
             return (object)[
                 'sets' => $lastSets,
-                'reps' => $lastDuration,
+                'time' => $lastDuration,
                 'weight' => 5, // Start with 5 lbs
                 'band_color' => null,
             ];
@@ -480,7 +484,7 @@ class StaticHoldExerciseType extends BaseExerciseType
             
             return (object)[
                 'sets' => $suggestedSets,
-                'reps' => $lastDuration,
+                'time' => $lastDuration,
                 'weight' => $lastWeight,
                 'band_color' => null,
             ];
@@ -494,7 +498,7 @@ class StaticHoldExerciseType extends BaseExerciseType
     {
         return (object)[
             'sets' => 3, // 3 sets
-            'reps' => 30, // 30 seconds duration
+            'time' => 30, // 30 seconds duration
             'weight' => 0, // bodyweight only
             'band_color' => null, // not applicable for static holds
         ];
@@ -527,7 +531,7 @@ class StaticHoldExerciseType extends BaseExerciseType
      * Calculate current metrics from a lift log
      * 
      * For static hold exercises:
-     * - best_hold: Longest single hold duration (max reps field = duration in seconds)
+     * - best_hold: Longest single hold duration (from time field)
      * - weighted_holds: Map of weight => best duration at that weight
      */
     public function calculateCurrentMetrics(LiftLog $liftLog): array
@@ -536,14 +540,14 @@ class StaticHoldExerciseType extends BaseExerciseType
         $weightedHolds = []; // [weight => duration]
         
         foreach ($liftLog->liftSets as $set) {
-            if ($set->reps > 0) { // reps = duration in seconds
+            if ($set->time > 0) {
                 // Track best overall hold
-                $bestHold = max($bestHold, $set->reps);
+                $bestHold = max($bestHold, $set->time);
                 
                 // Track best hold at each weight (including bodyweight = 0)
                 $weight = $set->weight ?? 0;
-                if (!isset($weightedHolds[$weight]) || $set->reps > $weightedHolds[$weight]) {
-                    $weightedHolds[$weight] = $set->reps;
+                if (!isset($weightedHolds[$weight]) || $set->time > $weightedHolds[$weight]) {
+                    $weightedHolds[$weight] = $set->time;
                 }
             }
         }
@@ -682,8 +686,8 @@ class StaticHoldExerciseType extends BaseExerciseType
         
         foreach ($logs as $log) {
             foreach ($log->liftSets as $set) {
-                if ($set->reps > $bestDuration) {
-                    $bestDuration = $set->reps;
+                if ($set->time > $bestDuration) {
+                    $bestDuration = $set->time;
                     $liftLogId = $log->id;
                 }
             }
@@ -704,8 +708,8 @@ class StaticHoldExerciseType extends BaseExerciseType
         foreach ($logs as $log) {
             foreach ($log->liftSets as $set) {
                 $setWeight = $set->weight ?? 0;
-                if (abs($setWeight - $targetWeight) <= $tolerance && $set->reps > $bestDuration) {
-                    $bestDuration = $set->reps;
+                if (abs($setWeight - $targetWeight) <= $tolerance && $set->time > $bestDuration) {
+                    $bestDuration = $set->time;
                     $liftLogId = $log->id;
                 }
             }

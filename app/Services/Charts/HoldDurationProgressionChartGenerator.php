@@ -17,9 +17,9 @@ class HoldDurationProgressionChartGenerator implements ChartGeneratorInterface
     public function generate(Collection $liftLogs): array
     {
         $volumeData = $liftLogs->map(function ($liftLog) {
-            // For static holds: reps = duration in seconds
+            // For static holds: time field stores duration in seconds
             // Volume = duration × number of sets (total time under tension)
-            $duration = $liftLog->liftSets->first()->reps ?? 0;
+            $duration = $liftLog->liftSets->first()->time ?? 0;
             $sets = $liftLog->liftSets->count();
             $totalDuration = $duration * $sets;
             

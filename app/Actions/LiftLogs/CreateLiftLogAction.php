@@ -55,7 +55,7 @@ class CreateLiftLogAction
             'successMessage' => $this->generateSuccessMessage(
                 $exercise, 
                 $request->input('weight'), 
-                $request->input('reps'), 
+                $request->input('reps') ?? $request->input('time') ?? 0, // Use time for static holds
                 $request->input('rounds'), 
                 $request->input('band_color'), 
                 $prFlags
@@ -137,19 +137,22 @@ class CreateLiftLogAction
     
     private function createLiftSets(Request $request, LiftLog $liftLog, Exercise $exercise): void
     {
-        $reps = $request->input('reps');
         $rounds = $request->input('rounds');
 
         // Use exercise type strategy to process lift data
         $exerciseTypeStrategy = ExerciseTypeFactory::create($exercise);
         
+        // Build lift data from request - include all possible fields
+        $liftDataInput = [
+            'weight' => $request->input('weight'),
+            'band_color' => $request->input('band_color'),
+            'reps' => $request->input('reps'),
+            'time' => $request->input('time'), // For static holds
+            'notes' => $request->input('comments'),
+        ];
+        
         try {
-            $liftData = $exerciseTypeStrategy->processLiftData([
-                'weight' => $request->input('weight'),
-                'band_color' => $request->input('band_color'),
-                'reps' => $reps,
-                'notes' => $request->input('comments'),
-            ]);
+            $liftData = $exerciseTypeStrategy->processLiftData($liftDataInput);
         } catch (InvalidExerciseDataException $e) {
             // Delete the created lift log since data processing failed
             $liftLog->delete();
@@ -160,6 +163,7 @@ class CreateLiftLogAction
             $liftLog->liftSets()->create([
                 'weight' => $liftData['weight'] ?? 0,
                 'reps' => $liftData['reps'],
+                'time' => $liftData['time'] ?? null,
                 'notes' => $liftData['notes'],
                 'band_color' => $liftData['band_color'],
             ]);
@@ -191,7 +195,11 @@ class CreateLiftLogAction
         
         // Use strategy pattern to format workout description
         $strategy = $exercise->getTypeStrategy();
-        $workoutDescription = $strategy->formatSuccessMessageDescription($weight, $reps, $rounds, $bandColor);
+        
+        // For static holds, pass time parameter (reps is always 1, time contains duration)
+        // For other exercises, time will be null
+        $time = $exercise->exercise_type === 'static_hold' ? $reps : null;
+        $workoutDescription = $strategy->formatSuccessMessageDescription($weight, $reps, $rounds, $bandColor, $time);
         
         // Get celebratory messages from config and replace placeholders
         $celebrationTemplates = config('mobile_entry_messages.success.lift_logged');
