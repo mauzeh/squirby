@@ -38,7 +38,7 @@ class StaticHoldExerciseTypeTest extends TestCase
     public function it_processes_lift_data_correctly()
     {
         $data = [
-            'reps' => 30,      // 30 seconds hold
+            'time' => 30,      // 30 seconds hold
             'weight' => 25,    // 25 lbs added weight
             'sets' => 3,
             'band_color' => 'red', // Should be nullified
@@ -46,7 +46,8 @@ class StaticHoldExerciseTypeTest extends TestCase
 
         $processed = $this->strategy->processLiftData($data);
 
-        $this->assertEquals(30, $processed['reps']);
+        $this->assertEquals(30, $processed['time']);
+        $this->assertEquals(1, $processed['reps']); // Always 1
         $this->assertEquals(25, $processed['weight']);
         $this->assertNull($processed['band_color']);
     }
@@ -55,14 +56,15 @@ class StaticHoldExerciseTypeTest extends TestCase
     public function it_processes_bodyweight_static_hold()
     {
         $data = [
-            'reps' => 45,      // 45 seconds hold
+            'time' => 45,      // 45 seconds hold
             'weight' => 0,     // No added weight
             'sets' => 3,
         ];
 
         $processed = $this->strategy->processLiftData($data);
 
-        $this->assertEquals(45, $processed['reps']);
+        $this->assertEquals(45, $processed['time']);
+        $this->assertEquals(1, $processed['reps']); // Always 1
         $this->assertEquals(0, $processed['weight']);
     }
 
@@ -72,7 +74,7 @@ class StaticHoldExerciseTypeTest extends TestCase
         $this->expectException(InvalidExerciseDataException::class);
 
         $data = [
-            'reps' => 0,  // Invalid: too short
+            'time' => 0,  // Invalid: too short
             'weight' => 0,
             'sets' => 3,
         ];
@@ -86,7 +88,7 @@ class StaticHoldExerciseTypeTest extends TestCase
         $this->expectException(InvalidExerciseDataException::class);
 
         $data = [
-            'reps' => 301,  // Invalid: exceeds 5 minutes (300 seconds)
+            'time' => 301,  // Invalid: exceeds 5 minutes (300 seconds)
             'weight' => 0,
             'sets' => 3,
         ];
@@ -100,7 +102,7 @@ class StaticHoldExerciseTypeTest extends TestCase
         $this->expectException(InvalidExerciseDataException::class);
 
         $data = [
-            'reps' => 30,
+            'time' => 30,
             'weight' => -10,  // Invalid: negative weight
             'sets' => 3,
         ];
@@ -242,7 +244,7 @@ class StaticHoldExerciseTypeTest extends TestCase
     /** @test */
     public function it_formats_success_message_for_bodyweight_hold()
     {
-        $message = $this->strategy->formatSuccessMessageDescription(0, 30, 3);
+        $message = $this->strategy->formatSuccessMessageDescription(0, 1, 3, null, 30);
         
         $this->assertEquals('30s hold × 3 sets', $message);
     }
@@ -250,7 +252,7 @@ class StaticHoldExerciseTypeTest extends TestCase
     /** @test */
     public function it_formats_success_message_for_weighted_hold()
     {
-        $message = $this->strategy->formatSuccessMessageDescription(25, 45, 3);
+        $message = $this->strategy->formatSuccessMessageDescription(25, 1, 3, null, 45);
         
         $this->assertEquals('45s hold +25 lbs × 3 sets', $message);
     }
@@ -261,7 +263,7 @@ class StaticHoldExerciseTypeTest extends TestCase
     private function createMockLiftLog(int $duration, float $weight, int $sets = 3): LiftLog
     {
         $liftLog = new LiftLog();
-        $liftLog->display_reps = $duration;
+        $liftLog->display_reps = 1; // Always 1 for static holds
         $liftLog->display_weight = $weight;
         $liftLog->display_rounds = $sets;
         
@@ -274,7 +276,8 @@ class StaticHoldExerciseTypeTest extends TestCase
         $liftSets = collect();
         for ($i = 0; $i < $sets; $i++) {
             $liftSets->push((object)[
-                'reps' => $duration,
+                'reps' => 1,
+                'time' => $duration,
                 'weight' => $weight,
             ]);
         }

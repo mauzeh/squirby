@@ -16,7 +16,7 @@ class LiftSet extends Model
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->logOnly(['lift_log_id', 'weight', 'reps', 'notes', 'band_color'])
+            ->logOnly(['lift_log_id', 'weight', 'reps', 'time', 'notes', 'band_color'])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }
@@ -28,8 +28,16 @@ class LiftSet extends Model
         'lift_log_id',
         'weight',
         'reps',
+        'time',
         'notes',
         'band_color',
+    ];
+
+    protected $casts = [
+        'weight' => 'float',
+        'reps' => 'integer',
+        'time' => 'integer',
+        'band_color' => 'string',
     ];
 
     public function liftLog()

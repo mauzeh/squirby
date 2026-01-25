@@ -34,7 +34,8 @@ class StaticHoldPRDetectionTest extends TestCase
         LiftSet::factory()->create([
             'lift_log_id' => $liftLog->id,
             'weight' => 0,
-            'reps' => 30, // 30 seconds
+            'reps' => 1,
+            'time' => 30, // 30 seconds
         ]);
 
         // Trigger PR detection
@@ -71,7 +72,8 @@ class StaticHoldPRDetectionTest extends TestCase
         LiftSet::factory()->create([
             'lift_log_id' => $firstLog->id,
             'weight' => 0,
-            'reps' => 45,
+            'reps' => 1,
+            'time' => 45,
         ]);
 
         event(new \App\Events\LiftLogCompleted($firstLog));
@@ -86,7 +88,8 @@ class StaticHoldPRDetectionTest extends TestCase
         LiftSet::factory()->create([
             'lift_log_id' => $secondLog->id,
             'weight' => 0,
-            'reps' => 60,
+            'reps' => 1,
+            'time' => 60,
         ]);
 
         event(new \App\Events\LiftLogCompleted($secondLog));
@@ -121,7 +124,8 @@ class StaticHoldPRDetectionTest extends TestCase
         LiftSet::factory()->create([
             'lift_log_id' => $firstLog->id,
             'weight' => 0,
-            'reps' => 20,
+            'reps' => 1,
+            'time' => 20,
         ]);
 
         event(new \App\Events\LiftLogCompleted($firstLog));
@@ -136,7 +140,8 @@ class StaticHoldPRDetectionTest extends TestCase
         LiftSet::factory()->create([
             'lift_log_id' => $secondLog->id,
             'weight' => 0,
-            'reps' => 15,
+            'reps' => 1,
+            'time' => 15,
         ]);
 
         event(new \App\Events\LiftLogCompleted($secondLog));
@@ -169,7 +174,8 @@ class StaticHoldPRDetectionTest extends TestCase
         LiftSet::factory()->create([
             'lift_log_id' => $liftLog->id,
             'weight' => 25,
-            'reps' => 30,
+            'reps' => 1,
+            'time' => 30,
         ]);
 
         event(new \App\Events\LiftLogCompleted($liftLog));
@@ -205,7 +211,8 @@ class StaticHoldPRDetectionTest extends TestCase
         LiftSet::factory()->create([
             'lift_log_id' => $firstLog->id,
             'weight' => 10,
-            'reps' => 20,
+            'reps' => 1,
+            'time' => 20,
         ]);
 
         event(new \App\Events\LiftLogCompleted($firstLog));
@@ -220,7 +227,8 @@ class StaticHoldPRDetectionTest extends TestCase
         LiftSet::factory()->create([
             'lift_log_id' => $secondLog->id,
             'weight' => 10,
-            'reps' => 30,
+            'reps' => 1,
+            'time' => 30,
         ]);
 
         event(new \App\Events\LiftLogCompleted($secondLog));
@@ -256,7 +264,8 @@ class StaticHoldPRDetectionTest extends TestCase
         LiftSet::factory()->create([
             'lift_log_id' => $firstLog->id,
             'weight' => 0,
-            'reps' => 30,
+            'reps' => 1,
+            'time' => 30,
         ]);
 
         event(new \App\Events\LiftLogCompleted($firstLog));
@@ -271,7 +280,8 @@ class StaticHoldPRDetectionTest extends TestCase
         LiftSet::factory()->create([
             'lift_log_id' => $secondLog->id,
             'weight' => 5,
-            'reps' => 45,
+            'reps' => 1,
+            'time' => 45,
         ]);
 
         event(new \App\Events\LiftLogCompleted($secondLog));
@@ -312,19 +322,22 @@ class StaticHoldPRDetectionTest extends TestCase
         LiftSet::factory()->create([
             'lift_log_id' => $liftLog->id,
             'weight' => 0,
-            'reps' => 40, // First set: 40s
+            'reps' => 1,
+            'time' => 40, // First set: 40s
         ]);
 
         LiftSet::factory()->create([
             'lift_log_id' => $liftLog->id,
             'weight' => 0,
-            'reps' => 50, // Second set: 50s (best)
+            'reps' => 1,
+            'time' => 50, // Second set: 50s (best)
         ]);
 
         LiftSet::factory()->create([
             'lift_log_id' => $liftLog->id,
             'weight' => 0,
-            'reps' => 35, // Third set: 35s
+            'reps' => 1,
+            'time' => 35, // Third set: 35s
         ]);
 
         event(new \App\Events\LiftLogCompleted($liftLog));
@@ -358,13 +371,15 @@ class StaticHoldPRDetectionTest extends TestCase
         LiftSet::factory()->create([
             'lift_log_id' => $firstLog->id,
             'weight' => 0,
-            'reps' => 20,
+            'reps' => 1,
+            'time' => 20,
         ]);
 
         LiftSet::factory()->create([
             'lift_log_id' => $firstLog->id,
             'weight' => 10,
-            'reps' => 15,
+            'reps' => 1,
+            'time' => 15,
         ]);
 
         event(new \App\Events\LiftLogCompleted($firstLog));
@@ -379,13 +394,15 @@ class StaticHoldPRDetectionTest extends TestCase
         LiftSet::factory()->create([
             'lift_log_id' => $secondLog->id,
             'weight' => 0,
-            'reps' => 25, // PR at bodyweight
+            'reps' => 1,
+            'time' => 25, // PR at bodyweight
         ]);
 
         LiftSet::factory()->create([
             'lift_log_id' => $secondLog->id,
             'weight' => 10,
-            'reps' => 20, // PR at 10 lbs
+            'reps' => 1,
+            'time' => 20, // PR at 10 lbs
         ]);
 
         event(new \App\Events\LiftLogCompleted($secondLog));
@@ -426,7 +443,8 @@ class StaticHoldPRDetectionTest extends TestCase
         LiftSet::factory()->create([
             'lift_log_id' => $liftLog->id,
             'weight' => 0,
-            'reps' => 30,
+            'reps' => 1,
+            'time' => 30,
         ]);
 
         event(new \App\Events\LiftLogCompleted($liftLog));
@@ -458,7 +476,8 @@ class StaticHoldPRDetectionTest extends TestCase
         LiftSet::factory()->create([
             'lift_log_id' => $liftLog->id,
             'weight' => 0,
-            'reps' => 60,
+            'reps' => 1,
+            'time' => 60,
         ]);
 
         event(new \App\Events\LiftLogCompleted($liftLog));
@@ -490,7 +509,8 @@ class StaticHoldPRDetectionTest extends TestCase
         LiftSet::factory()->create([
             'lift_log_id' => $liftLog->id,
             'weight' => 10,
-            'reps' => 20,
+            'reps' => 1,
+            'time' => 20,
         ]);
 
         event(new \App\Events\LiftLogCompleted($liftLog));
