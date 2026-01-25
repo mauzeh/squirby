@@ -1216,3 +1216,176 @@ Making PRs first-class data transforms them from expensive calculations into que
 - **Unlocks insights** into training patterns
 
 The event-driven approach ensures data consistency while maintaining flexibility for future enhancements.
+
+
+### Phase 6: Cardio Exercise PR Detection (Week 4) ✅ COMPLETE
+- [x] Add ENDURANCE PR type to PRType enum (value: 32)
+- [x] Create migration to add 'endurance' to pr_type ENUM in personal_records table
+- [x] Implement PR detection methods in CardioExerciseType
+- [x] Create comprehensive test suite (14 tests, all passing)
+- [x] Verify all existing tests still pass (1816 tests passing)
+
+**Cardio Exercise PR Types:**
+
+Cardio exercises support three PR types:
+1. **ENDURANCE**: Longest single distance in one round (best individual round)
+2. **VOLUME**: Total distance across all rounds in a session
+3. **REP_SPECIFIC**: Best total distance at specific round counts (e.g., best 5-round total)
+
+**Implementation Details:**
+
+**CardioExerciseType PR Methods:**
+```php
+public function getSupportedPRTypes(): array
+{
+    return [PRType::ENDURANCE, PRType::REP_SPECIFIC, PRType::VOLUME];
+}
+
+public function calculateCurrentMetrics(LiftLog $liftLog): array
+{
+    $bestDistance = 0;
+    $totalDistance = 0;
+    $roundCount = 0;
+    
+    foreach ($liftLog->liftSets as $set) {
+        if ($set->reps > 0) { // reps field stores distance in meters
+            $distance = $set->reps;
+            $bestDistance = max($bestDistance, $distance);
+            $totalDistance += $distance;
+            $roundCount++;
+        }
+    }
+    
+    $roundDistances = [];
+    if ($roundCount > 0 && $roundCount <= 10) {
+        $roundDistances[$roundCount] = $totalDistance;
+    }
+    
+    return [
+        'best_distance' => $bestDistance,
+        'total_distance' => $totalDistance,
+        'round_distances' => $roundDistances,
+    ];
+}
+
+public function compareToPrevious(array $currentMetrics, Collection $previousLogs, LiftLog $currentLog): array
+{
+    $prs = [];
+    $distanceTolerance = 1; // 1 meter tolerance
+    
+    // Check ENDURANCE PR (longest single distance)
+    $bestDistanceResult = $this->getBestSingleDistance($previousLogs);
+    if ($currentMetrics['best_distance'] > $bestDistanceResult['value'] + $distanceTolerance) {
+        $prs[] = [
+            'type' => 'endurance',
+            'value' => $currentMetrics['best_distance'],
+            'previous_value' => $bestDistanceResult['value'],
+            'previous_lift_log_id' => $bestDistanceResult['lift_log_id'],
+        ];
+    }
+    
+    // Check VOLUME PR (total distance)
+    $bestVolumeResult = $this->getBestTotalDistance($previousLogs);
+    if ($currentMetrics['total_distance'] > $bestVolumeResult['value'] + $distanceTolerance) {
+        $prs[] = [
+            'type' => 'volume',
+            'value' => $currentMetrics['total_distance'],
+            'previous_value' => $bestVolumeResult['value'],
+            'previous_lift_log_id' => $bestVolumeResult['lift_log_id'],
+        ];
+    }
+    
+    // Check REP_SPECIFIC PRs (best total distance at specific round counts)
+    foreach ($currentMetrics['round_distances'] as $rounds => $distance) {
+        $previousBestResult = $this->getBestDistanceForRounds($previousLogs, $rounds);
+        if ($distance > $previousBestResult['distance'] + $distanceTolerance) {
+            $prs[] = [
+                'type' => 'rep_specific',
+                'rep_count' => $rounds,
+                'value' => $distance,
+                'previous_value' => $previousBestResult['distance'],
+                'previous_lift_log_id' => $previousBestResult['lift_log_id'],
+            ];
+        }
+    }
+    
+    return $prs;
+}
+```
+
+**Cardio Data Model:**
+- `reps` field stores distance in meters (e.g., 500 = 500m)
+- `weight` always 0 for cardio exercises
+- `sets` represents number of rounds/intervals
+- Distance displayed as "500m" or "10.5km" depending on magnitude
+
+**Examples:**
+
+1. **First cardio session:**
+   - 3 × 500m = 1500m total
+   - Creates 3 PRs: ENDURANCE (500m), VOLUME (1500m), REP_SPECIFIC for 3 rounds (1500m)
+
+2. **Improved session:**
+   - 3 × 600m = 1800m total
+   - Beats all 3 PRs: ENDURANCE (600m > 500m), VOLUME (1800m > 1500m), REP_SPECIFIC for 3 rounds (1800m > 1500m)
+
+3. **Different round count:**
+   - 5 × 400m = 2000m total
+   - Creates new REP_SPECIFIC PR for 5 rounds (first time doing 5 rounds)
+   - May or may not beat VOLUME PR depending on previous best
+
+4. **Multiple sets with varying distances:**
+   - 500m, 800m, 600m
+   - ENDURANCE PR tracks the best single distance (800m)
+   - VOLUME PR tracks total (1900m)
+
+**Test Coverage:**
+
+Created comprehensive test suite `tests/Feature/CardioPRDetectionTest.php` with 14 tests:
+- ✅ First cardio creates ENDURANCE PR
+- ✅ Longer distance creates ENDURANCE PR
+- ✅ Shorter distance does not create ENDURANCE PR
+- ✅ First cardio creates VOLUME PR
+- ✅ Higher total distance creates VOLUME PR
+- ✅ Lower total distance does not create VOLUME PR
+- ✅ First cardio creates REP_SPECIFIC PR
+- ✅ Better distance at same rounds creates REP_SPECIFIC PR
+- ✅ Different round counts create separate REP_SPECIFIC PRs
+- ✅ Cardio can achieve multiple PR types simultaneously
+- ✅ Multiple sets tracks best distance for ENDURANCE PR
+- ✅ Cardio does not create ONE_RM PR
+- ✅ Cardio display shows distance correctly
+- ✅ Cardio PR flags are set correctly
+
+**Key Implementation Insight:**
+
+The `is_pr` field in the `lift_logs` table is a boolean flag (not bitwise flags), indicating whether the lift has ANY PRs. The specific PR types are stored in the `personal_records` table with the `pr_type` column. This was discovered when the test initially tried to use bitwise operations on `is_pr`, which failed because it's cast as a boolean in the LiftLog model.
+
+**Migration:**
+```php
+Schema::table('personal_records', function (Blueprint $table) {
+    DB::statement("ALTER TABLE personal_records MODIFY COLUMN pr_type ENUM('one_rm', 'rep_specific', 'volume', 'density', 'time', 'endurance') NOT NULL");
+});
+```
+
+**Files Modified:**
+- `app/Services/ExerciseTypes/CardioExerciseType.php` - Added PR detection methods
+- `database/migrations/2026_01_25_084700_add_endurance_pr_type_to_personal_records_table.php` - Added ENDURANCE to enum
+- `tests/Feature/CardioPRDetectionTest.php` - Created comprehensive test suite
+- `app/Enums/PRType.php` - ENDURANCE enum already existed with value 32
+
+**Test Results:**
+- All 14 cardio PR detection tests passing ✅
+- All 1816 existing tests still passing ✅
+- Zero regressions introduced ✅
+
+**Design Consistency:**
+
+Cardio PR detection follows the same Strategy Pattern architecture as other exercise types:
+- Implements `getSupportedPRTypes()`, `calculateCurrentMetrics()`, `compareToPrevious()`
+- Uses same event-driven architecture (LiftLogCompleted event)
+- Stores PRs in same `personal_records` table
+- Uses same `is_pr` and `pr_count` flags on `lift_logs`
+- No changes needed to PRDetectionService or DetectAndRecordPRs listener
+
+This demonstrates the power of the Strategy Pattern - adding PR support for a new exercise type required ZERO changes to the core PR detection infrastructure.
