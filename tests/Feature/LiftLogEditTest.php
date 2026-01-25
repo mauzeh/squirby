@@ -357,4 +357,95 @@ class LiftLogEditTest extends TestCase
         $this->assertEquals('Date:', $formData['messages'][0]['prefix']);
         $this->assertStringContainsString('3 days ago', $formData['messages'][0]['text']);
     }
+
+    /** @test */
+    public function edit_page_works_for_static_hold_exercises()
+    {
+        $staticHoldExercise = Exercise::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_type' => 'static_hold'
+        ]);
+        $staticHoldLog = LiftLog::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $staticHoldExercise->id,
+        ]);
+        $staticHoldLog->liftSets()->create([
+            'weight' => 0,
+            'reps' => 1,
+            'time' => 31,
+            'notes' => 'Static hold set',
+        ]);
+
+        $response = $this->actingAs($this->user)
+            ->get(route('lift-logs.edit', $staticHoldLog));
+
+        $response->assertStatus(200);
+        $response->assertSee($staticHoldExercise->title);
+        
+        $data = $response->viewData('data');
+        $formData = $data['components'][0]['data'];
+        
+        // Check numeric fields have correct default values
+        $numericFields = collect($formData['numericFields']);
+        
+        $timeField = $numericFields->firstWhere('name', 'time');
+        $this->assertNotNull($timeField, 'Time field should exist for static hold exercises');
+        $this->assertEquals(31, $timeField['defaultValue'], 'Time field should be prepopulated with 31 seconds');
+        
+        $weightField = $numericFields->firstWhere('name', 'weight');
+        $this->assertEquals(0, $weightField['defaultValue']);
+    }
+
+    /** @test */
+    public function edit_page_prepopulates_time_field_for_weighted_static_hold()
+    {
+        $staticHoldExercise = Exercise::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_type' => 'static_hold'
+        ]);
+        $staticHoldLog = LiftLog::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $staticHoldExercise->id,
+        ]);
+        // Create multiple sets with different durations
+        $staticHoldLog->liftSets()->create([
+            'weight' => 25,
+            'reps' => 1,
+            'time' => 45,
+            'notes' => 'First set',
+        ]);
+        $staticHoldLog->liftSets()->create([
+            'weight' => 25,
+            'reps' => 1,
+            'time' => 40,
+            'notes' => 'Second set',
+        ]);
+        $staticHoldLog->liftSets()->create([
+            'weight' => 25,
+            'reps' => 1,
+            'time' => 38,
+            'notes' => 'Third set',
+        ]);
+
+        $response = $this->actingAs($this->user)
+            ->get(route('lift-logs.edit', $staticHoldLog));
+
+        $response->assertStatus(200);
+        
+        $data = $response->viewData('data');
+        $formData = $data['components'][0]['data'];
+        
+        // Check numeric fields have correct default values from first set
+        $numericFields = collect($formData['numericFields']);
+        
+        $timeField = $numericFields->firstWhere('name', 'time');
+        $this->assertNotNull($timeField, 'Time field should exist for static hold exercises');
+        $this->assertEquals(45, $timeField['defaultValue'], 'Time field should be prepopulated with first set duration (45 seconds)');
+        
+        $weightField = $numericFields->firstWhere('name', 'weight');
+        $this->assertEquals(25, $weightField['defaultValue'], 'Weight field should be prepopulated with 25 lbs');
+        
+        $roundsField = $numericFields->firstWhere('name', 'rounds');
+        $this->assertEquals(3, $roundsField['defaultValue'], 'Rounds field should show 3 sets');
+    }
 }

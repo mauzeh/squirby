@@ -132,6 +132,7 @@ class LiftLogService extends MobileEntryBaseService
         return [
             'weight' => $firstSet->weight ?? 0,
             'reps' => $firstSet->reps ?? 0,
+            'time' => $firstSet->time ?? 0,
             'sets' => $liftLog->liftSets->count(),
             'band_color' => $firstSet->band_color ?? 'red',
             'comments' => $liftLog->comments ?? '',
