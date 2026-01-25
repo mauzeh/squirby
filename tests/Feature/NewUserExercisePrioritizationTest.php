@@ -6,7 +6,7 @@ use App\Models\Exercise;
 use App\Models\LiftLog;
 use App\Models\Role;
 use App\Models\User;
-use App\Services\MobileEntry\LiftLogService;
+use App\Services\MobileEntry\ExerciseSelectionService;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -18,7 +18,7 @@ class NewUserExercisePrioritizationTest extends TestCase
     private User $newUser;
     private User $experiencedUser;
     private User $adminUser;
-    private LiftLogService $liftLogService;
+    private ExerciseSelectionService $exerciseSelectionService;
 
     protected function setUp(): void
     {
@@ -37,7 +37,7 @@ class NewUserExercisePrioritizationTest extends TestCase
         $this->adminUser->roles()->attach($adminRole);
         
         // Create the service
-        $this->liftLogService = app(LiftLogService::class);
+        $this->exerciseSelectionService = app(ExerciseSelectionService::class);
     }
 
     /** @test */
@@ -73,7 +73,7 @@ class NewUserExercisePrioritizationTest extends TestCase
         ]);
         
         // Get item selection list for new user
-        $result = $this->liftLogService->generateItemSelectionList($this->newUser->id, Carbon::today());
+        $result = $this->exerciseSelectionService->generateItemSelectionList($this->newUser->id, Carbon::today());
         
         // Find the exercises in the results
         $benchPressItem = collect($result['items'])->firstWhere('name', 'Bench Press');
@@ -109,7 +109,7 @@ class NewUserExercisePrioritizationTest extends TestCase
         ]);
         
         // Get item selection list for experienced user
-        $result = $this->liftLogService->generateItemSelectionList($this->experiencedUser->id, Carbon::today());
+        $result = $this->exerciseSelectionService->generateItemSelectionList($this->experiencedUser->id, Carbon::today());
         
         // Find exercises in results
         $loggedExerciseItem = collect($result['items'])->firstWhere('name', 'Logged Exercise');
@@ -146,7 +146,7 @@ class NewUserExercisePrioritizationTest extends TestCase
         ]);
         
         // Get item selection list for new user
-        $result = $this->liftLogService->generateItemSelectionList($this->newUser->id, Carbon::today());
+        $result = $this->exerciseSelectionService->generateItemSelectionList($this->newUser->id, Carbon::today());
         
         // Find exercises in results
         $exercise1Item = collect($result['items'])->firstWhere('name', 'Exercise 1');
@@ -191,7 +191,7 @@ class NewUserExercisePrioritizationTest extends TestCase
         ]);
         
         // Get item selection list for new user (should only see global exercise)
-        $result = $this->liftLogService->generateItemSelectionList($this->newUser->id, Carbon::today());
+        $result = $this->exerciseSelectionService->generateItemSelectionList($this->newUser->id, Carbon::today());
         
         // Should only contain the global exercise
         $exerciseNames = collect($result['items'])->pluck('name')->toArray();
@@ -237,7 +237,7 @@ class NewUserExercisePrioritizationTest extends TestCase
         ]);
         
         // Get item selection list
-        $result = $this->liftLogService->generateItemSelectionList($this->newUser->id, Carbon::today());
+        $result = $this->exerciseSelectionService->generateItemSelectionList($this->newUser->id, Carbon::today());
         
         // Find exercises
         $popularItem = collect($result['items'])->firstWhere('name', 'Popular Exercise');
@@ -272,7 +272,7 @@ class NewUserExercisePrioritizationTest extends TestCase
         ]);
         
         // Get item selection list
-        $result = $this->liftLogService->generateItemSelectionList($this->experiencedUser->id, Carbon::today());
+        $result = $this->exerciseSelectionService->generateItemSelectionList($this->experiencedUser->id, Carbon::today());
         
         // Find exercises
         $recentItem = collect($result['items'])->firstWhere('name', 'Recent Exercise');
@@ -296,7 +296,7 @@ class NewUserExercisePrioritizationTest extends TestCase
         $exercise = Exercise::factory()->create(['title' => 'Test Exercise']);
         
         // Initially new user (0 logs) - should see popular exercises
-        $result1 = $this->liftLogService->generateItemSelectionList($this->newUser->id, Carbon::today());
+        $result1 = $this->exerciseSelectionService->generateItemSelectionList($this->newUser->id, Carbon::today());
         
         // Create 4 lift logs (still new user)
         LiftLog::factory()->count(4)->create([
@@ -304,7 +304,7 @@ class NewUserExercisePrioritizationTest extends TestCase
             'exercise_id' => $exercise->id,
         ]);
         
-        $result2 = $this->liftLogService->generateItemSelectionList($this->newUser->id, Carbon::today());
+        $result2 = $this->exerciseSelectionService->generateItemSelectionList($this->newUser->id, Carbon::today());
         
         // Create 1 more lift log (now experienced user with 5 total)
         LiftLog::factory()->create([
@@ -312,7 +312,7 @@ class NewUserExercisePrioritizationTest extends TestCase
             'exercise_id' => $exercise->id,
         ]);
         
-        $result3 = $this->liftLogService->generateItemSelectionList($this->newUser->id, Carbon::today());
+        $result3 = $this->exerciseSelectionService->generateItemSelectionList($this->newUser->id, Carbon::today());
         
         // The behavior should change at the 5-log threshold
         // This test mainly ensures the threshold logic works correctly
@@ -325,7 +325,7 @@ class NewUserExercisePrioritizationTest extends TestCase
     public function empty_exercise_list_returns_empty_prioritization()
     {
         // Test with no exercises available
-        $result = $this->liftLogService->generateItemSelectionList($this->newUser->id, Carbon::today());
+        $result = $this->exerciseSelectionService->generateItemSelectionList($this->newUser->id, Carbon::today());
         
         $this->assertEmpty($result['items']);
     }
@@ -348,7 +348,7 @@ class NewUserExercisePrioritizationTest extends TestCase
         }
         
         // Get item selection list for new user
-        $result = $this->liftLogService->generateItemSelectionList($this->newUser->id, Carbon::today());
+        $result = $this->exerciseSelectionService->generateItemSelectionList($this->newUser->id, Carbon::today());
         
         // Count how many exercises are marked as "Popular"
         $popularCount = collect($result['items'])
@@ -381,7 +381,7 @@ class NewUserExercisePrioritizationTest extends TestCase
         ]);
         
         // Get item selection list
-        $result = $this->liftLogService->generateItemSelectionList($this->newUser->id, Carbon::today());
+        $result = $this->exerciseSelectionService->generateItemSelectionList($this->newUser->id, Carbon::today());
         
         // Find exercises
         $withinWindowItem = collect($result['items'])->firstWhere('name', 'Within Window');

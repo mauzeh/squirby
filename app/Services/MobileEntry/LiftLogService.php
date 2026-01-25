@@ -9,11 +9,9 @@ use App\Models\User;
 use App\Services\TrainingProgressionService;
 use App\Services\ExerciseAliasService;
 use App\Services\Factories\LiftLogFormFactory;
-use App\Services\LiftLogTableRowBuilder;
-use App\Services\ComponentBuilder;
-use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
+use App\Services\MobileEntry\LiftProgressionService;
 use App\Services\MobileEntry\MobileEntryBaseService;
+use Carbon\Carbon;
 
 class LiftLogService extends MobileEntryBaseService
 {
@@ -21,52 +19,20 @@ class LiftLogService extends MobileEntryBaseService
     protected LiftDataCacheService $cacheService;
     protected ExerciseAliasService $aliasService;
     protected LiftLogFormFactory $liftLogFormFactory;
-    protected LiftLogTableRowBuilder $tableRowBuilder;
 
     public function __construct(
         TrainingProgressionService $trainingProgressionService,
         LiftDataCacheService $cacheService,
         ExerciseAliasService $aliasService,
-        LiftLogFormFactory $liftLogFormFactory,
-        LiftLogTableRowBuilder $tableRowBuilder
+        LiftLogFormFactory $liftLogFormFactory
     ) {
         $this->trainingProgressionService = $trainingProgressionService;
         $this->cacheService = $cacheService;
         $this->aliasService = $aliasService;
         $this->liftLogFormFactory = $liftLogFormFactory;
-        $this->tableRowBuilder = $tableRowBuilder;
     }
 
-    /**
-     * Generate PR info components for a collection of lift logs
-     * Creates one PR info card per unique exercise
-     * 
-     * @param Collection $liftLogs Collection of lift logs
-     * @param Carbon $beforeDate Only consider logs before this date
-     * @return array Array of PR info components
-     */
-    public function generatePRInfoForLogs($liftLogs, Carbon $beforeDate): array
-    {
-        $components = [];
-        
-        // Group logs by exercise
-        $logsByExercise = $liftLogs->groupBy('exercise_id');
-        
-        foreach ($logsByExercise as $exerciseId => $exerciseLogs) {
-            $exercise = $exerciseLogs->first()->exercise;
-            
-            // Get PR information for this exercise
-            $prInfo = $this->getPRInformation($exerciseId, $exerciseLogs->first()->user_id, $beforeDate);
-            
-            // Only add component if there's PR data
-            if (!empty($prInfo)) {
-                $displayName = $this->aliasService->getDisplayName($exercise, $exerciseLogs->first()->user);
-                $components[] = ComponentBuilder::prInfo($displayName . ' - Previous Records', $prInfo);
-            }
-        }
-        
-        return $components;
-    }
+
     
     /**
      * Generate a form component for creating or editing a lift log
@@ -145,256 +111,15 @@ class LiftLogService extends MobileEntryBaseService
         return $formComponent;
     }
     
-    /**
-     * Generate a form component with PR information for creating a lift log
-     * This is a wrapper that adds PR info component after the form
-     * 
-     * @param int $exerciseId The exercise ID
-     * @param int $userId The user ID
-     * @param Carbon $selectedDate The selected date
-     * @param array $redirectParams Optional redirect parameters
-     * @return array Array of components (form + PR info)
-     */
-    public function generateFormWithPRInfo(
-        int $exerciseId,
-        int $userId,
-        Carbon $selectedDate,
-        array $redirectParams = []
-    ): array {
-        $components = [];
-        
-        // Get the main form component
-        $formComponent = $this->generateFormComponent(
-            $exerciseId,
-            $userId,
-            $selectedDate,
-            $redirectParams
-        );
-        
-        $components[] = $formComponent;
-        
-        // Get PR information for this exercise
-        $prInfo = $this->getPRInformation($exerciseId, $userId, $selectedDate);
-        
-        // Add PR info component if there's data
-        if (!empty($prInfo)) {
-            $components[] = ComponentBuilder::prInfo('Previous Records', $prInfo);
-        }
-        
-        return $components;
-    }
-    
-    /**
-     * Get PR information for an exercise
-     * 
-     * @param int $exerciseId
-     * @param int $userId
-     * @param Carbon $beforeDate Only consider logs before this date
-     * @return array Array of PR records
-     */
-    private function getPRInformation(int $exerciseId, int $userId, Carbon $beforeDate): array
-    {
-        $exercise = Exercise::find($exerciseId);
-        if (!$exercise) {
-            return [];
-        }
-        
-        $strategy = $exercise->getTypeStrategy();
-        
-        // Only exercises that support 1RM calculation can have PRs
-        if (!$strategy->canCalculate1RM()) {
-            return [];
-        }
-        
-        // Get all previous lift logs for this exercise
-        $previousLogs = LiftLog::where('exercise_id', $exerciseId)
-            ->where('user_id', $userId)
-            ->where('logged_at', '<', $beforeDate->toDateString())
-            ->with('liftSets')
-            ->orderBy('logged_at', 'asc')
-            ->get();
-        
-        if ($previousLogs->isEmpty()) {
-            return [];
-        }
-        
-        $records = [];
-        
-        // Get 1RM PR
-        $oneRMResult = $this->getMax1RMWithLog($previousLogs);
-        if ($oneRMResult['value'] > 0) {
-            $records[] = [
-                'type' => 'one_rm',
-                'label' => '1RM',
-                'value' => number_format($oneRMResult['value'], 1) . ' lbs',
-                'date' => $oneRMResult['date'],
-                'lift_log_id' => $oneRMResult['lift_log_id']
-            ];
-        }
-        
-        // Get Volume PR
-        $volumeResult = $this->getMaxVolumeWithLog($previousLogs);
-        if ($volumeResult['value'] > 0) {
-            $records[] = [
-                'type' => 'volume',
-                'label' => 'Volume',
-                'value' => number_format($volumeResult['value'], 0) . ' lbs',
-                'date' => $volumeResult['date'],
-                'lift_log_id' => $volumeResult['lift_log_id']
-            ];
-        }
-        
-        // Get rep-specific PRs (for reps 1-10)
-        for ($reps = 1; $reps <= 10; $reps++) {
-            $repResult = $this->getMaxWeightForRepsWithLog($previousLogs, $reps);
-            if ($repResult['weight'] > 0) {
-                $records[] = [
-                    'type' => 'rep_specific',
-                    'label' => $reps . ' Rep' . ($reps > 1 ? 's' : ''),
-                    'value' => number_format($repResult['weight'], 1) . ' lbs',
-                    'date' => $repResult['date'],
-                    'lift_log_id' => $repResult['lift_log_id']
-                ];
-            }
-        }
-        
-        return $records;
-    }
-    
-    /**
-     * Get maximum 1RM from previous logs with lift log ID
-     * 
-     * @param Collection $previousLogs
-     * @return array ['value' => float, 'date' => string, 'lift_log_id' => int]
-     */
-    private function getMax1RMWithLog($previousLogs): array
-    {
-        $max1RM = 0;
-        $maxDate = null;
-        $maxLiftLogId = null;
-        
-        foreach ($previousLogs as $log) {
-            $strategy = $log->exercise->getTypeStrategy();
-            
-            foreach ($log->liftSets as $set) {
-                if ($set->weight > 0 && $set->reps > 0) {
-                    try {
-                        $estimated1RM = $strategy->calculate1RM($set->weight, $set->reps, $log);
-                        if ($estimated1RM > $max1RM) {
-                            $max1RM = $estimated1RM;
-                            $maxDate = $log->logged_at->format('M j, Y');
-                            $maxLiftLogId = $log->id;
-                        }
-                    } catch (\Exception $e) {
-                        continue;
-                    }
-                }
-            }
-        }
-        
-        return [
-            'value' => $max1RM,
-            'date' => $maxDate ?? '',
-            'lift_log_id' => $maxLiftLogId
-        ];
-    }
-    
-    /**
-     * Get maximum volume from previous logs with lift log ID
-     * 
-     * @param Collection $previousLogs
-     * @return array ['value' => float, 'date' => string, 'lift_log_id' => int]
-     */
-    private function getMaxVolumeWithLog($previousLogs): array
-    {
-        $maxVolume = 0;
-        $maxDate = null;
-        $maxLiftLogId = null;
-        
-        foreach ($previousLogs as $log) {
-            $totalVolume = 0;
-            
-            foreach ($log->liftSets as $set) {
-                if ($set->weight > 0 && $set->reps > 0) {
-                    $totalVolume += ($set->weight * $set->reps);
-                }
-            }
-            
-            if ($totalVolume > $maxVolume) {
-                $maxVolume = $totalVolume;
-                $maxDate = $log->logged_at->format('M j, Y');
-                $maxLiftLogId = $log->id;
-            }
-        }
-        
-        return [
-            'value' => $maxVolume,
-            'date' => $maxDate ?? '',
-            'lift_log_id' => $maxLiftLogId
-        ];
-    }
-    
-    /**
-     * Get maximum weight for a specific rep count with lift log ID
-     * 
-     * @param Collection $previousLogs
-     * @param int $targetReps
-     * @return array ['weight' => float, 'date' => string, 'lift_log_id' => int]
-     */
-    private function getMaxWeightForRepsWithLog($previousLogs, int $targetReps): array
-    {
-        $maxWeight = 0;
-        $maxDate = null;
-        $maxLiftLogId = null;
-        
-        foreach ($previousLogs as $log) {
-            foreach ($log->liftSets as $set) {
-                if ($set->reps === $targetReps && $set->weight > $maxWeight) {
-                    $maxWeight = $set->weight;
-                    $maxDate = $log->logged_at->format('M j, Y');
-                    $maxLiftLogId = $log->id;
-                }
-            }
-        }
-        
-        return [
-            'weight' => $maxWeight,
-            'date' => $maxDate ?? '',
-            'lift_log_id' => $maxLiftLogId
-        ];
-    }
+
 
     /**
      * Prepare default values for create mode
      */
     private function prepareCreateDefaults(Exercise $exercise, ?array $lastSession, int $userId, User $user): array
     {
-        // Get progression suggestion
-        $progressionSuggestion = null;
-        if ($lastSession) {
-            $progressionSuggestion = $this->trainingProgressionService->getSuggestionDetails($userId, $exercise->id);
-        }
-        
-        // Determine default weight, reps, and sets based on user preference
-        if ($user->shouldPrefillSuggestedValues()) {
-            // Use suggested values from progression service
-            $defaultWeight = $this->getDefaultWeight($exercise, $lastSession, $userId);
-            $defaultReps = $progressionSuggestion->reps ?? ($lastSession['reps'] ?? 5);
-            $defaultSets = $progressionSuggestion->sets ?? ($lastSession['sets'] ?? 3);
-        } else {
-            // Use last workout values only
-            $defaultWeight = $lastSession['weight'] ?? $exercise->getTypeStrategy()->getDefaultStartingWeight($exercise);
-            $defaultReps = $lastSession['reps'] ?? 5;
-            $defaultSets = $lastSession['sets'] ?? 3;
-        }
-        
-        return [
-            'weight' => $defaultWeight,
-            'reps' => $defaultReps,
-            'sets' => $defaultSets,
-            'band_color' => $lastSession['band_color'] ?? 'red',
-            'comments' => '',
-        ];
+        // Use LiftProgressionService for defaults
+        return app(LiftProgressionService::class)->prepareCreateDefaults($exercise, $lastSession, $userId, $user);
     }
 
     /**
@@ -443,6 +168,42 @@ class LiftLogService extends MobileEntryBaseService
                 'text' => $dateMessage
             ]
         ];
+    }
+
+    /**
+     * Generate a friendly date message for display
+     * 
+     * @param Carbon $date
+     * @return string
+     */
+    private function generateFriendlyDateMessage(Carbon $date): string
+    {
+        $now = Carbon::now();
+        
+        if ($date->isToday()) {
+            return 'Today';
+        }
+        
+        if ($date->isYesterday()) {
+            return 'Yesterday';
+        }
+        
+        if ($date->isTomorrow()) {
+            return 'Tomorrow';
+        }
+        
+        $daysDiff = (int) abs($now->diffInDays($date));
+        
+        if ($daysDiff <= 7 && $date->isPast()) {
+            return $daysDiff . ' days ago (' . $date->format('l, M j') . ')';
+        }
+        
+        if ($daysDiff <= 7 && $date->isFuture()) {
+            return 'In ' . $daysDiff . ' days (' . $date->format('l, M j') . ')';
+        }
+        
+        // For dates more than a week away
+        return $date->format('l, F j, Y');
     }
 
     /**
@@ -686,279 +447,11 @@ class LiftLogService extends MobileEntryBaseService
     }
 
     /**
-     * Generate logged items data for the selected date
-     * 
-     * @param int $userId
-     * @param Carbon $selectedDate
-     * @return array
-     */
-    public function generateLoggedItems($userId, Carbon $selectedDate)
-    {
-        $logs = LiftLog::where('user_id', $userId)
-            ->whereDate('logged_at', $selectedDate->toDateString())
-            ->with(['exercise' => function ($query) use ($userId) {
-                $query->with(['aliases' => function ($aliasQuery) use ($userId) {
-                    $aliasQuery->where('user_id', $userId);
-                }]);
-            }, 'liftSets'])
-            ->orderBy('logged_at', 'desc')
-            ->get();
-
-        // Build table rows using shared service
-        $rows = $this->tableRowBuilder->buildRows($logs, [
-            'showDateBadge' => false, // Don't show date badge on mobile-entry (same day)
-            'showCheckbox' => false,
-            'showViewLogsAction' => true, // Show view logs action
-            'showDeleteAction' => true, // Show delete button on mobile-entry
-            'wrapActions' => false, // Keep all 3 buttons on same line
-            'includeEncouragingMessage' => true, // Show encouraging messages
-            'redirectContext' => 'mobile-entry-lifts',
-            'selectedDate' => $selectedDate->toDateString(),
-            'showPRRecordsTable' => true, // Show PR records table on mobile-entry/lifts
-        ]);
-
-        $tableBuilder = ComponentBuilder::table()
-            ->rows($rows)
-            ->emptyMessage(config('mobile_entry_messages.empty_states.no_workouts_logged'))
-            ->confirmMessage('deleteItem', 'Are you sure you want to delete this lift log entry? This action cannot be undone.')
-            ->ariaLabel('Logged workouts')
-            ->spacedRows();
-
-        return $tableBuilder->build();
-    }
-
-    /**
-     * Generate item selection list based on user's accessible exercises
-     * 
-     * Adaptive system that prioritizes exercises based on user experience:
-     * 
-     * For New Users (< 5 total lift logs):
-     * 1. Recent (Last 4 Weeks)
-     *    - Label: Recent
-     *    - Style: 'recent' (green, lighter)
-     *    - Priority: 1
-     *    - Exercises performed in the last 4 weeks (excluding today)
-     * 
-     * 2. Popular Exercises (Essential beginner-friendly exercises)
-     *    - Label: Popular
-     *    - Style: 'in-program' (green, prominent)
-     *    - Priority: 2
-     *    - Curated list of most common beginner exercises
-     * 
-     * 3. All Others
-     *    - No label or last performed date
-     *    - Style: 'regular' (gray)
-     *    - Priority: 3
-     *    - All remaining exercises, ordered alphabetically
-     * 
-     * For Experienced Users (≥ 5 total lift logs):
-     * 1. Recent (Last 4 Weeks)
-     *    - Label: Recent
-     *    - Style: 'recent' (green, lighter)
-     *    - Priority: 1
-     *    - Exercises performed in the last 4 weeks (excluding today)
-     * 
-     * 2. Previously Logged Exercises
-     *    - Label: Shows last performed date (e.g., "2 days ago")
-     *    - Style: 'in-program' (green, prominent)
-     *    - Priority: 2
-     *    - Other exercises with workout history for this user
-     * 
-     * 3. Never Logged Exercises
-     *    - Label: Empty
-     *    - Style: 'regular' (gray)
-     *    - Priority: 3
-     *    - Exercises never performed by this user, ordered alphabetically
-     * 
-     * @param int $userId
-     * @param Carbon $selectedDate
-     * @return array
-     */
-    public function generateItemSelectionList($userId, Carbon $selectedDate)
-    {
-        // Get user's accessible exercises with aliases
-        $exercises = Exercise::availableToUser($userId)
-            ->with(['aliases' => function ($query) use ($userId) {
-                $query->where('user_id', $userId);
-            }])
-            ->orderBy('title', 'asc')
-            ->get();
-
-        // Apply aliases to exercises
-        $user = User::find($userId);
-        $exercises = $this->aliasService->applyAliasesToExercises($exercises, $user);
-
-        // Get exercises already logged today (to exclude from recent list)
-        $loggedTodayExerciseIds = LiftLog::where('user_id', $userId)
-            ->whereDate('logged_at', $selectedDate->toDateString())
-            ->pluck('exercise_id')
-            ->unique()
-            ->toArray();
-
-        // Get recent exercises (last 4 weeks, excluding today) for the "Recent" category
-        $recentExerciseIds = LiftLog::where('user_id', $userId)
-            ->where('logged_at', '>=', $selectedDate->copy()->subDays(28))
-            ->where('logged_at', '<', $selectedDate->startOfDay())
-            ->whereNotIn('exercise_id', $loggedTodayExerciseIds)
-            ->pluck('exercise_id')
-            ->unique()
-            ->toArray();
-            
-        // Get last performed dates for all exercises in a single query
-        $lastPerformedDates = LiftLog::where('user_id', $userId)
-            ->whereIn('exercise_id', $exercises->pluck('id'))
-            ->select('exercise_id', DB::raw('MAX(logged_at) as last_logged_at'))
-            ->groupBy('exercise_id')
-            ->pluck('last_logged_at', 'exercise_id');
-
-        // Check if user is new (has fewer than 5 total lift logs)
-        $totalLiftLogs = LiftLog::where('user_id', $userId)->count();
-        $isNewUser = $totalLiftLogs < 5;
-
-        // Simplified prioritization based on user experience
-        $prioritizedExerciseMap = [];
-        
-        if ($isNewUser) {
-            // For new users: show common beginner-friendly exercises at the top
-            $prioritizedExerciseMap = $this->getCommonExercisesForNewUsers($exercises);
-        }
-
-        $items = [];
-        
-        foreach ($exercises as $exercise) {
-            // Calculate "X ago" label for last performed date
-            $lastPerformedLabel = '';
-            if (isset($lastPerformedDates[$exercise->id])) {
-                $lastPerformed = Carbon::parse($lastPerformedDates[$exercise->id]);
-                $lastPerformedLabel = $lastPerformed->diffForHumans(['short' => true]);
-            }
-            
-            // Enhanced category system - Recent always at top for all users
-            if ($isNewUser && in_array($exercise->id, $recentExerciseIds)) {
-                // Category 1: Recent exercises for new users (top priority)
-                $itemType = [
-                    'label' => 'Recent',
-                    'cssClass' => 'recent',  // Green, lighter
-                    'priority' => 1,
-                    'subPriority' => 0
-                ];
-            } elseif ($isNewUser && isset($prioritizedExerciseMap[$exercise->id])) {
-                // Category 2: Popular exercises for new users
-                $rank = $prioritizedExerciseMap[$exercise->id];
-                $itemType = [
-                    'label' => 'Popular',
-                    'cssClass' => 'in-program',  // Green, prominent
-                    'priority' => 2,
-                    'subPriority' => $rank  // Preserve ordering
-                ];
-            } elseif (!$isNewUser && in_array($exercise->id, $recentExerciseIds)) {
-                // Category 1: Recent exercises for experienced users (top priority)
-                $itemType = [
-                    'label' => 'Recent',
-                    'cssClass' => 'recent',  // Green, lighter
-                    'priority' => 1,
-                    'subPriority' => 0
-                ];
-            } elseif (!$isNewUser && isset($lastPerformedDates[$exercise->id])) {
-                // Category 2: Other exercises with logs for experienced users
-                $itemType = [
-                    'label' => $lastPerformedLabel,
-                    'cssClass' => 'in-program',  // Green, show they have history
-                    'priority' => 2,
-                    'subPriority' => 0
-                ];
-            } else {
-                // Category 3: All others (never logged or no special priority)
-                $priority = $isNewUser ? 3 : 3;  // Lower priority for both user types
-                $itemType = [
-                    'label' => $lastPerformedLabel,
-                    'cssClass' => 'regular',  // Gray
-                    'priority' => $priority,
-                    'subPriority' => 0
-                ];
-            }
-            
-            // Always use default flow: go directly to lift log creation
-            $routeParams = [
-                'exercise_id' => $exercise->id,
-                'redirect_to' => 'mobile-entry-lifts'
-            ];
-            
-            // Only include date if we're NOT viewing today
-            if (!$selectedDate->isToday()) {
-                $routeParams['date'] = $selectedDate->toDateString();
-            }
-            
-            $href = route('lift-logs.create', $routeParams);
-            
-            $items[] = [
-                'id' => 'exercise-' . $exercise->id,
-                'name' => $exercise->title,
-                'type' => $itemType,
-                'href' => $href
-            ];
-        }
-
-        // Sort items: by priority first, then by subPriority (for popular exercises ranking), then alphabetical by name
-        usort($items, function ($a, $b) {
-            // First sort by priority (lower number = higher priority)
-            $priorityComparison = $a['type']['priority'] <=> $b['type']['priority'];
-            if ($priorityComparison !== 0) {
-                return $priorityComparison;
-            }
-            
-            // If same priority, sort by subPriority (for recommendations to maintain engine order)
-            $subPriorityA = $a['type']['subPriority'] ?? 0;
-            $subPriorityB = $b['type']['subPriority'] ?? 0;
-            $subPriorityComparison = $subPriorityA <=> $subPriorityB;
-            if ($subPriorityComparison !== 0) {
-                return $subPriorityComparison;
-            }
-            
-            // If same priority and subPriority, sort alphabetically by name
-            return strcmp($a['name'], $b['name']);
-        });
-
-        // Prepare hidden fields for create form
-        $hiddenFields = [];
-        // Only include date if we're NOT viewing today
-        if (!$selectedDate->isToday()) {
-            $hiddenFields['date'] = $selectedDate->toDateString();
-        }
-
-        return [
-            'noResultsMessage' => config('mobile_entry_messages.empty_states.no_exercises_found'),
-            'createForm' => [
-                'action' => route('mobile-entry.create-exercise'),
-                'method' => 'POST',
-                'inputName' => 'exercise_name',
-                'submitText' => '+',
-                'buttonTextTemplate' => 'Create "{term}"',
-                'ariaLabel' => 'Create new exercise',
-                'hiddenFields' => $hiddenFields
-            ],
-            'items' => $items,
-            'ariaLabels' => [
-                'section' => 'Exercise selection list',
-                'selectItem' => 'Add this exercise to today\'s workout'
-            ],
-            'filterPlaceholder' => config('mobile_entry_messages.placeholders.search_exercises')
-        ];
-    }
-
-    /**
-     * Add an exercise form by finding the exercise and creating a mobile lift form entry
-     * 
-     * @param int $userId
-     * @param string $exerciseIdentifier Exercise canonical name or ID
-     * @param Carbon $selectedDate
-     * @return array Result with success/error status and message
-     */
-    /**
      * Generate contextual help messages based on user's current state
      * 
      * @param int $userId
      * @param Carbon $selectedDate
+     * @param bool $expandSelection
      * @return array
      */
     public function generateContextualHelpMessages($userId, Carbon $selectedDate, $expandSelection = false)
@@ -991,81 +484,5 @@ class LiftLogService extends MobileEntryBaseService
         
         return $messages;
     }
-    
-    /**
-     * Generate a friendly date message for display
-     * 
-     * @param Carbon $date
-     * @return string
-     */
-    private function generateFriendlyDateMessage(Carbon $date): string
-    {
-        $now = Carbon::now();
-        
-        if ($date->isToday()) {
-            return 'Today';
-        }
-        
-        if ($date->isYesterday()) {
-            return 'Yesterday';
-        }
-        
-        if ($date->isTomorrow()) {
-            return 'Tomorrow';
-        }
-        
-        $daysDiff = (int) abs($now->diffInDays($date));
-        
-        if ($daysDiff <= 7 && $date->isPast()) {
-            return $daysDiff . ' days ago (' . $date->format('l, M j') . ')';
-        }
-        
-        if ($daysDiff <= 7 && $date->isFuture()) {
-            return 'In ' . $daysDiff . ' days (' . $date->format('l, M j') . ')';
-        }
-        
-        // For dates more than a week away
-        return $date->format('l, F j, Y');
-    }
 
-    /**
-     * Get the top 10 most logged exercises by non-admin users for new user prioritization
-     * 
-     * Returns a map of exercise IDs to their priority ranking (1-10)
-     * Only includes exercises that exist in the user's available exercises
-     * 
-     * @param \Illuminate\Support\Collection $exercises Available exercises for the user
-     * @return array Map of exercise_id => priority_rank
-     */
-    private function getCommonExercisesForNewUsers($exercises): array
-    {
-        // Get available exercise IDs to filter the query
-        $availableExerciseIds = $exercises->pluck('id')->toArray();
-        
-        if (empty($availableExerciseIds)) {
-            return [];
-        }
-        
-        // Find top 10 most logged exercises by non-admin users
-        $topExercises = LiftLog::select('exercise_id', DB::raw('COUNT(*) as log_count'))
-            ->whereIn('exercise_id', $availableExerciseIds)
-            ->whereHas('user', function ($query) {
-                $query->whereDoesntHave('roles', function ($roleQuery) {
-                    $roleQuery->where('name', 'Admin');
-                });
-            })
-            ->groupBy('exercise_id')
-            ->orderBy('log_count', 'desc')
-            ->limit(10)
-            ->pluck('exercise_id')
-            ->toArray();
-        
-        // Create priority map (1 = highest priority)
-        $priorityMap = [];
-        foreach ($topExercises as $index => $exerciseId) {
-            $priorityMap[$exerciseId] = $index + 1;
-        }
-        
-        return $priorityMap;
-    }
 }

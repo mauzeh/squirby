@@ -6,7 +6,7 @@ use App\Models\Exercise;
 use App\Models\LiftLog;
 use App\Models\Role;
 use App\Models\User;
-use App\Services\MobileEntry\LiftLogService;
+use App\Services\MobileEntry\ExerciseSelectionService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -14,7 +14,7 @@ class LiftLogServiceTest extends TestCase
 {
     use RefreshDatabase;
 
-    private LiftLogService $liftLogService;
+    private ExerciseSelectionService $exerciseSelectionService;
 
     protected function setUp(): void
     {
@@ -24,18 +24,18 @@ class LiftLogServiceTest extends TestCase
         $this->seed(\Database\Seeders\RoleSeeder::class);
         
         // Create the service
-        $this->liftLogService = app(LiftLogService::class);
+        $this->exerciseSelectionService = app(ExerciseSelectionService::class);
     }
 
     public function test_getCommonExercisesForNewUsers_returns_empty_array_when_no_exercises_available()
     {
         $exercises = collect([]);
         
-        $reflection = new \ReflectionClass($this->liftLogService);
+        $reflection = new \ReflectionClass($this->exerciseSelectionService);
         $method = $reflection->getMethod('getCommonExercisesForNewUsers');
         $method->setAccessible(true);
         
-        $result = $method->invoke($this->liftLogService, $exercises);
+        $result = $method->invoke($this->exerciseSelectionService, $exercises);
         
         $this->assertEmpty($result);
     }
@@ -76,11 +76,11 @@ class LiftLogServiceTest extends TestCase
             'exercise_id' => $exercise3->id,
         ]);
         
-        $reflection = new \ReflectionClass($this->liftLogService);
+        $reflection = new \ReflectionClass($this->exerciseSelectionService);
         $method = $reflection->getMethod('getCommonExercisesForNewUsers');
         $method->setAccessible(true);
         
-        $result = $method->invoke($this->liftLogService, $exercises);
+        $result = $method->invoke($this->exerciseSelectionService, $exercises);
         
         // Should return exercises in order of popularity
         $this->assertEquals(1, $result[$exercise2->id]); // Most popular
@@ -115,11 +115,11 @@ class LiftLogServiceTest extends TestCase
             'exercise_id' => $exercise2->id,
         ]);
         
-        $reflection = new \ReflectionClass($this->liftLogService);
+        $reflection = new \ReflectionClass($this->exerciseSelectionService);
         $method = $reflection->getMethod('getCommonExercisesForNewUsers');
         $method->setAccessible(true);
         
-        $result = $method->invoke($this->liftLogService, $exercises);
+        $result = $method->invoke($this->exerciseSelectionService, $exercises);
         
         // Exercise 2 should be prioritized despite having fewer total logs
         // because admin logs are excluded
@@ -143,11 +143,11 @@ class LiftLogServiceTest extends TestCase
             ]);
         }
         
-        $reflection = new \ReflectionClass($this->liftLogService);
+        $reflection = new \ReflectionClass($this->exerciseSelectionService);
         $method = $reflection->getMethod('getCommonExercisesForNewUsers');
         $method->setAccessible(true);
         
-        $result = $method->invoke($this->liftLogService, $exercises);
+        $result = $method->invoke($this->exerciseSelectionService, $exercises);
         
         // Should return at most 10 exercises
         $this->assertLessThanOrEqual(10, count($result));
@@ -184,11 +184,11 @@ class LiftLogServiceTest extends TestCase
             'exercise_id' => $unavailableExercise->id,
         ]);
         
-        $reflection = new \ReflectionClass($this->liftLogService);
+        $reflection = new \ReflectionClass($this->exerciseSelectionService);
         $method = $reflection->getMethod('getCommonExercisesForNewUsers');
         $method->setAccessible(true);
         
-        $result = $method->invoke($this->liftLogService, $exercises);
+        $result = $method->invoke($this->exerciseSelectionService, $exercises);
         
         // Should only include the available exercise
         $this->assertArrayHasKey($availableExercise->id, $result);
@@ -204,11 +204,11 @@ class LiftLogServiceTest extends TestCase
         
         $exercises = collect([$exercise1, $exercise2]);
         
-        $reflection = new \ReflectionClass($this->liftLogService);
+        $reflection = new \ReflectionClass($this->exerciseSelectionService);
         $method = $reflection->getMethod('getCommonExercisesForNewUsers');
         $method->setAccessible(true);
         
-        $result = $method->invoke($this->liftLogService, $exercises);
+        $result = $method->invoke($this->exerciseSelectionService, $exercises);
         
         // Should return empty array when no exercises have logs
         $this->assertEmpty($result);

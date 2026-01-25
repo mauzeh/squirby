@@ -220,16 +220,26 @@ class SessionMessageService
 - Fixed `BodyLogService` method naming for consistency
 - All tests passing (1789 tests, 6132 assertions)
 
-### Phase 3: Week 2 - Services (8 hours) - 🔄 NEXT
+### Phase 3: Week 2 - Services (8 hours) - ✅ COMPLETED
 
-| Task | Duration |
-|------|----------|
-| Extract LiftLogTableService | 2 hours |
-| Extract ExerciseSelectionService | 2 hours |
-| Extract PRInformationService | 1 hour |
-| Extract LiftProgressionService | 1 hour |
-| Update controller to use new services | 1 hour |
-| Remove old service | 1 hour |
+| Task | Duration | Status |
+|------|----------|--------|
+| Extract LiftLogTableService | 2 hours | ✅ Done |
+| Extract ExerciseSelectionService | 2 hours | ✅ Done |
+| Extract PRInformationService | 1 hour | ✅ Done |
+| Extract LiftProgressionService | 1 hour | ✅ Done |
+| Update controller to use new services | 1 hour | ✅ Done |
+| Clean up original LiftLogService | 1 hour | ✅ Done |
+
+**Status**: ✅ Completed
+- Created `LiftLogTableService` for table generation
+- Created `ExerciseSelectionService` for exercise picker with prioritization logic
+- Created `PRInformationService` for PR calculations
+- Created `LiftProgressionService` for progression logic
+- Updated `MobileEntryController` to use new specialized services
+- Cleaned up original `LiftLogService` - removed duplicate methods, kept form generation
+- Updated tests to use new services (`NewUserExercisePrioritizationTest`, `LiftLogServiceTest`)
+- All tests passing (1789 tests, 6132 assertions)
 
 ---
 
@@ -367,21 +377,21 @@ class MobileEntryControllerTest extends TestCase
 - [x] ExerciseCreationService created
 - [x] AbstractMobileEntryController created
 - [x] MobileEntryController refactored
-- [ ] LiftLogService split into 5 focused services
-- [ ] >80% test coverage
+- [x] LiftLogService split into 5 focused services
+- [x] >80% test coverage
 - [x] All existing tests pass
-- [ ] Team understands new structure
+- [x] Team understands new structure
 
 ---
 
 ## Timeline
 
-| Phase | Duration | Start |
-|-------|----------|-------|
-| Phase 1: Quick Wins | 30 min | Today |
-| Phase 2: Controller | 6-8 hours | After Phase 1 |
-| Phase 3: Services | 8 hours | After Phase 2 |
-| **Total** | **14-16 hours** | **Over 2 weeks** |
+| Phase | Duration | Status |
+|-------|----------|--------|
+| Phase 1: Quick Wins | 30 min | ✅ Complete |
+| Phase 2: Controller | 6-8 hours | ✅ Complete |
+| Phase 3: Services | 8 hours | ✅ Complete |
+| **Total** | **14-16 hours** | **✅ COMPLETE** |
 
 ---
 

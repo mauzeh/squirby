@@ -11,6 +11,8 @@ use App\Services\MobileEntry\SessionMessageService;
 use App\Services\MobileEntry\ComponentAssembler;
 use App\Services\MobileEntry\PRCelebrationService;
 use App\Services\MobileEntry\ExerciseCreationService;
+use App\Services\MobileEntry\LiftLogTableService;
+use App\Services\MobileEntry\ExerciseSelectionService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\RedirectResponse;
 use Carbon\Carbon;
@@ -25,7 +27,9 @@ class MobileEntryController extends AbstractMobileEntryController
         private FoodLogService $foodLogService,
         private \App\Services\MobileEntry\BodyLogService $bodyLogService,
         private PRCelebrationService $prCelebrationService,
-        private ExerciseCreationService $exerciseCreationService
+        private ExerciseCreationService $exerciseCreationService,
+        private LiftLogTableService $liftLogTableService,
+        private ExerciseSelectionService $exerciseSelectionService
     ) {
         parent::__construct($dateContextBuilder, $sessionMessageService, $componentAssembler);
     }
@@ -47,26 +51,43 @@ class MobileEntryController extends AbstractMobileEntryController
         array $sessionMessages,
         string $entryType
     ): array {
-        $service = $this->getServiceForType($entryType);
         $userId = Auth::id();
         $selectedDate = $dateContext['selectedDate'];
         
-        $data = [
-            'loggedItems' => $service->generateLoggedItems($userId, $selectedDate),
-            'itemSelectionList' => $service->generateItemSelectionList($userId, $selectedDate),
-            'interfaceMessages' => $this->buildInterfaceMessages(
-                $service,
-                $userId,
-                $selectedDate,
-                $sessionMessages,
-                $request
-            ),
-            'summary' => $service->generateSummary($userId, $selectedDate),
-        ];
-        
-        // Add measurement forms if needed
-        if ($entryType === 'measurements') {
-            $data['forms'] = $service->generateItemSelectionList($userId, $selectedDate);
+        // Use specialized services for lifts
+        if ($entryType === 'lifts') {
+            $data = [
+                'loggedItems' => $this->liftLogTableService->generateLoggedItems($userId, $selectedDate),
+                'itemSelectionList' => $this->exerciseSelectionService->generateItemSelectionList($userId, $selectedDate),
+                'interfaceMessages' => $this->buildInterfaceMessages(
+                    $this->liftLogService,
+                    $userId,
+                    $selectedDate,
+                    $sessionMessages,
+                    $request
+                ),
+                'summary' => null, // Lifts don't have a summary
+            ];
+        } else {
+            // Use generic service for foods and measurements
+            $service = $this->getServiceForType($entryType);
+            $data = [
+                'loggedItems' => $service->generateLoggedItems($userId, $selectedDate),
+                'itemSelectionList' => $service->generateItemSelectionList($userId, $selectedDate),
+                'interfaceMessages' => $this->buildInterfaceMessages(
+                    $service,
+                    $userId,
+                    $selectedDate,
+                    $sessionMessages,
+                    $request
+                ),
+                'summary' => $service->generateSummary($userId, $selectedDate),
+            ];
+            
+            // Add measurement forms if needed
+            if ($entryType === 'measurements') {
+                $data['forms'] = $service->generateItemSelectionList($userId, $selectedDate);
+            }
         }
         
         return $data;
