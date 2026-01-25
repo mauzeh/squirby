@@ -17,39 +17,27 @@ class MobileEntryController extends Controller
      * Supports date-based navigation and pre-configured lift forms.
      * 
      * @param Request $request
-     * @antml:parameter name="DateTitleService $dateTitleService
+     * @param DateTitleService $dateTitleService
      * @return \Illuminate\View\View
      */
-    public function lifts(Request $request, DateTitleService $dateTitleService, LiftLogService $formService)
+    public function lifts(
+        Request $request, 
+        DateTitleService $dateTitleService, 
+        LiftLogService $formService,
+        \App\Services\MobileEntry\DateContextBuilder $dateContextBuilder,
+        \App\Services\MobileEntry\SessionMessageService $sessionMessageService
+    )
     {
-        // Get the selected date from request or default to today
-        $selectedDate = $request->input('date') 
-            ? \Carbon\Carbon::parse($request->input('date')) 
-            : \Carbon\Carbon::today();
+        // Build date context using service
+        $dateContext = $dateContextBuilder->build($request->all());
+        $selectedDate = $dateContext['selectedDate'];
+        $prevDay = $dateContext['prevDay'];
+        $nextDay = $dateContext['nextDay'];
+        $today = $dateContext['today'];
+        $dateTitleData = $dateContext['title'];
         
-        // Calculate navigation dates
-        $prevDay = $selectedDate->copy()->subDay();
-        $nextDay = $selectedDate->copy()->addDay();
-        $today = \Carbon\Carbon::today();
-        
-        // Generate date title
-        $dateTitleData = $dateTitleService->generateDateTitle($selectedDate, $today);
-        
-        // Get session messages for display
-        $sessionMessages = [
-            'success' => session('success'),
-            'error' => session('error'),
-            'warning' => session('warning'),
-            'info' => session('info') ?: $request->input('completion_info')
-        ];
-        
-        // Add validation errors if they exist
-        if ($errors = session('errors')) {
-            $errorMessages = $errors->all();
-            if (!empty($errorMessages)) {
-                $sessionMessages['error'] = implode(' ', $errorMessages);
-            }
-        }
+        // Extract session messages using service
+        $sessionMessages = $sessionMessageService->extract();
         
         // Generate logged items using the service
         $loggedItems = $formService->generateLoggedItems(Auth::id(), $selectedDate);
@@ -176,32 +164,11 @@ class MobileEntryController extends Controller
         // Logged items (now using table component with full component data)
         $components[] = $loggedItems;
         
-        // Check if all logged items today are PRs (for celebration)
-        $todaysLogs = \App\Models\LiftLog::where('user_id', Auth::id())
+        // Check if user has any PRs today (use database flag for performance)
+        $hasPRs = \App\Models\LiftLog::where('user_id', Auth::id())
             ->whereDate('logged_at', $selectedDate->toDateString())
-            ->with(['exercise', 'liftSets'])
-            ->get();
-        
-        $hasPRs = false;
-        if ($todaysLogs->isNotEmpty()) {
-            // Get all exercise IDs from today
-            $exerciseIds = $todaysLogs->pluck('exercise_id')->unique();
-            
-            // Get all historical logs for PR calculation
-            $allLogs = \App\Models\LiftLog::where('user_id', Auth::id())
-                ->whereIn('exercise_id', $exerciseIds)
-                ->with(['exercise', 'liftSets'])
-                ->orderBy('logged_at', 'asc')
-                ->get();
-            
-            // Calculate PR log IDs
-            $prDetectionService = app(\App\Services\PRDetectionService::class);
-            $prLogIds = $prDetectionService->calculatePRLogIds($allLogs);
-            
-            // Check if at least one of today's logs is a PR
-            $todaysLogIds = $todaysLogs->pluck('id')->toArray();
-            $hasPRs = !empty($todaysLogIds) && count(array_intersect($todaysLogIds, $prLogIds)) > 0;
-        }
+            ->where('is_pr', true)
+            ->exists();
         
         $data = [
             'components' => $components,
