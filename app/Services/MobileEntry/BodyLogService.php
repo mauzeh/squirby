@@ -73,7 +73,7 @@ class BodyLogService extends MobileEntryBaseService
      * @param Carbon $selectedDate
      * @return array
      */
-    public function generateForms($userId, Carbon $selectedDate)
+    public function generateItemSelectionList($userId, Carbon $selectedDate)
     {
         $forms = [];
         
@@ -430,5 +430,18 @@ class BodyLogService extends MobileEntryBaseService
         }
         
         return $messages;
+    }
+
+    /**
+     * Generate summary data for the selected date
+     * Measurements don't have a summary like food logs do
+     * 
+     * @param int $userId
+     * @param Carbon $selectedDate
+     * @return null
+     */
+    public function generateSummary($userId, Carbon $selectedDate)
+    {
+        return null;
     }
 }

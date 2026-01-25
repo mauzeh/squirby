@@ -41,7 +41,7 @@ class BodyLogServiceTest extends TestCase
         ]);
 
         $selectedDate = Carbon::today();
-        $forms = $this->service->generateForms($this->user->id, $selectedDate);
+        $forms = $this->service->generateItemSelectionList($this->user->id, $selectedDate);
 
         $this->assertCount(2, $forms);
         
@@ -72,7 +72,7 @@ class BodyLogServiceTest extends TestCase
             'comments' => 'Morning weigh-in'
         ]);
 
-        $forms = $this->service->generateForms($this->user->id, $selectedDate);
+        $forms = $this->service->generateItemSelectionList($this->user->id, $selectedDate);
 
         // Should not show any forms since the measurement is already logged
         $this->assertCount(0, $forms);
