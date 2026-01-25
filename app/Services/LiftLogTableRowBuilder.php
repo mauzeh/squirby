@@ -306,82 +306,27 @@ class LiftLogTableRowBuilder
             ]];
         }
         
-        // NEW: Use PersonalRecord database records
+        // Use PersonalRecord database records
         $prs = \App\Models\PersonalRecord::where('lift_log_id', $liftLog->id)
             ->get();
         
+        if ($prs->isEmpty()) {
+            return [];
+        }
+        
+        // Get the exercise type strategy for formatting
+        $strategy = $liftLog->exercise->getTypeStrategy();
+        
         $records = [];
-        $isBodyweight = $liftLog->exercise->exercise_type === 'bodyweight';
-        $hasExtraWeight = $liftLog->liftSets->max('weight') > 0;
         
-        // Group PRs by type to avoid duplicates
-        $prsByType = $prs->groupBy('pr_type');
-        
-        // Process 1RM PRs (skip for bodyweight)
-        if ($prsByType->has('one_rm') && !$isBodyweight) {
-            $oneRmPR = $prsByType['one_rm']->first();
+        // Use the strategy's formatPRDisplay method for each PR
+        foreach ($prs as $pr) {
+            $formatted = $strategy->formatPRDisplay($pr, $liftLog);
             
-            // Check if this is a true 1RM (from a 1 rep lift)
-            $hasOneRepSet = $liftLog->liftSets->contains(function ($set) {
-                return $set->reps === 1 && $set->weight > 0;
-            });
-            
-            // Only show "Est 1RM" for estimated 1RMs (from multiple reps)
-            // For true 1RMs, it will show as a rep-specific PR instead
-            if (!$hasOneRepSet) {
-                $records[] = [
-                    'label' => 'Est 1RM',
-                    'value' => $oneRmPR->previous_value ? $this->formatWeight($oneRmPR->previous_value) . ' lbs' : '—',
-                    'comparison' => $this->formatWeight($oneRmPR->value) . ' lbs'
-                ];
+            // Skip if the strategy returns empty array (e.g., redundant 1RM)
+            if (!empty($formatted)) {
+                $records[] = $formatted;
             }
-        }
-        
-        // Process Volume PRs
-        // For pure bodyweight (no extra weight), show as "Total Reps"
-        if ($prsByType->has('volume')) {
-            $volumePR = $prsByType['volume']->first();
-            
-            if ($isBodyweight && !$hasExtraWeight) {
-                // Pure bodyweight: show total reps
-                $records[] = [
-                    'label' => 'Total Reps',
-                    'value' => $volumePR->previous_value ? (int)$volumePR->previous_value . ' reps' : '—',
-                    'comparison' => (int)$volumePR->value . ' reps'
-                ];
-            } else {
-                // Weighted: show volume in lbs
-                $records[] = [
-                    'label' => 'Volume',
-                    'value' => $volumePR->previous_value ? number_format($volumePR->previous_value, 0) . ' lbs' : '—',
-                    'comparison' => number_format($volumePR->value, 0) . ' lbs'
-                ];
-            }
-        }
-        
-        // Process Rep-Specific PRs (limit to first one to keep it clean)
-        // Only shown for weighted exercises or bodyweight with extra weight
-        if ($prsByType->has('rep_specific')) {
-            $repPR = $prsByType['rep_specific']->first();
-            $repLabel = $repPR->rep_count . ' Rep' . ($repPR->rep_count > 1 ? 's' : '');
-            
-            $records[] = [
-                'label' => $repLabel,
-                'value' => ($repPR->previous_value && $repPR->previous_value > 0) ? $this->formatWeight($repPR->previous_value) . ' lbs' : '—',
-                'comparison' => $this->formatWeight($repPR->value) . ' lbs'
-            ];
-        }
-        
-        // Process Hypertrophy PRs (best at weight) - skip for bodyweight
-        if ($prsByType->has('hypertrophy') && !$isBodyweight) {
-            $hypertrophyPR = $prsByType['hypertrophy']->first();
-            $label = 'Best @ ' . $this->formatWeight($hypertrophyPR->weight) . ' lbs';
-            
-            $records[] = [
-                'label' => $label,
-                'value' => $hypertrophyPR->previous_value ? (int)$hypertrophyPR->previous_value . ' reps' : '—',
-                'comparison' => (int)$hypertrophyPR->value . ' reps'
-            ];
         }
         
         return $records;
@@ -397,7 +342,7 @@ class LiftLogTableRowBuilder
      */
     protected function getCurrentRecordsTable(LiftLog $liftLog, array $config): array
     {
-        // NEW: Use PersonalRecord database records to get current PRs
+        // Use PersonalRecord database records to get current PRs
         // Get all current (unbeaten) PRs for this exercise
         $currentPRs = \App\Models\PersonalRecord::where('user_id', $liftLog->user_id)
             ->where('exercise_id', $liftLog->exercise_id)
@@ -408,50 +353,7 @@ class LiftLogTableRowBuilder
             return []; // No PRs yet
         }
         
-        $isBodyweight = $liftLog->exercise->exercise_type === 'bodyweight';
-        $hasExtraWeight = $liftLog->liftSets->max('weight') > 0;
         $strategy = $liftLog->exercise->getTypeStrategy();
-        
-        // Skip 1RM calculation for bodyweight exercises
-        if (!$isBodyweight && !$strategy->canCalculate1RM()) {
-            return [];
-        }
-        
-        $records = [];
-        
-        // Calculate current lift's values for comparison
-        $current1RM = 0;
-        $currentVolume = 0;
-        $currentTotalReps = 0;
-        $currentRepWeights = []; // [reps => weight]
-        
-        foreach ($liftLog->liftSets as $set) {
-            if ($set->weight > 0 && $set->reps > 0) {
-                // Calculate 1RM (skip for bodyweight)
-                if (!$isBodyweight) {
-                    try {
-                        $estimated1RM = $strategy->calculate1RM($set->weight, $set->reps, $liftLog);
-                        if ($estimated1RM > $current1RM) {
-                            $current1RM = $estimated1RM;
-                        }
-                    } catch (\Exception $e) {
-                        // Skip if calculation fails
-                    }
-                }
-                
-                // Calculate volume
-                $currentVolume += ($set->weight * $set->reps);
-                $currentTotalReps += $set->reps;
-                
-                // Track rep-specific weights
-                if (!isset($currentRepWeights[$set->reps]) || $set->weight > $currentRepWeights[$set->reps]) {
-                    $currentRepWeights[$set->reps] = $set->weight;
-                }
-            } elseif ($isBodyweight && $set->reps > 0) {
-                // For pure bodyweight (weight = 0), still count reps
-                $currentTotalReps += $set->reps;
-            }
-        }
         
         // Get PRs that were beaten by THIS lift (to exclude from current records)
         $beatenPRs = \App\Models\PersonalRecord::where('lift_log_id', $liftLog->id)
@@ -466,87 +368,103 @@ class LiftLogTableRowBuilder
             } elseif ($pr->pr_type === 'hypertrophy') {
                 // For hypertrophy, track which weight was beaten
                 $beatenPRMap['hypertrophy_' . $pr->weight] = true;
+            } elseif ($pr->pr_type === 'time') {
+                // For time PRs, track the type
+                $beatenPRMap['time'] = true;
             } else {
                 // For other types, just track the type
                 $beatenPRMap[$pr->pr_type] = true;
             }
         }
         
-        // Group PRs by type
-        $prsByType = $currentPRs->groupBy('pr_type');
+        $records = [];
         
-        // Process 1RM PRs (only if NOT beaten by this lift, skip for bodyweight)
-        if (!$isBodyweight && $prsByType->has('one_rm') && !isset($beatenPRMap['one_rm'])) {
-            $oneRmPR = $prsByType['one_rm']->first();
-            
-            // Check if the PR is a true 1RM (from a 1 rep lift)
-            $prLiftLog = \App\Models\LiftLog::find($oneRmPR->lift_log_id);
-            $isTrueMax = $prLiftLog && $prLiftLog->liftSets->contains(function ($set) {
-                return $set->reps === 1 && $set->weight > 0;
-            });
-            
-            // Check if current lift is also a true 1RM
-            $currentIsTrueMax = $liftLog->liftSets->contains(function ($set) {
-                return $set->reps === 1 && $set->weight > 0;
-            });
-            
-            // Only show if both are estimated OR if we have a current estimated to compare
-            if (!$isTrueMax || !$currentIsTrueMax) {
-                $label = $isTrueMax ? '1RM' : 'Est 1RM';
-                
-                $records[] = [
-                    'label' => $label,
-                    'value' => sprintf('%s lbs', $this->formatWeight($oneRmPR->value)),
-                    'comparison' => sprintf('%s lbs', $this->formatWeight($current1RM))
-                ];
+        // Calculate current metrics using the strategy
+        $currentMetrics = $strategy->calculateCurrentMetrics($liftLog);
+        
+        // Filter out beaten PRs and format using strategy
+        foreach ($currentPRs as $pr) {
+            // Check if this PR was beaten
+            $key = $pr->pr_type;
+            if ($pr->pr_type === 'rep_specific') {
+                $key = 'rep_specific_' . $pr->rep_count;
+            } elseif ($pr->pr_type === 'hypertrophy') {
+                $key = 'hypertrophy_' . $pr->weight;
             }
-        }
-        
-        // Process Volume PRs (only if NOT beaten by this lift)
-        // For pure bodyweight (no extra weight), show as "Total Reps"
-        if ($prsByType->has('volume') && !isset($beatenPRMap['volume'])) {
-            $volumePR = $prsByType['volume']->first();
             
-            if ($isBodyweight && !$hasExtraWeight) {
-                // Pure bodyweight: show total reps
-                $records[] = [
-                    'label' => 'Total Reps',
-                    'value' => sprintf('%d reps', (int)$volumePR->value),
-                    'comparison' => sprintf('%d reps', $currentTotalReps)
-                ];
-            } else {
-                // Weighted: show volume in lbs
-                $records[] = [
-                    'label' => 'Volume',
-                    'value' => sprintf('%s lbs', number_format($volumePR->value, 0)),
-                    'comparison' => sprintf('%s lbs', number_format($currentVolume, 0))
-                ];
+            if (isset($beatenPRMap[$key])) {
+                continue; // Skip beaten PRs
             }
-        }
-        
-        // Process Rep-Specific PRs (only for reps in current lift, limit to 2, exclude beaten)
-        // Only shown for weighted exercises or bodyweight with extra weight
-        if ($prsByType->has('rep_specific') && (!$isBodyweight || $hasExtraWeight)) {
-            $repPRs = $prsByType['rep_specific']
-                ->filter(function ($pr) use ($currentRepWeights, $beatenPRMap) {
-                    // Only show if we have this rep count in current lift AND it wasn't beaten
-                    return isset($currentRepWeights[$pr->rep_count]) && !isset($beatenPRMap['rep_specific_' . $pr->rep_count]);
-                })
-                ->take(2);
             
-            foreach ($repPRs as $repPR) {
-                $repLabel = $repPR->rep_count . ' Rep' . ($repPR->rep_count > 1 ? 's' : '');
-                $currentWeight = $currentRepWeights[$repPR->rep_count] ?? 0;
-                
-                $records[] = [
-                    'label' => $repLabel,
-                    'value' => sprintf('%s lbs', $this->formatWeight($repPR->value)),
-                    'comparison' => sprintf('%s lbs', $this->formatWeight($currentWeight))
-                ];
+            // Use strategy to format the PR display
+            $formatted = $strategy->formatCurrentPRDisplay($pr, $liftLog, true);
+            
+            // Add comparison value based on current metrics
+            $comparison = $this->getComparisonValue($pr, $currentMetrics, $liftLog, $strategy);
+            if ($comparison !== null) {
+                $formatted['comparison'] = $comparison;
+                $records[] = $formatted;
             }
         }
         
         return $records;
+    }
+    
+    /**
+     * Get comparison value for a PR based on current metrics
+     * 
+     * @param \App\Models\PersonalRecord $pr
+     * @param array $currentMetrics
+     * @param LiftLog $liftLog
+     * @param \App\Services\ExerciseTypes\ExerciseTypeInterface $strategy
+     * @return string|null
+     */
+    protected function getComparisonValue(\App\Models\PersonalRecord $pr, array $currentMetrics, LiftLog $liftLog, $strategy): ?string
+    {
+        $isBodyweight = $liftLog->exercise->exercise_type === 'bodyweight';
+        $hasExtraWeight = $liftLog->liftSets->max('weight') > 0;
+        
+        switch ($pr->pr_type) {
+            case 'one_rm':
+                if (!$isBodyweight && isset($currentMetrics['best_1rm'])) {
+                    return sprintf('%s lbs', $this->formatWeight($currentMetrics['best_1rm']));
+                }
+                return null;
+                
+            case 'volume':
+                if ($isBodyweight && !$hasExtraWeight && isset($currentMetrics['total_reps'])) {
+                    return sprintf('%d reps', (int)$currentMetrics['total_reps']);
+                } elseif (isset($currentMetrics['total_volume'])) {
+                    return sprintf('%s lbs', number_format($currentMetrics['total_volume'], 0));
+                }
+                return null;
+                
+            case 'rep_specific':
+                if (isset($currentMetrics['rep_weights'][$pr->rep_count])) {
+                    $currentWeight = $currentMetrics['rep_weights'][$pr->rep_count];
+                    return sprintf('%s lbs', $this->formatWeight($currentWeight));
+                }
+                return null;
+                
+            case 'hypertrophy':
+                // Not typically shown in current records table
+                return null;
+                
+            case 'time':
+                // For static holds - delegate to strategy for proper formatting
+                if (isset($currentMetrics['best_hold'])) {
+                    // Create a temporary PR object with current value for formatting
+                    $tempPR = new \App\Models\PersonalRecord();
+                    $tempPR->pr_type = 'time';
+                    $tempPR->value = $currentMetrics['best_hold'];
+                    $formatted = $strategy->formatCurrentPRDisplay($tempPR, $liftLog, false);
+                    return $formatted['value'];
+                }
+                return null;
+                
+            default:
+                return null;
+        }
     }
     
     /**

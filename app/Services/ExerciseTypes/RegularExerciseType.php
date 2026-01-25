@@ -284,6 +284,19 @@ class RegularExerciseType extends BaseExerciseType
      */
     public function formatPRDisplay(\App\Models\PersonalRecord $pr, LiftLog $liftLog): array
     {
+        // Special handling for 1RM PRs: skip if it's a true 1RM (from a 1-rep set)
+        // because it will be shown as a "1 Rep" PR instead (redundant)
+        if ($pr->pr_type === 'one_rm') {
+            $hasOneRepSet = $liftLog->liftSets->contains(function ($set) {
+                return $set->reps === 1 && $set->weight > 0;
+            });
+            
+            // Return empty array to signal this PR should be skipped
+            if ($hasOneRepSet) {
+                return [];
+            }
+        }
+        
         return match($pr->pr_type) {
             'one_rm' => [
                 'label' => 'Est 1RM',
