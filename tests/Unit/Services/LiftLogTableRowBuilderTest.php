@@ -1006,15 +1006,18 @@ class LiftLogTableRowBuilderTest extends TestCase
             'showPRRecordsTable' => true
         ]);
 
-        // Should have subItems with comments AND component
+        // Should have subItems with comments AND components
         $this->assertNotEmpty($rows[0]['subItems']);
         $subItem = $rows[0]['subItems'][0];
         
-        // Should have comments message AND PR records table component
+        // Should have comments message AND PR records table components
         $this->assertCount(1, $subItem['messages']);
-        $this->assertArrayHasKey('component', $subItem);
-        $this->assertEquals('pr-records-table', $subItem['component']['type']);
-        $this->assertEquals('pr-records-table--beaten', $subItem['component']['data']['cssClass']);
+        $this->assertArrayHasKey('components', $subItem);
+        $this->assertNotEmpty($subItem['components']);
+        
+        // First component should be the beaten records table
+        $this->assertEquals('pr-records-table', $subItem['components'][0]['type']);
+        $this->assertEquals('pr-records-table--beaten', $subItem['components'][0]['data']['cssClass']);
     }
 
     /** @test */
@@ -1070,15 +1073,18 @@ class LiftLogTableRowBuilderTest extends TestCase
             'showPRRecordsTable' => true
         ]);
 
-        // Should have subItems with comments AND component
+        // Should have subItems with comments AND components
         $this->assertNotEmpty($rows[0]['subItems']);
         $subItem = $rows[0]['subItems'][0];
         
-        // Should have comments message AND current records table component
+        // Should have comments message AND current records table components
         $this->assertCount(1, $subItem['messages']);
-        $this->assertArrayHasKey('component', $subItem);
-        $this->assertEquals('pr-records-table', $subItem['component']['type']);
-        $this->assertEquals('pr-records-table--current', $subItem['component']['data']['cssClass']);
+        $this->assertArrayHasKey('components', $subItem);
+        $this->assertNotEmpty($subItem['components']);
+        
+        // First component should be the current records table
+        $this->assertEquals('pr-records-table', $subItem['components'][0]['type']);
+        $this->assertEquals('pr-records-table--current', $subItem['components'][0]['data']['cssClass']);
     }
 
     /** @test */

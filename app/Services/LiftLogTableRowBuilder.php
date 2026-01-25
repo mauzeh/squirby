@@ -110,7 +110,32 @@ class LiftLogTableRowBuilder
         // Build actions
         $actions = [];
         
-        // View logs action removed - now using "View history" link in PR records table
+        // View logs action (optional)
+        if ($config['showViewLogsAction']) {
+            $viewLogsUrl = route('exercises.show-logs', $liftLog->exercise);
+            $queryParams = [];
+            
+            // Only add query parameters when redirectContext is 'mobile-entry-lifts'
+            if ($config['redirectContext'] === 'mobile-entry-lifts') {
+                $queryParams['from'] = $config['redirectContext'];
+                
+                if ($config['selectedDate']) {
+                    $queryParams['date'] = $config['selectedDate'];
+                }
+            }
+            
+            if (!empty($queryParams)) {
+                $viewLogsUrl .= '?' . http_build_query($queryParams);
+            }
+            
+            $actions[] = [
+                'type' => 'link',
+                'url' => $viewLogsUrl,
+                'icon' => 'fa-chart-line',
+                'ariaLabel' => 'View logs',
+                'cssClass' => 'btn-info-circle'
+            ];
+        }
         
         // Edit action
         $editUrl = route('lift-logs.edit', $liftLog);

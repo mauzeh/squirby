@@ -166,16 +166,18 @@ class ExerciseControllerChartDateRangeTest extends TestCase
     /**
      * @test
      */
-    public function it_does_not_render_chart_when_all_logs_have_zero_1rm()
+    public function it_renders_chart_for_high_rep_sets_using_capped_calculation()
     {
-        // Arrange: Create logs with high-rep sets (>10 reps) that result in 0 1RM
+        // Arrange: Create logs with high-rep sets (>10 reps)
+        // The 1RM formula caps at 10 reps, so 20 reps will be calculated as if it were 10 reps
         $liftLog = LiftLog::factory()->create([
             'user_id' => $this->user->id,
             'exercise_id' => $this->exercise->id,
             'logged_at' => Carbon::now(),
         ]);
 
-        // Create high-rep sets (20 reps) which won't calculate 1RM
+        // Create high-rep sets (20 reps) which will calculate 1RM using capped value of 10 reps
+        // Expected 1RM: 95 * (1 + (0.0333 * 10)) = 95 * 1.333 = 126.635
         LiftSet::factory()->create([
             'lift_log_id' => $liftLog->id,
             'weight' => 95,
@@ -189,7 +191,7 @@ class ExerciseControllerChartDateRangeTest extends TestCase
         // Assert
         $response->assertOk();
         
-        // Chart should not be rendered when no valid 1RM data exists
+        // Chart should be rendered even for high-rep sets (using capped calculation)
         $components = $response->viewData('data')['components'];
         $tabsComponent = collect($components)->firstWhere('type', 'tabs');
         
@@ -199,10 +201,15 @@ class ExerciseControllerChartDateRangeTest extends TestCase
         $historyTab = collect($tabsComponent['data']['tabs'])->firstWhere('id', 'history');
         $this->assertNotNull($historyTab, 'History tab should exist');
         
-        // Find chart component within the history tab - should be null
+        // Find chart component within the history tab - should exist
         $chartComponent = collect($historyTab['components'])->firstWhere('type', 'chart');
         
-        $this->assertNull($chartComponent);
+        $this->assertNotNull($chartComponent, 'Chart should be rendered for high-rep sets');
+        $this->assertEquals('chart', $chartComponent['type']);
+        
+        // Verify the 1RM value is calculated using the capped formula (10 reps max)
+        $chartData = $chartComponent['data']['datasets'][0]['data'][0];
+        $this->assertEqualsWithDelta(126.635, $chartData['y'], 0.01, '1RM should be calculated using capped reps (10)');
     }
 
     /**
