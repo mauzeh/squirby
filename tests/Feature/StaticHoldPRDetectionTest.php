@@ -522,4 +522,75 @@ class StaticHoldPRDetectionTest extends TestCase
 
         $this->assertNull($hypertrophyPR);
     }
+
+    /** @test */
+    public function static_hold_display_shows_time_field_not_reps()
+    {
+        $user = User::factory()->create();
+        $exercise = Exercise::factory()->create([
+            'user_id' => $user->id,
+            'exercise_type' => 'static_hold',
+            'title' => 'L-sit',
+        ]);
+
+        // Create a lift log with 45 second hold
+        $liftLog = LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => now(),
+        ]);
+
+        LiftSet::factory()->create([
+            'lift_log_id' => $liftLog->id,
+            'weight' => 0,
+            'reps' => 1,  // Always 1 for static holds
+            'time' => 45, // 45 seconds
+        ]);
+
+        // Visit the mobile entry lifts page
+        $response = $this->actingAs($user)->get(route('mobile-entry.lifts'));
+
+        $response->assertStatus(200);
+        
+        // Should display "45s hold" not "1s hold"
+        $response->assertSee('45s hold');
+        $response->assertDontSee('1s hold');
+        $response->assertSee('L-sit');
+    }
+
+    /** @test */
+    public function static_hold_display_shows_correct_duration_with_weight()
+    {
+        $user = User::factory()->create();
+        $exercise = Exercise::factory()->create([
+            'user_id' => $user->id,
+            'exercise_type' => 'static_hold',
+            'title' => 'Weighted Plank',
+        ]);
+
+        // Create a lift log with 60 second hold and 25 lbs
+        $liftLog = LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => now(),
+        ]);
+
+        LiftSet::factory()->create([
+            'lift_log_id' => $liftLog->id,
+            'weight' => 25,
+            'reps' => 1,  // Always 1 for static holds
+            'time' => 60, // 60 seconds = 1 minute
+        ]);
+
+        // Visit the mobile entry lifts page
+        $response = $this->actingAs($user)->get(route('mobile-entry.lifts'));
+
+        $response->assertStatus(200);
+        
+        // Should display "1m hold +25 lbs" not "1s hold +25 lbs"
+        $response->assertSee('1m hold');
+        $response->assertSee('+25 lbs');
+        $response->assertDontSee('1s hold');
+        $response->assertSee('Weighted Plank');
+    }
 }
