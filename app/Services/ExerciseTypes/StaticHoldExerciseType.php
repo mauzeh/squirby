@@ -395,7 +395,7 @@ class StaticHoldExerciseType extends BaseExerciseType
      */
     public function formatMobileSummaryDisplay(LiftLog $liftLog): array
     {
-        $duration = $liftLog->display_reps;
+        $duration = $liftLog->liftSets->first()?->time ?? 0;
         $weight = $liftLog->display_weight;
         $sets = $liftLog->display_rounds;
         
