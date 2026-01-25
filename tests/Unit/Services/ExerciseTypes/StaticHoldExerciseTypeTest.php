@@ -257,6 +257,60 @@ class StaticHoldExerciseTypeTest extends TestCase
         $this->assertEquals('45s hold +25 lbs × 3 sets', $message);
     }
 
+    /** @test */
+    public function it_reads_duration_from_time_field_not_reps()
+    {
+        $liftLog = $this->createMockLiftLog(45, 0, 3);
+        
+        // Verify that formatWeightDisplay reads from time field
+        $display = $this->strategy->formatWeightDisplay($liftLog);
+        $this->assertEquals('45s hold', $display);
+        
+        // Verify that formatTableCellDisplay reads from time field
+        $tableDisplay = $this->strategy->formatTableCellDisplay($liftLog);
+        $this->assertEquals('45s hold', $tableDisplay['primary']);
+    }
+
+    /** @test */
+    public function it_uses_time_field_for_mobile_summary_display()
+    {
+        $liftLog = $this->createMockLiftLog(60, 25, 3);
+        
+        $mobileDisplay = $this->strategy->formatMobileSummaryDisplay($liftLog);
+        
+        // Should show "1m hold +25 lbs" not "1s hold"
+        $this->assertEquals('1m hold +25 lbs', $mobileDisplay['weight']);
+        $this->assertEquals('3 sets', $mobileDisplay['repsSets']);
+    }
+
+    /** @test */
+    public function it_uses_time_field_for_progression_suggestions()
+    {
+        $liftLog = $this->createMockLiftLog(30, 0, 3);
+        
+        $suggestion = $this->strategy->formatProgressionSuggestion($liftLog);
+        
+        // Should suggest 32s (30 + 2) not 3s (1 + 2)
+        $this->assertEquals('Try 32s hold × 3 sets', $suggestion);
+    }
+
+    /** @test */
+    public function it_validates_time_field_in_process_lift_data()
+    {
+        $data = [
+            'time' => 45,
+            'weight' => 10,
+            'sets' => 3,
+        ];
+
+        $processed = $this->strategy->processLiftData($data);
+
+        // Should set reps to 1 and keep time as 45
+        $this->assertEquals(1, $processed['reps']);
+        $this->assertEquals(45, $processed['time']);
+        $this->assertEquals(10, $processed['weight']);
+    }
+
     /**
      * Helper method to create a mock LiftLog for testing
      */
