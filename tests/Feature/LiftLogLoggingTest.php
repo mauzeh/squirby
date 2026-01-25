@@ -679,6 +679,7 @@ class LiftLogLoggingTest extends TestCase {
             'logged_at' => now()->subWeek(),
         ]);
         $prevLog->liftSets()->create(['weight' => 100, 'reps' => 5, 'notes' => '']);
+        $this->triggerPRDetection($prevLog);
 
         // Log a PR today
         $prLog = \App\Models\LiftLog::factory()->create([
@@ -687,6 +688,7 @@ class LiftLogLoggingTest extends TestCase {
             'logged_at' => now(),
         ]);
         $prLog->liftSets()->create(['weight' => 120, 'reps' => 5, 'notes' => '']);
+        $this->triggerPRDetection($prLog);
 
         // Visit mobile-entry lifts page
         $response = $this->get(route('mobile-entry.lifts'));
@@ -710,6 +712,7 @@ class LiftLogLoggingTest extends TestCase {
             'logged_at' => now()->subWeek(),
         ]);
         $prevLog1->liftSets()->create(['weight' => 100, 'reps' => 5, 'notes' => '']);
+        $this->triggerPRDetection($prevLog1);
 
         $prevLog2 = \App\Models\LiftLog::factory()->create([
             'user_id' => $this->user->id,
@@ -717,6 +720,7 @@ class LiftLogLoggingTest extends TestCase {
             'logged_at' => now()->subWeek(),
         ]);
         $prevLog2->liftSets()->create(['weight' => 200, 'reps' => 5, 'notes' => '']);
+        $this->triggerPRDetection($prevLog2);
 
         // Log one PR and one non-PR today
         $prLog = \App\Models\LiftLog::factory()->create([
@@ -725,6 +729,7 @@ class LiftLogLoggingTest extends TestCase {
             'logged_at' => now(),
         ]);
         $prLog->liftSets()->create(['weight' => 120, 'reps' => 5, 'notes' => '']);
+        $this->triggerPRDetection($prLog);
 
         $nonPrLog = \App\Models\LiftLog::factory()->create([
             'user_id' => $this->user->id,
@@ -732,6 +737,7 @@ class LiftLogLoggingTest extends TestCase {
             'logged_at' => now(),
         ]);
         $nonPrLog->liftSets()->create(['weight' => 180, 'reps' => 5, 'notes' => '']); // Lighter than previous
+        $this->triggerPRDetection($nonPrLog);
 
         // Visit mobile-entry lifts page
         $response = $this->get(route('mobile-entry.lifts'));
