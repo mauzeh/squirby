@@ -224,6 +224,7 @@ class PRDetectionService
             'time' => PRType::TIME,
             'density' => PRType::DENSITY,
             'endurance' => PRType::ENDURANCE,
+            'consistency' => PRType::CONSISTENCY,
             default => null,
         };
     }

@@ -146,8 +146,16 @@ class PRRecordsComponentAssembler
                 $beatenPRMap['rep_specific_' . $pr->rep_count] = true;
             } elseif ($pr->pr_type === 'hypertrophy') {
                 $beatenPRMap['hypertrophy_' . $pr->weight] = true;
+            } elseif ($pr->pr_type === 'density') {
+                // Density PRs are weight/duration-specific
+                $beatenPRMap['density_' . $pr->weight . '_' . $pr->rep_count] = true;
+            } elseif ($pr->pr_type === 'consistency') {
+                // Consistency PRs are set-count-specific
+                $beatenPRMap['consistency_' . $pr->rep_count] = true;
             } elseif ($pr->pr_type === 'time') {
                 $beatenPRMap['time'] = true;
+            } elseif ($pr->pr_type === 'endurance') {
+                $beatenPRMap['endurance'] = true;
             } else {
                 $beatenPRMap[$pr->pr_type] = true;
             }
@@ -166,6 +174,10 @@ class PRRecordsComponentAssembler
                 $key = 'rep_specific_' . $pr->rep_count;
             } elseif ($pr->pr_type === 'hypertrophy') {
                 $key = 'hypertrophy_' . $pr->weight;
+            } elseif ($pr->pr_type === 'density') {
+                $key = 'density_' . $pr->weight . '_' . $pr->rep_count;
+            } elseif ($pr->pr_type === 'consistency') {
+                $key = 'consistency_' . $pr->rep_count;
             }
             
             if (isset($beatenPRMap[$key])) {
@@ -228,6 +240,31 @@ class PRRecordsComponentAssembler
                     $tempPR = new \App\Models\PersonalRecord();
                     $tempPR->pr_type = 'time';
                     $tempPR->value = $currentMetrics['best_hold'];
+                    $formatted = $strategy->formatCurrentPRDisplay($tempPR, $liftLog, false);
+                    return $formatted['value'];
+                }
+                return null;
+                
+            case 'consistency':
+                if (isset($currentMetrics['min_hold']) && isset($currentMetrics['total_sets'])) {
+                    $tempPR = new \App\Models\PersonalRecord();
+                    $tempPR->pr_type = 'consistency';
+                    $tempPR->value = $currentMetrics['min_hold'];
+                    $tempPR->rep_count = $currentMetrics['total_sets'];
+                    $formatted = $strategy->formatCurrentPRDisplay($tempPR, $liftLog, false);
+                    return $formatted['value'];
+                }
+                return null;
+                
+            case 'density':
+                // Density PRs are weight/duration-specific, so we can't show a simple comparison
+                return null;
+                
+            case 'endurance':
+                if (isset($currentMetrics['best_distance'])) {
+                    $tempPR = new \App\Models\PersonalRecord();
+                    $tempPR->pr_type = 'endurance';
+                    $tempPR->value = $currentMetrics['best_distance'];
                     $formatted = $strategy->formatCurrentPRDisplay($tempPR, $liftLog, false);
                     return $formatted['value'];
                 }

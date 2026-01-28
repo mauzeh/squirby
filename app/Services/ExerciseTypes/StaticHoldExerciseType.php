@@ -513,6 +513,7 @@ class StaticHoldExerciseType extends BaseExerciseType
      * 
      * Static hold exercises support:
      * - TIME: Longest single hold duration
+     * - CONSISTENCY: Highest minimum hold maintained across all sets in a session
      * - DENSITY: Most sets at a specific duration
      * 
      * Note: Static holds are always bodyweight, so no weight-specific PRs
@@ -521,6 +522,7 @@ class StaticHoldExerciseType extends BaseExerciseType
     {
         return [
             \App\Enums\PRType::TIME,
+            \App\Enums\PRType::CONSISTENCY,
             \App\Enums\PRType::DENSITY,
         ];
     }
@@ -530,6 +532,8 @@ class StaticHoldExerciseType extends BaseExerciseType
      * 
      * For static hold exercises:
      * - best_hold: Longest single hold duration (from time field)
+     * - min_hold: Shortest hold duration across all sets (for consistency PR)
+     * - total_sets: Total number of sets performed
      * - duration_sets: Map of duration => number of sets (for density PR)
      * 
      * Note: Static holds are always bodyweight (weight field is always 0)
@@ -537,12 +541,19 @@ class StaticHoldExerciseType extends BaseExerciseType
     public function calculateCurrentMetrics(LiftLog $liftLog): array
     {
         $bestHold = 0;
+        $minHold = PHP_INT_MAX;
+        $totalSets = 0;
         $durationSets = []; // [duration => set_count] for density PR
         
         foreach ($liftLog->liftSets as $set) {
             if ($set->time > 0) {
+                $totalSets++;
+                
                 // Track best overall hold
                 $bestHold = max($bestHold, $set->time);
+                
+                // Track minimum hold (for consistency PR)
+                $minHold = min($minHold, $set->time);
                 
                 // Track number of sets at each duration for density PR
                 $duration = $set->time;
@@ -553,8 +564,15 @@ class StaticHoldExerciseType extends BaseExerciseType
             }
         }
         
+        // If no valid sets, set minHold to 0
+        if ($minHold === PHP_INT_MAX) {
+            $minHold = 0;
+        }
+        
         return [
             'best_hold' => $bestHold,
+            'min_hold' => $minHold,
+            'total_sets' => $totalSets,
             'duration_sets' => $durationSets,
         ];
     }
@@ -564,6 +582,7 @@ class StaticHoldExerciseType extends BaseExerciseType
      * 
      * For static holds:
      * - TIME PR: Longest hold duration
+     * - CONSISTENCY PR: Highest minimum hold maintained across all sets
      * - DENSITY PR: Most sets at specific duration
      * 
      * Note: Static holds are always bodyweight, so no weight-specific PRs
@@ -583,6 +602,16 @@ class StaticHoldExerciseType extends BaseExerciseType
                 ];
             }
             
+            if ($currentMetrics['min_hold'] > 0 && $currentMetrics['total_sets'] > 1) {
+                $prs[] = [
+                    'type' => 'consistency',
+                    'value' => $currentMetrics['min_hold'],
+                    'rep_count' => $currentMetrics['total_sets'], // Store set count for display
+                    'previous_value' => null,
+                    'previous_lift_log_id' => null,
+                ];
+            }
+            
             return $prs;
         }
         
@@ -595,6 +624,21 @@ class StaticHoldExerciseType extends BaseExerciseType
                 'previous_value' => $bestTimeResult['value'],
                 'previous_lift_log_id' => $bestTimeResult['lift_log_id'],
             ];
+        }
+        
+        // Check CONSISTENCY PR (highest minimum hold across all sets)
+        // Only check if current session has multiple sets
+        if ($currentMetrics['total_sets'] > 1 && $currentMetrics['min_hold'] > 0) {
+            $bestConsistencyResult = $this->getBestMinimumHold($previousLogs, $currentMetrics['total_sets']);
+            if ($currentMetrics['min_hold'] > $bestConsistencyResult['value']) {
+                $prs[] = [
+                    'type' => 'consistency',
+                    'value' => $currentMetrics['min_hold'],
+                    'rep_count' => $currentMetrics['total_sets'], // Store set count for display
+                    'previous_value' => $bestConsistencyResult['value'],
+                    'previous_lift_log_id' => $bestConsistencyResult['lift_log_id'],
+                ];
+            }
         }
         
         // Check DENSITY PRs (most sets at each duration)
@@ -627,6 +671,11 @@ class StaticHoldExerciseType extends BaseExerciseType
                 'value' => $pr->previous_value ? $this->formatDuration((int)$pr->previous_value) : '—',
                 'comparison' => $this->formatDuration((int)$pr->value),
             ],
+            'consistency' => [
+                'label' => $this->formatConsistencyPRLabel($pr),
+                'value' => $pr->previous_value ? $this->formatDuration((int)$pr->previous_value) : '—',
+                'comparison' => $this->formatDuration((int)$pr->value),
+            ],
             'density' => [
                 'label' => $this->formatDensityPRLabel($pr),
                 'value' => $pr->previous_value ? (intval($pr->previous_value) == 1 ? '1 set' : intval($pr->previous_value) . ' sets') : '—',
@@ -648,6 +697,11 @@ class StaticHoldExerciseType extends BaseExerciseType
         return match($pr->pr_type) {
             'time' => [
                 'label' => 'Best Hold',
+                'value' => $this->formatDuration((int)$pr->value),
+                'is_current' => $isCurrent,
+            ],
+            'consistency' => [
+                'label' => $this->formatConsistencyPRLabel($pr),
                 'value' => $this->formatDuration((int)$pr->value),
                 'is_current' => $isCurrent,
             ],
@@ -689,6 +743,37 @@ class StaticHoldExerciseType extends BaseExerciseType
     }
     
     /**
+     * Get best minimum hold from previous logs (for CONSISTENCY PR)
+     * Finds the highest minimum hold duration maintained across all sets in a session
+     * Only considers sessions with at least the target number of sets
+     */
+    private function getBestMinimumHold(\Illuminate\Database\Eloquent\Collection $logs, int $minSetCount): array
+    {
+        $bestMinHold = 0;
+        $liftLogId = null;
+        
+        foreach ($logs as $log) {
+            $setTimes = [];
+            foreach ($log->liftSets as $set) {
+                if ($set->time > 0) {
+                    $setTimes[] = $set->time;
+                }
+            }
+            
+            // Only consider sessions with at least the target number of sets
+            if (count($setTimes) >= $minSetCount) {
+                $minHold = min($setTimes);
+                if ($minHold > $bestMinHold) {
+                    $bestMinHold = $minHold;
+                    $liftLogId = $log->id;
+                }
+            }
+        }
+        
+        return ['value' => $bestMinHold, 'lift_log_id' => $liftLogId];
+    }
+    
+    /**
      * Get best number of sets at specific duration from previous logs (for DENSITY PR)
      * Static holds are always bodyweight, so we only track by duration
      */
@@ -725,5 +810,17 @@ class StaticHoldExerciseType extends BaseExerciseType
         $durationDisplay = $this->formatDuration((int)$duration);
         
         return "Sets of {$durationDisplay}";
+    }
+    
+    /**
+     * Format consistency PR label for static holds
+     * Shows the minimum hold maintained across all sets
+     */
+    private function formatConsistencyPRLabel(\App\Models\PersonalRecord $pr): string
+    {
+        $setCount = $pr->rep_count; // Set count is stored in rep_count field
+        $setsText = $setCount == 1 ? 'set' : 'sets';
+        
+        return "Min Hold ({$setCount} {$setsText})";
     }
 }

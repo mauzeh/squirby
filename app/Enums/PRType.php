@@ -11,6 +11,7 @@ enum PRType: int
     case DENSITY = 8;
     case TIME = 16;
     case ENDURANCE = 32;
+    case CONSISTENCY = 64;
 
     /**
      * Check if a flags value contains this PR type
@@ -32,6 +33,7 @@ enum PRType: int
             self::DENSITY => '⚡ Density PR!',
             self::TIME => '⏱️ Time PR!',
             self::ENDURANCE => '🔥 Endurance PR!',
+            self::CONSISTENCY => '🎯 Consistency PR!',
             self::NONE => '',
         };
     }
@@ -51,6 +53,7 @@ enum PRType: int
             self::ONE_RM,
             self::REP_SPECIFIC,
             self::VOLUME,
+            self::CONSISTENCY,
             self::DENSITY,
             self::TIME,
             self::ENDURANCE,

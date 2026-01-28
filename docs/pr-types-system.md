@@ -22,11 +22,31 @@ The PR (Personal Record) detection system now supports multiple types of PRs usi
    - Triggered when total session volume (weight × reps × sets) exceeds previous best
    - Calculated as sum of all sets in a single lift log
 
+4. **DENSITY (8)** - Work density PR
+   - Label: "⚡ Density PR!"
+   - Triggered when you complete more sets at a specific weight/duration than ever before
+   - Weight-specific for regular exercises, duration-specific for static holds
+
+5. **TIME (16)** - Time-based PR
+   - Label: "⏱️ Time PR!"
+   - Triggered when you achieve the longest single hold duration
+   - Primarily used for static hold exercises (L-sits, planks, etc.)
+
+6. **ENDURANCE (32)** - Endurance PR
+   - Label: "🔥 Endurance PR!"
+   - Triggered for cardio exercises when you achieve the longest total duration
+
+7. **CONSISTENCY (64)** - Consistency PR (NEW!)
+   - Label: "🎯 Consistency PR!"
+   - Triggered when you maintain a higher minimum across all sets in a session
+   - **Example**: 5 rounds of L-sit with times [20s, 18s, 15s, 17s, 15s] = 15s minimum
+   - This is a PR if you've never maintained at least 15s across all 5 sets before
+   - Only applies to multi-set sessions (2+ sets)
+   - Compares sessions with same or more sets
+
 ### Future PR Types (Placeholders)
 
-4. **DENSITY (8)** - Work density PR
-5. **TIME (16)** - Time-based PR
-6. **ENDURANCE (32)** - Endurance PR
+None currently - all planned PR types have been implemented!
 
 ## Technical Implementation
 
@@ -73,9 +93,10 @@ When multiple PR types are achieved, the label shown follows this priority:
 1. ONE_RM
 2. REP_SPECIFIC
 3. VOLUME
-4. DENSITY
-5. TIME
-6. ENDURANCE
+4. CONSISTENCY
+5. DENSITY
+6. TIME
+7. ENDURANCE
 
 ## Usage Examples
 
@@ -126,6 +147,39 @@ Example:
 - **Total Volume: 1500 lbs**
 
 A volume PR is achieved when the current session's total volume exceeds all previous sessions for that exercise.
+
+## Consistency PR Calculation (Static Holds)
+
+Consistency PR tracks the highest minimum hold duration maintained across all sets in a session. This is particularly useful for static hold exercises like L-sits, planks, handstands, etc.
+
+**How it works:**
+1. Find the shortest (minimum) hold duration across all sets in the current session
+2. Compare to the best minimum from previous sessions with the same or more sets
+3. Award PR if current minimum exceeds previous best minimum
+
+**Example Progression:**
+
+**Week 1:** L-sit holds: [15s, 12s, 10s, 14s, 13s]
+- Minimum: 10s across 5 sets
+
+**Week 2:** L-sit holds: [20s, 18s, 15s, 17s, 15s]
+- Minimum: 15s across 5 sets
+- **🎯 Consistency PR!** (15s > 10s)
+
+**Week 3:** L-sit holds: [22s, 15s, 19s]
+- Minimum: 15s across 3 sets
+- **🎯 Consistency PR!** (First time maintaining 15s across 3 sets)
+
+**Why this matters:**
+- Measures your ability to maintain quality across all sets
+- Prevents "one good set" from masking overall fatigue
+- Encourages sustainable progression
+- Particularly valuable for skill-based holds where consistency matters
+
+**Key Rules:**
+- Only applies to sessions with 2+ sets (single sets can't measure consistency)
+- Compares to sessions with same or more sets
+- Independent of TIME PR (you can get both simultaneously)
 
 ## Badge Display
 
