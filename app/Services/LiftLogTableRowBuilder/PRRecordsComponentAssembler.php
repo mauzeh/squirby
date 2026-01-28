@@ -208,6 +208,8 @@ class PRRecordsComponentAssembler
         $strategy
     ): ?string {
         $isBodyweight = $liftLog->exercise->exercise_type === 'bodyweight';
+        $isStaticHold = $liftLog->exercise->exercise_type === 'static_hold';
+        $isCardio = $liftLog->exercise->exercise_type === 'cardio';
         $hasExtraWeight = $liftLog->liftSets->max('weight') > 0;
         
         switch ($pr->pr_type) {
@@ -218,9 +220,28 @@ class PRRecordsComponentAssembler
                 return null;
                 
             case 'volume':
-                if ($isBodyweight && !$hasExtraWeight && isset($currentMetrics['total_reps'])) {
+                // Static holds: use formatVolumeDuration via strategy
+                if ($isStaticHold && isset($currentMetrics['total_volume'])) {
+                    $tempPR = new \App\Models\PersonalRecord();
+                    $tempPR->pr_type = 'volume';
+                    $tempPR->value = $currentMetrics['total_volume'];
+                    $formatted = $strategy->formatCurrentPRDisplay($tempPR, $liftLog, false);
+                    return $formatted['value'];
+                }
+                // Cardio: use strategy formatting
+                elseif ($isCardio && isset($currentMetrics['total_volume'])) {
+                    $tempPR = new \App\Models\PersonalRecord();
+                    $tempPR->pr_type = 'volume';
+                    $tempPR->value = $currentMetrics['total_volume'];
+                    $formatted = $strategy->formatCurrentPRDisplay($tempPR, $liftLog, false);
+                    return $formatted['value'];
+                }
+                // Bodyweight: show total reps
+                elseif ($isBodyweight && !$hasExtraWeight && isset($currentMetrics['total_reps'])) {
                     return sprintf('%d reps', (int)$currentMetrics['total_reps']);
-                } elseif (isset($currentMetrics['total_volume'])) {
+                }
+                // Weighted exercises: show weight × reps
+                elseif (isset($currentMetrics['total_volume'])) {
                     return sprintf('%s lbs', number_format($currentMetrics['total_volume'], 0));
                 }
                 return null;

@@ -178,6 +178,25 @@ class StaticHoldExerciseType extends BaseExerciseType
     }
     
     /**
+     * Format volume duration in seconds to time format
+     * 
+     * @param int $seconds Duration in seconds
+     * @return string Formatted duration (e.g., "30s hold", "2:20 hold")
+     */
+    private function formatVolumeDuration(int $seconds): string
+    {
+        if ($seconds < 60) {
+            return "{$seconds}s hold";
+        }
+        
+        $minutes = floor($seconds / 60);
+        $remainingSeconds = $seconds % 60;
+        
+        // Format as M:SS for volumes over 60 seconds
+        return sprintf("%d:%02d hold", $minutes, $remainingSeconds);
+    }
+    
+    /**
      * Format complete static hold display showing duration, weight, and sets
      * 
      * Returns a formatted string like "30s hold × 3 sets" or "30s hold +25 lbs × 3 sets"
@@ -513,6 +532,7 @@ class StaticHoldExerciseType extends BaseExerciseType
      * 
      * Static hold exercises support:
      * - TIME: Longest single hold duration
+     * - VOLUME: Total accumulated hold time across all sets
      * - CONSISTENCY: Highest minimum hold maintained across all sets in a session
      * - DENSITY: Most sets at a specific duration
      * 
@@ -522,6 +542,7 @@ class StaticHoldExerciseType extends BaseExerciseType
     {
         return [
             \App\Enums\PRType::TIME,
+            \App\Enums\PRType::VOLUME,
             \App\Enums\PRType::CONSISTENCY,
             \App\Enums\PRType::DENSITY,
         ];
@@ -532,6 +553,7 @@ class StaticHoldExerciseType extends BaseExerciseType
      * 
      * For static hold exercises:
      * - best_hold: Longest single hold duration (from time field)
+     * - total_volume: Total accumulated hold time across all sets
      * - min_hold: Shortest hold duration across all sets (for consistency PR)
      * - total_sets: Total number of sets performed
      * - duration_sets: Map of duration => number of sets (for density PR)
@@ -541,6 +563,7 @@ class StaticHoldExerciseType extends BaseExerciseType
     public function calculateCurrentMetrics(LiftLog $liftLog): array
     {
         $bestHold = 0;
+        $totalVolume = 0;
         $minHold = PHP_INT_MAX;
         $totalSets = 0;
         $durationSets = []; // [duration => set_count] for density PR
@@ -551,6 +574,9 @@ class StaticHoldExerciseType extends BaseExerciseType
                 
                 // Track best overall hold
                 $bestHold = max($bestHold, $set->time);
+                
+                // Track total volume (sum of all hold times)
+                $totalVolume += $set->time;
                 
                 // Track minimum hold (for consistency PR)
                 $minHold = min($minHold, $set->time);
@@ -571,6 +597,7 @@ class StaticHoldExerciseType extends BaseExerciseType
         
         return [
             'best_hold' => $bestHold,
+            'total_volume' => $totalVolume,
             'min_hold' => $minHold,
             'total_sets' => $totalSets,
             'duration_sets' => $durationSets,
@@ -582,6 +609,7 @@ class StaticHoldExerciseType extends BaseExerciseType
      * 
      * For static holds:
      * - TIME PR: Longest hold duration
+     * - VOLUME PR: Total accumulated hold time across all sets
      * - CONSISTENCY PR: Highest minimum hold maintained across all sets
      * - DENSITY PR: Most sets at specific duration
      * 
@@ -597,6 +625,15 @@ class StaticHoldExerciseType extends BaseExerciseType
                 $prs[] = [
                     'type' => 'time',
                     'value' => $currentMetrics['best_hold'],
+                    'previous_value' => null,
+                    'previous_lift_log_id' => null,
+                ];
+            }
+            
+            if ($currentMetrics['total_volume'] > 0) {
+                $prs[] = [
+                    'type' => 'volume',
+                    'value' => $currentMetrics['total_volume'],
                     'previous_value' => null,
                     'previous_lift_log_id' => null,
                 ];
@@ -623,6 +660,17 @@ class StaticHoldExerciseType extends BaseExerciseType
                 'value' => $currentMetrics['best_hold'],
                 'previous_value' => $bestTimeResult['value'],
                 'previous_lift_log_id' => $bestTimeResult['lift_log_id'],
+            ];
+        }
+        
+        // Check VOLUME PR (total accumulated time)
+        $bestVolumeResult = $this->getBestTotalVolume($previousLogs);
+        if ($currentMetrics['total_volume'] > $bestVolumeResult['value']) {
+            $prs[] = [
+                'type' => 'volume',
+                'value' => $currentMetrics['total_volume'],
+                'previous_value' => $bestVolumeResult['value'],
+                'previous_lift_log_id' => $bestVolumeResult['lift_log_id'],
             ];
         }
         
@@ -671,6 +719,11 @@ class StaticHoldExerciseType extends BaseExerciseType
                 'value' => $pr->previous_value ? $this->formatDuration((int)$pr->previous_value) : '—',
                 'comparison' => $this->formatDuration((int)$pr->value),
             ],
+            'volume' => [
+                'label' => 'Total Volume',
+                'value' => $pr->previous_value ? $this->formatVolumeDuration((int)$pr->previous_value) : '—',
+                'comparison' => $this->formatVolumeDuration((int)$pr->value),
+            ],
             'consistency' => [
                 'label' => $this->formatConsistencyPRLabel($pr),
                 'value' => $pr->previous_value ? $this->formatDuration((int)$pr->previous_value) : '—',
@@ -698,6 +751,11 @@ class StaticHoldExerciseType extends BaseExerciseType
             'time' => [
                 'label' => 'Best Hold',
                 'value' => $this->formatDuration((int)$pr->value),
+                'is_current' => $isCurrent,
+            ],
+            'volume' => [
+                'label' => 'Total Volume',
+                'value' => $this->formatVolumeDuration((int)$pr->value),
                 'is_current' => $isCurrent,
             ],
             'consistency' => [
@@ -740,6 +798,32 @@ class StaticHoldExerciseType extends BaseExerciseType
         }
         
         return ['value' => $bestDuration, 'lift_log_id' => $liftLogId];
+    }
+    
+    /**
+     * Get best total volume from previous logs (for VOLUME PR)
+     * Calculates the sum of all hold times in each session
+     */
+    private function getBestTotalVolume(\Illuminate\Database\Eloquent\Collection $logs): array
+    {
+        $bestVolume = 0;
+        $liftLogId = null;
+        
+        foreach ($logs as $log) {
+            $sessionVolume = 0;
+            foreach ($log->liftSets as $set) {
+                if ($set->time > 0) {
+                    $sessionVolume += $set->time;
+                }
+            }
+            
+            if ($sessionVolume > $bestVolume) {
+                $bestVolume = $sessionVolume;
+                $liftLogId = $log->id;
+            }
+        }
+        
+        return ['value' => $bestVolume, 'lift_log_id' => $liftLogId];
     }
     
     /**

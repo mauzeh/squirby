@@ -477,7 +477,7 @@ class StaticHoldPRDetectionTest extends TestCase
     }
 
     /** @test */
-    public function static_hold_does_not_create_volume_pr()
+    public function first_static_hold_creates_volume_pr()
     {
         $user = User::factory()->create();
         $exercise = Exercise::factory()->create([
@@ -486,27 +486,174 @@ class StaticHoldPRDetectionTest extends TestCase
             'title' => 'Plank',
         ]);
 
+        // First session: 3 sets totaling 90 seconds
         $liftLog = LiftLog::factory()->create([
             'user_id' => $user->id,
             'exercise_id' => $exercise->id,
             'logged_at' => now(),
         ]);
 
-        LiftSet::factory()->create([
-            'lift_log_id' => $liftLog->id,
-            'weight' => 0,
-            'reps' => 1,
-            'time' => 60,
+        LiftSet::factory()->createMany([
+            ['lift_log_id' => $liftLog->id, 'weight' => 0, 'reps' => 1, 'time' => 30],
+            ['lift_log_id' => $liftLog->id, 'weight' => 0, 'reps' => 1, 'time' => 30],
+            ['lift_log_id' => $liftLog->id, 'weight' => 0, 'reps' => 1, 'time' => 30],
         ]);
 
         event(new \App\Events\LiftLogCompleted($liftLog));
 
-        // Should NOT create VOLUME PR
+        // Should create VOLUME PR
         $volumePR = PersonalRecord::where('lift_log_id', $liftLog->id)
             ->where('pr_type', 'volume')
             ->first();
 
+        $this->assertNotNull($volumePR);
+        $this->assertEquals(90, $volumePR->value); // 30 + 30 + 30
+        $this->assertNull($volumePR->previous_value);
+    }
+
+    /** @test */
+    public function higher_total_volume_creates_volume_pr()
+    {
+        $user = User::factory()->create();
+        $exercise = Exercise::factory()->create([
+            'user_id' => $user->id,
+            'exercise_type' => 'static_hold',
+            'title' => 'L-sit',
+        ]);
+
+        // First session: 2 sets totaling 60 seconds
+        $firstLog = LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => now()->subDay(),
+        ]);
+
+        LiftSet::factory()->createMany([
+            ['lift_log_id' => $firstLog->id, 'weight' => 0, 'reps' => 1, 'time' => 30],
+            ['lift_log_id' => $firstLog->id, 'weight' => 0, 'reps' => 1, 'time' => 30],
+        ]);
+
+        event(new \App\Events\LiftLogCompleted($firstLog));
+
+        // Second session: 3 sets totaling 90 seconds (VOLUME PR!)
+        $secondLog = LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => now(),
+        ]);
+
+        LiftSet::factory()->createMany([
+            ['lift_log_id' => $secondLog->id, 'weight' => 0, 'reps' => 1, 'time' => 30],
+            ['lift_log_id' => $secondLog->id, 'weight' => 0, 'reps' => 1, 'time' => 30],
+            ['lift_log_id' => $secondLog->id, 'weight' => 0, 'reps' => 1, 'time' => 30],
+        ]);
+
+        event(new \App\Events\LiftLogCompleted($secondLog));
+
+        // Should create VOLUME PR
+        $volumePR = PersonalRecord::where('lift_log_id', $secondLog->id)
+            ->where('pr_type', 'volume')
+            ->first();
+
+        $this->assertNotNull($volumePR);
+        $this->assertEquals(90, $volumePR->value);
+        $this->assertEquals(60, $volumePR->previous_value);
+    }
+
+    /** @test */
+    public function lower_total_volume_does_not_create_volume_pr()
+    {
+        $user = User::factory()->create();
+        $exercise = Exercise::factory()->create([
+            'user_id' => $user->id,
+            'exercise_type' => 'static_hold',
+            'title' => 'Plank',
+        ]);
+
+        // First session: 3 sets totaling 90 seconds
+        $firstLog = LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => now()->subDay(),
+        ]);
+
+        LiftSet::factory()->createMany([
+            ['lift_log_id' => $firstLog->id, 'weight' => 0, 'reps' => 1, 'time' => 30],
+            ['lift_log_id' => $firstLog->id, 'weight' => 0, 'reps' => 1, 'time' => 30],
+            ['lift_log_id' => $firstLog->id, 'weight' => 0, 'reps' => 1, 'time' => 30],
+        ]);
+
+        event(new \App\Events\LiftLogCompleted($firstLog));
+
+        // Second session: 2 sets totaling 60 seconds (not a PR)
+        $secondLog = LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => now(),
+        ]);
+
+        LiftSet::factory()->createMany([
+            ['lift_log_id' => $secondLog->id, 'weight' => 0, 'reps' => 1, 'time' => 30],
+            ['lift_log_id' => $secondLog->id, 'weight' => 0, 'reps' => 1, 'time' => 30],
+        ]);
+
+        event(new \App\Events\LiftLogCompleted($secondLog));
+
+        // Should NOT create VOLUME PR
+        $volumePR = PersonalRecord::where('lift_log_id', $secondLog->id)
+            ->where('pr_type', 'volume')
+            ->first();
+
         $this->assertNull($volumePR);
+    }
+
+    /** @test */
+    public function volume_pr_sums_all_sets_regardless_of_duration()
+    {
+        $user = User::factory()->create();
+        $exercise = Exercise::factory()->create([
+            'user_id' => $user->id,
+            'exercise_type' => 'static_hold',
+            'title' => 'Hollow Body Hold',
+        ]);
+
+        // First session: 2 sets totaling 50 seconds
+        $firstLog = LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => now()->subDay(),
+        ]);
+
+        LiftSet::factory()->createMany([
+            ['lift_log_id' => $firstLog->id, 'weight' => 0, 'reps' => 1, 'time' => 25],
+            ['lift_log_id' => $firstLog->id, 'weight' => 0, 'reps' => 1, 'time' => 25],
+        ]);
+
+        event(new \App\Events\LiftLogCompleted($firstLog));
+
+        // Second session: varying durations totaling 100 seconds (VOLUME PR!)
+        $secondLog = LiftLog::factory()->create([
+            'user_id' => $user->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => now(),
+        ]);
+
+        LiftSet::factory()->createMany([
+            ['lift_log_id' => $secondLog->id, 'weight' => 0, 'reps' => 1, 'time' => 40],
+            ['lift_log_id' => $secondLog->id, 'weight' => 0, 'reps' => 1, 'time' => 35],
+            ['lift_log_id' => $secondLog->id, 'weight' => 0, 'reps' => 1, 'time' => 25],
+        ]);
+
+        event(new \App\Events\LiftLogCompleted($secondLog));
+
+        // Should create VOLUME PR with sum of all durations
+        $volumePR = PersonalRecord::where('lift_log_id', $secondLog->id)
+            ->where('pr_type', 'volume')
+            ->first();
+
+        $this->assertNotNull($volumePR);
+        $this->assertEquals(100, $volumePR->value); // 40 + 35 + 25
+        $this->assertEquals(50, $volumePR->previous_value); // 25 + 25
     }
 
     /** @test */
