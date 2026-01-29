@@ -9,9 +9,7 @@
                 <button type="button" class="btn-clear-filter" aria-label="Clear filter" style="display: none;">×</button>
             </div>
             @if($data['showCancelButton'] ?? true)
-            <button type="button" class="btn btn-secondary btn-cancel" aria-label="Cancel and go back">
-                <span class="cancel-icon">×</span>
-            </button>
+            <button type="button" class="btn btn-secondary btn-cancel" aria-label="Cancel and go back">×</button>
             @endif
         </div>
     </div>

@@ -106,11 +106,6 @@
     background-color: #495057;
 }
 
-.plus-icon {
-    font-weight: bold;
-    font-size: 1.5em;
-}
-
 .btn-create {
     background-color: var(--color-primary);
     color: white;
@@ -127,12 +122,19 @@
     outline-offset: 2px;
 }
 
+/**
+ * Because buttons have media queries which override this
+ * button's dimensions and flex settings, we are using
+ * !important to make sure they are not overridden. This is
+ * an exception that was manually applied by Maurits.
+ */
 .btn-cancel {
     background-color: var(--color-danger);
     color: white;
     flex-basis: 0px !important;
     flex-grow: inherit !important;
-    font-size: 1em !important;
+    font-size: 1.5em !important;
+    font-weight: bold !important;
     width: 44px !important;
     height: 44px !important;
 }
@@ -146,11 +148,6 @@
 .btn-cancel:focus {
     outline: 2px solid var(--color-danger);
     outline-offset: 2px;
-}
-
-.cancel-icon {
-    font-weight: bold;
-    font-size: 1.5em;
 }
 
 
@@ -342,7 +339,7 @@
     background-color: var(--color-secondary);
 }
 
-/* Icon spacing for buttons with icons */
+/* Icon styles for buttons with icons */
 .btn i.button-icon {
     margin-right: 6px;
 }
