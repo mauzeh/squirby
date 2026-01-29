@@ -19,6 +19,8 @@
 /* Button System */
 /* Base button styles - shared across all button variants */
 .btn {
+    background-color: var(--color-secondary);
+    color: white;
     border: none;
     border-radius: var(--border-radius-sm);
     padding: var(--spacing-md) var(--spacing-xl);
@@ -38,6 +40,7 @@
 
 @media (hover: hover) {
     .btn:hover {
+        background-color: var(--color-secondary-hover);
         transform: translateY(-1px);
         box-shadow: var(--shadow-light);
     }
@@ -49,6 +52,7 @@
 }
 
 .btn:disabled {
+    background-color: #495057;
     cursor: not-allowed;
     transform: none;
     box-shadow: none;
@@ -338,26 +342,7 @@
     background-color: var(--color-secondary);
 }
 
-/* Button Component Styles */
-.component-button.btn-primary {
-    background-color: var(--color-success);
-    color: var(--text-primary);
-}
-
-.component-button.btn-primary:hover {
-    background-color: var(--color-success-hover);
-}
-
-.component-button.btn-secondary {
-    background-color: var(--color-secondary);
-    color: var(--text-primary);
-}
-
-.component-button.btn-secondary:hover {
-    background-color: var(--color-secondary-hover);
-}
-
-/* Icon spacing for button components */
-.component-button i.button-icon {
+/* Icon spacing for buttons with icons */
+.btn i.button-icon {
     margin-right: 6px;
 }
