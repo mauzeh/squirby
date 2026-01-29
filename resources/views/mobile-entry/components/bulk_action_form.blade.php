@@ -16,7 +16,7 @@
                 @method($data['method'])
             @endif
             <button type="submit" 
-                    class="btn-primary {{ $data['buttonClass'] }}"
+                    class="btn btn-primary {{ $data['buttonClass'] }}"
                     @if($data['ariaLabel'])
                     aria-label="{{ $data['ariaLabel'] }}"
                     @endif>

@@ -126,6 +126,11 @@
 .btn-cancel {
     background-color: var(--color-danger);
     color: white;
+    flex-basis: 0px !important;
+    flex-grow: inherit !important;
+    font-size: 1em !important;
+    width: 44px !important;
+    height: 44px !important;
 }
 
 @media (hover: hover) {

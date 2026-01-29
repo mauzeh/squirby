@@ -54,7 +54,7 @@
                     @foreach($row['actions'] as $action)
                         @if($action['type'] === 'link')
                             <a href="{{ $action['url'] }}" 
-                               class="btn-table-edit {{ $action['cssClass'] ?? '' }}" 
+                               class="btn btn-table-edit {{ $action['cssClass'] ?? '' }}" 
                                aria-label="{{ $action['ariaLabel'] ?? '' }}">
                                 <i class="fas {{ $action['icon'] }}"></i>
                             </a>
@@ -72,7 +72,7 @@
                                     @endforeach
                                 @endif
                                 <button type="submit" 
-                                        class="btn-table-delete {{ $action['cssClass'] ?? '' }}" 
+                                        class="btn btn-table-delete {{ $action['cssClass'] ?? '' }}" 
                                         aria-label="{{ $action['ariaLabel'] ?? '' }}">
                                     <i class="fas {{ $action['icon'] }}"></i>
                                 </button>
@@ -82,7 +82,7 @@
                 @else
                     {{-- Legacy format: edit/delete only --}}
                     @if(!empty($row['editAction']))
-                    <a href="{{ $row['editAction'] }}" class="btn-table-edit" aria-label="{{ $data['ariaLabels']['editItem'] ?? 'Edit item' }}">
+                    <a href="{{ $row['editAction'] }}" class="btn btn-table-edit" aria-label="{{ $data['ariaLabels']['editItem'] ?? 'Edit item' }}">
                         <i class="fas fa-pencil"></i>
                     </a>
                     @endif
@@ -95,7 +95,7 @@
                                 <input type="hidden" name="{{ $name }}" value="{{ $value }}">
                             @endforeach
                         @endif
-                        <button type="submit" class="btn-table-delete" aria-label="{{ $data['ariaLabels']['deleteItem'] ?? 'Delete item' }}">
+                        <button type="submit" class="btn btn-table-delete" aria-label="{{ $data['ariaLabels']['deleteItem'] ?? 'Delete item' }}">
                             <i class="fas fa-trash"></i>
                         </button>
                     </form>
@@ -169,7 +169,7 @@
                             @foreach($subItem['actions'] as $action)
                                 @if($action['type'] === 'link')
                                     <a href="{{ $action['url'] }}" 
-                                       class="btn-table-edit {{ $action['cssClass'] ?? '' }}" 
+                                       class="btn btn-table-edit {{ $action['cssClass'] ?? '' }}" 
                                        aria-label="{{ $action['ariaLabel'] ?? '' }}">
                                         <i class="fas {{ $action['icon'] }}"></i>
                                     </a>
@@ -187,7 +187,7 @@
                                             @endforeach
                                         @endif
                                         <button type="submit" 
-                                                class="btn-table-delete {{ $action['cssClass'] ?? '' }}" 
+                                                class="btn btn-table-delete {{ $action['cssClass'] ?? '' }}" 
                                                 aria-label="{{ $action['ariaLabel'] ?? '' }}">
                                             <i class="fas {{ $action['icon'] }}"></i>
                                         </button>
@@ -197,7 +197,7 @@
                         @else
                             {{-- Legacy format --}}
                             @if(!empty($subItem['editAction']))
-                            <a href="{{ $subItem['editAction'] }}" class="btn-table-edit" aria-label="{{ $data['ariaLabels']['editItem'] ?? 'Edit item' }}">
+                            <a href="{{ $subItem['editAction'] }}" class="btn btn-table-edit" aria-label="{{ $data['ariaLabels']['editItem'] ?? 'Edit item' }}">
                                 <i class="fas fa-pencil"></i>
                             </a>
                             @endif
@@ -210,7 +210,7 @@
                                         <input type="hidden" name="{{ $name }}" value="{{ $value }}">
                                     @endforeach
                                 @endif
-                                <button type="submit" class="btn-table-delete" aria-label="{{ $data['ariaLabels']['deleteItem'] ?? 'Delete item' }}">
+                                <button type="submit" class="btn btn-table-delete" aria-label="{{ $data['ariaLabels']['deleteItem'] ?? 'Delete item' }}">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </form>

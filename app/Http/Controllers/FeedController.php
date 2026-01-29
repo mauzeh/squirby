@@ -16,7 +16,7 @@ class FeedController extends Controller
                 C::form('like-form', '')
                     ->formAction(route('feed.like'))
                     ->submitButton($liked ? 'Liked' : 'Like')
-                    ->submitButtonClass($liked ? 'btn btn-primary' : 'btn btn-secondary')
+                    ->submitButtonClass($liked ? 'btn-primary' : '')
                     ->build(),
             ],
         ];

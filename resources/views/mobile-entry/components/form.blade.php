@@ -14,7 +14,7 @@
                     <input type="hidden" name="{{ $name }}" value="{{ $value }}">
                 @endforeach
             @endif
-            <button type="submit" class="btn-delete" aria-label="{{ $data['ariaLabels']['deleteForm'] }}">
+            <button type="submit" class="btn btn-delete" aria-label="{{ $data['ariaLabels']['deleteForm'] }}">
                 <i class="fas fa-trash"></i>
             </button>
         </form>
@@ -68,7 +68,7 @@
         @endforeach
         
         <div class="form-actions">
-            <button type="submit" class="{{ $data['submitButtonClass'] ?? 'btn-primary' }}">{{ $data['buttons']['submit'] }}</button>
+            <button type="submit" class="btn {{ $data['submitButtonClass'] ?? 'btn-primary' }}">{{ $data['buttons']['submit'] }}</button>
         </div>
     </form>
 </section>
