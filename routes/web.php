@@ -17,6 +17,7 @@ use App\Http\Controllers\BodyLogController;
 use App\Http\Controllers\MeasurementTypeController;
 use App\Http\Controllers\RecommendationController;
 use App\Http\Controllers\WorkoutController;
+use App\Http\Controllers\FeedController;
 
 // Breeze Routes
 Route::get('/', function () {
@@ -37,6 +38,8 @@ Route::middleware('auth')->group(function () {
 
     // Custom Application Routes (Protected by 'auth' middleware)
 
+    // Feed
+    Route::get('feed', [FeedController::class, 'index'])->name('feed.index');
 
     Route::post('food-logs/add-meal', [FoodLogController::class, 'addMealToLog'])->name('food-logs.add-meal');
 

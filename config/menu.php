@@ -2,6 +2,16 @@
 
 return [
     'main' => [
+        // Feed Main Menu Item
+        [
+            'id' => 'feed-nav-link',
+            'label' => 'Feed',
+            'icon' => 'fa-stream',
+            'route' => 'feed.index',
+            'patterns' => [
+                'feed.*',
+            ],
+        ],
         // Lifts Main Menu Item
         [
             'id' => 'lifts-nav-link',
