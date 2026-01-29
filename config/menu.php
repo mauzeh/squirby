@@ -94,24 +94,26 @@ return [
     ],
     // Utility Menu (outside main hierarchy, processed differently)
     'utility' => [
-        // Admin specific utility items
+        // Settings menu (consolidated from settings + profile)
         [
             'label' => null,
             'icon' => 'fa-cog',
-            'route' => 'users.index', // Default route when clicking the main settings icon
-            'patterns' => ['users.*', 'exercises.index', 'exercises.create', 'exercises.edit', 'exercises.destroy', 'recommendations.*'], // Admin exercise management only
+            'route' => 'profile.edit', // Default route - profile for all users
+            'patterns' => ['users.*', 'exercises.index', 'exercises.create', 'exercises.edit', 'exercises.destroy', 'recommendations.*', 'profile.edit'],
             'style' => 'padding: 14px 8px',
-            'roles' => ['Admin'], // Only for Admin
-            'children' => [ // Settings Sub-Menu Items
+            'children' => [
+                // Admin-only items
                 [
                     'label' => 'Users',
                     'route' => 'users.index',
                     'patterns' => ['users.*'],
+                    'roles' => ['Admin'],
                 ],
                 [
                     'label' => 'Exercises',
                     'route' => 'exercises.index',
                     'patterns' => ['exercises.index', 'exercises.create', 'exercises.edit', 'exercises.destroy'],
+                    'roles' => ['Admin'],
                 ],
                 [
                     'label' => null,
@@ -121,18 +123,9 @@ return [
                     'patterns' => ['recommendations.*'],
                     'roles' => ['Admin'],
                 ],
-            ],
-        ],
-        // Profile
-        [
-            'label' => null,
-            'icon' => 'fa-user',
-            'route' => 'profile.edit',
-            'patterns' => ['profile.edit'],
-            'style' => 'padding: 14px 8px',
-            'children' => [
+                // Available to all users
                 [
-                    'label' => 'Edit Profile',
+                    'label' => 'Profile',
                     'route' => 'profile.edit',
                     'patterns' => ['profile.edit'],
                 ],

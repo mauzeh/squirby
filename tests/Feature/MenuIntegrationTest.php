@@ -67,15 +67,19 @@ class MenuIntegrationTest extends TestCase
         // Admin should see more items than regular user
         $this->assertNotEmpty($utilityMenu);
         
-        // Check for admin-specific items (Labs, Settings)
+        // Check for admin-specific items in children (Settings submenu)
         $hasAdminItems = false;
         foreach ($utilityMenu as $item) {
-            if (isset($item['roles']) && in_array('Admin', $item['roles'])) {
-                $hasAdminItems = true;
-                break;
+            if (isset($item['children'])) {
+                foreach ($item['children'] as $child) {
+                    if (isset($child['roles']) && in_array('Admin', $child['roles'])) {
+                        $hasAdminItems = true;
+                        break 2;
+                    }
+                }
             }
         }
-        $this->assertTrue($hasAdminItems);
+        $this->assertTrue($hasAdminItems, 'Admin user should see admin-specific submenu items');
     }
 
     /** @test */
@@ -86,11 +90,19 @@ class MenuIntegrationTest extends TestCase
         $menuService = app(MenuService::class);
         $utilityMenu = $menuService->getUtilityMenu();
         
-        // Count admin-only items
+        // Count admin-only items at top level and in children
         $adminItemCount = 0;
         foreach ($utilityMenu as $item) {
             if (isset($item['roles']) && in_array('Admin', $item['roles'])) {
                 $adminItemCount++;
+            }
+            // Check children for admin items (they should be filtered out)
+            if (isset($item['children'])) {
+                foreach ($item['children'] as $child) {
+                    if (isset($child['roles']) && in_array('Admin', $child['roles'])) {
+                        $adminItemCount++;
+                    }
+                }
             }
         }
         
