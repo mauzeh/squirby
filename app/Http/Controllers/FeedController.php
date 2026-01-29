@@ -7,19 +7,28 @@ use App\Services\ComponentBuilder as C;
 
 class FeedController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $liked = session('liked', false);
+        
         $data = [
             'components' => [
-                C::title('Feed', 'Your social activity feed')->build(),
-                
-                C::messages()
-                    ->info('This is a placeholder for the social feed feature')
-                    ->tip('More functionality coming soon!', 'Status:')
+                C::form('like-form', '')
+                    ->formAction(route('feed.like'))
+                    ->submitButton($liked ? 'Liked' : 'Like')
+                    ->submitButtonClass($liked ? 'btn btn-primary' : 'btn btn-secondary')
                     ->build(),
             ],
         ];
         
         return view('mobile-entry.flexible', compact('data'));
+    }
+    
+    public function like(Request $request)
+    {
+        $liked = session('liked', false);
+        session(['liked' => !$liked]);
+        
+        return redirect()->route('feed.index');
     }
 }
