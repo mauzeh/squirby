@@ -95,32 +95,6 @@ return [
     // Utility Menu (outside main hierarchy, processed differently)
     'utility' => [
         // Admin specific utility items
-        // Labs Item (with sub-menu)
-        [
-            'label' => null,
-            'icon' => 'fa-flask',
-            'route' => 'labs.with-nav',
-            'patterns' => ['labs.*'],
-            'roles' => ['Admin'],
-            'style' => 'padding: 14px 8px', // Added for consistency with utility items
-            'children' => [ // Labs Sub-Menu Items
-                [ 'label' => null, 'icon' => 'fa-plus', 'route' => 'labs.with-nav', 'title' => 'With Navigation', 'patterns' => ['labs.with-nav'] ],
-                [ 'label' => null, 'icon' => 'fa-minus', 'route' => 'labs.without-nav', 'title' => 'Without Navigation', 'patterns' => ['labs.without-nav'] ],
-                [ 'label' => null, 'icon' => 'fa-clone', 'route' => 'labs.multiple-forms', 'title' => 'Multiple Forms', 'patterns' => ['labs.multiple-forms'] ],
-                [ 'label' => null, 'icon' => 'fa-sort', 'route' => 'labs.custom-order', 'title' => 'Custom Order', 'patterns' => ['labs.custom-order'] ],
-                [ 'label' => null, 'icon' => 'fa-hand-pointer', 'route' => 'labs.multiple-buttons', 'title' => 'Multiple Buttons', 'patterns' => ['labs.multiple-buttons'] ],
-                [ 'label' => null, 'icon' => 'fa-table', 'route' => 'labs.table-example', 'title' => 'Table Example', 'patterns' => ['labs.table-example'] ],
-                [ 'label' => null, 'icon' => 'fa-arrows-alt-v', 'route' => 'labs.table-reorder', 'title' => 'Table Reorder', 'patterns' => ['labs.table-reorder'] ],
-                [ 'label' => null, 'icon' => 'fa-list-ul', 'route' => 'labs.multiple-lists', 'title' => 'Multiple Lists', 'patterns' => ['labs.multiple-lists'] ],
-                [ 'label' => null, 'icon' => 'fa-arrow-left', 'route' => 'labs.title-back-button', 'title' => 'Title Back Button', 'patterns' => ['labs.title-back-button'] ],
-                [ 'label' => null, 'icon' => 'fa-chevron-down', 'route' => 'labs.table-initial-expanded', 'title' => 'Table Initial Expanded', 'patterns' => ['labs.table-initial-expanded'] ],
-                [ 'label' => null, 'icon' => 'fa-expand', 'route' => 'labs.expanded-list', 'title' => 'Expanded List', 'patterns' => ['labs.expanded-list'] ],
-                [ 'label' => null, 'icon' => 'fa-check-square', 'route' => 'labs.table-bulk-selection', 'title' => 'Table Bulk Selection', 'patterns' => ['labs.table-bulk-selection'] ],
-                [ 'label' => null, 'icon' => 'fa-apple-alt', 'route' => 'labs.ingredient-entry', 'title' => 'Ingredient Entry', 'patterns' => ['labs.ingredient-entry'] ],
-                [ 'label' => null, 'icon' => 'fa-chart-line', 'route' => 'labs.chart-example', 'title' => 'Chart Example', 'patterns' => ['labs.chart-example'] ],
-                [ 'label' => null, 'icon' => 'fa-folder-open', 'route' => 'labs.tabbed-lift-logger', 'title' => 'Tabbed Container', 'patterns' => ['labs.tabbed-lift-logger'] ],
-            ],
-        ],
         [
             'label' => null,
             'icon' => 'fa-cog',

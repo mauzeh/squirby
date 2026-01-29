@@ -172,22 +172,6 @@ The ComponentBuilder service provides the following component types:
 - **Form**: Multiple lift logging forms for selected exercises
 - **Table**: Previously logged items with edit/delete actions
 
-### LabsController
-
-#### Various Demo Methods
-**Routes**: `/labs/*`
-**Components Used**: 
-- Comprehensive examples of all component types
-- **Navigation**: Date navigation examples
-- **Title**: Various title configurations
-- **Messages**: All message types (success, error, warning, info, tip)
-- **Summary**: Multi-item summaries with different data types
-- **Button**: Various button configurations and states
-- **ItemList**: Different list configurations and states
-- **Form**: Complex forms with all field types
-- **Table**: Various table layouts and configurations
-- **Chart**: Different chart types and configurations
-
 ### ExerciseMatchingAliasController
 
 #### `create()` - Exercise Alias Linking

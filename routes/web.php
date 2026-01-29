@@ -16,7 +16,6 @@ use App\Http\Controllers\LiftLogController;
 use App\Http\Controllers\BodyLogController;
 use App\Http\Controllers\MeasurementTypeController;
 use App\Http\Controllers\RecommendationController;
-use App\Http\Controllers\LabsController;
 use App\Http\Controllers\WorkoutController;
 
 // Breeze Routes
@@ -135,25 +134,6 @@ Route::middleware('auth')->group(function () {
     Route::post('mobile-entry/create-ingredient', [MobileEntryController::class, 'createIngredient'])->name('mobile-entry.create-ingredient');
     Route::get('food-logs/create/ingredient/{ingredient}', [FoodLogController::class, 'createIngredientForm'])->name('food-logs.create-ingredient');
     Route::get('food-logs/create/meal/{meal}', [FoodLogController::class, 'createMealForm'])->name('food-logs.create-meal');
-
-    // Labs - Component-Based Architecture Examples
-    Route::get('labs/with-nav', [LabsController::class, 'withDateNavigation'])->name('labs.with-nav');
-    Route::get('labs/without-nav', [LabsController::class, 'withoutNavigation'])->name('labs.without-nav');
-    Route::get('labs/multiple-forms', [LabsController::class, 'multipleForms'])->name('labs.multiple-forms');
-    Route::get('labs/custom-order', [LabsController::class, 'customOrder'])->name('labs.custom-order');
-    Route::get('labs/multiple-buttons', [LabsController::class, 'multipleButtons'])->name('labs.multiple-buttons');
-    Route::get('labs/table-example', [LabsController::class, 'tableExample'])->name('labs.table-example');
-    Route::get('labs/table-reorder', [LabsController::class, 'tableWithReorder'])->name('labs.table-reorder');
-    Route::get('labs/multiple-lists', [LabsController::class, 'multipleItemLists'])->name('labs.multiple-lists');
-    Route::get('labs/title-back-button', [LabsController::class, 'titleWithBackButton'])->name('labs.title-back-button');
-    Route::get('labs/table-initial-expanded', [LabsController::class, 'tableInitialExpanded'])->name('labs.table-initial-expanded');
-    Route::get('labs/expanded-list', [LabsController::class, 'expandedList'])->name('labs.expanded-list');
-    Route::match(['get', 'post'], 'labs/table-bulk-selection', [LabsController::class, 'tableBulkSelection'])->name('labs.table-bulk-selection');
-    Route::match(['get', 'post'], 'labs/ingredient-entry', [LabsController::class, 'ingredientEntry'])->name('labs.ingredient-entry');
-    Route::get('labs/chart-example', [LabsController::class, 'chartExample'])->name('labs.chart-example');
-    Route::match(['get', 'post'], 'labs/tabbed-lift-logger', [LabsController::class, 'tabbedLiftLogger'])->name('labs.tabbed-lift-logger');
-
-
 
 });
 
