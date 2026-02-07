@@ -38,8 +38,11 @@ class SimpleWorkoutController extends Controller
             ->build();
 
         // Exercise selection list - always expanded on create page
-        $exerciseSelectionList = $this->exerciseListService->generateExerciseSelectionListForNew(Auth::id());
-        $components[] = $exerciseSelectionList;
+        $exerciseSelectionData = $this->exerciseListService->generateExerciseSelectionListForNew(Auth::id());
+        $components[] = [
+            'type' => 'item-list',
+            'data' => $exerciseSelectionData,
+        ];
 
         $data = ['components' => $components];
         return view('mobile-entry.flexible', compact('data'));
@@ -133,12 +136,15 @@ class SimpleWorkoutController extends Controller
         $components[] = $buttonBuilder->build();
 
         // Exercise selection list - expanded if coming from "Add exercises" button
-        $exerciseSelectionList = $this->exerciseListService->generateExerciseSelectionList($workout, [
+        $exerciseSelectionData = $this->exerciseListService->generateExerciseSelectionList($workout, [
             'redirectContext' => 'simple-workout',
             'initialState' => $shouldExpandList ? 'expanded' : 'collapsed'
         ]);
         
-        $components[] = $exerciseSelectionList;
+        $components[] = [
+            'type' => 'item-list',
+            'data' => $exerciseSelectionData,
+        ];
 
         // Exercise list table
         $exerciseListTable = $this->exerciseListService->generateExerciseListTable($workout, [

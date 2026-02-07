@@ -140,7 +140,12 @@ class LiftLogController extends Controller
                 ->asLink(route('mobile-entry.lifts', ['expand_selection' => true]))
                 ->build();
         } else {
-            $components[] = $this->exerciseListService->generateMetricsExerciseList($userId);
+            // Get raw array from service and wrap with ComponentBuilder
+            $exerciseListData = $this->exerciseListService->generateMetricsExerciseList($userId);
+            $components[] = [
+                'type' => 'item-list',
+                'data' => $exerciseListData,
+            ];
         }
 
         $data = ['components' => $components];

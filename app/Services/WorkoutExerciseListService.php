@@ -182,10 +182,11 @@ class WorkoutExerciseListService
 
     /**
      * Generate exercise selection list for adding exercises to a workout
+     * Returns raw array format (controller wraps with ComponentBuilder if needed)
      * 
      * @param Workout $workout
      * @param array $options Configuration options
-     * @return array Item list component data
+     * @return array Raw item list data
      */
     public function generateExerciseSelectionList(Workout $workout, array $options = []): array
     {
@@ -246,10 +247,7 @@ class WorkoutExerciseListService
         // Merge back together: recent (alphabetical) then others (by recency)
         $finalExercises = $recentExercises->concat($otherExercises);
 
-        $itemListBuilder = C::itemList()
-            ->filterPlaceholder('Tap to search...')
-            ->noResultsMessage('No exercises found.')
-            ->initialState($options['initialState']);
+        $items = [];
 
         foreach ($finalExercises as $exercise) {
             // Calculate "X ago" label for last performed date
@@ -264,26 +262,39 @@ class WorkoutExerciseListService
             $cssClass = $isRecent ? 'recent' : 'exercise-history';
             $priority = $isRecent ? 1 : 2;
             
-            $itemListBuilder->item(
-                'exercise-' . $exercise->id,
-                $exercise->title,
-                $this->getAddExerciseRoute($workout, $exercise, $options['redirectContext']),
-                $typeLabel,
-                $cssClass,
-                $priority
-            );
+            $items[] = [
+                'id' => 'exercise-' . $exercise->id,
+                'name' => $exercise->title,
+                'href' => $this->getAddExerciseRoute($workout, $exercise, $options['redirectContext']),
+                'type' => [
+                    'label' => $typeLabel,
+                    'cssClass' => $cssClass,
+                    'priority' => $priority,
+                ],
+            ];
         }
 
-        // Add create form
-        $itemListBuilder->createForm(
-            $this->getCreateExerciseRoute($workout, $options['redirectContext']),
-            'exercise_name',
-            [],
-            'Create "{term}"',
-            'POST'
-        );
-
-        return $itemListBuilder->build();
+        return [
+            'items' => $items,
+            'filterPlaceholder' => 'Tap to search...',
+            'noResultsMessage' => 'No exercises found.',
+            'initialState' => $options['initialState'],
+            'showCancelButton' => true,
+            'restrictHeight' => true,
+            'createForm' => [
+                'action' => $this->getCreateExerciseRoute($workout, $options['redirectContext']),
+                'method' => 'POST',
+                'inputName' => 'exercise_name',
+                'submitText' => '+',
+                'buttonTextTemplate' => 'Create "{term}"',
+                'ariaLabel' => 'Create new exercise',
+                'hiddenFields' => [],
+            ],
+            'ariaLabels' => [
+                'section' => 'Exercise selection list',
+                'selectItem' => 'Add this exercise to workout',
+            ],
+        ];
     }
 
     /**
@@ -323,9 +334,10 @@ class WorkoutExerciseListService
 
     /**
      * Generate exercise selection list for new simple workout creation (no workout exists yet)
+     * Returns raw array format (controller wraps with ComponentBuilder if needed)
      * 
      * @param int $userId
-     * @return array Item list component data
+     * @return array Raw item list data
      */
     public function generateExerciseSelectionListForNew(int $userId): array
     {
@@ -378,11 +390,7 @@ class WorkoutExerciseListService
         // Merge back together: recent (alphabetical) then others (by recency)
         $finalExercises = $recentExercises->concat($otherExercises);
 
-        $itemListBuilder = C::itemList()
-            ->filterPlaceholder('Tap to search...')
-            ->noResultsMessage('No exercises found.')
-            ->initialState('expanded')
-            ->showCancelButton(false);
+        $items = [];
 
         foreach ($finalExercises as $exercise) {
             // Calculate "X ago" label for last performed date
@@ -397,28 +405,39 @@ class WorkoutExerciseListService
             $cssClass = $isRecent ? 'recent' : 'exercise-history';
             $priority = $isRecent ? 1 : 2;
             
-            $itemListBuilder->item(
-                'exercise-' . $exercise->id,
-                $exercise->title,
-                route('simple-workouts.add-exercise-new', [
-                    'exercise' => $exercise->id
-                ]),
-                $typeLabel,
-                $cssClass,
-                $priority
-            );
+            $items[] = [
+                'id' => 'exercise-' . $exercise->id,
+                'name' => $exercise->title,
+                'href' => route('simple-workouts.add-exercise-new', ['exercise' => $exercise->id]),
+                'type' => [
+                    'label' => $typeLabel,
+                    'cssClass' => $cssClass,
+                    'priority' => $priority,
+                ],
+            ];
         }
 
-        // Add create form
-        $itemListBuilder->createForm(
-            route('simple-workouts.create-exercise-new'),
-            'exercise_name',
-            [],
-            'Create "{term}"',
-            'POST'
-        );
-
-        return $itemListBuilder->build();
+        return [
+            'items' => $items,
+            'filterPlaceholder' => 'Tap to search...',
+            'noResultsMessage' => 'No exercises found.',
+            'initialState' => 'expanded',
+            'showCancelButton' => false,
+            'restrictHeight' => true,
+            'createForm' => [
+                'action' => route('simple-workouts.create-exercise-new'),
+                'method' => 'POST',
+                'inputName' => 'exercise_name',
+                'submitText' => '+',
+                'buttonTextTemplate' => 'Create "{term}"',
+                'ariaLabel' => 'Create new exercise',
+                'hiddenFields' => [],
+            ],
+            'ariaLabels' => [
+                'section' => 'Exercise selection list',
+                'selectItem' => 'Add this exercise to workout',
+            ],
+        ];
     }
 
     /**

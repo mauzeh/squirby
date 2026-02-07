@@ -267,9 +267,10 @@ class ExerciseListService
 
     /**
      * Generate a complete exercise list component for metrics page
+     * Returns raw array format (controller wraps with ComponentBuilder if needed)
      * 
      * @param int $userId
-     * @return array Complete item list component
+     * @return array Raw item list data
      */
     public function generateMetricsExerciseList(int $userId): array
     {
@@ -304,7 +305,7 @@ class ExerciseListService
         // Merge back together: recent (alphabetical) then others (by recency)
         $finalExercises = $recentExercises->concat($otherExercises);
         
-        $listBuilder = ComponentBuilder::itemList();
+        $items = [];
         
         foreach ($finalExercises as $exercise) {
             $displayName = $this->aliasService->getDisplayName($exercise, \App\Models\User::find($userId));
@@ -321,23 +322,31 @@ class ExerciseListService
             $cssClass = $isRecent ? 'recent' : 'exercise-history';
             $priority = $isRecent ? 1 : 2;
             
-            $listBuilder->item(
-                (string) $exercise->id,
-                $displayName,
-                route('exercises.show-logs', ['exercise' => $exercise, 'from' => 'lift-logs-index']),
-                $typeLabel,
-                $cssClass,
-                $priority
-            );
+            $items[] = [
+                'id' => (string) $exercise->id,
+                'name' => $displayName,
+                'href' => route('exercises.show-logs', ['exercise' => $exercise, 'from' => 'lift-logs-index']),
+                'type' => [
+                    'label' => $typeLabel,
+                    'cssClass' => $cssClass,
+                    'priority' => $priority,
+                ],
+            ];
         }
         
-        return $listBuilder
-            ->filterPlaceholder('Tap to search...')
-            ->noResultsMessage('No exercises found.')
-            ->initialState('expanded')
-            ->showCancelButton(false)
-            ->restrictHeight(false)
-            ->build();
+        return [
+            'items' => $items,
+            'filterPlaceholder' => 'Tap to search...',
+            'noResultsMessage' => 'No exercises found.',
+            'initialState' => 'expanded',
+            'showCancelButton' => false,
+            'restrictHeight' => false,
+            'createForm' => null,
+            'ariaLabels' => [
+                'section' => 'Exercise selection list',
+                'selectItem' => 'Select exercise to view history',
+            ],
+        ];
     }
 
     /**

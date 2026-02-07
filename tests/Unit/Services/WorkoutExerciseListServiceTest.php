@@ -203,9 +203,11 @@ class WorkoutExerciseListServiceTest extends TestCase
 
         $result = $this->service->generateExerciseSelectionList($workout);
 
-        $this->assertEquals('item-list', $result['type']);
-        $this->assertArrayHasKey('items', $result['data']);
-        $this->assertArrayHasKey('createForm', $result['data']);
+        // Now returns raw array format
+        $this->assertArrayHasKey('items', $result);
+        $this->assertArrayHasKey('createForm', $result);
+        $this->assertArrayHasKey('filterPlaceholder', $result);
+        $this->assertEquals('Tap to search...', $result['filterPlaceholder']);
     }
 
     public function test_generates_exercise_selection_list_for_new_workout()
@@ -220,10 +222,10 @@ class WorkoutExerciseListServiceTest extends TestCase
 
         $result = $this->service->generateExerciseSelectionListForNew($this->user->id);
 
-        $this->assertEquals('item-list', $result['type']);
-        $this->assertArrayHasKey('items', $result['data']);
-        $this->assertArrayHasKey('createForm', $result['data']);
-        $this->assertEquals('expanded', $result['data']['initialState']);
+        // Now returns raw array format
+        $this->assertArrayHasKey('items', $result);
+        $this->assertArrayHasKey('createForm', $result);
+        $this->assertEquals('expanded', $result['initialState']);
     }
 
     public function test_allows_duplicate_exercises_in_workout_selection_list()
@@ -241,7 +243,7 @@ class WorkoutExerciseListServiceTest extends TestCase
         $result = $this->service->generateExerciseSelectionList($workout);
 
         // Should show both exercises (duplicates are allowed for athletes who log same exercise multiple times per day)
-        $items = collect($result['data']['items']);
+        $items = collect($result['items']);
         $this->assertCount(2, $items);
         $this->assertTrue($items->contains('name', 'Bench Press'));
         $this->assertTrue($items->contains('name', 'Back Squat'));
