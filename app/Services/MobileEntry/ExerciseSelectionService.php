@@ -28,7 +28,7 @@ class ExerciseSelectionService
      *    - Label: Recent
      *    - Style: 'recent' (green, lighter)
      *    - Priority: 1
-     *    - Exercises performed in the last 4 weeks (excluding today)
+     *    - Exercises performed in the last 4 weeks
      * 
      * 2. Popular Exercises (Essential beginner-friendly exercises)
      *    - Label: Popular
@@ -47,7 +47,7 @@ class ExerciseSelectionService
      *    - Label: Recent
      *    - Style: 'recent' (green, lighter)
      *    - Priority: 1
-     *    - Exercises performed in the last 4 weeks (excluding today)
+     *    - Exercises performed in the last 4 weeks
      * 
      * 2. Previously Logged Exercises
      *    - Label: Shows last performed date (e.g., "2 days ago")
@@ -79,18 +79,9 @@ class ExerciseSelectionService
         $user = User::find($userId);
         $exercises = $this->aliasService->applyAliasesToExercises($exercises, $user);
 
-        // Get exercises already logged today (to exclude from recent list)
-        $loggedTodayExerciseIds = LiftLog::where('user_id', $userId)
-            ->whereDate('logged_at', $selectedDate->toDateString())
-            ->pluck('exercise_id')
-            ->unique()
-            ->toArray();
-
-        // Get recent exercises (last 4 weeks, excluding today) for the "Recent" category
+        // Get recent exercises (last 4 weeks) for the "Recent" category
         $recentExerciseIds = LiftLog::where('user_id', $userId)
             ->where('logged_at', '>=', $selectedDate->copy()->subDays(28))
-            ->where('logged_at', '<', $selectedDate->startOfDay())
-            ->whereNotIn('exercise_id', $loggedTodayExerciseIds)
             ->pluck('exercise_id')
             ->unique()
             ->toArray();
