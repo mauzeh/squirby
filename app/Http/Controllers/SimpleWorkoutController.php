@@ -38,7 +38,32 @@ class SimpleWorkoutController extends Controller
             ->build();
 
         // Exercise selection list - always expanded on create page
-        $exerciseSelectionData = $this->exerciseListService->generateExerciseSelectionListForNew(Auth::id());
+        $unifiedService = app(\App\Services\UnifiedExerciseListService::class);
+        $exerciseSelectionData = $unifiedService->generate(Auth::id(), [
+            'context' => 'workout-builder-new',
+            'filter_exercises' => 'all',
+            'show_popular' => false,
+            'url_generator' => fn($exercise) => route('simple-workouts.add-exercise-new', [
+                'exercise' => $exercise->id
+            ]),
+            'create_form' => [
+                'action' => route('simple-workouts.create-exercise-new'),
+                'method' => 'POST',
+                'inputName' => 'exercise_name',
+                'submitText' => '+',
+                'buttonTextTemplate' => 'Create "{term}"',
+                'ariaLabel' => 'Create new exercise',
+                'hiddenFields' => [],
+            ],
+            'initial_state' => 'expanded',
+            'show_cancel_button' => false,
+            'restrict_height' => true,
+            'aria_labels' => [
+                'section' => 'Exercise selection list',
+                'selectItem' => 'Add this exercise to workout',
+            ],
+        ]);
+        
         $components[] = [
             'type' => 'item-list',
             'data' => $exerciseSelectionData,
@@ -136,9 +161,31 @@ class SimpleWorkoutController extends Controller
         $components[] = $buttonBuilder->build();
 
         // Exercise selection list - expanded if coming from "Add exercises" button
-        $exerciseSelectionData = $this->exerciseListService->generateExerciseSelectionList($workout, [
-            'redirectContext' => 'simple-workout',
-            'initialState' => $shouldExpandList ? 'expanded' : 'collapsed'
+        $unifiedService = app(\App\Services\UnifiedExerciseListService::class);
+        $exerciseSelectionData = $unifiedService->generate(Auth::id(), [
+            'context' => 'workout-builder-edit',
+            'filter_exercises' => 'all',
+            'show_popular' => false,
+            'url_generator' => fn($exercise) => route('simple-workouts.add-exercise', [
+                $workout->id,
+                'exercise' => $exercise->id
+            ]),
+            'create_form' => [
+                'action' => route('simple-workouts.create-exercise', $workout->id),
+                'method' => 'POST',
+                'inputName' => 'exercise_name',
+                'submitText' => '+',
+                'buttonTextTemplate' => 'Create "{term}"',
+                'ariaLabel' => 'Create new exercise',
+                'hiddenFields' => [],
+            ],
+            'initial_state' => $shouldExpandList ? 'expanded' : 'collapsed',
+            'show_cancel_button' => true,
+            'restrict_height' => true,
+            'aria_labels' => [
+                'section' => 'Exercise selection list',
+                'selectItem' => 'Add this exercise to workout',
+            ],
         ]);
         
         $components[] = [
