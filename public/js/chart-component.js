@@ -264,6 +264,9 @@ function initializeChart(canvas) {
             
             // Set up timeframe selector buttons
             setupTimeframeSelector(canvas);
+            
+            // Apply default 6 month filter
+            updateChartTimeframe(canvas.id, '6mo');
         }
         
         // Mark as initialized

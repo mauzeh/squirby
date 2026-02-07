@@ -52,7 +52,8 @@ class ChartTimeframeSelectorTest extends TestCase
         $response->assertSee('data-timeframe="6mo"', false);
         $response->assertSee('data-timeframe="3mo"', false);
         
-        // Check for active class on "All" button by default
+        // Check for active class on "6 Months" button by default
+        $response->assertSee('data-timeframe="6mo">6 Months</button>', false);
         $response->assertSee('timeframe-btn active', false);
     }
 
