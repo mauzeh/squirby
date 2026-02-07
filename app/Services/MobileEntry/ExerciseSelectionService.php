@@ -21,6 +21,9 @@ class ExerciseSelectionService
     /**
      * Generate item selection list based on user's accessible exercises
      * 
+     * @deprecated Use UnifiedExerciseListService::generate() instead
+     * @see \App\Services\UnifiedExerciseListService::generate()
+     * 
      * Adaptive system that prioritizes exercises based on user experience:
      * 
      * For New Users (< 5 total lift logs):

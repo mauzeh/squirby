@@ -28,8 +28,7 @@ class MobileEntryController extends AbstractMobileEntryController
         private \App\Services\MobileEntry\BodyLogService $bodyLogService,
         private PRCelebrationService $prCelebrationService,
         private ExerciseCreationService $exerciseCreationService,
-        private LiftLogTableService $liftLogTableService,
-        private ExerciseSelectionService $exerciseSelectionService
+        private LiftLogTableService $liftLogTableService
     ) {
         parent::__construct($dateContextBuilder, $sessionMessageService, $componentAssembler);
     }
@@ -56,9 +55,49 @@ class MobileEntryController extends AbstractMobileEntryController
         
         // Use specialized services for lifts
         if ($entryType === 'lifts') {
+            // Use unified service for exercise selection
+            $unifiedService = app(\App\Services\UnifiedExerciseListService::class);
+            $itemSelectionList = $unifiedService->generate($userId, [
+                'context' => 'mobile-entry',
+                'date' => $selectedDate,
+                'filter_exercises' => 'all',
+                'show_popular' => true,
+                'url_generator' => function($exercise, $config) use ($selectedDate) {
+                    $routeParams = [
+                        'exercise_id' => $exercise->id,
+                        'redirect_to' => 'mobile-entry-lifts'
+                    ];
+                    
+                    // Only include date if we're NOT viewing today
+                    if (!$selectedDate->isToday()) {
+                        $routeParams['date'] = $selectedDate->toDateString();
+                    }
+                    
+                    return route('lift-logs.create', $routeParams);
+                },
+                'create_form' => [
+                    'action' => route('mobile-entry.create-exercise'),
+                    'method' => 'POST',
+                    'inputName' => 'exercise_name',
+                    'submitText' => '+',
+                    'buttonTextTemplate' => 'Create "{term}"',
+                    'ariaLabel' => 'Create new exercise',
+                    'hiddenFields' => !$selectedDate->isToday() ? ['date' => $selectedDate->toDateString()] : [],
+                ],
+                'initial_state' => 'collapsed',
+                'show_cancel_button' => true,
+                'restrict_height' => false,
+                'filter_placeholder' => 'Tap to search...',
+                'no_results_message' => config('mobile_entry_messages.empty_states.no_exercises_found'),
+                'aria_labels' => [
+                    'section' => 'Exercise selection list',
+                    'selectItem' => 'Add this exercise to today\'s workout',
+                ],
+            ]);
+            
             $data = [
                 'loggedItems' => $this->liftLogTableService->generateLoggedItems($userId, $selectedDate),
-                'itemSelectionList' => $this->exerciseSelectionService->generateItemSelectionList($userId, $selectedDate),
+                'itemSelectionList' => $itemSelectionList,
                 'interfaceMessages' => $this->buildInterfaceMessages(
                     $this->liftLogService,
                     $userId,

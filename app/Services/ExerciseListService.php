@@ -269,6 +269,9 @@ class ExerciseListService
      * Generate a complete exercise list component for metrics page
      * Returns raw array format (controller wraps with ComponentBuilder if needed)
      * 
+     * @deprecated Use UnifiedExerciseListService::generate() instead
+     * @see \App\Services\UnifiedExerciseListService::generate()
+     * 
      * @param int $userId
      * @return array Raw item list data
      */

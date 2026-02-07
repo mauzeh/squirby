@@ -140,8 +140,26 @@ class LiftLogController extends Controller
                 ->asLink(route('mobile-entry.lifts', ['expand_selection' => true]))
                 ->build();
         } else {
-            // Get raw array from service and wrap with ComponentBuilder
-            $exerciseListData = $this->exerciseListService->generateMetricsExerciseList($userId);
+            // Use unified service
+            $unifiedService = app(\App\Services\UnifiedExerciseListService::class);
+            $exerciseListData = $unifiedService->generate($userId, [
+                'context' => 'metrics',
+                'filter_exercises' => 'logged-only',
+                'show_popular' => false,
+                'url_generator' => fn($exercise) => route('exercises.show-logs', [
+                    'exercise' => $exercise,
+                    'from' => 'lift-logs-index'
+                ]),
+                'create_form' => null,
+                'initial_state' => 'expanded',
+                'show_cancel_button' => false,
+                'restrict_height' => false,
+                'aria_labels' => [
+                    'section' => 'Exercise selection list',
+                    'selectItem' => 'Select exercise to view history',
+                ],
+            ]);
+            
             $components[] = [
                 'type' => 'item-list',
                 'data' => $exerciseListData,

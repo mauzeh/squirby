@@ -184,6 +184,9 @@ class WorkoutExerciseListService
      * Generate exercise selection list for adding exercises to a workout
      * Returns raw array format (controller wraps with ComponentBuilder if needed)
      * 
+     * @deprecated Use UnifiedExerciseListService::generate() instead
+     * @see \App\Services\UnifiedExerciseListService::generate()
+     * 
      * @param Workout $workout
      * @param array $options Configuration options
      * @return array Raw item list data
@@ -335,6 +338,9 @@ class WorkoutExerciseListService
     /**
      * Generate exercise selection list for new simple workout creation (no workout exists yet)
      * Returns raw array format (controller wraps with ComponentBuilder if needed)
+     * 
+     * @deprecated Use UnifiedExerciseListService::generate() instead
+     * @see \App\Services\UnifiedExerciseListService::generate()
      * 
      * @param int $userId
      * @return array Raw item list data
