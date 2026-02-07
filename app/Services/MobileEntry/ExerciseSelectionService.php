@@ -38,7 +38,7 @@ class ExerciseSelectionService
      * 
      * 3. All Others
      *    - Label: Shows last performed date if available, empty otherwise
-     *    - Style: 'regular' (gray)
+     *    - Style: 'exercise-history' (gray)
      *    - Priority: 3
      *    - All remaining exercises, ordered alphabetically
      * 
@@ -51,13 +51,13 @@ class ExerciseSelectionService
      * 
      * 2. Previously Logged Exercises
      *    - Label: Shows last performed date (e.g., "2 days ago")
-     *    - Style: 'in-program' (green, prominent)
+     *    - Style: 'exercise-history' (gray)
      *    - Priority: 2
      *    - Other exercises with workout history for this user
      * 
      * 3. Never Logged Exercises
      *    - Label: Empty
-     *    - Style: 'regular' (gray)
+     *    - Style: 'exercise-history' (gray)
      *    - Priority: 3
      *    - Exercises never performed by this user, ordered alphabetically
      * 
@@ -145,7 +145,7 @@ class ExerciseSelectionService
                 // Category 2: Other exercises with logs for experienced users
                 $itemType = [
                     'label' => $lastPerformedLabel,
-                    'cssClass' => 'in-program',  // Green, show they have history
+                    'cssClass' => 'exercise-history',  // Gray
                     'priority' => 2,
                     'subPriority' => 0
                 ];
@@ -154,7 +154,7 @@ class ExerciseSelectionService
                 $priority = $isNewUser ? 3 : 3;  // Lower priority for both user types
                 $itemType = [
                     'label' => $lastPerformedLabel,
-                    'cssClass' => 'regular',  // Gray
+                    'cssClass' => 'exercise-history',  // Gray
                     'priority' => $priority,
                     'subPriority' => 0
                 ];
