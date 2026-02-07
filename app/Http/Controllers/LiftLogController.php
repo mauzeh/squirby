@@ -8,7 +8,6 @@ use App\Models\Exercise;
 use App\Models\LiftLog;
 use App\Services\ExerciseTypes\Exceptions\InvalidExerciseDataException;
 use App\Services\RedirectService;
-use App\Services\ExerciseListService;
 use App\Services\MobileEntry\LiftLogService;
 use App\Services\ExerciseAliasService;
 use App\Services\ComponentBuilder;
@@ -21,7 +20,6 @@ class LiftLogController extends Controller
 {
     public function __construct(
         private RedirectService $redirectService,
-        private ExerciseListService $exerciseListService,
         private CreateLiftLogAction $createLiftLogAction,
         private UpdateLiftLogAction $updateLiftLogAction,
         private LiftLogService $liftLogService,
@@ -114,9 +112,6 @@ class LiftLogController extends Controller
     public function index()
     {
         $userId = Auth::id();
-        
-        // Get all exercises that the user has logged
-        $exercises = $this->exerciseListService->getLoggedExercises($userId);
 
         // Build components array
         $components = [
@@ -131,8 +126,11 @@ class LiftLogController extends Controller
             $components[] = $sessionMessages;
         }
         
+        // Check if user has any logged exercises
+        $hasLoggedExercises = LiftLog::where('user_id', $userId)->exists();
+        
         // Build exercise list
-        if ($exercises->isEmpty()) {
+        if (!$hasLoggedExercises) {
             $components[] = ComponentBuilder::messages()
                 ->add('info', config('mobile_entry_messages.empty_states.metrics_getting_started'))
                 ->build();

@@ -6,16 +6,17 @@ use App\Models\Exercise;
 use App\Models\ExerciseMatchingAlias;
 use App\Models\Workout;
 use App\Services\ComponentBuilder as C;
+use App\Services\UnifiedExerciseListService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class ExerciseMatchingAliasController extends Controller
 {
-    protected $exerciseListService;
+    protected $unifiedExerciseListService;
 
-    public function __construct(\App\Services\ExerciseListService $exerciseListService)
+    public function __construct(UnifiedExerciseListService $unifiedExerciseListService)
     {
-        $this->exerciseListService = $exerciseListService;
+        $this->unifiedExerciseListService = $unifiedExerciseListService;
     }
 
     /**
@@ -48,12 +49,42 @@ class ExerciseMatchingAliasController extends Controller
             ->info('Select an exercise below to create an alias. This will make "' . $aliasName . '" clickable in your workouts.')
             ->build();
         
-        // Generate exercise list using the service
-        $components[] = $this->exerciseListService->generateAliasLinkingExerciseList(
-            Auth::id(),
-            $aliasName,
-            $workoutId
-        );
+        // Generate exercise list using unified service
+        $exerciseListData = $this->unifiedExerciseListService->generate(Auth::id(), [
+            'context' => 'alias-linking',
+            'filter_exercises' => 'all',
+            'show_popular' => false,
+            'url_generator' => fn($exercise) => route('exercise-aliases.store', [
+                'exercise_id' => $exercise->id,
+                'alias_name' => $aliasName,
+                'workout_id' => $workoutId
+            ]),
+            'create_form' => [
+                'action' => route('exercise-aliases.create-and-link'),
+                'inputName' => 'exercise_name',
+                'hiddenFields' => [
+                    'alias_name' => $aliasName,
+                    'workout_id' => $workoutId
+                ],
+                'buttonTemplate' => 'Create "{term}"',
+                'method' => 'POST',
+                'ariaLabel' => 'Create new exercise and link alias',
+                'submitText' => 'Create Exercise'
+            ],
+            'initial_state' => 'expanded',
+            'show_cancel_button' => false,
+            'restrict_height' => false,
+            'recent_days' => 30,
+            'aria_labels' => [
+                'section' => 'Exercise selection list',
+                'selectItem' => 'Select exercise to link alias',
+            ],
+        ]);
+        
+        $components[] = [
+            'type' => 'item-list',
+            'data' => $exerciseListData,
+        ];
         
         $data = ['components' => $components];
         return view('mobile-entry.flexible', compact('data'));

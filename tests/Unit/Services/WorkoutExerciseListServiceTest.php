@@ -189,65 +189,7 @@ class WorkoutExerciseListServiceTest extends TestCase
         $this->assertEquals('KB Swings → Kettlebell Swings', $row['line1']);
     }
 
-    public function test_generates_exercise_selection_list()
-    {
-        $workout = Workout::factory()->create(['user_id' => $this->user->id]);
-        
-        // Create some exercises
-        $exercise1 = Exercise::factory()->create(['title' => 'Back Squat']);
-        $exercise2 = Exercise::factory()->create(['title' => 'Bench Press']);
-        
-        // Mock alias service
-        $this->aliasService->method('applyAliasesToExercises')
-            ->willReturnCallback(fn($exercises) => $exercises);
 
-        $result = $this->service->generateExerciseSelectionList($workout);
-
-        // Now returns raw array format
-        $this->assertArrayHasKey('items', $result);
-        $this->assertArrayHasKey('createForm', $result);
-        $this->assertArrayHasKey('filterPlaceholder', $result);
-        $this->assertEquals('Tap to search...', $result['filterPlaceholder']);
-    }
-
-    public function test_generates_exercise_selection_list_for_new_workout()
-    {
-        // Create some exercises
-        Exercise::factory()->create(['title' => 'Back Squat']);
-        Exercise::factory()->create(['title' => 'Bench Press']);
-        
-        // Mock alias service
-        $this->aliasService->method('applyAliasesToExercises')
-            ->willReturnCallback(fn($exercises) => $exercises);
-
-        $result = $this->service->generateExerciseSelectionListForNew($this->user->id);
-
-        // Now returns raw array format
-        $this->assertArrayHasKey('items', $result);
-        $this->assertArrayHasKey('createForm', $result);
-        $this->assertEquals('expanded', $result['initialState']);
-    }
-
-    public function test_allows_duplicate_exercises_in_workout_selection_list()
-    {
-        $workout = Workout::factory()->create(['user_id' => $this->user->id]);
-        $exercise1 = Exercise::factory()->create(['title' => 'Back Squat']);
-        $exercise2 = Exercise::factory()->create(['title' => 'Bench Press']);
-        
-        // Add one exercise to workout
-        WorkoutExercise::create(['workout_id' => $workout->id, 'exercise_id' => $exercise1->id, 'order' => 1]);
-
-        $this->aliasService->method('applyAliasesToExercises')
-            ->willReturnCallback(fn($exercises) => $exercises);
-
-        $result = $this->service->generateExerciseSelectionList($workout);
-
-        // Should show both exercises (duplicates are allowed for athletes who log same exercise multiple times per day)
-        $items = collect($result['items']);
-        $this->assertCount(2, $items);
-        $this->assertTrue($items->contains('name', 'Bench Press'));
-        $this->assertTrue($items->contains('name', 'Back Squat'));
-    }
 
     public function test_handles_compact_mode_option()
     {
