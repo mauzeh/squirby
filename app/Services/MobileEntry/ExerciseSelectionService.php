@@ -25,7 +25,7 @@ class ExerciseSelectionService
      * 
      * For New Users (< 5 total lift logs):
      * 1. Recent (Last 4 Weeks)
-     *    - Label: Recent
+     *    - Label: Shows last performed date (e.g., "2d ago")
      *    - Style: 'recent' (green, lighter)
      *    - Priority: 1
      *    - Exercises performed in the last 4 weeks
@@ -37,14 +37,14 @@ class ExerciseSelectionService
      *    - Curated list of most common beginner exercises
      * 
      * 3. All Others
-     *    - No label or last performed date
+     *    - Label: Shows last performed date if available, empty otherwise
      *    - Style: 'regular' (gray)
      *    - Priority: 3
      *    - All remaining exercises, ordered alphabetically
      * 
      * For Experienced Users (≥ 5 total lift logs):
      * 1. Recent (Last 4 Weeks)
-     *    - Label: Recent
+     *    - Label: Shows last performed date (e.g., "2d ago")
      *    - Style: 'recent' (green, lighter)
      *    - Priority: 1
      *    - Exercises performed in the last 4 weeks
@@ -119,7 +119,7 @@ class ExerciseSelectionService
             if ($isNewUser && in_array($exercise->id, $recentExerciseIds)) {
                 // Category 1: Recent exercises for new users (top priority)
                 $itemType = [
-                    'label' => 'Recent',
+                    'label' => $lastPerformedLabel,
                     'cssClass' => 'recent',  // Green, lighter
                     'priority' => 1,
                     'subPriority' => 0
@@ -136,7 +136,7 @@ class ExerciseSelectionService
             } elseif (!$isNewUser && in_array($exercise->id, $recentExerciseIds)) {
                 // Category 1: Recent exercises for experienced users (top priority)
                 $itemType = [
-                    'label' => 'Recent',
+                    'label' => $lastPerformedLabel,
                     'cssClass' => 'recent',  // Green, lighter
                     'priority' => 1,
                     'subPriority' => 0
@@ -224,7 +224,7 @@ class ExerciseSelectionService
                 'section' => 'Exercise selection list',
                 'selectItem' => 'Add this exercise to today\'s workout'
             ],
-            'filterPlaceholder' => config('mobile_entry_messages.placeholders.search_exercises')
+            'filterPlaceholder' => 'Tap to search...'
         ];
     }
 

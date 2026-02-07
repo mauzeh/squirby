@@ -24,7 +24,7 @@ class ExerciseListService
      * 
      * @param int $userId
      * @param array $options Configuration options:
-     *   - 'filter_placeholder' => string (default: 'Search exercises...')
+     *   - 'filter_placeholder' => string (default: 'Tap to search...')
      *   - 'no_results_message' => string (default: 'No exercises found.')
      *   - 'initial_state' => string (default: 'expanded')
      *   - 'show_cancel_button' => bool (default: false)
@@ -38,7 +38,7 @@ class ExerciseListService
     {
         // Set defaults
         $options = array_merge([
-            'filter_placeholder' => 'Search exercises...',
+            'filter_placeholder' => 'Tap to search...',
             'no_results_message' => 'No exercises found.',
             'initial_state' => 'expanded',
             'show_cancel_button' => false,
@@ -235,7 +235,7 @@ class ExerciseListService
 
         // Build the component
         $listBuilder = ComponentBuilder::itemList()
-            ->filterPlaceholder('Search exercises...')
+            ->filterPlaceholder('Tap to search...')
             ->noResultsMessage('No exercises found.');
         
         if ($shouldExpand) {
@@ -371,7 +371,7 @@ class ExerciseListService
 
         // Build the component
         $listBuilder = ComponentBuilder::itemList()
-            ->filterPlaceholder('Search exercises...')
+            ->filterPlaceholder('Tap to search...')
             ->noResultsMessage('No exercises found.')
             ->initialState('expanded')
             ->showCancelButton(false)

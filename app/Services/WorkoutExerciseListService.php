@@ -247,7 +247,7 @@ class WorkoutExerciseListService
         $finalExercises = $recentExercises->concat($otherExercises);
 
         $itemListBuilder = C::itemList()
-            ->filterPlaceholder('Search exercises...')
+            ->filterPlaceholder('Tap to search...')
             ->noResultsMessage('No exercises found.')
             ->initialState($options['initialState']);
 
@@ -379,7 +379,7 @@ class WorkoutExerciseListService
         $finalExercises = $recentExercises->concat($otherExercises);
 
         $itemListBuilder = C::itemList()
-            ->filterPlaceholder('Search exercises...')
+            ->filterPlaceholder('Tap to search...')
             ->noResultsMessage('No exercises found.')
             ->initialState('expanded')
             ->showCancelButton(false);
