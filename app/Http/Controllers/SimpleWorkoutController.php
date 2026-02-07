@@ -247,17 +247,6 @@ class SimpleWorkoutController extends Controller
             $this->authorize('update', $workout);
         }
 
-        // Check if exercise already exists in workout
-        $exists = WorkoutExercise::where('workout_id', $workout->id)
-            ->where('exercise_id', $exercise->id)
-            ->exists();
-
-        if ($exists) {
-            return redirect()
-                ->route('workouts.edit-simple', $workout->id)
-                ->with('warning', 'Exercise already in workout.');
-        }
-
         // Get next order (priority)
         $maxOrder = $workout->exercises()->max('order') ?? 0;
 
@@ -303,17 +292,6 @@ class SimpleWorkoutController extends Controller
             ]);
         } else {
             $this->authorize('update', $workout);
-        }
-
-        // Check if exercise already exists in workout
-        $exists = WorkoutExercise::where('workout_id', $workout->id)
-            ->where('exercise_id', $exercise->id)
-            ->exists();
-
-        if ($exists) {
-            return redirect()
-                ->route('workouts.edit-simple', $workout->id)
-                ->with('warning', 'Exercise already in workout.');
         }
 
         // Get next order (priority)

@@ -143,7 +143,7 @@ class LiftLogHistoryPageTest extends TestCase
     }
 
     #[\PHPUnit\Framework\Attributes\Test]
-    public function it_displays_exercises_in_alphabetical_order()
+    public function it_displays_exercises_sorted_by_recency()
     {
         $user = User::factory()->create();
         
@@ -151,10 +151,23 @@ class LiftLogHistoryPageTest extends TestCase
         $exerciseA = Exercise::factory()->create(['title' => 'Apple Lift']);
         $exerciseM = Exercise::factory()->create(['title' => 'Mango Lift']);
         
-        // Create logs for all exercises
-        LiftLog::factory()->create(['user_id' => $user->id, 'exercise_id' => $exerciseZ->id]);
-        LiftLog::factory()->create(['user_id' => $user->id, 'exercise_id' => $exerciseA->id]);
-        LiftLog::factory()->create(['user_id' => $user->id, 'exercise_id' => $exerciseM->id]);
+        // Create logs with different dates
+        // All within last 4 weeks = all "recent", so should be alphabetical
+        LiftLog::factory()->create([
+            'user_id' => $user->id, 
+            'exercise_id' => $exerciseM->id,
+            'logged_at' => now()->subDays(1) // Most recent
+        ]);
+        LiftLog::factory()->create([
+            'user_id' => $user->id, 
+            'exercise_id' => $exerciseA->id,
+            'logged_at' => now()->subDays(5) // Middle
+        ]);
+        LiftLog::factory()->create([
+            'user_id' => $user->id, 
+            'exercise_id' => $exerciseZ->id,
+            'logged_at' => now()->subDays(10) // Oldest (but still within 4 weeks)
+        ]);
         
         $response = $this->actingAs($user)->get(route('lift-logs.index'));
         
@@ -168,9 +181,9 @@ class LiftLogHistoryPageTest extends TestCase
         $posM = strpos($content, 'Mango Lift');
         $posZ = strpos($content, 'Zebra Lift');
         
-        // Assert they appear in alphabetical order
-        $this->assertLessThan($posM, $posA, 'Apple Lift should appear before Mango Lift');
-        $this->assertLessThan($posZ, $posM, 'Mango Lift should appear before Zebra Lift');
+        // All exercises are within last 4 weeks, so they should be alphabetical
+        $this->assertLessThan($posM, $posA, 'Apple Lift should appear before Mango Lift (alphabetical within recent)');
+        $this->assertLessThan($posZ, $posM, 'Mango Lift should appear before Zebra Lift (alphabetical within recent)');
     }
 
     #[\PHPUnit\Framework\Attributes\Test]

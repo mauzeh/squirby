@@ -226,7 +226,7 @@ class WorkoutExerciseListServiceTest extends TestCase
         $this->assertEquals('expanded', $result['data']['initialState']);
     }
 
-    public function test_excludes_exercises_already_in_workout_from_selection_list()
+    public function test_allows_duplicate_exercises_in_workout_selection_list()
     {
         $workout = Workout::factory()->create(['user_id' => $this->user->id]);
         $exercise1 = Exercise::factory()->create(['title' => 'Back Squat']);
@@ -240,11 +240,11 @@ class WorkoutExerciseListServiceTest extends TestCase
 
         $result = $this->service->generateExerciseSelectionList($workout);
 
-        // Should only show Bench Press (Back Squat is already in workout)
+        // Should show both exercises (duplicates are allowed for athletes who log same exercise multiple times per day)
         $items = collect($result['data']['items']);
-        $this->assertCount(1, $items);
+        $this->assertCount(2, $items);
         $this->assertTrue($items->contains('name', 'Bench Press'));
-        $this->assertFalse($items->contains('name', 'Back Squat'));
+        $this->assertTrue($items->contains('name', 'Back Squat'));
     }
 
     public function test_handles_compact_mode_option()

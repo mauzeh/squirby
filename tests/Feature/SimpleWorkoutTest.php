@@ -158,7 +158,7 @@ class SimpleWorkoutTest extends TestCase
     }
 
     /** @test */
-    public function user_cannot_add_duplicate_exercise_to_simple_workout()
+    public function user_can_add_duplicate_exercise_to_simple_workout()
     {
         $user = User::factory()->create();
         $workout = Workout::factory()->create([
@@ -174,14 +174,19 @@ class SimpleWorkoutTest extends TestCase
             'order' => 1,
         ]);
 
-        // Try to add same exercise again
+        // Add same exercise again (allowed for athletes who log same exercise multiple times per day)
         $response = $this->actingAs($user)->get(route('simple-workouts.add-exercise', [
             'workout' => $workout->id,
             'exercise' => $exercise->id,
         ]));
 
         $response->assertRedirect(route('workouts.edit-simple', $workout->id));
-        $response->assertSessionHas('warning', 'Exercise already in workout.');
+        $response->assertSessionHas('success', 'Exercise added!');
+        
+        // Verify exercise was added twice
+        $this->assertEquals(2, WorkoutExercise::where('workout_id', $workout->id)
+            ->where('exercise_id', $exercise->id)
+            ->count());
     }
 
     /** @test */

@@ -209,111 +209,71 @@ class WorkoutExerciseListService
         $user = Auth::user();
         $exercises = $this->aliasService->applyAliasesToExercises($exercises, $user);
 
-        // Get exercises already in this workout (to exclude from selection list)
-        $workoutExerciseIds = $workout->exercises()->pluck('exercise_id')->toArray();
-
-        // Get recent exercises (last 7 days) for the "Recent" category
+        // Get recent exercises (last 4 weeks) - matching lift-logs/index behavior
         $recentExerciseIds = \App\Models\LiftLog::where('user_id', $userId)
-            ->where('logged_at', '>=', Carbon::now()->subDays(7))
+            ->where('logged_at', '>=', Carbon::now()->subDays(28))
             ->pluck('exercise_id')
             ->unique()
             ->toArray();
 
-        // Get last performed dates for all exercises
+        // Get last performed dates for sorting within non-recent group
         $lastPerformedDates = \App\Models\LiftLog::where('user_id', $userId)
             ->whereIn('exercise_id', $exercises->pluck('id'))
             ->select('exercise_id', \DB::raw('MAX(logged_at) as last_logged_at'))
             ->groupBy('exercise_id')
             ->pluck('last_logged_at', 'exercise_id');
 
-        // Get top 10 recommended exercises
-        $recommendationEngine = app(\App\Services\RecommendationEngine::class);
-        $recommendations = $recommendationEngine->getRecommendations($userId, 10);
-        
-        $recommendationMap = [];
-        foreach ($recommendations as $index => $recommendation) {
-            $exerciseId = $recommendation['exercise']->id;
-            $recommendationMap[$exerciseId] = $index + 1;
-        }
+        // Get lift log counts for each exercise
+        $exerciseLogCounts = \App\Models\LiftLog::where('user_id', $userId)
+            ->whereIn('exercise_id', $exercises->pluck('id'))
+            ->select('exercise_id', \DB::raw('count(*) as log_count'))
+            ->groupBy('exercise_id')
+            ->pluck('log_count', 'exercise_id');
 
-        $items = [];
+        // Separate into recent and other groups
+        $recentExercises = collect();
+        $otherExercises = collect();
         
         foreach ($exercises as $exercise) {
-            // Skip exercises already in workout
-            if (in_array($exercise->id, $workoutExerciseIds)) {
-                continue;
-            }
-            
-            // Calculate "X ago" label
-            $lastPerformedLabel = '';
-            if (isset($lastPerformedDates[$exercise->id])) {
-                $lastPerformed = Carbon::parse($lastPerformedDates[$exercise->id]);
-                $lastPerformedLabel = $lastPerformed->diffForHumans(['short' => true]);
-            }
-            
-            // Categorize exercises
-            if (isset($recommendationMap[$exercise->id])) {
-                $rank = $recommendationMap[$exercise->id];
-                $itemType = [
-                    'label' => '<i class="fas fa-star"></i> Recommended',
-                    'cssClass' => 'in-program',
-                    'priority' => 1,
-                    'subPriority' => $rank
-                ];
-            } elseif (in_array($exercise->id, $recentExerciseIds)) {
-                $itemType = [
-                    'label' => 'Recent',
-                    'cssClass' => 'recent',
-                    'priority' => 2,
-                    'subPriority' => 0
-                ];
+            if (in_array($exercise->id, $recentExerciseIds)) {
+                $recentExercises->push($exercise);
             } else {
-                $itemType = [
-                    'label' => $lastPerformedLabel,
-                    'cssClass' => 'regular',
-                    'priority' => 3,
-                    'subPriority' => 0
-                ];
+                $otherExercises->push($exercise);
             }
-
-            $items[] = [
-                'id' => 'exercise-' . $exercise->id,
-                'name' => $exercise->title,
-                'type' => $itemType,
-                'href' => $this->getAddExerciseRoute($workout, $exercise, $options['redirectContext'])
-            ];
         }
-
-        // Sort items
-        usort($items, function ($a, $b) {
-            $priorityComparison = $a['type']['priority'] <=> $b['type']['priority'];
-            if ($priorityComparison !== 0) {
-                return $priorityComparison;
-            }
-            
-            $subPriorityA = $a['type']['subPriority'] ?? 0;
-            $subPriorityB = $b['type']['subPriority'] ?? 0;
-            $subPriorityComparison = $subPriorityA <=> $subPriorityB;
-            if ($subPriorityComparison !== 0) {
-                return $subPriorityComparison;
-            }
-            
-            return strcmp($a['name'], $b['name']);
-        });
+        
+        // Sort recent exercises alphabetically
+        $recentExercises = $recentExercises->sortBy('title')->values();
+        
+        // Sort other exercises by recency (most recent first)
+        $otherExercises = $otherExercises->sortByDesc(function ($exercise) use ($lastPerformedDates) {
+            return $lastPerformedDates[$exercise->id] ?? '1970-01-01';
+        })->values();
+        
+        // Merge back together: recent (alphabetical) then others (by recency)
+        $finalExercises = $recentExercises->concat($otherExercises);
 
         $itemListBuilder = C::itemList()
             ->filterPlaceholder('Search exercises...')
             ->noResultsMessage('No exercises found.')
             ->initialState($options['initialState']);
 
-        foreach ($items as $item) {
+        foreach ($finalExercises as $exercise) {
+            $logCount = $exerciseLogCounts[$exercise->id] ?? 0;
+            $typeLabel = $logCount . ' ' . ($logCount === 1 ? 'log' : 'logs');
+            
+            // Determine if this is a recent exercise (last 4 weeks)
+            $isRecent = in_array($exercise->id, $recentExerciseIds);
+            $cssClass = $isRecent ? 'recent' : 'exercise-history';
+            $priority = $isRecent ? 1 : 2;
+            
             $itemListBuilder->item(
-                $item['id'],
-                $item['name'],
-                $item['href'],
-                $item['type']['label'],
-                $item['type']['cssClass'],
-                $item['type']['priority']
+                'exercise-' . $exercise->id,
+                $exercise->title,
+                $this->getAddExerciseRoute($workout, $exercise, $options['redirectContext']),
+                $typeLabel,
+                $cssClass,
+                $priority
             );
         }
 
@@ -384,105 +344,74 @@ class WorkoutExerciseListService
         $user = \App\Models\User::find($userId);
         $exercises = $this->aliasService->applyAliasesToExercises($exercises, $user);
 
-        // Get recent exercises (last 7 days) for the "Recent" category
+        // Get recent exercises (last 4 weeks) - matching lift-logs/index behavior
         $recentExerciseIds = \App\Models\LiftLog::where('user_id', $userId)
-            ->where('logged_at', '>=', Carbon::now()->subDays(7))
+            ->where('logged_at', '>=', Carbon::now()->subDays(28))
             ->pluck('exercise_id')
             ->unique()
             ->toArray();
 
-        // Get last performed dates for all exercises
+        // Get last performed dates for sorting within non-recent group
         $lastPerformedDates = \App\Models\LiftLog::where('user_id', $userId)
             ->whereIn('exercise_id', $exercises->pluck('id'))
             ->select('exercise_id', \DB::raw('MAX(logged_at) as last_logged_at'))
             ->groupBy('exercise_id')
             ->pluck('last_logged_at', 'exercise_id');
 
-        // Get top 10 recommended exercises
-        $recommendationEngine = app(\App\Services\RecommendationEngine::class);
-        $recommendations = $recommendationEngine->getRecommendations($userId, 10);
-        
-        $recommendationMap = [];
-        foreach ($recommendations as $index => $recommendation) {
-            $exerciseId = $recommendation['exercise']->id;
-            $recommendationMap[$exerciseId] = $index + 1;
-        }
+        // Get lift log counts for each exercise
+        $exerciseLogCounts = \App\Models\LiftLog::where('user_id', $userId)
+            ->whereIn('exercise_id', $exercises->pluck('id'))
+            ->select('exercise_id', \DB::raw('count(*) as log_count'))
+            ->groupBy('exercise_id')
+            ->pluck('log_count', 'exercise_id');
 
-        $items = [];
+        // Separate into recent and other groups
+        $recentExercises = collect();
+        $otherExercises = collect();
         
         foreach ($exercises as $exercise) {
-            // Calculate "X ago" label
-            $lastPerformedLabel = '';
-            if (isset($lastPerformedDates[$exercise->id])) {
-                $lastPerformed = Carbon::parse($lastPerformedDates[$exercise->id]);
-                $lastPerformedLabel = $lastPerformed->diffForHumans(['short' => true]);
-            }
-            
-            // Categorize exercises
-            if (isset($recommendationMap[$exercise->id])) {
-                $rank = $recommendationMap[$exercise->id];
-                $itemType = [
-                    'label' => '<i class="fas fa-star"></i> Recommended',
-                    'cssClass' => 'in-program',
-                    'priority' => 1,
-                    'subPriority' => $rank
-                ];
-            } elseif (in_array($exercise->id, $recentExerciseIds)) {
-                $itemType = [
-                    'label' => 'Recent',
-                    'cssClass' => 'recent',
-                    'priority' => 2,
-                    'subPriority' => 0
-                ];
+            if (in_array($exercise->id, $recentExerciseIds)) {
+                $recentExercises->push($exercise);
             } else {
-                $itemType = [
-                    'label' => $lastPerformedLabel,
-                    'cssClass' => 'regular',
-                    'priority' => 3,
-                    'subPriority' => 0
-                ];
+                $otherExercises->push($exercise);
             }
-
-            $items[] = [
-                'id' => 'exercise-' . $exercise->id,
-                'name' => $exercise->title,
-                'type' => $itemType,
-                'href' => route('simple-workouts.add-exercise-new', [
-                    'exercise' => $exercise->id
-                ])
-            ];
         }
-
-        // Sort items
-        usort($items, function ($a, $b) {
-            $priorityComparison = $a['type']['priority'] <=> $b['type']['priority'];
-            if ($priorityComparison !== 0) {
-                return $priorityComparison;
-            }
-            
-            $subPriorityA = $a['type']['subPriority'] ?? 0;
-            $subPriorityB = $b['type']['subPriority'] ?? 0;
-            $subPriorityComparison = $subPriorityA <=> $subPriorityB;
-            if ($subPriorityComparison !== 0) {
-                return $subPriorityComparison;
-            }
-            
-            return strcmp($a['name'], $b['name']);
-        });
+        
+        // Sort recent exercises alphabetically
+        $recentExercises = $recentExercises->sortBy('title')->values();
+        
+        // Sort other exercises by recency (most recent first)
+        $otherExercises = $otherExercises->sortByDesc(function ($exercise) use ($lastPerformedDates) {
+            return $lastPerformedDates[$exercise->id] ?? '1970-01-01';
+        })->values();
+        
+        // Merge back together: recent (alphabetical) then others (by recency)
+        $finalExercises = $recentExercises->concat($otherExercises);
 
         $itemListBuilder = C::itemList()
             ->filterPlaceholder('Search exercises...')
             ->noResultsMessage('No exercises found.')
-            ->initialState('expanded');
+            ->initialState('expanded')
+            ->showCancelButton(false);
 
-        foreach ($items as $item) {
+        foreach ($finalExercises as $exercise) {
+            $logCount = $exerciseLogCounts[$exercise->id] ?? 0;
+            $typeLabel = $logCount . ' ' . ($logCount === 1 ? 'log' : 'logs');
+            
+            // Determine if this is a recent exercise (last 4 weeks)
+            $isRecent = in_array($exercise->id, $recentExerciseIds);
+            $cssClass = $isRecent ? 'recent' : 'exercise-history';
+            $priority = $isRecent ? 1 : 2;
+            
             $itemListBuilder->item(
-                $item['id'],
-                $item['name'],
-                $item['href'],
-                $item['type']['label'],
-                $item['type']['cssClass'],
-                $item['type']['priority']
+                'exercise-' . $exercise->id,
+                $exercise->title,
+                route('simple-workouts.add-exercise-new', [
+                    'exercise' => $exercise->id
+                ]),
+                $typeLabel,
+                $cssClass,
+                $priority
             );
         }
 

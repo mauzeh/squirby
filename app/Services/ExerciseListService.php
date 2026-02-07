@@ -279,19 +279,53 @@ class ExerciseListService
         // Get lift log counts for each exercise
         $exerciseLogCounts = $this->getExerciseLogCounts($userId, $exercises->pluck('id')->toArray());
         
+        // Get recent exercises (last 4 weeks) - matching mobile-entry/lifts behavior
+        $recentExerciseIds = LiftLog::where('user_id', $userId)
+            ->where('logged_at', '>=', now()->subDays(28))
+            ->pluck('exercise_id')
+            ->unique()
+            ->toArray();
+        
+        // Get last performed dates for sorting within non-recent group
+        $lastPerformedDates = LiftLog::where('user_id', $userId)
+            ->whereIn('exercise_id', $exercises->pluck('id'))
+            ->select('exercise_id', DB::raw('MAX(logged_at) as last_logged_at'))
+            ->groupBy('exercise_id')
+            ->pluck('last_logged_at', 'exercise_id');
+        
+        // Separate into recent and other groups
+        $recentExercises = $exercises->filter(function ($exercise) use ($recentExerciseIds) {
+            return in_array($exercise->id, $recentExerciseIds);
+        })->sortBy('title')->values(); // Sort alphabetically within recent
+        
+        $otherExercises = $exercises->filter(function ($exercise) use ($recentExerciseIds) {
+            return !in_array($exercise->id, $recentExerciseIds);
+        })->sortByDesc(function ($exercise) use ($lastPerformedDates) {
+            return $lastPerformedDates[$exercise->id] ?? '1970-01-01';
+        })->values(); // Sort by recency for others
+        
+        // Merge back together: recent (alphabetical) then others (by recency)
+        $finalExercises = $recentExercises->concat($otherExercises);
+        
         $listBuilder = ComponentBuilder::itemList();
         
-        foreach ($exercises as $exercise) {
+        foreach ($finalExercises as $exercise) {
             $displayName = $this->aliasService->getDisplayName($exercise, \App\Models\User::find($userId));
             $logCount = $exerciseLogCounts[$exercise->id] ?? 0;
             $typeLabel = $logCount . ' ' . ($logCount === 1 ? 'log' : 'logs');
+            
+            // Determine if this is a recent exercise (last 4 weeks)
+            $isRecent = in_array($exercise->id, $recentExerciseIds);
+            $cssClass = $isRecent ? 'recent' : 'exercise-history';
+            $priority = $isRecent ? 1 : 2;
             
             $listBuilder->item(
                 (string) $exercise->id,
                 $displayName,
                 route('exercises.show-logs', ['exercise' => $exercise, 'from' => 'lift-logs-index']),
                 $typeLabel,
-                'exercise-history'
+                $cssClass,
+                $priority
             );
         }
         
