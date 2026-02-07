@@ -24,7 +24,8 @@ class ChartComponentBuilder
             ],
             'height' => null,
             'containerClass' => 'form-container',
-            'ariaLabel' => $title . ' chart'
+            'ariaLabel' => $title . ' chart',
+            'showTimeframeSelector' => false
         ];
     }
     
@@ -202,6 +203,12 @@ class ChartComponentBuilder
             ]
         ];
         
+        return $this;
+    }
+    
+    public function showTimeframeSelector(bool $show = true): self
+    {
+        $this->data['showTimeframeSelector'] = $show;
         return $this;
     }
     

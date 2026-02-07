@@ -337,6 +337,7 @@ Track your ' . strtolower($displayName) . ' progress with this app.
             ->datasets($chartData['datasets'])
             ->timeScale($timeUnit, $displayFormat)
             ->showLegend()
+            ->showTimeframeSelector()
             ->ariaLabel($exercise->title . ' progress chart')
             ->containerClass('chart-container-styled')
             ->height(300)
