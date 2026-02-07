@@ -216,19 +216,12 @@ class WorkoutExerciseListService
             ->unique()
             ->toArray();
 
-        // Get last performed dates for sorting within non-recent group
+        // Get last performed dates for all exercises
         $lastPerformedDates = \App\Models\LiftLog::where('user_id', $userId)
             ->whereIn('exercise_id', $exercises->pluck('id'))
             ->select('exercise_id', \DB::raw('MAX(logged_at) as last_logged_at'))
             ->groupBy('exercise_id')
             ->pluck('last_logged_at', 'exercise_id');
-
-        // Get lift log counts for each exercise
-        $exerciseLogCounts = \App\Models\LiftLog::where('user_id', $userId)
-            ->whereIn('exercise_id', $exercises->pluck('id'))
-            ->select('exercise_id', \DB::raw('count(*) as log_count'))
-            ->groupBy('exercise_id')
-            ->pluck('log_count', 'exercise_id');
 
         // Separate into recent and other groups
         $recentExercises = collect();
@@ -259,8 +252,12 @@ class WorkoutExerciseListService
             ->initialState($options['initialState']);
 
         foreach ($finalExercises as $exercise) {
-            $logCount = $exerciseLogCounts[$exercise->id] ?? 0;
-            $typeLabel = $logCount . ' ' . ($logCount === 1 ? 'log' : 'logs');
+            // Calculate "X ago" label for last performed date
+            $typeLabel = '';
+            if (isset($lastPerformedDates[$exercise->id])) {
+                $lastPerformed = Carbon::parse($lastPerformedDates[$exercise->id]);
+                $typeLabel = $lastPerformed->diffForHumans(['short' => true]);
+            }
             
             // Determine if this is a recent exercise (last 4 weeks)
             $isRecent = in_array($exercise->id, $recentExerciseIds);
@@ -351,19 +348,12 @@ class WorkoutExerciseListService
             ->unique()
             ->toArray();
 
-        // Get last performed dates for sorting within non-recent group
+        // Get last performed dates for all exercises
         $lastPerformedDates = \App\Models\LiftLog::where('user_id', $userId)
             ->whereIn('exercise_id', $exercises->pluck('id'))
             ->select('exercise_id', \DB::raw('MAX(logged_at) as last_logged_at'))
             ->groupBy('exercise_id')
             ->pluck('last_logged_at', 'exercise_id');
-
-        // Get lift log counts for each exercise
-        $exerciseLogCounts = \App\Models\LiftLog::where('user_id', $userId)
-            ->whereIn('exercise_id', $exercises->pluck('id'))
-            ->select('exercise_id', \DB::raw('count(*) as log_count'))
-            ->groupBy('exercise_id')
-            ->pluck('log_count', 'exercise_id');
 
         // Separate into recent and other groups
         $recentExercises = collect();
@@ -395,8 +385,12 @@ class WorkoutExerciseListService
             ->showCancelButton(false);
 
         foreach ($finalExercises as $exercise) {
-            $logCount = $exerciseLogCounts[$exercise->id] ?? 0;
-            $typeLabel = $logCount . ' ' . ($logCount === 1 ? 'log' : 'logs');
+            // Calculate "X ago" label for last performed date
+            $typeLabel = '';
+            if (isset($lastPerformedDates[$exercise->id])) {
+                $lastPerformed = Carbon::parse($lastPerformedDates[$exercise->id]);
+                $typeLabel = $lastPerformed->diffForHumans(['short' => true]);
+            }
             
             // Determine if this is a recent exercise (last 4 weeks)
             $isRecent = in_array($exercise->id, $recentExerciseIds);

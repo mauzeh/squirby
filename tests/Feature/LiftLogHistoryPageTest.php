@@ -50,21 +50,23 @@ class LiftLogHistoryPageTest extends TestCase
         LiftLog::factory()->count(5)->create([
             'user_id' => $user->id,
             'exercise_id' => $exercise1->id,
+            'logged_at' => now()->subDays(2),
         ]);
         
         // Create 1 log for exercise 2
         LiftLog::factory()->count(1)->create([
             'user_id' => $user->id,
             'exercise_id' => $exercise2->id,
+            'logged_at' => now()->subWeeks(1),
         ]);
         
         $response = $this->actingAs($user)->get(route('lift-logs.index'));
         
         $response->assertStatus(200);
         
-        // Should see correct counts
-        $response->assertSee('5 logs');
-        $response->assertSee('1 log');
+        // Should see time ago labels instead of log counts
+        $response->assertSee('2d ago'); // Exercise 1 logged 2 days ago
+        $response->assertSee('1w ago'); // Exercise 2 logged 1 week ago
     }
 
     #[\PHPUnit\Framework\Attributes\Test]
