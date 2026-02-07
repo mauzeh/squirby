@@ -12,7 +12,6 @@ use App\Services\MobileEntry\ComponentAssembler;
 use App\Services\MobileEntry\PRCelebrationService;
 use App\Services\MobileEntry\ExerciseCreationService;
 use App\Services\MobileEntry\LiftLogTableService;
-use App\Services\MobileEntry\ExerciseSelectionService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\RedirectResponse;
 use Carbon\Carbon;
