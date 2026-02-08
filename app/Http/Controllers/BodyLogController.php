@@ -158,6 +158,7 @@ class BodyLogController extends Controller
                 ->datasets($chartData['datasets'])
                 ->timeScale('day')
                 ->showLegend()
+                ->showTimeframeSelector()
                 ->ariaLabel($measurementType->name . ' history chart')
                 ->containerClass('chart-container-styled')
                 ->height(300)

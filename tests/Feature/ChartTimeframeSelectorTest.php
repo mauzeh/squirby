@@ -136,4 +136,52 @@ class ChartTimeframeSelectorTest extends TestCase
             ]);
         }
     }
+
+    /** @test */
+    public function body_log_chart_includes_timeframe_selector()
+    {
+        $measurementType = \App\Models\MeasurementType::factory()->create([
+            'user_id' => $this->user->id,
+            'name' => 'Weight',
+            'default_unit' => 'lbs'
+        ]);
+
+        // Create body logs over time to ensure chart is rendered
+        $dates = [
+            Carbon::now()->subMonths(12),
+            Carbon::now()->subMonths(9),
+            Carbon::now()->subMonths(6),
+            Carbon::now()->subMonths(3),
+            Carbon::now()->subMonth(),
+            Carbon::now()->subWeek(),
+        ];
+
+        foreach ($dates as $date) {
+            \App\Models\BodyLog::factory()->create([
+                'user_id' => $this->user->id,
+                'measurement_type_id' => $measurementType->id,
+                'value' => 180 + rand(-5, 5),
+                'logged_at' => $date,
+            ]);
+        }
+
+        $response = $this->get(route('body-logs.show-by-type', $measurementType));
+
+        $response->assertStatus(200);
+        
+        // Check for timeframe selector buttons
+        $response->assertSee('All', false);
+        $response->assertSee('1 Year', false);
+        $response->assertSee('6 Months', false);
+        $response->assertSee('3 Months', false);
+        
+        // Check for data attributes
+        $response->assertSee('data-timeframe="all"', false);
+        $response->assertSee('data-timeframe="1yr"', false);
+        $response->assertSee('data-timeframe="6mo"', false);
+        $response->assertSee('data-timeframe="3mo"', false);
+        
+        // Check for timeframe enabled attribute
+        $response->assertSee('data-chart-timeframe-enabled="true"', false);
+    }
 }
