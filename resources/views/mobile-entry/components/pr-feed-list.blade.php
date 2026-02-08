@@ -9,11 +9,13 @@
             @foreach($data['items'] as $pr)
                 <div class="pr-card">
                     <div class="pr-header">
-                        <strong>{{ $pr->user->name }}</strong>
+                        <div class="pr-header-left">
+                            <strong>{{ $pr->user->name }}</strong>
+                            <span class="pr-exercise">{{ $pr->exercise->title }}</span>
+                        </div>
                         <span class="pr-time">{{ $pr->achieved_at->diffForHumans() }}</span>
                     </div>
                     <div class="pr-body">
-                        <div class="pr-exercise">{{ $pr->exercise->name }}</div>
                         <div class="pr-details">
                             <span class="pr-type">{{ match($pr->pr_type) {
                                 'one_rm' => '1RM',
@@ -31,13 +33,13 @@
                             @if($pr->weight)
                                 <span class="pr-weight">@ {{ $pr->weight }} lbs</span>
                             @endif
-                            <span class="pr-value">{{ $pr->value }}</span>
+                            <span class="pr-value">{{ number_format($pr->value, 1) }}</span>
                         </div>
                         @if($pr->previous_value)
                             <div class="pr-improvement">
                                 <i class="fas fa-arrow-up"></i>
-                                Improved from {{ $pr->previous_value }}
-                                (+{{ round($pr->value - $pr->previous_value, 2) }})
+                                Improved from {{ number_format($pr->previous_value, 1) }}
+                                (+{{ number_format($pr->value - $pr->previous_value, 1) }})
                             </div>
                         @else
                             <div class="pr-first">
@@ -57,4 +59,3 @@
         @endif
     @endif
 </div>
-

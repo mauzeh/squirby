@@ -34,10 +34,19 @@
 .pr-header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
     margin-bottom: var(--spacing-md);
     padding-bottom: var(--spacing-sm);
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    gap: var(--spacing-md);
+}
+
+.pr-header-left {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+    flex: 1;
+    text-align: left;
 }
 
 .pr-header strong {
@@ -49,6 +58,7 @@
 .pr-time {
     font-size: 0.875rem;
     color: var(--text-muted);
+    white-space: nowrap;
 }
 
 /* PR Body */
