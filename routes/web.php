@@ -40,6 +40,10 @@ Route::middleware('auth')->group(function () {
 
     // Feed
     Route::get('feed', [FeedController::class, 'index'])->name('feed.index');
+    Route::get('feed/users', [FeedController::class, 'users'])->name('feed.users');
+    Route::get('feed/users/{user}', [FeedController::class, 'showUser'])->name('feed.users.show');
+    Route::post('feed/users/{user}/follow', [FeedController::class, 'followUser'])->name('feed.users.follow');
+    Route::delete('feed/users/{user}/unfollow', [FeedController::class, 'unfollowUser'])->name('feed.users.unfollow');
 
     Route::post('food-logs/add-meal', [FoodLogController::class, 'addMealToLog'])->name('food-logs.add-meal');
 

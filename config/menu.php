@@ -11,6 +11,22 @@ return [
             'patterns' => [
                 'feed.*',
             ],
+            'children' => [
+                [
+                    'label' => 'PRs',
+                    'icon' => 'fa-trophy',
+                    'route' => 'feed.index',
+                    'title' => 'PR Feed',
+                    'patterns' => ['feed.index'],
+                ],
+                [
+                    'label' => 'Users',
+                    'icon' => 'fa-users',
+                    'route' => 'feed.users',
+                    'title' => 'All Users',
+                    'patterns' => ['feed.users', 'feed.users.show'],
+                ],
+            ],
         ],
         // Lifts Main Menu Item
         [
