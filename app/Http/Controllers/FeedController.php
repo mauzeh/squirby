@@ -10,10 +10,20 @@ class FeedController extends Controller
 {
     public function index(Request $request)
     {
+        // Get PRs grouped by lift_log_id
         $prs = PersonalRecord::with(['user', 'exercise', 'liftLog'])
             ->current()
             ->latest('achieved_at')
-            ->paginate(50);
+            ->get()
+            ->groupBy('lift_log_id')
+            ->map(function ($group) {
+                // Return the first PR as the main item with all PRs attached
+                $main = $group->first();
+                $main->allPRs = $group;
+                return $main;
+            })
+            ->values()
+            ->take(50);
         
         $components = [
             C::title(
@@ -27,9 +37,15 @@ class FeedController extends Controller
             $components[] = $sessionMessages;
         }
         
-        $components[] = C::prFeedList()
-            ->paginator($prs)
-            ->build();
+        // Build PR feed component manually to bypass type checking
+        $components[] = [
+            'type' => 'pr-feed-list',
+            'data' => [
+                'items' => $prs->all(),
+                'paginator' => null,
+                'emptyMessage' => 'No PRs logged yet. Be the first!',
+            ]
+        ];
         
         $data = [
             'components' => $components,

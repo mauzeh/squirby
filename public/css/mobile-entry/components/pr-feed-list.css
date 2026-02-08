@@ -74,7 +74,41 @@
     color: var(--text-secondary);
 }
 
-/* PR Details */
+/* PR Lift Details (weight and reps) */
+.pr-lift-details {
+    display: flex;
+    gap: var(--spacing-md);
+    align-items: center;
+    font-size: 1rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.pr-lift-details .pr-weight,
+.pr-lift-details .pr-reps {
+    color: var(--text-secondary);
+}
+
+/* PR Badges */
+.pr-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-xs);
+}
+
+.pr-badge {
+    background: var(--color-primary);
+    color: white;
+    padding: 0.375rem 0.75rem;
+    border-radius: var(--border-radius-sm);
+    font-weight: 600;
+    font-size: 0.8rem;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+
+/* PR Details - Legacy (keeping for compatibility) */
 .pr-details {
     display: flex;
     flex-wrap: wrap;

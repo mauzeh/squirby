@@ -6,42 +6,57 @@
         </div>
     @else
         <div class="pr-feed">
-            @foreach($data['items'] as $pr)
+            @foreach($data['items'] as $liftLog)
                 <div class="pr-card">
                     <div class="pr-header">
                         <div class="pr-header-left">
-                            <strong>{{ $pr->user->name }}</strong>
-                            <span class="pr-exercise">{{ $pr->exercise->title }}</span>
+                            <strong>{{ $liftLog->user->name }}</strong>
+                            <span class="pr-exercise">{{ $liftLog->exercise->title }}</span>
                         </div>
-                        <span class="pr-time">{{ $pr->achieved_at->diffForHumans() }}</span>
+                        <span class="pr-time">{{ $liftLog->achieved_at->diffForHumans() }}</span>
                     </div>
                     <div class="pr-body">
-                        <div class="pr-details">
-                            <span class="pr-type">{{ match($pr->pr_type) {
-                                'one_rm' => '1RM',
-                                'rep_specific' => ($pr->rep_count ?? '') . ' Rep' . (($pr->rep_count ?? 1) > 1 ? 's' : ''),
-                                'volume' => 'Volume',
-                                'density' => 'Density',
-                                'time' => 'Time',
-                                'endurance' => 'Endurance',
-                                'consistency' => 'Consistency',
-                                default => ucfirst(str_replace('_', ' ', $pr->pr_type))
-                            } }}</span>
-                            @if($pr->rep_count && $pr->pr_type !== 'rep_specific')
-                                <span class="pr-reps">{{ $pr->rep_count }} reps</span>
-                            @endif
-                            @if($pr->weight)
-                                <span class="pr-weight">@ {{ $pr->weight }} lbs</span>
-                            @endif
-                            <span class="pr-value">{{ number_format($pr->value, 1) }}</span>
-                        </div>
-                        @if($pr->previous_value)
-                            <div class="pr-improvement">
-                                <i class="fas fa-arrow-up"></i>
-                                Improved from {{ number_format($pr->previous_value, 1) }}
-                                (+{{ number_format($pr->value - $pr->previous_value, 1) }})
+                        {{-- Show weight and reps from the lift log --}}
+                        @php
+                            // Get weight and reps from the lift log
+                            $weight = $liftLog->liftLog?->display_weight ?? 0;
+                            $reps = $liftLog->liftLog?->display_reps ?? 0;
+                        @endphp
+                        @if($weight > 0 || $reps > 0)
+                            <div class="pr-lift-details">
+                                @if($weight > 0)
+                                    <span class="pr-weight">{{ number_format($weight, 0) }} lbs</span>
+                                @endif
+                                @if($reps > 0)
+                                    <span class="pr-reps">{{ $reps }} reps</span>
+                                @endif
                             </div>
-                        @else
+                        @endif
+
+                        {{-- PR Badges --}}
+                        @php
+                            // Ensure allPRs exists
+                            if (!isset($liftLog->allPRs)) {
+                                $liftLog->allPRs = collect([$liftLog]);
+                            }
+                        @endphp
+                        <div class="pr-badges">
+                            @foreach($liftLog->allPRs as $pr)
+                                <span class="pr-badge">{{ match($pr->pr_type) {
+                                    'one_rm' => '1RM',
+                                    'rep_specific' => ($pr->rep_count ?? '') . ' Rep' . (($pr->rep_count ?? 1) > 1 ? 's' : ''),
+                                    'volume' => 'Volume',
+                                    'density' => 'Density',
+                                    'time' => 'Time',
+                                    'endurance' => 'Endurance',
+                                    'consistency' => 'Consistency',
+                                    default => ucfirst(str_replace('_', ' ', $pr->pr_type))
+                                } }}</span>
+                            @endforeach
+                        </div>
+
+                        {{-- First PR note if any PR is first --}}
+                        @if($liftLog->allPRs->whereNull('previous_value')->count() > 0)
                             <div class="pr-first">
                                 <i class="fas fa-star"></i>
                                 First PR!
