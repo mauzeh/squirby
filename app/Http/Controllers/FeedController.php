@@ -156,6 +156,14 @@ class FeedController extends Controller
             $components[] = $sessionMessages;
         }
         
+        // User avatar
+        $components[] = [
+            'type' => 'raw_html',
+            'data' => [
+                'html' => '<div class="user-profile-avatar"><i class="fas fa-user-circle"></i></div>'
+            ]
+        ];
+        
         // User stats summary
         $components[] = C::summary()
             ->item('PRs', $user->personal_records_count)

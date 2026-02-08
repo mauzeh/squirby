@@ -10,8 +10,15 @@
                 <div class="pr-card">
                     <div class="pr-header">
                         <div class="pr-header-left">
-                            <strong>{{ $liftLog->user_id === ($data['currentUserId'] ?? null) ? 'You' : $liftLog->user->name }}</strong>
-                            <span class="pr-exercise">{{ $liftLog->exercise->title }}</span>
+                            <div class="pr-user-info">
+                                <div class="pr-avatar">
+                                    <i class="fas fa-user-circle"></i>
+                                </div>
+                                <div class="pr-user-details">
+                                    <strong>{{ $liftLog->user_id === ($data['currentUserId'] ?? null) ? 'You' : $liftLog->user->name }}</strong>
+                                    <span class="pr-exercise">{{ $liftLog->exercise->title }}</span>
+                                </div>
+                            </div>
                         </div>
                         <span class="pr-time">{{ $liftLog->achieved_at->diffForHumans() }}</span>
                     </div>

@@ -49,6 +49,34 @@
     text-align: left;
 }
 
+.pr-user-info {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+}
+
+.pr-avatar {
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    font-size: 48px;
+}
+
+.pr-avatar i {
+    display: block;
+}
+
+.pr-user-details {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+    flex: 1;
+}
+
 .pr-header strong {
     font-size: 1rem;
     color: var(--text-primary);
