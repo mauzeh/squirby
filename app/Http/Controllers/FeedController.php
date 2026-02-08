@@ -37,7 +37,7 @@ class FeedController extends Controller
         $components = [
             C::title(
                 'PR Feed',
-                'Recent personal records from you and users you follow'
+                'Recent personal records from you and your friends'
             )->build(),
         ];
         
@@ -82,8 +82,8 @@ class FeedController extends Controller
         
         $components = [
             C::title(
-                'Users',
-                'Follow other users to see their PRs in your feed'
+                'Find Friends',
+                'Find your friends and follow them to see their PRs in your feed!'
             )->build(),
         ];
         

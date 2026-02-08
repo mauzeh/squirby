@@ -20,7 +20,7 @@ return [
                     'patterns' => ['feed.index'],
                 ],
                 [
-                    'label' => 'Users',
+                    'label' => 'Friends',
                     'icon' => 'fa-users',
                     'route' => 'feed.users',
                     'title' => 'All Users',
