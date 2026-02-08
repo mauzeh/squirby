@@ -65,7 +65,7 @@ class FeedController extends Controller
         $components = [
             C::title(
                 'Users',
-                'All users in the app'
+                'Follow other users to see their PRs in your feed'
             )->build(),
         ];
         
