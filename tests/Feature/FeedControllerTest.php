@@ -182,4 +182,56 @@ class FeedControllerTest extends TestCase
         $this->get(route('feed.users'))->assertRedirect(route('login'));
         $this->get(route('feed.users.show', $this->otherUser))->assertRedirect(route('login'));
     }
+
+    /** @test */
+    public function it_categorizes_users_by_follow_status()
+    {
+        $followedUser = User::factory()->create(['name' => 'Followed User']);
+        $unfollowedUser = User::factory()->create(['name' => 'Unfollowed User']);
+        
+        // Follow one user
+        $this->user->follow($followedUser);
+
+        $response = $this->actingAs($this->user)->get(route('feed.users'));
+
+        $response->assertStatus(200);
+        
+        // Both users should be visible
+        $response->assertSee('Followed User');
+        $response->assertSee('Unfollowed User');
+        
+        // Check that the followed user has the "Following" label
+        $response->assertSee('Following');
+        
+        // Check that the unfollowed user has the "Not following" label
+        $response->assertSee('Not following');
+    }
+
+    /** @test */
+    public function it_groups_followed_users_before_unfollowed_users()
+    {
+        // Create users with names that would be out of order alphabetically
+        $userA = User::factory()->create(['name' => 'Alice']);
+        $userB = User::factory()->create(['name' => 'Bob']);
+        $userC = User::factory()->create(['name' => 'Charlie']);
+        
+        // Follow Bob (middle alphabetically)
+        $this->user->follow($userB);
+
+        $response = $this->actingAs($this->user)->get(route('feed.users'));
+
+        $response->assertStatus(200);
+        
+        // Get the response content
+        $content = $response->getContent();
+        
+        // Find positions of each user name in the HTML
+        $posAlice = strpos($content, 'Alice');
+        $posBob = strpos($content, 'Bob');
+        $posCharlie = strpos($content, 'Charlie');
+        
+        // Bob (followed) should appear before Alice and Charlie (not followed)
+        $this->assertLessThan($posAlice, $posBob, 'Followed user Bob should appear before unfollowed user Alice');
+        $this->assertLessThan($posCharlie, $posBob, 'Followed user Bob should appear before unfollowed user Charlie');
+    }
 }

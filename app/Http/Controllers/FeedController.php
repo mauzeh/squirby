@@ -58,9 +58,19 @@ class FeedController extends Controller
 
     public function users(Request $request)
     {
-        $users = User::where('id', '!=', $request->user()->id)
+        $currentUser = $request->user();
+        
+        // Get all users except current user
+        $users = User::where('id', '!=', $currentUser->id)
             ->orderBy('name')
             ->get();
+        
+        // Get IDs of users that current user is following
+        $followingIds = $currentUser->following()->pluck('users.id')->toArray();
+        
+        // Separate users into following and not following
+        $followingUsers = $users->filter(fn($user) => in_array($user->id, $followingIds));
+        $notFollowingUsers = $users->filter(fn($user) => !in_array($user->id, $followingIds));
         
         $components = [
             C::title(
@@ -82,14 +92,27 @@ class FeedController extends Controller
             ->showCancelButton(false)
             ->restrictHeight(false);
         
-        foreach ($users as $user) {
+        // Add following users first
+        foreach ($followingUsers as $user) {
             $itemList->item(
                 id: (string) $user->id,
                 name: $user->name,
                 href: route('feed.users.show', $user),
-                typeLabel: '',
-                typeCssClass: 'user',
-                priority: 3
+                typeLabel: 'Following',
+                typeCssClass: 'recent',
+                priority: 1
+            );
+        }
+        
+        // Then add not following users
+        foreach ($notFollowingUsers as $user) {
+            $itemList->item(
+                id: (string) $user->id,
+                name: $user->name,
+                href: route('feed.users.show', $user),
+                typeLabel: 'Not following',
+                typeCssClass: 'exercise-history',
+                priority: 2
             );
         }
         
