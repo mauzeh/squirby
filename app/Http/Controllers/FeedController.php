@@ -157,10 +157,14 @@ class FeedController extends Controller
         }
         
         // User avatar
+        $avatarHtml = $user->profile_photo_url 
+            ? '<div class="user-profile-avatar"><img src="' . e($user->profile_photo_url) . '" alt="Profile photo" class="user-profile-avatar-img"></div>'
+            : '<div class="user-profile-avatar"><i class="fas fa-user-circle"></i></div>';
+        
         $components[] = [
             'type' => 'raw_html',
             'data' => [
-                'html' => '<div class="user-profile-avatar"><i class="fas fa-user-circle"></i></div>'
+                'html' => $avatarHtml
             ]
         ];
         

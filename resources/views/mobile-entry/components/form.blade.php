@@ -35,7 +35,7 @@
     </div>
     @endif
     
-    <form class="component-form-element" method="POST" action="{{ $data['formAction'] }}" data-form-type="{{ $data['type'] }}" @if(isset($data['confirmMessage'])) data-confirm-message="{{ $data['confirmMessage'] }}" @endif>
+    <form class="component-form-element" method="POST" action="{{ $data['formAction'] }}" data-form-type="{{ $data['type'] }}" @if(isset($data['confirmMessage'])) data-confirm-message="{{ $data['confirmMessage'] }}" @endif @if(isset($data['enctype'])) enctype="{{ $data['enctype'] }}" @endif>
         @csrf
         <input type="hidden" name="form_type" value="{{ $data['type'] }}">
         <input type="hidden" name="item_name" value="{{ $data['itemName'] }}">

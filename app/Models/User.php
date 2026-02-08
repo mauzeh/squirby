@@ -37,6 +37,7 @@ class User extends Authenticatable
         'show_global_exercises',
         'show_extra_weight',
         'prefill_suggested_values',
+        'profile_photo_path',
     ];
 
     /**
@@ -293,5 +294,17 @@ class User extends Authenticatable
     public function unfollow(User $user): void
     {
         $this->following()->detach($user->id);
+    }
+
+    /**
+     * Get the URL for the user's profile photo
+     */
+    public function getProfilePhotoUrlAttribute(): ?string
+    {
+        if ($this->profile_photo_path) {
+            return asset('storage/' . $this->profile_photo_path);
+        }
+        
+        return null;
     }
 }

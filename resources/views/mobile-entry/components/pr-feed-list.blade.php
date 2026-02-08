@@ -12,7 +12,11 @@
                         <div class="pr-header-left">
                             <div class="pr-user-info">
                                 <div class="pr-avatar">
-                                    <i class="fas fa-user-circle"></i>
+                                    @if($liftLog->user->profile_photo_url)
+                                        <img src="{{ $liftLog->user->profile_photo_url }}" alt="Profile photo" class="pr-avatar-img">
+                                    @else
+                                        <i class="fas fa-user-circle"></i>
+                                    @endif
                                 </div>
                                 <div class="pr-user-details">
                                     <strong>{{ $liftLog->user_id === ($data['currentUserId'] ?? null) ? 'You' : $liftLog->user->name }}</strong>

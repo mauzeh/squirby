@@ -193,6 +193,32 @@ class FormComponentBuilder
         return $this;
     }
     
+    public function fileField(string $name, string $label, string $accept = 'image/*'): self
+    {
+        $field = [
+            'id' => $this->data['id'] . '-' . $name,
+            'name' => $name,
+            'label' => $label,
+            'type' => 'file',
+            'accept' => $accept,
+            'ariaLabels' => [
+                'field' => $label
+            ]
+        ];
+        
+        if ($this->currentSection !== null && !empty($this->data['sections'])) {
+            $lastSectionIndex = count($this->data['sections']) - 1;
+            $this->data['sections'][$lastSectionIndex]['fields'][] = $field;
+        } else {
+            $this->data['numericFields'][] = $field;
+        }
+        
+        // Mark form as multipart
+        $this->data['enctype'] = 'multipart/form-data';
+        
+        return $this;
+    }
+    
     public function textareaField(string $name, string $label, string $defaultValue = '', string $placeholder = '', ?string $cssClass = null): self
     {
         $field = [
