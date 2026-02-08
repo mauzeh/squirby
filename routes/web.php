@@ -40,7 +40,6 @@ Route::middleware('auth')->group(function () {
 
     // Feed
     Route::get('feed', [FeedController::class, 'index'])->name('feed.index');
-    Route::post('feed/like', [FeedController::class, 'like'])->name('feed.like');
 
     Route::post('food-logs/add-meal', [FoodLogController::class, 'addMealToLog'])->name('food-logs.add-meal');
 

@@ -22,6 +22,7 @@
     <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/welcome-overlay.css') }}">
     <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/pr-info.css') }}">
     <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/pr-records-table.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/pr-feed-list.css') }}">
 @endsection
 
 @section('scripts')

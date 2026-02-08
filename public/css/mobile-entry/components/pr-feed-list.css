@@ -1,0 +1,197 @@
+/* PR Feed List Component - Social feed of personal records */
+
+/* Container */
+.pr-feed-list {
+    padding: var(--spacing-md) 0;
+}
+
+/* Feed Container */
+.pr-feed {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+}
+
+/* PR Card */
+.pr-card {
+    background: var(--tertiary-bg);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--border-radius-md);
+    padding: var(--spacing-lg);
+    box-shadow: var(--shadow-light);
+    transition: all var(--transition-fast);
+}
+
+@media (hover: hover) {
+    .pr-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-medium);
+        border-color: rgba(255, 255, 255, 0.15);
+    }
+}
+
+/* PR Header */
+.pr-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-md);
+    padding-bottom: var(--spacing-sm);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.pr-header strong {
+    font-size: 1rem;
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.pr-time {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+
+/* PR Body */
+.pr-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.pr-exercise {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+/* PR Details */
+.pr-details {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-md);
+    align-items: center;
+    font-size: 0.9rem;
+}
+
+.pr-type {
+    background: var(--color-primary);
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--border-radius-sm);
+    font-weight: 600;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+}
+
+.pr-reps,
+.pr-weight {
+    color: var(--text-muted);
+}
+
+.pr-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-success);
+}
+
+/* PR Improvement */
+.pr-improvement {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    color: var(--color-success);
+    font-size: 0.875rem;
+    margin-top: var(--spacing-xs);
+}
+
+.pr-improvement i {
+    font-size: 0.75rem;
+}
+
+/* First PR Badge */
+.pr-first {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    color: var(--color-warning);
+    font-size: 0.875rem;
+    margin-top: var(--spacing-xs);
+}
+
+.pr-first i {
+    font-size: 0.75rem;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: var(--spacing-xxl) var(--spacing-lg);
+    color: var(--text-muted);
+}
+
+.empty-state p {
+    font-size: 1rem;
+}
+
+/* Pagination */
+.pagination-wrapper {
+    margin-top: var(--spacing-xxl);
+    display: flex;
+    justify-content: center;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .pr-card {
+        padding: var(--spacing-md);
+    }
+
+    .pr-feed {
+        gap: var(--spacing-md);
+    }
+
+    .pr-exercise {
+        font-size: 1rem;
+    }
+
+    .pr-value {
+        font-size: 1.125rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .pr-feed-list {
+        padding: var(--spacing-sm) 0;
+    }
+
+    .pr-card {
+        padding: var(--spacing-sm);
+    }
+
+    .pr-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--spacing-xs);
+    }
+
+    .pr-details {
+        gap: var(--spacing-sm);
+    }
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+    .pr-card {
+        border: 2px solid var(--text-primary);
+    }
+
+    .pr-type {
+        border: 1px solid white;
+    }
+}
+
+/* Focus State for Accessibility */
+.pr-card:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}

@@ -17,6 +17,7 @@ use App\Services\Components\Interactive\CodeEditorComponentBuilder;
 use App\Services\Components\Interactive\QuickActionsComponentBuilder;
 use App\Services\Components\Interactive\TabsComponentBuilder;
 use App\Services\Components\Lists\ItemListComponentBuilder;
+use App\Services\Components\Lists\PRFeedListComponentBuilder;
 use App\Services\Components\Tables\TableComponentBuilder;
 use App\Services\Components\Charts\ChartComponentBuilder;
 
@@ -117,6 +118,14 @@ class ComponentBuilder
     public static function itemList(): ItemListComponentBuilder
     {
         return new ItemListComponentBuilder();
+    }
+    
+    /**
+     * Create a PR feed list component
+     */
+    public static function prFeedList(): PRFeedListComponentBuilder
+    {
+        return new PRFeedListComponentBuilder();
     }
     
     /**

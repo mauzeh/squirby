@@ -259,4 +259,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(LiftLog::class);
     }
+
+    public function personalRecords()
+    {
+        return $this->hasMany(PersonalRecord::class);
+    }
 }
