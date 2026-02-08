@@ -11,10 +11,17 @@ class FeedController extends Controller
 {
     public function index(Request $request)
     {
-        // Get PRs from the last 7 days, grouped by lift_log_id
+        $currentUser = $request->user();
+        
+        // Get IDs of users that current user is following, plus current user
+        $followingIds = $currentUser->following()->pluck('users.id')->toArray();
+        $followingIds[] = $currentUser->id;
+        
+        // Get PRs from the last 7 days, only from users being followed (including self), grouped by lift_log_id
         $prs = PersonalRecord::with(['user', 'exercise', 'liftLog'])
             ->current()
             ->where('achieved_at', '>=', now()->subDays(7))
+            ->whereIn('user_id', $followingIds)
             ->latest('achieved_at')
             ->get()
             ->groupBy('lift_log_id')
@@ -30,7 +37,7 @@ class FeedController extends Controller
         $components = [
             C::title(
                 'PR Feed',
-                'Recent personal records from the last 7 days'
+                'Recent personal records from you and users you follow'
             )->build(),
         ];
         
@@ -45,7 +52,8 @@ class FeedController extends Controller
             'data' => [
                 'items' => $prs->all(),
                 'paginator' => null,
-                'emptyMessage' => 'No PRs logged in the last 7 days.',
+                'emptyMessage' => 'No PRs in the last 7 days.',
+                'currentUserId' => $currentUser->id,
             ]
         ];
         

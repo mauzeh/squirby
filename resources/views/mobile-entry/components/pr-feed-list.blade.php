@@ -10,7 +10,7 @@
                 <div class="pr-card">
                     <div class="pr-header">
                         <div class="pr-header-left">
-                            <strong>{{ $liftLog->user->name }}</strong>
+                            <strong>{{ $liftLog->user_id === ($data['currentUserId'] ?? null) ? 'You' : $liftLog->user->name }}</strong>
                             <span class="pr-exercise">{{ $liftLog->exercise->title }}</span>
                         </div>
                         <span class="pr-time">{{ $liftLog->achieved_at->diffForHumans() }}</span>

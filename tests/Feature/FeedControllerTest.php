@@ -39,6 +39,9 @@ class FeedControllerTest extends TestCase
         $exercise = Exercise::factory()->create(['user_id' => null]);
         $liftLog = LiftLog::factory()->create(['user_id' => $this->otherUser->id]);
 
+        // Follow the other user
+        $this->user->follow($this->otherUser);
+
         // Recent PR (within 7 days)
         $recentPR = PersonalRecord::factory()->create([
             'user_id' => $this->otherUser->id,
@@ -60,6 +63,75 @@ class FeedControllerTest extends TestCase
         $response->assertStatus(200);
         // Should see recent PR's exercise
         $response->assertSee($exercise->title);
+    }
+
+    /** @test */
+    public function it_only_shows_prs_from_followed_users()
+    {
+        $followedUser = User::factory()->create();
+        $unfollowedUser = User::factory()->create();
+        
+        $exercise = Exercise::factory()->create(['user_id' => null]);
+        
+        $followedLiftLog = LiftLog::factory()->create(['user_id' => $followedUser->id]);
+        $unfollowedLiftLog = LiftLog::factory()->create(['user_id' => $unfollowedUser->id]);
+
+        // Follow only one user
+        $this->user->follow($followedUser);
+
+        // Create PRs for both users
+        $followedPR = PersonalRecord::factory()->create([
+            'user_id' => $followedUser->id,
+            'exercise_id' => $exercise->id,
+            'lift_log_id' => $followedLiftLog->id,
+            'achieved_at' => now()->subDays(1),
+        ]);
+
+        $unfollowedPR = PersonalRecord::factory()->create([
+            'user_id' => $unfollowedUser->id,
+            'exercise_id' => $exercise->id,
+            'lift_log_id' => $unfollowedLiftLog->id,
+            'achieved_at' => now()->subDays(1),
+        ]);
+
+        $response = $this->actingAs($this->user)->get(route('feed.index'));
+
+        $response->assertStatus(200);
+        // Should see followed user's name
+        $response->assertSee($followedUser->name);
+        // Should NOT see unfollowed user's name
+        $response->assertDontSee($unfollowedUser->name);
+    }
+
+    /** @test */
+    public function it_shows_own_prs_in_feed()
+    {
+        $exercise = Exercise::factory()->create(['user_id' => null]);
+        $liftLog = LiftLog::factory()->create(['user_id' => $this->user->id]);
+
+        // Create PR for current user
+        $pr = PersonalRecord::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $exercise->id,
+            'lift_log_id' => $liftLog->id,
+            'achieved_at' => now()->subDays(1),
+        ]);
+
+        $response = $this->actingAs($this->user)->get(route('feed.index'));
+
+        $response->assertStatus(200);
+        // Should see "You" instead of user's name
+        $response->assertSee('You');
+        $response->assertSee($exercise->title);
+    }
+
+    /** @test */
+    public function it_shows_empty_message_when_no_prs()
+    {
+        $response = $this->actingAs($this->user)->get(route('feed.index'));
+
+        $response->assertStatus(200);
+        $response->assertSee('No PRs in the last 7 days');
     }
 
     /** @test */
