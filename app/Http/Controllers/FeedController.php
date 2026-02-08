@@ -10,9 +10,10 @@ class FeedController extends Controller
 {
     public function index(Request $request)
     {
-        // Get PRs grouped by lift_log_id
+        // Get PRs from the last 7 days, grouped by lift_log_id
         $prs = PersonalRecord::with(['user', 'exercise', 'liftLog'])
             ->current()
+            ->where('achieved_at', '>=', now()->subDays(7))
             ->latest('achieved_at')
             ->get()
             ->groupBy('lift_log_id')
@@ -28,7 +29,7 @@ class FeedController extends Controller
         $components = [
             C::title(
                 'PR Feed',
-                'Recent personal records from all users'
+                'Recent personal records from the last 7 days'
             )->build(),
         ];
         
@@ -43,7 +44,7 @@ class FeedController extends Controller
             'data' => [
                 'items' => $prs->all(),
                 'paginator' => null,
-                'emptyMessage' => 'No PRs logged yet. Be the first!',
+                'emptyMessage' => 'No PRs logged in the last 7 days.',
             ]
         ];
         
