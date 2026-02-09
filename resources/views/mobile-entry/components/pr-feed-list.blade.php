@@ -270,7 +270,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                             'one_rm' => 'new max weight',
                                             'rep_specific' => 'most weight for ' . ($pr->rep_count ?? '') . ' rep' . (($pr->rep_count ?? 1) > 1 ? 's' : ''),
                                             'volume' => 'most total volume',
-                                            'density' => 'fastest workout',
+                                            'density' => 'most sets at this weight',
                                             'time' => 'best time',
                                             'endurance' => 'most reps',
                                             'consistency' => 'most consistent',
