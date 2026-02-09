@@ -48,6 +48,11 @@ class MenuService
                 $item['active'] = false;
             }
 
+            // Calculate badge count if badge callback is defined
+            if (isset($item['badge']) && is_callable($item['badge'])) {
+                $item['badgeCount'] = $item['badge']();
+            }
+
             // Recursively process children
             if (isset($item['children'])) {
                 $item['children'] = $this->processMenuItems($item['children'], $currentRoute);

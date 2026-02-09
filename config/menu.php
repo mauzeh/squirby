@@ -11,6 +11,49 @@ return [
             'patterns' => [
                 'feed.*',
             ],
+            'badge' => function() {
+                $currentUser = auth()->user();
+                if (!$currentUser) {
+                    return 0;
+                }
+                
+                // Get IDs of users that current user is following, plus current user
+                $followingIds = $currentUser->following()->pluck('users.id')->toArray();
+                $followingIds[] = $currentUser->id;
+                
+                // Get PRs from the last 7 days that are new
+                $prs = \App\Models\PersonalRecord::with(['user', 'exercise'])
+                    ->current()
+                    ->where('achieved_at', '>=', now()->subDays(7))
+                    ->whereIn('user_id', $followingIds)
+                    ->whereHas('exercise', function ($query) {
+                        $query->where('show_in_feed', true);
+                    })
+                    ->get();
+                
+                // Count user-date groups that are new (within 24 hours AND after last viewed)
+                $newCount = 0;
+                $seenGroups = [];
+                
+                foreach ($prs as $pr) {
+                    $groupKey = $pr->user_id . '_' . $pr->achieved_at->format('Y-m-d');
+                    
+                    if (isset($seenGroups[$groupKey])) {
+                        continue; // Already counted this group
+                    }
+                    
+                    $isWithin24Hours = $pr->achieved_at->isAfter(now()->subHours(24));
+                    $isAfterLastViewed = !$currentUser->last_feed_viewed_at || 
+                                         $pr->achieved_at->isAfter($currentUser->last_feed_viewed_at);
+                    
+                    if ($isWithin24Hours && $isAfterLastViewed) {
+                        $newCount++;
+                        $seenGroups[$groupKey] = true;
+                    }
+                }
+                
+                return $newCount;
+            },
             'children' => [
                 [
                     'label' => 'PRs',
