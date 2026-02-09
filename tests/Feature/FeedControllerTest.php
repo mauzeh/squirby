@@ -1223,4 +1223,81 @@ class FeedControllerTest extends TestCase
         $response = $this->actingAs($this->user)->get(route('feed.index'));
         $response->assertDontSee('menu-badge');
     }
+
+    /** @test */
+    public function it_does_not_show_own_prs_as_new()
+    {
+        $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
+        
+        // Create own PR (recent)
+        $liftLog = LiftLog::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $exercise->id,
+        ]);
+        
+        PersonalRecord::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $exercise->id,
+            'lift_log_id' => $liftLog->id,
+            'achieved_at' => now()->subHours(12),
+        ]);
+
+        $response = $this->actingAs($this->user)->get(route('feed.index'));
+
+        $response->assertStatus(200);
+        // Should see own PR but NOT with NEW badge
+        $response->assertSee('You');
+        $response->assertDontSee('NEW');
+        $response->assertDontSee('pr-card-new');
+    }
+
+    /** @test */
+    public function it_does_not_count_own_prs_in_badge()
+    {
+        $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
+        
+        // Create own PR (recent)
+        $ownLiftLog = LiftLog::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $exercise->id,
+        ]);
+        
+        PersonalRecord::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $exercise->id,
+            'lift_log_id' => $ownLiftLog->id,
+            'achieved_at' => now()->subHours(12),
+        ]);
+
+        $response = $this->actingAs($this->user)->get(route('feed.index'));
+
+        $response->assertStatus(200);
+        // Should NOT see badge (own PRs don't count)
+        $response->assertDontSee('menu-badge');
+    }
+
+    /** @test */
+    public function it_does_not_show_mark_as_read_button_for_only_own_prs()
+    {
+        $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
+        
+        // Create own PR (recent)
+        $ownLiftLog = LiftLog::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $exercise->id,
+        ]);
+        
+        PersonalRecord::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $exercise->id,
+            'lift_log_id' => $ownLiftLog->id,
+            'achieved_at' => now()->subHours(12),
+        ]);
+
+        $response = $this->actingAs($this->user)->get(route('feed.index'));
+
+        $response->assertStatus(200);
+        // Should NOT see "Mark all as read" button (only own PRs)
+        $response->assertDontSee('Mark all as read');
+    }
 }

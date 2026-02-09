@@ -31,11 +31,16 @@ return [
                     })
                     ->get();
                 
-                // Count user-date groups that are new
+                // Count user-date groups that are new (excluding own PRs)
                 $newCount = 0;
                 $seenGroups = [];
                 
                 foreach ($prs as $pr) {
+                    // Skip own PRs
+                    if ($pr->user_id === $currentUser->id) {
+                        continue;
+                    }
+                    
                     $groupKey = $pr->user_id . '_' . $pr->achieved_at->format('Y-m-d');
                     
                     if (isset($seenGroups[$groupKey])) {

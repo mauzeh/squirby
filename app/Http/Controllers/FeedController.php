@@ -50,8 +50,13 @@ class FeedController extends Controller
         ->values()
         ->take(50);
         
-        // Check if there are any new PRs
+        // Check if there are any new PRs (excluding own PRs)
         $hasNewPRs = $groupedPrs->contains(function ($item) use ($currentUser) {
+            // Own PRs are never "new"
+            if ($item->user_id === $currentUser->id) {
+                return false;
+            }
+            
             // If never viewed, all PRs in last 7 days are new
             if (!$currentUser->last_feed_viewed_at) {
                 return true;

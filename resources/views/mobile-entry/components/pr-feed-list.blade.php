@@ -94,16 +94,23 @@ document.addEventListener('DOMContentLoaded', function() {
                     $date = $mainItem->achieved_at;
                     $exerciseCount = $allLiftLogs->count(); // Count exercises instead of total PRs
                     
-                    // Check if new
-                    // If never viewed, all PRs in last 7 days are new
-                    // Otherwise, check if within 24 hours AND after last viewed
-                    $lastViewed = $data['lastFeedViewedAt'] ?? null;
-                    if (!$lastViewed) {
-                        $isNew = true;
+                    // Own PRs are never shown as new
+                    $isOwnPR = $user->id === ($data['currentUserId'] ?? null);
+                    
+                    // Check if new (only for other users' PRs)
+                    if ($isOwnPR) {
+                        $isNew = false;
                     } else {
-                        $isWithin24Hours = $date->isAfter(now()->subHours(24));
-                        $isAfterLastViewed = $date->isAfter($lastViewed);
-                        $isNew = $isWithin24Hours && $isAfterLastViewed;
+                        // If never viewed, all PRs in last 7 days are new
+                        // Otherwise, check if within 24 hours AND after last viewed
+                        $lastViewed = $data['lastFeedViewedAt'] ?? null;
+                        if (!$lastViewed) {
+                            $isNew = true;
+                        } else {
+                            $isWithin24Hours = $date->isAfter(now()->subHours(24));
+                            $isAfterLastViewed = $date->isAfter($lastViewed);
+                            $isNew = $isWithin24Hours && $isAfterLastViewed;
+                        }
                     }
                 @endphp
                 <div class="pr-card{{ $isNew ? ' pr-card-new' : '' }}">
