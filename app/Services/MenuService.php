@@ -22,6 +22,13 @@ class MenuService
 
         $processedItems = [];
         foreach ($menuItems as $item) {
+            // Check visibility callback
+            if (isset($item['visible']) && is_callable($item['visible'])) {
+                if (!$item['visible']()) {
+                    continue; // Skip this item if visibility callback returns false
+                }
+            }
+            
             // Check roles
             if (isset($item['roles'])) {
                 $hasRole = false;

@@ -11,6 +11,15 @@ return [
             'patterns' => [
                 'feed.*',
             ],
+            'visible' => function() {
+                $currentUser = auth()->user();
+                if (!$currentUser) {
+                    return false;
+                }
+                
+                // Only show Feed menu if user is following someone
+                return $currentUser->following()->count() > 0;
+            },
             'badge' => function() {
                 $currentUser = auth()->user();
                 if (!$currentUser) {

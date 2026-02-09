@@ -1300,4 +1300,30 @@ class FeedControllerTest extends TestCase
         // Should NOT see "Mark all as read" button (only own PRs)
         $response->assertDontSee('Mark all as read');
     }
+
+    /** @test */
+    public function it_hides_feed_menu_when_not_following_anyone()
+    {
+        // User is not following anyone
+        $this->assertEquals(0, $this->user->following()->count());
+        
+        $response = $this->actingAs($this->user)->get(route('mobile-entry.lifts'));
+
+        $response->assertStatus(200);
+        // Should NOT see Feed menu item
+        $response->assertDontSee('id="feed-nav-link"', false);
+    }
+
+    /** @test */
+    public function it_shows_feed_menu_when_following_someone()
+    {
+        // Follow another user
+        $this->user->follow($this->otherUser);
+        
+        $response = $this->actingAs($this->user)->get(route('mobile-entry.lifts'));
+
+        $response->assertStatus(200);
+        // Should see Feed menu item
+        $response->assertSee('id="feed-nav-link"', false);
+    }
 }
