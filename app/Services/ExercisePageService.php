@@ -72,7 +72,9 @@ class ExercisePageService
             $workoutId = $redirectParams['workout_id'] ?? null;
             $dateString = $date ? Carbon::parse($date)->toDateString() : Carbon::today()->toDateString();
             
-            if ($redirectTo === 'workouts') {
+            if ($redirectTo === 'simple-workout' && $workoutId) {
+                return route('workouts.edit-simple', ['workout' => $workoutId]);
+            } elseif ($redirectTo === 'workouts') {
                 return route('workouts.index', $workoutId ? ['workout_id' => $workoutId] : []);
             } elseif ($redirectTo === 'mobile-entry-lifts') {
                 return route('mobile-entry.lifts', ['date' => $dateString]);

@@ -1035,4 +1035,54 @@ class SimpleWorkoutTest extends TestCase
         // Should redirect back to the simple workout editor
         $response->assertRedirect(route('workouts.edit-simple', $workout->id));
     }
+
+    /** @test */
+    public function lift_log_create_page_back_button_returns_to_simple_workout_editor()
+    {
+        $user = User::factory()->create();
+        $workout = Workout::factory()->create([
+            'user_id' => $user->id,
+            'wod_syntax' => null,
+        ]);
+        
+        $exercise = Exercise::factory()->create(['user_id' => null, 'title' => 'Bench Press']);
+        
+        WorkoutExercise::create([
+            'workout_id' => $workout->id,
+            'exercise_id' => $exercise->id,
+            'order' => 1,
+        ]);
+
+        // Visit lift-logs/create with redirect_to=simple-workout (simulating clicking play button)
+        $response = $this->actingAs($user)->get(route('lift-logs.create', [
+            'exercise_id' => $exercise->id,
+            'date' => \Carbon\Carbon::today()->toDateString(),
+            'redirect_to' => 'simple-workout',
+            'workout_id' => $workout->id,
+        ]));
+
+        $response->assertOk();
+        
+        // Verify the back button URL points to the workout editor
+        $expectedBackUrl = route('workouts.edit-simple', ['workout' => $workout->id]);
+        $response->assertViewHas('data', function ($data) use ($expectedBackUrl) {
+            $components = $data['components'];
+            
+            // Find the title component (first component)
+            if (empty($components)) {
+                return false;
+            }
+            
+            $titleComponent = $components[0];
+            
+            // Check if it has a back button with the correct URL
+            if (!isset($titleComponent['data']['backButton'])) {
+                return false;
+            }
+            
+            $backButton = $titleComponent['data']['backButton'];
+            
+            return isset($backButton['url']) && $backButton['url'] === $expectedBackUrl;
+        });
+    }
 }
