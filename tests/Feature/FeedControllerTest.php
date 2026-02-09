@@ -831,7 +831,8 @@ class FeedControllerTest extends TestCase
         $response->assertSee('Alice');
         $response->assertSee('Bob');
         $response->assertSee('and');
-        $response->assertSee('loved this');
+        $response->assertSee('loves');
+        $response->assertSee('this!');
         $response->assertSee('2'); // Count should show 2
     }
 
@@ -855,9 +856,10 @@ class FeedControllerTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertSee('Charlie');
-        $response->assertSee('loved this');
-        // Should see "Charlie loved this" without "and"
-        $response->assertSee('Charlie</strong> loved this', false);
+        $response->assertSee('loves');
+        $response->assertSee('this!');
+        // Should see "Charlie loves this!" without "and"
+        $response->assertSee('Charlie</strong> loves&nbsp;this!', false);
     }
 
     /** @test */
@@ -887,7 +889,8 @@ class FeedControllerTest extends TestCase
         $response->assertSee('Bob');
         $response->assertSee('Charlie');
         $response->assertSee('and');
-        $response->assertSee('loved this');
+        $response->assertSee('loves');
+        $response->assertSee('this!');
     }
 
     /** @test */
@@ -938,7 +941,8 @@ class FeedControllerTest extends TestCase
         $response->assertSee('high-five-btn');
         // Should also see the names
         $response->assertSee('David');
-        $response->assertSee('loved this');
+        $response->assertSee('loves');
+        $response->assertSee('this!');
     }
 
     /** @test */

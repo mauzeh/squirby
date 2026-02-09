@@ -208,13 +208,27 @@
 }
 
 .pr-lift-header {
-    margin-bottom: var(--spacing-xs);
+    margin-bottom: var(--spacing-sm);
     text-align: left;
 }
 
 .pr-lift-header strong {
     color: var(--text-primary);
     font-weight: 600;
+}
+
+/* Two-column layout for lift content */
+.pr-lift-content {
+    display: flex;
+    gap: var(--spacing-md);
+    align-items: flex-start;
+}
+
+.pr-lift-details-column {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
 }
 
 /* High Five Button */
@@ -273,6 +287,8 @@
     flex-direction: column;
     align-items: flex-end;
     gap: 0.25rem;
+    flex-shrink: 0;
+    min-width: 120px;
 }
 
 /* OPTION 2: Subtle badge - Light background, no border */
@@ -307,16 +323,62 @@
     gap: var(--spacing-md);
     align-items: center;
     font-size: 1rem;
-    color: var(--text-secondary);
-    font-weight: 500;
+    margin-bottom: var(--spacing-sm);
 }
 
+/* Weight Pill - Green */
+.pr-weight-pill {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 1.125rem;
+    letter-spacing: 0.3px;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+
+/* Weight Pill - Orange for new/unread items */
+.pr-weight-pill-new {
+    background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+    box-shadow: 0 2px 8px rgba(255, 107, 53, 0.3);
+}
+
+/* Reps Pill - Blue */
+.pr-reps-pill {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 1.125rem;
+    letter-spacing: 0.3px;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+}
+
+/* Legacy styles for compatibility */
 .pr-lift-details .pr-weight,
 .pr-lift-details .pr-reps {
     color: var(--text-secondary);
 }
 
-/* PR Badges */
+/* PR Types - Simple text list without badge styling */
+.pr-types {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+    margin-top: var(--spacing-sm);
+    width: 100%;
+    text-align: left;
+}
+
+.pr-type-label {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+/* Legacy PR Badges - keeping for compatibility */
 .pr-badges {
     display: flex;
     flex-wrap: wrap;
@@ -431,6 +493,15 @@
 
     .pr-value {
         font-size: 1.125rem;
+    }
+    
+    .pr-lift-content {
+        flex-direction: column;
+    }
+    
+    .high-five-info {
+        align-items: flex-start;
+        width: 100%;
     }
 }
 

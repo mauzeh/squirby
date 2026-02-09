@@ -99,7 +99,13 @@ document.addEventListener('DOMContentLoaded', function() {
                                 </div>
                                 <div class="pr-user-details">
                                     <strong>{{ $user->id === ($data['currentUserId'] ?? null) ? 'You' : $user->name }}</strong>
-                                    <span class="pr-exercise">{{ $exerciseCount }} PR{{ $exerciseCount > 1 ? 's' : '' }} on {{ $date->format('M j') }}</span>
+                                    <span class="pr-exercise">
+                                        @if($exerciseCount === 1)
+                                            PR: {{ $allLiftLogs->first()->exercise->title }}
+                                        @else
+                                            {{ $exerciseCount }} PRs
+                                        @endif
+                                    </span>
                                 </div>
                             </a>
                         </div>
@@ -125,102 +131,116 @@ document.addEventListener('DOMContentLoaded', function() {
                             @endphp
                             <div class="pr-lift-session">
                                 <div class="pr-lift-header">
-                                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                                        <strong>{{ $liftLog->exercise->title }}</strong>
-                                        @if($firstPRId)
-                                            @php
-                                                $names = $allHighFives->pluck('user.name')->toArray();
-                                                $nameCount = count($names);
-                                                
-                                                if ($nameCount === 1) {
-                                                    $formattedNames = '<strong>' . $names[0] . '</strong>';
-                                                } elseif ($nameCount === 2) {
-                                                    $formattedNames = '<strong>' . $names[0] . '</strong> and <strong>' . $names[1] . '</strong>';
-                                                } elseif ($nameCount > 2) {
-                                                    $lastIndex = $nameCount - 1;
-                                                    $allButLast = array_slice($names, 0, $lastIndex);
-                                                    $formattedNames = '<strong>' . implode('</strong>, <strong>', $allButLast) . '</strong> and <strong>' . $names[$lastIndex] . '</strong>';
-                                                } else {
-                                                    $formattedNames = '';
-                                                }
-                                            @endphp
-                                            
-                                            <div class="high-five-info">
-                                                @if($isOwnPR)
-                                                    {{-- Non-interactive display for own PRs --}}
-                                                    @if($highFiveCount > 0)
-                                                        <div class="high-five-display">
-                                                            <i class="fas fa-heart"></i>
-                                                            <span class="high-five-count">{{ $highFiveCount }}</span>
-                                                        </div>
-                                                    @endif
-                                                @else
-                                                    {{-- Interactive button for others' PRs --}}
-                                                    <form method="POST" action="{{ route('feed.toggle-high-five', $firstPRId) }}" style="display: inline;">
-                                                        @csrf
-                                                        <button type="submit" class="high-five-btn {{ $currentUserHighFived ? 'high-fived' : '' }}" title="{{ $currentUserHighFived ? 'Remove high five' : 'Give high five' }}">
-                                                            <i class="{{ $currentUserHighFived ? 'fas' : 'far' }} fa-heart"></i>
-                                                            @if($highFiveCount > 0)
-                                                                <span class="high-five-count">{{ $highFiveCount }}</span>
-                                                            @endif
-                                                        </button>
-                                                    </form>
+                                    <strong>{{ $liftLog->exercise->title }}</strong>
+                                </div>
+                                
+                                <div class="pr-lift-content">
+                                    {{-- Left column: Weight and reps pills --}}
+                                    <div class="pr-lift-details-column">
+                                        {{-- Show weight and reps from the lift log --}}
+                                        @php
+                                            $weight = $liftLog->liftLog?->display_weight ?? 0;
+                                            $reps = $liftLog->liftLog?->display_reps ?? 0;
+                                        @endphp
+                                        @if($weight > 0 || $reps > 0)
+                                            <div class="pr-lift-details">
+                                                @if($weight > 0)
+                                                    <span class="pr-weight-pill{{ $isNew ? ' pr-weight-pill-new' : '' }}">{{ number_format($weight, 0) }} lbs</span>
                                                 @endif
-                                                
-                                                {{-- Show names for everyone if there are high fives --}}
-                                                @if($highFiveCount > 0)
-                                                    <div class="high-five-names">
-                                                        {!! $formattedNames !!} loves&nbsp;this!
-                                                    </div>
+                                                @if($reps > 0)
+                                                    <span class="pr-reps-pill">{{ $reps }} reps</span>
                                                 @endif
                                             </div>
                                         @endif
+
+                                        {{-- First PR note if any PR is first --}}
+                                        @if($liftLog->allPRs->whereNull('previous_value')->count() > 0)
+                                            <div class="pr-first">
+                                                <i class="fas fa-star"></i>
+                                                First PR!
+                                            </div>
+                                        @endif
                                     </div>
+                                    
+                                    {{-- Right column: High five info --}}
+                                    @if($firstPRId)
+                                        @php
+                                            $names = $allHighFives->pluck('user.name')->toArray();
+                                            $nameCount = count($names);
+                                            
+                                            if ($nameCount === 1) {
+                                                $formattedNames = '<strong>' . $names[0] . '</strong>';
+                                            } elseif ($nameCount === 2) {
+                                                $formattedNames = '<strong>' . $names[0] . '</strong> and <strong>' . $names[1] . '</strong>';
+                                            } elseif ($nameCount > 2) {
+                                                $lastIndex = $nameCount - 1;
+                                                $allButLast = array_slice($names, 0, $lastIndex);
+                                                $formattedNames = '<strong>' . implode('</strong>, <strong>', $allButLast) . '</strong> and <strong>' . $names[$lastIndex] . '</strong>';
+                                            } else {
+                                                $formattedNames = '';
+                                            }
+                                        @endphp
+                                        
+                                        <div class="high-five-info">
+                                            @if($isOwnPR)
+                                                {{-- Non-interactive display for own PRs --}}
+                                                @if($highFiveCount > 0)
+                                                    <div class="high-five-display">
+                                                        <i class="fas fa-heart"></i>
+                                                        <span class="high-five-count">{{ $highFiveCount }}</span>
+                                                    </div>
+                                                @endif
+                                            @else
+                                                {{-- Interactive button for others' PRs --}}
+                                                <form method="POST" action="{{ route('feed.toggle-high-five', $firstPRId) }}" style="display: inline;">
+                                                    @csrf
+                                                    <button type="submit" class="high-five-btn {{ $currentUserHighFived ? 'high-fived' : '' }}" title="{{ $currentUserHighFived ? 'Remove high five' : 'Give high five' }}">
+                                                        <i class="{{ $currentUserHighFived ? 'fas' : 'far' }} fa-heart"></i>
+                                                        @if($highFiveCount > 0)
+                                                            <span class="high-five-count">{{ $highFiveCount }}</span>
+                                                        @endif
+                                                    </button>
+                                                </form>
+                                            @endif
+                                            
+                                            {{-- Show names for everyone if there are high fives --}}
+                                            @if($highFiveCount > 0)
+                                                <div class="high-five-names">
+                                                    {!! $formattedNames !!} loves&nbsp;this!
+                                                </div>
+                                            @endif
+                                        </div>
+                                    @endif
                                 </div>
                                 
-                                {{-- Show weight and reps from the lift log --}}
-                                @php
-                                    $weight = $liftLog->liftLog?->display_weight ?? 0;
-                                    $reps = $liftLog->liftLog?->display_reps ?? 0;
-                                @endphp
-                                @if($weight > 0 || $reps > 0)
-                                    <div class="pr-lift-details">
-                                        @if($weight > 0)
-                                            <span class="pr-weight">{{ number_format($weight, 0) }} lbs</span>
-                                        @endif
-                                        @if($reps > 0)
-                                            <span class="pr-reps">{{ $reps }} reps</span>
-                                        @endif
-                                    </div>
-                                @endif
-
-                                {{-- PR Badges --}}
+                                {{-- PR Types - Full width row below --}}
                                 @php
                                     // Ensure allPRs exists
                                     if (!isset($liftLog->allPRs)) {
                                         $liftLog->allPRs = collect([$liftLog]);
                                     }
+                                    
+                                    // Build friendly PR descriptions
+                                    $prDescriptions = $liftLog->allPRs->map(function($pr) {
+                                        return match($pr->pr_type) {
+                                            'one_rm' => 'new max weight',
+                                            'rep_specific' => 'most weight for ' . ($pr->rep_count ?? '') . ' rep' . (($pr->rep_count ?? 1) > 1 ? 's' : ''),
+                                            'volume' => 'most total volume',
+                                            'density' => 'fastest workout',
+                                            'time' => 'best time',
+                                            'endurance' => 'most reps',
+                                            'consistency' => 'most consistent',
+                                            'hypertrophy' => 'hypertrophy PR',
+                                            default => strtolower(str_replace('_', ' ', $pr->pr_type))
+                                        };
+                                    })->join(', ');
+                                    
+                                    // Capitalize only the first letter of the entire string
+                                    $prDescriptions = ucfirst($prDescriptions);
                                 @endphp
-                                <div class="pr-badges">
-                                    @foreach($liftLog->allPRs as $pr)
-                                        <span class="pr-badge">{{ match($pr->pr_type) {
-                                            'one_rm' => '1RM',
-                                            'rep_specific' => ($pr->rep_count ?? '') . ' Rep' . (($pr->rep_count ?? 1) > 1 ? 's' : ''),
-                                            'volume' => 'Volume',
-                                            'density' => 'Density',
-                                            'time' => 'Time',
-                                            'endurance' => 'Endurance',
-                                            'consistency' => 'Consistency',
-                                            default => ucfirst(str_replace('_', ' ', $pr->pr_type))
-                                        } }}</span>
-                                    @endforeach
-                                </div>
-
-                                {{-- First PR note if any PR is first --}}
-                                @if($liftLog->allPRs->whereNull('previous_value')->count() > 0)
-                                    <div class="pr-first">
-                                        <i class="fas fa-star"></i>
-                                        First PR!
+                                @if($prDescriptions)
+                                    <div class="pr-types">
+                                        <span class="pr-type-label">{{ $prDescriptions }}</span>
                                     </div>
                                 @endif
                             </div>
