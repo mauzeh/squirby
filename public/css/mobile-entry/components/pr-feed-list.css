@@ -53,6 +53,17 @@
     display: flex;
     align-items: center;
     gap: var(--spacing-md);
+    text-decoration: none;
+    color: inherit;
+    transition: opacity var(--transition-fast);
+}
+
+.pr-user-info:hover {
+    opacity: 0.8;
+}
+
+.pr-user-info:active {
+    opacity: 0.6;
 }
 
 .pr-avatar {
@@ -117,6 +128,7 @@
 
 .pr-lift-header {
     margin-bottom: var(--spacing-xs);
+    text-align: left;
 }
 
 .pr-lift-header strong {

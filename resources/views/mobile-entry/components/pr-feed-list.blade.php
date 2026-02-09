@@ -17,7 +17,7 @@
                 <div class="pr-card">
                     <div class="pr-header">
                         <div class="pr-header-left">
-                            <div class="pr-user-info">
+                            <a href="{{ route('feed.users.show', $user) }}" class="pr-user-info">
                                 <div class="pr-avatar">
                                     @if($user->profile_photo_url)
                                         <img src="{{ $user->profile_photo_url }}" alt="Profile photo" class="pr-avatar-img">
@@ -29,7 +29,7 @@
                                     <strong>{{ $user->id === ($data['currentUserId'] ?? null) ? 'You' : $user->name }}</strong>
                                     <span class="pr-exercise">{{ $totalPRCount }} PR{{ $totalPRCount > 1 ? 's' : '' }} on {{ $date->format('M j') }}</span>
                                 </div>
-                            </div>
+                            </a>
                         </div>
                         <span class="pr-time">{{ $date->diffForHumans() }}</span>
                     </div>

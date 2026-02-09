@@ -206,6 +206,55 @@ class FeedController extends Controller
             }
         }
         
+        // Get user's last 10 PRs grouped by user-date (same logic as feed)
+        $prs = PersonalRecord::with(['user', 'exercise', 'liftLog'])
+            ->current()
+            ->where('user_id', $user->id)
+            ->latest('achieved_at')
+            ->take(50) // Get more to ensure we have enough after grouping
+            ->get();
+        
+        // Group by date (not user since it's all the same user)
+        $groupedPrs = $prs->groupBy(function ($pr) {
+            return $pr->achieved_at->format('Y-m-d');
+        })
+        ->map(function ($group) {
+            // For each date group, further group by lift_log_id
+            $liftLogGroups = $group->groupBy('lift_log_id')->map(function ($liftLogGroup) {
+                $main = $liftLogGroup->first();
+                $main->allPRs = $liftLogGroup;
+                return $main;
+            })->values();
+            
+            // Return the first lift log as the main item with all lift logs for that date
+            $main = $liftLogGroups->first();
+            $main->allLiftLogs = $liftLogGroups;
+            return $main;
+        })
+        ->values()
+        ->take(10); // Limit to 10 date groups
+        
+        if ($groupedPrs->isNotEmpty()) {
+            // Add section title
+            $components[] = [
+                'type' => 'raw_html',
+                'data' => [
+                    'html' => '<h3 style="margin-top: var(--spacing-xl); margin-bottom: var(--spacing-md); color: var(--text-primary); font-size: 1.25rem; font-weight: 600;">Recent PRs</h3>'
+                ]
+            ];
+            
+            // Add PR feed component
+            $components[] = [
+                'type' => 'pr-feed-list',
+                'data' => [
+                    'items' => $groupedPrs->all(),
+                    'paginator' => null,
+                    'emptyMessage' => 'No PRs yet.',
+                    'currentUserId' => $currentUser->id,
+                ]
+            ];
+        }
+        
         $data = [
             'components' => $components,
         ];

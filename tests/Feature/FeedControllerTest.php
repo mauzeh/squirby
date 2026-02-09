@@ -185,6 +185,29 @@ class FeedControllerTest extends TestCase
     }
 
     /** @test */
+    public function it_shows_recent_prs_on_user_profile()
+    {
+        $exercise = Exercise::factory()->create(['user_id' => null, 'title' => 'Deadlift']);
+        $liftLog = LiftLog::factory()->create([
+            'user_id' => $this->otherUser->id,
+            'exercise_id' => $exercise->id,
+        ]);
+        
+        PersonalRecord::factory()->create([
+            'user_id' => $this->otherUser->id,
+            'exercise_id' => $exercise->id,
+            'lift_log_id' => $liftLog->id,
+            'achieved_at' => now()->subDays(1),
+        ]);
+
+        $response = $this->actingAs($this->user)->get(route('feed.users.show', $this->otherUser));
+
+        $response->assertStatus(200);
+        $response->assertSee('Recent PRs');
+        $response->assertSee('Deadlift');
+    }
+
+    /** @test */
     public function it_does_not_show_follow_button_on_own_profile()
     {
         $response = $this->actingAs($this->user)->get(route('feed.users.show', $this->user));
