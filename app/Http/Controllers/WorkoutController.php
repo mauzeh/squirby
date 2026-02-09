@@ -50,7 +50,7 @@ class WorkoutController extends Controller
         // Get user's workouts
         $workouts = Workout::where('user_id', Auth::id())
             ->with(['exercises.exercise'])
-            ->orderBy('name')
+            ->orderBy('updated_at', 'desc')
             ->get();
 
         $components = [];
@@ -111,6 +111,7 @@ class WorkoutController extends Controller
                         $line2 = 'No exercises';
                     }
                 }
+                
                 $line3 = $workout->description ?: null;
 
                 // Route to appropriate edit page based on workout type and user role
@@ -132,6 +133,25 @@ class WorkoutController extends Controller
                     $line2,
                     $line3
                 );
+                
+                // Add time badge - green if modified today, neutral otherwise
+                $badgeColor = $workout->updated_at->isToday() ? 'success' : 'neutral';
+                
+                // Show "X days ago" for up to 14 days, then show the date
+                $daysAgo = (int) $workout->updated_at->diffInDays(now());
+                if ($daysAgo <= 14) {
+                    if ($daysAgo === 0) {
+                        // Today - show hours/minutes
+                        $timeText = $workout->updated_at->diffForHumans();
+                    } else {
+                        // 1-14 days - always show as days
+                        $timeText = $daysAgo === 1 ? '1 day ago' : $daysAgo . ' days ago';
+                    }
+                } else {
+                    $timeText = $workout->updated_at->format('M j, Y');
+                }
+                
+                $rowBuilder->badge($timeText, $badgeColor);
                 
                 // Make the entire row clickable if user has permission to edit
                 if ($editRoute) {

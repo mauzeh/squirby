@@ -537,4 +537,232 @@ class WorkoutTest extends TestCase
         $indexResponse->assertDontSee('No exercises');
         $editResponse->assertDontSee('No loggable exercises found');
     }
+
+    /** @test */
+    public function workouts_are_ordered_by_most_recently_modified()
+    {
+        $user = User::factory()->create();
+        
+        // Create workouts with different updated_at times
+        $oldWorkout = Workout::factory()->create([
+            'user_id' => $user->id,
+            'name' => 'Old Workout',
+            'updated_at' => now()->subDays(10),
+        ]);
+        
+        $recentWorkout = Workout::factory()->create([
+            'user_id' => $user->id,
+            'name' => 'Recent Workout',
+            'updated_at' => now()->subHours(2),
+        ]);
+        
+        $middleWorkout = Workout::factory()->create([
+            'user_id' => $user->id,
+            'name' => 'Middle Workout',
+            'updated_at' => now()->subDays(5),
+        ]);
+        
+        $response = $this->actingAs($user)->get(route('workouts.index'));
+        
+        $response->assertOk();
+        
+        // Verify workouts are ordered by updated_at DESC
+        $response->assertViewHas('data', function ($data) use ($recentWorkout, $middleWorkout, $oldWorkout) {
+            $components = $data['components'];
+            foreach ($components as $component) {
+                if (isset($component['type']) && $component['type'] === 'table') {
+                    $rows = $component['data']['rows'];
+                    
+                    // Should have 3 rows in correct order
+                    if (count($rows) !== 3) {
+                        return false;
+                    }
+                    
+                    // Most recent should be first
+                    if ($rows[0]['id'] !== $recentWorkout->id) {
+                        return false;
+                    }
+                    
+                    // Middle should be second
+                    if ($rows[1]['id'] !== $middleWorkout->id) {
+                        return false;
+                    }
+                    
+                    // Oldest should be last
+                    if ($rows[2]['id'] !== $oldWorkout->id) {
+                        return false;
+                    }
+                    
+                    return true;
+                }
+            }
+            return false;
+        });
+    }
+
+    /** @test */
+    public function workout_modified_today_shows_green_badge()
+    {
+        $user = User::factory()->create();
+        
+        $workout = Workout::factory()->create([
+            'user_id' => $user->id,
+            'name' => 'Today Workout',
+            'updated_at' => now()->subHours(2),
+        ]);
+        
+        // Add an exercise so the workout shows up properly
+        $exercise = Exercise::factory()->create(['title' => 'Bench Press', 'user_id' => null]);
+        WorkoutExercise::create(['workout_id' => $workout->id, 'exercise_id' => $exercise->id, 'order' => 1]);
+        
+        $response = $this->actingAs($user)->get(route('workouts.index'));
+        
+        $response->assertOk();
+        $response->assertSee('Bench Press');
+        
+        // Verify the badge shows hours/minutes, not decimal days
+        $response->assertViewHas('data', function ($data) {
+            $components = $data['components'];
+            foreach ($components as $component) {
+                if (isset($component['type']) && $component['type'] === 'table') {
+                    $rows = $component['data']['rows'];
+                    if (!empty($rows) && isset($rows[0]['badges'][0]['text'])) {
+                        $badgeText = $rows[0]['badges'][0]['text'];
+                        // Should contain "hour" or "minute", not decimal days
+                        return (str_contains($badgeText, 'hour') || str_contains($badgeText, 'minute')) 
+                            && !str_contains($badgeText, '0.0');
+                    }
+                }
+            }
+            return false;
+        });
+    }
+
+    /** @test */
+    public function workout_modified_yesterday_shows_neutral_badge_with_days()
+    {
+        $user = User::factory()->create();
+        
+        $workout = Workout::factory()->create([
+            'user_id' => $user->id,
+            'name' => 'Yesterday Workout',
+            'updated_at' => now()->subDays(1),
+        ]);
+        
+        // Add an exercise so the workout shows up properly
+        $exercise = Exercise::factory()->create(['title' => 'Squat', 'user_id' => null]);
+        WorkoutExercise::create(['workout_id' => $workout->id, 'exercise_id' => $exercise->id, 'order' => 1]);
+        
+        $response = $this->actingAs($user)->get(route('workouts.index'));
+        
+        $response->assertOk();
+        $response->assertSee('Squat');
+        
+        // Verify the badge shows "1 day ago" as an integer, not decimal
+        $response->assertViewHas('data', function ($data) {
+            $components = $data['components'];
+            foreach ($components as $component) {
+                if (isset($component['type']) && $component['type'] === 'table') {
+                    $rows = $component['data']['rows'];
+                    if (!empty($rows) && isset($rows[0]['badges'][0]['text'])) {
+                        $badgeText = $rows[0]['badges'][0]['text'];
+                        // Should be exactly "1 day ago", not "1.xxx days ago"
+                        return $badgeText === '1 day ago';
+                    }
+                }
+            }
+            return false;
+        });
+    }
+
+    /** @test */
+    public function workout_modified_7_days_ago_shows_days_not_weeks()
+    {
+        $user = User::factory()->create();
+        
+        $workout = Workout::factory()->create([
+            'user_id' => $user->id,
+            'name' => 'Week Old Workout',
+            'updated_at' => now()->subDays(7),
+        ]);
+        
+        // Add an exercise so the workout shows up properly
+        $exercise = Exercise::factory()->create(['title' => 'Deadlift', 'user_id' => null]);
+        WorkoutExercise::create(['workout_id' => $workout->id, 'exercise_id' => $exercise->id, 'order' => 1]);
+        
+        $response = $this->actingAs($user)->get(route('workouts.index'));
+        
+        $response->assertOk();
+        $response->assertSee('Deadlift');
+        
+        // Verify the badge shows "7 days ago" as an integer, not "1 week ago" or decimal
+        $response->assertViewHas('data', function ($data) {
+            $components = $data['components'];
+            foreach ($components as $component) {
+                if (isset($component['type']) && $component['type'] === 'table') {
+                    $rows = $component['data']['rows'];
+                    if (!empty($rows) && isset($rows[0]['badges'][0]['text'])) {
+                        $badgeText = $rows[0]['badges'][0]['text'];
+                        // Should be exactly "7 days ago", not "7.xxx days ago" or "1 week ago"
+                        return $badgeText === '7 days ago';
+                    }
+                }
+            }
+            return false;
+        });
+    }
+
+    /** @test */
+    public function workout_modified_over_14_days_ago_shows_date()
+    {
+        $user = User::factory()->create();
+        
+        $oldDate = now()->subDays(20);
+        $workout = Workout::factory()->create([
+            'user_id' => $user->id,
+            'name' => 'Old Workout',
+            'updated_at' => $oldDate,
+        ]);
+        
+        $response = $this->actingAs($user)->get(route('workouts.index'));
+        
+        $response->assertOk();
+        
+        // Verify badge shows formatted date instead of "days ago"
+        $response->assertViewHas('data', function ($data) use ($workout, $oldDate) {
+            $components = $data['components'];
+            foreach ($components as $component) {
+                if (isset($component['type']) && $component['type'] === 'table') {
+                    $rows = $component['data']['rows'];
+                    
+                    if (empty($rows)) {
+                        return false;
+                    }
+                    
+                    $row = $rows[0];
+                    
+                    // Should have badges
+                    if (!isset($row['badges']) || empty($row['badges'])) {
+                        return false;
+                    }
+                    
+                    $badge = $row['badges'][0];
+                    
+                    // Badge text should show formatted date (e.g., "Jan 20, 2026")
+                    $expectedDate = $oldDate->format('M j, Y');
+                    if ($badge['text'] !== $expectedDate) {
+                        return false;
+                    }
+                    
+                    // Should NOT contain "ago"
+                    if (str_contains($badge['text'], 'ago')) {
+                        return false;
+                    }
+                    
+                    return true;
+                }
+            }
+            return false;
+        });
+    }
 }
