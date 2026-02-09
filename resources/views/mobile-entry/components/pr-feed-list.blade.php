@@ -170,7 +170,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                                 {{-- Show names for everyone if there are high fives --}}
                                                 @if($highFiveCount > 0)
                                                     <div class="high-five-names">
-                                                        {!! $formattedNames !!} loved this
+                                                        {!! $formattedNames !!} loves&nbsp;this!
                                                     </div>
                                                 @endif
                                             </div>
