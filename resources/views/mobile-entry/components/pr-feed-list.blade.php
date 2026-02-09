@@ -6,73 +6,88 @@
         </div>
     @else
         <div class="pr-feed">
-            @foreach($data['items'] as $liftLog)
+            @foreach($data['items'] as $mainItem)
+                @php
+                    // Get all lift logs for this user-date group
+                    $allLiftLogs = $mainItem->allLiftLogs ?? collect([$mainItem]);
+                    $user = $mainItem->user;
+                    $date = $mainItem->achieved_at;
+                    $totalPRCount = $allLiftLogs->sum(fn($ll) => ($ll->allPRs ?? collect([$ll]))->count());
+                @endphp
                 <div class="pr-card">
                     <div class="pr-header">
                         <div class="pr-header-left">
                             <div class="pr-user-info">
                                 <div class="pr-avatar">
-                                    @if($liftLog->user->profile_photo_url)
-                                        <img src="{{ $liftLog->user->profile_photo_url }}" alt="Profile photo" class="pr-avatar-img">
+                                    @if($user->profile_photo_url)
+                                        <img src="{{ $user->profile_photo_url }}" alt="Profile photo" class="pr-avatar-img">
                                     @else
                                         <i class="fas fa-user-circle"></i>
                                     @endif
                                 </div>
                                 <div class="pr-user-details">
-                                    <strong>{{ $liftLog->user_id === ($data['currentUserId'] ?? null) ? 'You' : $liftLog->user->name }}</strong>
-                                    <span class="pr-exercise">{{ $liftLog->exercise->title }}</span>
+                                    <strong>{{ $user->id === ($data['currentUserId'] ?? null) ? 'You' : $user->name }}</strong>
+                                    <span class="pr-exercise">{{ $totalPRCount }} PR{{ $totalPRCount > 1 ? 's' : '' }} on {{ $date->format('M j') }}</span>
                                 </div>
                             </div>
                         </div>
-                        <span class="pr-time">{{ $liftLog->achieved_at->diffForHumans() }}</span>
+                        <span class="pr-time">{{ $date->diffForHumans() }}</span>
                     </div>
                     <div class="pr-body">
-                        {{-- Show weight and reps from the lift log --}}
-                        @php
-                            // Get weight and reps from the lift log
-                            $weight = $liftLog->liftLog?->display_weight ?? 0;
-                            $reps = $liftLog->liftLog?->display_reps ?? 0;
-                        @endphp
-                        @if($weight > 0 || $reps > 0)
-                            <div class="pr-lift-details">
-                                @if($weight > 0)
-                                    <span class="pr-weight">{{ number_format($weight, 0) }} lbs</span>
+                        {{-- Show all lift logs for this user-date --}}
+                        @foreach($allLiftLogs as $liftLog)
+                            <div class="pr-lift-session">
+                                <div class="pr-lift-header">
+                                    <strong>{{ $liftLog->exercise->title }}</strong>
+                                </div>
+                                
+                                {{-- Show weight and reps from the lift log --}}
+                                @php
+                                    $weight = $liftLog->liftLog?->display_weight ?? 0;
+                                    $reps = $liftLog->liftLog?->display_reps ?? 0;
+                                @endphp
+                                @if($weight > 0 || $reps > 0)
+                                    <div class="pr-lift-details">
+                                        @if($weight > 0)
+                                            <span class="pr-weight">{{ number_format($weight, 0) }} lbs</span>
+                                        @endif
+                                        @if($reps > 0)
+                                            <span class="pr-reps">{{ $reps }} reps</span>
+                                        @endif
+                                    </div>
                                 @endif
-                                @if($reps > 0)
-                                    <span class="pr-reps">{{ $reps }} reps</span>
+
+                                {{-- PR Badges --}}
+                                @php
+                                    // Ensure allPRs exists
+                                    if (!isset($liftLog->allPRs)) {
+                                        $liftLog->allPRs = collect([$liftLog]);
+                                    }
+                                @endphp
+                                <div class="pr-badges">
+                                    @foreach($liftLog->allPRs as $pr)
+                                        <span class="pr-badge">{{ match($pr->pr_type) {
+                                            'one_rm' => '1RM',
+                                            'rep_specific' => ($pr->rep_count ?? '') . ' Rep' . (($pr->rep_count ?? 1) > 1 ? 's' : ''),
+                                            'volume' => 'Volume',
+                                            'density' => 'Density',
+                                            'time' => 'Time',
+                                            'endurance' => 'Endurance',
+                                            'consistency' => 'Consistency',
+                                            default => ucfirst(str_replace('_', ' ', $pr->pr_type))
+                                        } }}</span>
+                                    @endforeach
+                                </div>
+
+                                {{-- First PR note if any PR is first --}}
+                                @if($liftLog->allPRs->whereNull('previous_value')->count() > 0)
+                                    <div class="pr-first">
+                                        <i class="fas fa-star"></i>
+                                        First PR!
+                                    </div>
                                 @endif
                             </div>
-                        @endif
-
-                        {{-- PR Badges --}}
-                        @php
-                            // Ensure allPRs exists
-                            if (!isset($liftLog->allPRs)) {
-                                $liftLog->allPRs = collect([$liftLog]);
-                            }
-                        @endphp
-                        <div class="pr-badges">
-                            @foreach($liftLog->allPRs as $pr)
-                                <span class="pr-badge">{{ match($pr->pr_type) {
-                                    'one_rm' => '1RM',
-                                    'rep_specific' => ($pr->rep_count ?? '') . ' Rep' . (($pr->rep_count ?? 1) > 1 ? 's' : ''),
-                                    'volume' => 'Volume',
-                                    'density' => 'Density',
-                                    'time' => 'Time',
-                                    'endurance' => 'Endurance',
-                                    'consistency' => 'Consistency',
-                                    default => ucfirst(str_replace('_', ' ', $pr->pr_type))
-                                } }}</span>
-                            @endforeach
-                        </div>
-
-                        {{-- First PR note if any PR is first --}}
-                        @if($liftLog->allPRs->whereNull('previous_value')->count() > 0)
-                            <div class="pr-first">
-                                <i class="fas fa-star"></i>
-                                First PR!
-                            </div>
-                        @endif
+                        @endforeach
                     </div>
                 </div>
             @endforeach

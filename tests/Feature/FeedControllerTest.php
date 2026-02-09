@@ -306,4 +306,53 @@ class FeedControllerTest extends TestCase
         $this->assertLessThan($posAlice, $posBob, 'Followed user Bob should appear before unfollowed user Alice');
         $this->assertLessThan($posCharlie, $posBob, 'Followed user Bob should appear before unfollowed user Charlie');
     }
+
+    /** @test */
+    public function it_groups_prs_by_user_and_date()
+    {
+        $exercise1 = Exercise::factory()->create(['user_id' => null, 'title' => 'Squat']);
+        $exercise2 = Exercise::factory()->create(['user_id' => null, 'title' => 'Bench Press']);
+        
+        // Follow the other user
+        $this->user->follow($this->otherUser);
+        
+        // Create two lift logs for the same user on the same day
+        $liftLog1 = LiftLog::factory()->create([
+            'user_id' => $this->otherUser->id,
+            'exercise_id' => $exercise1->id,
+            'logged_at' => now()->subHours(2),
+        ]);
+        
+        $liftLog2 = LiftLog::factory()->create([
+            'user_id' => $this->otherUser->id,
+            'exercise_id' => $exercise2->id,
+            'logged_at' => now()->subHours(1),
+        ]);
+        
+        // Create PRs for both lift logs
+        PersonalRecord::factory()->create([
+            'user_id' => $this->otherUser->id,
+            'exercise_id' => $exercise1->id,
+            'lift_log_id' => $liftLog1->id,
+            'achieved_at' => now()->subHours(2),
+        ]);
+        
+        PersonalRecord::factory()->create([
+            'user_id' => $this->otherUser->id,
+            'exercise_id' => $exercise2->id,
+            'lift_log_id' => $liftLog2->id,
+            'achieved_at' => now()->subHours(1),
+        ]);
+
+        $response = $this->actingAs($this->user)->get(route('feed.index'));
+
+        $response->assertStatus(200);
+        // Should see both exercises
+        $response->assertSee('Squat');
+        $response->assertSee('Bench Press');
+        // Should see "2 PRs" in the card header
+        $response->assertSee('2 PRs');
+        // Should only see the user's name once (grouped in one card)
+        $this->assertEquals(1, substr_count($response->getContent(), $this->otherUser->name));
+    }
 }

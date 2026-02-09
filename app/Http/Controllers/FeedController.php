@@ -17,22 +17,33 @@ class FeedController extends Controller
         $followingIds = $currentUser->following()->pluck('users.id')->toArray();
         $followingIds[] = $currentUser->id;
         
-        // Get PRs from the last 7 days, only from users being followed (including self), grouped by lift_log_id
+        // Get PRs from the last 7 days, only from users being followed (including self)
         $prs = PersonalRecord::with(['user', 'exercise', 'liftLog'])
             ->current()
             ->where('achieved_at', '>=', now()->subDays(7))
             ->whereIn('user_id', $followingIds)
             ->latest('achieved_at')
-            ->get()
-            ->groupBy('lift_log_id')
-            ->map(function ($group) {
-                // Return the first PR as the main item with all PRs attached
-                $main = $group->first();
-                $main->allPRs = $group;
+            ->get();
+        
+        // Group by user and date (not lift_log_id)
+        $groupedPrs = $prs->groupBy(function ($pr) {
+            return $pr->user_id . '_' . $pr->achieved_at->format('Y-m-d');
+        })
+        ->map(function ($group) {
+            // For each user-date group, further group by lift_log_id
+            $liftLogGroups = $group->groupBy('lift_log_id')->map(function ($liftLogGroup) {
+                $main = $liftLogGroup->first();
+                $main->allPRs = $liftLogGroup;
                 return $main;
-            })
-            ->values()
-            ->take(50);
+            })->values();
+            
+            // Return the first lift log as the main item with all lift logs for that user-date
+            $main = $liftLogGroups->first();
+            $main->allLiftLogs = $liftLogGroups;
+            return $main;
+        })
+        ->values()
+        ->take(50);
         
         $components = [
             C::title(
@@ -50,7 +61,7 @@ class FeedController extends Controller
         $components[] = [
             'type' => 'pr-feed-list',
             'data' => [
-                'items' => $prs->all(),
+                'items' => $groupedPrs->all(),
                 'paginator' => null,
                 'emptyMessage' => 'No PRs in the last 7 days.',
                 'currentUserId' => $currentUser->id,
