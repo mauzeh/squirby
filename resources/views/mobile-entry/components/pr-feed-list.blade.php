@@ -64,7 +64,7 @@
                                             <form method="POST" action="{{ route('feed.toggle-high-five', $firstPRId) }}" style="display: inline;">
                                                 @csrf
                                                 <button type="submit" class="high-five-btn {{ $currentUserHighFived ? 'high-fived' : '' }}" title="{{ $currentUserHighFived ? 'Remove high five' : 'Give high five' }}">
-                                                    <i class="fas fa-hand-paper"></i>
+                                                    <i class="{{ $currentUserHighFived ? 'fas' : 'far' }} fa-heart"></i>
                                                     @if($highFiveCount > 0)
                                                         <span class="high-five-count">{{ $highFiveCount }}</span>
                                                     @endif
