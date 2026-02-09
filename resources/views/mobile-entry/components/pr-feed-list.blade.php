@@ -145,37 +145,71 @@ document.addEventListener('DOMContentLoaded', function() {
                                 $isOwnPR = $user->id === ($data['currentUserId'] ?? null);
                             @endphp
                             <div class="pr-lift-session">
+                                @php
+                                    $weight = $liftLog->liftLog?->display_weight ?? 0;
+                                    $reps = $liftLog->liftLog?->display_reps ?? 0;
+                                    $sets = $liftLog->liftLog?->display_rounds ?? 0;
+                                @endphp
                                 <div class="pr-lift-header">
-                                    <strong>{{ $liftLog->exercise->title }}</strong>
-                                </div>
-                                
-                                <div class="pr-lift-content">
-                                    {{-- Left column: Weight and reps pills --}}
-                                    <div class="pr-lift-details-column">
-                                        {{-- Show weight and reps from the lift log --}}
-                                        @php
-                                            $weight = $liftLog->liftLog?->display_weight ?? 0;
-                                            $reps = $liftLog->liftLog?->display_reps ?? 0;
-                                        @endphp
+                                    <div class="pr-lift-title-row">
+                                        <div class="pr-lift-title-column">
+                                            <strong>{{ $liftLog->exercise->title }}</strong>
+                                            
+                                            {{-- PR Types - Directly under exercise name --}}
+                                            @php
+                                                // Ensure allPRs exists
+                                                if (!isset($liftLog->allPRs)) {
+                                                    $liftLog->allPRs = collect([$liftLog]);
+                                                }
+                                                
+                                                // Build friendly PR descriptions as array
+                                                $prDescriptions = $liftLog->allPRs->map(function($pr) {
+                                                    return match($pr->pr_type) {
+                                                        'one_rm' => 'new max weight',
+                                                        'rep_specific' => 'most weight for ' . ($pr->rep_count ?? '') . ' rep' . (($pr->rep_count ?? 1) > 1 ? 's' : ''),
+                                                        'volume' => 'most total volume',
+                                                        'density' => 'most sets at this weight',
+                                                        'time' => 'best time',
+                                                        'endurance' => 'most reps',
+                                                        'consistency' => 'most consistent',
+                                                        'hypertrophy' => 'hypertrophy PR',
+                                                        default => strtolower(str_replace('_', ' ', $pr->pr_type))
+                                                    };
+                                                })->toArray();
+                                            @endphp
+                                            @if(!empty($prDescriptions))
+                                                <div class="pr-types">
+                                                    @foreach($prDescriptions as $description)
+                                                        <span class="pr-type-label"><i class="fas fa-check"></i> {{ ucfirst($description) }}</span>
+                                                    @endforeach
+                                                </div>
+                                            @endif
+                                        </div>
+                                        
                                         @if($weight > 0 || $reps > 0)
-                                            <div class="pr-lift-details">
+                                            <div class="pr-lift-pills">
+                                                @if($sets > 0 && $reps > 0)
+                                                    <span class="pr-reps-pill">{{ $sets }} x {{ $reps }}</span>
+                                                @elseif($reps > 0)
+                                                    <span class="pr-reps-pill">{{ $reps }} reps</span>
+                                                @endif
                                                 @if($weight > 0)
                                                     <span class="pr-weight-pill{{ $isNew ? ' pr-weight-pill-new' : '' }}">{{ number_format($weight, 0) }} lbs</span>
                                                 @endif
-                                                @if($reps > 0)
-                                                    <span class="pr-reps-pill">{{ $reps }} reps</span>
-                                                @endif
-                                            </div>
-                                        @endif
-
-                                        {{-- First PR note if any PR is first --}}
-                                        @if($liftLog->allPRs->whereNull('previous_value')->count() > 0)
-                                            <div class="pr-first">
-                                                <i class="fas fa-star"></i>
-                                                First PR!
                                             </div>
                                         @endif
                                     </div>
+                                    
+                                    {{-- First PR note if any PR is first --}}
+                                    @if($liftLog->allPRs->whereNull('previous_value')->count() > 0)
+                                        <div class="pr-first">
+                                            <i class="fas fa-star"></i>
+                                            First PR!
+                                        </div>
+                                    @endif
+                                </div>
+                                
+                                <div class="pr-lift-content">
                                     
                                     {{-- Right column: High five info --}}
                                     @if($firstPRId)
@@ -244,37 +278,6 @@ document.addEventListener('DOMContentLoaded', function() {
                                         </div>
                                     @endif
                                 </div>
-                                
-                                {{-- PR Types - Full width row below --}}
-                                @php
-                                    // Ensure allPRs exists
-                                    if (!isset($liftLog->allPRs)) {
-                                        $liftLog->allPRs = collect([$liftLog]);
-                                    }
-                                    
-                                    // Build friendly PR descriptions
-                                    $prDescriptions = $liftLog->allPRs->map(function($pr) {
-                                        return match($pr->pr_type) {
-                                            'one_rm' => 'new max weight',
-                                            'rep_specific' => 'most weight for ' . ($pr->rep_count ?? '') . ' rep' . (($pr->rep_count ?? 1) > 1 ? 's' : ''),
-                                            'volume' => 'most total volume',
-                                            'density' => 'most sets at this weight',
-                                            'time' => 'best time',
-                                            'endurance' => 'most reps',
-                                            'consistency' => 'most consistent',
-                                            'hypertrophy' => 'hypertrophy PR',
-                                            default => strtolower(str_replace('_', ' ', $pr->pr_type))
-                                        };
-                                    })->join(', ');
-                                    
-                                    // Capitalize only the first letter of the entire string
-                                    $prDescriptions = ucfirst($prDescriptions);
-                                @endphp
-                                @if($prDescriptions)
-                                    <div class="pr-types">
-                                        <span class="pr-type-label">{{ $prDescriptions }}</span>
-                                    </div>
-                                @endif
                             </div>
                         @endforeach
                     </div>

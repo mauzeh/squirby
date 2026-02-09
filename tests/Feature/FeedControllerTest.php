@@ -1250,9 +1250,12 @@ class FeedControllerTest extends TestCase
     }
 
     /** @test */
-    public function it_does_not_count_own_prs_in_badge()
+    public function it_counts_own_prs_in_badge()
     {
         $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
+        
+        // Make user follow someone so Feed menu is visible
+        $this->user->following()->attach($this->otherUser->id);
         
         // Create own PR (recent)
         $ownLiftLog = LiftLog::factory()->create([
@@ -1270,8 +1273,9 @@ class FeedControllerTest extends TestCase
         $response = $this->actingAs($this->user)->get(route('feed.index'));
 
         $response->assertStatus(200);
-        // Should NOT see badge (own PRs don't count)
-        $response->assertDontSee('menu-badge');
+        // Should see badge (own PRs now count)
+        $response->assertSee('menu-badge');
+        $response->assertSee('1'); // Badge count
     }
 
     /** @test */

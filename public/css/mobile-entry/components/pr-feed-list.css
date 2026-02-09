@@ -207,9 +207,32 @@
     text-align: left;
 }
 
-.pr-lift-header strong {
+.pr-lift-title-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.pr-lift-title-column {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+}
+
+.pr-lift-title-column strong {
     color: var(--text-primary);
     font-weight: 600;
+    font-size: 1rem;
+}
+
+.pr-lift-pills {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+    flex-shrink: 0;
 }
 
 /* Two-column layout for lift content */
@@ -331,13 +354,11 @@
     padding: 0.5rem 1rem;
     border-radius: 20px;
     font-weight: 700;
-    font-size: 1.125rem;
+    font-size: 1rem;
     letter-spacing: 0.3px;
 }
 
-/* Weight Pill - Orange for new/unread items */
-.pr-weight-pill-new {
-}
+/* Weight Pill - Orange for new/unread items (currently unused) */
 
 /* Reps Pill - Blue */
 .pr-reps-pill {
@@ -346,7 +367,7 @@
     border-radius: 20px;
     border: 1px solid #666;
     font-weight: 700;
-    font-size: 1.125rem;
+    font-size: 1rem;
     letter-spacing: 0.3px;
 }
 
@@ -359,10 +380,9 @@
 /* PR Types - Simple text list without badge styling */
 .pr-types {
     display: flex;
-    flex-wrap: wrap;
-    gap: var(--spacing-sm);
-    margin-top: var(--spacing-sm);
-    width: 100%;
+    flex-direction: column;
+    gap: 2px;
+    margin-top: 4px;
     text-align: left;
 }
 
@@ -370,6 +390,13 @@
     color: var(--text-muted);
     font-size: 0.875rem;
     font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.pr-type-label i {
+    font-size: 0.75rem;
 }
 
 /* Legacy PR Badges - keeping for compatibility */
@@ -505,10 +532,16 @@
     
     /* Smaller pills on mobile */
     .pr-weight-pill,
-    .pr-weight-pill-new,
     .pr-reps-pill {
-        font-size: 0.9rem;
         padding: 0.4rem 0.8rem;
+    }
+    
+    .pr-lift-title-row {
+        gap: 6px;
+    }
+    
+    .pr-lift-pills {
+        gap: 4px;
     }
 }
 
