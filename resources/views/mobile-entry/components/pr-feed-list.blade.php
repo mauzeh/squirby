@@ -203,13 +203,13 @@ document.addEventListener('DOMContentLoaded', function() {
                                         
                                         @if($weight > 0 || $reps > 0)
                                             <div class="pr-lift-pills">
+                                                @if($weight > 0)
+                                                    <span class="pr-weight-pill{{ $isNew ? ' pr-weight-pill-new' : '' }}">{{ number_format($weight, 0) }} lbs</span>
+                                                @endif
                                                 @if($sets > 0 && $reps > 0)
                                                     <span class="pr-reps-pill">{{ $sets }} x {{ $reps }}</span>
                                                 @elseif($reps > 0)
                                                     <span class="pr-reps-pill">{{ $reps }} reps</span>
-                                                @endif
-                                                @if($weight > 0)
-                                                    <span class="pr-weight-pill{{ $isNew ? ' pr-weight-pill-new' : '' }}">{{ number_format($weight, 0) }} lbs</span>
                                                 @endif
                                             </div>
                                         @endif
