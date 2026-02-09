@@ -126,15 +126,26 @@ class FeedController extends Controller
     {
         $currentUser = $request->user();
         
-        // Get all users except current user
-        $users = User::where('id', '!=', $currentUser->id)
-            ->orderBy('name')
-            ->get();
+        // Check if user is admin or being impersonated
+        $isAdminOrImpersonated = $currentUser->hasRole('Admin') || session()->has('impersonator_id');
         
         // Get IDs of users that current user is following
         $followingIds = $currentUser->following()->pluck('users.id')->toArray();
         
-        // Separate users into following and not following
+        // For regular users, only show users they're following
+        // For admins and impersonated users, show all users
+        if ($isAdminOrImpersonated) {
+            $users = User::where('id', '!=', $currentUser->id)
+                ->orderBy('name')
+                ->get();
+        } else {
+            // Only show users the current user is following
+            $users = User::whereIn('id', $followingIds)
+                ->orderBy('name')
+                ->get();
+        }
+        
+        // Separate users into following and not following (only relevant for admins/impersonated)
         $followingUsers = $users->filter(fn($user) => in_array($user->id, $followingIds));
         $notFollowingUsers = $users->filter(fn($user) => !in_array($user->id, $followingIds));
         
@@ -170,7 +181,7 @@ class FeedController extends Controller
             );
         }
         
-        // Then add not following users
+        // Then add not following users (only for admins/impersonated)
         foreach ($notFollowingUsers as $user) {
             $itemList->item(
                 id: (string) $user->id,

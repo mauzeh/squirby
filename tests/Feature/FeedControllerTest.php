@@ -137,6 +137,9 @@ class FeedControllerTest extends TestCase
     /** @test */
     public function it_displays_users_list_page()
     {
+        // Follow the other user so they appear in the list
+        $this->user->follow($this->otherUser);
+        
         $response = $this->actingAs($this->user)->get(route('feed.users'));
 
         $response->assertStatus(200);
@@ -147,6 +150,9 @@ class FeedControllerTest extends TestCase
     /** @test */
     public function it_excludes_current_user_from_users_list()
     {
+        // Follow the other user so they appear in the list
+        $this->user->follow($this->otherUser);
+        
         $response = $this->actingAs($this->user)->get(route('feed.users'));
 
         $response->assertStatus(200);
@@ -291,20 +297,24 @@ class FeedControllerTest extends TestCase
 
         $response->assertStatus(200);
         
-        // Both users should be visible
+        // Only followed user should be visible for regular users
         $response->assertSee('Followed User');
-        $response->assertSee('Unfollowed User');
+        $response->assertDontSee('Unfollowed User');
         
         // Check that the followed user has the "Following" label
         $response->assertSee('Following');
         
-        // Check that the unfollowed user has the "Not following" label
-        $response->assertSee('Not following');
+        // Should NOT see "Not following" label (no unfollowed users shown)
+        $response->assertDontSee('Not following');
     }
 
     /** @test */
     public function it_groups_followed_users_before_unfollowed_users()
     {
+        // Make user an admin to see all users
+        $adminRole = \App\Models\Role::firstOrCreate(['name' => 'Admin']);
+        $this->user->roles()->attach($adminRole);
+        
         // Create users with names that would be out of order alphabetically
         $userA = User::factory()->create(['name' => 'Alice']);
         $userB = User::factory()->create(['name' => 'Bob']);
@@ -328,6 +338,71 @@ class FeedControllerTest extends TestCase
         // Bob (followed) should appear before Alice and Charlie (not followed)
         $this->assertLessThan($posAlice, $posBob, 'Followed user Bob should appear before unfollowed user Alice');
         $this->assertLessThan($posCharlie, $posBob, 'Followed user Bob should appear before unfollowed user Charlie');
+    }
+
+    /** @test */
+    public function it_shows_only_followed_users_for_regular_users()
+    {
+        $followedUser = User::factory()->create(['name' => 'Followed User']);
+        $unfollowedUser = User::factory()->create(['name' => 'Unfollowed User']);
+        
+        // Follow only one user
+        $this->user->follow($followedUser);
+
+        $response = $this->actingAs($this->user)->get(route('feed.users'));
+
+        $response->assertStatus(200);
+        
+        // Should only see followed user
+        $response->assertSee('Followed User');
+        $response->assertDontSee('Unfollowed User');
+    }
+
+    /** @test */
+    public function it_shows_all_users_for_admin()
+    {
+        // Make user an admin
+        $adminRole = \App\Models\Role::firstOrCreate(['name' => 'Admin']);
+        $this->user->roles()->attach($adminRole);
+        
+        $followedUser = User::factory()->create(['name' => 'Followed User']);
+        $unfollowedUser = User::factory()->create(['name' => 'Unfollowed User']);
+        
+        // Follow only one user
+        $this->user->follow($followedUser);
+
+        $response = $this->actingAs($this->user)->get(route('feed.users'));
+
+        $response->assertStatus(200);
+        
+        // Admin should see both users
+        $response->assertSee('Followed User');
+        $response->assertSee('Unfollowed User');
+        $response->assertSee('Following');
+        $response->assertSee('Not following');
+    }
+
+    /** @test */
+    public function it_shows_all_users_for_impersonated_users()
+    {
+        $followedUser = User::factory()->create(['name' => 'Followed User']);
+        $unfollowedUser = User::factory()->create(['name' => 'Unfollowed User']);
+        
+        // Follow only one user
+        $this->user->follow($followedUser);
+        
+        // Simulate impersonation
+        session(['impersonator_id' => 999]);
+
+        $response = $this->actingAs($this->user)->get(route('feed.users'));
+
+        $response->assertStatus(200);
+        
+        // Impersonated user should see both users
+        $response->assertSee('Followed User');
+        $response->assertSee('Unfollowed User');
+        $response->assertSee('Following');
+        $response->assertSee('Not following');
     }
 
     /** @test */
