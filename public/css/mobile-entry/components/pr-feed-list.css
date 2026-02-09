@@ -90,6 +90,7 @@
     gap: var(--spacing-xs);
     flex: 1;
     text-align: left;
+    min-width: 0; /* Allow text truncation */
 }
 
 .pr-header-right {
@@ -97,6 +98,7 @@
     flex-direction: column;
     align-items: flex-end;
     gap: var(--spacing-xs);
+    flex-shrink: 0; /* Prevent shrinking */
 }
 
 .pr-user-info {
@@ -289,6 +291,7 @@
     gap: 0.25rem;
     flex-shrink: 0;
     min-width: 120px;
+    max-width: 200px; /* Prevent excessive width */
 }
 
 /* OPTION 2: Subtle badge - Light background, no border */
@@ -301,14 +304,16 @@
     background: rgba(231, 76, 60, 0.08);
     color: #ff6b6b;
     font-size: 1rem;
+    flex-shrink: 0; /* Prevent shrinking */
 }
 
 .high-five-names {
     font-size: 0.85rem;
     color: var(--text-secondary);
     text-align: right;
-    max-width: 200px;
     line-height: 1.2;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 .pr-exercise {
@@ -502,6 +507,19 @@
     .high-five-info {
         align-items: flex-start;
         width: 100%;
+        max-width: 100%;
+    }
+    
+    .high-five-names {
+        text-align: left;
+    }
+    
+    /* Smaller pills on mobile */
+    .pr-weight-pill,
+    .pr-weight-pill-new,
+    .pr-reps-pill {
+        font-size: 0.9rem;
+        padding: 0.4rem 0.8rem;
     }
 }
 
@@ -515,9 +533,21 @@
     }
 
     .pr-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: var(--spacing-xs);
+        gap: var(--spacing-sm);
+    }
+    
+    .pr-header-right {
+        flex-direction: row;
+        align-items: center;
+        gap: var(--spacing-sm);
+    }
+    
+    .pr-user-details strong {
+        font-size: 0.9rem;
+    }
+    
+    .pr-exercise {
+        font-size: 0.95rem;
     }
 
     .pr-details {
