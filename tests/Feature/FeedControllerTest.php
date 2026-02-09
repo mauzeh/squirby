@@ -970,4 +970,182 @@ class FeedControllerTest extends TestCase
         $response = $this->post(route('feed.toggle-high-five', $pr));
         $response->assertRedirect(route('login'));
     }
+
+    /** @test */
+    public function it_shows_badge_count_for_new_prs()
+    {
+        $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
+        
+        // Follow the other user
+        $this->user->follow($this->otherUser);
+        
+        // Create a recent PR (within 24 hours)
+        $liftLog = LiftLog::factory()->create([
+            'user_id' => $this->otherUser->id,
+            'exercise_id' => $exercise->id,
+        ]);
+        
+        PersonalRecord::factory()->create([
+            'user_id' => $this->otherUser->id,
+            'exercise_id' => $exercise->id,
+            'lift_log_id' => $liftLog->id,
+            'achieved_at' => now()->subHours(12),
+        ]);
+
+        $response = $this->actingAs($this->user)->get(route('feed.index'));
+
+        $response->assertStatus(200);
+        // Should see the badge with count
+        $response->assertSee('menu-badge');
+        $response->assertSee('>1<', false); // Badge count of 1
+    }
+
+    /** @test */
+    public function it_does_not_show_badge_when_no_new_prs()
+    {
+        $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
+        
+        // Follow the other user
+        $this->user->follow($this->otherUser);
+        
+        // Mark feed as viewed now
+        $this->user->update(['last_feed_viewed_at' => now()]);
+        
+        // Create an old PR (more than 24 hours ago)
+        $liftLog = LiftLog::factory()->create([
+            'user_id' => $this->otherUser->id,
+            'exercise_id' => $exercise->id,
+        ]);
+        
+        PersonalRecord::factory()->create([
+            'user_id' => $this->otherUser->id,
+            'exercise_id' => $exercise->id,
+            'lift_log_id' => $liftLog->id,
+            'achieved_at' => now()->subHours(30),
+        ]);
+
+        $response = $this->actingAs($this->user)->get(route('feed.index'));
+
+        $response->assertStatus(200);
+        // Should NOT see the badge
+        $response->assertDontSee('menu-badge');
+    }
+
+    /** @test */
+    public function it_shows_badge_count_for_multiple_user_date_groups()
+    {
+        $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
+        
+        // Follow the other user
+        $this->user->follow($this->otherUser);
+        
+        // Create PRs for different dates
+        $liftLog1 = LiftLog::factory()->create([
+            'user_id' => $this->otherUser->id,
+            'exercise_id' => $exercise->id,
+        ]);
+        
+        PersonalRecord::factory()->create([
+            'user_id' => $this->otherUser->id,
+            'exercise_id' => $exercise->id,
+            'lift_log_id' => $liftLog1->id,
+            'achieved_at' => now()->subHours(12),
+        ]);
+        
+        $liftLog2 = LiftLog::factory()->create([
+            'user_id' => $this->otherUser->id,
+            'exercise_id' => $exercise->id,
+        ]);
+        
+        PersonalRecord::factory()->create([
+            'user_id' => $this->otherUser->id,
+            'exercise_id' => $exercise->id,
+            'lift_log_id' => $liftLog2->id,
+            'achieved_at' => now()->subHours(36), // Different day
+        ]);
+
+        $response = $this->actingAs($this->user)->get(route('feed.index'));
+
+        $response->assertStatus(200);
+        // Should see badge with count of 2 (two different dates)
+        $response->assertSee('menu-badge');
+        $response->assertSee('>2<', false); // Badge count of 2
+    }
+
+    /** @test */
+    public function it_shows_all_prs_as_new_for_first_time_users()
+    {
+        $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
+        
+        // Follow the other user
+        $this->user->follow($this->otherUser);
+        
+        // Ensure last_feed_viewed_at is null (first-time user)
+        $this->user->update(['last_feed_viewed_at' => null]);
+        
+        // Create PRs at different times within 7 days
+        $liftLog1 = LiftLog::factory()->create([
+            'user_id' => $this->otherUser->id,
+            'exercise_id' => $exercise->id,
+        ]);
+        
+        PersonalRecord::factory()->create([
+            'user_id' => $this->otherUser->id,
+            'exercise_id' => $exercise->id,
+            'lift_log_id' => $liftLog1->id,
+            'achieved_at' => now()->subHours(12), // Recent
+        ]);
+        
+        $liftLog2 = LiftLog::factory()->create([
+            'user_id' => $this->otherUser->id,
+            'exercise_id' => $exercise->id,
+        ]);
+        
+        PersonalRecord::factory()->create([
+            'user_id' => $this->otherUser->id,
+            'exercise_id' => $exercise->id,
+            'lift_log_id' => $liftLog2->id,
+            'achieved_at' => now()->subDays(3), // Older but within 7 days
+        ]);
+
+        $response = $this->actingAs($this->user)->get(route('feed.index'));
+
+        $response->assertStatus(200);
+        // Should see badge with count of 2 (all PRs are new for first-time user)
+        $response->assertSee('menu-badge');
+        $response->assertSee('>2<', false); // Badge count of 2
+    }
+
+    /** @test */
+    public function it_clears_badge_after_marking_as_read()
+    {
+        $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
+        
+        // Follow the other user
+        $this->user->follow($this->otherUser);
+        
+        // Create a recent PR
+        $liftLog = LiftLog::factory()->create([
+            'user_id' => $this->otherUser->id,
+            'exercise_id' => $exercise->id,
+        ]);
+        
+        PersonalRecord::factory()->create([
+            'user_id' => $this->otherUser->id,
+            'exercise_id' => $exercise->id,
+            'lift_log_id' => $liftLog->id,
+            'achieved_at' => now()->subHours(12),
+        ]);
+
+        // First visit - should see badge
+        $response = $this->actingAs($this->user)->get(route('feed.index'));
+        $response->assertSee('menu-badge');
+
+        // Mark as read
+        $this->actingAs($this->user)->post(route('feed.mark-read'));
+
+        // Second visit - should NOT see badge
+        $response = $this->actingAs($this->user)->get(route('feed.index'));
+        $response->assertDontSee('menu-badge');
+    }
 }
