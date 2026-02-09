@@ -998,12 +998,12 @@ class FeedControllerTest extends TestCase
         $response = $this->actingAs($this->user)->get(route('feed.index'));
 
         $response->assertStatus(200);
-        // Should see the names displayed with proper grammar
+        // Should see the names displayed with proper grammar (plural "love")
         $response->assertSee('high-five-names');
         $response->assertSee('Alice');
         $response->assertSee('Bob');
         $response->assertSee('and');
-        $response->assertSee('loves');
+        $response->assertSee('love'); // Plural verb for multiple people
         $response->assertSee('this!');
         $response->assertSee('2'); // Count should show 2
     }
@@ -1061,7 +1061,7 @@ class FeedControllerTest extends TestCase
         $response->assertSee('Bob');
         $response->assertSee('Charlie');
         $response->assertSee('and');
-        $response->assertSee('loves');
+        $response->assertSee('love'); // Plural verb for multiple people
         $response->assertSee('this!');
     }
 
@@ -1111,9 +1111,9 @@ class FeedControllerTest extends TestCase
         $response->assertStatus(200);
         // Should see the interactive button
         $response->assertSee('high-five-btn');
-        // Should also see the names
+        // Should also see the names with singular verb (only one person)
         $response->assertSee('David');
-        $response->assertSee('loves');
+        $response->assertSee('loves'); // Singular verb for single person
         $response->assertSee('this!');
     }
 

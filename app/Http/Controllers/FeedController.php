@@ -433,9 +433,10 @@ class FeedController extends Controller
         $formattedNames = '';
         $nameCount = count($names);
         
-        // Determine verb based on whether "You" is in the list
+        // Determine verb based on count and whether "You" is in the list
         $hasYou = in_array('You', $names);
-        $verb = $hasYou ? 'love' : 'loves';
+        // Use "love" for multiple people or when "You" is included, "loves" for single person
+        $verb = ($nameCount > 1 || $hasYou) ? 'love' : 'loves';
         
         if ($nameCount === 1) {
             $formattedNames = '<strong>' . $names[0] . '</strong>';
