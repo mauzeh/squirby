@@ -31,7 +31,7 @@ return [
                     })
                     ->get();
                 
-                // Count user-date groups that are new (within 24 hours AND after last viewed)
+                // Count user-date groups that are new
                 $newCount = 0;
                 $seenGroups = [];
                 
@@ -42,11 +42,17 @@ return [
                         continue; // Already counted this group
                     }
                     
-                    $isWithin24Hours = $pr->achieved_at->isAfter(now()->subHours(24));
-                    $isAfterLastViewed = !$currentUser->last_feed_viewed_at || 
-                                         $pr->achieved_at->isAfter($currentUser->last_feed_viewed_at);
+                    // If never viewed, all PRs in last 7 days are new
+                    // Otherwise, check if within 24 hours OR after last viewed
+                    if (!$currentUser->last_feed_viewed_at) {
+                        $isNew = true;
+                    } else {
+                        $isWithin24Hours = $pr->achieved_at->isAfter(now()->subHours(24));
+                        $isAfterLastViewed = $pr->achieved_at->isAfter($currentUser->last_feed_viewed_at);
+                        $isNew = $isWithin24Hours && $isAfterLastViewed;
+                    }
                     
-                    if ($isWithin24Hours && $isAfterLastViewed) {
+                    if ($isNew) {
                         $newCount++;
                         $seenGroups[$groupKey] = true;
                     }

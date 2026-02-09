@@ -430,7 +430,10 @@ class FeedControllerTest extends TestCase
         // Follow the other user
         $this->user->follow($this->otherUser);
         
-        // Create an old PR (more than 24 hours ago)
+        // Set last viewed to now, so the old PR will be considered "read"
+        $this->user->update(['last_feed_viewed_at' => now()]);
+        
+        // Create an old PR (more than 24 hours ago, but after we "viewed" the feed)
         $oldLiftLog = LiftLog::factory()->create([
             'user_id' => $this->otherUser->id,
             'exercise_id' => $exercise->id,
@@ -446,7 +449,7 @@ class FeedControllerTest extends TestCase
         $response = $this->actingAs($this->user)->get(route('feed.index'));
 
         $response->assertStatus(200);
-        // Should NOT see NEW badge
+        // Should NOT see NEW badge (PR is older than 24 hours)
         $response->assertDontSee('NEW');
         // Should NOT see the pr-card-new class
         $response->assertDontSee('pr-card-new');

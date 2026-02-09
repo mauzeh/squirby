@@ -50,11 +50,16 @@ class FeedController extends Controller
         ->values()
         ->take(50);
         
-        // Check if there are any new PRs (within 24 hours OR after last viewed)
+        // Check if there are any new PRs
         $hasNewPRs = $groupedPrs->contains(function ($item) use ($currentUser) {
+            // If never viewed, all PRs in last 7 days are new
+            if (!$currentUser->last_feed_viewed_at) {
+                return true;
+            }
+            
+            // Otherwise, check if within 24 hours AND after last viewed
             $isWithin24Hours = $item->achieved_at->isAfter(now()->subHours(24));
-            $isAfterLastViewed = !$currentUser->last_feed_viewed_at || 
-                                 $item->achieved_at->isAfter($currentUser->last_feed_viewed_at);
+            $isAfterLastViewed = $item->achieved_at->isAfter($currentUser->last_feed_viewed_at);
             return $isWithin24Hours && $isAfterLastViewed;
         });
         
