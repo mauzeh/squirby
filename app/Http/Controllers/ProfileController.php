@@ -38,6 +38,7 @@ class ProfileController extends Controller
         }
 
         // Add form components
+        $components[] = $this->profileFormService->generateProfilePhotoForm($user);
         $components[] = $this->profileFormService->generateProfileInformationForm($user);
         $components[] = $this->profileFormService->generatePreferencesForm($user);
         $components[] = $this->profileFormService->generatePasswordForm();
@@ -84,6 +85,50 @@ class ProfileController extends Controller
         ]);
 
         return Redirect::route('profile.edit')->with('success', 'Preferences updated successfully.');
+    }
+
+    /**
+     * Update the user's profile photo.
+     */
+    public function updatePhoto(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'profile_photo' => ['required', 'image', 'max:2048'], // 2MB max
+        ]);
+
+        $user = $request->user();
+
+        // Delete old photo if exists
+        if ($user->profile_photo_path) {
+            \Storage::disk('public')->delete($user->profile_photo_path);
+        }
+
+        // Store new photo
+        $path = $request->file('profile_photo')->store('profile-photos', 'public');
+
+        $user->update([
+            'profile_photo_path' => $path,
+        ]);
+
+        return Redirect::route('profile.edit')->with('success', 'Profile photo updated successfully.');
+    }
+
+    /**
+     * Delete the user's profile photo.
+     */
+    public function deletePhoto(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+
+        if ($user->profile_photo_path) {
+            \Storage::disk('public')->delete($user->profile_photo_path);
+            
+            $user->update([
+                'profile_photo_path' => null,
+            ]);
+        }
+
+        return Redirect::route('profile.edit')->with('success', 'Profile photo deleted successfully.');
     }
 
     /**

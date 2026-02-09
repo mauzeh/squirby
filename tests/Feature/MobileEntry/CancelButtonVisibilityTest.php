@@ -54,7 +54,6 @@ class CancelButtonVisibilityTest extends TestCase
         // The Blade template should not render the button at all when showCancelButton is false
         $response->assertDontSee('btn-cancel', false);
         $response->assertDontSee('Cancel and go back', false);
-        $response->assertDontSee('<span class="cancel-icon">×</span>', false);
     }
 
     /**
@@ -87,7 +86,6 @@ class CancelButtonVisibilityTest extends TestCase
         // When the user clicks "Log Now", they should be able to cancel and return to collapsed state
         $response->assertSee('btn-cancel', false);
         $response->assertSee('Cancel and go back', false);
-        $response->assertSee('<span class="cancel-icon">×</span>', false);
     }
 
     /**

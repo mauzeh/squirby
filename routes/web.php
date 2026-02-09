@@ -17,6 +17,7 @@ use App\Http\Controllers\BodyLogController;
 use App\Http\Controllers\MeasurementTypeController;
 use App\Http\Controllers\RecommendationController;
 use App\Http\Controllers\WorkoutController;
+use App\Http\Controllers\FeedController;
 
 // Breeze Routes
 Route::get('/', function () {
@@ -33,10 +34,21 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::patch('/profile/preferences', [ProfileController::class, 'updatePreferences'])->name('profile.update-preferences');
+    Route::post('/profile/photo', [ProfileController::class, 'updatePhoto'])->name('profile.update-photo');
+    Route::delete('/profile/photo', [ProfileController::class, 'deletePhoto'])->name('profile.delete-photo');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     // Custom Application Routes (Protected by 'auth' middleware)
 
+    // Feed
+    Route::get('feed', [FeedController::class, 'index'])->name('feed.index');
+    Route::post('feed/mark-read', [FeedController::class, 'markAsRead'])->name('feed.mark-read');
+    Route::post('feed/reset-read', [FeedController::class, 'resetRead'])->name('feed.reset-read');
+    Route::post('feed/pr/{personalRecord}/high-five', [FeedController::class, 'toggleHighFive'])->name('feed.toggle-high-five');
+    Route::get('feed/users', [FeedController::class, 'users'])->name('feed.users');
+    Route::get('feed/users/{user}', [FeedController::class, 'showUser'])->name('feed.users.show');
+    Route::post('feed/users/{user}/follow', [FeedController::class, 'followUser'])->name('feed.users.follow');
+    Route::delete('feed/users/{user}/unfollow', [FeedController::class, 'unfollowUser'])->name('feed.users.unfollow');
 
     Route::post('food-logs/add-meal', [FoodLogController::class, 'addMealToLog'])->name('food-logs.add-meal');
 

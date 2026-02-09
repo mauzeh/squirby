@@ -8,6 +8,61 @@ use App\Services\ComponentBuilder as C;
 class ProfileFormService
 {
     /**
+     * Generate profile photo upload form component
+     */
+    public function generateProfilePhotoForm(User $user): array
+    {
+        // Show current photo or placeholder
+        $photoHtml = '';
+        if ($user->profile_photo_url) {
+            $photoHtml = '<div class="profile-photo-preview"><img src="' . e($user->profile_photo_url) . '" alt="Profile photo" class="profile-photo-img"></div>';
+        } else {
+            $photoHtml = '<div class="profile-photo-preview"><i class="fas fa-user-circle profile-photo-placeholder"></i></div>';
+        }
+        
+        // Upload form
+        $uploadForm = C::form('profile-photo-upload', 'Profile Photo')
+            ->formAction(route('profile.update-photo'))
+            ->hiddenField('_method', 'POST')
+            ->message('info', 'Upload a profile photo (JPG, PNG, max 2MB)')
+            ->fileField('profile_photo', 'Choose Photo')
+            ->submitButton('Upload Photo');
+        
+        // Add error messages if validation failed
+        if ($errors = session('errors')) {
+            if ($errors->has('profile_photo')) {
+                $uploadForm->message('error', $errors->first('profile_photo'));
+            }
+        }
+        
+        $uploadFormHtml = view('mobile-entry.components.form', ['data' => $uploadForm->build()['data']])->render();
+        
+        // Delete photo button if photo exists
+        $deleteFormHtml = '';
+        if ($user->profile_photo_path) {
+            $deleteForm = C::form('profile-photo-delete')
+                ->formAction(route('profile.delete-photo'))
+                ->hiddenField('_method', 'DELETE')
+                ->submitButton('Remove Photo')
+                ->submitButtonClass('btn-secondary')
+                ->confirmMessage('Are you sure you want to remove your profile photo?');
+            
+            $deleteFormHtml = view('mobile-entry.components.form', ['data' => $deleteForm->build()['data']])->render();
+        }
+        
+        return [
+            'type' => 'raw_html',
+            'data' => [
+                'html' => '<div class="profile-photo-section">' . 
+                    $photoHtml . 
+                    $uploadFormHtml . 
+                    $deleteFormHtml . 
+                    '</div>'
+            ]
+        ];
+    }
+
+    /**
      * Generate profile information form component
      */
     public function generateProfileInformationForm(User $user): array

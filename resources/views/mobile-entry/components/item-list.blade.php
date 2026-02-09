@@ -9,9 +9,7 @@
                 <button type="button" class="btn-clear-filter" aria-label="Clear filter" style="display: none;">×</button>
             </div>
             @if($data['showCancelButton'] ?? true)
-            <button type="button" class="btn-secondary btn-cancel" aria-label="Cancel and go back">
-                <span class="cancel-icon">×</span>
-            </button>
+            <button type="button" class="btn btn-secondary btn-cancel" aria-label="Cancel and go back">×</button>
             @endif
         </div>
     </div>
@@ -45,7 +43,7 @@
                 @foreach($data['createForm']['hiddenFields'] as $name => $value)
                     <input type="hidden" name="{{ $name }}" value="{{ $value }}">
                 @endforeach
-                <button type="submit" class="btn-primary btn-create" aria-label="{{ $data['createForm']['ariaLabel'] }}" data-text-template="{{ $data['createForm']['buttonTextTemplate'] ?? 'Create "{term}"' }}">
+                <button type="submit" class="btn btn-primary btn-create" aria-label="{{ $data['createForm']['ariaLabel'] }}" data-text-template="{{ $data['createForm']['buttonTextTemplate'] ?? 'Create "{term}"' }}">
                     <span class="btn-create-text">{{ $data['createForm']['submitText'] }}</span>
                 </button>
             </form>

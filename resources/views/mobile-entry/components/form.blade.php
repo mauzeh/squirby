@@ -14,7 +14,7 @@
                     <input type="hidden" name="{{ $name }}" value="{{ $value }}">
                 @endforeach
             @endif
-            <button type="submit" class="btn-delete" aria-label="{{ $data['ariaLabels']['deleteForm'] }}">
+            <button type="submit" class="btn btn-delete" aria-label="{{ $data['ariaLabels']['deleteForm'] }}">
                 <i class="fas fa-trash"></i>
             </button>
         </form>
@@ -35,7 +35,7 @@
     </div>
     @endif
     
-    <form class="component-form-element" method="POST" action="{{ $data['formAction'] }}" data-form-type="{{ $data['type'] }}" @if(isset($data['confirmMessage'])) data-confirm-message="{{ $data['confirmMessage'] }}" @endif>
+    <form class="component-form-element" method="POST" action="{{ $data['formAction'] }}" data-form-type="{{ $data['type'] }}" @if(isset($data['confirmMessage'])) data-confirm-message="{{ $data['confirmMessage'] }}" @endif @if(isset($data['enctype'])) enctype="{{ $data['enctype'] }}" @endif>
         @csrf
         <input type="hidden" name="form_type" value="{{ $data['type'] }}">
         <input type="hidden" name="item_name" value="{{ $data['itemName'] }}">
@@ -68,7 +68,7 @@
         @endforeach
         
         <div class="form-actions">
-            <button type="submit" class="{{ $data['submitButtonClass'] ?? 'btn-primary' }}">{{ $data['buttons']['submit'] }}</button>
+            <button type="submit" class="btn {{ $data['submitButtonClass'] ?? 'btn-primary' }}">{{ $data['buttons']['submit'] }}</button>
         </div>
     </form>
 </section>

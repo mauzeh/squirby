@@ -22,6 +22,13 @@ class MenuService
 
         $processedItems = [];
         foreach ($menuItems as $item) {
+            // Check visibility callback
+            if (isset($item['visible']) && is_callable($item['visible'])) {
+                if (!$item['visible']()) {
+                    continue; // Skip this item if visibility callback returns false
+                }
+            }
+            
             // Check roles
             if (isset($item['roles'])) {
                 $hasRole = false;
@@ -46,6 +53,11 @@ class MenuService
                 $item['active'] = Request::routeIs($item['patterns']);
             } else {
                 $item['active'] = false;
+            }
+
+            // Calculate badge count if badge callback is defined
+            if (isset($item['badge']) && is_callable($item['badge'])) {
+                $item['badgeCount'] = $item['badge']();
             }
 
             // Recursively process children

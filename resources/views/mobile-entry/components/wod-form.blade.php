@@ -72,7 +72,7 @@
         
         {{-- Submit Button --}}
         <div class="form-actions">
-            <button type="submit" class="btn-primary">{{ $data['submitButton'] }}</button>
+            <button type="submit" class="btn btn-primary">{{ $data['submitButton'] }}</button>
         </div>
     </form>
 </section>

@@ -2,6 +2,100 @@
 
 return [
     'main' => [
+        // Feed Main Menu Item
+        [
+            'id' => 'feed-nav-link',
+            'label' => 'Feed',
+            'icon' => 'fa-stream',
+            'route' => 'feed.index',
+            'patterns' => [
+                'feed.*',
+            ],
+            'visible' => function() {
+                $currentUser = auth()->user();
+                if (!$currentUser) {
+                    return false;
+                }
+                
+                // Always show Feed menu when impersonating
+                if (session()->has('impersonator_id')) {
+                    return true;
+                }
+                
+                // Only show Feed menu if user is following someone
+                return $currentUser->following()->count() > 0;
+            },
+            'badge' => function() {
+                $currentUser = auth()->user();
+                if (!$currentUser) {
+                    return 0;
+                }
+                
+                // Get IDs of users that current user is following, plus current user
+                $followingIds = $currentUser->following()->pluck('users.id')->toArray();
+                $followingIds[] = $currentUser->id;
+                
+                // Get PRs from the last 7 days that are new
+                $prs = \App\Models\PersonalRecord::with(['user', 'exercise'])
+                    ->current()
+                    ->where('achieved_at', '>=', now()->subDays(7))
+                    ->whereIn('user_id', $followingIds)
+                    ->whereHas('exercise', function ($query) {
+                        $query->where('show_in_feed', true);
+                    })
+                    ->get();
+                
+                // Count user-date groups that are new (excluding own PRs)
+                $newCount = 0;
+                $seenGroups = [];
+                
+                foreach ($prs as $pr) {
+                    // Skip own PRs
+                    if ($pr->user_id === $currentUser->id) {
+                        continue;
+                    }
+                    
+                    $groupKey = $pr->user_id . '_' . $pr->achieved_at->format('Y-m-d');
+                    
+                    if (isset($seenGroups[$groupKey])) {
+                        continue; // Already counted this group
+                    }
+                    
+                    // If never viewed, all PRs in last 7 days are new
+                    // Otherwise, check if within 24 hours OR after last viewed
+                    if (!$currentUser->last_feed_viewed_at) {
+                        $isNew = true;
+                    } else {
+                        $isWithin24Hours = $pr->achieved_at->isAfter(now()->subHours(24));
+                        $isAfterLastViewed = $pr->achieved_at->isAfter($currentUser->last_feed_viewed_at);
+                        $isNew = $isWithin24Hours && $isAfterLastViewed;
+                    }
+                    
+                    if ($isNew) {
+                        $newCount++;
+                        $seenGroups[$groupKey] = true;
+                    }
+                }
+                
+                return $newCount;
+            },
+            'children' => [
+                [
+                    'label' => 'PRs',
+                    'icon' => 'fa-trophy',
+                    'route' => 'feed.index',
+                    'title' => 'PR Feed',
+                    'patterns' => ['feed.index'],
+                ],
+                [
+                    'label' => 'Friends',
+                    'icon' => 'fa-users',
+                    'route' => 'feed.users',
+                    'title' => 'All Users',
+                    'patterns' => ['feed.users', 'feed.users.show'],
+                ],
+            ],
+        ],
         // Lifts Main Menu Item
         [
             'id' => 'lifts-nav-link',

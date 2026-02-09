@@ -37,6 +37,8 @@ class User extends Authenticatable
         'show_global_exercises',
         'show_extra_weight',
         'prefill_suggested_values',
+        'profile_photo_path',
+        'last_feed_viewed_at',
     ];
 
     /**
@@ -63,6 +65,7 @@ class User extends Authenticatable
             'show_extra_weight' => 'boolean',
             'prefill_suggested_values' => 'boolean',
             'deleted_at' => 'datetime',
+            'last_feed_viewed_at' => 'datetime',
         ];
     }
 
@@ -258,5 +261,60 @@ class User extends Authenticatable
     public function liftLogs()
     {
         return $this->hasMany(LiftLog::class);
+    }
+
+    public function personalRecords()
+    {
+        return $this->hasMany(PersonalRecord::class);
+    }
+
+    // Follow relationships
+    public function following()
+    {
+        return $this->belongsToMany(User::class, 'follows', 'follower_id', 'following_id')
+            ->withTimestamps();
+    }
+
+    public function followers()
+    {
+        return $this->belongsToMany(User::class, 'follows', 'following_id', 'follower_id')
+            ->withTimestamps();
+    }
+
+    public function isFollowing(User $user): bool
+    {
+        return $this->following()->where('following_id', $user->id)->exists();
+    }
+
+    public function follow(User $user): void
+    {
+        if (!$this->isFollowing($user) && $this->id !== $user->id) {
+            $this->following()->attach($user->id);
+        }
+    }
+
+    public function unfollow(User $user): void
+    {
+        $this->following()->detach($user->id);
+    }
+
+    public function highFivePR(PersonalRecord $pr): void
+    {
+        PRHighFive::firstOrCreate([
+            'user_id' => $this->id,
+            'personal_record_id' => $pr->id,
+        ]);
+    }
+
+    /**
+     * Get the URL for the user's profile photo
+     */
+    public function getProfilePhotoUrlAttribute(): ?string
+    {
+        if ($this->profile_photo_path) {
+            return asset('storage/' . $this->profile_photo_path);
+        }
+        
+        return null;
     }
 }

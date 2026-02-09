@@ -45,6 +45,9 @@
                    href="{{ route($item['route']) }}" 
                    class="top-level-nav-item {{ $item['active'] ? 'active' : '' }}">
                     <i class="fas {{ $item['icon'] }} menu-icon"></i>{{ $item['label'] }}
+                    @if(isset($item['badgeCount']) && $item['badgeCount'] > 0)
+                        <span class="menu-badge">{{ $item['badgeCount'] }}</span>
+                    @endif
                 </a>
             @endforeach
 

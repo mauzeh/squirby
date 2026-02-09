@@ -17,8 +17,9 @@
 }
 
 /* Button System */
-.btn-primary {
-    background-color: var(--color-primary);
+/* Base button styles - shared across all button variants */
+.btn {
+    background-color: var(--color-secondary);
     color: white;
     border: none;
     border-radius: var(--border-radius-sm);
@@ -38,16 +39,36 @@
 }
 
 @media (hover: hover) {
-    .btn-primary:hover {
-        background-color: var(--color-primary-hover);
+    .btn:hover {
+        background-color: var(--color-secondary-hover);
         transform: translateY(-1px);
         box-shadow: var(--shadow-light);
     }
 }
 
-.btn-primary:active {
+.btn:active {
     transform: translateY(0);
     box-shadow: none;
+}
+
+.btn:disabled {
+    background-color: #495057;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+    opacity: 0.6;
+}
+
+/* Primary button - color overrides only */
+.btn-primary {
+    background-color: var(--color-primary);
+    color: white;
+}
+
+@media (hover: hover) {
+    .btn-primary:hover {
+        background-color: var(--color-primary-hover);
+    }
 }
 
 .btn-primary:focus {
@@ -57,37 +78,17 @@
 
 .btn-primary:disabled {
     background-color: var(--color-secondary);
-    cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
-    opacity: 0.6;
 }
 
+/* Secondary button - color overrides only */
 .btn-secondary {
     background-color: var(--color-secondary);
     color: white;
-    border: none;
-    border-radius: var(--border-radius-sm);
-    padding: 10px var(--spacing-md);
-    cursor: pointer;
-    font-size: 1em;
-    font-weight: bold;
-    text-decoration: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: var(--touch-target-min);
-    min-width: var(--touch-target-min);
-    transition: all var(--transition-fast);
-    touch-action: manipulation;
-    user-select: none;
 }
 
 @media (hover: hover) {
     .btn-secondary:hover {
         background-color: var(--color-secondary-hover);
-        transform: translateY(-1px);
-        box-shadow: var(--shadow-light);
     }
 }
 
@@ -103,15 +104,6 @@
 
 .btn-secondary:disabled {
     background-color: #495057;
-    cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
-    opacity: 0.6;
-}
-
-.plus-icon {
-    font-weight: bold;
-    font-size: 1.5em;
 }
 
 .btn-create {
@@ -130,9 +122,21 @@
     outline-offset: 2px;
 }
 
+/**
+ * Because buttons have media queries which override this
+ * button's dimensions and flex settings, we are using
+ * !important to make sure they are not overridden. This is
+ * an exception that was manually applied by Maurits.
+ */
 .btn-cancel {
     background-color: var(--color-danger);
     color: white;
+    flex-basis: 0px !important;
+    flex-grow: inherit !important;
+    font-size: 1.5em !important;
+    font-weight: bold !important;
+    width: 44px !important;
+    height: 44px !important;
 }
 
 @media (hover: hover) {
@@ -144,11 +148,6 @@
 .btn-cancel:focus {
     outline: 2px solid var(--color-danger);
     outline-offset: 2px;
-}
-
-.cancel-icon {
-    font-weight: bold;
-    font-size: 1.5em;
 }
 
 
@@ -264,17 +263,10 @@
 
 /* Responsive adjustments for buttons */
 @media (max-width: 768px) {
-    .btn-primary {
+    .btn {
         font-size: 1.3em;
         padding: 12px var(--spacing-lg);
         min-height: var(--touch-target-min);
-    }
-
-    .btn-secondary {
-        padding: var(--spacing-sm) 12px;
-        font-size: 0.9em;
-        min-height: var(--touch-target-min);
-        min-width: var(--touch-target-min);
     }
 
     .btn-delete {
@@ -291,17 +283,10 @@
 }
 
 @media (max-width: 480px) {
-    .btn-primary {
+    .btn {
         font-size: 1.2em;
         padding: 10px 16px;
         min-height: 40px;
-    }
-
-    .btn-secondary {
-        padding: 6px 10px;
-        font-size: 0.85em;
-        min-height: 40px;
-        min-width: 40px;
     }
 
     .btn-delete {
@@ -333,38 +318,16 @@
     outline-offset: 2px;
 }
 
-/* Button Danger Variant - matches btn-primary sizing but with danger color */
+/* Button Danger Variant - color overrides only */
 .btn-danger {
     background-color: var(--color-danger);
     color: white;
-    border: none;
-    border-radius: var(--border-radius-sm);
-    padding: var(--spacing-md) var(--spacing-xl);
-    cursor: pointer;
-    font-size: 1.5em;
-    font-weight: bold;
-    text-decoration: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: var(--touch-target-min);
-    flex: 1;
-    transition: all var(--transition-fast);
-    touch-action: manipulation;
-    user-select: none;
 }
 
 @media (hover: hover) {
     .btn-danger:hover {
         background-color: var(--color-danger-hover);
-        transform: translateY(-1px);
-        box-shadow: var(--shadow-light);
     }
-}
-
-.btn-danger:active {
-    transform: translateY(0);
-    box-shadow: none;
 }
 
 .btn-danger:focus {
@@ -374,48 +337,9 @@
 
 .btn-danger:disabled {
     background-color: var(--color-secondary);
-    cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
-    opacity: 0.6;
 }
 
-@media (max-width: 768px) {
-    .btn-danger {
-        font-size: 1.3em;
-        padding: 12px var(--spacing-lg);
-        min-height: var(--touch-target-min);
-    }
-}
-
-@media (max-width: 480px) {
-    .btn-danger {
-        font-size: 1.2em;
-        padding: 10px 16px;
-        min-height: 40px;
-    }
-}
-
-/* Button Component Styles */
-.component-button.btn-primary {
-    background-color: var(--color-success);
-    color: var(--text-primary);
-}
-
-.component-button.btn-primary:hover {
-    background-color: var(--color-success-hover);
-}
-
-.component-button.btn-secondary {
-    background-color: var(--color-secondary);
-    color: var(--text-primary);
-}
-
-.component-button.btn-secondary:hover {
-    background-color: var(--color-secondary-hover);
-}
-
-/* Icon spacing for button components */
-.component-button i.button-icon {
+/* Icon styles for buttons with icons */
+.btn i.button-icon {
     margin-right: 6px;
 }
