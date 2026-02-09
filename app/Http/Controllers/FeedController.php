@@ -387,8 +387,44 @@ class FeedController extends Controller
             $highFived = true;
         }
         
-        // Get updated count
-        $highFiveCount = PRHighFive::where('personal_record_id', $personalRecord->id)->count();
+        // Get updated count and names
+        $highFives = PRHighFive::where('personal_record_id', $personalRecord->id)
+            ->with('user')
+            ->get();
+        $highFiveCount = $highFives->count();
+        
+        // Format names for display
+        $names = $highFives->pluck('user.name')->toArray();
+        $userIds = $highFives->pluck('user_id')->toArray();
+        
+        // Replace current user's name with "You"
+        $names = array_map(function($name, $userId) use ($currentUser) {
+            return $userId === $currentUser->id ? 'You' : $name;
+        }, $names, $userIds);
+        
+        // Sort so "You" always comes first
+        usort($names, function($a, $b) {
+            if ($a === 'You') return -1;
+            if ($b === 'You') return 1;
+            return 0;
+        });
+        
+        $formattedNames = '';
+        $nameCount = count($names);
+        
+        // Determine verb based on whether "You" is in the list
+        $hasYou = in_array('You', $names);
+        $verb = $hasYou ? 'love' : 'loves';
+        
+        if ($nameCount === 1) {
+            $formattedNames = '<strong>' . $names[0] . '</strong>';
+        } elseif ($nameCount === 2) {
+            $formattedNames = '<strong>' . $names[0] . '</strong> and <strong>' . $names[1] . '</strong>';
+        } elseif ($nameCount > 2) {
+            $lastIndex = $nameCount - 1;
+            $allButLast = array_slice($names, 0, $lastIndex);
+            $formattedNames = '<strong>' . implode('</strong>, <strong>', $allButLast) . '</strong>, and <strong>' . $names[$lastIndex] . '</strong>';
+        }
         
         // Return JSON for AJAX requests
         if ($request->wantsJson() || $request->ajax()) {
@@ -396,6 +432,8 @@ class FeedController extends Controller
                 'success' => true,
                 'highFived' => $highFived,
                 'count' => $highFiveCount,
+                'names' => $formattedNames,
+                'verb' => $verb,
             ]);
         }
         

@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const form = this.closest('form');
             const url = form.action;
             const csrfToken = form.querySelector('[name="_token"]').value;
+            const highFiveInfo = this.closest('.high-five-info');
             
             // Disable button during request
             this.disabled = true;
@@ -50,6 +51,19 @@ document.addEventListener('DOMContentLoaded', function() {
                         countSpan.textContent = data.count;
                     } else if (countSpan) {
                         countSpan.remove();
+                    }
+                    
+                    // Update or create names display
+                    let namesDiv = highFiveInfo.querySelector('.high-five-names');
+                    if (data.count > 0 && data.names && data.verb) {
+                        if (!namesDiv) {
+                            namesDiv = document.createElement('div');
+                            namesDiv.className = 'high-five-names';
+                            highFiveInfo.appendChild(namesDiv);
+                        }
+                        namesDiv.innerHTML = data.names + ' ' + data.verb + '&nbsp;this!';
+                    } else if (namesDiv) {
+                        namesDiv.remove();
                     }
                 }
             })
@@ -166,7 +180,24 @@ document.addEventListener('DOMContentLoaded', function() {
                                     @if($firstPRId)
                                         @php
                                             $names = $allHighFives->pluck('user.name')->toArray();
+                                            $userIds = $allHighFives->pluck('user_id')->toArray();
                                             $nameCount = count($names);
+                                            
+                                            // Replace current user's name with "You"
+                                            $names = array_map(function($name, $userId) use ($data) {
+                                                return $userId === ($data['currentUserId'] ?? null) ? 'You' : $name;
+                                            }, $names, $userIds);
+                                            
+                                            // Sort so "You" always comes first
+                                            usort($names, function($a, $b) {
+                                                if ($a === 'You') return -1;
+                                                if ($b === 'You') return 1;
+                                                return 0;
+                                            });
+                                            
+                                            // Determine verb based on whether "You" is in the list
+                                            $hasYou = in_array('You', $names);
+                                            $verb = $hasYou ? 'love' : 'loves';
                                             
                                             if ($nameCount === 1) {
                                                 $formattedNames = '<strong>' . $names[0] . '</strong>';
@@ -175,7 +206,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                             } elseif ($nameCount > 2) {
                                                 $lastIndex = $nameCount - 1;
                                                 $allButLast = array_slice($names, 0, $lastIndex);
-                                                $formattedNames = '<strong>' . implode('</strong>, <strong>', $allButLast) . '</strong> and <strong>' . $names[$lastIndex] . '</strong>';
+                                                $formattedNames = '<strong>' . implode('</strong>, <strong>', $allButLast) . '</strong>, and <strong>' . $names[$lastIndex] . '</strong>';
                                             } else {
                                                 $formattedNames = '';
                                             }
@@ -206,7 +237,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                             {{-- Show names for everyone if there are high fives --}}
                                             @if($highFiveCount > 0)
                                                 <div class="high-five-names">
-                                                    {!! $formattedNames !!} loves&nbsp;this!
+                                                    {!! $formattedNames !!} {{ $verb }}&nbsp;this!
                                                 </div>
                                             @endif
                                         </div>

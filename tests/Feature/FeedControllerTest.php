@@ -689,6 +689,13 @@ class FeedControllerTest extends TestCase
             'count' => 1,
         ]);
         
+        // Check that names are returned with "You" for current user and correct verb
+        $responseData = $response->json();
+        $this->assertArrayHasKey('names', $responseData);
+        $this->assertArrayHasKey('verb', $responseData);
+        $this->assertStringContainsString('You', $responseData['names']);
+        $this->assertEquals('love', $responseData['verb']); // "You love" not "You loves"
+        
         $this->assertDatabaseHas('pr_high_fives', [
             'user_id' => $this->user->id,
             'personal_record_id' => $pr->id,
