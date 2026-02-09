@@ -17,6 +17,11 @@ return [
                     return false;
                 }
                 
+                // Always show Feed menu when impersonating
+                if (session()->has('impersonator_id')) {
+                    return true;
+                }
+                
                 // Only show Feed menu if user is following someone
                 return $currentUser->following()->count() > 0;
             },

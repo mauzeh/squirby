@@ -1326,4 +1326,20 @@ class FeedControllerTest extends TestCase
         // Should see Feed menu item
         $response->assertSee('id="feed-nav-link"', false);
     }
+
+    /** @test */
+    public function it_shows_feed_menu_when_impersonating_even_if_not_following()
+    {
+        // User is not following anyone
+        $this->assertEquals(0, $this->user->following()->count());
+        
+        // Simulate impersonation
+        session(['impersonator_id' => 999]);
+        
+        $response = $this->actingAs($this->user)->get(route('mobile-entry.lifts'));
+
+        $response->assertStatus(200);
+        // Should see Feed menu item when impersonating
+        $response->assertSee('id="feed-nav-link"', false);
+    }
 }
