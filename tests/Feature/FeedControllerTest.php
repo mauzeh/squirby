@@ -611,4 +611,206 @@ class FeedControllerTest extends TestCase
         $this->user->refresh();
         $this->assertNotNull($this->user->last_feed_viewed_at);
     }
+
+    /** @test */
+    public function it_allows_user_to_give_high_five_to_pr()
+    {
+        $exercise = Exercise::factory()->create(['user_id' => null]);
+        $liftLog = LiftLog::factory()->create(['user_id' => $this->otherUser->id]);
+        
+        $pr = PersonalRecord::factory()->create([
+            'user_id' => $this->otherUser->id,
+            'exercise_id' => $exercise->id,
+            'lift_log_id' => $liftLog->id,
+        ]);
+
+        $response = $this->actingAs($this->user)
+            ->post(route('feed.toggle-high-five', $pr));
+
+        $response->assertRedirect();
+        
+        $this->assertDatabaseHas('pr_high_fives', [
+            'user_id' => $this->user->id,
+            'personal_record_id' => $pr->id,
+        ]);
+    }
+
+    /** @test */
+    public function it_allows_user_to_remove_high_five_from_pr()
+    {
+        $exercise = Exercise::factory()->create(['user_id' => null]);
+        $liftLog = LiftLog::factory()->create(['user_id' => $this->otherUser->id]);
+        
+        $pr = PersonalRecord::factory()->create([
+            'user_id' => $this->otherUser->id,
+            'exercise_id' => $exercise->id,
+            'lift_log_id' => $liftLog->id,
+        ]);
+
+        // Give high five first
+        $this->user->highFivePR($pr);
+        
+        $this->assertDatabaseHas('pr_high_fives', [
+            'user_id' => $this->user->id,
+            'personal_record_id' => $pr->id,
+        ]);
+
+        // Remove high five
+        $response = $this->actingAs($this->user)
+            ->post(route('feed.toggle-high-five', $pr));
+
+        $response->assertRedirect();
+        
+        $this->assertDatabaseMissing('pr_high_fives', [
+            'user_id' => $this->user->id,
+            'personal_record_id' => $pr->id,
+        ]);
+    }
+
+    /** @test */
+    public function it_returns_json_for_ajax_high_five_request()
+    {
+        $exercise = Exercise::factory()->create(['user_id' => null]);
+        $liftLog = LiftLog::factory()->create(['user_id' => $this->otherUser->id]);
+        
+        $pr = PersonalRecord::factory()->create([
+            'user_id' => $this->otherUser->id,
+            'exercise_id' => $exercise->id,
+            'lift_log_id' => $liftLog->id,
+        ]);
+
+        $response = $this->actingAs($this->user)
+            ->postJson(route('feed.toggle-high-five', $pr));
+
+        $response->assertStatus(200);
+        $response->assertJson([
+            'success' => true,
+            'highFived' => true,
+            'count' => 1,
+        ]);
+        
+        $this->assertDatabaseHas('pr_high_fives', [
+            'user_id' => $this->user->id,
+            'personal_record_id' => $pr->id,
+        ]);
+    }
+
+    /** @test */
+    public function it_returns_correct_count_when_removing_high_five_via_ajax()
+    {
+        $exercise = Exercise::factory()->create(['user_id' => null]);
+        $liftLog = LiftLog::factory()->create(['user_id' => $this->otherUser->id]);
+        
+        $pr = PersonalRecord::factory()->create([
+            'user_id' => $this->otherUser->id,
+            'exercise_id' => $exercise->id,
+            'lift_log_id' => $liftLog->id,
+        ]);
+
+        // Give high five first
+        $this->user->highFivePR($pr);
+
+        // Remove via AJAX
+        $response = $this->actingAs($this->user)
+            ->postJson(route('feed.toggle-high-five', $pr));
+
+        $response->assertStatus(200);
+        $response->assertJson([
+            'success' => true,
+            'highFived' => false,
+            'count' => 0,
+        ]);
+    }
+
+    /** @test */
+    public function it_returns_correct_count_with_multiple_high_fives()
+    {
+        $exercise = Exercise::factory()->create(['user_id' => null]);
+        $liftLog = LiftLog::factory()->create(['user_id' => $this->otherUser->id]);
+        
+        $pr = PersonalRecord::factory()->create([
+            'user_id' => $this->otherUser->id,
+            'exercise_id' => $exercise->id,
+            'lift_log_id' => $liftLog->id,
+        ]);
+
+        // Other users give high fives
+        $user2 = User::factory()->create();
+        $user3 = User::factory()->create();
+        $user2->highFivePR($pr);
+        $user3->highFivePR($pr);
+
+        // Current user gives high five via AJAX
+        $response = $this->actingAs($this->user)
+            ->postJson(route('feed.toggle-high-five', $pr));
+
+        $response->assertStatus(200);
+        $response->assertJson([
+            'success' => true,
+            'highFived' => true,
+            'count' => 3,
+        ]);
+    }
+
+    /** @test */
+    public function it_shows_high_five_count_on_feed()
+    {
+        $exercise = Exercise::factory()->create(['user_id' => null]);
+        $liftLog = LiftLog::factory()->create(['user_id' => $this->otherUser->id]);
+        
+        $pr = PersonalRecord::factory()->create([
+            'user_id' => $this->otherUser->id,
+            'exercise_id' => $exercise->id,
+            'lift_log_id' => $liftLog->id,
+            'achieved_at' => now()->subHours(1),
+        ]);
+
+        // Follow the other user
+        $this->user->follow($this->otherUser);
+
+        // Give high five
+        $this->user->highFivePR($pr);
+
+        $response = $this->actingAs($this->user)->get(route('feed.index'));
+
+        $response->assertStatus(200);
+        $response->assertSee('high-five-count');
+        $response->assertSee('1'); // Count should be visible
+    }
+
+    /** @test */
+    public function it_does_not_show_high_five_button_on_own_prs()
+    {
+        $exercise = Exercise::factory()->create(['user_id' => null]);
+        $liftLog = LiftLog::factory()->create(['user_id' => $this->user->id]);
+        
+        $pr = PersonalRecord::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $exercise->id,
+            'lift_log_id' => $liftLog->id,
+            'achieved_at' => now()->subHours(1),
+        ]);
+
+        $response = $this->actingAs($this->user)->get(route('feed.index'));
+
+        $response->assertStatus(200);
+        // Should not see the high five form/button for own PRs
+        $response->assertDontSee('toggle-high-five');
+    }
+
+    /** @test */
+    public function it_requires_authentication_for_high_five()
+    {
+        $exercise = Exercise::factory()->create(['user_id' => null]);
+        $liftLog = LiftLog::factory()->create(['user_id' => $this->otherUser->id]);
+        
+        $pr = PersonalRecord::factory()->create([
+            'user_id' => $this->otherUser->id,
+            'exercise_id' => $exercise->id,
+            'lift_log_id' => $liftLog->id,
+        ]);
+
+        $response = $this->post(route('feed.toggle-high-five', $pr));
+        $response->assertRedirect(route('login'));
+    }
 }

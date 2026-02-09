@@ -298,6 +298,14 @@ class User extends Authenticatable
         $this->following()->detach($user->id);
     }
 
+    public function highFivePR(PersonalRecord $pr): void
+    {
+        PRHighFive::firstOrCreate([
+            'user_id' => $this->id,
+            'personal_record_id' => $pr->id,
+        ]);
+    }
+
     /**
      * Get the URL for the user's profile photo
      */

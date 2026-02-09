@@ -369,11 +369,25 @@ class FeedController extends Controller
         if ($existingHighFive) {
             // Remove high five
             $existingHighFive->delete();
+            $highFived = false;
         } else {
             // Add high five
             PRHighFive::create([
                 'user_id' => $currentUser->id,
                 'personal_record_id' => $personalRecord->id,
+            ]);
+            $highFived = true;
+        }
+        
+        // Get updated count
+        $highFiveCount = PRHighFive::where('personal_record_id', $personalRecord->id)->count();
+        
+        // Return JSON for AJAX requests
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'highFived' => $highFived,
+                'count' => $highFiveCount,
             ]);
         }
         

@@ -1,4 +1,70 @@
 {{-- PR Feed List Component --}}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle high five button clicks
+    document.querySelectorAll('.high-five-btn').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const form = this.closest('form');
+            const url = form.action;
+            const csrfToken = form.querySelector('[name="_token"]').value;
+            
+            // Disable button during request
+            this.disabled = true;
+            
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update button state
+                    const icon = this.querySelector('i');
+                    if (data.highFived) {
+                        this.classList.add('high-fived');
+                        icon.classList.remove('far');
+                        icon.classList.add('fas');
+                        this.title = 'Remove high five';
+                    } else {
+                        this.classList.remove('high-fived');
+                        icon.classList.remove('fas');
+                        icon.classList.add('far');
+                        this.title = 'Give high five';
+                    }
+                    
+                    // Update count
+                    let countSpan = this.querySelector('.high-five-count');
+                    if (data.count > 0) {
+                        if (!countSpan) {
+                            countSpan = document.createElement('span');
+                            countSpan.className = 'high-five-count';
+                            this.appendChild(countSpan);
+                        }
+                        countSpan.textContent = data.count;
+                    } else if (countSpan) {
+                        countSpan.remove();
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error toggling high five:', error);
+            })
+            .finally(() => {
+                // Re-enable button
+                this.disabled = false;
+            });
+        });
+    });
+});
+</script>
+
 <div class="pr-feed-list">
     @if(empty($data['items']))
         <div class="empty-state">
