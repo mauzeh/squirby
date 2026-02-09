@@ -160,6 +160,10 @@
     border-left: 3px solid var(--color-primary);
 }
 
+.pr-card-new .pr-lift-session {
+    border-left-color: #ff6b35;
+}
+
 .pr-lift-session:not(:last-child) {
     margin-bottom: var(--spacing-sm);
 }
@@ -213,6 +217,10 @@
     font-size: 0.8rem;
     letter-spacing: 0.5px;
     white-space: nowrap;
+}
+
+.pr-card-new .pr-badge {
+    background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
 }
 
 /* PR Details - Legacy (keeping for compatibility) */

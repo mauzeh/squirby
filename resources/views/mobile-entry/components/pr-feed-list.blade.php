@@ -13,7 +13,12 @@
                     $user = $mainItem->user;
                     $date = $mainItem->achieved_at;
                     $exerciseCount = $allLiftLogs->count(); // Count exercises instead of total PRs
-                    $isNew = $date->isAfter(now()->subHours(24)); // New if within last 24 hours
+                    
+                    // Check if new: within 24 hours AND after last viewed (or never viewed)
+                    $isWithin24Hours = $date->isAfter(now()->subHours(24));
+                    $lastViewed = $data['lastFeedViewedAt'] ?? null;
+                    $isAfterLastViewed = !$lastViewed || $date->isAfter($lastViewed);
+                    $isNew = $isWithin24Hours && $isAfterLastViewed;
                 @endphp
                 <div class="pr-card{{ $isNew ? ' pr-card-new' : '' }}">
                     <div class="pr-header">

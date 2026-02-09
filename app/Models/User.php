@@ -38,6 +38,7 @@ class User extends Authenticatable
         'show_extra_weight',
         'prefill_suggested_values',
         'profile_photo_path',
+        'last_feed_viewed_at',
     ];
 
     /**
@@ -64,6 +65,7 @@ class User extends Authenticatable
             'show_extra_weight' => 'boolean',
             'prefill_suggested_values' => 'boolean',
             'deleted_at' => 'datetime',
+            'last_feed_viewed_at' => 'datetime',
         ];
     }
 

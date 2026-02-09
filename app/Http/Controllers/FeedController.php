@@ -45,6 +45,14 @@ class FeedController extends Controller
         ->values()
         ->take(50);
         
+        // Check if there are any new PRs (within 24 hours OR after last viewed)
+        $hasNewPRs = $groupedPrs->contains(function ($item) use ($currentUser) {
+            $isWithin24Hours = $item->achieved_at->isAfter(now()->subHours(24));
+            $isAfterLastViewed = !$currentUser->last_feed_viewed_at || 
+                                 $item->achieved_at->isAfter($currentUser->last_feed_viewed_at);
+            return $isWithin24Hours && $isAfterLastViewed;
+        });
+        
         $components = [
             C::title(
                 'PR Feed',
@@ -57,6 +65,15 @@ class FeedController extends Controller
             $components[] = $sessionMessages;
         }
         
+        // Add "Mark all as read" button if there are new PRs
+        if ($hasNewPRs) {
+            $components[] = C::form('mark-feed-read')
+                ->formAction(route('feed.mark-read'))
+                ->submitButton('Mark all as read')
+                ->submitButtonClass('btn-secondary')
+                ->build();
+        }
+        
         // Build PR feed component manually to bypass type checking
         $components[] = [
             'type' => 'pr-feed-list',
@@ -65,6 +82,7 @@ class FeedController extends Controller
                 'paginator' => null,
                 'emptyMessage' => 'No PRs in the last 7 days.',
                 'currentUserId' => $currentUser->id,
+                'lastFeedViewedAt' => $currentUser->last_feed_viewed_at,
             ]
         ];
         
@@ -291,5 +309,15 @@ class FeedController extends Controller
         $currentUser->unfollow($user);
         
         return redirect()->back()->with('success', "You have unfollowed {$user->name}.");
+    }
+
+    public function markAsRead(Request $request)
+    {
+        $currentUser = $request->user();
+        $currentUser->update([
+            'last_feed_viewed_at' => now(),
+        ]);
+        
+        return redirect()->route('feed.index')->with('success', 'All PRs marked as read.');
     }
 }
