@@ -275,15 +275,15 @@
     gap: 0.25rem;
 }
 
+/* OPTION 2: Subtle badge - Light background, no border */
 .high-five-display {
     display: inline-flex;
     align-items: center;
     gap: 0.375rem;
-    padding: 0.375rem 0.75rem;
-    border-radius: var(--border-radius-sm);
-    background: rgba(231, 76, 60, 0.1);
-    border: 2px solid rgba(231, 76, 60, 0.3);
-    color: #e74c3c;
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    background: rgba(231, 76, 60, 0.08);
+    color: #ff6b6b;
     font-size: 1rem;
 }
 
