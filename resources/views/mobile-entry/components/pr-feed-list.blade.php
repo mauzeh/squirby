@@ -13,8 +13,9 @@
                     $user = $mainItem->user;
                     $date = $mainItem->achieved_at;
                     $exerciseCount = $allLiftLogs->count(); // Count exercises instead of total PRs
+                    $isNew = $date->isAfter(now()->subHours(24)); // New if within last 24 hours
                 @endphp
-                <div class="pr-card">
+                <div class="pr-card{{ $isNew ? ' pr-card-new' : '' }}">
                     <div class="pr-header">
                         <div class="pr-header-left">
                             <a href="{{ route('feed.users.show', $user) }}" class="pr-user-info">
@@ -31,7 +32,12 @@
                                 </div>
                             </a>
                         </div>
-                        <span class="pr-time">{{ $date->diffForHumans() }}</span>
+                        <div class="pr-header-right">
+                            @if($isNew)
+                                <span class="pr-new-badge">NEW</span>
+                            @endif
+                            <span class="pr-time">{{ $date->diffForHumans() }}</span>
+                        </div>
                     </div>
                     <div class="pr-body">
                         {{-- Show all lift logs for this user-date --}}

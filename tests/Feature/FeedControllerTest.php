@@ -378,4 +378,77 @@ class FeedControllerTest extends TestCase
         // Should only see the user's name once (grouped in one card)
         $this->assertEquals(1, substr_count($response->getContent(), $this->otherUser->name));
     }
+
+    /** @test */
+    public function it_shows_new_badge_for_prs_within_24_hours()
+    {
+        $exercise = Exercise::factory()->create(['user_id' => null]);
+        
+        // Follow the other user
+        $this->user->follow($this->otherUser);
+        
+        // Create a recent PR (within 24 hours)
+        $recentLiftLog = LiftLog::factory()->create([
+            'user_id' => $this->otherUser->id,
+            'exercise_id' => $exercise->id,
+        ]);
+        
+        PersonalRecord::factory()->create([
+            'user_id' => $this->otherUser->id,
+            'exercise_id' => $exercise->id,
+            'lift_log_id' => $recentLiftLog->id,
+            'achieved_at' => now()->subHours(12),
+        ]);
+        
+        // Create an old PR (more than 24 hours ago)
+        $oldLiftLog = LiftLog::factory()->create([
+            'user_id' => $this->otherUser->id,
+            'exercise_id' => $exercise->id,
+        ]);
+        
+        PersonalRecord::factory()->create([
+            'user_id' => $this->otherUser->id,
+            'exercise_id' => $exercise->id,
+            'lift_log_id' => $oldLiftLog->id,
+            'achieved_at' => now()->subHours(30),
+        ]);
+
+        $response = $this->actingAs($this->user)->get(route('feed.index'));
+
+        $response->assertStatus(200);
+        // Should see NEW badge for recent PR
+        $response->assertSee('NEW');
+        // Should see the pr-card-new class
+        $response->assertSee('pr-card-new');
+    }
+
+    /** @test */
+    public function it_does_not_show_new_badge_for_old_prs()
+    {
+        $exercise = Exercise::factory()->create(['user_id' => null]);
+        
+        // Follow the other user
+        $this->user->follow($this->otherUser);
+        
+        // Create an old PR (more than 24 hours ago)
+        $oldLiftLog = LiftLog::factory()->create([
+            'user_id' => $this->otherUser->id,
+            'exercise_id' => $exercise->id,
+        ]);
+        
+        PersonalRecord::factory()->create([
+            'user_id' => $this->otherUser->id,
+            'exercise_id' => $exercise->id,
+            'lift_log_id' => $oldLiftLog->id,
+            'achieved_at' => now()->subHours(30),
+        ]);
+
+        $response = $this->actingAs($this->user)->get(route('feed.index'));
+
+        $response->assertStatus(200);
+        // Should NOT see NEW badge
+        $response->assertDontSee('NEW');
+        // Should NOT see the pr-card-new class
+        $response->assertDontSee('pr-card-new');
+    }
 }
