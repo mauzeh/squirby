@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const url = form.action;
             const csrfToken = form.querySelector('[name="_token"]').value;
             const highFiveInfo = this.closest('.high-five-info');
+            const highFiveAction = this.closest('.high-five-action');
             
             // Disable button during request
             this.disabled = true;
@@ -62,8 +63,22 @@ document.addEventListener('DOMContentLoaded', function() {
                             highFiveInfo.appendChild(namesDiv);
                         }
                         namesDiv.innerHTML = data.names + ' ' + data.verb + '&nbsp;this!';
+                        
+                        // Remove prompt if it exists
+                        const prompt = highFiveAction?.querySelector('.high-five-prompt');
+                        if (prompt) {
+                            prompt.remove();
+                        }
                     } else if (namesDiv) {
                         namesDiv.remove();
+                        
+                        // Add prompt back if no high fives
+                        if (highFiveAction && !highFiveAction.querySelector('.high-five-prompt')) {
+                            const prompt = document.createElement('span');
+                            prompt.className = 'high-five-prompt';
+                            prompt.textContent = 'Be the first to love this!';
+                            highFiveAction.appendChild(prompt);
+                        }
                     }
                 }
             })
@@ -258,15 +273,20 @@ document.addEventListener('DOMContentLoaded', function() {
                                                 @endif
                                             @else
                                                 {{-- Interactive button for others' PRs --}}
-                                                <form method="POST" action="{{ route('feed.toggle-high-five', $firstPRId) }}" style="display: inline;">
-                                                    @csrf
-                                                    <button type="submit" class="high-five-btn {{ $currentUserHighFived ? 'high-fived' : '' }}" title="{{ $currentUserHighFived ? 'Remove high five' : 'Give high five' }}">
-                                                        <i class="{{ $currentUserHighFived ? 'fas' : 'far' }} fa-heart"></i>
-                                                        @if($highFiveCount > 0)
-                                                            <span class="high-five-count">{{ $highFiveCount }}</span>
-                                                        @endif
-                                                    </button>
-                                                </form>
+                                                <div class="high-five-action">
+                                                    <form method="POST" action="{{ route('feed.toggle-high-five', $firstPRId) }}" style="display: inline;">
+                                                        @csrf
+                                                        <button type="submit" class="high-five-btn {{ $currentUserHighFived ? 'high-fived' : '' }}" title="{{ $currentUserHighFived ? 'Remove high five' : 'Give high five' }}">
+                                                            <i class="{{ $currentUserHighFived ? 'fas' : 'far' }} fa-heart"></i>
+                                                            @if($highFiveCount > 0)
+                                                                <span class="high-five-count">{{ $highFiveCount }}</span>
+                                                            @endif
+                                                        </button>
+                                                    </form>
+                                                    @if($highFiveCount === 0)
+                                                        <span class="high-five-prompt">Be the first to love this!</span>
+                                                    @endif
+                                                </div>
                                             @endif
                                             
                                             {{-- Show names for everyone if there are high fives --}}
