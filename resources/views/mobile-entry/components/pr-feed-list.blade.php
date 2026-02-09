@@ -47,9 +47,31 @@
                     <div class="pr-body">
                         {{-- Show all lift logs for this user-date --}}
                         @foreach($allLiftLogs as $liftLog)
+                            @php
+                                // Get all PRs for this lift log and collect their high fives
+                                $allPRsForLiftLog = $liftLog->allPRs ?? collect([$liftLog]);
+                                $allHighFives = $allPRsForLiftLog->flatMap(fn($pr) => $pr->highFives ?? collect());
+                                $highFiveCount = $allHighFives->count();
+                                $currentUserHighFived = $allHighFives->contains('user_id', $data['currentUserId'] ?? null);
+                                // Get the first PR ID for the toggle action
+                                $firstPRId = $allPRsForLiftLog->first()->id ?? null;
+                            @endphp
                             <div class="pr-lift-session">
                                 <div class="pr-lift-header">
-                                    <strong>{{ $liftLog->exercise->title }}</strong>
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <strong>{{ $liftLog->exercise->title }}</strong>
+                                        @if($firstPRId && $user->id !== ($data['currentUserId'] ?? null))
+                                            <form method="POST" action="{{ route('feed.toggle-high-five', $firstPRId) }}" style="display: inline;">
+                                                @csrf
+                                                <button type="submit" class="high-five-btn {{ $currentUserHighFived ? 'high-fived' : '' }}" title="{{ $currentUserHighFived ? 'Remove high five' : 'Give high five' }}">
+                                                    <i class="fas fa-hand-paper"></i>
+                                                    @if($highFiveCount > 0)
+                                                        <span class="high-five-count">{{ $highFiveCount }}</span>
+                                                    @endif
+                                                </button>
+                                            </form>
+                                        @endif
+                                    </div>
                                 </div>
                                 
                                 {{-- Show weight and reps from the lift log --}}

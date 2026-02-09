@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\PersonalRecord;
 use App\Models\User;
+use App\Models\PRHighFive;
 use App\Services\ComponentBuilder as C;
 
 class FeedController extends Controller
@@ -18,7 +19,7 @@ class FeedController extends Controller
         $followingIds[] = $currentUser->id;
         
         // Get PRs from the last 7 days, only from users being followed (including self)
-        $prs = PersonalRecord::with(['user', 'exercise', 'liftLog'])
+        $prs = PersonalRecord::with(['user', 'exercise', 'liftLog', 'highFives.user'])
             ->current()
             ->where('achieved_at', '>=', now()->subDays(7))
             ->whereIn('user_id', $followingIds)
@@ -354,5 +355,28 @@ class FeedController extends Controller
         ]);
         
         return redirect()->route('feed.index');
+    }
+
+    public function toggleHighFive(Request $request, PersonalRecord $personalRecord)
+    {
+        $currentUser = $request->user();
+        
+        // Check if user already high-fived this PR
+        $existingHighFive = PRHighFive::where('user_id', $currentUser->id)
+            ->where('personal_record_id', $personalRecord->id)
+            ->first();
+        
+        if ($existingHighFive) {
+            // Remove high five
+            $existingHighFive->delete();
+        } else {
+            // Add high five
+            PRHighFive::create([
+                'user_id' => $currentUser->id,
+                'personal_record_id' => $personalRecord->id,
+            ]);
+        }
+        
+        return redirect()->back();
     }
 }

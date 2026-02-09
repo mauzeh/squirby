@@ -218,6 +218,42 @@
     font-weight: 600;
 }
 
+/* High Five Button */
+.high-five-btn {
+    background: transparent;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    color: var(--text-muted);
+    padding: 0.375rem 0.75rem;
+    border-radius: var(--border-radius-sm);
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+}
+
+.high-five-btn:hover {
+    border-color: #ffa500;
+    color: #ffa500;
+    transform: scale(1.05);
+}
+
+.high-five-btn.high-fived {
+    background: linear-gradient(135deg, #ffa500 0%, #ff8c00 100%);
+    border-color: #ffa500;
+    color: white;
+}
+
+.high-five-btn.high-fived:hover {
+    background: linear-gradient(135deg, #ff8c00 0%, #ff7700 100%);
+}
+
+.high-five-count {
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
 .pr-exercise {
     font-size: 1.125rem;
     font-weight: 600;

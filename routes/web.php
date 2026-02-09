@@ -44,6 +44,7 @@ Route::middleware('auth')->group(function () {
     Route::get('feed', [FeedController::class, 'index'])->name('feed.index');
     Route::post('feed/mark-read', [FeedController::class, 'markAsRead'])->name('feed.mark-read');
     Route::post('feed/reset-read', [FeedController::class, 'resetRead'])->name('feed.reset-read');
+    Route::post('feed/pr/{personalRecord}/high-five', [FeedController::class, 'toggleHighFive'])->name('feed.toggle-high-five');
     Route::get('feed/users', [FeedController::class, 'users'])->name('feed.users');
     Route::get('feed/users/{user}', [FeedController::class, 'showUser'])->name('feed.users.show');
     Route::post('feed/users/{user}/follow', [FeedController::class, 'followUser'])->name('feed.users.follow');
