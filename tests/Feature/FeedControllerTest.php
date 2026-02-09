@@ -373,7 +373,7 @@ class FeedControllerTest extends TestCase
         // Should see both exercises
         $response->assertSee('Squat');
         $response->assertSee('Bench Press');
-        // Should see "2 PRs" in the card header
+        // Should see "2 PRs" in the card header (counting exercises, not total PR badges)
         $response->assertSee('2 PRs');
         // Should only see the user's name once (grouped in one card)
         $this->assertEquals(1, substr_count($response->getContent(), $this->otherUser->name));

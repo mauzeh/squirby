@@ -12,7 +12,7 @@
                     $allLiftLogs = $mainItem->allLiftLogs ?? collect([$mainItem]);
                     $user = $mainItem->user;
                     $date = $mainItem->achieved_at;
-                    $totalPRCount = $allLiftLogs->sum(fn($ll) => ($ll->allPRs ?? collect([$ll]))->count());
+                    $exerciseCount = $allLiftLogs->count(); // Count exercises instead of total PRs
                 @endphp
                 <div class="pr-card">
                     <div class="pr-header">
@@ -27,7 +27,7 @@
                                 </div>
                                 <div class="pr-user-details">
                                     <strong>{{ $user->id === ($data['currentUserId'] ?? null) ? 'You' : $user->name }}</strong>
-                                    <span class="pr-exercise">{{ $totalPRCount }} PR{{ $totalPRCount > 1 ? 's' : '' }} on {{ $date->format('M j') }}</span>
+                                    <span class="pr-exercise">{{ $exerciseCount }} PR{{ $exerciseCount > 1 ? 's' : '' }} on {{ $date->format('M j') }}</span>
                                 </div>
                             </a>
                         </div>

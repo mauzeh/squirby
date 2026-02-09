@@ -153,12 +153,22 @@ class FeedController extends Controller
         // Load counts
         $user->loadCount(['followers', 'following', 'personalRecords']);
         
+        // Determine back button URL based on referrer
+        $referrer = $request->headers->get('referer');
+        $backUrl = route('feed.users'); // Default to users list
+        $backLabel = 'Back to users';
+        
+        if ($referrer && str_contains($referrer, route('feed.index'))) {
+            $backUrl = route('feed.index');
+            $backLabel = 'Back to feed';
+        }
+        
         $components = [
             C::title(
                 $user->name,
                 'User Profile'
             )
-            ->backButton('fa-arrow-left', route('feed.users'), 'Back to users')
+            ->backButton('fa-arrow-left', $backUrl, $backLabel)
             ->build(),
         ];
         
