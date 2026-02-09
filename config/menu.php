@@ -17,8 +17,8 @@ return [
                     return false;
                 }
                 
-                // Always show Feed menu when impersonating
-                if (session()->has('impersonator_id')) {
+                // Always show Feed menu when impersonating or for admins
+                if (session()->has('impersonator_id') || $currentUser->hasRole('Admin')) {
                     return true;
                 }
                 

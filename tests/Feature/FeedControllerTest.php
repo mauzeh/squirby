@@ -1342,4 +1342,21 @@ class FeedControllerTest extends TestCase
         // Should see Feed menu item when impersonating
         $response->assertSee('id="feed-nav-link"', false);
     }
+
+    /** @test */
+    public function it_shows_feed_menu_for_admins_even_if_not_following()
+    {
+        // Make user an admin
+        $adminRole = \App\Models\Role::firstOrCreate(['name' => 'Admin']);
+        $this->user->roles()->attach($adminRole);
+        
+        // User is not following anyone
+        $this->assertEquals(0, $this->user->following()->count());
+        
+        $response = $this->actingAs($this->user)->get(route('mobile-entry.lifts'));
+
+        $response->assertStatus(200);
+        // Should see Feed menu item for admins
+        $response->assertSee('id="feed-nav-link"', false);
+    }
 }
