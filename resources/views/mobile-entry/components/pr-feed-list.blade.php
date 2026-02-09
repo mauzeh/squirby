@@ -121,21 +121,59 @@ document.addEventListener('DOMContentLoaded', function() {
                                 $currentUserHighFived = $allHighFives->contains('user_id', $data['currentUserId'] ?? null);
                                 // Get the first PR ID for the toggle action
                                 $firstPRId = $allPRsForLiftLog->first()->id ?? null;
+                                $isOwnPR = $user->id === ($data['currentUserId'] ?? null);
                             @endphp
                             <div class="pr-lift-session">
                                 <div class="pr-lift-header">
-                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                                         <strong>{{ $liftLog->exercise->title }}</strong>
-                                        @if($firstPRId && $user->id !== ($data['currentUserId'] ?? null))
-                                            <form method="POST" action="{{ route('feed.toggle-high-five', $firstPRId) }}" style="display: inline;">
-                                                @csrf
-                                                <button type="submit" class="high-five-btn {{ $currentUserHighFived ? 'high-fived' : '' }}" title="{{ $currentUserHighFived ? 'Remove high five' : 'Give high five' }}">
-                                                    <i class="{{ $currentUserHighFived ? 'fas' : 'far' }} fa-heart"></i>
+                                        @if($firstPRId)
+                                            @php
+                                                $names = $allHighFives->pluck('user.name')->toArray();
+                                                $nameCount = count($names);
+                                                
+                                                if ($nameCount === 1) {
+                                                    $formattedNames = '<strong>' . $names[0] . '</strong>';
+                                                } elseif ($nameCount === 2) {
+                                                    $formattedNames = '<strong>' . $names[0] . '</strong> and <strong>' . $names[1] . '</strong>';
+                                                } elseif ($nameCount > 2) {
+                                                    $lastIndex = $nameCount - 1;
+                                                    $allButLast = array_slice($names, 0, $lastIndex);
+                                                    $formattedNames = '<strong>' . implode('</strong>, <strong>', $allButLast) . '</strong> and <strong>' . $names[$lastIndex] . '</strong>';
+                                                } else {
+                                                    $formattedNames = '';
+                                                }
+                                            @endphp
+                                            
+                                            <div class="high-five-info">
+                                                @if($isOwnPR)
+                                                    {{-- Non-interactive display for own PRs --}}
                                                     @if($highFiveCount > 0)
-                                                        <span class="high-five-count">{{ $highFiveCount }}</span>
+                                                        <div class="high-five-display">
+                                                            <i class="fas fa-heart"></i>
+                                                            <span class="high-five-count">{{ $highFiveCount }}</span>
+                                                        </div>
                                                     @endif
-                                                </button>
-                                            </form>
+                                                @else
+                                                    {{-- Interactive button for others' PRs --}}
+                                                    <form method="POST" action="{{ route('feed.toggle-high-five', $firstPRId) }}" style="display: inline;">
+                                                        @csrf
+                                                        <button type="submit" class="high-five-btn {{ $currentUserHighFived ? 'high-fived' : '' }}" title="{{ $currentUserHighFived ? 'Remove high five' : 'Give high five' }}">
+                                                            <i class="{{ $currentUserHighFived ? 'fas' : 'far' }} fa-heart"></i>
+                                                            @if($highFiveCount > 0)
+                                                                <span class="high-five-count">{{ $highFiveCount }}</span>
+                                                            @endif
+                                                        </button>
+                                                    </form>
+                                                @endif
+                                                
+                                                {{-- Show names for everyone if there are high fives --}}
+                                                @if($highFiveCount > 0)
+                                                    <div class="high-five-names">
+                                                        {!! $formattedNames !!} loved this
+                                                    </div>
+                                                @endif
+                                            </div>
                                         @endif
                                     </div>
                                 </div>

@@ -779,7 +779,119 @@ class FeedControllerTest extends TestCase
     }
 
     /** @test */
-    public function it_does_not_show_high_five_button_on_own_prs()
+    public function it_shows_high_five_count_for_own_prs()
+    {
+        $exercise = Exercise::factory()->create(['user_id' => null]);
+        $liftLog = LiftLog::factory()->create(['user_id' => $this->user->id]);
+        
+        $pr = PersonalRecord::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $exercise->id,
+            'lift_log_id' => $liftLog->id,
+            'achieved_at' => now()->subHours(1),
+        ]);
+
+        // Other user gives high five
+        $this->otherUser->highFivePR($pr);
+
+        $response = $this->actingAs($this->user)->get(route('feed.index'));
+
+        $response->assertStatus(200);
+        // Should see the high five display (not button) for own PRs
+        $response->assertSee('high-five-display');
+        $response->assertSee('1'); // Count should be visible
+        // Should NOT see the interactive button
+        $response->assertDontSee('toggle-high-five');
+    }
+
+    /** @test */
+    public function it_shows_names_of_users_who_high_fived_own_pr()
+    {
+        $exercise = Exercise::factory()->create(['user_id' => null]);
+        $liftLog = LiftLog::factory()->create(['user_id' => $this->user->id]);
+        
+        $pr = PersonalRecord::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $exercise->id,
+            'lift_log_id' => $liftLog->id,
+            'achieved_at' => now()->subHours(1),
+        ]);
+
+        // Multiple users give high fives
+        $user2 = User::factory()->create(['name' => 'Alice']);
+        $user3 = User::factory()->create(['name' => 'Bob']);
+        $user2->highFivePR($pr);
+        $user3->highFivePR($pr);
+
+        $response = $this->actingAs($this->user)->get(route('feed.index'));
+
+        $response->assertStatus(200);
+        // Should see the names displayed with proper grammar
+        $response->assertSee('high-five-names');
+        $response->assertSee('Alice');
+        $response->assertSee('Bob');
+        $response->assertSee('and');
+        $response->assertSee('loved this');
+        $response->assertSee('2'); // Count should show 2
+    }
+
+    /** @test */
+    public function it_formats_single_high_five_name_correctly()
+    {
+        $exercise = Exercise::factory()->create(['user_id' => null]);
+        $liftLog = LiftLog::factory()->create(['user_id' => $this->user->id]);
+        
+        $pr = PersonalRecord::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $exercise->id,
+            'lift_log_id' => $liftLog->id,
+            'achieved_at' => now()->subHours(1),
+        ]);
+
+        $user2 = User::factory()->create(['name' => 'Charlie']);
+        $user2->highFivePR($pr);
+
+        $response = $this->actingAs($this->user)->get(route('feed.index'));
+
+        $response->assertStatus(200);
+        $response->assertSee('Charlie');
+        $response->assertSee('loved this');
+        // Should see "Charlie loved this" without "and"
+        $response->assertSee('Charlie</strong> loved this', false);
+    }
+
+    /** @test */
+    public function it_formats_three_or_more_high_five_names_with_commas()
+    {
+        $exercise = Exercise::factory()->create(['user_id' => null]);
+        $liftLog = LiftLog::factory()->create(['user_id' => $this->user->id]);
+        
+        $pr = PersonalRecord::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $exercise->id,
+            'lift_log_id' => $liftLog->id,
+            'achieved_at' => now()->subHours(1),
+        ]);
+
+        $user2 = User::factory()->create(['name' => 'Alice']);
+        $user3 = User::factory()->create(['name' => 'Bob']);
+        $user4 = User::factory()->create(['name' => 'Charlie']);
+        $user2->highFivePR($pr);
+        $user3->highFivePR($pr);
+        $user4->highFivePR($pr);
+
+        $response = $this->actingAs($this->user)->get(route('feed.index'));
+
+        $response->assertStatus(200);
+        $response->assertSee('Alice');
+        $response->assertSee('Bob');
+        $response->assertSee('Charlie');
+        $response->assertSee('and');
+        $response->assertSee('loved this');
+    }
+
+    /** @test */
+    public function it_does_not_show_high_five_display_for_own_prs_with_no_high_fives()
     {
         $exercise = Exercise::factory()->create(['user_id' => null]);
         $liftLog = LiftLog::factory()->create(['user_id' => $this->user->id]);
@@ -794,8 +906,39 @@ class FeedControllerTest extends TestCase
         $response = $this->actingAs($this->user)->get(route('feed.index'));
 
         $response->assertStatus(200);
-        // Should not see the high five form/button for own PRs
+        // Should not see high five display when there are no high fives
+        $response->assertDontSee('high-five-display');
         $response->assertDontSee('toggle-high-five');
+    }
+
+    /** @test */
+    public function it_shows_names_for_other_users_prs()
+    {
+        $exercise = Exercise::factory()->create(['user_id' => null]);
+        $liftLog = LiftLog::factory()->create(['user_id' => $this->otherUser->id]);
+        
+        $pr = PersonalRecord::factory()->create([
+            'user_id' => $this->otherUser->id,
+            'exercise_id' => $exercise->id,
+            'lift_log_id' => $liftLog->id,
+            'achieved_at' => now()->subHours(1),
+        ]);
+
+        // Follow the other user
+        $this->user->follow($this->otherUser);
+
+        // Third user gives high five
+        $user3 = User::factory()->create(['name' => 'David']);
+        $user3->highFivePR($pr);
+
+        $response = $this->actingAs($this->user)->get(route('feed.index'));
+
+        $response->assertStatus(200);
+        // Should see the interactive button
+        $response->assertSee('high-five-btn');
+        // Should also see the names
+        $response->assertSee('David');
+        $response->assertSee('loved this');
     }
 
     /** @test */
