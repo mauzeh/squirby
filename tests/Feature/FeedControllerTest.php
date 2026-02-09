@@ -526,4 +526,89 @@ class FeedControllerTest extends TestCase
         $response->assertDontSee('NEW');
         $response->assertDontSee('Mark all as read');
     }
+
+    /** @test */
+    public function it_shows_reset_button_for_admins()
+    {
+        // Create admin role
+        $adminRole = \App\Models\Role::firstOrCreate(['name' => 'Admin']);
+        $this->user->roles()->attach($adminRole);
+        
+        // Set last viewed to future so all PRs appear as "read"
+        $this->user->update(['last_feed_viewed_at' => now()->addDay()]);
+
+        $response = $this->actingAs($this->user)->get(route('feed.index'));
+
+        $response->assertStatus(200);
+        $response->assertSee('Reset to unread');
+    }
+
+    /** @test */
+    public function it_shows_mark_as_read_instead_of_reset_when_new_prs_exist()
+    {
+        // Create admin role
+        $adminRole = \App\Models\Role::firstOrCreate(['name' => 'Admin']);
+        $this->user->roles()->attach($adminRole);
+        
+        $exercise = Exercise::factory()->create(['user_id' => null]);
+        
+        // Follow the other user
+        $this->user->follow($this->otherUser);
+        
+        // Create a recent PR
+        $liftLog = LiftLog::factory()->create([
+            'user_id' => $this->otherUser->id,
+            'exercise_id' => $exercise->id,
+        ]);
+        
+        PersonalRecord::factory()->create([
+            'user_id' => $this->otherUser->id,
+            'exercise_id' => $exercise->id,
+            'lift_log_id' => $liftLog->id,
+            'achieved_at' => now()->subHours(12),
+        ]);
+
+        $response = $this->actingAs($this->user)->get(route('feed.index'));
+
+        $response->assertStatus(200);
+        $response->assertSee('Mark all as read');
+        $response->assertDontSee('Reset to unread');
+    }
+
+    /** @test */
+    public function it_allows_admin_to_reset_to_unread()
+    {
+        // Create admin role
+        $adminRole = \App\Models\Role::firstOrCreate(['name' => 'Admin']);
+        $this->user->roles()->attach($adminRole);
+
+        // Mark as read first
+        $this->user->update(['last_feed_viewed_at' => now()]);
+        $this->assertNotNull($this->user->last_feed_viewed_at);
+
+        // Reset to unread
+        $response = $this->actingAs($this->user)
+            ->post(route('feed.reset-read'));
+
+        $response->assertRedirect(route('feed.index'));
+        
+        $this->user->refresh();
+        $this->assertNull($this->user->last_feed_viewed_at);
+    }
+
+    /** @test */
+    public function it_prevents_non_admin_from_resetting_to_unread()
+    {
+        // Mark as read first
+        $this->user->update(['last_feed_viewed_at' => now()]);
+
+        // Try to reset as non-admin
+        $response = $this->actingAs($this->user)
+            ->post(route('feed.reset-read'));
+
+        $response->assertStatus(403);
+        
+        $this->user->refresh();
+        $this->assertNotNull($this->user->last_feed_viewed_at);
+    }
 }

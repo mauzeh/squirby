@@ -72,6 +72,13 @@ class FeedController extends Controller
                 ->submitButton('Mark all as read')
                 ->submitButtonClass('btn-secondary')
                 ->build();
+        } elseif ($currentUser->hasRole('Admin') || session()->has('impersonator_id')) {
+            // Add "Reset to unread" button for admins and impersonating users (only when no new PRs)
+            $components[] = C::form('reset-feed-read')
+                ->formAction(route('feed.reset-read'))
+                ->submitButton('Reset to unread')
+                ->submitButtonClass('btn-secondary')
+                ->build();
         }
         
         // Build PR feed component manually to bypass type checking
@@ -316,6 +323,22 @@ class FeedController extends Controller
         $currentUser = $request->user();
         $currentUser->update([
             'last_feed_viewed_at' => now(),
+        ]);
+        
+        return redirect()->route('feed.index');
+    }
+
+    public function resetRead(Request $request)
+    {
+        $currentUser = $request->user();
+        
+        // Only allow admins and impersonating users
+        if (!$currentUser->hasRole('Admin') && !session()->has('impersonator_id')) {
+            abort(403, 'Unauthorized action.');
+        }
+        
+        $currentUser->update([
+            'last_feed_viewed_at' => null,
         ]);
         
         return redirect()->route('feed.index');
