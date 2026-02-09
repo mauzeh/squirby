@@ -12,6 +12,45 @@
     gap: var(--spacing-lg);
 }
 
+/* Feed Action Buttons */
+.feed-action-buttons {
+    display: flex;
+    justify-content: center;
+    margin-bottom: var(--spacing-md);
+}
+
+.feed-action-btn {
+    background: var(--color-primary);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: var(--border-radius-sm);
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.feed-action-btn:hover {
+    background: var(--color-primary-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.feed-action-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.feed-action-btn-secondary {
+    background: #6c757d;
+}
+
+.feed-action-btn-secondary:hover {
+    background: #5a6268;
+}
+
 /* PR Card */
 .pr-card {
     background: var(--tertiary-bg);

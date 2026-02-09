@@ -67,18 +67,30 @@ class FeedController extends Controller
         
         // Add "Mark all as read" button if there are new PRs
         if ($hasNewPRs) {
-            $components[] = C::form('mark-feed-read')
-                ->formAction(route('feed.mark-read'))
-                ->submitButton('Mark all as read')
-                ->submitButtonClass('btn-secondary')
-                ->build();
+            $components[] = [
+                'type' => 'raw_html',
+                'data' => [
+                    'html' => '<div class="feed-action-buttons">
+                        <form method="POST" action="' . route('feed.mark-read') . '" style="display: inline;">
+                            ' . csrf_field() . '
+                            <button type="submit" class="feed-action-btn">Mark all as read</button>
+                        </form>
+                    </div>'
+                ]
+            ];
         } elseif ($currentUser->hasRole('Admin') || session()->has('impersonator_id')) {
             // Add "Reset to unread" button for admins and impersonating users (only when no new PRs)
-            $components[] = C::form('reset-feed-read')
-                ->formAction(route('feed.reset-read'))
-                ->submitButton('Reset to unread')
-                ->submitButtonClass('btn-secondary')
-                ->build();
+            $components[] = [
+                'type' => 'raw_html',
+                'data' => [
+                    'html' => '<div class="feed-action-buttons">
+                        <form method="POST" action="' . route('feed.reset-read') . '" style="display: inline;">
+                            ' . csrf_field() . '
+                            <button type="submit" class="feed-action-btn feed-action-btn-secondary">Reset to unread</button>
+                        </form>
+                    </div>'
+                ]
+            ];
         }
         
         // Build PR feed component manually to bypass type checking
