@@ -94,23 +94,18 @@ document.addEventListener('DOMContentLoaded', function() {
                     $date = $mainItem->achieved_at;
                     $exerciseCount = $allLiftLogs->count(); // Count exercises instead of total PRs
                     
-                    // Own PRs are never shown as new
                     $isOwnPR = $user->id === ($data['currentUserId'] ?? null);
                     
-                    // Check if new (only for other users' PRs)
-                    if ($isOwnPR) {
-                        $isNew = false;
+                    // Check if new (applies to all PRs, including own)
+                    // If never viewed, all PRs in last 7 days are new
+                    // Otherwise, check if within 24 hours AND after last viewed
+                    $lastViewed = $data['lastFeedViewedAt'] ?? null;
+                    if (!$lastViewed) {
+                        $isNew = true;
                     } else {
-                        // If never viewed, all PRs in last 7 days are new
-                        // Otherwise, check if within 24 hours AND after last viewed
-                        $lastViewed = $data['lastFeedViewedAt'] ?? null;
-                        if (!$lastViewed) {
-                            $isNew = true;
-                        } else {
-                            $isWithin24Hours = $date->isAfter(now()->subHours(24));
-                            $isAfterLastViewed = $date->isAfter($lastViewed);
-                            $isNew = $isWithin24Hours && $isAfterLastViewed;
-                        }
+                        $isWithin24Hours = $date->isAfter(now()->subHours(24));
+                        $isAfterLastViewed = $date->isAfter($lastViewed);
+                        $isNew = $isWithin24Hours && $isAfterLastViewed;
                     }
                 @endphp
                 <div class="pr-card{{ $isNew ? ' pr-card-new' : '' }}">
@@ -126,13 +121,6 @@ document.addEventListener('DOMContentLoaded', function() {
                                 </div>
                                 <div class="pr-user-details">
                                     <strong>{{ $user->id === ($data['currentUserId'] ?? null) ? 'You' : $user->name }}</strong>
-                                    <span class="pr-exercise">
-                                        @if($exerciseCount === 1)
-                                            PR: {{ $allLiftLogs->first()->exercise->title }}
-                                        @else
-                                            {{ $exerciseCount }} PRs
-                                        @endif
-                                    </span>
                                 </div>
                             </a>
                         </div>

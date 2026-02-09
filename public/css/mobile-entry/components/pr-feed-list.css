@@ -148,7 +148,7 @@
 }
 
 .pr-header strong {
-    font-size: 1rem;
+    font-size: 1.25rem;
     color: var(--text-primary);
     font-weight: 600;
 }
@@ -532,7 +532,7 @@
     }
     
     .pr-user-details strong {
-        font-size: 0.9rem;
+        font-size: 1.1rem;
     }
     
     .pr-exercise {

@@ -448,8 +448,6 @@ class FeedControllerTest extends TestCase
         // Should see both exercises
         $response->assertSee('Squat');
         $response->assertSee('Bench Press');
-        // Should see "2 PRs" in the card header (counting exercises, not total PR badges)
-        $response->assertSee('2 PRs');
         // Should only see the user's name once (grouped in one card)
         $this->assertEquals(1, substr_count($response->getContent(), $this->otherUser->name));
     }
@@ -1225,7 +1223,7 @@ class FeedControllerTest extends TestCase
     }
 
     /** @test */
-    public function it_does_not_show_own_prs_as_new()
+    public function it_shows_own_prs_as_new_when_recent()
     {
         $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
         
@@ -1245,10 +1243,10 @@ class FeedControllerTest extends TestCase
         $response = $this->actingAs($this->user)->get(route('feed.index'));
 
         $response->assertStatus(200);
-        // Should see own PR but NOT with NEW badge
+        // Should see own PR WITH NEW badge
         $response->assertSee('You');
-        $response->assertDontSee('NEW');
-        $response->assertDontSee('pr-card-new');
+        $response->assertSee('NEW');
+        $response->assertSee('pr-card-new');
     }
 
     /** @test */
