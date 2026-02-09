@@ -36,7 +36,7 @@ class FeedControllerTest extends TestCase
     /** @test */
     public function it_shows_prs_from_last_7_days_only()
     {
-        $exercise = Exercise::factory()->create(['user_id' => null]);
+        $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
         $liftLog = LiftLog::factory()->create(['user_id' => $this->otherUser->id]);
 
         // Follow the other user
@@ -71,7 +71,7 @@ class FeedControllerTest extends TestCase
         $followedUser = User::factory()->create();
         $unfollowedUser = User::factory()->create();
         
-        $exercise = Exercise::factory()->create(['user_id' => null]);
+        $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
         
         $followedLiftLog = LiftLog::factory()->create(['user_id' => $followedUser->id]);
         $unfollowedLiftLog = LiftLog::factory()->create(['user_id' => $unfollowedUser->id]);
@@ -106,7 +106,7 @@ class FeedControllerTest extends TestCase
     /** @test */
     public function it_shows_own_prs_in_feed()
     {
-        $exercise = Exercise::factory()->create(['user_id' => null]);
+        $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
         $liftLog = LiftLog::factory()->create(['user_id' => $this->user->id]);
 
         // Create PR for current user
@@ -167,7 +167,7 @@ class FeedControllerTest extends TestCase
     /** @test */
     public function it_shows_user_stats_on_profile()
     {
-        $exercise = Exercise::factory()->create(['user_id' => null]);
+        $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
         $liftLog = LiftLog::factory()->create(['user_id' => $this->otherUser->id]);
         
         PersonalRecord::factory()->count(3)->create([
@@ -187,7 +187,7 @@ class FeedControllerTest extends TestCase
     /** @test */
     public function it_shows_recent_prs_on_user_profile()
     {
-        $exercise = Exercise::factory()->create(['user_id' => null, 'title' => 'Deadlift']);
+        $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true, 'title' => 'Deadlift']);
         $liftLog = LiftLog::factory()->create([
             'user_id' => $this->otherUser->id,
             'exercise_id' => $exercise->id,
@@ -333,8 +333,8 @@ class FeedControllerTest extends TestCase
     /** @test */
     public function it_groups_prs_by_user_and_date()
     {
-        $exercise1 = Exercise::factory()->create(['user_id' => null, 'title' => 'Squat']);
-        $exercise2 = Exercise::factory()->create(['user_id' => null, 'title' => 'Bench Press']);
+        $exercise1 = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true, 'title' => 'Squat']);
+        $exercise2 = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true, 'title' => 'Bench Press']);
         
         // Follow the other user
         $this->user->follow($this->otherUser);
@@ -382,7 +382,7 @@ class FeedControllerTest extends TestCase
     /** @test */
     public function it_shows_new_badge_for_prs_within_24_hours()
     {
-        $exercise = Exercise::factory()->create(['user_id' => null]);
+        $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
         
         // Follow the other user
         $this->user->follow($this->otherUser);
@@ -425,7 +425,7 @@ class FeedControllerTest extends TestCase
     /** @test */
     public function it_does_not_show_new_badge_for_old_prs()
     {
-        $exercise = Exercise::factory()->create(['user_id' => null]);
+        $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
         
         // Follow the other user
         $this->user->follow($this->otherUser);
@@ -455,7 +455,7 @@ class FeedControllerTest extends TestCase
     /** @test */
     public function it_shows_mark_as_read_button_when_new_prs_exist()
     {
-        $exercise = Exercise::factory()->create(['user_id' => null]);
+        $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
         
         // Follow the other user
         $this->user->follow($this->otherUser);
@@ -496,7 +496,7 @@ class FeedControllerTest extends TestCase
     /** @test */
     public function it_hides_new_badge_after_marking_as_read()
     {
-        $exercise = Exercise::factory()->create(['user_id' => null]);
+        $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
         
         // Follow the other user
         $this->user->follow($this->otherUser);
@@ -550,7 +550,7 @@ class FeedControllerTest extends TestCase
         $adminRole = \App\Models\Role::firstOrCreate(['name' => 'Admin']);
         $this->user->roles()->attach($adminRole);
         
-        $exercise = Exercise::factory()->create(['user_id' => null]);
+        $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
         
         // Follow the other user
         $this->user->follow($this->otherUser);
@@ -615,7 +615,7 @@ class FeedControllerTest extends TestCase
     /** @test */
     public function it_allows_user_to_give_high_five_to_pr()
     {
-        $exercise = Exercise::factory()->create(['user_id' => null]);
+        $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
         $liftLog = LiftLog::factory()->create(['user_id' => $this->otherUser->id]);
         
         $pr = PersonalRecord::factory()->create([
@@ -638,7 +638,7 @@ class FeedControllerTest extends TestCase
     /** @test */
     public function it_allows_user_to_remove_high_five_from_pr()
     {
-        $exercise = Exercise::factory()->create(['user_id' => null]);
+        $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
         $liftLog = LiftLog::factory()->create(['user_id' => $this->otherUser->id]);
         
         $pr = PersonalRecord::factory()->create([
@@ -670,7 +670,7 @@ class FeedControllerTest extends TestCase
     /** @test */
     public function it_returns_json_for_ajax_high_five_request()
     {
-        $exercise = Exercise::factory()->create(['user_id' => null]);
+        $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
         $liftLog = LiftLog::factory()->create(['user_id' => $this->otherUser->id]);
         
         $pr = PersonalRecord::factory()->create([
@@ -698,7 +698,7 @@ class FeedControllerTest extends TestCase
     /** @test */
     public function it_returns_correct_count_when_removing_high_five_via_ajax()
     {
-        $exercise = Exercise::factory()->create(['user_id' => null]);
+        $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
         $liftLog = LiftLog::factory()->create(['user_id' => $this->otherUser->id]);
         
         $pr = PersonalRecord::factory()->create([
@@ -725,7 +725,7 @@ class FeedControllerTest extends TestCase
     /** @test */
     public function it_returns_correct_count_with_multiple_high_fives()
     {
-        $exercise = Exercise::factory()->create(['user_id' => null]);
+        $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
         $liftLog = LiftLog::factory()->create(['user_id' => $this->otherUser->id]);
         
         $pr = PersonalRecord::factory()->create([
@@ -755,7 +755,7 @@ class FeedControllerTest extends TestCase
     /** @test */
     public function it_shows_high_five_count_on_feed()
     {
-        $exercise = Exercise::factory()->create(['user_id' => null]);
+        $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
         $liftLog = LiftLog::factory()->create(['user_id' => $this->otherUser->id]);
         
         $pr = PersonalRecord::factory()->create([
@@ -781,7 +781,7 @@ class FeedControllerTest extends TestCase
     /** @test */
     public function it_shows_high_five_count_for_own_prs()
     {
-        $exercise = Exercise::factory()->create(['user_id' => null]);
+        $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
         $liftLog = LiftLog::factory()->create(['user_id' => $this->user->id]);
         
         $pr = PersonalRecord::factory()->create([
@@ -807,7 +807,7 @@ class FeedControllerTest extends TestCase
     /** @test */
     public function it_shows_names_of_users_who_high_fived_own_pr()
     {
-        $exercise = Exercise::factory()->create(['user_id' => null]);
+        $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
         $liftLog = LiftLog::factory()->create(['user_id' => $this->user->id]);
         
         $pr = PersonalRecord::factory()->create([
@@ -839,7 +839,7 @@ class FeedControllerTest extends TestCase
     /** @test */
     public function it_formats_single_high_five_name_correctly()
     {
-        $exercise = Exercise::factory()->create(['user_id' => null]);
+        $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
         $liftLog = LiftLog::factory()->create(['user_id' => $this->user->id]);
         
         $pr = PersonalRecord::factory()->create([
@@ -865,7 +865,7 @@ class FeedControllerTest extends TestCase
     /** @test */
     public function it_formats_three_or_more_high_five_names_with_commas()
     {
-        $exercise = Exercise::factory()->create(['user_id' => null]);
+        $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
         $liftLog = LiftLog::factory()->create(['user_id' => $this->user->id]);
         
         $pr = PersonalRecord::factory()->create([
@@ -896,7 +896,7 @@ class FeedControllerTest extends TestCase
     /** @test */
     public function it_does_not_show_high_five_display_for_own_prs_with_no_high_fives()
     {
-        $exercise = Exercise::factory()->create(['user_id' => null]);
+        $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
         $liftLog = LiftLog::factory()->create(['user_id' => $this->user->id]);
         
         $pr = PersonalRecord::factory()->create([
@@ -917,7 +917,7 @@ class FeedControllerTest extends TestCase
     /** @test */
     public function it_shows_names_for_other_users_prs()
     {
-        $exercise = Exercise::factory()->create(['user_id' => null]);
+        $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
         $liftLog = LiftLog::factory()->create(['user_id' => $this->otherUser->id]);
         
         $pr = PersonalRecord::factory()->create([
@@ -948,7 +948,7 @@ class FeedControllerTest extends TestCase
     /** @test */
     public function it_requires_authentication_for_high_five()
     {
-        $exercise = Exercise::factory()->create(['user_id' => null]);
+        $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
         $liftLog = LiftLog::factory()->create(['user_id' => $this->otherUser->id]);
         
         $pr = PersonalRecord::factory()->create([

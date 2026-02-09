@@ -19,10 +19,14 @@ class FeedController extends Controller
         $followingIds[] = $currentUser->id;
         
         // Get PRs from the last 7 days, only from users being followed (including self)
+        // Filter to only include exercises that have show_in_feed enabled
         $prs = PersonalRecord::with(['user', 'exercise', 'liftLog', 'highFives.user'])
             ->current()
             ->where('achieved_at', '>=', now()->subDays(7))
             ->whereIn('user_id', $followingIds)
+            ->whereHas('exercise', function ($query) {
+                $query->where('show_in_feed', true);
+            })
             ->latest('achieved_at')
             ->get();
         
@@ -255,9 +259,13 @@ class FeedController extends Controller
         }
         
         // Get user's last 10 PRs grouped by user-date (same logic as feed)
+        // Filter to only include exercises that have show_in_feed enabled
         $prs = PersonalRecord::with(['user', 'exercise', 'liftLog'])
             ->current()
             ->where('user_id', $user->id)
+            ->whereHas('exercise', function ($query) {
+                $query->where('show_in_feed', true);
+            })
             ->latest('achieved_at')
             ->take(50) // Get more to ensure we have enough after grouping
             ->get();

@@ -30,10 +30,12 @@ class Exercise extends Model
         'canonical_name',
         'user_id',
         'exercise_type',
+        'show_in_feed',
     ];
 
     protected $casts = [
         'exercise_type' => 'string',
+        'show_in_feed' => 'boolean',
         'deleted_at' => 'datetime',
     ];
 

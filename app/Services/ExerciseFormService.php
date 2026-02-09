@@ -50,6 +50,14 @@ class ExerciseFormService
             old('exercise_type', $exercise->exercise_type ?? '')
         );
         
+        // Show in feed checkbox
+        $form->checkboxField(
+            'show_in_feed',
+            'Show in PR Feed',
+            old('show_in_feed', $exercise->show_in_feed ?? false),
+            'When enabled, PRs for this exercise will appear in the social feed'
+        );
+        
         // Submit button
         $form->submitButton($isEdit ? 'Update Exercise' : 'Create Exercise');
         
@@ -118,6 +126,9 @@ class ExerciseFormService
             }
             if ($errors->has('exercise_type')) {
                 $form->message('error', $errors->first('exercise_type'));
+            }
+            if ($errors->has('show_in_feed')) {
+                $form->message('error', $errors->first('show_in_feed'));
             }
         }
     }
