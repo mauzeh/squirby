@@ -1,28 +1,28 @@
 @extends('app')
 
 @section('styles')
-    <link rel="stylesheet" href="{{ asset('css/mobile-entry.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/navigation.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/title.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/messages.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/summary.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/button.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/table.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/form.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/list.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/badges.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/collapsible.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/pr-cards.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/calculator-grid.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/chart.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/markdown.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/code-editor.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/quick-actions.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/tabs.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/welcome-overlay.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/pr-info.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/pr-records-table.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/pr-feed-list.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/mobile-entry.css') }}?v={{ config('app.version', '1.0') }}">
+    <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/navigation.css') }}?v={{ config('app.version', '1.0') }}">
+    <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/title.css') }}?v={{ config('app.version', '1.0') }}">
+    <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/messages.css') }}?v={{ config('app.version', '1.0') }}">
+    <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/summary.css') }}?v={{ config('app.version', '1.0') }}">
+    <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/button.css') }}?v={{ config('app.version', '1.0') }}">
+    <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/table.css') }}?v={{ config('app.version', '1.0') }}">
+    <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/form.css') }}?v={{ config('app.version', '1.0') }}">
+    <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/list.css') }}?v={{ config('app.version', '1.0') }}">
+    <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/badges.css') }}?v={{ config('app.version', '1.0') }}">
+    <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/collapsible.css') }}?v={{ config('app.version', '1.0') }}">
+    <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/pr-cards.css') }}?v={{ config('app.version', '1.0') }}">
+    <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/calculator-grid.css') }}?v={{ config('app.version', '1.0') }}">
+    <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/chart.css') }}?v={{ config('app.version', '1.0') }}">
+    <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/markdown.css') }}?v={{ config('app.version', '1.0') }}">
+    <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/code-editor.css') }}?v={{ config('app.version', '1.0') }}">
+    <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/quick-actions.css') }}?v={{ config('app.version', '1.0') }}">
+    <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/tabs.css') }}?v={{ config('app.version', '1.0') }}">
+    <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/welcome-overlay.css') }}?v={{ config('app.version', '1.0') }}">
+    <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/pr-info.css') }}?v={{ config('app.version', '1.0') }}">
+    <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/pr-records-table.css') }}?v={{ config('app.version', '1.0') }}">
+    <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/pr-feed-list.css') }}?v={{ config('app.version', '1.0') }}">
 @endsection
 
 @section('scripts')

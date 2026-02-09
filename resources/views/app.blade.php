@@ -14,7 +14,7 @@
 
         <title>{{ config('app.name', 'Quantified Athletics') }}</title>
 
-        <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+        <link rel="stylesheet" href="{{ asset('css/app.css') }}?v={{ config('app.version', '1.0') }}">
         @yield('styles')
         @yield('scripts')
     </head>

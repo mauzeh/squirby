@@ -13,8 +13,8 @@
 
     <title>{{ config('app.name', 'Quantified Athletics') }} - @yield('title')</title>
 
-    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/login.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}?v={{ config('app.version', '1.0') }}">
+    <link rel="stylesheet" href="{{ asset('css/login.css') }}?v={{ config('app.version', '1.0') }}">
     @yield('styles')
 </head>
 <body>
