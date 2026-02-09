@@ -279,6 +279,8 @@ able Component - Tabular CRUD list optimized for narrow screens */
     border-radius: 50%;
     width: var(--touch-target-min);
     height: var(--touch-target-min);
+    min-width: var(--touch-target-min);
+    min-height: var(--touch-target-min);
     cursor: pointer;
     font-size: 20px;
     display: flex;
@@ -289,6 +291,9 @@ able Component - Tabular CRUD list optimized for narrow screens */
     user-select: none;
     text-decoration: none;
     color: white;
+    /* Override .btn class properties */
+    flex: 0 0 auto;
+    padding: 0;
 }
 
 .btn-table-edit {
