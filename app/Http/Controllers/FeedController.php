@@ -318,6 +318,6 @@ class FeedController extends Controller
             'last_feed_viewed_at' => now(),
         ]);
         
-        return redirect()->route('feed.index')->with('success', 'All PRs marked as read.');
+        return redirect()->route('feed.index');
     }
 }

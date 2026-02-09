@@ -488,7 +488,6 @@ class FeedControllerTest extends TestCase
             ->post(route('feed.mark-read'));
 
         $response->assertRedirect(route('feed.index'));
-        $response->assertSessionHas('success');
         
         $this->user->refresh();
         $this->assertNotNull($this->user->last_feed_viewed_at);
