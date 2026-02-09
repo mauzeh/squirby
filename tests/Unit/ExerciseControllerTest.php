@@ -374,4 +374,189 @@ class ExerciseControllerTest extends TestCase
             'exercise_type' => 'bodyweight'
         ]);
     }
+
+    // Show in feed functionality tests
+
+    public function test_create_exercise_with_show_in_feed_enabled(): void
+    {
+        $this->actingAs($this->regularUser);
+        
+        $response = $this->post(route('exercises.store'), [
+            'title' => 'New Exercise',
+            'description' => 'Test description',
+            'exercise_type' => 'regular',
+            'show_in_feed' => true,
+        ]);
+        
+        $response->assertRedirect(route('exercises.index'));
+        
+        $this->assertDatabaseHas('exercises', [
+            'title' => 'New Exercise',
+            'user_id' => $this->regularUser->id,
+            'show_in_feed' => true,
+        ]);
+    }
+
+    public function test_create_exercise_with_show_in_feed_disabled(): void
+    {
+        $this->actingAs($this->regularUser);
+        
+        $response = $this->post(route('exercises.store'), [
+            'title' => 'New Exercise',
+            'description' => 'Test description',
+            'exercise_type' => 'regular',
+            'show_in_feed' => false,
+        ]);
+        
+        $response->assertRedirect(route('exercises.index'));
+        
+        $this->assertDatabaseHas('exercises', [
+            'title' => 'New Exercise',
+            'user_id' => $this->regularUser->id,
+            'show_in_feed' => false,
+        ]);
+    }
+
+    public function test_create_exercise_defaults_show_in_feed_to_false_when_not_provided(): void
+    {
+        $this->actingAs($this->regularUser);
+        
+        $response = $this->post(route('exercises.store'), [
+            'title' => 'New Exercise',
+            'description' => 'Test description',
+            'exercise_type' => 'regular',
+            // show_in_feed not provided
+        ]);
+        
+        $response->assertRedirect(route('exercises.index'));
+        
+        $this->assertDatabaseHas('exercises', [
+            'title' => 'New Exercise',
+            'user_id' => $this->regularUser->id,
+            'show_in_feed' => false,
+        ]);
+    }
+
+    public function test_update_exercise_can_enable_show_in_feed(): void
+    {
+        $this->actingAs($this->regularUser);
+        
+        $exercise = Exercise::factory()->create([
+            'user_id' => $this->regularUser->id,
+            'title' => 'Test Exercise',
+            'show_in_feed' => false,
+        ]);
+        
+        $response = $this->put(route('exercises.update', $exercise), [
+            'title' => 'Test Exercise',
+            'description' => 'Test description',
+            'exercise_type' => 'regular',
+            'show_in_feed' => true,
+        ]);
+        
+        $response->assertRedirect(route('exercises.index'));
+        
+        $this->assertDatabaseHas('exercises', [
+            'id' => $exercise->id,
+            'show_in_feed' => true,
+        ]);
+    }
+
+    public function test_update_exercise_can_disable_show_in_feed(): void
+    {
+        $this->actingAs($this->regularUser);
+        
+        $exercise = Exercise::factory()->create([
+            'user_id' => $this->regularUser->id,
+            'title' => 'Test Exercise',
+            'show_in_feed' => true,
+        ]);
+        
+        $response = $this->put(route('exercises.update', $exercise), [
+            'title' => 'Test Exercise',
+            'description' => 'Test description',
+            'exercise_type' => 'regular',
+            'show_in_feed' => false,
+        ]);
+        
+        $response->assertRedirect(route('exercises.index'));
+        
+        $this->assertDatabaseHas('exercises', [
+            'id' => $exercise->id,
+            'show_in_feed' => false,
+        ]);
+    }
+
+    public function test_update_exercise_defaults_show_in_feed_to_false_when_not_provided(): void
+    {
+        $this->actingAs($this->regularUser);
+        
+        $exercise = Exercise::factory()->create([
+            'user_id' => $this->regularUser->id,
+            'title' => 'Test Exercise',
+            'show_in_feed' => true,
+        ]);
+        
+        $response = $this->put(route('exercises.update', $exercise), [
+            'title' => 'Test Exercise Updated',
+            'description' => 'Test description',
+            'exercise_type' => 'regular',
+            // show_in_feed not provided
+        ]);
+        
+        $response->assertRedirect(route('exercises.index'));
+        
+        $this->assertDatabaseHas('exercises', [
+            'id' => $exercise->id,
+            'title' => 'Test Exercise Updated',
+            'show_in_feed' => false,
+        ]);
+    }
+
+    public function test_promote_preserves_show_in_feed_value(): void
+    {
+        $this->actingAs($this->adminUser);
+        
+        $userExercise = Exercise::factory()->create([
+            'user_id' => $this->regularUser->id,
+            'title' => 'Test Exercise',
+            'show_in_feed' => true,
+        ]);
+        
+        $response = $this->controller->promote($userExercise);
+        
+        // Check that show_in_feed is preserved
+        $this->assertDatabaseHas('exercises', [
+            'id' => $userExercise->id,
+            'user_id' => null,
+            'show_in_feed' => true,
+        ]);
+    }
+
+    public function test_unpromote_preserves_show_in_feed_value(): void
+    {
+        $this->actingAs($this->adminUser);
+        
+        $globalExercise = Exercise::factory()->create([
+            'user_id' => null,
+            'title' => 'Test Exercise',
+            'show_in_feed' => true,
+        ]);
+        
+        // Create a lift log for the original owner
+        LiftLog::factory()->create([
+            'exercise_id' => $globalExercise->id,
+            'user_id' => $this->regularUser->id,
+            'logged_at' => now()->subDays(5)
+        ]);
+        
+        $response = $this->controller->unpromote($globalExercise);
+        
+        // Check that show_in_feed is preserved
+        $this->assertDatabaseHas('exercises', [
+            'id' => $globalExercise->id,
+            'user_id' => $this->regularUser->id,
+            'show_in_feed' => true,
+        ]);
+    }
 }

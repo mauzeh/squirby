@@ -34,6 +34,7 @@ class CreateExerciseAction
             'description' => $processedData['description'],
             'exercise_type' => $exerciseType,
             'user_id' => $user->id, // All new exercises are user exercises
+            'show_in_feed' => $validated['show_in_feed'] ?? false,
         ]);
 
         $exercise->save();
@@ -49,6 +50,7 @@ class CreateExerciseAction
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'exercise_type' => 'required|in:' . implode(',', $availableTypes),
+            'show_in_feed' => 'nullable|boolean',
         ];
 
         return $request->validate($rules);

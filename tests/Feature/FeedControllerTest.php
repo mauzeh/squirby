@@ -66,6 +66,95 @@ class FeedControllerTest extends TestCase
     }
 
     /** @test */
+    public function it_only_shows_prs_for_exercises_with_show_in_feed_enabled()
+    {
+        $exerciseWithFeed = Exercise::factory()->create([
+            'user_id' => null,
+            'title' => 'Squat',
+            'show_in_feed' => true
+        ]);
+        
+        $exerciseWithoutFeed = Exercise::factory()->create([
+            'user_id' => null,
+            'title' => 'Curl',
+            'show_in_feed' => false
+        ]);
+        
+        $liftLog1 = LiftLog::factory()->create(['user_id' => $this->otherUser->id]);
+        $liftLog2 = LiftLog::factory()->create(['user_id' => $this->otherUser->id]);
+
+        // Follow the other user
+        $this->user->follow($this->otherUser);
+
+        // PR for exercise with show_in_feed enabled
+        PersonalRecord::factory()->create([
+            'user_id' => $this->otherUser->id,
+            'exercise_id' => $exerciseWithFeed->id,
+            'lift_log_id' => $liftLog1->id,
+            'achieved_at' => now()->subDays(1),
+        ]);
+
+        // PR for exercise with show_in_feed disabled
+        PersonalRecord::factory()->create([
+            'user_id' => $this->otherUser->id,
+            'exercise_id' => $exerciseWithoutFeed->id,
+            'lift_log_id' => $liftLog2->id,
+            'achieved_at' => now()->subDays(1),
+        ]);
+
+        $response = $this->actingAs($this->user)->get(route('feed.index'));
+
+        $response->assertStatus(200);
+        // Should see exercise with show_in_feed enabled
+        $response->assertSee('Squat');
+        // Should NOT see exercise with show_in_feed disabled
+        $response->assertDontSee('Curl');
+    }
+
+    /** @test */
+    public function it_filters_own_prs_by_show_in_feed()
+    {
+        $exerciseWithFeed = Exercise::factory()->create([
+            'user_id' => null,
+            'title' => 'Deadlift',
+            'show_in_feed' => true
+        ]);
+        
+        $exerciseWithoutFeed = Exercise::factory()->create([
+            'user_id' => null,
+            'title' => 'Tricep Extension',
+            'show_in_feed' => false
+        ]);
+        
+        $liftLog1 = LiftLog::factory()->create(['user_id' => $this->user->id]);
+        $liftLog2 = LiftLog::factory()->create(['user_id' => $this->user->id]);
+
+        // PR for exercise with show_in_feed enabled
+        PersonalRecord::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $exerciseWithFeed->id,
+            'lift_log_id' => $liftLog1->id,
+            'achieved_at' => now()->subDays(1),
+        ]);
+
+        // PR for exercise with show_in_feed disabled
+        PersonalRecord::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $exerciseWithoutFeed->id,
+            'lift_log_id' => $liftLog2->id,
+            'achieved_at' => now()->subDays(1),
+        ]);
+
+        $response = $this->actingAs($this->user)->get(route('feed.index'));
+
+        $response->assertStatus(200);
+        // Should see own PR with show_in_feed enabled
+        $response->assertSee('Deadlift');
+        // Should NOT see own PR with show_in_feed disabled
+        $response->assertDontSee('Tricep Extension');
+    }
+
+    /** @test */
     public function it_only_shows_prs_from_followed_users()
     {
         $followedUser = User::factory()->create();

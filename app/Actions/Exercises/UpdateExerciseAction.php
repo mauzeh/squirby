@@ -32,6 +32,7 @@ class UpdateExerciseAction
             'title' => $processedData['title'],
             'description' => $processedData['description'],
             'exercise_type' => $exerciseType,
+            'show_in_feed' => $validated['show_in_feed'] ?? false,
         ]);
 
         return $exercise->fresh();
@@ -45,6 +46,7 @@ class UpdateExerciseAction
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'exercise_type' => 'required|in:' . implode(',', $availableTypes),
+            'show_in_feed' => 'nullable|boolean',
         ];
 
         return $request->validate($rules);
