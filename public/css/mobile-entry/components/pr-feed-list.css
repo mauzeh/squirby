@@ -195,14 +195,7 @@
 
 /* PR Lift Session - Groups multiple exercises from same user-date */
 .pr-lift-session {
-    padding: var(--spacing-md);
-    background: rgba(255, 255, 255, 0.03);
-    border-radius: var(--border-radius-sm);
-    border-left: 3px solid var(--color-primary);
-}
-
-.pr-card-new .pr-lift-session {
-    border-left-color: #ff6b35;
+    padding: var(--spacing-xs);
 }
 
 .pr-lift-session:not(:last-child) {
@@ -340,25 +333,21 @@
     font-weight: 700;
     font-size: 1.125rem;
     letter-spacing: 0.3px;
-    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
 }
 
 /* Weight Pill - Orange for new/unread items */
 .pr-weight-pill-new {
-    background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
-    box-shadow: 0 2px 8px rgba(255, 107, 53, 0.3);
 }
 
 /* Reps Pill - Blue */
 .pr-reps-pill {
-    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
     color: white;
     padding: 0.5rem 1rem;
     border-radius: 20px;
+    border: 1px solid #666;
     font-weight: 700;
     font-size: 1.125rem;
     letter-spacing: 0.3px;
-    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
 }
 
 /* Legacy styles for compatibility */
@@ -536,10 +525,10 @@
         gap: var(--spacing-sm);
     }
     
+    /* Keep header-right as column layout on mobile */
     .pr-header-right {
-        flex-direction: row;
-        align-items: center;
-        gap: var(--spacing-sm);
+        align-items: flex-end;
+        gap: var(--spacing-xs);
     }
     
     .pr-user-details strong {
