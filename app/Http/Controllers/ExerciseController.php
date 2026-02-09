@@ -358,7 +358,7 @@ class ExerciseController extends Controller
         
         $this->updateExerciseAction->execute($request, $exercise, Auth::user());
 
-        return redirect()->route('exercises.index')->with('success', 'Exercise updated successfully.');
+        return redirect()->route('exercises.edit', $exercise)->with('success', 'Exercise updated successfully.');
     }
 
     /**

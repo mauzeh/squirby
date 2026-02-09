@@ -454,7 +454,7 @@ class ExerciseControllerTest extends TestCase
             'show_in_feed' => true,
         ]);
         
-        $response->assertRedirect(route('exercises.index'));
+        $response->assertRedirect(route('exercises.edit', $exercise));
         
         $this->assertDatabaseHas('exercises', [
             'id' => $exercise->id,
@@ -479,7 +479,7 @@ class ExerciseControllerTest extends TestCase
             'show_in_feed' => false,
         ]);
         
-        $response->assertRedirect(route('exercises.index'));
+        $response->assertRedirect(route('exercises.edit', $exercise));
         
         $this->assertDatabaseHas('exercises', [
             'id' => $exercise->id,
@@ -504,7 +504,7 @@ class ExerciseControllerTest extends TestCase
             // show_in_feed not provided
         ]);
         
-        $response->assertRedirect(route('exercises.index'));
+        $response->assertRedirect(route('exercises.edit', $exercise));
         
         $this->assertDatabaseHas('exercises', [
             'id' => $exercise->id,
