@@ -1,9 +1,6 @@
 /* Connection Section Styles */
 .connection-section {
-    background: var(--card-bg);
-    border-radius: 12px;
-    padding: 24px;
-    margin-bottom: 20px;
+    /* Inherits background and border-radius from .form-container */
 }
 
 .connection-header {

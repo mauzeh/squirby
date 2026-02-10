@@ -1,4 +1,4 @@
-<div class="connection-section">
+<div class="component-form-section connection-section">
     <div class="connection-header">
         <h3>Connect with Friends</h3>
         <p class="connection-subtitle">Share your code or QR code with someone at the gym to connect</p>
