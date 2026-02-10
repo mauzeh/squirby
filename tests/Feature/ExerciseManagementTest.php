@@ -97,7 +97,7 @@ class ExerciseManagementTest extends TestCase
 
         $response = $this->put(route('exercises.update', $userExercise), $updatedData);
 
-        $response->assertRedirect(route('exercises.index'));
+        $response->assertRedirect(route('exercises.edit', $userExercise));
         $response->assertSessionHas('success', 'Exercise updated successfully.');
         $this->assertDatabaseHas('exercises', [
             'id' => $userExercise->id,
@@ -220,7 +220,7 @@ class ExerciseManagementTest extends TestCase
 
         $response = $this->put(route('exercises.update', $globalExercise), $updatedData);
 
-        $response->assertRedirect(route('exercises.index'));
+        $response->assertRedirect(route('exercises.edit', $globalExercise));
         $response->assertSessionHas('success', 'Exercise updated successfully.');
         $this->assertDatabaseHas('exercises', [
             'id' => $globalExercise->id,
@@ -328,7 +328,7 @@ class ExerciseManagementTest extends TestCase
             'exercise_type' => 'regular',
         ]);
 
-        $response->assertRedirect(route('exercises.index'));
+        $response->assertRedirect(route('exercises.edit', $userExercise));
         $response->assertSessionHas('success', 'Exercise updated successfully.');
 
         // Verify the exercise still belongs to the original user

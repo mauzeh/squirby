@@ -88,7 +88,7 @@ class ExerciseManagementWorkflowTest extends TestCase
         ];
 
         $updateResponse = $this->put(route('exercises.update', $exercise), $updatedData);
-        $updateResponse->assertRedirect(route('exercises.index'));
+        $updateResponse->assertRedirect(route('exercises.edit', $exercise));
         $updateResponse->assertSessionHas('success', 'Exercise updated successfully.');
         
         $this->assertDatabaseHas('exercises', [
@@ -174,7 +174,7 @@ class ExerciseManagementWorkflowTest extends TestCase
         ];
 
         $updateResponse = $this->put(route('exercises.update', $personalExercise), $updatedData);
-        $updateResponse->assertRedirect(route('exercises.index'));
+        $updateResponse->assertRedirect(route('exercises.edit', $personalExercise));
         $updateResponse->assertSessionHas('success', 'Exercise updated successfully.');
         
         $this->assertDatabaseHas('exercises', [

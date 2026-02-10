@@ -338,7 +338,7 @@ class AdminExerciseVisibilityTest extends TestCase
             'description' => 'Updated description',
             'exercise_type' => 'regular'
         ]);
-        $response->assertRedirect(route('exercises.index'));
+        $response->assertRedirect(route('exercises.edit', $userExercise));
         $response->assertSessionHas('success');
 
         $this->assertDatabaseHas('exercises', [

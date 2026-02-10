@@ -100,7 +100,7 @@ class BandedExerciseCreationTest extends TestCase
             'exercise_type' => 'banded_assistance',
         ]);
 
-        $response->assertRedirect(route('exercises.index'));
+        $response->assertRedirect(route('exercises.edit', $exercise));
         $this->assertDatabaseHas('exercises', [
             'id' => $exercise->id,
             'title' => 'Updated Banded Exercise',
@@ -123,7 +123,7 @@ class BandedExerciseCreationTest extends TestCase
             'exercise_type' => 'banded_resistance',
         ]);
 
-        $response->assertRedirect(route('exercises.index'));
+        $response->assertRedirect(route('exercises.edit', $exercise));
         $this->assertDatabaseHas('exercises', [
             'id' => $exercise->id,
             'exercise_type' => 'banded_resistance',
@@ -178,7 +178,7 @@ class BandedExerciseCreationTest extends TestCase
             'exercise_type' => 'banded_assistance',
         ]);
 
-        $response->assertRedirect(route('exercises.index'));
+        $response->assertRedirect(route('exercises.edit', $exercise));
         $this->assertDatabaseHas('exercises', [
             'id' => $exercise->id,
             'title' => 'Updated Global Banded Exercise',
