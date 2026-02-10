@@ -192,7 +192,7 @@ class ProfileFormService
     $qrCodeUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' . urlencode($connectUrl);
 
     // Calculate time remaining
-    $minutesRemaining = $expiresAt ? max(0, now()->diffInMinutes($expiresAt, false)) : 0;
+    $minutesRemaining = $expiresAt ? max(0, (int) ceil(now()->diffInMinutes($expiresAt, false))) : 0;
 
     $html = '
     <div class="connection-section">
