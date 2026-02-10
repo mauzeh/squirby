@@ -125,22 +125,11 @@
 }
 
 .connection-code-input {
+    /* Inherits all styling from .text-input */
+    /* Only override what's needed for monospace code display */
     text-align: center;
-    font-size: 32px;
     font-family: 'Courier New', monospace;
     letter-spacing: 8px;
-    padding: 16px;
-    width: 100%;
-    background: var(--input-bg);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    color: var(--text-primary);
-}
-
-.connection-code-input:focus {
-    outline: none;
-    border-color: var(--primary-color);
-    background: var(--input-focus-bg);
 }
 
 .connection-input-form .btn {
@@ -164,11 +153,6 @@
     .qr-code-img {
         width: 180px;
         height: 180px;
-    }
-    
-    .connection-code-input {
-        font-size: 28px;
-        letter-spacing: 6px;
     }
 }
 

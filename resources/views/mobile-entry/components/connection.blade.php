@@ -36,7 +36,7 @@
                 type="text"
                 id="connection_code"
                 name="connection_code"
-                class="form-control connection-code-input"
+                class="text-input connection-code-input"
                 placeholder="000 000"
                 maxlength="7"
                 pattern="[0-9 ]*"
