@@ -155,6 +155,19 @@ The encoded URL format:
 https://yourdomain.com/connect/123456
 ```
 
+## Feed Integration
+
+### Unread PR Display
+
+When users connect via this feature, PRs from the newly connected user appear as unread in the feed. This is handled by the [PR Read Tracking System](pr-read-tracking.md):
+
+1. New connections create mutual follow relationships
+2. PRs from the newly followed user are not in the current user's read list
+3. These PRs show as unread in the feed badge
+4. Once the user views the feed, the PRs are marked as read
+
+This provides immediate visibility of the new connection's recent activity without requiring complex timestamp comparisons.
+
 ## Error Handling
 
 ### Invalid Token
