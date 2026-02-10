@@ -91,6 +91,116 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     });
+    
+    // Handle comment form submissions
+    document.querySelectorAll('.pr-comment-form').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const url = this.action;
+            const csrfToken = this.querySelector('[name="_token"]').value;
+            const input = this.querySelector('.pr-comment-input');
+            const comment = input.value.trim();
+            
+            if (!comment) return;
+            
+            // Disable input during request
+            input.disabled = true;
+            
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({ comment: comment })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Clear input
+                    input.value = '';
+                    
+                    // Get or create comments list
+                    const commentsSection = this.closest('.pr-comments-section');
+                    let commentsList = commentsSection.querySelector('.pr-comments-list');
+                    
+                    if (!commentsList) {
+                        commentsList = document.createElement('div');
+                        commentsList.className = 'pr-comments-list';
+                        commentsSection.insertBefore(commentsList, this);
+                    }
+                    
+                    // Create temporary container and insert rendered HTML
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = data.html;
+                    const commentEl = tempDiv.firstElementChild;
+                    
+                    // Add to list
+                    commentsList.appendChild(commentEl);
+                    
+                    // Attach delete handler if it has a delete form
+                    const deleteForm = commentEl.querySelector('.pr-comment-delete-form');
+                    if (deleteForm) {
+                        attachDeleteHandler(deleteForm);
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error posting comment:', error);
+            })
+            .finally(() => {
+                // Re-enable input
+                input.disabled = false;
+                input.focus();
+            });
+        });
+    });
+    
+    // Handle comment deletion
+    function attachDeleteHandler(form) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            if (!confirm('Delete this comment?')) return;
+            
+            const url = this.action;
+            const csrfToken = this.querySelector('[name="_token"]').value;
+            const commentEl = this.closest('.pr-comment');
+            
+            fetch(url, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Remove comment element
+                    commentEl.remove();
+                    
+                    // Remove comments list if empty
+                    const commentsList = commentEl.closest('.pr-comments-list');
+                    if (commentsList && commentsList.children.length === 0) {
+                        commentsList.remove();
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error deleting comment:', error);
+            });
+        });
+    }
+    
+    // Attach delete handlers to existing delete forms
+    document.querySelectorAll('.pr-comment-delete-form').forEach(form => {
+        attachDeleteHandler(form);
+    });
 });
 </script>
 
@@ -261,6 +371,11 @@ document.addEventListener('DOMContentLoaded', function() {
                                             } else {
                                                 $formattedNames = '';
                                             }
+                                            
+                                            // Get comments for all PRs in this lift log
+                                            $comments = $allPRsForLiftLog->flatMap(function($pr) {
+                                                return $pr->comments ?? collect();
+                                            })->sortBy('created_at');
                                         @endphp
                                         
                                         <div class="high-five-info">
@@ -299,6 +414,30 @@ document.addEventListener('DOMContentLoaded', function() {
                                         </div>
                                     @endif
                                 </div>
+                                
+                                {{-- Comments Section - Outside pr-lift-content --}}
+                                @if($firstPRId)
+                                    <div class="pr-comments-section" data-pr-id="{{ $firstPRId }}">
+                                        @if($comments->count() > 0)
+                                            <div class="pr-comments-list">
+                                                @foreach($comments as $comment)
+                                                    @include('mobile-entry.components.partials.pr-comment', ['comment' => $comment, 'currentUserId' => $data['currentUserId'] ?? null])
+                                                @endforeach
+                                            </div>
+                                        @endif
+                                        
+                                        {{-- Comment Form --}}
+                                        <form method="POST" action="{{ route('feed.store-comment', $firstPRId) }}" class="pr-comment-form">
+                                            @csrf
+                                            <div class="pr-comment-input-wrapper">
+                                                <input type="text" name="comment" class="pr-comment-input" placeholder="Add a comment..." maxlength="1000" required>
+                                                <button type="submit" class="pr-comment-submit-btn">
+                                                    <i class="fas fa-paper-plane"></i>
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                @endif
                             </div>
                         @endforeach
                     </div>
