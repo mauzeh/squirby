@@ -77,21 +77,6 @@ class FeedController extends Controller
             $components[] = $sessionMessages;
         }
         
-        // Add "Reset to unread" button for admins and impersonating users
-        if ($currentUser->hasRole('Admin') || session()->has('impersonator_id')) {
-            $components[] = [
-                'type' => 'raw_html',
-                'data' => [
-                    'html' => '<div class="feed-action-buttons">
-                        <form method="POST" action="' . route('feed.reset-read') . '" style="display: inline;">
-                            ' . csrf_field() . '
-                            <button type="submit" class="feed-action-btn feed-action-btn-secondary">Reset to unread</button>
-                        </form>
-                    </div>'
-                ]
-            ];
-        }
-        
         // Build PR feed component manually to bypass type checking
         $components[] = [
             'type' => 'pr-feed-list',
@@ -108,11 +93,14 @@ class FeedController extends Controller
             'components' => $components,
         ];
         
-        // Mark as read AFTER the response is sent to the browser
-        $userId = $currentUser->id;
-        app()->terminating(function () use ($userId) {
-            \App\Models\User::where('id', $userId)->update(['last_feed_viewed_at' => now()]);
-        });
+        // Mark as read AFTER the response is sent to the browser (skip if impersonating on production)
+        $isImpersonatingOnProduction = session()->has('impersonator_id') && app()->environment('production');
+        if (!$isImpersonatingOnProduction) {
+            $userId = $currentUser->id;
+            app()->terminating(function () use ($userId) {
+                \App\Models\User::where('id', $userId)->update(['last_feed_viewed_at' => now()]);
+            });
+        }
         
         return view('mobile-entry.flexible', compact('data'));
     }
@@ -360,22 +348,6 @@ class FeedController extends Controller
         return redirect()->route('feed.index');
     }
 
-    public function resetRead(Request $request)
-    {
-        $currentUser = $request->user();
-        
-        // Only allow admins and impersonating users
-        if (!$currentUser->hasRole('Admin') && !session()->has('impersonator_id')) {
-            abort(403, 'Unauthorized action.');
-        }
-        
-        $currentUser->update([
-            'last_feed_viewed_at' => null,
-        ]);
-        
-        return redirect()->route('feed.index');
-    }
-
     public function toggleHighFive(Request $request, PersonalRecord $personalRecord)
     {
         $currentUser = $request->user();
@@ -554,10 +526,13 @@ class FeedController extends Controller
             'components' => $components,
         ];
         
-        // Mark as read AFTER the response is sent to the browser
-        app()->terminating(function () use ($currentUser) {
-            $currentUser->notifications()->unread()->update(['read_at' => now()]);
-        });
+        // Mark as read AFTER the response is sent to the browser (skip if impersonating on production)
+        $isImpersonatingOnProduction = session()->has('impersonator_id') && app()->environment('production');
+        if (!$isImpersonatingOnProduction) {
+            app()->terminating(function () use ($currentUser) {
+                $currentUser->notifications()->unread()->update(['read_at' => now()]);
+            });
+        }
         
         return view('mobile-entry.flexible', compact('data'));
     }

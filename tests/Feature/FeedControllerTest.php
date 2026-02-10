@@ -677,42 +677,6 @@ class FeedControllerTest extends TestCase
     }
 
     /** @test */
-    public function it_allows_admin_to_reset_to_unread()
-    {
-        // Create admin role
-        $adminRole = \App\Models\Role::firstOrCreate(['name' => 'Admin']);
-        $this->user->roles()->attach($adminRole);
-
-        // Mark as read first
-        $this->user->update(['last_feed_viewed_at' => now()]);
-        $this->assertNotNull($this->user->last_feed_viewed_at);
-
-        // Reset to unread
-        $response = $this->actingAs($this->user)
-            ->post(route('feed.reset-read'));
-
-        $response->assertRedirect(route('feed.index'));
-        
-        $this->user->refresh();
-        $this->assertNull($this->user->last_feed_viewed_at);
-    }
-
-    /** @test */
-    public function it_prevents_non_admin_from_resetting_to_unread()
-    {
-        // Mark as read first
-        $this->user->update(['last_feed_viewed_at' => now()]);
-
-        // Try to reset as non-admin
-        $response = $this->actingAs($this->user)
-            ->post(route('feed.reset-read'));
-
-        $response->assertStatus(403);
-        
-        $this->user->refresh();
-        $this->assertNotNull($this->user->last_feed_viewed_at);
-    }
-
     /** @test */
     public function it_allows_user_to_give_high_five_to_pr()
     {

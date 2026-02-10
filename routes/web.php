@@ -42,7 +42,6 @@ Route::middleware('auth')->group(function () {
 
     // Feed
     Route::get('feed', [FeedController::class, 'index'])->name('feed.index');
-    Route::post('feed/reset-read', [FeedController::class, 'resetRead'])->name('feed.reset-read');
     Route::post('feed/pr/{personalRecord}/high-five', [FeedController::class, 'toggleHighFive'])->name('feed.toggle-high-five');
     Route::post('feed/pr/{personalRecord}/comment', [FeedController::class, 'storeComment'])->name('feed.store-comment');
     Route::delete('feed/comment/{comment}', [FeedController::class, 'deleteComment'])->name('feed.delete-comment');
