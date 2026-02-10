@@ -47,7 +47,7 @@ return [
                     ->get();
                 
                 // Count user-date groups that are new (including own PRs)
-                $newCount = 0;
+                $newPRCount = 0;
                 $seenGroups = [];
                 
                 foreach ($prs as $pr) {
@@ -68,12 +68,16 @@ return [
                     }
                     
                     if ($isNew) {
-                        $newCount++;
+                        $newPRCount++;
                         $seenGroups[$groupKey] = true;
                     }
                 }
                 
-                return $newCount;
+                // Get unread notifications count
+                $unreadNotifications = $currentUser->notifications()->unread()->count();
+                
+                // Return sum of both
+                return $newPRCount + $unreadNotifications;
             },
             'children' => [
                 [
@@ -82,6 +86,53 @@ return [
                     'route' => 'feed.index',
                     'title' => 'PR Feed',
                     'patterns' => ['feed.index'],
+                    'badge' => function() {
+                        $currentUser = auth()->user();
+                        if (!$currentUser) {
+                            return 0;
+                        }
+                        
+                        // Get IDs of users that current user is following, plus current user
+                        $followingIds = $currentUser->following()->pluck('users.id')->toArray();
+                        $followingIds[] = $currentUser->id;
+                        
+                        // Get PRs from the last 7 days that are new
+                        $prs = \App\Models\PersonalRecord::with(['user', 'exercise'])
+                            ->current()
+                            ->where('achieved_at', '>=', now()->subDays(7))
+                            ->whereIn('user_id', $followingIds)
+                            ->whereHas('exercise', function ($query) {
+                                $query->where('show_in_feed', true);
+                            })
+                            ->get();
+                        
+                        // Count user-date groups that are new
+                        $newPRCount = 0;
+                        $seenGroups = [];
+                        
+                        foreach ($prs as $pr) {
+                            $groupKey = $pr->user_id . '_' . $pr->achieved_at->format('Y-m-d');
+                            
+                            if (isset($seenGroups[$groupKey])) {
+                                continue;
+                            }
+                            
+                            if (!$currentUser->last_feed_viewed_at) {
+                                $isNew = true;
+                            } else {
+                                $isWithin24Hours = $pr->achieved_at->isAfter(now()->subHours(24));
+                                $isAfterLastViewed = $pr->achieved_at->isAfter($currentUser->last_feed_viewed_at);
+                                $isNew = $isWithin24Hours && $isAfterLastViewed;
+                            }
+                            
+                            if ($isNew) {
+                                $newPRCount++;
+                                $seenGroups[$groupKey] = true;
+                            }
+                        }
+                        
+                        return $newPRCount;
+                    },
                 ],
                 [
                     'label' => 'Notifications',

@@ -166,6 +166,15 @@ a {
     position: relative; /* Needed for absolute positioning of badge in submenu */
 }
 
+/* Adjust badge position in submenu to give more spacing */
+.sub-navbar a.sub-nav-item:has(.menu-badge) {
+    padding-right: 25px; /* Add padding only when badge is present */
+}
+
+.sub-navbar a.sub-nav-item .menu-badge {
+    right: 10px;
+}
+
 .env-bar {
     color: white;
     text-align: center;
