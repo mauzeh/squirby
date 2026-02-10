@@ -316,12 +316,13 @@
 /* High Five Display (for own PRs - non-interactive) */
 .high-five-info {
     display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.25rem;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
     flex-shrink: 0;
-    min-width: 120px;
-    max-width: 200px; /* Prevent excessive width */
+    width: 100%;
+    max-width: 100%;
 }
 
 /* OPTION 2: Subtle badge - Light background, no border */
@@ -340,10 +341,14 @@
 .high-five-names {
     font-size: 0.85rem;
     color: var(--text-secondary);
-    text-align: left;
     line-height: 1.2;
     word-wrap: break-word;
     overflow-wrap: break-word;
+    word-break: break-word;
+    flex: 1 1 0;
+    min-width: 0;
+    max-width: 100%;
+    text-align: left;
 }
 
 .pr-exercise {
@@ -535,7 +540,7 @@
     }
     
     .high-five-info {
-        align-items: flex-start;
+        align-items: center;
         width: 100%;
         max-width: 100%;
     }

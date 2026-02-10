@@ -54,31 +54,26 @@ document.addEventListener('DOMContentLoaded', function() {
                         countSpan.remove();
                     }
                     
-                    // Update or create names display
-                    let namesDiv = highFiveInfo.querySelector('.high-five-names');
+                    // Update the text in high-five-action (either names or prompt)
+                    const highFiveAction = this.closest('.high-five-action');
+                    
+                    // Remove existing names or prompt
+                    let existingText = highFiveAction.querySelector('.high-five-names, .high-five-prompt');
+                    if (existingText) {
+                        existingText.remove();
+                    }
+                    
+                    // Add new text
                     if (data.count > 0 && data.names && data.verb) {
-                        if (!namesDiv) {
-                            namesDiv = document.createElement('div');
-                            namesDiv.className = 'high-five-names';
-                            highFiveInfo.appendChild(namesDiv);
-                        }
-                        namesDiv.innerHTML = data.names + ' ' + data.verb + '&nbsp;this!';
-                        
-                        // Remove prompt if it exists
-                        const prompt = highFiveAction?.querySelector('.high-five-prompt');
-                        if (prompt) {
-                            prompt.remove();
-                        }
-                    } else if (namesDiv) {
-                        namesDiv.remove();
-                        
-                        // Add prompt back if no high fives
-                        if (highFiveAction && !highFiveAction.querySelector('.high-five-prompt')) {
-                            const prompt = document.createElement('span');
-                            prompt.className = 'high-five-prompt';
-                            prompt.textContent = 'Be the first to love this!';
-                            highFiveAction.appendChild(prompt);
-                        }
+                        const namesSpan = document.createElement('span');
+                        namesSpan.className = 'high-five-names';
+                        namesSpan.innerHTML = data.names + ' ' + data.verb + '&nbsp;this!';
+                        highFiveAction.appendChild(namesSpan);
+                    } else {
+                        const promptSpan = document.createElement('span');
+                        promptSpan.className = 'high-five-prompt';
+                        promptSpan.textContent = 'Be the first to love this!';
+                        highFiveAction.appendChild(promptSpan);
                     }
                 }
             })
@@ -386,6 +381,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                                         <i class="fas fa-heart"></i>
                                                         <span class="high-five-count">{{ $highFiveCount }}</span>
                                                     </div>
+                                                    <span class="high-five-names">{!! $formattedNames !!} {{ $verb }}&nbsp;this!</span>
                                                 @endif
                                             @else
                                                 {{-- Interactive button for others' PRs --}}
@@ -399,16 +395,11 @@ document.addEventListener('DOMContentLoaded', function() {
                                                             @endif
                                                         </button>
                                                     </form>
-                                                    @if($highFiveCount === 0)
+                                                    @if($highFiveCount > 0)
+                                                        <span class="high-five-names">{!! $formattedNames !!} {{ $verb }}&nbsp;this!</span>
+                                                    @else
                                                         <span class="high-five-prompt">Be the first to love this!</span>
                                                     @endif
-                                                </div>
-                                            @endif
-                                            
-                                            {{-- Show names for everyone if there are high fives --}}
-                                            @if($highFiveCount > 0)
-                                                <div class="high-five-names">
-                                                    {!! $formattedNames !!} {{ $verb }}&nbsp;this!
                                                 </div>
                                             @endif
                                         </div>
