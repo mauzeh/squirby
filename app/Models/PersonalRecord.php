@@ -66,6 +66,18 @@ class PersonalRecord extends Model
         return $this->hasMany(PRComment::class, 'personal_record_id');
     }
 
+    public function reads()
+    {
+        return $this->hasMany(PersonalRecordRead::class, 'personal_record_id');
+    }
+
+    public function readBy()
+    {
+        return $this->belongsToMany(User::class, 'personal_record_reads')
+            ->withPivot('read_at')
+            ->withTimestamps();
+    }
+
     // Scopes
     public function scopeCurrent($query)
     {
@@ -80,5 +92,21 @@ class PersonalRecord extends Model
     public function scopeOfType($query, $type)
     {
         return $query->where('pr_type', $type);
+    }
+
+    // Helper methods
+    public function isReadBy(User $user): bool
+    {
+        return $this->reads()->where('user_id', $user->id)->exists();
+    }
+
+    public function markAsReadBy(User $user): void
+    {
+        PersonalRecordRead::firstOrCreate([
+            'user_id' => $user->id,
+            'personal_record_id' => $this->id,
+        ], [
+            'read_at' => now(),
+        ]);
     }
 }

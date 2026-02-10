@@ -271,6 +271,12 @@ class User extends Authenticatable
         return $this->hasMany(PersonalRecord::class);
     }
 
+    public function readPersonalRecords()
+    {
+        return $this->belongsToMany(PersonalRecord::class, 'personal_record_reads')
+            ->withPivot('read_at');
+    }
+
     public function notifications()
     {
         return $this->hasMany(Notification::class);

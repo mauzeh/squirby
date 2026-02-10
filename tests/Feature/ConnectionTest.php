@@ -188,33 +188,22 @@ class ConnectionTest extends TestCase
             'achieved_at' => now()->subDays(2),
         ]);
         
-        // User2 views feed (no PRs yet since not following anyone)
+        // User2 connects with User1 via token (before viewing feed)
         $this->actingAs($user2);
-        $this->get(route('feed.index'));
-        
-        // User2's last_feed_viewed_at is now set
-        $user2->refresh();
-        $this->assertNotNull($user2->last_feed_viewed_at);
-        $lastViewedAt = $user2->last_feed_viewed_at;
-        
-        // Wait a moment to ensure follow timestamp is after last_feed_viewed_at
-        sleep(1);
-        
-        // User2 connects with User1 via token
         $token = $user1->generateConnectionToken();
         $this->post(route('connections.connect', ['token' => $token]));
         
-        // Now when User2 views feed, User1's PR should show as new
+        // Verify User1's PR is not marked as read by User2
+        $this->assertFalse($pr->isReadBy($user2));
+        
+        // When User2 views feed, User1's PR should be visible
         $response = $this->get(route('feed.index'));
         
         // Check that the feed shows the PR
         $response->assertSee($exercise->title);
         
-        // The badge should show because User1's PRs are from a newly followed user
-        // This is tested by checking the menu badge logic
+        // After viewing, the PR should be marked as read
         $user2->refresh();
-        $followRelationship = $user2->following()->wherePivot('following_id', $user1->id)->first();
-        $this->assertNotNull($followRelationship);
-        $this->assertTrue($followRelationship->pivot->created_at->isAfter($lastViewedAt));
+        $this->assertTrue($pr->isReadBy($user2));
     }
 }

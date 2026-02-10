@@ -32,6 +32,9 @@ class FeedController extends Controller
             ->latest('achieved_at')
             ->get();
         
+        // Get IDs of PRs that the current user has already read
+        $readPRIds = $currentUser->readPersonalRecords()->pluck('personal_records.id')->toArray();
+        
         // Group by user and date (not lift_log_id)
         $groupedPrs = $prs->groupBy(function ($pr) {
             return $pr->user_id . '_' . $pr->achieved_at->format('Y-m-d');
@@ -52,27 +55,9 @@ class FeedController extends Controller
         ->values()
         ->take(50);
         
-        // Check if there are any new PRs (including own PRs) - for badge display
-        $hasNewPRs = $groupedPrs->contains(function ($item) use ($currentUser) {
-            // If never viewed, all PRs in last 7 days are new
-            if (!$currentUser->last_feed_viewed_at) {
-                return true;
-            }
-            
-            // Check if this PR is from a newly followed user
-            $followRelationship = $currentUser->following()
-                ->wherePivot('following_id', $item->user_id)
-                ->first();
-            
-            if ($followRelationship && $followRelationship->pivot->created_at->isAfter($currentUser->last_feed_viewed_at)) {
-                // This is a newly followed user, show their PRs as new
-                return true;
-            }
-            
-            // Otherwise, check if within 24 hours AND after last viewed
-            $isWithin24Hours = $item->achieved_at->isAfter(now()->subHours(24));
-            $isAfterLastViewed = $item->achieved_at->isAfter($currentUser->last_feed_viewed_at);
-            return $isWithin24Hours && $isAfterLastViewed;
+        // Check if there are any unread PRs - for badge display
+        $hasNewPRs = $prs->contains(function ($pr) use ($readPRIds) {
+            return !in_array($pr->id, $readPRIds);
         });
         
         $components = [
@@ -95,7 +80,7 @@ class FeedController extends Controller
                 'paginator' => null,
                 'emptyMessage' => 'No PRs in the last 7 days.',
                 'currentUserId' => $currentUser->id,
-                'lastFeedViewedAt' => $currentUser->last_feed_viewed_at,
+                'readPRIds' => $readPRIds,
             ]
         ];
         
@@ -106,12 +91,20 @@ class FeedController extends Controller
             'components' => $components,
         ];
         
-        // Mark as read AFTER the response is sent to the browser (skip if impersonating on production)
+        // Mark all visible PRs as read AFTER the response is sent to the browser (skip if impersonating on production)
         $isImpersonatingOnProduction = session()->has('impersonator_id') && app()->environment('production');
         if (!$isImpersonatingOnProduction) {
+            $prIds = $prs->pluck('id')->toArray();
             $userId = $currentUser->id;
-            app()->terminating(function () use ($userId) {
-                \App\Models\User::where('id', $userId)->update(['last_feed_viewed_at' => now()]);
+            app()->terminating(function () use ($userId, $prIds) {
+                foreach ($prIds as $prId) {
+                    \App\Models\PersonalRecordRead::firstOrCreate([
+                        'user_id' => $userId,
+                        'personal_record_id' => $prId,
+                    ], [
+                        'read_at' => now(),
+                    ]);
+                }
             });
         }
         
@@ -357,16 +350,6 @@ class FeedController extends Controller
         $currentUser->unfollow($user);
         
         return redirect()->back()->with('success', "You have unfollowed {$user->name}.");
-    }
-
-    public function markAsRead(Request $request)
-    {
-        $currentUser = $request->user();
-        $currentUser->update([
-            'last_feed_viewed_at' => now(),
-        ]);
-        
-        return redirect()->route('feed.index');
     }
 
     public function toggleHighFive(Request $request, PersonalRecord $personalRecord)
