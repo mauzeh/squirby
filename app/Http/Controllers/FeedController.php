@@ -221,7 +221,12 @@ class FeedController extends Controller
         // User avatar
         $avatarHtml = $user->profile_photo_url 
             ? '<div class="user-profile-avatar"><img src="' . e($user->profile_photo_url) . '" alt="Profile photo" class="user-profile-avatar-img"></div>'
-            : '<div class="user-profile-avatar"><i class="fas fa-user-circle"></i></div>';
+            : '<div class="user-profile-avatar">
+                <i class="fas fa-user-circle"></i>
+                ' . ($isSelf ? '<a href="' . route('profile.edit') . '" class="user-profile-avatar-upload-btn">
+                    <i class="fas fa-camera"></i> Add Photo
+                </a>' : '') . '
+            </div>';
         
         $components[] = [
             'type' => 'raw_html',
@@ -548,21 +553,22 @@ class FeedController extends Controller
         
         switch ($notification->type) {
             case 'pr_comment':
-                $prId = $notification->data['personal_record_id'] ?? null;
                 $commentPreview = $notification->data['comment_preview'] ?? '';
                 $message = "commented on your PR: \"{$commentPreview}\"";
-                $link = route('feed.index') . '#pr-' . $prId;
+                // Link to the PR owner's profile (the notification recipient)
+                $link = route('feed.users.show', $notification->user_id);
                 break;
                 
             case 'pr_high_five':
-                $prId = $notification->data['personal_record_id'] ?? null;
                 $message = "gave you a high five!";
-                $link = route('feed.index') . '#pr-' . $prId;
+                // Link to the PR owner's profile (the notification recipient)
+                $link = route('feed.users.show', $notification->user_id);
                 break;
                 
             case 'new_pr':
                 $message = "achieved a new PR!";
-                $link = route('feed.index');
+                // Link to the actor's profile (the person who achieved the PR)
+                $link = route('feed.users.show', $actor->id);
                 break;
         }
         

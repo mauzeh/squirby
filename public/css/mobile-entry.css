@@ -301,11 +301,13 @@
 /* User Profile Avatar */
 .user-profile-avatar {
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     padding: var(--spacing-lg) 0;
     color: var(--text-muted);
     font-size: 120px;
+    position: relative;
 }
 
 .user-profile-avatar i {
@@ -318,6 +320,30 @@
     border-radius: 50%;
     object-fit: cover;
     border: 3px solid var(--text-muted);
+}
+
+.user-profile-avatar-upload-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5em;
+    margin-top: 1em;
+    padding: 0.75em 1.5em;
+    background: var(--primary-color);
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.user-profile-avatar-upload-btn:hover {
+    background: var(--primary-hover);
+    transform: translateY(-1px);
+}
+
+.user-profile-avatar-upload-btn i {
+    font-size: 1em;
 }
 
 /* Profile Photo Section */

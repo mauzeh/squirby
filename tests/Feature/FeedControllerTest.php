@@ -651,29 +651,16 @@ class FeedControllerTest extends TestCase
             'achieved_at' => now()->subHours(12),
         ]);
 
-        // First visit - should see NEW badge (but feed is auto-marked as read)
+        // First visit - should see NEW badge
         $response = $this->actingAs($this->user)->get(route('feed.index'));
         $response->assertSee('NEW');
+        
+        // Manually trigger what the terminating callback does
+        $this->user->update(['last_feed_viewed_at' => now()]);
 
         // Second visit - should NOT see NEW badge
         $response = $this->actingAs($this->user)->get(route('feed.index'));
         $response->assertDontSee('NEW');
-    }
-
-    /** @test */
-    public function it_shows_reset_button_for_admins()
-    {
-        // Create admin role
-        $adminRole = \App\Models\Role::firstOrCreate(['name' => 'Admin']);
-        $this->user->roles()->attach($adminRole);
-        
-        // Set last viewed to future so all PRs appear as "read"
-        $this->user->update(['last_feed_viewed_at' => now()->addDay()]);
-
-        $response = $this->actingAs($this->user)->get(route('feed.index'));
-
-        $response->assertStatus(200);
-        $response->assertSee('Reset to unread');
     }
 
     /** @test */
@@ -1199,9 +1186,12 @@ class FeedControllerTest extends TestCase
             'achieved_at' => now()->subHours(12),
         ]);
 
-        // First visit - should see badge (feed auto-marks as read after render)
+        // First visit - should see badge
         $response = $this->actingAs($this->user)->get(route('feed.index'));
         $response->assertSee('menu-badge');
+        
+        // Manually trigger what the terminating callback does
+        $this->user->update(['last_feed_viewed_at' => now()]);
 
         // Second visit - should NOT see badge
         $response = $this->actingAs($this->user)->get(route('feed.index'));

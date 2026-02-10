@@ -178,7 +178,7 @@ class NotificationTest extends TestCase
         $response = $this->actingAs($this->user)->get(route('notifications.index'));
 
         $response->assertStatus(200);
-        $response->assertSee('No notifications yet');
+        $response->assertSee('Nothing to see here');
     }
 
     /** @test */
