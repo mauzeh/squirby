@@ -536,7 +536,11 @@ class FeedController extends Controller
             $components[] = [
                 'type' => 'raw_html',
                 'data' => [
-                    'html' => '<div class="empty-state">No notifications yet.</div>'
+                    'html' => '<div style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; padding: 2em; text-align: center; margin: 1em 0;">
+                        <i class="fas fa-spa" style="font-size: 3em; color: rgba(255, 255, 255, 0.3); margin-bottom: 0.5em;"></i>
+                        <p style="font-size: 1.1em; margin-bottom: 0.5em; color: #f2f2f2;">Nothing to see here. Yet.</p>
+                        <p style="color: #999; font-size: 0.95em; margin: 0;">When someone high-fives your PR or leaves a comment, we\'ll let you know. Until then, enjoy the silence.</p>
+                    </div>'
                 ]
             ];
         } else {
