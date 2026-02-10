@@ -268,6 +268,11 @@ class User extends Authenticatable
         return $this->hasMany(PersonalRecord::class);
     }
 
+    public function notifications()
+    {
+        return $this->hasMany(Notification::class);
+    }
+
     // Follow relationships
     public function following()
     {

@@ -10,6 +10,7 @@ return [
             'route' => 'feed.index',
             'patterns' => [
                 'feed.*',
+                'notifications.*',
             ],
             'visible' => function() {
                 $currentUser = auth()->user();
@@ -81,6 +82,20 @@ return [
                     'route' => 'feed.index',
                     'title' => 'PR Feed',
                     'patterns' => ['feed.index'],
+                ],
+                [
+                    'label' => 'Notifications',
+                    'icon' => 'fa-bell',
+                    'route' => 'notifications.index',
+                    'title' => 'Notifications',
+                    'patterns' => ['notifications.*'],
+                    'badge' => function() {
+                        $currentUser = auth()->user();
+                        if (!$currentUser) {
+                            return 0;
+                        }
+                        return $currentUser->notifications()->unread()->count();
+                    },
                 ],
                 [
                     'label' => 'Friends',

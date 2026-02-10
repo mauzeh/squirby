@@ -7,6 +7,7 @@ use App\Models\PersonalRecord;
 use App\Models\User;
 use App\Models\PRHighFive;
 use App\Models\PRComment;
+use App\Models\Notification;
 use App\Services\ComponentBuilder as C;
 
 class FeedController extends Controller
@@ -517,4 +518,156 @@ class FeedController extends Controller
 
         return redirect()->back()->with('success', 'Comment deleted!');
     }
+
+    public function notifications(Request $request)
+    {
+        $currentUser = $request->user();
+        
+        // Get recent notifications (last 30 days)
+        $notifications = Notification::with(['actor', 'notifiable'])
+            ->where('user_id', $currentUser->id)
+            ->recent()
+            ->latest()
+            ->paginate(50);
+        
+        $unreadCount = $currentUser->notifications()->unread()->count();
+        
+        $components = [
+            C::title(
+                'Notifications',
+                $unreadCount > 0 ? "{$unreadCount} unread" : 'All caught up!'
+            )->build(),
+        ];
+        
+        // Add session messages if present
+        if ($sessionMessages = C::messagesFromSession()) {
+            $components[] = $sessionMessages;
+        }
+        
+        // Add "Mark all as read" button if there are unread notifications
+        if ($unreadCount > 0) {
+            $components[] = [
+                'type' => 'raw_html',
+                'data' => [
+                    'html' => '<div class="feed-action-buttons">
+                        <form method="POST" action="' . route('notifications.mark-all-read') . '" style="display: inline;">
+                            ' . csrf_field() . '
+                            <button type="submit" class="feed-action-btn">Mark all as read</button>
+                        </form>
+                    </div>'
+                ]
+            ];
+        }
+        
+        // Build notification list
+        if ($notifications->isEmpty()) {
+            $components[] = [
+                'type' => 'raw_html',
+                'data' => [
+                    'html' => '<div class="empty-state">No notifications yet.</div>'
+                ]
+            ];
+        } else {
+            foreach ($notifications as $notification) {
+                $components[] = $this->buildNotificationComponent($notification, $currentUser);
+            }
+        }
+        
+        $data = [
+            'components' => $components,
+        ];
+        
+        return view('mobile-entry.flexible', compact('data'));
+    }
+    
+    private function buildNotificationComponent(Notification $notification, User $currentUser): array
+    {
+        $actor = $notification->actor;
+        $isUnread = $notification->isUnread();
+        
+        // Build notification message based on type
+        $message = '';
+        $link = '#';
+        
+        switch ($notification->type) {
+            case 'pr_comment':
+                $prId = $notification->data['personal_record_id'] ?? null;
+                $commentPreview = $notification->data['comment_preview'] ?? '';
+                $message = "commented on your PR: \"{$commentPreview}\"";
+                $link = route('feed.index') . '#pr-' . $prId;
+                break;
+                
+            case 'pr_high_five':
+                $prId = $notification->data['personal_record_id'] ?? null;
+                $message = "gave you a high five!";
+                $link = route('feed.index') . '#pr-' . $prId;
+                break;
+                
+            case 'new_pr':
+                $message = "achieved a new PR!";
+                $link = route('feed.index');
+                break;
+        }
+        
+        $timeAgo = $notification->created_at->diffForHumans();
+        $unreadClass = $isUnread ? 'notification-unread' : '';
+        
+        // Avatar HTML
+        $avatarHtml = $actor->profile_photo_url 
+            ? '<img src="' . e($actor->profile_photo_url) . '" alt="' . e($actor->name) . '" class="notification-avatar-img">'
+            : '<i class="fas fa-user-circle"></i>';
+        
+        return [
+            'type' => 'raw_html',
+            'data' => [
+                'html' => "
+                    <div class='notification-item {$unreadClass}'>
+                        <a href='{$link}' class='notification-link'>
+                            <div class='notification-avatar'>
+                                {$avatarHtml}
+                            </div>
+                            <div class='notification-content'>
+                                <div class='notification-message'>
+                                    <span class='notification-actor'>{$actor->name}</span> {$message}
+                                </div>
+                                <div class='notification-time'>{$timeAgo}</div>
+                            </div>
+                        </a>
+                        " . ($isUnread ? "
+                        <form method='POST' action='" . route('notifications.mark-read', $notification) . "' style='display: inline;'>
+                            " . csrf_field() . "
+                            <button type='submit' class='notification-mark-read' title='Mark as read'>
+                                <i class='fas fa-check'></i>
+                            </button>
+                        </form>
+                        " : "") . "
+                    </div>
+                "
+            ]
+        ];
+    }
+    
+    public function markAllNotificationsRead(Request $request)
+    {
+        $currentUser = $request->user();
+        
+        $currentUser->notifications()
+            ->unread()
+            ->update(['read_at' => now()]);
+        
+        return redirect()->route('notifications.index')->with('success', 'All notifications marked as read.');
+    }
+    
+    public function markNotificationRead(Request $request, Notification $notification)
+    {
+        // Ensure user owns this notification
+        if ($notification->user_id !== $request->user()->id) {
+            abort(403);
+        }
+        
+        $notification->markAsRead();
+        
+        return redirect()->back()->with('success', 'Notification marked as read.');
+    }
+
 }

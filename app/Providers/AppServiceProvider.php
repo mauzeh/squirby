@@ -8,6 +8,10 @@ use App\Models\MeasurementType;
 use Illuminate\Support\Facades\Auth;
 use App\Http\View\Composers\ExerciseAliasComposer;
 use Illuminate\Support\Facades\Log;
+use App\Models\PRComment;
+use App\Models\PRHighFive;
+use App\Observers\PRCommentObserver;
+use App\Observers\PRHighFiveObserver;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -29,6 +33,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Register observers
+        PRComment::observe(PRCommentObserver::class);
+        PRHighFive::observe(PRHighFiveObserver::class);
+
         // Enable query log for non-production environments
         // 2025-11-09 Temporarily enabled across all environments to troubleshoot discrepancy
         // in recommendations between local and product for 1 user.
