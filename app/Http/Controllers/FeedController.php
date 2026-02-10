@@ -90,7 +90,7 @@ class FeedController extends Controller
         ];
         
         // Add FAB for quick connection
-        $components[] = C::rawHtml('<a href="' . route('profile.edit') . '#connection" class="fab" title="Connect with Friends"><i class="fas fa-user-plus"></i></a>');
+        $components[] = C::rawHtml('<a href="' . route('connections.index') . '" class="fab" title="Connect"><i class="fas fa-user-plus"></i></a>');
         
         $data = [
             'components' => $components,
@@ -182,7 +182,7 @@ class FeedController extends Controller
         $components[] = $itemList->build();
         
         // Add FAB for quick connection
-        $components[] = C::rawHtml('<a href="' . route('profile.edit') . '#connection" class="fab" title="Connect with Friends"><i class="fas fa-user-plus"></i></a>');
+        $components[] = C::rawHtml('<a href="' . route('connections.index') . '" class="fab" title="Connect"><i class="fas fa-user-plus"></i></a>');
         
         $data = [
             'components' => $components,

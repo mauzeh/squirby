@@ -255,7 +255,7 @@ return [
             'label' => null,
             'icon' => 'fa-cog',
             'route' => 'profile.edit', // Default route - profile for all users
-            'patterns' => ['users.*', 'exercises.index', 'exercises.create', 'exercises.edit', 'exercises.destroy', 'recommendations.*', 'profile.edit'],
+            'patterns' => ['users.*', 'exercises.index', 'exercises.create', 'exercises.edit', 'exercises.destroy', 'recommendations.*', 'profile.edit', 'connections.index'],
             'style' => 'padding: 14px 8px',
             'children' => [
                 // Admin-only items
@@ -284,6 +284,12 @@ return [
                     'label' => 'Profile',
                     'route' => 'profile.edit',
                     'patterns' => ['profile.edit'],
+                ],
+                [
+                    'label' => 'Connect',
+                    'route' => 'connections.index',
+                    'patterns' => ['connections.index'],
+                    'icon' => 'fa-user-plus',
                 ],
                 [
                     'label' => 'Logout',

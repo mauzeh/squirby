@@ -79,6 +79,8 @@
 .connection-refresh-form {
     text-align: center;
     margin-bottom: 32px;
+    display: flex;
+    justify-content: center;
 }
 
 .connection-refresh-form .btn {

@@ -188,7 +188,7 @@ class ProfileFormService
             $expiresAt = $user->connection_token_expires_at;
 
             // Generate QR code URL (using a simple QR code API)
-            $connectUrl = route('profile.connect-via-token', ['token' => $token]);
+            $connectUrl = route('connections.connect', ['token' => $token]);
             $qrCodeUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' . urlencode($connectUrl);
 
             // Calculate time remaining
@@ -196,8 +196,8 @@ class ProfileFormService
 
             return C::connection($token, $expiresAt, $minutesRemaining)
                 ->qrCodeUrl($qrCodeUrl)
-                ->generateTokenRoute(route('profile.generate-connection-token'))
-                ->connectRoute('/connect/__TOKEN__')
+                ->generateTokenRoute(route('connections.generate-token'))
+                ->connectRoute('/connections/connect/__TOKEN__')
                 ->build();
         }
 

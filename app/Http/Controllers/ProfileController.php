@@ -39,11 +39,37 @@ class ProfileController extends Controller
 
         // Add form components
         $components[] = $this->profileFormService->generateProfilePhotoForm($user);
-        $components[] = $this->profileFormService->generateConnectionForm($user);
         $components[] = $this->profileFormService->generateProfileInformationForm($user);
         $components[] = $this->profileFormService->generatePreferencesForm($user);
         $components[] = $this->profileFormService->generatePasswordForm();
         $components[] = $this->profileFormService->generateDeleteAccountForm();
+
+        return view('mobile-entry.flexible', [
+            'data' => [
+                'components' => $components,
+            ]
+        ]);
+    }
+
+    /**
+     * Display the connections page.
+     */
+    public function connections(Request $request): View
+    {
+        $user = $request->user();
+        
+        $components = [
+            C::title('Connect', 'Share your code or scan a friend\'s code to connect')->build(),
+        ];
+
+        // Add session messages if any
+        $sessionMessages = C::messagesFromSession();
+        if ($sessionMessages) {
+            $components[] = $sessionMessages;
+        }
+
+        // Add connection form
+        $components[] = $this->profileFormService->generateConnectionForm($user);
 
         return view('mobile-entry.flexible', [
             'data' => [
@@ -161,7 +187,7 @@ class ProfileController extends Controller
         $user = $request->user();
         $user->generateConnectionToken();
 
-        return Redirect::route('profile.edit');
+        return Redirect::route('connections.index');
     }
 
     /**
@@ -175,18 +201,18 @@ class ProfileController extends Controller
         $targetUser = \App\Models\User::findByConnectionToken($token);
 
         if (!$targetUser) {
-            return Redirect::route('profile.edit')->with('error', 'Invalid or expired connection code.');
+            return Redirect::route('connections.index')->with('error', 'Invalid or expired connection code.');
         }
 
         if ($targetUser->id === $currentUser->id) {
-            return Redirect::route('profile.edit')->with('error', 'You cannot connect with yourself.');
+            return Redirect::route('connections.index')->with('error', 'You cannot connect with yourself.');
         }
 
         // Create mutual follow
         $currentUser->follow($targetUser);
         $targetUser->follow($currentUser);
 
-        return Redirect::route('profile.edit')->with('success', "You're now connected with {$targetUser->name}!");
+        return Redirect::route('connections.index')->with('success', "You're now connected with {$targetUser->name}!");
     }
 }
 

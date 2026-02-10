@@ -16,9 +16,9 @@ class ConnectionTest extends TestCase
 
         $this->actingAs($user);
 
-        $response = $this->post(route('profile.generate-connection-token'));
+        $response = $this->post(route('connections.generate-token'));
 
-        $response->assertRedirect(route('profile.edit'));
+        $response->assertRedirect(route('connections.index'));
         
         $user->refresh();
         $this->assertNotNull($user->connection_token);
@@ -26,17 +26,17 @@ class ConnectionTest extends TestCase
         $this->assertEquals(6, strlen($user->connection_token));
     }
 
-    public function test_connection_token_is_displayed_on_profile_page(): void
+    public function test_connection_token_is_displayed_on_connections_page(): void
     {
         $user = User::factory()->create();
         $user->generateConnectionToken();
 
         $this->actingAs($user);
 
-        $response = $this->get(route('profile.edit'));
+        $response = $this->get(route('connections.index'));
 
         $response->assertStatus(200);
-        $response->assertSee('Connect with Friends');
+        $response->assertSee('Connect');
         $response->assertSee($user->connection_token);
     }
 
@@ -49,9 +49,9 @@ class ConnectionTest extends TestCase
 
         $this->actingAs($user2);
 
-        $response = $this->post(route('profile.connect-via-token', ['token' => $token]));
+        $response = $this->post(route('connections.connect', ['token' => $token]));
 
-        $response->assertRedirect(route('profile.edit'));
+        $response->assertRedirect(route('connections.index'));
         $response->assertSessionHas('success');
         
         // Check mutual follow
@@ -65,9 +65,9 @@ class ConnectionTest extends TestCase
 
         $this->actingAs($user);
 
-        $response = $this->post(route('profile.connect-via-token', ['token' => '999999']));
+        $response = $this->post(route('connections.connect', ['token' => '999999']));
 
-        $response->assertRedirect(route('profile.edit'));
+        $response->assertRedirect(route('connections.index'));
         $response->assertSessionHas('error', 'Invalid or expired connection code.');
     }
 
@@ -83,9 +83,9 @@ class ConnectionTest extends TestCase
 
         $this->actingAs($user2);
 
-        $response = $this->post(route('profile.connect-via-token', ['token' => $token]));
+        $response = $this->post(route('connections.connect', ['token' => $token]));
 
-        $response->assertRedirect(route('profile.edit'));
+        $response->assertRedirect(route('connections.index'));
         $response->assertSessionHas('error', 'Invalid or expired connection code.');
     }
 
@@ -96,9 +96,9 @@ class ConnectionTest extends TestCase
 
         $this->actingAs($user);
 
-        $response = $this->post(route('profile.connect-via-token', ['token' => $token]));
+        $response = $this->post(route('connections.connect', ['token' => $token]));
 
-        $response->assertRedirect(route('profile.edit'));
+        $response->assertRedirect(route('connections.index'));
         $response->assertSessionHas('error', 'You cannot connect with yourself.');
     }
 
@@ -134,7 +134,7 @@ class ConnectionTest extends TestCase
         $token = $user1->generateConnectionToken();
 
         $this->actingAs($user2);
-        $this->post(route('profile.connect-via-token', ['token' => $token]));
+        $this->post(route('connections.connect', ['token' => $token]));
 
         // Both users should follow each other
         $this->assertTrue($user1->isFollowing($user2));
@@ -155,11 +155,11 @@ class ConnectionTest extends TestCase
         $token = $user1->generateConnectionToken();
 
         $this->actingAs($user2);
-        $this->post(route('profile.connect-via-token', ['token' => $token]));
+        $this->post(route('connections.connect', ['token' => $token]));
         
         // Generate new token and connect again
         $token2 = $user1->generateConnectionToken();
-        $this->post(route('profile.connect-via-token', ['token' => $token2]));
+        $this->post(route('connections.connect', ['token' => $token2]));
 
         // Should still only have 1 follow relationship each way
         $this->assertEquals(1, $user1->following()->count());

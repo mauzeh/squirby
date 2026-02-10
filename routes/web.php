@@ -39,8 +39,9 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     
     // Connection routes
-    Route::post('/profile/connection-token/generate', [ProfileController::class, 'generateConnectionToken'])->name('profile.generate-connection-token');
-    Route::post('/connect/{token}', [ProfileController::class, 'connectViaToken'])->name('profile.connect-via-token');
+    Route::get('/connections', [ProfileController::class, 'connections'])->name('connections.index');
+    Route::post('/connections/generate-token', [ProfileController::class, 'generateConnectionToken'])->name('connections.generate-token');
+    Route::post('/connections/connect/{token}', [ProfileController::class, 'connectViaToken'])->name('connections.connect');
 
     // Custom Application Routes (Protected by 'auth' middleware)
 

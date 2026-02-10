@@ -10,13 +10,13 @@ The QR code connection feature allows users to connect with each other at the gy
 
 Each user can generate a temporary connection token that:
 - Is a 6-digit numeric code (e.g., `123 456`)
-- Expires after 10 minutes
+- Expires after 1 hour
 - Can be regenerated at any time
 - Is displayed both as text and as a QR code
 
 ### Connection Process
 
-1. User A opens their Profile page
+1. User A opens the Connect with Friends page
 2. User A sees their connection code and QR code
 3. User B can either:
    - Scan User A's QR code with their device camera
@@ -25,12 +25,16 @@ Each user can generate a temporary connection token that:
 
 ## User Interface
 
-### Profile Page Location
+### Accessing the Connection Page
 
-The connection interface is located on the Profile page (`/profile`), positioned between:
-- Profile Photo section (above)
-- Profile Information section (below)
+Users can access the connection feature in two ways:
 
+1. **Settings Menu**: Click the settings icon (gear) in the navigation menu, then select "Connect with Friends"
+2. **Floating Action Button (FAB)**: On Feed pages (PR Feed and Find Friends), click the floating action button in the bottom-right corner
+
+### Connection Page Location
+
+The connection interface is located at `/connections` as a dedicated page under the settings menu, positioned between "Profile" and "Logout" options.
 ### Components
 
 1. **Connection Code Display**
@@ -61,11 +65,14 @@ connection_token_expires_at TIMESTAMP NULLABLE
 ### Routes
 
 ```php
+// View connections page
+GET /connections
+
 // Generate new connection token
-POST /profile/connection-token/generate
+POST /connections/generate-token
 
 // Connect via token
-POST /connect/{token}
+POST /connections/connect/{token}
 ```
 
 ### Models
