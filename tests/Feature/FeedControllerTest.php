@@ -1368,7 +1368,7 @@ class FeedControllerTest extends TestCase
     }
 
     /** @test */
-    public function it_does_not_show_mark_as_read_button_for_only_own_prs()
+    public function it_shows_mark_as_read_button_for_own_prs()
     {
         $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
         
@@ -1388,8 +1388,8 @@ class FeedControllerTest extends TestCase
         $response = $this->actingAs($this->user)->get(route('feed.index'));
 
         $response->assertStatus(200);
-        // Should NOT see "Mark all as read" button (only own PRs)
-        $response->assertDontSee('Mark all as read');
+        // Should see "Mark all as read" button (own PRs count as new)
+        $response->assertSee('Mark all as read');
     }
 
     /** @test */
