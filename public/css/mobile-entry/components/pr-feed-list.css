@@ -633,6 +633,36 @@
     position: relative;
     width: 100%;
     text-align: left;
+    display: flex;
+    gap: var(--spacing-sm);
+    align-items: flex-start;
+}
+
+.pr-comment-avatar {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    font-size: 32px;
+}
+
+.pr-comment-avatar i {
+    display: block;
+}
+
+.pr-comment-avatar-img {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.pr-comment-content {
+    flex: 1;
+    min-width: 0;
 }
 
 .pr-comment-header {
@@ -664,6 +694,7 @@
     position: absolute;
     top: var(--spacing-xs);
     right: var(--spacing-xs);
+    flex-shrink: 0;
 }
 
 .pr-comment-delete-btn {
