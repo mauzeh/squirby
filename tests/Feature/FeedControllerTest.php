@@ -1450,4 +1450,401 @@ class FeedControllerTest extends TestCase
         // Should see Feed menu item for admins
         $response->assertSee('id="feed-nav-link"', false);
     }
+
+    /** @test */
+    public function it_allows_user_to_add_comment_to_pr()
+    {
+        $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
+        $liftLog = LiftLog::factory()->create(['user_id' => $this->otherUser->id]);
+        
+        $pr = PersonalRecord::factory()->create([
+            'user_id' => $this->otherUser->id,
+            'exercise_id' => $exercise->id,
+            'lift_log_id' => $liftLog->id,
+        ]);
+
+        $response = $this->actingAs($this->user)
+            ->post(route('feed.store-comment', $pr), [
+                'comment' => 'Great work!',
+            ]);
+
+        $response->assertRedirect();
+        
+        $this->assertDatabaseHas('pr_comments', [
+            'user_id' => $this->user->id,
+            'personal_record_id' => $pr->id,
+            'comment' => 'Great work!',
+        ]);
+    }
+
+    /** @test */
+    public function it_returns_json_for_ajax_comment_request()
+    {
+        $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
+        $liftLog = LiftLog::factory()->create(['user_id' => $this->otherUser->id]);
+        
+        $pr = PersonalRecord::factory()->create([
+            'user_id' => $this->otherUser->id,
+            'exercise_id' => $exercise->id,
+            'lift_log_id' => $liftLog->id,
+        ]);
+
+        $response = $this->actingAs($this->user)
+            ->postJson(route('feed.store-comment', $pr), [
+                'comment' => 'Nice PR!',
+            ]);
+
+        $response->assertStatus(200);
+        $response->assertJson([
+            'success' => true,
+        ]);
+        
+        $responseData = $response->json();
+        $this->assertArrayHasKey('html', $responseData);
+        $this->assertStringContainsString('Nice PR!', $responseData['html']);
+        $this->assertStringContainsString('pr-comment', $responseData['html']);
+    }
+
+    /** @test */
+    public function it_validates_comment_is_required()
+    {
+        $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
+        $liftLog = LiftLog::factory()->create(['user_id' => $this->otherUser->id]);
+        
+        $pr = PersonalRecord::factory()->create([
+            'user_id' => $this->otherUser->id,
+            'exercise_id' => $exercise->id,
+            'lift_log_id' => $liftLog->id,
+        ]);
+
+        $response = $this->actingAs($this->user)
+            ->post(route('feed.store-comment', $pr), [
+                'comment' => '',
+            ]);
+
+        $response->assertSessionHasErrors('comment');
+    }
+
+    /** @test */
+    public function it_validates_comment_max_length()
+    {
+        $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
+        $liftLog = LiftLog::factory()->create(['user_id' => $this->otherUser->id]);
+        
+        $pr = PersonalRecord::factory()->create([
+            'user_id' => $this->otherUser->id,
+            'exercise_id' => $exercise->id,
+            'lift_log_id' => $liftLog->id,
+        ]);
+
+        $response = $this->actingAs($this->user)
+            ->post(route('feed.store-comment', $pr), [
+                'comment' => str_repeat('a', 1001), // Over 1000 chars
+            ]);
+
+        $response->assertSessionHasErrors('comment');
+    }
+
+    /** @test */
+    public function it_allows_user_to_delete_own_comment()
+    {
+        $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
+        $liftLog = LiftLog::factory()->create(['user_id' => $this->otherUser->id]);
+        
+        $pr = PersonalRecord::factory()->create([
+            'user_id' => $this->otherUser->id,
+            'exercise_id' => $exercise->id,
+            'lift_log_id' => $liftLog->id,
+        ]);
+
+        $comment = \App\Models\PRComment::create([
+            'user_id' => $this->user->id,
+            'personal_record_id' => $pr->id,
+            'comment' => 'Test comment',
+        ]);
+
+        $response = $this->actingAs($this->user)
+            ->delete(route('feed.delete-comment', $comment));
+
+        $response->assertRedirect();
+        
+        $this->assertDatabaseMissing('pr_comments', [
+            'id' => $comment->id,
+        ]);
+    }
+
+    /** @test */
+    public function it_prevents_user_from_deleting_others_comments()
+    {
+        $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
+        $liftLog = LiftLog::factory()->create(['user_id' => $this->otherUser->id]);
+        
+        $pr = PersonalRecord::factory()->create([
+            'user_id' => $this->otherUser->id,
+            'exercise_id' => $exercise->id,
+            'lift_log_id' => $liftLog->id,
+        ]);
+
+        $comment = \App\Models\PRComment::create([
+            'user_id' => $this->otherUser->id,
+            'personal_record_id' => $pr->id,
+            'comment' => 'Other user comment',
+        ]);
+
+        $response = $this->actingAs($this->user)
+            ->delete(route('feed.delete-comment', $comment));
+
+        $response->assertStatus(403);
+        
+        $this->assertDatabaseHas('pr_comments', [
+            'id' => $comment->id,
+        ]);
+    }
+
+    /** @test */
+    public function it_allows_admin_to_delete_any_comment()
+    {
+        // Make user an admin
+        $adminRole = \App\Models\Role::firstOrCreate(['name' => 'Admin']);
+        $this->user->roles()->attach($adminRole);
+
+        $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
+        $liftLog = LiftLog::factory()->create(['user_id' => $this->otherUser->id]);
+        
+        $pr = PersonalRecord::factory()->create([
+            'user_id' => $this->otherUser->id,
+            'exercise_id' => $exercise->id,
+            'lift_log_id' => $liftLog->id,
+        ]);
+
+        $comment = \App\Models\PRComment::create([
+            'user_id' => $this->otherUser->id,
+            'personal_record_id' => $pr->id,
+            'comment' => 'Other user comment',
+        ]);
+
+        $response = $this->actingAs($this->user)
+            ->delete(route('feed.delete-comment', $comment));
+
+        $response->assertRedirect();
+        
+        $this->assertDatabaseMissing('pr_comments', [
+            'id' => $comment->id,
+        ]);
+    }
+
+    /** @test */
+    public function it_returns_json_for_ajax_delete_comment_request()
+    {
+        $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
+        $liftLog = LiftLog::factory()->create(['user_id' => $this->otherUser->id]);
+        
+        $pr = PersonalRecord::factory()->create([
+            'user_id' => $this->otherUser->id,
+            'exercise_id' => $exercise->id,
+            'lift_log_id' => $liftLog->id,
+        ]);
+
+        $comment = \App\Models\PRComment::create([
+            'user_id' => $this->user->id,
+            'personal_record_id' => $pr->id,
+            'comment' => 'Test comment',
+        ]);
+
+        $response = $this->actingAs($this->user)
+            ->deleteJson(route('feed.delete-comment', $comment));
+
+        $response->assertStatus(200);
+        $response->assertJson([
+            'success' => true,
+        ]);
+    }
+
+    /** @test */
+    public function it_shows_comments_on_feed()
+    {
+        $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
+        $liftLog = LiftLog::factory()->create(['user_id' => $this->otherUser->id]);
+        
+        $pr = PersonalRecord::factory()->create([
+            'user_id' => $this->otherUser->id,
+            'exercise_id' => $exercise->id,
+            'lift_log_id' => $liftLog->id,
+            'achieved_at' => now()->subHours(1),
+        ]);
+
+        // Follow the other user
+        $this->user->follow($this->otherUser);
+
+        // Add comment
+        \App\Models\PRComment::create([
+            'user_id' => $this->user->id,
+            'personal_record_id' => $pr->id,
+            'comment' => 'Awesome lift!',
+        ]);
+
+        $response = $this->actingAs($this->user)->get(route('feed.index'));
+
+        $response->assertStatus(200);
+        $response->assertSee('Awesome lift!');
+        $response->assertSee('pr-comment');
+    }
+
+    /** @test */
+    public function it_shows_comment_author_as_you_for_own_comments()
+    {
+        $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
+        $liftLog = LiftLog::factory()->create(['user_id' => $this->otherUser->id]);
+        
+        $pr = PersonalRecord::factory()->create([
+            'user_id' => $this->otherUser->id,
+            'exercise_id' => $exercise->id,
+            'lift_log_id' => $liftLog->id,
+            'achieved_at' => now()->subHours(1),
+        ]);
+
+        // Follow the other user
+        $this->user->follow($this->otherUser);
+
+        // Add comment
+        \App\Models\PRComment::create([
+            'user_id' => $this->user->id,
+            'personal_record_id' => $pr->id,
+            'comment' => 'My comment',
+        ]);
+
+        $response = $this->actingAs($this->user)->get(route('feed.index'));
+
+        $response->assertStatus(200);
+        $response->assertSee('My comment');
+        // Should see "You" as the author
+        $response->assertSee('pr-comment-author">You</strong>', false);
+    }
+
+    /** @test */
+    public function it_shows_delete_button_only_for_own_comments()
+    {
+        $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
+        $liftLog = LiftLog::factory()->create(['user_id' => $this->otherUser->id]);
+        
+        $pr = PersonalRecord::factory()->create([
+            'user_id' => $this->otherUser->id,
+            'exercise_id' => $exercise->id,
+            'lift_log_id' => $liftLog->id,
+            'achieved_at' => now()->subHours(1),
+        ]);
+
+        // Follow the other user
+        $this->user->follow($this->otherUser);
+
+        // Add own comment
+        \App\Models\PRComment::create([
+            'user_id' => $this->user->id,
+            'personal_record_id' => $pr->id,
+            'comment' => 'My comment',
+        ]);
+
+        // Add other user's comment
+        \App\Models\PRComment::create([
+            'user_id' => $this->otherUser->id,
+            'personal_record_id' => $pr->id,
+            'comment' => 'Other comment',
+        ]);
+
+        $response = $this->actingAs($this->user)->get(route('feed.index'));
+
+        $response->assertStatus(200);
+        // Should see both comments
+        $response->assertSee('My comment');
+        $response->assertSee('Other comment');
+        // Should see delete button (at least one)
+        $response->assertSee('pr-comment-delete-btn');
+    }
+
+    /** @test */
+    public function it_requires_authentication_for_commenting()
+    {
+        $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
+        $liftLog = LiftLog::factory()->create(['user_id' => $this->otherUser->id]);
+        
+        $pr = PersonalRecord::factory()->create([
+            'user_id' => $this->otherUser->id,
+            'exercise_id' => $exercise->id,
+            'lift_log_id' => $liftLog->id,
+        ]);
+
+        $response = $this->post(route('feed.store-comment', $pr), [
+            'comment' => 'Test',
+        ]);
+        
+        $response->assertRedirect(route('login'));
+    }
+
+    /** @test */
+    public function it_requires_authentication_for_deleting_comments()
+    {
+        $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
+        $liftLog = LiftLog::factory()->create(['user_id' => $this->otherUser->id]);
+        
+        $pr = PersonalRecord::factory()->create([
+            'user_id' => $this->otherUser->id,
+            'exercise_id' => $exercise->id,
+            'lift_log_id' => $liftLog->id,
+        ]);
+
+        $comment = \App\Models\PRComment::create([
+            'user_id' => $this->user->id,
+            'personal_record_id' => $pr->id,
+            'comment' => 'Test comment',
+        ]);
+
+        $response = $this->delete(route('feed.delete-comment', $comment));
+        $response->assertRedirect(route('login'));
+    }
+
+    /** @test */
+    public function it_shows_comments_sorted_by_creation_time()
+    {
+        $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
+        $liftLog = LiftLog::factory()->create(['user_id' => $this->otherUser->id]);
+        
+        $pr = PersonalRecord::factory()->create([
+            'user_id' => $this->otherUser->id,
+            'exercise_id' => $exercise->id,
+            'lift_log_id' => $liftLog->id,
+            'achieved_at' => now()->subHours(1),
+        ]);
+
+        // Follow the other user
+        $this->user->follow($this->otherUser);
+
+        // Add comments in specific order
+        $comment1 = \App\Models\PRComment::create([
+            'user_id' => $this->user->id,
+            'personal_record_id' => $pr->id,
+            'comment' => 'First comment',
+            'created_at' => now()->subMinutes(10),
+        ]);
+
+        $comment2 = \App\Models\PRComment::create([
+            'user_id' => $this->otherUser->id,
+            'personal_record_id' => $pr->id,
+            'comment' => 'Second comment',
+            'created_at' => now()->subMinutes(5),
+        ]);
+
+        $response = $this->actingAs($this->user)->get(route('feed.index'));
+
+        $response->assertStatus(200);
+        
+        // Get the response content
+        $content = $response->getContent();
+        
+        // Find positions of each comment in the HTML
+        $posFirst = strpos($content, 'First comment');
+        $posSecond = strpos($content, 'Second comment');
+        
+        // First comment should appear before second comment
+        $this->assertLessThan($posSecond, $posFirst, 'Comments should be sorted by creation time');
+    }
 }
