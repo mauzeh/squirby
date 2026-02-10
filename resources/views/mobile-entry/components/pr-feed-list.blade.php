@@ -218,16 +218,17 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     $isOwnPR = $user->id === ($data['currentUserId'] ?? null);
                     
-                    // Check if new (applies to all PRs, including own)
-                    // If never viewed, all PRs in last 7 days are new
-                    // Otherwise, check if within 24 hours AND after last viewed
-                    $lastViewed = $data['lastFeedViewedAt'] ?? null;
-                    if (!$lastViewed) {
-                        $isNew = true;
-                    } else {
-                        $isWithin24Hours = $date->isAfter(now()->subHours(24));
-                        $isAfterLastViewed = $date->isAfter($lastViewed);
-                        $isNew = $isWithin24Hours && $isAfterLastViewed;
+                    // Check if any PR in this group is unread
+                    $readPRIds = $data['readPRIds'] ?? [];
+                    $isNew = false;
+                    foreach ($allLiftLogs as $liftLog) {
+                        $allPRs = $liftLog->allPRs ?? collect([$liftLog]);
+                        foreach ($allPRs as $pr) {
+                            if (!in_array($pr->id, $readPRIds)) {
+                                $isNew = true;
+                                break 2; // Break out of both loops
+                            }
+                        }
                     }
                 @endphp
                 <div class="pr-card{{ $isNew ? ' pr-card-new' : '' }}">

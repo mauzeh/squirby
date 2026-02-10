@@ -592,26 +592,26 @@ class FeedControllerTest extends TestCase
         // Follow the other user
         $this->user->follow($this->otherUser);
         
-        // Set last viewed to now, so the old PR will be considered "read"
-        $this->user->update(['last_feed_viewed_at' => now()]);
-        
-        // Create an old PR (more than 24 hours ago, but after we "viewed" the feed)
+        // Create an old PR (more than 24 hours ago)
         $oldLiftLog = LiftLog::factory()->create([
             'user_id' => $this->otherUser->id,
             'exercise_id' => $exercise->id,
         ]);
         
-        PersonalRecord::factory()->create([
+        $pr = PersonalRecord::factory()->create([
             'user_id' => $this->otherUser->id,
             'exercise_id' => $exercise->id,
             'lift_log_id' => $oldLiftLog->id,
             'achieved_at' => now()->subHours(30),
         ]);
+        
+        // Mark the PR as read
+        $pr->markAsReadBy($this->user);
 
         $response = $this->actingAs($this->user)->get(route('feed.index'));
 
         $response->assertStatus(200);
-        // Should NOT see NEW badge (PR is older than 24 hours)
+        // Should NOT see NEW badge (PR is marked as read)
         $response->assertDontSee('NEW');
         // Should NOT see the pr-card-new class
         $response->assertDontSee('pr-card-new');
@@ -620,14 +620,33 @@ class FeedControllerTest extends TestCase
     /** @test */
     public function it_auto_marks_feed_as_read_on_view()
     {
-        $this->assertNull($this->user->last_feed_viewed_at);
+        $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
+        
+        // Follow the other user
+        $this->user->follow($this->otherUser);
+        
+        // Create a PR
+        $liftLog = LiftLog::factory()->create([
+            'user_id' => $this->otherUser->id,
+            'exercise_id' => $exercise->id,
+        ]);
+        
+        $pr = PersonalRecord::factory()->create([
+            'user_id' => $this->otherUser->id,
+            'exercise_id' => $exercise->id,
+            'lift_log_id' => $liftLog->id,
+            'achieved_at' => now()->subHours(1),
+        ]);
+        
+        // Verify PR is not read yet
+        $this->assertFalse($pr->isReadBy($this->user));
 
         $response = $this->actingAs($this->user)->get(route('feed.index'));
 
         $response->assertStatus(200);
         
-        $this->user->refresh();
-        $this->assertNotNull($this->user->last_feed_viewed_at);
+        // Verify PR is now marked as read
+        $this->assertTrue($pr->isReadBy($this->user));
     }
 
     /** @test */
@@ -644,19 +663,19 @@ class FeedControllerTest extends TestCase
             'exercise_id' => $exercise->id,
         ]);
         
-        PersonalRecord::factory()->create([
+        $pr = PersonalRecord::factory()->create([
             'user_id' => $this->otherUser->id,
             'exercise_id' => $exercise->id,
             'lift_log_id' => $liftLog->id,
             'achieved_at' => now()->subHours(12),
         ]);
 
-        // First visit - should see NEW badge
+        // First visit - should see NEW badge (PR is unread)
         $response = $this->actingAs($this->user)->get(route('feed.index'));
         $response->assertSee('NEW');
         
-        // Manually trigger what the terminating callback does
-        $this->user->update(['last_feed_viewed_at' => now()]);
+        // Mark PR as read (simulating what happens after viewing)
+        $pr->markAsReadBy($this->user);
 
         // Second visit - should NOT see NEW badge
         $response = $this->actingAs($this->user)->get(route('feed.index'));
