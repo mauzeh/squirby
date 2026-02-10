@@ -37,9 +37,8 @@
 }
 
 .connection-code-label {
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
+    font-size: 14px;
+    letter-spacing: 0.5px;
     color: var(--text-secondary);
     margin-bottom: 12px;
     font-weight: 600;
