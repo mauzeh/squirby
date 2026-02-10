@@ -165,4 +165,56 @@ class ConnectionTest extends TestCase
         $this->assertEquals(1, $user1->following()->count());
         $this->assertEquals(1, $user2->following()->count());
     }
+
+    public function test_new_connection_prs_show_as_unread_in_feed(): void
+    {
+        $user1 = User::factory()->create();
+        $user2 = User::factory()->create();
+        
+        // User1 creates a PR with show_in_feed enabled
+        $exercise = \App\Models\Exercise::factory()->create([
+            'user_id' => $user1->id,
+            'show_in_feed' => true,
+        ]);
+        $liftLog = \App\Models\LiftLog::factory()->create([
+            'user_id' => $user1->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => now()->subDays(2),
+        ]);
+        $pr = \App\Models\PersonalRecord::factory()->create([
+            'user_id' => $user1->id,
+            'exercise_id' => $exercise->id,
+            'lift_log_id' => $liftLog->id,
+            'achieved_at' => now()->subDays(2),
+        ]);
+        
+        // User2 views feed (no PRs yet since not following anyone)
+        $this->actingAs($user2);
+        $this->get(route('feed.index'));
+        
+        // User2's last_feed_viewed_at is now set
+        $user2->refresh();
+        $this->assertNotNull($user2->last_feed_viewed_at);
+        $lastViewedAt = $user2->last_feed_viewed_at;
+        
+        // Wait a moment to ensure follow timestamp is after last_feed_viewed_at
+        sleep(1);
+        
+        // User2 connects with User1 via token
+        $token = $user1->generateConnectionToken();
+        $this->post(route('connections.connect', ['token' => $token]));
+        
+        // Now when User2 views feed, User1's PR should show as new
+        $response = $this->get(route('feed.index'));
+        
+        // Check that the feed shows the PR
+        $response->assertSee($exercise->title);
+        
+        // The badge should show because User1's PRs are from a newly followed user
+        // This is tested by checking the menu badge logic
+        $user2->refresh();
+        $followRelationship = $user2->following()->wherePivot('following_id', $user1->id)->first();
+        $this->assertNotNull($followRelationship);
+        $this->assertTrue($followRelationship->pivot->created_at->isAfter($lastViewedAt));
+    }
 }

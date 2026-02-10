@@ -59,6 +59,16 @@ class FeedController extends Controller
                 return true;
             }
             
+            // Check if this PR is from a newly followed user
+            $followRelationship = $currentUser->following()
+                ->wherePivot('following_id', $item->user_id)
+                ->first();
+            
+            if ($followRelationship && $followRelationship->pivot->created_at->isAfter($currentUser->last_feed_viewed_at)) {
+                // This is a newly followed user, show their PRs as new
+                return true;
+            }
+            
             // Otherwise, check if within 24 hours AND after last viewed
             $isWithin24Hours = $item->achieved_at->isAfter(now()->subHours(24));
             $isAfterLastViewed = $item->achieved_at->isAfter($currentUser->last_feed_viewed_at);
