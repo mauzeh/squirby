@@ -109,8 +109,9 @@ class FeedController extends Controller
         ];
         
         // Mark as read AFTER the response is sent to the browser
-        app()->terminating(function () use ($currentUser) {
-            $currentUser->update(['last_feed_viewed_at' => now()]);
+        $userId = $currentUser->id;
+        app()->terminating(function () use ($userId) {
+            \App\Models\User::where('id', $userId)->update(['last_feed_viewed_at' => now()]);
         });
         
         return view('mobile-entry.flexible', compact('data'));
