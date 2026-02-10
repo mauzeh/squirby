@@ -37,6 +37,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/profile/photo', [ProfileController::class, 'updatePhoto'])->name('profile.update-photo');
     Route::delete('/profile/photo', [ProfileController::class, 'deletePhoto'])->name('profile.delete-photo');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    
+    // Connection routes
+    Route::post('/profile/connection-token/generate', [ProfileController::class, 'generateConnectionToken'])->name('profile.generate-connection-token');
+    Route::post('/connect/{token}', [ProfileController::class, 'connectViaToken'])->name('profile.connect-via-token');
 
     // Custom Application Routes (Protected by 'auth' middleware)
 

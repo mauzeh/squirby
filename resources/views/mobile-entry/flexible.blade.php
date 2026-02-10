@@ -24,6 +24,7 @@
     <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/pr-records-table.css') }}?v={{ config('app.version', '1.0') }}">
     <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/pr-feed-list.css') }}?v={{ config('app.version', '1.0') }}">
     <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/notifications.css') }}?v={{ config('app.version', '1.0') }}">
+    <link rel="stylesheet" href="{{ asset('css/mobile-entry/components/connection.css') }}?v={{ config('app.version', '1.0') }}">
 @endsection
 
 @section('scripts')

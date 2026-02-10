@@ -39,6 +39,7 @@ class ProfileController extends Controller
 
         // Add form components
         $components[] = $this->profileFormService->generateProfilePhotoForm($user);
+        $components[] = $this->profileFormService->generateConnectionForm($user);
         $components[] = $this->profileFormService->generateProfileInformationForm($user);
         $components[] = $this->profileFormService->generatePreferencesForm($user);
         $components[] = $this->profileFormService->generatePasswordForm();
@@ -151,4 +152,41 @@ class ProfileController extends Controller
 
         return Redirect::to('/');
     }
+
+    /**
+     * Generate a new connection token for the user.
+     */
+    public function generateConnectionToken(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+        $user->generateConnectionToken();
+
+        return Redirect::route('profile.edit');
+    }
+
+    /**
+     * Connect with another user via their connection token.
+     */
+    public function connectViaToken(Request $request, string $token): RedirectResponse
+    {
+        $currentUser = $request->user();
+
+        // Find user by token
+        $targetUser = \App\Models\User::findByConnectionToken($token);
+
+        if (!$targetUser) {
+            return Redirect::route('profile.edit')->with('error', 'Invalid or expired connection code.');
+        }
+
+        if ($targetUser->id === $currentUser->id) {
+            return Redirect::route('profile.edit')->with('error', 'You cannot connect with yourself.');
+        }
+
+        // Create mutual follow
+        $currentUser->follow($targetUser);
+        $targetUser->follow($currentUser);
+
+        return Redirect::route('profile.edit')->with('success', "You're now connected with {$targetUser->name}!");
+    }
 }
+

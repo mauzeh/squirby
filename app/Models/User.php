@@ -39,6 +39,8 @@ class User extends Authenticatable
         'prefill_suggested_values',
         'profile_photo_path',
         'last_feed_viewed_at',
+        'connection_token',
+        'connection_token_expires_at',
     ];
 
     /**
@@ -66,6 +68,7 @@ class User extends Authenticatable
             'prefill_suggested_values' => 'boolean',
             'deleted_at' => 'datetime',
             'last_feed_viewed_at' => 'datetime',
+            'connection_token_expires_at' => 'datetime',
         ];
     }
 
@@ -322,4 +325,63 @@ class User extends Authenticatable
         
         return null;
     }
+
+    /**
+     * Generate a new connection token for this user
+     */
+    public function generateConnectionToken(): string
+    {
+        $token = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+
+        $this->update([
+            'connection_token' => $token,
+            'connection_token_expires_at' => now()->addMinutes(10),
+        ]);
+
+        return $token;
+    }
+
+    /**
+     * Get or generate a valid connection token
+     */
+    public function getValidConnectionToken(): string
+    {
+        if ($this->connection_token && $this->connection_token_expires_at && $this->connection_token_expires_at->isFuture()) {
+            return $this->connection_token;
+        }
+
+        return $this->generateConnectionToken();
+    }
+
+    /**
+     * Check if a connection token is valid
+     */
+    public function hasValidConnectionToken(): bool
+    {
+        return $this->connection_token
+            && $this->connection_token_expires_at
+            && $this->connection_token_expires_at->isFuture();
+    }
+
+    /**
+     * Clear the connection token
+     */
+    public function clearConnectionToken(): void
+    {
+        $this->update([
+            'connection_token' => null,
+            'connection_token_expires_at' => null,
+        ]);
+    }
+
+    /**
+     * Find a user by their connection token
+     */
+    public static function findByConnectionToken(string $token): ?User
+    {
+        return static::where('connection_token', $token)
+            ->where('connection_token_expires_at', '>', now())
+            ->first();
+    }
 }
+
