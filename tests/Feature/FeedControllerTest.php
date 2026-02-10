@@ -1076,22 +1076,23 @@ class FeedControllerTest extends TestCase
         // Follow the other user
         $this->user->follow($this->otherUser);
         
-        // Mark feed as viewed now
-        $this->user->update(['last_feed_viewed_at' => now()]);
-        
         // Create an old PR (more than 24 hours ago)
         $liftLog = LiftLog::factory()->create([
             'user_id' => $this->otherUser->id,
             'exercise_id' => $exercise->id,
         ]);
         
-        PersonalRecord::factory()->create([
+        $pr = PersonalRecord::factory()->create([
             'user_id' => $this->otherUser->id,
             'exercise_id' => $exercise->id,
             'lift_log_id' => $liftLog->id,
             'achieved_at' => now()->subHours(30),
         ]);
-
+        
+        // View the feed to mark the PR as read
+        $this->actingAs($this->user)->get(route('feed.index'));
+        
+        // Now view the feed again - should not show badge since all PRs are read
         $response = $this->actingAs($this->user)->get(route('feed.index'));
 
         $response->assertStatus(200);
@@ -1147,9 +1148,6 @@ class FeedControllerTest extends TestCase
         
         // Follow the other user
         $this->user->follow($this->otherUser);
-        
-        // Ensure last_feed_viewed_at is null (first-time user)
-        $this->user->update(['last_feed_viewed_at' => null]);
         
         // Create PRs at different times within 7 days
         $liftLog1 = LiftLog::factory()->create([
@@ -1208,11 +1206,8 @@ class FeedControllerTest extends TestCase
         // First visit - should see badge
         $response = $this->actingAs($this->user)->get(route('feed.index'));
         $response->assertSee('menu-badge');
-        
-        // Manually trigger what the terminating callback does
-        $this->user->update(['last_feed_viewed_at' => now()]);
 
-        // Second visit - should NOT see badge
+        // Second visit - should NOT see badge (PRs marked as read after first visit)
         $response = $this->actingAs($this->user)->get(route('feed.index'));
         $response->assertDontSee('menu-badge');
     }
@@ -1727,5 +1722,56 @@ class FeedControllerTest extends TestCase
         
         // First comment should appear before second comment
         $this->assertLessThan($posSecond, $posFirst, 'Comments should be sorted by creation time');
+    }
+
+    /** @test */
+    public function it_clears_read_status_when_unfollowing_user()
+    {
+        $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
+        
+        // Follow the other user
+        $this->user->follow($this->otherUser);
+        
+        // Create a PR from the other user
+        $liftLog = LiftLog::factory()->create([
+            'user_id' => $this->otherUser->id,
+            'exercise_id' => $exercise->id,
+        ]);
+        
+        $pr = PersonalRecord::factory()->create([
+            'user_id' => $this->otherUser->id,
+            'exercise_id' => $exercise->id,
+            'lift_log_id' => $liftLog->id,
+            'achieved_at' => now()->subDays(2),
+        ]);
+        
+        // View the feed (marks PR as read)
+        $this->actingAs($this->user)->get(route('feed.index'));
+        
+        // In tests, terminating callbacks execute after the response
+        // Verify PR is marked as read
+        $this->assertDatabaseHas('personal_record_reads', [
+            'user_id' => $this->user->id,
+            'personal_record_id' => $pr->id,
+        ]);
+        
+        // Unfollow the user
+        $response = $this->actingAs($this->user)
+            ->withoutMiddleware(\App\Http\Middleware\LogActivity::class)
+            ->delete(route('feed.users.unfollow', $this->otherUser));
+        $response->assertRedirect();
+        
+        // Verify PR is no longer marked as read
+        $this->assertDatabaseMissing('personal_record_reads', [
+            'user_id' => $this->user->id,
+            'personal_record_id' => $pr->id,
+        ]);
+        
+        // Re-follow the user
+        $this->user->follow($this->otherUser);
+        
+        // View feed again - PR should show as unread since read status was cleared
+        $response = $this->actingAs($this->user)->get(route('feed.index'));
+        $response->assertSee('NEW');
     }
 }

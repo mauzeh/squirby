@@ -97,13 +97,21 @@ class FeedController extends Controller
             $prIds = $prs->pluck('id')->toArray();
             $userId = $currentUser->id;
             app()->terminating(function () use ($userId, $prIds) {
+                // Re-fetch current following status to handle unfollows that happened after the feed was viewed
+                $currentFollowingIds = \App\Models\User::find($userId)->following()->pluck('users.id')->toArray();
+                $currentFollowingIds[] = $userId; // Include self
+                
                 foreach ($prIds as $prId) {
-                    \App\Models\PersonalRecordRead::firstOrCreate([
-                        'user_id' => $userId,
-                        'personal_record_id' => $prId,
-                    ], [
-                        'read_at' => now(),
-                    ]);
+                    // Only mark as read if the PR is from someone the user is still following
+                    $pr = \App\Models\PersonalRecord::find($prId);
+                    if ($pr && in_array($pr->user_id, $currentFollowingIds)) {
+                        \App\Models\PersonalRecordRead::firstOrCreate([
+                            'user_id' => $userId,
+                            'personal_record_id' => $prId,
+                        ], [
+                            'read_at' => now(),
+                        ]);
+                    }
                 }
             });
         }
@@ -347,6 +355,17 @@ class FeedController extends Controller
     public function unfollowUser(Request $request, User $user)
     {
         $currentUser = $request->user();
+        
+        // Clear read status for all PRs from the user being unfollowed
+        // This ensures PRs appear fresh if they reconnect later
+        $prIds = $user->personalRecords()->pluck('id')->toArray();
+        
+        if (!empty($prIds)) {
+            \App\Models\PersonalRecordRead::where('user_id', $currentUser->id)
+                ->whereIn('personal_record_id', $prIds)
+                ->delete();
+        }
+        
         $currentUser->unfollow($user);
         
         return redirect()->back()->with('success', "You have unfollowed {$user->name}.");

@@ -47,19 +47,51 @@ When a user views the feed (`FeedController::index()`):
 2. The feed is rendered with the current read status
 3. After the response is sent to the browser (using `app()->terminating()`), all visible PRs are marked as read
 4. This is done by creating `PersonalRecordRead` records for each PR the user hasn't already read
+5. **Important:** The terminating callback re-checks the current following status to prevent marking PRs as read if the user unfollowed someone between viewing the feed and the callback executing
 
 ```php
 app()->terminating(function () use ($userId, $prIds) {
+    // Re-fetch current following status to handle unfollows
+    $currentFollowingIds = \App\Models\User::find($userId)->following()->pluck('users.id')->toArray();
+    $currentFollowingIds[] = $userId;
+    
     foreach ($prIds as $prId) {
-        \App\Models\PersonalRecordRead::firstOrCreate([
-            'user_id' => $userId,
-            'personal_record_id' => $prId,
-        ], [
-            'read_at' => now(),
-        ]);
+        // Only mark as read if still following the PR owner
+        $pr = \App\Models\PersonalRecord::find($prId);
+        if ($pr && in_array($pr->user_id, $currentFollowingIds)) {
+            \App\Models\PersonalRecordRead::firstOrCreate([
+                'user_id' => $userId,
+                'personal_record_id' => $prId,
+            ], [
+                'read_at' => now(),
+            ]);
+        }
     }
 });
 ```
+
+### Unfollowing Users
+
+When a user unfollows another user (`FeedController::unfollowUser()`):
+
+1. All `PersonalRecordRead` records for the unfollowed user's PRs are deleted
+2. The follow relationship is removed
+3. This ensures PRs appear fresh if users reconnect later
+
+```php
+$prIds = $user->personalRecords()->pluck('id')->toArray();
+if (!empty($prIds)) {
+    \App\Models\PersonalRecordRead::where('user_id', $currentUser->id)
+        ->whereIn('personal_record_id', $prIds)
+        ->delete();
+}
+$currentUser->unfollow($user);
+```
+
+This behavior provides a better user experience:
+- When you unfollow someone, you're essentially "forgetting" their PRs
+- If you reconnect later, their PRs appear fresh and unread
+- Prevents stale read status from previous connections
 
 ### Badge Display
 
@@ -136,10 +168,14 @@ Note: The `last_feed_viewed_at` field still exists on the users table but is no 
 The system includes comprehensive test coverage:
 
 - `test_new_connection_prs_show_as_unread_in_feed()` - Verifies PRs from new connections appear as unread
+- `it_clears_read_status_when_unfollowing_user()` - Verifies read status is cleared when unfollowing
 - Tests verify that:
   - PRs are not marked as read before viewing
   - PRs are marked as read after viewing feed
   - Badge logic correctly identifies unread PRs
+  - Unfollowing clears read status for that user's PRs
+  - Re-following shows PRs as unread again
+  - Terminating callback respects current following status (race condition protection)
 
 ## Related Documentation
 
