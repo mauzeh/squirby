@@ -3,22 +3,6 @@
     /* Inherits background and border-radius from .form-container */
 }
 
-.connection-header {
-    text-align: center;
-    margin-bottom: 32px;
-}
-
-.connection-header h3 {
-    font-weight: 600;
-    margin: 0 0 8px 0;
-    color: var(--text-primary);
-}
-
-.connection-subtitle {
-    color: var(--text-secondary);
-    margin: 0;
-}
-
 .connection-code-container {
     display: grid;
     grid-template-columns: 1fr 1fr;

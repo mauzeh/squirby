@@ -1,9 +1,4 @@
 <div class="component-form-section connection-section">
-    <div class="connection-header">
-        <h3>Connect with Friends</h3>
-        <p class="connection-subtitle">Share your code or QR code with someone at the gym to connect</p>
-    </div>
-
     <div class="connection-code-container">
         <div class="connection-code-display">
             <div class="connection-code-label">Your Connection Code</div>
