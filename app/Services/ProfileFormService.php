@@ -217,7 +217,7 @@ class ProfileFormService
         <form method="POST" action="' . route('profile.generate-connection-token') . '" class="connection-refresh-form">
             ' . csrf_field() . '
             <button type="submit" class="btn btn-secondary">
-                <i class="fas fa-sync-alt"></i> Generate New Code
+                <i class="fas fa-sync-alt"></i>&nbsp; Generate New Code
             </button>
         </form>
 
@@ -241,7 +241,7 @@ class ProfileFormService
                 >
             </div>
             <button type="submit" class="btn btn-primary">
-                <i class="fas fa-user-plus"></i> Connect
+                <i class="fas fa-user-plus"></i>&nbsp; Connect
             </button>
         </form>
     </div>
