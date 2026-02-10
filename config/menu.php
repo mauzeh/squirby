@@ -36,9 +36,8 @@ return [
                 $followingIds = $currentUser->following()->pluck('users.id')->toArray();
                 $followingIds[] = $currentUser->id;
                 
-                // Get PRs from the last 7 days that are new
-                $prs = \App\Models\PersonalRecord::with(['user', 'exercise'])
-                    ->current()
+                // Get PRs from the last 7 days
+                $prs = \App\Models\PersonalRecord::current()
                     ->where('achieved_at', '>=', now()->subDays(7))
                     ->whereIn('user_id', $followingIds)
                     ->whereHas('exercise', function ($query) {
@@ -46,7 +45,10 @@ return [
                     })
                     ->get();
                 
-                // Count user-date groups that are new (including own PRs)
+                // Get IDs of PRs that the current user has already read
+                $readPRIds = $currentUser->readPersonalRecords()->pluck('personal_records.id')->toArray();
+                
+                // Count user-date groups that have at least one unread PR
                 $newPRCount = 0;
                 $seenGroups = [];
                 
@@ -57,17 +59,8 @@ return [
                         continue; // Already counted this group
                     }
                     
-                    // If never viewed, all PRs in last 7 days are new
-                    // Otherwise, check if within 24 hours AND after last viewed
-                    if (!$currentUser->last_feed_viewed_at) {
-                        $isNew = true;
-                    } else {
-                        $isWithin24Hours = $pr->achieved_at->isAfter(now()->subHours(24));
-                        $isAfterLastViewed = $pr->achieved_at->isAfter($currentUser->last_feed_viewed_at);
-                        $isNew = $isWithin24Hours && $isAfterLastViewed;
-                    }
-                    
-                    if ($isNew) {
+                    // Check if this PR is unread
+                    if (!in_array($pr->id, $readPRIds)) {
                         $newPRCount++;
                         $seenGroups[$groupKey] = true;
                     }
@@ -96,9 +89,8 @@ return [
                         $followingIds = $currentUser->following()->pluck('users.id')->toArray();
                         $followingIds[] = $currentUser->id;
                         
-                        // Get PRs from the last 7 days that are new
-                        $prs = \App\Models\PersonalRecord::with(['user', 'exercise'])
-                            ->current()
+                        // Get PRs from the last 7 days
+                        $prs = \App\Models\PersonalRecord::current()
                             ->where('achieved_at', '>=', now()->subDays(7))
                             ->whereIn('user_id', $followingIds)
                             ->whereHas('exercise', function ($query) {
@@ -106,7 +98,10 @@ return [
                             })
                             ->get();
                         
-                        // Count user-date groups that are new
+                        // Get IDs of PRs that the current user has already read
+                        $readPRIds = $currentUser->readPersonalRecords()->pluck('personal_records.id')->toArray();
+                        
+                        // Count user-date groups that have at least one unread PR
                         $newPRCount = 0;
                         $seenGroups = [];
                         
@@ -117,15 +112,8 @@ return [
                                 continue;
                             }
                             
-                            if (!$currentUser->last_feed_viewed_at) {
-                                $isNew = true;
-                            } else {
-                                $isWithin24Hours = $pr->achieved_at->isAfter(now()->subHours(24));
-                                $isAfterLastViewed = $pr->achieved_at->isAfter($currentUser->last_feed_viewed_at);
-                                $isNew = $isWithin24Hours && $isAfterLastViewed;
-                            }
-                            
-                            if ($isNew) {
+                            // Check if this PR is unread
+                            if (!in_array($pr->id, $readPRIds)) {
                                 $newPRCount++;
                                 $seenGroups[$groupKey] = true;
                             }
