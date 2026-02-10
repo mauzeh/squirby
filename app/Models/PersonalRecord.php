@@ -61,6 +61,11 @@ class PersonalRecord extends Model
         return $this->hasMany(PRHighFive::class, 'personal_record_id');
     }
 
+    public function comments()
+    {
+        return $this->hasMany(PRComment::class, 'personal_record_id');
+    }
+
     // Scopes
     public function scopeCurrent($query)
     {

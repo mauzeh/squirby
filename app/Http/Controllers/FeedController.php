@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\PersonalRecord;
 use App\Models\User;
 use App\Models\PRHighFive;
+use App\Models\PRComment;
 use App\Services\ComponentBuilder as C;
 
 class FeedController extends Controller
@@ -20,7 +21,7 @@ class FeedController extends Controller
         
         // Get PRs from the last 7 days, only from users being followed (including self)
         // Filter to only include exercises that have show_in_feed enabled
-        $prs = PersonalRecord::with(['user', 'exercise', 'liftLog', 'highFives.user'])
+        $prs = PersonalRecord::with(['user', 'exercise', 'liftLog', 'highFives.user', 'comments.user'])
             ->current()
             ->where('achieved_at', '>=', now()->subDays(7))
             ->whereIn('user_id', $followingIds)
@@ -281,7 +282,7 @@ class FeedController extends Controller
         
         // Get user's last 10 PRs grouped by user-date (same logic as feed)
         // Filter to only include exercises that have show_in_feed enabled
-        $prs = PersonalRecord::with(['user', 'exercise', 'liftLog'])
+        $prs = PersonalRecord::with(['user', 'exercise', 'liftLog', 'comments.user'])
             ->current()
             ->where('user_id', $user->id)
             ->whereHas('exercise', function ($query) {
@@ -460,5 +461,60 @@ class FeedController extends Controller
         }
         
         return redirect()->back();
+    }
+
+    public function storeComment(Request $request, PersonalRecord $personalRecord)
+    {
+        $request->validate([
+            'comment' => 'required|string|max:1000',
+        ]);
+
+        $currentUser = $request->user();
+
+        $comment = PRComment::create([
+            'personal_record_id' => $personalRecord->id,
+            'user_id' => $currentUser->id,
+            'comment' => $request->comment,
+        ]);
+
+        // Return JSON for AJAX requests
+        if ($request->wantsJson() || $request->ajax()) {
+            // Load the user relationship
+            $comment->load('user');
+            
+            // Render the comment HTML using the partial
+            $html = view('mobile-entry.components.partials.pr-comment', [
+                'comment' => $comment,
+                'currentUserId' => $currentUser->id,
+            ])->render();
+
+            return response()->json([
+                'success' => true,
+                'html' => $html,
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Comment added!');
+    }
+
+    public function deleteComment(Request $request, PRComment $comment)
+    {
+        $currentUser = $request->user();
+
+        // Only allow deleting own comments or if admin
+        if ($comment->user_id !== $currentUser->id && !$currentUser->hasRole('Admin')) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $comment->delete();
+
+        // Return JSON for AJAX requests
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Comment deleted!');
     }
 }
