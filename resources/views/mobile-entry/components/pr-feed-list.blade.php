@@ -296,12 +296,17 @@ document.addEventListener('DOMContentLoaded', function() {
                                                         default => strtolower(str_replace('_', ' ', $pr->pr_type))
                                                     };
                                                 })->toArray();
+                                                
+                                                $hasFirstPR = $liftLog->allPRs->whereNull('previous_value')->count() > 0;
                                             @endphp
-                                            @if(!empty($prDescriptions))
+                                            @if(!empty($prDescriptions) || $hasFirstPR)
                                                 <div class="pr-types">
                                                     @foreach($prDescriptions as $description)
                                                         <span class="pr-type-label"><i class="fas fa-check"></i> {{ ucfirst($description) }}</span>
                                                     @endforeach
+                                                    @if($hasFirstPR)
+                                                        <span class="pr-type-label pr-first"><i class="fas fa-star"></i> First PR!</span>
+                                                    @endif
                                                 </div>
                                             @endif
                                         </div>
@@ -319,14 +324,6 @@ document.addEventListener('DOMContentLoaded', function() {
                                             </div>
                                         @endif
                                     </div>
-                                    
-                                    {{-- First PR note if any PR is first --}}
-                                    @if($liftLog->allPRs->whereNull('previous_value')->count() > 0)
-                                        <div class="pr-first">
-                                            <i class="fas fa-star"></i>
-                                            First PR!
-                                        </div>
-                                    @endif
                                 </div>
                                 
                                 <div class="pr-lift-content">

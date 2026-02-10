@@ -486,13 +486,8 @@
 }
 
 /* First PR Badge */
-.pr-first {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-sm);
+.pr-type-label.pr-first {
     color: var(--color-warning);
-    font-size: 0.875rem;
-    margin-top: var(--spacing-xs);
 }
 
 .pr-first i {
