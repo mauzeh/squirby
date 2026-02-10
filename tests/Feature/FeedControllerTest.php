@@ -1774,4 +1774,79 @@ class FeedControllerTest extends TestCase
         $response = $this->actingAs($this->user)->get(route('feed.index'));
         $response->assertSee('NEW');
     }
+
+    /** @test */
+    public function it_prioritizes_unread_prs_in_feed()
+    {
+        $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
+        
+        // Follow the other user
+        $this->user->follow($this->otherUser);
+        
+        // Create an older PR (3 days ago)
+        $olderLiftLog = LiftLog::factory()->create([
+            'user_id' => $this->otherUser->id,
+            'exercise_id' => $exercise->id,
+        ]);
+        
+        $olderPR = PersonalRecord::factory()->create([
+            'user_id' => $this->otherUser->id,
+            'exercise_id' => $exercise->id,
+            'lift_log_id' => $olderLiftLog->id,
+            'achieved_at' => now()->subDays(3),
+        ]);
+        
+        // Create a newer PR (1 day ago)
+        $newerLiftLog = LiftLog::factory()->create([
+            'user_id' => $this->otherUser->id,
+            'exercise_id' => $exercise->id,
+        ]);
+        
+        $newerPR = PersonalRecord::factory()->create([
+            'user_id' => $this->otherUser->id,
+            'exercise_id' => $exercise->id,
+            'lift_log_id' => $newerLiftLog->id,
+            'achieved_at' => now()->subDays(1),
+        ]);
+        
+        // View feed to mark both as read
+        $this->actingAs($this->user)->get(route('feed.index'));
+        
+        // Verify both are marked as read
+        $this->assertDatabaseHas('personal_record_reads', [
+            'user_id' => $this->user->id,
+            'personal_record_id' => $olderPR->id,
+        ]);
+        $this->assertDatabaseHas('personal_record_reads', [
+            'user_id' => $this->user->id,
+            'personal_record_id' => $newerPR->id,
+        ]);
+        
+        // Manually mark the older PR as unread by deleting its read record
+        \App\Models\PersonalRecordRead::where('user_id', $this->user->id)
+            ->where('personal_record_id', $olderPR->id)
+            ->delete();
+        
+        // View feed again
+        $response = $this->actingAs($this->user)->get(route('feed.index'));
+        
+        // Get the response content
+        $content = $response->getContent();
+        
+        // Find positions of the PR IDs in the HTML (they appear in data attributes)
+        $olderPRPosition = strpos($content, 'data-pr-id="' . $olderPR->id . '"');
+        $newerPRPosition = strpos($content, 'data-pr-id="' . $newerPR->id . '"');
+        
+        // If data-pr-id doesn't exist, try finding the lift log IDs
+        if ($olderPRPosition === false || $newerPRPosition === false) {
+            $olderPRPosition = strpos($content, 'lift-log-' . $olderLiftLog->id);
+            $newerPRPosition = strpos($content, 'lift-log-' . $newerLiftLog->id);
+        }
+        
+        // Verify the older (unread) PR appears before the newer (read) PR
+        $this->assertNotFalse($olderPRPosition, 'Older PR should be present in feed');
+        $this->assertNotFalse($newerPRPosition, 'Newer PR should be present in feed');
+        $this->assertLessThan($newerPRPosition, $olderPRPosition, 
+            'Unread PR should appear before read PR in the feed');
+    }
 }

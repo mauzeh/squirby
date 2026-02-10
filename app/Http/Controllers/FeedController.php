@@ -53,6 +53,13 @@ class FeedController extends Controller
             return $main;
         })
         ->values()
+        ->sortBy(function ($pr) use ($readPRIds) {
+            // Sort unread PRs first (0), then read PRs (1)
+            // Within each group, maintain chronological order by achieved_at
+            $isRead = in_array($pr->id, $readPRIds) ? 1 : 0;
+            return [$isRead, -$pr->achieved_at->timestamp];
+        })
+        ->values()
         ->take(50);
         
         // Check if there are any unread PRs - for badge display
