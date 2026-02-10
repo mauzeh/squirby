@@ -7,7 +7,11 @@
         </div>
 
         <div class="connection-qr">
-            <img src="{{ $data['qrCodeUrl'] }}" alt="QR Code" class="qr-code-img">
+            <div class="qr-code-placeholder" id="qr-placeholder">
+                <i class="fas fa-qrcode"></i>
+                <span>Loading QR code...</span>
+            </div>
+            <img src="{{ $data['qrCodeUrl'] }}" alt="QR Code" class="qr-code-img" id="qr-code-img" style="display: none;">
             <div class="qr-code-label">Scan to connect</div>
         </div>
     </div>
@@ -48,6 +52,20 @@
 document.addEventListener("DOMContentLoaded", function() {
     const form = document.getElementById("connection-input-form");
     const input = document.getElementById("connection_code");
+    const qrImg = document.getElementById("qr-code-img");
+    const qrPlaceholder = document.getElementById("qr-placeholder");
+
+    // Handle QR code loading
+    if (qrImg && qrPlaceholder) {
+        qrImg.addEventListener("load", function() {
+            qrPlaceholder.style.display = "none";
+            qrImg.style.display = "block";
+        });
+
+        qrImg.addEventListener("error", function() {
+            qrPlaceholder.innerHTML = '<i class="fas fa-exclamation-triangle"></i><span>Failed to load QR code</span>';
+        });
+    }
 
     // Auto-format input with space after 3 digits
     input.addEventListener("input", function(e) {
