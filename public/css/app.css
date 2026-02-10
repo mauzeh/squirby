@@ -162,6 +162,10 @@ a {
     position: relative; /* Needed for absolute positioning of badge */
 }
 
+.navbar a.sub-nav-item {
+    position: relative; /* Needed for absolute positioning of badge in submenu */
+}
+
 .env-bar {
     color: white;
     text-align: center;

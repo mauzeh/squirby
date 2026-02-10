@@ -76,10 +76,14 @@
         <div class="navbar sub-navbar @if($showNonProdHues) env-navbar-non-production @elseif($showAdminHues) env-navbar-admin-production @endif">
             @foreach($menuService->getSubMenu() as $item)
                 <a href="{{ isset($item['routeParams']) ? route($item['route'], $item['routeParams']) : route($item['route']) }}" 
-                   class="{{ $item['active'] ? 'active' : '' }}{{ !isset($item['label']) || empty($item['label']) ? ' icon-only' : '' }}"
-                   @if(isset($item['title']))title="{{ $item['title'] }}"@endif>
+                   class="{{ $item['active'] ? 'active' : '' }}{{ !isset($item['label']) || empty($item['label']) ? ' icon-only' : '' }} sub-nav-item"
+                   @if(isset($item['title']))title="{{ $item['title'] }}"@endif
+                   style="position: relative;">
                     @if(isset($item['icon']))<i class="fas {{ $item['icon'] }} menu-icon"></i>@endif
                     @if(isset($item['label'])){{ $item['label'] }}@endif
+                    @if(isset($item['badgeCount']) && $item['badgeCount'] > 0)
+                        <span class="menu-badge">{{ $item['badgeCount'] }}</span>
+                    @endif
                 </a>
             @endforeach
         </div>
