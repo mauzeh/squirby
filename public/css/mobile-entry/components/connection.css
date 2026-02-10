@@ -19,13 +19,14 @@
     letter-spacing: 0.5px;
     color: var(--text-secondary);
     margin-bottom: 12px;
+    margin-top: 15px;
     font-weight: 600;
 }
 
 .connection-code {
-    font-size: 42px;
+    font-size: 52px;
     font-weight: 700;
-    letter-spacing: 8px;
+    letter-spacing: 4px;
     color: var(--primary-color);
     font-family: 'Courier New', monospace;
     padding: 20px 16px;
@@ -37,6 +38,7 @@
 
 .connection-code-expires {
     color: var(--text-secondary);
+    font-style: italic;
 }
 
 .connection-qr {
@@ -47,8 +49,8 @@
 }
 
 .qr-code-img {
-    width: 200px;
-    height: 200px;
+    width: 300px;
+    height: 300px;
     border: 2px solid var(--border-color);
     border-radius: 8px;
     padding: 8px;
@@ -131,14 +133,9 @@
         gap: 24px;
     }
     
-    .connection-code {
-        font-size: 36px;
-        letter-spacing: 6px;
-    }
-    
     .qr-code-img {
-        width: 180px;
-        height: 180px;
+        width: 270px;
+        height: 270px;
     }
 }
 

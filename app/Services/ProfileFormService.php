@@ -189,7 +189,7 @@ class ProfileFormService
 
             // Generate QR code URL (using a simple QR code API)
             $connectUrl = route('connections.connect', ['token' => $token]);
-            $qrCodeUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' . urlencode($connectUrl);
+            $qrCodeUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=' . urlencode($connectUrl);
 
             // Calculate time remaining
             $minutesRemaining = $expiresAt ? max(0, (int) ceil(now()->diffInMinutes($expiresAt, false))) : 0;
