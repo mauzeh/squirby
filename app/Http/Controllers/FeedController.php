@@ -650,7 +650,7 @@ class FeedController extends Controller
             ->unread()
             ->update(['read_at' => now()]);
         
-        return redirect()->route('notifications.index')->with('success', 'All notifications marked as read.');
+        return redirect()->route('notifications.index');
     }
     
     public function markNotificationRead(Request $request, Notification $notification)
@@ -662,7 +662,7 @@ class FeedController extends Controller
         
         $notification->markAsRead();
         
-        return redirect()->back()->with('success', 'Notification marked as read.');
+        return redirect()->back();
     }
 
 }

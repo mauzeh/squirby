@@ -145,6 +145,13 @@
     color: var(--text-primary, #111827);
 }
 
+@media (prefers-color-scheme: dark) {
+    .notification-mark-read:hover {
+        background: var(--bg-hover, #4b5563);
+        color: var(--text-primary, #f9fafb);
+    }
+}
+
 .empty-state {
     text-align: center;
     padding: var(--spacing-xl, 2rem);
