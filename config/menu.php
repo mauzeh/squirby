@@ -145,6 +145,7 @@ return [
                         if (!$currentUser) {
                             return 0;
                         }
+                        
                         return $currentUser->notifications()->unread()->count();
                     },
                 ],

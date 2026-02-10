@@ -52,7 +52,7 @@ class FeedController extends Controller
         ->values()
         ->take(50);
         
-        // Check if there are any new PRs (including own PRs)
+        // Check if there are any new PRs (including own PRs) - for badge display
         $hasNewPRs = $groupedPrs->contains(function ($item) use ($currentUser) {
             // If never viewed, all PRs in last 7 days are new
             if (!$currentUser->last_feed_viewed_at) {
@@ -77,21 +77,8 @@ class FeedController extends Controller
             $components[] = $sessionMessages;
         }
         
-        // Add "Mark all as read" button if there are new PRs
-        if ($hasNewPRs) {
-            $components[] = [
-                'type' => 'raw_html',
-                'data' => [
-                    'html' => '<div class="feed-action-buttons">
-                        <form method="POST" action="' . route('feed.mark-read') . '" style="display: inline;">
-                            ' . csrf_field() . '
-                            <button type="submit" class="feed-action-btn">Mark all as read</button>
-                        </form>
-                    </div>'
-                ]
-            ];
-        } elseif ($currentUser->hasRole('Admin') || session()->has('impersonator_id')) {
-            // Add "Reset to unread" button for admins and impersonating users (only when no new PRs)
+        // Add "Reset to unread" button for admins and impersonating users
+        if ($currentUser->hasRole('Admin') || session()->has('impersonator_id')) {
             $components[] = [
                 'type' => 'raw_html',
                 'data' => [
@@ -120,6 +107,11 @@ class FeedController extends Controller
         $data = [
             'components' => $components,
         ];
+        
+        // Mark as read AFTER the response is sent to the browser
+        app()->terminating(function () use ($currentUser) {
+            $currentUser->update(['last_feed_viewed_at' => now()]);
+        });
         
         return view('mobile-entry.flexible', compact('data'));
     }
@@ -539,21 +531,6 @@ class FeedController extends Controller
             $components[] = $sessionMessages;
         }
         
-        // Add "Mark all as read" button if there are unread notifications
-        if ($unreadCount > 0) {
-            $components[] = [
-                'type' => 'raw_html',
-                'data' => [
-                    'html' => '<div class="feed-action-buttons">
-                        <form method="POST" action="' . route('notifications.mark-all-read') . '" style="display: inline;">
-                            ' . csrf_field() . '
-                            <button type="submit" class="feed-action-btn">Mark all as read</button>
-                        </form>
-                    </div>'
-                ]
-            ];
-        }
-        
         // Build notification list
         if ($notifications->isEmpty()) {
             $components[] = [
@@ -571,6 +548,11 @@ class FeedController extends Controller
         $data = [
             'components' => $components,
         ];
+        
+        // Mark as read AFTER the response is sent to the browser
+        app()->terminating(function () use ($currentUser) {
+            $currentUser->notifications()->unread()->update(['read_at' => now()]);
+        });
         
         return view('mobile-entry.flexible', compact('data'));
     }
@@ -628,41 +610,12 @@ class FeedController extends Controller
                                 <div class='notification-time'>{$timeAgo}</div>
                             </div>
                         </a>
-                        " . ($isUnread ? "
-                        <form method='POST' action='" . route('notifications.mark-read', $notification) . "' style='display: inline;'>
-                            " . csrf_field() . "
-                            <button type='submit' class='notification-mark-read' title='Mark as read'>
-                                <i class='fas fa-check'></i>
-                            </button>
-                        </form>
-                        " : "") . "
                     </div>
                 "
             ]
         ];
     }
     
-    public function markAllNotificationsRead(Request $request)
-    {
-        $currentUser = $request->user();
-        
-        $currentUser->notifications()
-            ->unread()
-            ->update(['read_at' => now()]);
-        
-        return redirect()->route('notifications.index');
-    }
-    
-    public function markNotificationRead(Request $request, Notification $notification)
-    {
-        // Ensure user owns this notification
-        if ($notification->user_id !== $request->user()->id) {
-            abort(403);
-        }
-        
-        $notification->markAsRead();
-        
-        return redirect()->back();
-    }
+
 
 }

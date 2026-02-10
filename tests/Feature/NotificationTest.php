@@ -150,7 +150,7 @@ class NotificationTest extends TestCase
     }
 
     /** @test */
-    public function it_marks_all_notifications_as_read()
+    public function it_auto_marks_all_notifications_as_read_on_view()
     {
         PRComment::create([
             'personal_record_id' => $this->pr->id,
@@ -165,74 +165,11 @@ class NotificationTest extends TestCase
 
         $this->assertEquals(2, $this->user->notifications()->unread()->count());
 
-        $response = $this->actingAs($this->user)
-            ->post(route('notifications.mark-all-read'));
+        $response = $this->actingAs($this->user)->get(route('notifications.index'));
 
-        $response->assertRedirect(route('notifications.index'));
+        $response->assertStatus(200);
         $this->assertEquals(0, $this->user->notifications()->unread()->count());
         $this->assertEquals(2, $this->user->notifications()->read()->count());
-    }
-
-    /** @test */
-    public function it_marks_single_notification_as_read()
-    {
-        PRComment::create([
-            'personal_record_id' => $this->pr->id,
-            'user_id' => $this->otherUser->id,
-            'comment' => 'Great job!',
-        ]);
-
-        $notification = $this->user->notifications()->first();
-        $this->assertTrue($notification->isUnread());
-
-        $response = $this->actingAs($this->user)
-            ->post(route('notifications.mark-read', $notification));
-
-        $response->assertRedirect();
-        
-        $notification->refresh();
-        $this->assertFalse($notification->isUnread());
-    }
-
-    /** @test */
-    public function it_prevents_marking_other_users_notification_as_read()
-    {
-        PRComment::create([
-            'personal_record_id' => $this->pr->id,
-            'user_id' => $this->otherUser->id,
-            'comment' => 'Great job!',
-        ]);
-
-        $notification = $this->user->notifications()->first();
-
-        $response = $this->actingAs($this->otherUser)
-            ->post(route('notifications.mark-read', $notification));
-
-        $response->assertStatus(403);
-    }
-
-    /** @test */
-    public function it_shows_mark_all_as_read_button_when_unread_notifications_exist()
-    {
-        PRComment::create([
-            'personal_record_id' => $this->pr->id,
-            'user_id' => $this->otherUser->id,
-            'comment' => 'Great job!',
-        ]);
-
-        $response = $this->actingAs($this->user)->get(route('notifications.index'));
-
-        $response->assertStatus(200);
-        $response->assertSee('Mark all as read');
-    }
-
-    /** @test */
-    public function it_does_not_show_mark_all_as_read_button_when_no_unread_notifications()
-    {
-        $response = $this->actingAs($this->user)->get(route('notifications.index'));
-
-        $response->assertStatus(200);
-        $response->assertDontSee('Mark all as read');
     }
 
     /** @test */

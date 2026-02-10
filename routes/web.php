@@ -42,7 +42,6 @@ Route::middleware('auth')->group(function () {
 
     // Feed
     Route::get('feed', [FeedController::class, 'index'])->name('feed.index');
-    Route::post('feed/mark-read', [FeedController::class, 'markAsRead'])->name('feed.mark-read');
     Route::post('feed/reset-read', [FeedController::class, 'resetRead'])->name('feed.reset-read');
     Route::post('feed/pr/{personalRecord}/high-five', [FeedController::class, 'toggleHighFive'])->name('feed.toggle-high-five');
     Route::post('feed/pr/{personalRecord}/comment', [FeedController::class, 'storeComment'])->name('feed.store-comment');
@@ -54,8 +53,6 @@ Route::middleware('auth')->group(function () {
     
     // Notifications
     Route::get('notifications', [FeedController::class, 'notifications'])->name('notifications.index');
-    Route::post('notifications/mark-all-read', [FeedController::class, 'markAllNotificationsRead'])->name('notifications.mark-all-read');
-    Route::post('notifications/{notification}/mark-read', [FeedController::class, 'markNotificationRead'])->name('notifications.mark-read');
 
     Route::post('food-logs/add-meal', [FoodLogController::class, 'addMealToLog'])->name('food-logs.add-meal');
 

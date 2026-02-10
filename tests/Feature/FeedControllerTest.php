@@ -618,48 +618,20 @@ class FeedControllerTest extends TestCase
     }
 
     /** @test */
-    public function it_shows_mark_as_read_button_when_new_prs_exist()
+    public function it_auto_marks_feed_as_read_on_view()
     {
-        $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
-        
-        // Follow the other user
-        $this->user->follow($this->otherUser);
-        
-        // Create a recent PR
-        $liftLog = LiftLog::factory()->create([
-            'user_id' => $this->otherUser->id,
-            'exercise_id' => $exercise->id,
-        ]);
-        
-        PersonalRecord::factory()->create([
-            'user_id' => $this->otherUser->id,
-            'exercise_id' => $exercise->id,
-            'lift_log_id' => $liftLog->id,
-            'achieved_at' => now()->subHours(12),
-        ]);
+        $this->assertNull($this->user->last_feed_viewed_at);
 
         $response = $this->actingAs($this->user)->get(route('feed.index'));
 
         $response->assertStatus(200);
-        $response->assertSee('Mark all as read');
-    }
-
-    /** @test */
-    public function it_marks_feed_as_read()
-    {
-        $this->assertNull($this->user->last_feed_viewed_at);
-
-        $response = $this->actingAs($this->user)
-            ->post(route('feed.mark-read'));
-
-        $response->assertRedirect(route('feed.index'));
         
         $this->user->refresh();
         $this->assertNotNull($this->user->last_feed_viewed_at);
     }
 
     /** @test */
-    public function it_hides_new_badge_after_marking_as_read()
+    public function it_hides_new_badge_after_viewing_feed()
     {
         $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
         
@@ -679,17 +651,13 @@ class FeedControllerTest extends TestCase
             'achieved_at' => now()->subHours(12),
         ]);
 
-        // First visit - should see NEW badge
+        // First visit - should see NEW badge (but feed is auto-marked as read)
         $response = $this->actingAs($this->user)->get(route('feed.index'));
         $response->assertSee('NEW');
-
-        // Mark as read
-        $this->actingAs($this->user)->post(route('feed.mark-read'));
 
         // Second visit - should NOT see NEW badge
         $response = $this->actingAs($this->user)->get(route('feed.index'));
         $response->assertDontSee('NEW');
-        $response->assertDontSee('Mark all as read');
     }
 
     /** @test */
@@ -706,38 +674,6 @@ class FeedControllerTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertSee('Reset to unread');
-    }
-
-    /** @test */
-    public function it_shows_mark_as_read_instead_of_reset_when_new_prs_exist()
-    {
-        // Create admin role
-        $adminRole = \App\Models\Role::firstOrCreate(['name' => 'Admin']);
-        $this->user->roles()->attach($adminRole);
-        
-        $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
-        
-        // Follow the other user
-        $this->user->follow($this->otherUser);
-        
-        // Create a recent PR
-        $liftLog = LiftLog::factory()->create([
-            'user_id' => $this->otherUser->id,
-            'exercise_id' => $exercise->id,
-        ]);
-        
-        PersonalRecord::factory()->create([
-            'user_id' => $this->otherUser->id,
-            'exercise_id' => $exercise->id,
-            'lift_log_id' => $liftLog->id,
-            'achieved_at' => now()->subHours(12),
-        ]);
-
-        $response = $this->actingAs($this->user)->get(route('feed.index'));
-
-        $response->assertStatus(200);
-        $response->assertSee('Mark all as read');
-        $response->assertDontSee('Reset to unread');
     }
 
     /** @test */
@@ -1279,7 +1215,7 @@ class FeedControllerTest extends TestCase
     }
 
     /** @test */
-    public function it_clears_badge_after_marking_as_read()
+    public function it_clears_badge_after_viewing_feed()
     {
         $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
         
@@ -1299,12 +1235,9 @@ class FeedControllerTest extends TestCase
             'achieved_at' => now()->subHours(12),
         ]);
 
-        // First visit - should see badge
+        // First visit - should see badge (feed auto-marks as read after render)
         $response = $this->actingAs($this->user)->get(route('feed.index'));
         $response->assertSee('menu-badge');
-
-        // Mark as read
-        $this->actingAs($this->user)->post(route('feed.mark-read'));
 
         // Second visit - should NOT see badge
         $response = $this->actingAs($this->user)->get(route('feed.index'));
@@ -1365,31 +1298,6 @@ class FeedControllerTest extends TestCase
         // Should see badge (own PRs now count)
         $response->assertSee('menu-badge');
         $response->assertSee('1'); // Badge count
-    }
-
-    /** @test */
-    public function it_shows_mark_as_read_button_for_own_prs()
-    {
-        $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
-        
-        // Create own PR (recent)
-        $ownLiftLog = LiftLog::factory()->create([
-            'user_id' => $this->user->id,
-            'exercise_id' => $exercise->id,
-        ]);
-        
-        PersonalRecord::factory()->create([
-            'user_id' => $this->user->id,
-            'exercise_id' => $exercise->id,
-            'lift_log_id' => $ownLiftLog->id,
-            'achieved_at' => now()->subHours(12),
-        ]);
-
-        $response = $this->actingAs($this->user)->get(route('feed.index'));
-
-        $response->assertStatus(200);
-        // Should see "Mark all as read" button (own PRs count as new)
-        $response->assertSee('Mark all as read');
     }
 
     /** @test */

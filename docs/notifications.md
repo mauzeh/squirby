@@ -2,7 +2,7 @@
 
 ## Overview
 
-The notifications system tracks user interactions in the feed, specifically comments and high fives on personal records (PRs). Users receive notifications when someone interacts with their PRs.
+The notifications system tracks user interactions in the feed, specifically comments and high fives on personal records (PRs). Users receive notifications when someone interacts with their PRs. Notifications are automatically marked as read when viewing the notifications page.
 
 ## Quick Start
 
@@ -10,7 +10,7 @@ The notifications system tracks user interactions in the feed, specifically comm
 
 1. **View notifications**: Navigate to `/notifications` or click Feed → Notifications in the menu
 2. **See unread count**: Badge appears on "Notifications" menu item
-3. **Mark as read**: Click checkmark icon or use "Mark all as read" button
+3. **Auto-mark as read**: Notifications are automatically marked as read when you view the page (badge shows one last time)
 4. **Jump to PR**: Click any notification to see the related PR
 
 ### For Developers
@@ -84,30 +84,24 @@ Notifications are created automatically via Eloquent observers:
 - Route: `/notifications` (route name: `notifications.index`)
 - Shows last 30 days of notifications
 - Displays unread count in page title
-- "Mark all as read" button when unread notifications exist
+- Automatically marks all notifications as read when page is viewed
 - Built using the flexible component system (no dedicated Blade template)
 
 ### Navigation Badge
 - Feed menu shows notification count badge
-- Updates automatically based on unread notifications
+- Badge displays on page load one last time before notifications are marked as read
 - Visible in the Feed submenu under "Notifications"
 
 ### Notification Display
-- Unread notifications have blue background
+- Unread notifications have blue background (visible on initial page load)
 - Shows actor name, action, and time ago
 - Links directly to the relevant PR in the feed
-- Individual "mark as read" button for unread items
+- All notifications automatically marked as read after page renders
 
 ## API Endpoints
 
 ### GET /notifications
-Display notifications page
-
-### POST /notifications/mark-all-read
-Mark all user's notifications as read
-
-### POST /notifications/{notification}/mark-read
-Mark a specific notification as read
+Display notifications page and automatically mark all as read
 
 ## Models
 
@@ -125,8 +119,8 @@ Location: `app/Models/Notification.php`
 - `recent()` - Last 30 days
 
 **Methods:**
-- `markAsRead()` - Mark notification as read
-- `markAsUnread()` - Mark notification as unread
+- `markAsRead()` - Mark notification as read (used internally)
+- `markAsUnread()` - Mark notification as unread (used internally)
 - `isUnread()` - Check if notification is unread
 
 ## Implementation Details
@@ -145,15 +139,14 @@ Location: `app/Models/Notification.php`
 
 **Controllers:**
 - Added to `app/Http/Controllers/FeedController.php`:
-  - `notifications()` - Display page
-  - `markAllNotificationsRead()` - Bulk mark read
-  - `markNotificationRead()` - Single mark read
+  - `notifications()` - Display page and auto-mark as read
   - `buildNotificationComponent()` - Helper for rendering
 
 **Routes:**
 - `GET /notifications`
-- `POST /notifications/mark-all-read`
-- `POST /notifications/{notification}/mark-read`
+
+**Configuration:**
+- Updated `config/menu.php` - Added Notifications submenu with badge (checks session cache)
 
 **Views & Assets:**
 - `public/css/mobile-entry/components/notifications.css`
@@ -172,15 +165,17 @@ Location: `app/Models/Notification.php`
 - ✅ High five someone's PR → They get notified
 - ✅ Remove high five → Notification deleted
 - ✅ Comment/high five your own PR → No notification (you already know!)
+- ✅ View notifications page → All notifications marked as read
+- ✅ Badge shows on notifications page → Disappears on next navigation
 
 ## Testing
 
-All 17 tests passing:
+All 13 tests passing:
 - Notification creation for comments and high fives
 - No self-notifications
 - High five removal deletes notification
 - Display and UI tests
-- Mark as read functionality
+- Auto-mark as read functionality
 - Authorization checks
 - Data integrity tests
 - Polymorphic relationships
