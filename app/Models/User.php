@@ -335,7 +335,7 @@ class User extends Authenticatable
 
         $this->update([
             'connection_token' => $token,
-            'connection_token_expires_at' => now()->addMinutes(10),
+            'connection_token_expires_at' => now()->addHour(),
         ]);
 
         return $token;
