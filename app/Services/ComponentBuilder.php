@@ -16,6 +16,7 @@ use App\Services\Components\Interactive\SelectAllControlComponentBuilder;
 use App\Services\Components\Interactive\CodeEditorComponentBuilder;
 use App\Services\Components\Interactive\QuickActionsComponentBuilder;
 use App\Services\Components\Interactive\TabsComponentBuilder;
+use App\Services\Components\Interactive\ConnectionComponentBuilder;
 use App\Services\Components\Lists\ItemListComponentBuilder;
 use App\Services\Components\Lists\PRFeedListComponentBuilder;
 use App\Services\Components\Tables\TableComponentBuilder;
@@ -225,6 +226,14 @@ class ComponentBuilder
     public static function tabs(string $id): TabsComponentBuilder
     {
         return new TabsComponentBuilder($id);
+    }
+    
+    /**
+     * Create a connection component
+     */
+    public static function connection(string $token, string $expiresAt, int $minutesRemaining): ConnectionComponentBuilder
+    {
+        return new ConnectionComponentBuilder($token, $expiresAt, $minutesRemaining);
     }
     
     /**
