@@ -58,17 +58,19 @@ class ComponentAssembler
         
         $components[] = $serviceData['loggedItems'];
         
-        // Add FAB for quick connection
-        $currentUser = auth()->user();
-        $hasConnections = $currentUser->following()->exists() || $currentUser->followers()->exists();
-        $fab = ComponentBuilder::fab(route('connections.index'), 'fa-user-plus')
-            ->title('Connect');
-        
-        if (!$hasConnections) {
-            $fab->tooltip('Connect with friends');
+        // Add FAB for quick connection (only on lifts page)
+        if ($entryType === 'lifts') {
+            $currentUser = auth()->user();
+            $hasConnections = $currentUser->following()->exists() || $currentUser->followers()->exists();
+            $fab = ComponentBuilder::fab(route('connections.index'), 'fa-user-plus')
+                ->title('Connect');
+            
+            if (!$hasConnections) {
+                $fab->tooltip('Connect with friends');
+            }
+            
+            $components[] = $fab->build();
         }
-        
-        $components[] = $fab->build();
         
         return $components;
     }
