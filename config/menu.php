@@ -12,20 +12,6 @@ return [
                 'feed.*',
                 'notifications.*',
             ],
-            'visible' => function() {
-                $currentUser = auth()->user();
-                if (!$currentUser) {
-                    return false;
-                }
-                
-                // Always show Feed menu when impersonating or for admins
-                if (session()->has('impersonator_id') || $currentUser->hasRole('Admin')) {
-                    return true;
-                }
-                
-                // Only show Feed menu if user is following someone
-                return $currentUser->following()->count() > 0;
-            },
             'badge' => function() {
                 $currentUser = auth()->user();
                 if (!$currentUser) {

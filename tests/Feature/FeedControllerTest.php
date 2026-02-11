@@ -1269,7 +1269,7 @@ class FeedControllerTest extends TestCase
     }
 
     /** @test */
-    public function it_hides_feed_menu_when_not_following_anyone()
+    public function it_always_shows_feed_menu()
     {
         // User is not following anyone
         $this->assertEquals(0, $this->user->following()->count());
@@ -1277,53 +1277,7 @@ class FeedControllerTest extends TestCase
         $response = $this->actingAs($this->user)->get(route('mobile-entry.lifts'));
 
         $response->assertStatus(200);
-        // Should NOT see Feed menu item
-        $response->assertDontSee('id="feed-nav-link"', false);
-    }
-
-    /** @test */
-    public function it_shows_feed_menu_when_following_someone()
-    {
-        // Follow another user
-        $this->user->follow($this->otherUser);
-        
-        $response = $this->actingAs($this->user)->get(route('mobile-entry.lifts'));
-
-        $response->assertStatus(200);
-        // Should see Feed menu item
-        $response->assertSee('id="feed-nav-link"', false);
-    }
-
-    /** @test */
-    public function it_shows_feed_menu_when_impersonating_even_if_not_following()
-    {
-        // User is not following anyone
-        $this->assertEquals(0, $this->user->following()->count());
-        
-        // Simulate impersonation
-        session(['impersonator_id' => 999]);
-        
-        $response = $this->actingAs($this->user)->get(route('mobile-entry.lifts'));
-
-        $response->assertStatus(200);
-        // Should see Feed menu item when impersonating
-        $response->assertSee('id="feed-nav-link"', false);
-    }
-
-    /** @test */
-    public function it_shows_feed_menu_for_admins_even_if_not_following()
-    {
-        // Make user an admin
-        $adminRole = \App\Models\Role::firstOrCreate(['name' => 'Admin']);
-        $this->user->roles()->attach($adminRole);
-        
-        // User is not following anyone
-        $this->assertEquals(0, $this->user->following()->count());
-        
-        $response = $this->actingAs($this->user)->get(route('mobile-entry.lifts'));
-
-        $response->assertStatus(200);
-        // Should see Feed menu item for admins
+        // Should always see Feed menu item
         $response->assertSee('id="feed-nav-link"', false);
     }
 
