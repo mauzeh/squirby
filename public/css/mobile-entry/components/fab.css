@@ -34,10 +34,51 @@
     line-height: 1;
 }
 
+/* FAB Tooltip */
+.fab-tooltip {
+    position: absolute;
+    right: 70px;
+    background: var(--color-primary);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 28px;
+    font-size: 15px;
+    font-weight: 400;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    text-transform: none;
+    letter-spacing: normal;
+    white-space: nowrap;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    opacity: 0;
+    transform: translateX(10px);
+    pointer-events: none;
+    animation: fabTooltipIn 0.4s ease-out 0.5s forwards, fabTooltipOut 0.4s ease-in 3s forwards;
+}
+
+@keyframes fabTooltipIn {
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes fabTooltipOut {
+    to {
+        opacity: 0;
+        transform: translateX(10px);
+    }
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .fab {
         bottom: 70px;
         right: 16px;
+    }
+    
+    .fab-tooltip {
+        right: 66px;
+        font-size: 14px;
+        padding: 10px 16px;
     }
 }

@@ -92,7 +92,15 @@ class FeedController extends Controller
         ];
         
         // Add FAB for quick connection
-        $components[] = C::rawHtml('<a href="' . route('connections.index') . '" class="fab" title="Connect"><i class="fas fa-user-plus"></i></a>');
+        $hasConnections = $currentUser->following()->exists() || $currentUser->followers()->exists();
+        $fab = C::fab(route('connections.index'), 'fa-user-plus')
+            ->title('Connect');
+        
+        if (!$hasConnections) {
+            $fab->tooltip('Connect with friends');
+        }
+        
+        $components[] = $fab->build();
         
         $data = [
             'components' => $components,
@@ -200,7 +208,15 @@ class FeedController extends Controller
         $components[] = $itemList->build();
         
         // Add FAB for quick connection
-        $components[] = C::rawHtml('<a href="' . route('connections.index') . '" class="fab" title="Connect"><i class="fas fa-user-plus"></i></a>');
+        $hasConnections = $currentUser->following()->exists() || $currentUser->followers()->exists();
+        $fab = C::fab(route('connections.index'), 'fa-user-plus')
+            ->title('Connect');
+        
+        if (!$hasConnections) {
+            $fab->tooltip('Connect with friends');
+        }
+        
+        $components[] = $fab->build();
         
         $data = [
             'components' => $components,
@@ -551,6 +567,17 @@ class FeedController extends Controller
                 $components[] = $this->buildNotificationComponent($notification, $currentUser);
             }
         }
+        
+        // Add FAB for quick connection
+        $hasConnections = $currentUser->following()->exists() || $currentUser->followers()->exists();
+        $fab = C::fab(route('connections.index'), 'fa-user-plus')
+            ->title('Connect');
+        
+        if (!$hasConnections) {
+            $fab->tooltip('Connect with friends');
+        }
+        
+        $components[] = $fab->build();
         
         $data = [
             'components' => $components,

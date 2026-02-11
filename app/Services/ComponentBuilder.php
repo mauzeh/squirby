@@ -17,6 +17,7 @@ use App\Services\Components\Interactive\CodeEditorComponentBuilder;
 use App\Services\Components\Interactive\QuickActionsComponentBuilder;
 use App\Services\Components\Interactive\TabsComponentBuilder;
 use App\Services\Components\Interactive\ConnectionComponentBuilder;
+use App\Services\Components\Interactive\FabComponentBuilder;
 use App\Services\Components\Lists\ItemListComponentBuilder;
 use App\Services\Components\Lists\PRFeedListComponentBuilder;
 use App\Services\Components\Tables\TableComponentBuilder;
@@ -234,6 +235,14 @@ class ComponentBuilder
     public static function connection(string $token, string $expiresAt, int $minutesRemaining): ConnectionComponentBuilder
     {
         return new ConnectionComponentBuilder($token, $expiresAt, $minutesRemaining);
+    }
+    
+    /**
+     * Create a FAB (Floating Action Button) component
+     */
+    public static function fab(string $url, string $icon): FabComponentBuilder
+    {
+        return new FabComponentBuilder($url, $icon);
     }
     
     /**
