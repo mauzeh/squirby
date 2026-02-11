@@ -41,6 +41,7 @@ Route::middleware('auth')->group(function () {
     // Connection routes
     Route::get('/connections', [ProfileController::class, 'connections'])->name('connections.index');
     Route::post('/connections/generate-token', [ProfileController::class, 'generateConnectionToken'])->name('connections.generate-token');
+    Route::get('/connections/connect/{token}', [ProfileController::class, 'connectViaToken'])->name('connections.connect.get');
     Route::post('/connections/connect/{token}', [ProfileController::class, 'connectViaToken'])->name('connections.connect');
 
     // Custom Application Routes (Protected by 'auth' middleware)
