@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\PersonalRecord;
 use App\Models\Exercise;
 use App\Models\LiftLog;
+use App\Models\Role;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -2150,8 +2151,8 @@ class FeedControllerTest extends TestCase
         $response = $this->actingAs($this->user)->get(route('feed.users'));
 
         $response->assertStatus(200);
-        $response->assertSee('No friends yet');
-        $response->assertSee('Connect with friends to see their PRs and share your progress together');
+        $response->assertSee('Build Your Crew');
+        $response->assertSee('Connect with friends and celebrate each other', false);
         $response->assertSee('Connect with Friends');
         $response->assertSee(route('connections.index'), false);
     }
@@ -2167,7 +2168,7 @@ class FeedControllerTest extends TestCase
         $response->assertSee('My Friends');
         $response->assertSee('View their profiles and recent PRs');
         $response->assertSee($this->otherUser->name);
-        $response->assertDontSee('No friends yet');
+        $response->assertDontSee('Build Your Crew');
     }
 
     /** @test */
@@ -2183,7 +2184,7 @@ class FeedControllerTest extends TestCase
         $response->assertSee('My Friends');
         $response->assertSee($this->user->name);
         $response->assertSee($this->otherUser->name);
-        $response->assertDontSee('No friends yet');
+        $response->assertDontSee('Build Your Crew');
     }
 
     /** @test */
@@ -2196,7 +2197,7 @@ class FeedControllerTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('My Friends');
         $response->assertSee($this->otherUser->name);
-        $response->assertDontSee('No friends yet');
+        $response->assertDontSee('Build Your Crew');
     }
 
     /** @test */
@@ -2207,9 +2208,10 @@ class FeedControllerTest extends TestCase
         $response = $this->actingAs($this->user)->get(route('feed.users', ['view_as_user' => 1]));
 
         $response->assertStatus(200);
-        $response->assertSee('No friends yet');
-        $response->assertSee('Connect with friends to see their PRs and share your progress together');
-        $response->assertDontSee($this->otherUser->name);
+        $response->assertSee('Build Your Crew');
+        $response->assertSee('Connect with friends and celebrate each other', false);
+        // The user list should be empty (not showing other users in the main content)
+        $response->assertDontSee('My Friends');
     }
 
     /** @test */
@@ -2225,6 +2227,6 @@ class FeedControllerTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('My Friends');
         $response->assertSee($this->otherUser->name);
-        $response->assertDontSee('No friends yet');
+        $response->assertDontSee('Build Your Crew');
     }
 }
