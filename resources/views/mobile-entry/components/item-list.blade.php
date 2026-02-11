@@ -1,6 +1,7 @@
 {{-- Item List Component --}}
 <section class="component-list-section{{ ($data['initialState'] ?? 'collapsed') === 'expanded' ? ' active' : '' }}" aria-label="{{ $data['ariaLabels']['section'] }}" data-initial-state="{{ $data['initialState'] ?? 'collapsed' }}">
     {{-- Sticky Filter Header --}}
+    @if($data['showFilter'] ?? true)
     <div class="component-filter-container">
         <div class="component-filter-group{{ ($data['showCancelButton'] ?? true) ? '' : ' component-filter-group--no-cancel' }}">
             <div class="component-filter-input-wrapper">
@@ -13,9 +14,10 @@
             @endif
         </div>
     </div>
+    @endif
     
     {{-- Scrollable Item List --}}
-    <ul class="component-list{{ ($data['restrictHeight'] ?? true) ? '' : ' component-list--no-height-restriction' }}">
+    <ul class="component-list{{ ($data['restrictHeight'] ?? true) ? '' : ' component-list--no-height-restriction' }}{{ !($data['showFilter'] ?? true) ? ' component-list--no-filter' : '' }}">
         @foreach($data['items'] as $item)
         <li>
             <a href="{{ $item['href'] }}" class="component-list-item component-list-item--{{ $item['type']['cssClass'] }}" 

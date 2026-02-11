@@ -15,6 +15,7 @@ class ItemListComponentBuilder
         'initialState' => 'collapsed',
         'showCancelButton' => true,
         'restrictHeight' => true,
+        'showFilter' => true,
         'ariaLabels' => [
             'section' => 'Item selection list',
             'selectItem' => 'Select this item'
@@ -81,6 +82,12 @@ class ItemListComponentBuilder
         $this->data['restrictHeight'] = $restrict;
         return $this;
     }
+    public function showFilter(bool $show = true): self
+    {
+        $this->data['showFilter'] = $show;
+        return $this;
+    }
+
     
     public function build(): array
     {

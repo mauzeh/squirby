@@ -218,12 +218,15 @@ class FeedController extends Controller
             $components[] = $this->fabService->createConnectionFab($currentUser, 'feed');
         } else {
             // Build user list using ItemList component
+            $totalUsers = $followingUsers->count() + $notFollowingUsers->count();
+            
             $itemList = C::itemList()
-                ->filterPlaceholder('Search users...')
+                ->filterPlaceholder('Filter connections...')
                 ->noResultsMessage('No users found.')
                 ->initialState('expanded')
                 ->showCancelButton(false)
-                ->restrictHeight(false);
+                ->restrictHeight(false)
+                ->showFilter($totalUsers >= 10);
             
             // Add following users first
             foreach ($followingUsers as $user) {

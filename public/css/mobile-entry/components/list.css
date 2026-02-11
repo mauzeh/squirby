@@ -155,6 +155,10 @@
     flex: 1;
 }
 
+.component-list--no-filter {
+    border-radius: var(--border-radius-md);
+}
+
 .component-list li {
     margin: 0;
     padding: 0;
