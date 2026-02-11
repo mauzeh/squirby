@@ -3,6 +3,7 @@
 namespace App\Services\MobileEntry;
 
 use App\Services\ComponentBuilder;
+use App\Services\FabService;
 
 /**
  * Assembles UI components for mobile entry pages
@@ -10,6 +11,10 @@ use App\Services\ComponentBuilder;
  */
 class ComponentAssembler
 {
+    public function __construct(
+        private FabService $fabService
+    ) {}
+    
     /**
      * Assemble all components for a mobile entry page
      * 
@@ -60,16 +65,7 @@ class ComponentAssembler
         
         // Add FAB for quick connection (only on lifts page)
         if ($entryType === 'lifts') {
-            $currentUser = auth()->user();
-            $hasConnections = $currentUser->following()->exists() || $currentUser->followers()->exists();
-            $fab = ComponentBuilder::fab(route('connections.index'), 'fa-user-plus')
-                ->title('Connect');
-            
-            if (!$hasConnections) {
-                $fab->tooltip('Connect with friends');
-            }
-            
-            $components[] = $fab->build();
+            $components[] = $this->fabService->createConnectionFab(auth()->user());
         }
         
         return $components;

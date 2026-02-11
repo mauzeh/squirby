@@ -9,9 +9,14 @@ use App\Models\PRHighFive;
 use App\Models\PRComment;
 use App\Models\Notification;
 use App\Services\ComponentBuilder as C;
+use App\Services\FabService;
 
 class FeedController extends Controller
 {
+    public function __construct(
+        private FabService $fabService
+    ) {}
+    
     public function index(Request $request)
     {
         $currentUser = $request->user();
@@ -109,15 +114,7 @@ class FeedController extends Controller
         ];
         
         // Add FAB for quick connection
-        $hasConnections = $currentUser->following()->exists() || $currentUser->followers()->exists();
-        $fab = C::fab(route('connections.index'), 'fa-user-plus')
-            ->title('Connect');
-        
-        if (!$hasConnections) {
-            $fab->tooltip('Connect with friends');
-        }
-        
-        $components[] = $fab->build();
+        $components[] = $this->fabService->createConnectionFab($currentUser);
         
         $data = [
             'components' => $components,
@@ -226,15 +223,7 @@ class FeedController extends Controller
         $components[] = $itemList->build();
         
         // Add FAB for quick connection
-        $hasConnections = $currentUser->following()->exists() || $currentUser->followers()->exists();
-        $fab = C::fab(route('connections.index'), 'fa-user-plus')
-            ->title('Connect');
-        
-        if (!$hasConnections) {
-            $fab->tooltip('Connect with friends');
-        }
-        
-        $components[] = $fab->build();
+        $components[] = $this->fabService->createConnectionFab($currentUser);
         
         $data = [
             'components' => $components,
@@ -378,15 +367,7 @@ class FeedController extends Controller
         }
         
         // Add FAB for quick connection
-        $hasConnections = $currentUser->following()->exists() || $currentUser->followers()->exists();
-        $fab = C::fab(route('connections.index'), 'fa-user-plus')
-            ->title('Connect');
-        
-        if (!$hasConnections) {
-            $fab->tooltip('Connect with friends');
-        }
-        
-        $components[] = $fab->build();
+        $components[] = $this->fabService->createConnectionFab($currentUser);
         
         $data = [
             'components' => $components,
@@ -614,15 +595,7 @@ class FeedController extends Controller
         }
         
         // Add FAB for quick connection
-        $hasConnections = $currentUser->following()->exists() || $currentUser->followers()->exists();
-        $fab = C::fab(route('connections.index'), 'fa-user-plus')
-            ->title('Connect');
-        
-        if (!$hasConnections) {
-            $fab->tooltip('Connect with friends');
-        }
-        
-        $components[] = $fab->build();
+        $components[] = $this->fabService->createConnectionFab($currentUser);
         
         $data = [
             'components' => $components,
