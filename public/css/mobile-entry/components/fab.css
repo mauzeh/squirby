@@ -1,7 +1,7 @@
 /* Floating Action Button (FAB) */
 .fab {
     position: fixed;
-    bottom: 80px;
+    bottom: 20px;
     right: 20px;
     width: 56px;
     height: 56px;
@@ -72,7 +72,7 @@
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .fab {
-        bottom: 70px;
+        bottom: 16px;
         right: 16px;
     }
     
