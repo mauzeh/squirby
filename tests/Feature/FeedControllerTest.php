@@ -1851,6 +1851,84 @@ class FeedControllerTest extends TestCase
     }
 
     /** @test */
+    public function it_prioritizes_grouped_prs_with_any_unread()
+    {
+        $exercise1 = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
+        $exercise2 = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
+        
+        // Follow the other user
+        $this->user->follow($this->otherUser);
+        
+        // Create two lift logs for the same user on the same day (will be grouped together)
+        $today = now();
+        $liftLog1 = LiftLog::factory()->create([
+            'user_id' => $this->otherUser->id,
+            'exercise_id' => $exercise1->id,
+            'logged_at' => $today->copy()->subHours(2),
+        ]);
+        
+        $liftLog2 = LiftLog::factory()->create([
+            'user_id' => $this->otherUser->id,
+            'exercise_id' => $exercise2->id,
+            'logged_at' => $today->copy()->subHours(1),
+        ]);
+        
+        // Create PRs for both lift logs on the same day
+        $pr1 = PersonalRecord::factory()->create([
+            'user_id' => $this->otherUser->id,
+            'exercise_id' => $exercise1->id,
+            'lift_log_id' => $liftLog1->id,
+            'achieved_at' => $today->copy()->subHours(2),
+        ]);
+        
+        $pr2 = PersonalRecord::factory()->create([
+            'user_id' => $this->otherUser->id,
+            'exercise_id' => $exercise2->id,
+            'lift_log_id' => $liftLog2->id,
+            'achieved_at' => $today->copy()->subHours(1),
+        ]);
+        
+        // Create an older PR from a different day (will be in a separate group)
+        $olderLiftLog = LiftLog::factory()->create([
+            'user_id' => $this->otherUser->id,
+            'exercise_id' => $exercise1->id,
+            'logged_at' => now()->subDays(2),
+        ]);
+        
+        $olderPR = PersonalRecord::factory()->create([
+            'user_id' => $this->otherUser->id,
+            'exercise_id' => $exercise1->id,
+            'lift_log_id' => $olderLiftLog->id,
+            'achieved_at' => now()->subDays(2),
+        ]);
+        
+        // View feed to mark all as read
+        $this->actingAs($this->user)->get(route('feed.index'));
+        
+        // Mark only ONE PR from the grouped pair as unread
+        \App\Models\PersonalRecordRead::where('user_id', $this->user->id)
+            ->where('personal_record_id', $pr2->id)
+            ->delete();
+        
+        // View feed again
+        $response = $this->actingAs($this->user)->get(route('feed.index'));
+        
+        // Get the response content
+        $content = $response->getContent();
+        
+        // Find positions - the grouped PRs should appear before the older PR
+        // even though the older PR is chronologically older
+        $todayGroupPosition = strpos($content, 'lift-log-' . $liftLog1->id);
+        $olderPRPosition = strpos($content, 'lift-log-' . $olderLiftLog->id);
+        
+        // Verify the group with any unread PR appears before the fully read older PR
+        $this->assertNotFalse($todayGroupPosition, 'Today\'s grouped PRs should be present in feed');
+        $this->assertNotFalse($olderPRPosition, 'Older PR should be present in feed');
+        $this->assertLessThan($olderPRPosition, $todayGroupPosition, 
+            'Grouped PRs with any unread should appear before fully read PRs, regardless of date');
+    }
+
+    /** @test */
     public function it_shows_fab_tooltip_for_users_without_connections()
     {
         // User has no connections

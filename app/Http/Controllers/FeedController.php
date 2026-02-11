@@ -55,8 +55,25 @@ class FeedController extends Controller
         ->values()
         ->sortBy(function ($pr) use ($readPRIds) {
             // Sort unread PRs first (0), then read PRs (1)
-            // Within each group, maintain chronological order by achieved_at
-            $isRead = in_array($pr->id, $readPRIds) ? 1 : 0;
+            // Check if ANY PR in the entire group is unread
+            $hasUnreadPR = false;
+            
+            // Check all lift logs in this user-date group
+            if (isset($pr->allLiftLogs)) {
+                foreach ($pr->allLiftLogs as $liftLog) {
+                    // Check all PRs in this lift log
+                    if (isset($liftLog->allPRs)) {
+                        foreach ($liftLog->allPRs as $individualPR) {
+                            if (!in_array($individualPR->id, $readPRIds)) {
+                                $hasUnreadPR = true;
+                                break 2; // Break out of both loops
+                            }
+                        }
+                    }
+                }
+            }
+            
+            $isRead = $hasUnreadPR ? 0 : 1;
             return [$isRead, -$pr->achieved_at->timestamp];
         })
         ->values()
