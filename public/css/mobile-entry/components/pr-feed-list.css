@@ -9,7 +9,7 @@
 .pr-feed {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-lg);
+    gap: var(--spacing-xl);
 }
 
 /* Feed Action Buttons */
@@ -53,8 +53,8 @@
 
 /* PR Card */
 .pr-card {
-    background: var(--tertiary-bg);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.15);
     border-radius: var(--border-radius-md);
     padding: var(--spacing-lg);
     box-shadow: var(--shadow-light);
@@ -78,9 +78,11 @@
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: var(--spacing-md);
-    padding-bottom: var(--spacing-sm);
+    margin: calc(var(--spacing-lg) * -1) calc(var(--spacing-lg) * -1) var(--spacing-md);
+    padding: var(--spacing-md) var(--spacing-lg);
+    background: rgba(0, 0, 0, 0.25);
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--border-radius-md) var(--border-radius-md) 0 0;
     gap: var(--spacing-md);
 }
 
@@ -138,6 +140,11 @@
     height: 48px;
     border-radius: 50%;
     object-fit: cover;
+    border: 1px solid #eee;
+}
+
+.pr-card-new .pr-avatar-img {
+    border: 3px solid #ff6b35;
 }
 
 .pr-user-details {
