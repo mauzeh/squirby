@@ -30,4 +30,13 @@ class PRCommentObserver
             ],
         ]);
     }
+
+    public function deleted(PRComment $comment): void
+    {
+        // Remove the notification when comment is deleted
+        Notification::where('notifiable_type', PRComment::class)
+            ->where('notifiable_id', $comment->id)
+            ->delete();
+    }
 }
+

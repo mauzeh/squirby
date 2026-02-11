@@ -119,6 +119,22 @@ class NotificationTest extends TestCase
     }
 
     /** @test */
+    public function it_deletes_notification_when_comment_is_removed()
+    {
+        $comment = PRComment::create([
+            'personal_record_id' => $this->pr->id,
+            'user_id' => $this->otherUser->id,
+            'comment' => 'Great job!',
+        ]);
+
+        $this->assertEquals(1, $this->user->notifications()->count());
+
+        $comment->delete();
+
+        $this->assertEquals(0, $this->user->notifications()->count());
+    }
+
+    /** @test */
     public function it_displays_notifications_page()
     {
         PRComment::create([
