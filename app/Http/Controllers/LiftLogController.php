@@ -12,6 +12,7 @@ use App\Services\MobileEntry\LiftLogService;
 use App\Services\ExerciseAliasService;
 use App\Services\ComponentBuilder;
 use App\Services\ExercisePageService;
+use App\Services\FabService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -24,7 +25,8 @@ class LiftLogController extends Controller
         private UpdateLiftLogAction $updateLiftLogAction,
         private LiftLogService $liftLogService,
         private ExerciseAliasService $exerciseAliasService,
-        private ExercisePageService $exercisePageService
+        private ExercisePageService $exercisePageService,
+        private FabService $fabService
     ) {}
     
     /**
@@ -163,6 +165,9 @@ class LiftLogController extends Controller
                 'data' => $exerciseListData,
             ];
         }
+
+        // Add FAB
+        $components[] = $this->fabService->createConnectionFab(Auth::user(), 'lifts');
 
         $data = ['components' => $components];
 

@@ -14,6 +14,7 @@ use App\Services\ExercisePRService;
 use App\Services\ComponentBuilder;
 use App\Services\ExerciseFormService;
 use App\Services\ExercisePageService;
+use App\Services\FabService;
 use App\Presenters\LiftLogTablePresenter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -33,7 +34,8 @@ class ExerciseController extends Controller
         private UpdateExerciseAction $updateExerciseAction,
         private MergeExerciseAction $mergeExerciseAction,
         private ExerciseFormService $exerciseFormService,
-        private ExercisePageService $exercisePageService
+        private ExercisePageService $exercisePageService,
+        private FabService $fabService
     ) {}
 
     /**
@@ -111,6 +113,9 @@ class ExerciseController extends Controller
             
             $components[] = $listBuilder->build();
         }
+
+        // Add FAB
+        $components[] = $this->fabService->createConnectionFab(Auth::user());
 
         $data = ['components' => $components];
         

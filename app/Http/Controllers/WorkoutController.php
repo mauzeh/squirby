@@ -9,6 +9,7 @@ use App\Models\Exercise;
 use App\Models\Workout;
 use App\Models\WorkoutExercise;
 use App\Services\ComponentBuilder as C;
+use App\Services\FabService;
 use App\Services\WodDisplayService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -23,7 +24,8 @@ class WorkoutController extends Controller
         private WodDisplayService $wodDisplayService,
         private \App\Services\WorkoutExerciseListService $exerciseListService,
         private CreateWorkoutAction $createWorkoutAction,
-        private UpdateWorkoutAction $updateWorkoutAction
+        private UpdateWorkoutAction $updateWorkoutAction,
+        private FabService $fabService
     ) {}
 
     /**
@@ -180,6 +182,9 @@ class WorkoutController extends Controller
                     ->build();
             }
         }
+
+        // Add FAB
+        $components[] = $this->fabService->createConnectionFab(Auth::user(), 'lifts');
 
         $data = ['components' => $components];
         return view('mobile-entry.flexible', compact('data'));
