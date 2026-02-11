@@ -396,6 +396,17 @@ class FeedController extends Controller
             ];
         }
         
+        // Add FAB for quick connection
+        $hasConnections = $currentUser->following()->exists() || $currentUser->followers()->exists();
+        $fab = C::fab(route('connections.index'), 'fa-user-plus')
+            ->title('Connect');
+        
+        if (!$hasConnections) {
+            $fab->tooltip('Connect with friends');
+        }
+        
+        $components[] = $fab->build();
+        
         $data = [
             'components' => $components,
             'customScripts' => ['pr-feed-scroll'],
