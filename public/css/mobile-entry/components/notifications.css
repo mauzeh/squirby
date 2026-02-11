@@ -67,7 +67,7 @@
     text-decoration: none;
     color: inherit;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: var(--spacing-md, 1rem);
     min-width: 0;
 }
@@ -118,9 +118,70 @@
     font-weight: 700;
 }
 
+.notification-heart {
+    color: #ff6b6b;
+    margin-right: 0.25rem;
+    animation: notification-heart-pulse 2s ease-in-out infinite;
+}
+
+.notification-comment {
+    color: #3b82f6;
+    margin-right: 0.25rem;
+}
+
+@keyframes notification-heart-pulse {
+    0%, 100% {
+        transform: scale(1);
+        filter: drop-shadow(0 0 2px rgba(255, 107, 107, 0.5));
+    }
+    50% {
+        transform: scale(1.1);
+        filter: drop-shadow(0 0 6px rgba(255, 107, 107, 0.8));
+    }
+}
+
 .notification-time {
     color: var(--text-secondary, #6b7280);
     font-size: 0.8125rem;
+}
+
+.notification-pr-details {
+    color: var(--text-tertiary, #9ca3af);
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    margin-top: var(--spacing-xs, 0.25rem);
+}
+
+.notification-pr-exercise {
+    font-weight: 500;
+    color: var(--text-secondary, #6b7280);
+}
+
+.notification-pr-sets {
+    color: var(--text-tertiary, #9ca3af);
+}
+
+.notification-pr-date {
+    color: var(--text-tertiary, #9ca3af);
+    font-size: 0.8125rem;
+}
+
+@media (prefers-color-scheme: dark) {
+    .notification-pr-details {
+        color: var(--text-tertiary, #6b7280);
+    }
+
+    .notification-pr-exercise {
+        color: var(--text-secondary, #9ca3af);
+    }
+
+    .notification-pr-sets {
+        color: var(--text-tertiary, #6b7280);
+    }
+
+    .notification-pr-date {
+        color: var(--text-tertiary, #6b7280);
+    }
 }
 
 .notification-mark-read {

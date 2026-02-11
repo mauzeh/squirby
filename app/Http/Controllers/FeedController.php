@@ -553,6 +553,13 @@ class FeedController extends Controller
             ->latest()
             ->paginate(50);
         
+        // Load PersonalRecords for notifications that have them
+        $prIds = $notifications->pluck('data.personal_record_id')->filter()->unique();
+        $personalRecords = PersonalRecord::with(['exercise', 'liftLog.liftSets'])
+            ->whereIn('id', $prIds)
+            ->get()
+            ->keyBy('id');
+        
         $unreadCount = $currentUser->notifications()->unread()->count();
         
         $components = [
@@ -581,7 +588,11 @@ class FeedController extends Controller
             ];
         } else {
             foreach ($notifications as $notification) {
-                $components[] = $this->buildNotificationComponent($notification, $currentUser);
+                $pr = null;
+                if (isset($notification->data['personal_record_id'])) {
+                    $pr = $personalRecords->get($notification->data['personal_record_id']);
+                }
+                $components[] = $this->buildNotificationComponent($notification, $currentUser, $pr);
             }
         }
         
@@ -611,7 +622,7 @@ class FeedController extends Controller
         return view('mobile-entry.flexible', compact('data'));
     }
     
-    private function buildNotificationComponent(Notification $notification, User $currentUser): array
+    private function buildNotificationComponent(Notification $notification, User $currentUser, ?PersonalRecord $pr = null): array
     {
         $actor = $notification->actor;
         $isUnread = $notification->isUnread();
@@ -619,17 +630,59 @@ class FeedController extends Controller
         // Build notification message based on type
         $message = '';
         $link = '#';
+        $prDetails = '';
+        
+        // Build PR details if available
+        if ($pr && $pr->exercise) {
+            $date = $pr->achieved_at->format('M j');
+            $exerciseName = $pr->exercise->title;
+            
+            // Get sets/reps from lift log
+            $setsInfo = '';
+            if ($pr->liftLog && $pr->liftLog->liftSets->isNotEmpty()) {
+                $sets = $pr->liftLog->liftSets;
+                $setCount = $sets->count();
+                
+                // Get the best set (highest weight or reps)
+                $bestSet = $sets->sortByDesc(function ($set) {
+                    return ($set->weight ?? 0) * 1000 + ($set->reps ?? 0);
+                })->first();
+                
+                if ($bestSet) {
+                    $weight = $bestSet->weight ? number_format($bestSet->weight) . ' lbs' : '';
+                    $reps = $bestSet->reps ? $bestSet->reps . ' reps' : '';
+                    
+                    if ($weight && $reps) {
+                        $setsInfo = "{$setCount} sets × {$weight} × {$reps}";
+                    } elseif ($weight) {
+                        $setsInfo = "{$setCount} sets × {$weight}";
+                    } elseif ($reps) {
+                        $setsInfo = "{$setCount} sets × {$reps}";
+                    } else {
+                        $setsInfo = "{$setCount} sets";
+                    }
+                }
+            }
+            
+            $prDetails = "<div class='notification-pr-details'>";
+            $prDetails .= "<span class='notification-pr-exercise'>{$exerciseName}</span>";
+            if ($setsInfo) {
+                $prDetails .= " <span class='notification-pr-sets'>{$setsInfo}</span>";
+            }
+            $prDetails .= " <span class='notification-pr-date'>{$date}</span>";
+            $prDetails .= "</div>";
+        }
         
         switch ($notification->type) {
             case 'pr_comment':
                 $commentPreview = $notification->data['comment_preview'] ?? '';
-                $message = "commented on your PR: \"{$commentPreview}\"";
+                $message = "<i class='fas fa-comment notification-comment'></i> commented on your PR: \"{$commentPreview}\"";
                 // Link to the PR owner's profile (the notification recipient)
                 $link = route('feed.users.show', $notification->user_id);
                 break;
                 
             case 'pr_high_five':
-                $message = "gave you a high five!";
+                $message = "<i class='fas fa-heart notification-heart'></i> gave you a high five!";
                 // Link to the PR owner's profile (the notification recipient)
                 $link = route('feed.users.show', $notification->user_id);
                 break;
@@ -662,6 +715,7 @@ class FeedController extends Controller
                                 <div class='notification-message'>
                                     <span class='notification-actor'>{$actor->name}</span> {$message}
                                 </div>
+                                {$prDetails}
                                 <div class='notification-time'>{$timeAgo}</div>
                             </div>
                         </a>
