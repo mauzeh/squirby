@@ -374,125 +374,6 @@ class FeedControllerTest extends TestCase
     }
 
     /** @test */
-    public function it_marks_prs_as_read_when_viewing_user_profile()
-    {
-        $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
-        $liftLog = LiftLog::factory()->create([
-            'user_id' => $this->otherUser->id,
-            'exercise_id' => $exercise->id,
-        ]);
-        
-        $pr = PersonalRecord::factory()->create([
-            'user_id' => $this->otherUser->id,
-            'exercise_id' => $exercise->id,
-            'lift_log_id' => $liftLog->id,
-            'achieved_at' => now()->subDays(1),
-        ]);
-        
-        // Verify PR is not read yet
-        $this->assertFalse($pr->isReadBy($this->user));
-        
-        // View user profile
-        $response = $this->actingAs($this->user)->get(route('feed.users.show', $this->otherUser));
-        
-        $response->assertStatus(200);
-        
-        // Verify PR is now marked as read
-        $this->assertTrue($pr->fresh()->isReadBy($this->user));
-    }
-
-    /** @test */
-    public function it_marks_old_prs_as_read_on_user_profile()
-    {
-        $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
-        $liftLog = LiftLog::factory()->create([
-            'user_id' => $this->otherUser->id,
-            'exercise_id' => $exercise->id,
-        ]);
-        
-        // Create a PR older than 7 days (wouldn't appear in main feed)
-        $oldPR = PersonalRecord::factory()->create([
-            'user_id' => $this->otherUser->id,
-            'exercise_id' => $exercise->id,
-            'lift_log_id' => $liftLog->id,
-            'achieved_at' => now()->subDays(10),
-        ]);
-        
-        // Verify PR is not read yet
-        $this->assertFalse($oldPR->isReadBy($this->user));
-        
-        // View user profile
-        $response = $this->actingAs($this->user)->get(route('feed.users.show', $this->otherUser));
-        
-        $response->assertStatus(200);
-        
-        // Verify old PR is now marked as read
-        $this->assertTrue($oldPR->fresh()->isReadBy($this->user));
-    }
-
-    /** @test */
-    public function it_shows_prs_as_read_immediately_on_user_profile()
-    {
-        $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
-        $liftLog = LiftLog::factory()->create([
-            'user_id' => $this->otherUser->id,
-            'exercise_id' => $exercise->id,
-        ]);
-        
-        $pr = PersonalRecord::factory()->create([
-            'user_id' => $this->otherUser->id,
-            'exercise_id' => $exercise->id,
-            'lift_log_id' => $liftLog->id,
-            'achieved_at' => now()->subHours(12),
-        ]);
-        
-        // View user profile
-        $response = $this->actingAs($this->user)->get(route('feed.users.show', $this->otherUser));
-        
-        $response->assertStatus(200);
-        
-        // PR should NOT show the NEW badge (it's marked as read before rendering)
-        $response->assertDontSee('NEW');
-        $response->assertDontSee('pr-card-new');
-    }
-
-    /** @test */
-    public function it_does_not_mark_prs_as_read_when_impersonating_on_production()
-    {
-        // Simulate production environment
-        app()->detectEnvironment(function () {
-            return 'production';
-        });
-        
-        // Simulate impersonation
-        session(['impersonator_id' => 999]);
-        
-        $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
-        $liftLog = LiftLog::factory()->create([
-            'user_id' => $this->otherUser->id,
-            'exercise_id' => $exercise->id,
-        ]);
-        
-        $pr = PersonalRecord::factory()->create([
-            'user_id' => $this->otherUser->id,
-            'exercise_id' => $exercise->id,
-            'lift_log_id' => $liftLog->id,
-            'achieved_at' => now()->subDays(1),
-        ]);
-        
-        // Verify PR is not read yet
-        $this->assertFalse($pr->isReadBy($this->user));
-        
-        // View user profile while impersonating
-        $response = $this->actingAs($this->user)->get(route('feed.users.show', $this->otherUser));
-        
-        $response->assertStatus(200);
-        
-        // Verify PR is still not marked as read
-        $this->assertFalse($pr->fresh()->isReadBy($this->user));
-    }
-
-    /** @test */
     public function it_categorizes_users_by_follow_status()
     {
         $followedUser = User::factory()->create(['name' => 'Followed User']);
@@ -2121,8 +2002,6 @@ class FeedControllerTest extends TestCase
         $response->assertStatus(200);
         $response->assertDontSee('Connect with friends');
     }
-}
-
 
     /** @test */
     public function it_includes_pr_anchor_in_notification_links_for_comments()

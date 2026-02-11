@@ -335,25 +335,6 @@ class FeedController extends Controller
         // Get IDs of PRs that the current user has already read
         $readPRIds = $currentUser->readPersonalRecords()->pluck('personal_records.id')->toArray();
         
-        // Mark all visible PRs as read immediately (before rendering)
-        // This includes PRs older than 7 days that wouldn't be shown in the main feed
-        $isImpersonatingOnProduction = session()->has('impersonator_id') && app()->environment('production');
-        if (!$isImpersonatingOnProduction && $prs->isNotEmpty()) {
-            $prIds = $prs->pluck('id')->toArray();
-            foreach ($prIds as $prId) {
-                if (!in_array($prId, $readPRIds)) {
-                    \App\Models\PersonalRecordRead::firstOrCreate([
-                        'user_id' => $currentUser->id,
-                        'personal_record_id' => $prId,
-                    ], [
-                        'read_at' => now(),
-                    ]);
-                    // Add to readPRIds so it's marked as read in the view
-                    $readPRIds[] = $prId;
-                }
-            }
-        }
-        
         // Group by date (not user since it's all the same user)
         $groupedPrs = $prs->groupBy(function ($pr) {
             return $pr->achieved_at->format('Y-m-d');
