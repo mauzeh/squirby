@@ -1849,4 +1849,79 @@ class FeedControllerTest extends TestCase
         $this->assertLessThan($newerPRPosition, $olderPRPosition, 
             'Unread PR should appear before read PR in the feed');
     }
+
+    /** @test */
+    public function it_shows_fab_tooltip_for_users_without_connections()
+    {
+        // User has no connections
+        $response = $this->actingAs($this->user)->get(route('feed.index'));
+
+        $response->assertStatus(200);
+        $response->assertSee('Connect with friends');
+        $response->assertSee('fab-tooltip');
+    }
+
+    /** @test */
+    public function it_hides_fab_tooltip_for_users_with_following()
+    {
+        // User follows someone
+        $this->user->follow($this->otherUser);
+
+        $response = $this->actingAs($this->user)->get(route('feed.index'));
+
+        $response->assertStatus(200);
+        $response->assertDontSee('Connect with friends');
+    }
+
+    /** @test */
+    public function it_hides_fab_tooltip_for_users_with_followers()
+    {
+        // Someone follows the user
+        $this->otherUser->follow($this->user);
+
+        $response = $this->actingAs($this->user)->get(route('feed.index'));
+
+        $response->assertStatus(200);
+        $response->assertDontSee('Connect with friends');
+    }
+
+    /** @test */
+    public function it_shows_fab_tooltip_on_users_page_without_connections()
+    {
+        $response = $this->actingAs($this->user)->get(route('feed.users'));
+
+        $response->assertStatus(200);
+        $response->assertSee('Connect with friends');
+    }
+
+    /** @test */
+    public function it_hides_fab_tooltip_on_users_page_with_connections()
+    {
+        $this->user->follow($this->otherUser);
+
+        $response = $this->actingAs($this->user)->get(route('feed.users'));
+
+        $response->assertStatus(200);
+        $response->assertDontSee('Connect with friends');
+    }
+
+    /** @test */
+    public function it_shows_fab_tooltip_on_notifications_page_without_connections()
+    {
+        $response = $this->actingAs($this->user)->get(route('feed.notifications'));
+
+        $response->assertStatus(200);
+        $response->assertSee('Connect with friends');
+    }
+
+    /** @test */
+    public function it_hides_fab_tooltip_on_notifications_page_with_connections()
+    {
+        $this->user->follow($this->otherUser);
+
+        $response = $this->actingAs($this->user)->get(route('feed.notifications'));
+
+        $response->assertStatus(200);
+        $response->assertDontSee('Connect with friends');
+    }
 }
