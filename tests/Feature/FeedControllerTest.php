@@ -2122,3 +2122,180 @@ class FeedControllerTest extends TestCase
         $response->assertDontSee('Connect with friends');
     }
 }
+
+
+    /** @test */
+    public function it_includes_pr_anchor_in_notification_links_for_comments()
+    {
+        $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
+        $liftLog = LiftLog::factory()->create(['user_id' => $this->user->id]);
+        
+        $pr = PersonalRecord::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $exercise->id,
+            'lift_log_id' => $liftLog->id,
+        ]);
+
+        // Create a notification for a comment
+        $notification = \App\Models\Notification::create([
+            'user_id' => $this->user->id,
+            'type' => 'pr_comment',
+            'actor_id' => $this->otherUser->id,
+            'notifiable_type' => 'App\Models\PRComment',
+            'notifiable_id' => 1,
+            'data' => [
+                'personal_record_id' => $pr->id,
+                'comment_preview' => 'Great job!',
+            ],
+        ]);
+
+        $response = $this->actingAs($this->user)->get(route('notifications.index'));
+
+        $response->assertStatus(200);
+        // Should see link with anchor hash
+        $response->assertSee('feed/users/' . $this->user->id . '#pr-' . $pr->id, false);
+    }
+
+    /** @test */
+    public function it_includes_pr_anchor_in_notification_links_for_high_fives()
+    {
+        $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
+        $liftLog = LiftLog::factory()->create(['user_id' => $this->user->id]);
+        
+        $pr = PersonalRecord::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_id' => $exercise->id,
+            'lift_log_id' => $liftLog->id,
+        ]);
+
+        // Create a notification for a high five
+        $notification = \App\Models\Notification::create([
+            'user_id' => $this->user->id,
+            'type' => 'pr_high_five',
+            'actor_id' => $this->otherUser->id,
+            'notifiable_type' => 'App\Models\PRHighFive',
+            'notifiable_id' => 1,
+            'data' => [
+                'personal_record_id' => $pr->id,
+            ],
+        ]);
+
+        $response = $this->actingAs($this->user)->get(route('notifications.index'));
+
+        $response->assertStatus(200);
+        // Should see link with anchor hash
+        $response->assertSee('feed/users/' . $this->user->id . '#pr-' . $pr->id, false);
+    }
+
+    /** @test */
+    public function it_includes_pr_anchor_in_notification_links_for_new_prs()
+    {
+        $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
+        $liftLog = LiftLog::factory()->create(['user_id' => $this->otherUser->id]);
+        
+        $pr = PersonalRecord::factory()->create([
+            'user_id' => $this->otherUser->id,
+            'exercise_id' => $exercise->id,
+            'lift_log_id' => $liftLog->id,
+        ]);
+
+        // Follow the other user
+        $this->user->follow($this->otherUser);
+
+        // Create a notification for a new PR
+        $notification = \App\Models\Notification::create([
+            'user_id' => $this->user->id,
+            'type' => 'new_pr',
+            'actor_id' => $this->otherUser->id,
+            'notifiable_type' => 'App\Models\PersonalRecord',
+            'notifiable_id' => $pr->id,
+            'data' => [
+                'personal_record_id' => $pr->id,
+            ],
+        ]);
+
+        $response = $this->actingAs($this->user)->get(route('notifications.index'));
+
+        $response->assertStatus(200);
+        // Should see link with anchor hash pointing to actor's profile
+        $response->assertSee('feed/users/' . $this->otherUser->id . '#pr-' . $pr->id, false);
+    }
+
+    /** @test */
+    public function it_adds_anchor_ids_to_pr_cards()
+    {
+        $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
+        $liftLog = LiftLog::factory()->create(['user_id' => $this->otherUser->id]);
+        
+        $pr = PersonalRecord::factory()->create([
+            'user_id' => $this->otherUser->id,
+            'exercise_id' => $exercise->id,
+            'lift_log_id' => $liftLog->id,
+            'achieved_at' => now()->subHours(1),
+        ]);
+
+        // Follow the other user
+        $this->user->follow($this->otherUser);
+
+        $response = $this->actingAs($this->user)->get(route('feed.index'));
+
+        $response->assertStatus(200);
+        // Should see anchor ID for the PR
+        $response->assertSee('id="pr-' . $pr->id . '"', false);
+    }
+
+    /** @test */
+    public function it_loads_pr_feed_scroll_script_on_user_profile()
+    {
+        $response = $this->actingAs($this->user)->get(route('feed.users.show', $this->otherUser));
+
+        $response->assertStatus(200);
+        // Should include the pr-feed-scroll.js script
+        $response->assertSee('pr-feed-scroll.js', false);
+    }
+
+    /** @test */
+    public function it_loads_pr_feed_scroll_script_on_feed_index()
+    {
+        $response = $this->actingAs($this->user)->get(route('feed.index'));
+
+        $response->assertStatus(200);
+        // Should include the pr-feed-scroll.js script
+        $response->assertSee('pr-feed-scroll.js', false);
+    }
+
+    /** @test */
+    public function it_shows_fab_on_feed_index()
+    {
+        $response = $this->actingAs($this->user)->get(route('feed.index'));
+
+        $response->assertStatus(200);
+        // Should see FAB
+        $response->assertSee('class="fab"', false);
+        $response->assertSee('Connect');
+    }
+
+    /** @test */
+    public function it_shows_fab_on_user_profile()
+    {
+        $response = $this->actingAs($this->user)->get(route('feed.users.show', $this->otherUser));
+
+        $response->assertStatus(200);
+        // Should see FAB
+        $response->assertSee('class="fab"', false);
+        $response->assertSee('Connect');
+    }
+
+    /** @test */
+    public function it_shows_fab_on_users_list()
+    {
+        $this->user->follow($this->otherUser);
+        
+        $response = $this->actingAs($this->user)->get(route('feed.users'));
+
+        $response->assertStatus(200);
+        // Should see FAB
+        $response->assertSee('class="fab"', false);
+        $response->assertSee('Connect');
+    }
+}

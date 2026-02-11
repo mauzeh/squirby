@@ -206,4 +206,86 @@ class ConnectionTest extends TestCase
         $user2->refresh();
         $this->assertTrue($pr->isReadBy($user2));
     }
+
+    public function test_user_can_connect_via_get_request_with_valid_token(): void
+    {
+        $user1 = User::factory()->create(['name' => 'Alice']);
+        $user2 = User::factory()->create(['name' => 'Bob']);
+
+        $token = $user1->generateConnectionToken();
+
+        $this->actingAs($user2);
+
+        // Test GET request (for QR code scanning)
+        $response = $this->get(route('connections.connect.get', ['token' => $token]));
+
+        $response->assertRedirect(route('connections.index'));
+        $response->assertSessionHas('success');
+        
+        // Check mutual follow
+        $this->assertTrue($user2->isFollowing($user1));
+        $this->assertTrue($user1->isFollowing($user2));
+    }
+
+    public function test_get_request_cannot_connect_with_invalid_token(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user);
+
+        $response = $this->get(route('connections.connect.get', ['token' => '999999']));
+
+        $response->assertRedirect(route('connections.index'));
+        $response->assertSessionHas('error', 'Invalid or expired connection code.');
+    }
+
+    public function test_get_request_cannot_connect_with_expired_token(): void
+    {
+        $user1 = User::factory()->create();
+        $user2 = User::factory()->create();
+
+        $token = $user1->generateConnectionToken();
+        
+        // Manually expire the token
+        $user1->update(['connection_token_expires_at' => now()->subMinutes(1)]);
+
+        $this->actingAs($user2);
+
+        $response = $this->get(route('connections.connect.get', ['token' => $token]));
+
+        $response->assertRedirect(route('connections.index'));
+        $response->assertSessionHas('error', 'Invalid or expired connection code.');
+    }
+
+    public function test_get_request_cannot_connect_with_self(): void
+    {
+        $user = User::factory()->create();
+        $token = $user->generateConnectionToken();
+
+        $this->actingAs($user);
+
+        $response = $this->get(route('connections.connect.get', ['token' => $token]));
+
+        $response->assertRedirect(route('connections.index'));
+        $response->assertSessionHas('error', 'You cannot connect with yourself.');
+    }
+
+    public function test_qr_code_url_works_with_get_request(): void
+    {
+        $user1 = User::factory()->create();
+        $user2 = User::factory()->create();
+
+        $token = $user1->generateConnectionToken();
+        
+        // Simulate scanning QR code (GET request)
+        $this->actingAs($user2);
+        $response = $this->get("/connections/connect/{$token}");
+
+        $response->assertRedirect(route('connections.index'));
+        $response->assertSessionHas('success');
+        
+        // Verify connection was established
+        $this->assertTrue($user2->isFollowing($user1));
+        $this->assertTrue($user1->isFollowing($user2));
+    }
 }
