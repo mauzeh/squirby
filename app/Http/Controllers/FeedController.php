@@ -122,7 +122,9 @@ class FeedController extends Controller
         ];
         
         // Mark all visible PRs as read AFTER the response is sent to the browser (skip if impersonating on production)
-        $isImpersonatingOnProduction = session()->has('impersonator_id') && app()->environment('production');
+        // Allow disabling this behavior with ?view_as_user=1 query parameter
+        $viewAsRegularUser = $request->query('view_as_user', false);
+        $isImpersonatingOnProduction = !$viewAsRegularUser && session()->has('impersonator_id') && app()->environment('production');
         if (!$isImpersonatingOnProduction) {
             $prIds = $prs->pluck('id')->toArray();
             $userId = $currentUser->id;
@@ -154,7 +156,9 @@ class FeedController extends Controller
         $currentUser = $request->user();
         
         // Check if user is admin or being impersonated
-        $isAdminOrImpersonated = $currentUser->hasRole('Admin') || session()->has('impersonator_id');
+        // Allow disabling this behavior with ?view_as_user=1 query parameter
+        $viewAsRegularUser = $request->query('view_as_user', false);
+        $isAdminOrImpersonated = !$viewAsRegularUser && ($currentUser->hasRole('Admin') || session()->has('impersonator_id'));
         
         // Get IDs of users that current user is following
         $followingIds = $currentUser->following()->pluck('users.id')->toArray();
@@ -176,10 +180,13 @@ class FeedController extends Controller
         $followingUsers = $users->filter(fn($user) => in_array($user->id, $followingIds));
         $notFollowingUsers = $users->filter(fn($user) => !in_array($user->id, $followingIds));
         
+        // Determine title based on whether user has connections
+        $hasConnections = $followingUsers->isNotEmpty() || $isAdminOrImpersonated;
+        
         $components = [
             C::title(
-                'My Friends',
-                'View their profiles and recent PRs'
+                $hasConnections ? 'My Friends' : 'Build Your Crew',
+                $hasConnections ? 'View their profiles and recent PRs' : 'Connect with friends and celebrate each other\'s wins'
             )->build(),
         ];
         
@@ -188,42 +195,65 @@ class FeedController extends Controller
             $components[] = $sessionMessages;
         }
         
-        // Build user list using ItemList component
-        $itemList = C::itemList()
-            ->filterPlaceholder('Search users...')
-            ->noResultsMessage('No users found.')
-            ->initialState('expanded')
-            ->showCancelButton(false)
-            ->restrictHeight(false);
-        
-        // Add following users first
-        foreach ($followingUsers as $user) {
-            $itemList->item(
-                id: (string) $user->id,
-                name: $user->name,
-                href: route('feed.users.show', $user),
-                typeLabel: 'Following',
-                typeCssClass: 'recent',
-                priority: 1
-            );
+        // Check if user has any connections
+        if ($followingUsers->isEmpty() && !$isAdminOrImpersonated) {
+            // Show empty state with call-to-action
+            $components[] = [
+                'type' => 'raw_html',
+                'data' => [
+                    'html' => '
+                        <div class="component-form-section" style="text-align: center; padding: var(--spacing-xl) var(--spacing-lg);">
+                            <div style="font-size: 48px; color: var(--text-muted); margin-bottom: var(--spacing-lg); opacity: 0.6;">
+                                <i class="fas fa-user-friends"></i>
+                            </div>
+                            <a href="' . route('connections.index') . '" class="btn btn-primary">
+                                <i class="fas fa-user-plus"></i>&nbsp; Connect with Friends
+                            </a>
+                        </div>
+                    '
+                ]
+            ];
+            
+            // Add FAB for quick connection
+            $components[] = $this->fabService->createConnectionFab($currentUser, 'feed');
+        } else {
+            // Build user list using ItemList component
+            $itemList = C::itemList()
+                ->filterPlaceholder('Search users...')
+                ->noResultsMessage('No users found.')
+                ->initialState('expanded')
+                ->showCancelButton(false)
+                ->restrictHeight(false);
+            
+            // Add following users first
+            foreach ($followingUsers as $user) {
+                $itemList->item(
+                    id: (string) $user->id,
+                    name: $user->name,
+                    href: route('feed.users.show', $user),
+                    typeLabel: 'Following',
+                    typeCssClass: 'recent',
+                    priority: 1
+                );
+            }
+            
+            // Then add not following users (only for admins/impersonated)
+            foreach ($notFollowingUsers as $user) {
+                $itemList->item(
+                    id: (string) $user->id,
+                    name: $user->name,
+                    href: route('feed.users.show', $user),
+                    typeLabel: 'Not following',
+                    typeCssClass: 'exercise-history',
+                    priority: 2
+                );
+            }
+            
+            $components[] = $itemList->build();
+            
+            // Add FAB for quick connection
+            $components[] = $this->fabService->createConnectionFab($currentUser, 'feed');
         }
-        
-        // Then add not following users (only for admins/impersonated)
-        foreach ($notFollowingUsers as $user) {
-            $itemList->item(
-                id: (string) $user->id,
-                name: $user->name,
-                href: route('feed.users.show', $user),
-                typeLabel: 'Not following',
-                typeCssClass: 'exercise-history',
-                priority: 2
-            );
-        }
-        
-        $components[] = $itemList->build();
-        
-        // Add FAB for quick connection
-        $components[] = $this->fabService->createConnectionFab($currentUser, 'feed');
         
         $data = [
             'components' => $components,

@@ -2143,4 +2143,88 @@ class FeedControllerTest extends TestCase
         $response->assertSee('class="fab"', false);
         $response->assertSee('Connect');
     }
+
+    /** @test */
+    public function it_shows_empty_state_when_user_has_no_connections()
+    {
+        $response = $this->actingAs($this->user)->get(route('feed.users'));
+
+        $response->assertStatus(200);
+        $response->assertSee('No friends yet');
+        $response->assertSee('Connect with friends to see their PRs and share your progress together');
+        $response->assertSee('Connect with Friends');
+        $response->assertSee(route('connections.index'), false);
+    }
+
+    /** @test */
+    public function it_shows_user_list_when_user_has_connections()
+    {
+        $this->user->follow($this->otherUser);
+        
+        $response = $this->actingAs($this->user)->get(route('feed.users'));
+
+        $response->assertStatus(200);
+        $response->assertSee('My Friends');
+        $response->assertSee('View their profiles and recent PRs');
+        $response->assertSee($this->otherUser->name);
+        $response->assertDontSee('No friends yet');
+    }
+
+    /** @test */
+    public function it_shows_all_users_for_admin_even_without_connections()
+    {
+        $adminRole = Role::firstOrCreate(['name' => 'Admin']);
+        $admin = User::factory()->create();
+        $admin->roles()->attach($adminRole);
+        
+        $response = $this->actingAs($admin)->get(route('feed.users'));
+
+        $response->assertStatus(200);
+        $response->assertSee('My Friends');
+        $response->assertSee($this->user->name);
+        $response->assertSee($this->otherUser->name);
+        $response->assertDontSee('No friends yet');
+    }
+
+    /** @test */
+    public function it_shows_all_users_for_impersonated_user_even_without_connections()
+    {
+        session(['impersonator_id' => 999]);
+        
+        $response = $this->actingAs($this->user)->get(route('feed.users'));
+
+        $response->assertStatus(200);
+        $response->assertSee('My Friends');
+        $response->assertSee($this->otherUser->name);
+        $response->assertDontSee('No friends yet');
+    }
+
+    /** @test */
+    public function it_shows_empty_state_for_impersonated_user_with_view_as_user_param()
+    {
+        session(['impersonator_id' => 999]);
+        
+        $response = $this->actingAs($this->user)->get(route('feed.users', ['view_as_user' => 1]));
+
+        $response->assertStatus(200);
+        $response->assertSee('No friends yet');
+        $response->assertSee('Connect with friends to see their PRs and share your progress together');
+        $response->assertDontSee($this->otherUser->name);
+    }
+
+    /** @test */
+    public function it_shows_user_list_for_admin_with_view_as_user_param_when_has_connections()
+    {
+        $adminRole = Role::firstOrCreate(['name' => 'Admin']);
+        $admin = User::factory()->create();
+        $admin->roles()->attach($adminRole);
+        $admin->follow($this->otherUser);
+        
+        $response = $this->actingAs($admin)->get(route('feed.users', ['view_as_user' => 1]));
+
+        $response->assertStatus(200);
+        $response->assertSee('My Friends');
+        $response->assertSee($this->otherUser->name);
+        $response->assertDontSee('No friends yet');
+    }
 }
