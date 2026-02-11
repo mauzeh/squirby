@@ -1940,7 +1940,7 @@ class FeedControllerTest extends TestCase
     }
 
     /** @test */
-    public function it_hides_fab_tooltip_for_users_with_following()
+    public function it_always_shows_fab_tooltip_on_feed_even_with_following()
     {
         // User follows someone
         $this->user->follow($this->otherUser);
@@ -1948,11 +1948,12 @@ class FeedControllerTest extends TestCase
         $response = $this->actingAs($this->user)->get(route('feed.index'));
 
         $response->assertStatus(200);
-        $response->assertDontSee('Connect with friends');
+        // Feed pages always show tooltip regardless of connections
+        $response->assertSee('Connect with friends');
     }
 
     /** @test */
-    public function it_hides_fab_tooltip_for_users_with_followers()
+    public function it_always_shows_fab_tooltip_on_feed_even_with_followers()
     {
         // Someone follows the user
         $this->otherUser->follow($this->user);
@@ -1960,7 +1961,8 @@ class FeedControllerTest extends TestCase
         $response = $this->actingAs($this->user)->get(route('feed.index'));
 
         $response->assertStatus(200);
-        $response->assertDontSee('Connect with friends');
+        // Feed pages always show tooltip regardless of connections
+        $response->assertSee('Connect with friends');
     }
 
     /** @test */
@@ -1973,34 +1975,36 @@ class FeedControllerTest extends TestCase
     }
 
     /** @test */
-    public function it_hides_fab_tooltip_on_users_page_with_connections()
+    public function it_always_shows_fab_tooltip_on_users_page_with_connections()
     {
         $this->user->follow($this->otherUser);
 
         $response = $this->actingAs($this->user)->get(route('feed.users'));
 
         $response->assertStatus(200);
-        $response->assertDontSee('Connect with friends');
+        // Feed pages always show tooltip regardless of connections
+        $response->assertSee('Connect with friends');
     }
 
     /** @test */
     public function it_shows_fab_tooltip_on_notifications_page_without_connections()
     {
-        $response = $this->actingAs($this->user)->get(route('feed.notifications'));
+        $response = $this->actingAs($this->user)->get(route('notifications.index'));
 
         $response->assertStatus(200);
         $response->assertSee('Connect with friends');
     }
 
     /** @test */
-    public function it_hides_fab_tooltip_on_notifications_page_with_connections()
+    public function it_always_shows_fab_tooltip_on_notifications_page_with_connections()
     {
         $this->user->follow($this->otherUser);
 
-        $response = $this->actingAs($this->user)->get(route('feed.notifications'));
+        $response = $this->actingAs($this->user)->get(route('notifications.index'));
 
         $response->assertStatus(200);
-        $response->assertDontSee('Connect with friends');
+        // Feed pages always show tooltip regardless of connections
+        $response->assertSee('Connect with friends');
     }
 
     /** @test */

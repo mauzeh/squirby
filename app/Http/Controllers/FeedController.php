@@ -114,7 +114,7 @@ class FeedController extends Controller
         ];
         
         // Add FAB for quick connection
-        $components[] = $this->fabService->createConnectionFab($currentUser);
+        $components[] = $this->fabService->createConnectionFab($currentUser, 'feed');
         
         $data = [
             'components' => $components,
@@ -223,7 +223,7 @@ class FeedController extends Controller
         $components[] = $itemList->build();
         
         // Add FAB for quick connection
-        $components[] = $this->fabService->createConnectionFab($currentUser);
+        $components[] = $this->fabService->createConnectionFab($currentUser, 'feed');
         
         $data = [
             'components' => $components,
@@ -367,7 +367,7 @@ class FeedController extends Controller
         }
         
         // Add FAB for quick connection
-        $components[] = $this->fabService->createConnectionFab($currentUser);
+        $components[] = $this->fabService->createConnectionFab($currentUser, 'feed');
         
         $data = [
             'components' => $components,
@@ -595,7 +595,7 @@ class FeedController extends Controller
         }
         
         // Add FAB for quick connection
-        $components[] = $this->fabService->createConnectionFab($currentUser);
+        $components[] = $this->fabService->createConnectionFab($currentUser, 'feed');
         
         $data = [
             'components' => $components,

@@ -65,7 +65,7 @@ class ComponentAssembler
         
         // Add FAB for quick connection (only on lifts page)
         if ($entryType === 'lifts') {
-            $components[] = $this->fabService->createConnectionFab(auth()->user());
+            $components[] = $this->fabService->createConnectionFab(auth()->user(), 'lifts');
         }
         
         return $components;
