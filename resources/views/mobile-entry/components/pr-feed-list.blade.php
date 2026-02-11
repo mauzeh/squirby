@@ -268,6 +268,11 @@ document.addEventListener('DOMContentLoaded', function() {
                                 $isOwnPR = $user->id === ($data['currentUserId'] ?? null);
                             @endphp
                             <div class="pr-lift-session">
+                                {{-- Add ID anchors for each PR in this lift log --}}
+                                @foreach($allPRsForLiftLog as $pr)
+                                    <div id="pr-{{ $pr->id }}" style="position: absolute; margin-top: -80px;"></div>
+                                @endforeach
+                                
                                 @php
                                     $weight = $liftLog->liftLog?->display_weight ?? 0;
                                     $reps = $liftLog->liftLog?->display_reps ?? 0;

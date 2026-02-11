@@ -121,6 +121,7 @@ class FeedController extends Controller
         
         $data = [
             'components' => $components,
+            'customScripts' => ['pr-feed-scroll'],
         ];
         
         // Mark all visible PRs as read AFTER the response is sent to the browser (skip if impersonating on production)
@@ -397,6 +398,7 @@ class FeedController extends Controller
         
         $data = [
             'components' => $components,
+            'customScripts' => ['pr-feed-scroll'],
         ];
         
         return view('mobile-entry.flexible', compact('data'));
@@ -700,20 +702,23 @@ class FeedController extends Controller
             case 'pr_comment':
                 $commentPreview = $notification->data['comment_preview'] ?? '';
                 $message = "<i class='fas fa-comment notification-comment'></i> commented on your PR: \"{$commentPreview}\"";
-                // Link to the PR owner's profile (the notification recipient)
-                $link = route('feed.users.show', $notification->user_id);
+                // Link to the PR owner's profile with anchor to specific PR
+                $prId = $notification->data['personal_record_id'] ?? null;
+                $link = route('feed.users.show', $notification->user_id) . ($prId ? '#pr-' . $prId : '');
                 break;
                 
             case 'pr_high_five':
                 $message = "<i class='fas fa-heart notification-heart'></i> gave you a high five!";
-                // Link to the PR owner's profile (the notification recipient)
-                $link = route('feed.users.show', $notification->user_id);
+                // Link to the PR owner's profile with anchor to specific PR
+                $prId = $notification->data['personal_record_id'] ?? null;
+                $link = route('feed.users.show', $notification->user_id) . ($prId ? '#pr-' . $prId : '');
                 break;
                 
             case 'new_pr':
                 $message = "achieved a new PR!";
-                // Link to the actor's profile (the person who achieved the PR)
-                $link = route('feed.users.show', $actor->id);
+                // Link to the actor's profile with anchor to specific PR
+                $prId = $notification->data['personal_record_id'] ?? null;
+                $link = route('feed.users.show', $actor->id) . ($prId ? '#pr-' . $prId : '');
                 break;
         }
         
