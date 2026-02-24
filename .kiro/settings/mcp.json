@@ -1,0 +1,24 @@
+{
+  "mcpServers": {
+    "laravel-boost": {
+      "command": "php",
+      "args": [
+        "artisan",
+        "boost:mcp",
+        "--no-interaction"
+      ]
+    },
+    "herd": {
+      "command": "php",
+      "args": [
+        "/Applications/Herd.app/Contents/Resources/herd-mcp.phar"
+      ],
+      "env": {
+        "SITE_PATH": "/Users/dekkers/Herd/squirby"
+      },
+      "autoApprove": [
+        "get_site_information"
+      ]
+    }
+  }
+}
