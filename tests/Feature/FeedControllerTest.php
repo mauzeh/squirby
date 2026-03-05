@@ -2,11 +2,11 @@
 
 namespace Tests\Feature;
 
-use App\Models\User;
-use App\Models\PersonalRecord;
 use App\Models\Exercise;
 use App\Models\LiftLog;
+use App\Models\PersonalRecord;
 use App\Models\Role;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -15,12 +15,13 @@ class FeedControllerTest extends TestCase
     use RefreshDatabase;
 
     protected User $user;
+
     protected User $otherUser;
 
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         $this->user = User::factory()->create();
         $this->otherUser = User::factory()->create();
     }
@@ -72,15 +73,15 @@ class FeedControllerTest extends TestCase
         $exerciseWithFeed = Exercise::factory()->create([
             'user_id' => null,
             'title' => 'Squat',
-            'show_in_feed' => true
+            'show_in_feed' => true,
         ]);
-        
+
         $exerciseWithoutFeed = Exercise::factory()->create([
             'user_id' => null,
             'title' => 'Curl',
-            'show_in_feed' => false
+            'show_in_feed' => false,
         ]);
-        
+
         $liftLog1 = LiftLog::factory()->create(['user_id' => $this->otherUser->id]);
         $liftLog2 = LiftLog::factory()->create(['user_id' => $this->otherUser->id]);
 
@@ -118,15 +119,15 @@ class FeedControllerTest extends TestCase
         $exerciseWithFeed = Exercise::factory()->create([
             'user_id' => null,
             'title' => 'Deadlift',
-            'show_in_feed' => true
+            'show_in_feed' => true,
         ]);
-        
+
         $exerciseWithoutFeed = Exercise::factory()->create([
             'user_id' => null,
             'title' => 'Tricep Extension',
-            'show_in_feed' => false
+            'show_in_feed' => false,
         ]);
-        
+
         $liftLog1 = LiftLog::factory()->create(['user_id' => $this->user->id]);
         $liftLog2 = LiftLog::factory()->create(['user_id' => $this->user->id]);
 
@@ -160,9 +161,9 @@ class FeedControllerTest extends TestCase
     {
         $followedUser = User::factory()->create();
         $unfollowedUser = User::factory()->create();
-        
+
         $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
-        
+
         $followedLiftLog = LiftLog::factory()->create(['user_id' => $followedUser->id]);
         $unfollowedLiftLog = LiftLog::factory()->create(['user_id' => $unfollowedUser->id]);
 
@@ -229,7 +230,7 @@ class FeedControllerTest extends TestCase
     {
         // Follow the other user so they appear in the list
         $this->user->follow($this->otherUser);
-        
+
         $response = $this->actingAs($this->user)->get(route('feed.users'));
 
         $response->assertStatus(200);
@@ -242,7 +243,7 @@ class FeedControllerTest extends TestCase
     {
         // Follow the other user so they appear in the list
         $this->user->follow($this->otherUser);
-        
+
         $response = $this->actingAs($this->user)->get(route('feed.users'));
 
         $response->assertStatus(200);
@@ -265,7 +266,7 @@ class FeedControllerTest extends TestCase
     {
         $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
         $liftLog = LiftLog::factory()->create(['user_id' => $this->otherUser->id]);
-        
+
         PersonalRecord::factory()->count(3)->create([
             'user_id' => $this->otherUser->id,
             'exercise_id' => $exercise->id,
@@ -288,7 +289,7 @@ class FeedControllerTest extends TestCase
             'user_id' => $this->otherUser->id,
             'exercise_id' => $exercise->id,
         ]);
-        
+
         PersonalRecord::factory()->create([
             'user_id' => $this->otherUser->id,
             'exercise_id' => $exercise->id,
@@ -321,7 +322,7 @@ class FeedControllerTest extends TestCase
 
         $response->assertRedirect();
         $response->assertSessionHas('success');
-        
+
         $this->assertTrue($this->user->isFollowing($this->otherUser));
     }
 
@@ -335,7 +336,7 @@ class FeedControllerTest extends TestCase
 
         $response->assertRedirect();
         $response->assertSessionHas('success');
-        
+
         $this->assertFalse($this->user->isFollowing($this->otherUser));
     }
 
@@ -347,7 +348,7 @@ class FeedControllerTest extends TestCase
 
         $response->assertRedirect();
         $response->assertSessionHas('error');
-        
+
         $this->assertFalse($this->user->isFollowing($this->user));
     }
 
@@ -379,21 +380,21 @@ class FeedControllerTest extends TestCase
     {
         $followedUser = User::factory()->create(['name' => 'Followed User']);
         $unfollowedUser = User::factory()->create(['name' => 'Unfollowed User']);
-        
+
         // Follow one user
         $this->user->follow($followedUser);
 
         $response = $this->actingAs($this->user)->get(route('feed.users'));
 
         $response->assertStatus(200);
-        
+
         // Only followed user should be visible for regular users
         $response->assertSee('Followed User');
         $response->assertDontSee('Unfollowed User');
-        
+
         // Check that the followed user has the "Following" label
         $response->assertSee('Following');
-        
+
         // Should NOT see "Not following" label (no unfollowed users shown)
         $response->assertDontSee('Not following');
     }
@@ -404,27 +405,27 @@ class FeedControllerTest extends TestCase
         // Make user an admin to see all users
         $adminRole = \App\Models\Role::firstOrCreate(['name' => 'Admin']);
         $this->user->roles()->attach($adminRole);
-        
+
         // Create users with names that would be out of order alphabetically
         $userA = User::factory()->create(['name' => 'Alice']);
         $userB = User::factory()->create(['name' => 'Bob']);
         $userC = User::factory()->create(['name' => 'Charlie']);
-        
+
         // Follow Bob (middle alphabetically)
         $this->user->follow($userB);
 
         $response = $this->actingAs($this->user)->get(route('feed.users'));
 
         $response->assertStatus(200);
-        
+
         // Get the response content
         $content = $response->getContent();
-        
+
         // Find positions of each user name in the HTML
         $posAlice = strpos($content, 'Alice');
         $posBob = strpos($content, 'Bob');
         $posCharlie = strpos($content, 'Charlie');
-        
+
         // Bob (followed) should appear before Alice and Charlie (not followed)
         $this->assertLessThan($posAlice, $posBob, 'Followed user Bob should appear before unfollowed user Alice');
         $this->assertLessThan($posCharlie, $posBob, 'Followed user Bob should appear before unfollowed user Charlie');
@@ -435,14 +436,14 @@ class FeedControllerTest extends TestCase
     {
         $followedUser = User::factory()->create(['name' => 'Followed User']);
         $unfollowedUser = User::factory()->create(['name' => 'Unfollowed User']);
-        
+
         // Follow only one user
         $this->user->follow($followedUser);
 
         $response = $this->actingAs($this->user)->get(route('feed.users'));
 
         $response->assertStatus(200);
-        
+
         // Should only see followed user
         $response->assertSee('Followed User');
         $response->assertDontSee('Unfollowed User');
@@ -454,17 +455,17 @@ class FeedControllerTest extends TestCase
         // Make user an admin
         $adminRole = \App\Models\Role::firstOrCreate(['name' => 'Admin']);
         $this->user->roles()->attach($adminRole);
-        
+
         $followedUser = User::factory()->create(['name' => 'Followed User']);
         $unfollowedUser = User::factory()->create(['name' => 'Unfollowed User']);
-        
+
         // Follow only one user
         $this->user->follow($followedUser);
 
         $response = $this->actingAs($this->user)->get(route('feed.users'));
 
         $response->assertStatus(200);
-        
+
         // Admin should see both users
         $response->assertSee('Followed User');
         $response->assertSee('Unfollowed User');
@@ -477,17 +478,17 @@ class FeedControllerTest extends TestCase
     {
         $followedUser = User::factory()->create(['name' => 'Followed User']);
         $unfollowedUser = User::factory()->create(['name' => 'Unfollowed User']);
-        
+
         // Follow only one user
         $this->user->follow($followedUser);
-        
+
         // Simulate impersonation
         session(['impersonator_id' => 999]);
 
         $response = $this->actingAs($this->user)->get(route('feed.users'));
 
         $response->assertStatus(200);
-        
+
         // Impersonated user should see both users
         $response->assertSee('Followed User');
         $response->assertSee('Unfollowed User');
@@ -500,23 +501,23 @@ class FeedControllerTest extends TestCase
     {
         $exercise1 = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true, 'title' => 'Squat']);
         $exercise2 = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true, 'title' => 'Bench Press']);
-        
+
         // Follow the other user
         $this->user->follow($this->otherUser);
-        
+
         // Create two lift logs for the same user on the same day
         $liftLog1 = LiftLog::factory()->create([
             'user_id' => $this->otherUser->id,
             'exercise_id' => $exercise1->id,
             'logged_at' => now()->subHours(2),
         ]);
-        
+
         $liftLog2 = LiftLog::factory()->create([
             'user_id' => $this->otherUser->id,
             'exercise_id' => $exercise2->id,
             'logged_at' => now()->subHours(1),
         ]);
-        
+
         // Create PRs for both lift logs
         PersonalRecord::factory()->create([
             'user_id' => $this->otherUser->id,
@@ -524,7 +525,7 @@ class FeedControllerTest extends TestCase
             'lift_log_id' => $liftLog1->id,
             'achieved_at' => now()->subHours(2),
         ]);
-        
+
         PersonalRecord::factory()->create([
             'user_id' => $this->otherUser->id,
             'exercise_id' => $exercise2->id,
@@ -545,37 +546,37 @@ class FeedControllerTest extends TestCase
         // Both PRs should be present in the feed (using pr- prefix, not lift-log-)
         $pr1 = PersonalRecord::where('lift_log_id', $liftLog1->id)->first();
         $pr2 = PersonalRecord::where('lift_log_id', $liftLog2->id)->first();
-        $this->assertStringContainsString('pr-' . $pr1->id, $content);
-        $this->assertStringContainsString('pr-' . $pr2->id, $content);
+        $this->assertStringContainsString('pr-'.$pr1->id, $content);
+        $this->assertStringContainsString('pr-'.$pr2->id, $content);
     }
 
     /** @test */
     public function it_shows_new_badge_for_prs_within_24_hours()
     {
         $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
-        
+
         // Follow the other user
         $this->user->follow($this->otherUser);
-        
+
         // Create a recent PR (within 24 hours)
         $recentLiftLog = LiftLog::factory()->create([
             'user_id' => $this->otherUser->id,
             'exercise_id' => $exercise->id,
         ]);
-        
+
         PersonalRecord::factory()->create([
             'user_id' => $this->otherUser->id,
             'exercise_id' => $exercise->id,
             'lift_log_id' => $recentLiftLog->id,
             'achieved_at' => now()->subHours(12),
         ]);
-        
+
         // Create an old PR (more than 24 hours ago)
         $oldLiftLog = LiftLog::factory()->create([
             'user_id' => $this->otherUser->id,
             'exercise_id' => $exercise->id,
         ]);
-        
+
         PersonalRecord::factory()->create([
             'user_id' => $this->otherUser->id,
             'exercise_id' => $exercise->id,
@@ -596,23 +597,23 @@ class FeedControllerTest extends TestCase
     public function it_does_not_show_new_badge_for_old_prs()
     {
         $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
-        
+
         // Follow the other user
         $this->user->follow($this->otherUser);
-        
+
         // Create an old PR (more than 24 hours ago)
         $oldLiftLog = LiftLog::factory()->create([
             'user_id' => $this->otherUser->id,
             'exercise_id' => $exercise->id,
         ]);
-        
+
         $pr = PersonalRecord::factory()->create([
             'user_id' => $this->otherUser->id,
             'exercise_id' => $exercise->id,
             'lift_log_id' => $oldLiftLog->id,
             'achieved_at' => now()->subHours(30),
         ]);
-        
+
         // Mark the PR as read
         $pr->markAsReadBy($this->user);
 
@@ -629,30 +630,30 @@ class FeedControllerTest extends TestCase
     public function it_auto_marks_feed_as_read_on_view()
     {
         $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
-        
+
         // Follow the other user
         $this->user->follow($this->otherUser);
-        
+
         // Create a PR
         $liftLog = LiftLog::factory()->create([
             'user_id' => $this->otherUser->id,
             'exercise_id' => $exercise->id,
         ]);
-        
+
         $pr = PersonalRecord::factory()->create([
             'user_id' => $this->otherUser->id,
             'exercise_id' => $exercise->id,
             'lift_log_id' => $liftLog->id,
             'achieved_at' => now()->subHours(1),
         ]);
-        
+
         // Verify PR is not read yet
         $this->assertFalse($pr->isReadBy($this->user));
 
         $response = $this->actingAs($this->user)->get(route('feed.index'));
 
         $response->assertStatus(200);
-        
+
         // Verify PR is now marked as read
         $this->assertTrue($pr->isReadBy($this->user));
     }
@@ -661,16 +662,16 @@ class FeedControllerTest extends TestCase
     public function it_hides_new_badge_after_viewing_feed()
     {
         $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
-        
+
         // Follow the other user
         $this->user->follow($this->otherUser);
-        
+
         // Create a PR 12 hours ago
         $liftLog = LiftLog::factory()->create([
             'user_id' => $this->otherUser->id,
             'exercise_id' => $exercise->id,
         ]);
-        
+
         $pr = PersonalRecord::factory()->create([
             'user_id' => $this->otherUser->id,
             'exercise_id' => $exercise->id,
@@ -681,7 +682,7 @@ class FeedControllerTest extends TestCase
         // First visit - should see NEW badge (PR is unread)
         $response = $this->actingAs($this->user)->get(route('feed.index'));
         $response->assertSee('NEW');
-        
+
         // Mark PR as read (simulating what happens after viewing)
         $pr->markAsReadBy($this->user);
 
@@ -696,7 +697,7 @@ class FeedControllerTest extends TestCase
     {
         $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
         $liftLog = LiftLog::factory()->create(['user_id' => $this->otherUser->id]);
-        
+
         $pr = PersonalRecord::factory()->create([
             'user_id' => $this->otherUser->id,
             'exercise_id' => $exercise->id,
@@ -707,7 +708,7 @@ class FeedControllerTest extends TestCase
             ->post(route('feed.toggle-high-five', $pr));
 
         $response->assertRedirect();
-        
+
         $this->assertDatabaseHas('pr_high_fives', [
             'user_id' => $this->user->id,
             'personal_record_id' => $pr->id,
@@ -719,7 +720,7 @@ class FeedControllerTest extends TestCase
     {
         $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
         $liftLog = LiftLog::factory()->create(['user_id' => $this->otherUser->id]);
-        
+
         $pr = PersonalRecord::factory()->create([
             'user_id' => $this->otherUser->id,
             'exercise_id' => $exercise->id,
@@ -728,7 +729,7 @@ class FeedControllerTest extends TestCase
 
         // Give high five first
         $this->user->highFivePR($pr);
-        
+
         $this->assertDatabaseHas('pr_high_fives', [
             'user_id' => $this->user->id,
             'personal_record_id' => $pr->id,
@@ -739,7 +740,7 @@ class FeedControllerTest extends TestCase
             ->post(route('feed.toggle-high-five', $pr));
 
         $response->assertRedirect();
-        
+
         $this->assertDatabaseMissing('pr_high_fives', [
             'user_id' => $this->user->id,
             'personal_record_id' => $pr->id,
@@ -751,7 +752,7 @@ class FeedControllerTest extends TestCase
     {
         $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
         $liftLog = LiftLog::factory()->create(['user_id' => $this->otherUser->id]);
-        
+
         $pr = PersonalRecord::factory()->create([
             'user_id' => $this->otherUser->id,
             'exercise_id' => $exercise->id,
@@ -767,14 +768,14 @@ class FeedControllerTest extends TestCase
             'highFived' => true,
             'count' => 1,
         ]);
-        
+
         // Check that names are returned with "You" for current user and correct verb
         $responseData = $response->json();
         $this->assertArrayHasKey('names', $responseData);
         $this->assertArrayHasKey('verb', $responseData);
         $this->assertStringContainsString('You', $responseData['names']);
         $this->assertEquals('love', $responseData['verb']); // "You love" not "You loves"
-        
+
         $this->assertDatabaseHas('pr_high_fives', [
             'user_id' => $this->user->id,
             'personal_record_id' => $pr->id,
@@ -786,7 +787,7 @@ class FeedControllerTest extends TestCase
     {
         $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
         $liftLog = LiftLog::factory()->create(['user_id' => $this->otherUser->id]);
-        
+
         $pr = PersonalRecord::factory()->create([
             'user_id' => $this->otherUser->id,
             'exercise_id' => $exercise->id,
@@ -813,7 +814,7 @@ class FeedControllerTest extends TestCase
     {
         $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
         $liftLog = LiftLog::factory()->create(['user_id' => $this->otherUser->id]);
-        
+
         $pr = PersonalRecord::factory()->create([
             'user_id' => $this->otherUser->id,
             'exercise_id' => $exercise->id,
@@ -843,7 +844,7 @@ class FeedControllerTest extends TestCase
     {
         $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
         $liftLog = LiftLog::factory()->create(['user_id' => $this->otherUser->id]);
-        
+
         $pr = PersonalRecord::factory()->create([
             'user_id' => $this->otherUser->id,
             'exercise_id' => $exercise->id,
@@ -869,7 +870,7 @@ class FeedControllerTest extends TestCase
     {
         $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
         $liftLog = LiftLog::factory()->create(['user_id' => $this->user->id]);
-        
+
         $pr = PersonalRecord::factory()->create([
             'user_id' => $this->user->id,
             'exercise_id' => $exercise->id,
@@ -895,7 +896,7 @@ class FeedControllerTest extends TestCase
     {
         $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
         $liftLog = LiftLog::factory()->create(['user_id' => $this->user->id]);
-        
+
         $pr = PersonalRecord::factory()->create([
             'user_id' => $this->user->id,
             'exercise_id' => $exercise->id,
@@ -927,7 +928,7 @@ class FeedControllerTest extends TestCase
     {
         $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
         $liftLog = LiftLog::factory()->create(['user_id' => $this->user->id]);
-        
+
         $pr = PersonalRecord::factory()->create([
             'user_id' => $this->user->id,
             'exercise_id' => $exercise->id,
@@ -953,7 +954,7 @@ class FeedControllerTest extends TestCase
     {
         $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
         $liftLog = LiftLog::factory()->create(['user_id' => $this->user->id]);
-        
+
         $pr = PersonalRecord::factory()->create([
             'user_id' => $this->user->id,
             'exercise_id' => $exercise->id,
@@ -984,7 +985,7 @@ class FeedControllerTest extends TestCase
     {
         $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
         $liftLog = LiftLog::factory()->create(['user_id' => $this->user->id]);
-        
+
         $pr = PersonalRecord::factory()->create([
             'user_id' => $this->user->id,
             'exercise_id' => $exercise->id,
@@ -1005,7 +1006,7 @@ class FeedControllerTest extends TestCase
     {
         $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
         $liftLog = LiftLog::factory()->create(['user_id' => $this->otherUser->id]);
-        
+
         $pr = PersonalRecord::factory()->create([
             'user_id' => $this->otherUser->id,
             'exercise_id' => $exercise->id,
@@ -1036,7 +1037,7 @@ class FeedControllerTest extends TestCase
     {
         $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
         $liftLog = LiftLog::factory()->create(['user_id' => $this->otherUser->id]);
-        
+
         $pr = PersonalRecord::factory()->create([
             'user_id' => $this->otherUser->id,
             'exercise_id' => $exercise->id,
@@ -1051,16 +1052,16 @@ class FeedControllerTest extends TestCase
     public function it_shows_badge_count_for_new_prs()
     {
         $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
-        
+
         // Follow the other user
         $this->user->follow($this->otherUser);
-        
+
         // Create a recent PR (within 24 hours)
         $liftLog = LiftLog::factory()->create([
             'user_id' => $this->otherUser->id,
             'exercise_id' => $exercise->id,
         ]);
-        
+
         PersonalRecord::factory()->create([
             'user_id' => $this->otherUser->id,
             'exercise_id' => $exercise->id,
@@ -1080,26 +1081,26 @@ class FeedControllerTest extends TestCase
     public function it_does_not_show_badge_when_no_new_prs()
     {
         $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
-        
+
         // Follow the other user
         $this->user->follow($this->otherUser);
-        
+
         // Create an old PR (more than 24 hours ago)
         $liftLog = LiftLog::factory()->create([
             'user_id' => $this->otherUser->id,
             'exercise_id' => $exercise->id,
         ]);
-        
+
         $pr = PersonalRecord::factory()->create([
             'user_id' => $this->otherUser->id,
             'exercise_id' => $exercise->id,
             'lift_log_id' => $liftLog->id,
             'achieved_at' => now()->subHours(30),
         ]);
-        
+
         // View the feed to mark the PR as read
         $this->actingAs($this->user)->get(route('feed.index'));
-        
+
         // Now view the feed again - should not show badge since all PRs are read
         $response = $this->actingAs($this->user)->get(route('feed.index'));
 
@@ -1112,28 +1113,28 @@ class FeedControllerTest extends TestCase
     public function it_shows_badge_count_for_multiple_user_date_groups()
     {
         $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
-        
+
         // Follow the other user
         $this->user->follow($this->otherUser);
-        
+
         // Create PRs for different dates
         $liftLog1 = LiftLog::factory()->create([
             'user_id' => $this->otherUser->id,
             'exercise_id' => $exercise->id,
         ]);
-        
+
         PersonalRecord::factory()->create([
             'user_id' => $this->otherUser->id,
             'exercise_id' => $exercise->id,
             'lift_log_id' => $liftLog1->id,
             'achieved_at' => now()->subHours(12),
         ]);
-        
+
         $liftLog2 = LiftLog::factory()->create([
             'user_id' => $this->otherUser->id,
             'exercise_id' => $exercise->id,
         ]);
-        
+
         PersonalRecord::factory()->create([
             'user_id' => $this->otherUser->id,
             'exercise_id' => $exercise->id,
@@ -1153,28 +1154,28 @@ class FeedControllerTest extends TestCase
     public function it_shows_all_prs_as_new_for_first_time_users()
     {
         $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
-        
+
         // Follow the other user
         $this->user->follow($this->otherUser);
-        
+
         // Create PRs at different times within 7 days
         $liftLog1 = LiftLog::factory()->create([
             'user_id' => $this->otherUser->id,
             'exercise_id' => $exercise->id,
         ]);
-        
+
         PersonalRecord::factory()->create([
             'user_id' => $this->otherUser->id,
             'exercise_id' => $exercise->id,
             'lift_log_id' => $liftLog1->id,
             'achieved_at' => now()->subHours(12), // Recent
         ]);
-        
+
         $liftLog2 = LiftLog::factory()->create([
             'user_id' => $this->otherUser->id,
             'exercise_id' => $exercise->id,
         ]);
-        
+
         PersonalRecord::factory()->create([
             'user_id' => $this->otherUser->id,
             'exercise_id' => $exercise->id,
@@ -1194,16 +1195,16 @@ class FeedControllerTest extends TestCase
     public function it_clears_badge_after_viewing_feed()
     {
         $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
-        
+
         // Follow the other user
         $this->user->follow($this->otherUser);
-        
+
         // Create a recent PR
         $liftLog = LiftLog::factory()->create([
             'user_id' => $this->otherUser->id,
             'exercise_id' => $exercise->id,
         ]);
-        
+
         PersonalRecord::factory()->create([
             'user_id' => $this->otherUser->id,
             'exercise_id' => $exercise->id,
@@ -1224,13 +1225,13 @@ class FeedControllerTest extends TestCase
     public function it_shows_own_prs_as_new_when_recent()
     {
         $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
-        
+
         // Create own PR (recent)
         $liftLog = LiftLog::factory()->create([
             'user_id' => $this->user->id,
             'exercise_id' => $exercise->id,
         ]);
-        
+
         PersonalRecord::factory()->create([
             'user_id' => $this->user->id,
             'exercise_id' => $exercise->id,
@@ -1251,16 +1252,16 @@ class FeedControllerTest extends TestCase
     public function it_counts_own_prs_in_badge()
     {
         $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
-        
+
         // Make user follow someone so Feed menu is visible
         $this->user->following()->attach($this->otherUser->id);
-        
+
         // Create own PR (recent)
         $ownLiftLog = LiftLog::factory()->create([
             'user_id' => $this->user->id,
             'exercise_id' => $exercise->id,
         ]);
-        
+
         PersonalRecord::factory()->create([
             'user_id' => $this->user->id,
             'exercise_id' => $exercise->id,
@@ -1281,7 +1282,7 @@ class FeedControllerTest extends TestCase
     {
         // User is not following anyone
         $this->assertEquals(0, $this->user->following()->count());
-        
+
         $response = $this->actingAs($this->user)->get(route('mobile-entry.lifts'));
 
         $response->assertStatus(200);
@@ -1294,7 +1295,7 @@ class FeedControllerTest extends TestCase
     {
         $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
         $liftLog = LiftLog::factory()->create(['user_id' => $this->otherUser->id]);
-        
+
         $pr = PersonalRecord::factory()->create([
             'user_id' => $this->otherUser->id,
             'exercise_id' => $exercise->id,
@@ -1307,7 +1308,7 @@ class FeedControllerTest extends TestCase
             ]);
 
         $response->assertRedirect();
-        
+
         $this->assertDatabaseHas('pr_comments', [
             'user_id' => $this->user->id,
             'personal_record_id' => $pr->id,
@@ -1320,7 +1321,7 @@ class FeedControllerTest extends TestCase
     {
         $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
         $liftLog = LiftLog::factory()->create(['user_id' => $this->otherUser->id]);
-        
+
         $pr = PersonalRecord::factory()->create([
             'user_id' => $this->otherUser->id,
             'exercise_id' => $exercise->id,
@@ -1336,7 +1337,7 @@ class FeedControllerTest extends TestCase
         $response->assertJson([
             'success' => true,
         ]);
-        
+
         $responseData = $response->json();
         $this->assertArrayHasKey('html', $responseData);
         $this->assertStringContainsString('Nice PR!', $responseData['html']);
@@ -1348,7 +1349,7 @@ class FeedControllerTest extends TestCase
     {
         $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
         $liftLog = LiftLog::factory()->create(['user_id' => $this->otherUser->id]);
-        
+
         $pr = PersonalRecord::factory()->create([
             'user_id' => $this->otherUser->id,
             'exercise_id' => $exercise->id,
@@ -1368,7 +1369,7 @@ class FeedControllerTest extends TestCase
     {
         $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
         $liftLog = LiftLog::factory()->create(['user_id' => $this->otherUser->id]);
-        
+
         $pr = PersonalRecord::factory()->create([
             'user_id' => $this->otherUser->id,
             'exercise_id' => $exercise->id,
@@ -1388,7 +1389,7 @@ class FeedControllerTest extends TestCase
     {
         $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
         $liftLog = LiftLog::factory()->create(['user_id' => $this->otherUser->id]);
-        
+
         $pr = PersonalRecord::factory()->create([
             'user_id' => $this->otherUser->id,
             'exercise_id' => $exercise->id,
@@ -1405,7 +1406,7 @@ class FeedControllerTest extends TestCase
             ->delete(route('feed.delete-comment', $comment));
 
         $response->assertRedirect();
-        
+
         $this->assertDatabaseMissing('pr_comments', [
             'id' => $comment->id,
         ]);
@@ -1416,7 +1417,7 @@ class FeedControllerTest extends TestCase
     {
         $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
         $liftLog = LiftLog::factory()->create(['user_id' => $this->otherUser->id]);
-        
+
         $pr = PersonalRecord::factory()->create([
             'user_id' => $this->otherUser->id,
             'exercise_id' => $exercise->id,
@@ -1433,7 +1434,7 @@ class FeedControllerTest extends TestCase
             ->delete(route('feed.delete-comment', $comment));
 
         $response->assertStatus(403);
-        
+
         $this->assertDatabaseHas('pr_comments', [
             'id' => $comment->id,
         ]);
@@ -1448,7 +1449,7 @@ class FeedControllerTest extends TestCase
 
         $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
         $liftLog = LiftLog::factory()->create(['user_id' => $this->otherUser->id]);
-        
+
         $pr = PersonalRecord::factory()->create([
             'user_id' => $this->otherUser->id,
             'exercise_id' => $exercise->id,
@@ -1465,7 +1466,7 @@ class FeedControllerTest extends TestCase
             ->delete(route('feed.delete-comment', $comment));
 
         $response->assertRedirect();
-        
+
         $this->assertDatabaseMissing('pr_comments', [
             'id' => $comment->id,
         ]);
@@ -1476,7 +1477,7 @@ class FeedControllerTest extends TestCase
     {
         $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
         $liftLog = LiftLog::factory()->create(['user_id' => $this->otherUser->id]);
-        
+
         $pr = PersonalRecord::factory()->create([
             'user_id' => $this->otherUser->id,
             'exercise_id' => $exercise->id,
@@ -1503,7 +1504,7 @@ class FeedControllerTest extends TestCase
     {
         $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
         $liftLog = LiftLog::factory()->create(['user_id' => $this->otherUser->id]);
-        
+
         $pr = PersonalRecord::factory()->create([
             'user_id' => $this->otherUser->id,
             'exercise_id' => $exercise->id,
@@ -1533,7 +1534,7 @@ class FeedControllerTest extends TestCase
     {
         $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
         $liftLog = LiftLog::factory()->create(['user_id' => $this->otherUser->id]);
-        
+
         $pr = PersonalRecord::factory()->create([
             'user_id' => $this->otherUser->id,
             'exercise_id' => $exercise->id,
@@ -1564,7 +1565,7 @@ class FeedControllerTest extends TestCase
     {
         $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
         $liftLog = LiftLog::factory()->create(['user_id' => $this->otherUser->id]);
-        
+
         $pr = PersonalRecord::factory()->create([
             'user_id' => $this->otherUser->id,
             'exercise_id' => $exercise->id,
@@ -1604,7 +1605,7 @@ class FeedControllerTest extends TestCase
     {
         $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
         $liftLog = LiftLog::factory()->create(['user_id' => $this->otherUser->id]);
-        
+
         $pr = PersonalRecord::factory()->create([
             'user_id' => $this->otherUser->id,
             'exercise_id' => $exercise->id,
@@ -1614,7 +1615,7 @@ class FeedControllerTest extends TestCase
         $response = $this->post(route('feed.store-comment', $pr), [
             'comment' => 'Test',
         ]);
-        
+
         $response->assertRedirect(route('login'));
     }
 
@@ -1623,7 +1624,7 @@ class FeedControllerTest extends TestCase
     {
         $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
         $liftLog = LiftLog::factory()->create(['user_id' => $this->otherUser->id]);
-        
+
         $pr = PersonalRecord::factory()->create([
             'user_id' => $this->otherUser->id,
             'exercise_id' => $exercise->id,
@@ -1645,7 +1646,7 @@ class FeedControllerTest extends TestCase
     {
         $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
         $liftLog = LiftLog::factory()->create(['user_id' => $this->otherUser->id]);
-        
+
         $pr = PersonalRecord::factory()->create([
             'user_id' => $this->otherUser->id,
             'exercise_id' => $exercise->id,
@@ -1674,14 +1675,14 @@ class FeedControllerTest extends TestCase
         $response = $this->actingAs($this->user)->get(route('feed.index'));
 
         $response->assertStatus(200);
-        
+
         // Get the response content
         $content = $response->getContent();
-        
+
         // Find positions of each comment in the HTML
         $posFirst = strpos($content, 'First comment');
         $posSecond = strpos($content, 'Second comment');
-        
+
         // First comment should appear before second comment
         $this->assertLessThan($posSecond, $posFirst, 'Comments should be sorted by creation time');
     }
@@ -1690,48 +1691,48 @@ class FeedControllerTest extends TestCase
     public function it_clears_read_status_when_unfollowing_user()
     {
         $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
-        
+
         // Follow the other user
         $this->user->follow($this->otherUser);
-        
+
         // Create a PR from the other user
         $liftLog = LiftLog::factory()->create([
             'user_id' => $this->otherUser->id,
             'exercise_id' => $exercise->id,
         ]);
-        
+
         $pr = PersonalRecord::factory()->create([
             'user_id' => $this->otherUser->id,
             'exercise_id' => $exercise->id,
             'lift_log_id' => $liftLog->id,
             'achieved_at' => now()->subDays(2),
         ]);
-        
+
         // View the feed (marks PR as read)
         $this->actingAs($this->user)->get(route('feed.index'));
-        
+
         // In tests, terminating callbacks execute after the response
         // Verify PR is marked as read
         $this->assertDatabaseHas('personal_record_reads', [
             'user_id' => $this->user->id,
             'personal_record_id' => $pr->id,
         ]);
-        
+
         // Unfollow the user
         $response = $this->actingAs($this->user)
             ->withoutMiddleware(\App\Http\Middleware\LogActivity::class)
             ->delete(route('feed.users.unfollow', $this->otherUser));
         $response->assertRedirect();
-        
+
         // Verify PR is no longer marked as read
         $this->assertDatabaseMissing('personal_record_reads', [
             'user_id' => $this->user->id,
             'personal_record_id' => $pr->id,
         ]);
-        
+
         // Re-follow the user
         $this->user->follow($this->otherUser);
-        
+
         // View feed again - PR should show as unread since read status was cleared
         $response = $this->actingAs($this->user)->get(route('feed.index'));
         $response->assertSee('NEW');
@@ -1741,39 +1742,39 @@ class FeedControllerTest extends TestCase
     public function it_prioritizes_unread_prs_in_feed()
     {
         $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
-        
+
         // Follow the other user
         $this->user->follow($this->otherUser);
-        
+
         // Create an older PR (3 days ago)
         $olderLiftLog = LiftLog::factory()->create([
             'user_id' => $this->otherUser->id,
             'exercise_id' => $exercise->id,
         ]);
-        
+
         $olderPR = PersonalRecord::factory()->create([
             'user_id' => $this->otherUser->id,
             'exercise_id' => $exercise->id,
             'lift_log_id' => $olderLiftLog->id,
             'achieved_at' => now()->subDays(3),
         ]);
-        
+
         // Create a newer PR (1 day ago)
         $newerLiftLog = LiftLog::factory()->create([
             'user_id' => $this->otherUser->id,
             'exercise_id' => $exercise->id,
         ]);
-        
+
         $newerPR = PersonalRecord::factory()->create([
             'user_id' => $this->otherUser->id,
             'exercise_id' => $exercise->id,
             'lift_log_id' => $newerLiftLog->id,
             'achieved_at' => now()->subDays(1),
         ]);
-        
+
         // View feed to mark both as read
         $this->actingAs($this->user)->get(route('feed.index'));
-        
+
         // Verify both are marked as read
         $this->assertDatabaseHas('personal_record_reads', [
             'user_id' => $this->user->id,
@@ -1783,32 +1784,32 @@ class FeedControllerTest extends TestCase
             'user_id' => $this->user->id,
             'personal_record_id' => $newerPR->id,
         ]);
-        
+
         // Manually mark the older PR as unread by deleting its read record
         \App\Models\PersonalRecordRead::where('user_id', $this->user->id)
             ->where('personal_record_id', $olderPR->id)
             ->delete();
-        
+
         // View feed again
         $response = $this->actingAs($this->user)->get(route('feed.index'));
-        
+
         // Get the response content
         $content = $response->getContent();
-        
+
         // Find positions of the PR IDs in the HTML (they appear in data attributes)
-        $olderPRPosition = strpos($content, 'data-pr-id="' . $olderPR->id . '"');
-        $newerPRPosition = strpos($content, 'data-pr-id="' . $newerPR->id . '"');
-        
+        $olderPRPosition = strpos($content, 'data-pr-id="'.$olderPR->id.'"');
+        $newerPRPosition = strpos($content, 'data-pr-id="'.$newerPR->id.'"');
+
         // If data-pr-id doesn't exist, try finding the lift log IDs
         if ($olderPRPosition === false || $newerPRPosition === false) {
-            $olderPRPosition = strpos($content, 'lift-log-' . $olderLiftLog->id);
-            $newerPRPosition = strpos($content, 'lift-log-' . $newerLiftLog->id);
+            $olderPRPosition = strpos($content, 'lift-log-'.$olderLiftLog->id);
+            $newerPRPosition = strpos($content, 'lift-log-'.$newerLiftLog->id);
         }
-        
+
         // Verify the older (unread) PR appears before the newer (read) PR
         $this->assertNotFalse($olderPRPosition, 'Older PR should be present in feed');
         $this->assertNotFalse($newerPRPosition, 'Newer PR should be present in feed');
-        $this->assertLessThan($newerPRPosition, $olderPRPosition, 
+        $this->assertLessThan($newerPRPosition, $olderPRPosition,
             'Unread PR should appear before read PR in the feed');
     }
 
@@ -1817,10 +1818,10 @@ class FeedControllerTest extends TestCase
     {
         $exercise1 = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
         $exercise2 = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
-        
+
         // Follow the other user
         $this->user->follow($this->otherUser);
-        
+
         // Create two lift logs for the same user on the same day (will be grouped together)
         $today = now();
         $liftLog1 = LiftLog::factory()->create([
@@ -1828,13 +1829,13 @@ class FeedControllerTest extends TestCase
             'exercise_id' => $exercise1->id,
             'logged_at' => $today->copy()->subHours(2),
         ]);
-        
+
         $liftLog2 = LiftLog::factory()->create([
             'user_id' => $this->otherUser->id,
             'exercise_id' => $exercise2->id,
             'logged_at' => $today->copy()->subHours(1),
         ]);
-        
+
         // Create PRs for both lift logs on the same day
         $pr1 = PersonalRecord::factory()->create([
             'user_id' => $this->otherUser->id,
@@ -1842,52 +1843,52 @@ class FeedControllerTest extends TestCase
             'lift_log_id' => $liftLog1->id,
             'achieved_at' => $today->copy()->subHours(2),
         ]);
-        
+
         $pr2 = PersonalRecord::factory()->create([
             'user_id' => $this->otherUser->id,
             'exercise_id' => $exercise2->id,
             'lift_log_id' => $liftLog2->id,
             'achieved_at' => $today->copy()->subHours(1),
         ]);
-        
+
         // Create an older PR from a different day (will be in a separate group)
         $olderLiftLog = LiftLog::factory()->create([
             'user_id' => $this->otherUser->id,
             'exercise_id' => $exercise1->id,
             'logged_at' => now()->subDays(2),
         ]);
-        
+
         $olderPR = PersonalRecord::factory()->create([
             'user_id' => $this->otherUser->id,
             'exercise_id' => $exercise1->id,
             'lift_log_id' => $olderLiftLog->id,
             'achieved_at' => now()->subDays(2),
         ]);
-        
+
         // View feed to mark all as read
         $this->actingAs($this->user)->get(route('feed.index'));
-        
+
         // Mark only ONE PR from the grouped pair as unread
         \App\Models\PersonalRecordRead::where('user_id', $this->user->id)
             ->where('personal_record_id', $pr2->id)
             ->delete();
-        
+
         // View feed again
         $response = $this->actingAs($this->user)->get(route('feed.index'));
-        
+
         // Get the response content
         $content = $response->getContent();
-        
+
         // Find positions - the grouped PRs should appear before the older PR
         // even though the older PR is chronologically older
         // Look for PR IDs instead of lift-log IDs
-        $todayGroupPosition = strpos($content, 'pr-' . $pr1->id);
-        $olderPRPosition = strpos($content, 'pr-' . $olderPR->id);
-        
+        $todayGroupPosition = strpos($content, 'pr-'.$pr1->id);
+        $olderPRPosition = strpos($content, 'pr-'.$olderPR->id);
+
         // Verify the group with any unread PR appears before the fully read older PR
         $this->assertNotFalse($todayGroupPosition, 'Today\'s grouped PRs should be present in feed');
         $this->assertNotFalse($olderPRPosition, 'Older PR should be present in feed');
-        $this->assertLessThan($olderPRPosition, $todayGroupPosition, 
+        $this->assertLessThan($olderPRPosition, $todayGroupPosition,
             'Grouped PRs with any unread should appear before fully read PRs, regardless of date');
     }
 
@@ -1975,7 +1976,7 @@ class FeedControllerTest extends TestCase
     {
         $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
         $liftLog = LiftLog::factory()->create(['user_id' => $this->user->id]);
-        
+
         $pr = PersonalRecord::factory()->create([
             'user_id' => $this->user->id,
             'exercise_id' => $exercise->id,
@@ -1999,7 +2000,7 @@ class FeedControllerTest extends TestCase
 
         $response->assertStatus(200);
         // Should see link with anchor hash
-        $response->assertSee('feed/users/' . $this->user->id . '#pr-' . $pr->id, false);
+        $response->assertSee('feed/users/'.$this->user->id.'#pr-'.$pr->id, false);
     }
 
     /** @test */
@@ -2007,7 +2008,7 @@ class FeedControllerTest extends TestCase
     {
         $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
         $liftLog = LiftLog::factory()->create(['user_id' => $this->user->id]);
-        
+
         $pr = PersonalRecord::factory()->create([
             'user_id' => $this->user->id,
             'exercise_id' => $exercise->id,
@@ -2030,7 +2031,7 @@ class FeedControllerTest extends TestCase
 
         $response->assertStatus(200);
         // Should see link with anchor hash
-        $response->assertSee('feed/users/' . $this->user->id . '#pr-' . $pr->id, false);
+        $response->assertSee('feed/users/'.$this->user->id.'#pr-'.$pr->id, false);
     }
 
     /** @test */
@@ -2038,7 +2039,7 @@ class FeedControllerTest extends TestCase
     {
         $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
         $liftLog = LiftLog::factory()->create(['user_id' => $this->otherUser->id]);
-        
+
         $pr = PersonalRecord::factory()->create([
             'user_id' => $this->otherUser->id,
             'exercise_id' => $exercise->id,
@@ -2064,7 +2065,7 @@ class FeedControllerTest extends TestCase
 
         $response->assertStatus(200);
         // Should see link with anchor hash pointing to actor's profile
-        $response->assertSee('feed/users/' . $this->otherUser->id . '#pr-' . $pr->id, false);
+        $response->assertSee('feed/users/'.$this->otherUser->id.'#pr-'.$pr->id, false);
     }
 
     /** @test */
@@ -2072,7 +2073,7 @@ class FeedControllerTest extends TestCase
     {
         $exercise = Exercise::factory()->create(['user_id' => null, 'show_in_feed' => true]);
         $liftLog = LiftLog::factory()->create(['user_id' => $this->otherUser->id]);
-        
+
         $pr = PersonalRecord::factory()->create([
             'user_id' => $this->otherUser->id,
             'exercise_id' => $exercise->id,
@@ -2087,7 +2088,7 @@ class FeedControllerTest extends TestCase
 
         $response->assertStatus(200);
         // Should see anchor ID for the PR
-        $response->assertSee('id="pr-' . $pr->id . '"', false);
+        $response->assertSee('id="pr-'.$pr->id.'"', false);
     }
 
     /** @test */
@@ -2136,7 +2137,7 @@ class FeedControllerTest extends TestCase
     public function it_shows_fab_on_users_list()
     {
         $this->user->follow($this->otherUser);
-        
+
         $response = $this->actingAs($this->user)->get(route('feed.users'));
 
         $response->assertStatus(200);
@@ -2161,7 +2162,7 @@ class FeedControllerTest extends TestCase
     public function it_shows_user_list_when_user_has_connections()
     {
         $this->user->follow($this->otherUser);
-        
+
         $response = $this->actingAs($this->user)->get(route('feed.users'));
 
         $response->assertStatus(200);
@@ -2177,7 +2178,7 @@ class FeedControllerTest extends TestCase
         $adminRole = Role::firstOrCreate(['name' => 'Admin']);
         $admin = User::factory()->create();
         $admin->roles()->attach($adminRole);
-        
+
         $response = $this->actingAs($admin)->get(route('feed.users'));
 
         $response->assertStatus(200);
@@ -2191,7 +2192,7 @@ class FeedControllerTest extends TestCase
     public function it_shows_all_users_for_impersonated_user_even_without_connections()
     {
         session(['impersonator_id' => 999]);
-        
+
         $response = $this->actingAs($this->user)->get(route('feed.users'));
 
         $response->assertStatus(200);
@@ -2204,7 +2205,7 @@ class FeedControllerTest extends TestCase
     public function it_shows_empty_state_for_impersonated_user_with_view_as_user_param()
     {
         session(['impersonator_id' => 999]);
-        
+
         $response = $this->actingAs($this->user)->get(route('feed.users', ['view_as_user' => 1]));
 
         $response->assertStatus(200);
@@ -2221,12 +2222,63 @@ class FeedControllerTest extends TestCase
         $admin = User::factory()->create();
         $admin->roles()->attach($adminRole);
         $admin->follow($this->otherUser);
-        
+
         $response = $this->actingAs($admin)->get(route('feed.users', ['view_as_user' => 1]));
 
         $response->assertStatus(200);
         $response->assertSee('My Friends');
         $response->assertSee($this->otherUser->name);
         $response->assertDontSee('Build Your Crew');
+    }
+
+    /** @test */
+    public function it_displays_static_hold_exercises_correctly_in_feed()
+    {
+        // Create a static hold exercise (L-sit)
+        $exercise = Exercise::factory()->create([
+            'user_id' => null,
+            'title' => 'L-Sit',
+            'show_in_feed' => true,
+            'exercise_type' => 'static_hold',
+        ]);
+
+        // Follow the other user
+        $this->user->follow($this->otherUser);
+
+        // Create a lift log with 5 sets of 10s holds
+        $liftLog = LiftLog::factory()->create([
+            'user_id' => $this->otherUser->id,
+            'exercise_id' => $exercise->id,
+            'logged_at' => now()->subHours(2),
+        ]);
+
+        // Create 5 lift sets, each with 10s duration
+        for ($i = 0; $i < 5; $i++) {
+            \App\Models\LiftSet::factory()->create([
+                'lift_log_id' => $liftLog->id,
+                'reps' => 1,
+                'weight' => 0,
+                'time' => 10,
+            ]);
+        }
+
+        // Create a PR for this lift log
+        PersonalRecord::factory()->create([
+            'user_id' => $this->otherUser->id,
+            'exercise_id' => $exercise->id,
+            'lift_log_id' => $liftLog->id,
+            'achieved_at' => now()->subHours(2),
+            'pr_type' => 'time',
+        ]);
+
+        $response = $this->actingAs($this->user)->get(route('feed.index'));
+
+        $response->assertStatus(200);
+        // Should show "10s hold" for duration
+        $response->assertSee('10s hold');
+        // Should show "5 sets" not "5 x 1"
+        $response->assertSee('5 sets');
+        // Should NOT show "5 x 1"
+        $response->assertDontSee('5 x 1');
     }
 }

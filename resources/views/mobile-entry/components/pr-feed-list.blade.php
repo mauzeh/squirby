@@ -274,6 +274,8 @@ document.addEventListener('DOMContentLoaded', function() {
                                 @endforeach
                                 
                                 @php
+                                    // Use exercise type strategy for proper formatting
+                                    $displayData = $liftLog->liftLog?->exercise->getTypeStrategy()->formatMobileSummaryDisplay($liftLog->liftLog);
                                     $weight = $liftLog->liftLog?->display_weight ?? 0;
                                     $reps = $liftLog->liftLog?->display_reps ?? 0;
                                     $sets = $liftLog->liftLog?->display_rounds ?? 0;
@@ -319,12 +321,17 @@ document.addEventListener('DOMContentLoaded', function() {
                                             @endif
                                         </div>
                                         
-                                        @if($weight > 0 || $reps > 0)
+                                        @if($weight > 0 || $reps > 0 || isset($displayData['repsSets']))
                                             <div class="pr-lift-pills">
-                                                @if($weight > 0)
+                                                @if(isset($displayData['weight']) && $displayData['showWeight'])
+                                                    {{-- For static holds, weight contains duration --}}
+                                                    <span class="pr-weight-pill{{ $isNew ? ' pr-weight-pill-new' : '' }}">{{ $displayData['weight'] }}</span>
+                                                @elseif($weight > 0)
                                                     <span class="pr-weight-pill{{ $isNew ? ' pr-weight-pill-new' : '' }}">{{ number_format($weight, 0) }} lbs</span>
                                                 @endif
-                                                @if($sets > 0 && $reps > 0)
+                                                @if(isset($displayData['repsSets']))
+                                                    <span class="pr-reps-pill">{{ $displayData['repsSets'] }}</span>
+                                                @elseif($sets > 0 && $reps > 0)
                                                     <span class="pr-reps-pill">{{ $sets }} x {{ $reps }}</span>
                                                 @elseif($reps > 0)
                                                     <span class="pr-reps-pill">{{ $reps }} reps</span>
