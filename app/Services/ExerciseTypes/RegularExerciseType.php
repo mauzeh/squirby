@@ -238,8 +238,10 @@ class RegularExerciseType extends BaseExerciseType
             return $prs;
         }
         
+        $targetUnit = $currentLog->liftSets->first()->unit ?? 'lbs';
+
         // Check 1RM PR
-        $best1RMResult = $this->getBest1RM($previousLogs);
+        $best1RMResult = $this->getBest1RM($previousLogs, $targetUnit);
         if ($currentMetrics['best_1rm'] > $best1RMResult['value'] + $tolerance) {
             $prs[] = [
                 'type' => 'one_rm',
@@ -250,7 +252,7 @@ class RegularExerciseType extends BaseExerciseType
         }
         
         // Check Volume PR
-        $bestVolumeResult = $this->getBestVolume($previousLogs);
+        $bestVolumeResult = $this->getBestVolume($previousLogs, $targetUnit);
         $volumeTolerance = $bestVolumeResult['value'] * $volumeTolerancePercent;
         if ($currentMetrics['total_volume'] > $bestVolumeResult['value'] + $volumeTolerance) {
             $prs[] = [
@@ -263,7 +265,7 @@ class RegularExerciseType extends BaseExerciseType
         
         // Check Rep-Specific PRs
         foreach ($currentMetrics['rep_weights'] as $reps => $weight) {
-            $previousBestResult = $this->getBestWeightForReps($previousLogs, $reps);
+            $previousBestResult = $this->getBestWeightForReps($previousLogs, $reps, $targetUnit);
             if ($weight > $previousBestResult['weight'] + $tolerance) {
                 $prs[] = [
                     'type' => 'rep_specific',
@@ -278,7 +280,7 @@ class RegularExerciseType extends BaseExerciseType
         // Check Hypertrophy PRs (best reps at a given weight)
         foreach ($currentMetrics['weight_reps'] as $weightKey => $reps) {
             $weight = (float)$weightKey; // Convert string key back to float
-            $previousBestResult = $this->getBestRepsAtWeight($previousLogs, $weight);
+            $previousBestResult = $this->getBestRepsAtWeight($previousLogs, $weight, $targetUnit);
             // Only award hypertrophy PR if there was a previous lift at this weight
             if ($reps > $previousBestResult['reps'] && $previousBestResult['reps'] > 0) {
                 $prs[] = [
@@ -295,9 +297,8 @@ class RegularExerciseType extends BaseExerciseType
         foreach ($currentMetrics['weight_sets'] as $weightKey => $sets) {
             $weight = (float)$weightKey; // Convert string key back to float
             $minReps = $currentMetrics['weight_min_reps'][$weightKey]; // Get minimum reps at this weight
-            $previousBestResult = $this->getBestSetsAtWeight($previousLogs, $weight, $minReps);
+            $previousBestResult = $this->getBestSetsAtWeight($previousLogs, $weight, $targetUnit, $minReps);
             // Only award density PR if there was a previous lift at this weight (within tolerance)
-            // The getBestSetsAtWeight method already applies 0.5 lb tolerance
             if ($sets > $previousBestResult['sets'] && $previousBestResult['sets'] > 0) {
                 $prs[] = [
                     'type' => 'density',
@@ -414,18 +415,21 @@ class RegularExerciseType extends BaseExerciseType
     // ========================================================================
     
     /**
-     * Get best 1RM from previous logs
+     * Get best 1RM from previous logs, normalized to target unit
      */
-    private function getBest1RM(\Illuminate\Database\Eloquent\Collection $logs): array
+    private function getBest1RM(\Illuminate\Database\Eloquent\Collection $logs, string $targetUnit): array
     {
         $best1RM = 0;
         $liftLogId = null;
+        $unitResolver = $this->unitResolver();
         
         foreach ($logs as $log) {
+            $loggedUnit = $log->liftSets->first()->unit ?? 'lbs';
             foreach ($log->liftSets as $set) {
                 if ($set->weight > 0 && $set->reps > 0) {
                     try {
-                        $estimated1RM = $this->calculate1RM($set->weight, $set->reps, $log);
+                        $weightInTargetUnit = $unitResolver->convert($set->weight, $loggedUnit, $targetUnit);
+                        $estimated1RM = $this->calculate1RM($weightInTargetUnit, $set->reps, $log);
                         if ($estimated1RM > $best1RM) {
                             $best1RM = $estimated1RM;
                             $liftLogId = $log->id;
@@ -441,18 +445,21 @@ class RegularExerciseType extends BaseExerciseType
     }
     
     /**
-     * Get best volume from previous logs
+     * Get best volume from previous logs, normalized to target unit
      */
-    private function getBestVolume(\Illuminate\Database\Eloquent\Collection $logs): array
+    private function getBestVolume(\Illuminate\Database\Eloquent\Collection $logs, string $targetUnit): array
     {
         $bestVolume = 0;
         $liftLogId = null;
+        $unitResolver = $this->unitResolver();
         
         foreach ($logs as $log) {
             $logVolume = 0;
+            $loggedUnit = $log->liftSets->first()->unit ?? 'lbs';
             foreach ($log->liftSets as $set) {
                 if ($set->weight > 0 && $set->reps > 0) {
-                    $logVolume += ($set->weight * $set->reps);
+                    $weightInTargetUnit = $unitResolver->convert($set->weight, $loggedUnit, $targetUnit);
+                    $logVolume += ($weightInTargetUnit * $set->reps);
                 }
             }
             if ($logVolume > $bestVolume) {
@@ -465,18 +472,23 @@ class RegularExerciseType extends BaseExerciseType
     }
     
     /**
-     * Get best weight for specific rep count from previous logs
+     * Get best weight for specific rep count from previous logs, normalized to target unit
      */
-    private function getBestWeightForReps(\Illuminate\Database\Eloquent\Collection $logs, int $targetReps): array
+    private function getBestWeightForReps(\Illuminate\Database\Eloquent\Collection $logs, int $targetReps, string $targetUnit): array
     {
         $maxWeight = 0;
         $liftLogId = null;
+        $unitResolver = $this->unitResolver();
         
         foreach ($logs as $log) {
+            $loggedUnit = $log->liftSets->first()->unit ?? 'lbs';
             foreach ($log->liftSets as $set) {
-                if ($set->reps == $targetReps && $set->weight > $maxWeight) {
-                    $maxWeight = $set->weight;
-                    $liftLogId = $log->id;
+                if ($set->reps == $targetReps) {
+                    $weightInTargetUnit = $unitResolver->convert($set->weight, $loggedUnit, $targetUnit);
+                    if ($weightInTargetUnit > $maxWeight) {
+                        $maxWeight = $weightInTargetUnit;
+                        $liftLogId = $log->id;
+                    }
                 }
             }
         }
@@ -485,19 +497,24 @@ class RegularExerciseType extends BaseExerciseType
     }
     
     /**
-     * Get best reps at specific weight from previous logs
+     * Get best reps at specific weight from previous logs, normalized to target unit
      */
-    private function getBestRepsAtWeight(\Illuminate\Database\Eloquent\Collection $logs, float $targetWeight): array
+    private function getBestRepsAtWeight(\Illuminate\Database\Eloquent\Collection $logs, float $targetWeight, string $targetUnit): array
     {
         $maxReps = 0;
         $liftLogId = null;
-        $tolerance = 0.5; // Weight tolerance for matching
+        $tolerance = (strtolower($targetUnit) === 'kg') ? 0.25 : 0.5; // Weight tolerance for matching
+        $unitResolver = $this->unitResolver();
         
         foreach ($logs as $log) {
+            $loggedUnit = $log->liftSets->first()->unit ?? 'lbs';
             foreach ($log->liftSets as $set) {
-                if (abs($set->weight - $targetWeight) <= $tolerance && $set->reps > $maxReps) {
-                    $maxReps = $set->reps;
-                    $liftLogId = $log->id;
+                if ($set->reps > 0) {
+                    $weightInTargetUnit = $unitResolver->convert($set->weight, $loggedUnit, $targetUnit);
+                    if (abs($weightInTargetUnit - $targetWeight) <= $tolerance && $set->reps > $maxReps) {
+                        $maxReps = $set->reps;
+                        $liftLogId = $log->id;
+                    }
                 }
             }
         }
@@ -506,25 +523,29 @@ class RegularExerciseType extends BaseExerciseType
     }
     
     /**
-     * Get best number of sets at specific weight from previous logs
+     * Get best number of sets at specific weight from previous logs, normalized to target unit
      * Only counts sets that meet or exceed the minimum rep threshold
      * 
      * @param Collection $logs Previous lift logs
      * @param float $targetWeight Weight to match (with tolerance)
+     * @param string $targetUnit The target unit to normalize to
      * @param int $minReps Minimum reps required for a set to count
      * @return array ['sets' => int, 'lift_log_id' => int|null]
      */
-    private function getBestSetsAtWeight(\Illuminate\Database\Eloquent\Collection $logs, float $targetWeight, int $minReps = 1): array
+    private function getBestSetsAtWeight(\Illuminate\Database\Eloquent\Collection $logs, float $targetWeight, string $targetUnit, int $minReps = 1): array
     {
         $maxSets = 0;
         $liftLogId = null;
-        $tolerance = 0.5; // Weight tolerance for matching
+        $tolerance = (strtolower($targetUnit) === 'kg') ? 0.25 : 0.5; // Weight tolerance for matching
+        $unitResolver = $this->unitResolver();
         
         foreach ($logs as $log) {
             $setsAtWeight = 0;
+            $loggedUnit = $log->liftSets->first()->unit ?? 'lbs';
             foreach ($log->liftSets as $set) {
                 // Count sets that match weight (within tolerance) AND meet minimum rep threshold
-                if (abs($set->weight - $targetWeight) <= $tolerance && $set->reps >= $minReps) {
+                $weightInTargetUnit = $unitResolver->convert($set->weight, $loggedUnit, $targetUnit);
+                if (abs($weightInTargetUnit - $targetWeight) <= $tolerance && $set->reps >= $minReps) {
                     $setsAtWeight++;
                 }
             }
