@@ -189,8 +189,8 @@ The `PRRecordsComponentAssembler` must convert all comparison values (current me
 
 ### 4.5 1RM Calculator Grid
 `ExercisePRService::getCalculatorGrid()` must:
-- Compute all percentage weights in the user's preferred unit
-- Pass the unit label to the component so it can be displayed alongside values in the Blade template (`calculator-grid.blade.php`)
+- Compute all percentage weights in the user's preferred unit.
+- Keep the grid cells unit-free (display only raw values) to maintain high data density on mobile.
 
 ### 4.6 Charts (1RM Progression, Volume)
 The `OneRepMaxChartGenerator` currently uses `$liftLog->best_one_rep_max`, which calculates from raw `$liftSet->weight` without conversion. Fix: the chart generator receives the user context and normalizes all data points to the viewer's preferred unit so mixed-unit logs appear on the same scale.
@@ -357,7 +357,7 @@ These are ALL places where the string `'lbs'` is rendered to users and MUST be r
 | File | Line | Current Output |
 |------|------|----------------|
 | `resources/views/mobile-entry/components/pr-feed-list.blade.php` | ~330 | `{{ number_format($weight, 0) }} lbs` |
-| `resources/views/mobile-entry/components/calculator-grid.blade.php` | weight cells | Numbers without any unit label — needs unit suffix |
+| `resources/views/mobile-entry/components/calculator-grid.blade.php` | weight cells | Leave unit-free as-is (do not add unit suffix to maintain high density on mobile) |
 
 ### PHP Services / Controllers (user-facing output)
 
@@ -441,7 +441,7 @@ These are ALL places where the string `'lbs'` is rendered to users and MUST be r
 
 ### Views
 - `resources/views/mobile-entry/components/pr-feed-list.blade.php` — replace hardcoded `lbs`
-- `resources/views/mobile-entry/components/calculator-grid.blade.php` — display unit label
+- `resources/views/mobile-entry/components/calculator-grid.blade.php` — no changes needed (leave unit-free to keep cells compact)
 
 ### Form / Frontend
 - `public/js/mobile-entry.js` — dynamic step/increment on weight inputs
