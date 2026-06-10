@@ -207,9 +207,7 @@ class ExercisePRService
 
                     if ($estimated1RM > $maxEstimated1RM) {
                         $maxEstimated1RM = $estimated1RM;
-                        $roundedEstimated1RM = (strtolower($preferredUnit) === 'kg') 
-                            ? (round($estimated1RM * 2) / 2) 
-                            : (float) round($estimated1RM);
+                        $roundedEstimated1RM = (float) round($estimated1RM);
 
                         $bestLift = [
                             'weight' => $roundedEstimated1RM,
@@ -291,9 +289,7 @@ class ExercisePRService
             
             foreach ($columns as $column) {
                 $calculatedWeight = ($column['one_rep_max'] * $percentage) / 100;
-                $rounded = (strtolower($preferredUnit) === 'kg') 
-                    ? (round($calculatedWeight * 2) / 2) 
-                    : (float) round($calculatedWeight);
+                $rounded = (float) round($calculatedWeight);
                 $weights[] = $rounded;
             }
             
