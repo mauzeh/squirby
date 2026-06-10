@@ -255,22 +255,24 @@ document.addEventListener('DOMContentLoaded', function() {
             
             /**
              * Decrement Function
-             * Decreases the input value by the configured increment amount
+             * Decreases the input value by snapping to the previous multiple of increment
              * Respects the minimum boundary and updates button states
              */
             const decrementValue = () => {
                 // Get current value, defaulting to 0 if empty or invalid
                 const currentValue = parseFloat(input.value) || 0;
                 
-                // Calculate new value by subtracting the increment
-                const newValue = currentValue - increment;
+                // Calculate previous grid multiple strictly less than currentValue
+                const ratio = currentValue / increment;
+                const isInteger = Math.abs(ratio - Math.round(ratio)) < 1e-9;
+                const prevMultiple = (isInteger ? Math.round(ratio) - 1 : Math.floor(ratio)) * increment;
                 
                 // Only update if the new value doesn't go below the minimum
-                if (newValue >= min) {
+                if (prevMultiple >= min) {
                     // Round to avoid floating-point precision issues
                     // Determine decimal places from increment value
                     const decimalPlaces = getDecimalPlaces(increment);
-                    input.value = parseFloat(newValue.toFixed(decimalPlaces));
+                    input.value = parseFloat(prevMultiple.toFixed(decimalPlaces));
                     
                     // Dispatch input event so other code can listen for changes
                     // This ensures form validation, auto-save, etc. still work
@@ -283,22 +285,24 @@ document.addEventListener('DOMContentLoaded', function() {
             
             /**
              * Increment Function
-             * Increases the input value by the configured increment amount
+             * Increases the input value by snapping to the next multiple of increment
              * Respects the maximum boundary (if set) and updates button states
              */
             const incrementValue = () => {
                 // Get current value, defaulting to 0 if empty or invalid
                 const currentValue = parseFloat(input.value) || 0;
                 
-                // Calculate new value by adding the increment
-                const newValue = currentValue + increment;
+                // Calculate next grid multiple strictly greater than currentValue
+                const ratio = currentValue / increment;
+                const isInteger = Math.abs(ratio - Math.round(ratio)) < 1e-9;
+                const nextMultiple = (isInteger ? Math.round(ratio) + 1 : Math.ceil(ratio)) * increment;
                 
                 // Only update if there's no max limit OR the new value doesn't exceed it
-                if (max === null || newValue <= max) {
+                if (max === null || nextMultiple <= max) {
                     // Round to avoid floating-point precision issues
                     // Determine decimal places from increment value
                     const decimalPlaces = getDecimalPlaces(increment);
-                    input.value = parseFloat(newValue.toFixed(decimalPlaces));
+                    input.value = parseFloat(nextMultiple.toFixed(decimalPlaces));
                     
                     // Dispatch input event for other listeners
                     input.dispatchEvent(new Event('input', { bubbles: true }));

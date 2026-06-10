@@ -285,7 +285,7 @@ class StaticHoldExerciseType extends BaseExerciseType
     public function getFormFieldDefinitions(array $defaults = [], ?User $user = null): array
     {
         $labels = $this->getFieldLabels();
-        $increments = $this->getFieldIncrements();
+        $increments = $this->getFieldIncrements($user);
         
         return [
             [
