@@ -120,17 +120,13 @@ class BodyweightExerciseType extends BaseExerciseType
     public function formatWeightDisplay(LiftLog $liftLog): string
     {
         $extraWeight = $liftLog->display_weight;
+        $loggedUnit = $liftLog->liftSets->first()->unit ?? 'lbs';
         
         if (!is_numeric($extraWeight) || $extraWeight <= 0) {
             return 'Bodyweight';
         }
         
-        $unit = config('exercise_types.display.weight_unit', 'lbs');
-        
-        // Format as whole number if it's a whole number, otherwise show decimal
-        $formattedWeight = $extraWeight == floor($extraWeight) ? number_format($extraWeight, 0) : number_format($extraWeight, 1);
-        
-        return 'Bodyweight +' . $formattedWeight . ' ' . $unit;
+        return 'Bodyweight +' . $this->unitResolver()->formatForUser($extraWeight, $loggedUnit, $liftLog->user);
     }
     
     /**
@@ -180,12 +176,24 @@ class BodyweightExerciseType extends BaseExerciseType
             return null;
         }
         
+        $unitResolver = $this->unitResolver();
+        $user = $liftLog->user;
+        $preferredUnit = $unitResolver->getPreferredWeightUnit($user);
+        $loggedUnit = $liftLog->liftSets->first()->unit ?? 'lbs';
+        
         // Suggest adding weight if reps are high
         if ($reps >= 12 && (!is_numeric($extraWeight) || $extraWeight <= 0)) {
+            if ($preferredUnit === 'kg') {
+                return "Consider adding 2-5 kg extra weight";
+            }
             return "Consider adding 5-10 lbs extra weight";
         } elseif ($reps >= 15 && is_numeric($extraWeight) && $extraWeight > 0) {
-            $nextWeight = $extraWeight + 5;
-            return "Try {$nextWeight} lbs extra weight";
+            $convertedExtra = $unitResolver->convert($extraWeight, $loggedUnit, $preferredUnit);
+            $increment = $unitResolver->getWeightIncrement($user);
+            $nextWeight = $convertedExtra + $increment;
+            
+            $formattedNext = $unitResolver->format($nextWeight, $preferredUnit);
+            return "Try {$formattedNext} extra weight";
         }
         
         return null;
@@ -243,7 +251,9 @@ class BodyweightExerciseType extends BaseExerciseType
         ];
         
         if ($liftLog->display_weight > 0) {
-            $result['tertiary'] = '+ ' . $liftLog->display_weight . ' lbs';
+            $loggedUnit = $liftLog->liftSets->first()->unit ?? 'lbs';
+            $formatted = $this->unitResolver()->formatForUser($liftLog->display_weight, $loggedUnit, $liftLog->user);
+            $result['tertiary'] = '+ ' . $formatted;
         }
         
         return $result;
@@ -259,7 +269,12 @@ class BodyweightExerciseType extends BaseExerciseType
             return 'N/A (Bodyweight)';
         }
         
-        return round($liftLog->one_rep_max) . ' lbs (est. incl. BW)';
+        $oneRepMax = $liftLog->one_rep_max;
+        $loggedUnit = $liftLog->liftSets->first()->unit ?? 'lbs';
+        $unit = $this->unitResolver()->getPreferredWeightUnit($liftLog->user);
+        $converted = $this->unitResolver()->convert($oneRepMax, $loggedUnit, $unit);
+        
+        return round($converted) . ' ' . $unit . ' (est. incl. BW)';
     }
     
     /**
@@ -307,7 +322,9 @@ class BodyweightExerciseType extends BaseExerciseType
     public function formatSuccessMessageDescription(?float $weight, int $reps, int $rounds, ?string $bandColor = null): string
     {
         if ($weight && $weight > 0) {
-            return '+' . $weight . ' lbs × ' . $reps . ' reps × ' . $rounds . ' sets';
+            $unit = $this->unitResolver()->getPreferredWeightUnit(auth()->user());
+            $formattedWeight = $this->unitResolver()->format($weight, $unit);
+            return '+' . $formattedWeight . ' × ' . $reps . ' reps × ' . $rounds . ' sets';
         } else {
             return $reps . ' reps × ' . $rounds . ' sets';
         }
@@ -508,17 +525,19 @@ class BodyweightExerciseType extends BaseExerciseType
     public function formatPRDisplay(\App\Models\PersonalRecord $pr, LiftLog $liftLog): array
     {
         $hasExtraWeight = $liftLog->liftSets->max('weight') > 0;
+        $sourceUnit = $pr->unit ?? 'lbs';
+        $viewer = auth()->user() ?? $liftLog->user;
         
         return match($pr->pr_type) {
             'volume' => [
                 'label' => $hasExtraWeight ? 'Volume' : 'Total Reps',
-                'value' => $pr->previous_value ? ($hasExtraWeight ? number_format($pr->previous_value, 0) . ' lbs' : (int)$pr->previous_value . ' reps') : '—',
-                'comparison' => $hasExtraWeight ? number_format($pr->value, 0) . ' lbs' : (int)$pr->value . ' reps',
+                'value' => $pr->previous_value ? ($hasExtraWeight ? $this->unitResolver()->formatForUser($pr->previous_value, $sourceUnit, $viewer) : (int)$pr->previous_value . ' reps') : '—',
+                'comparison' => $hasExtraWeight ? $this->unitResolver()->formatForUser($pr->value, $sourceUnit, $viewer) : (int)$pr->value . ' reps',
             ],
             'rep_specific' => [
                 'label' => $pr->rep_count . ' Rep' . ($pr->rep_count > 1 ? 's' : ''),
-                'value' => ($pr->previous_value && $pr->previous_value > 0) ? $this->formatWeight($pr->previous_value) . ' lbs' : '—',
-                'comparison' => $this->formatWeight($pr->value) . ' lbs',
+                'value' => ($pr->previous_value && $pr->previous_value > 0) ? $this->unitResolver()->formatForUser($pr->previous_value, $sourceUnit, $viewer) : '—',
+                'comparison' => $this->unitResolver()->formatForUser($pr->value, $sourceUnit, $viewer),
             ],
             default => [
                 'label' => ucfirst(str_replace('_', ' ', $pr->pr_type)),
@@ -534,16 +553,18 @@ class BodyweightExerciseType extends BaseExerciseType
     public function formatCurrentPRDisplay(\App\Models\PersonalRecord $pr, LiftLog $liftLog, bool $isCurrent): array
     {
         $hasExtraWeight = $liftLog->liftSets->max('weight') > 0;
+        $sourceUnit = $pr->unit ?? 'lbs';
+        $viewer = auth()->user() ?? $liftLog->user;
         
         return match($pr->pr_type) {
             'volume' => [
                 'label' => $hasExtraWeight ? 'Volume' : 'Total Reps',
-                'value' => $hasExtraWeight ? number_format($pr->value, 0) . ' lbs' : (int)$pr->value . ' reps',
+                'value' => $hasExtraWeight ? $this->unitResolver()->formatForUser($pr->value, $sourceUnit, $viewer) : (int)$pr->value . ' reps',
                 'is_current' => $isCurrent,
             ],
             'rep_specific' => [
                 'label' => $pr->rep_count . ' Rep' . ($pr->rep_count > 1 ? 's' : ''),
-                'value' => $this->formatWeight($pr->value) . ' lbs',
+                'value' => $this->unitResolver()->formatForUser($pr->value, $sourceUnit, $viewer),
                 'is_current' => $isCurrent,
             ],
             default => [

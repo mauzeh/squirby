@@ -376,7 +376,7 @@ interface ExerciseTypeInterface
      * // Cardio exercise labels
      * ['reps' => 'Distance (m):', 'sets' => 'Rounds:']
      */
-    public function getFieldLabels(): array;
+    public function getFieldLabels(?User $user = null): array;
     
     /**
      * Get increment values for numeric fields
@@ -394,7 +394,7 @@ interface ExerciseTypeInterface
      * // Cardio exercise increments
      * ['reps' => 50, 'sets' => 1] // 50m increments for distance
      */
-    public function getFieldIncrements(): array;
+    public function getFieldIncrements(?User $user = null): array;
     
     /**
      * Format logged item display message for mobile entry

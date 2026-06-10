@@ -252,6 +252,9 @@ Track your ' . strtolower($displayName) . ' progress with this app.
             $prCardsBuilder = ComponentBuilder::prCards('Heaviest Lifts')
                 ->scrollable();
             
+            $unitResolver = app(\App\Services\UnitResolver::class);
+            $preferredUnit = $unitResolver->getPreferredWeightUnit(Auth::user());
+            
             // Find the most recent PR to highlight
             $mostRecentPRKey = $this->exercisePRService->getMostRecentPRKey($prData);
             
@@ -262,9 +265,9 @@ Track your ' . strtolower($displayName) . ' progress with this app.
                 $isRecent = ($key === $mostRecentPRKey);
                 
                 if (isset($prData[$key]) && $prData[$key] !== null) {
-                    $prCardsBuilder->card($label, $prData[$key]['weight'], 'lbs', $prData[$key]['date'], $isRecent);
+                    $prCardsBuilder->card($label, $prData[$key]['weight'], $preferredUnit, $prData[$key]['date'], $isRecent);
                 } else {
-                    $prCardsBuilder->card($label, null, 'lbs', null, false);
+                    $prCardsBuilder->card($label, null, $preferredUnit, null, false);
                 }
             }
             
@@ -275,7 +278,8 @@ Track your ' . strtolower($displayName) . ' progress with this app.
         $calculatorGrid = $this->exercisePRService->getCalculatorGrid(
             $exercise,
             $prData ?? [],
-            $estimated1RM
+            $estimated1RM,
+            Auth::user()
         );
         
         if ($calculatorGrid) {

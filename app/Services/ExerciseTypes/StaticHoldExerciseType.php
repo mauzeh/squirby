@@ -139,6 +139,7 @@ class StaticHoldExerciseType extends BaseExerciseType
     {
         $duration = $liftLog->liftSets->first()?->time ?? 0;
         $weight = $liftLog->display_weight;
+        $loggedUnit = $liftLog->liftSets->first()->unit ?? 'lbs';
         
         if (!is_numeric($duration) || $duration <= 0) {
             return '0s hold';
@@ -148,8 +149,8 @@ class StaticHoldExerciseType extends BaseExerciseType
         
         // If there's added weight, include it in the display
         if (is_numeric($weight) && $weight > 0) {
-            $weightFormatted = $weight == floor($weight) ? number_format($weight, 0) : number_format($weight, 1);
-            return "{$durationDisplay} +{$weightFormatted} lbs";
+            $weightFormatted = $this->unitResolver()->formatForUser($weight, $loggedUnit, $liftLog->user);
+            return "{$durationDisplay} +{$weightFormatted}";
         }
         
         return $durationDisplay;
@@ -206,6 +207,7 @@ class StaticHoldExerciseType extends BaseExerciseType
         $duration = $liftLog->liftSets->first()?->time ?? 0;
         $weight = $liftLog->display_weight;
         $sets = $liftLog->display_rounds;
+        $loggedUnit = $liftLog->liftSets->first()->unit ?? 'lbs';
         
         if (!is_numeric($duration) || $duration <= 0) {
             $duration = 0;
@@ -219,8 +221,8 @@ class StaticHoldExerciseType extends BaseExerciseType
         
         // Add weight if present
         if (is_numeric($weight) && $weight > 0) {
-            $weightFormatted = $weight == floor($weight) ? number_format($weight, 0) : number_format($weight, 1);
-            $durationDisplay .= " +{$weightFormatted} lbs";
+            $weightFormatted = $this->unitResolver()->formatForUser($weight, $loggedUnit, $liftLog->user);
+            $durationDisplay .= " +{$weightFormatted}";
         }
         
         $setsText = $sets == 1 ? 'set' : 'sets';
@@ -245,6 +247,11 @@ class StaticHoldExerciseType extends BaseExerciseType
             return null;
         }
         
+        $unitResolver = $this->unitResolver();
+        $user = $liftLog->user;
+        $preferredUnit = $unitResolver->getPreferredWeightUnit($user);
+        $loggedUnit = $liftLog->liftSets->first()->unit ?? 'lbs';
+        
         // For holds under 60 seconds, suggest small duration increases
         if ($duration < 60) {
             // Very conservative progression: 1-2 seconds
@@ -258,13 +265,16 @@ class StaticHoldExerciseType extends BaseExerciseType
         if (!is_numeric($weight) || $weight == 0) {
             // Suggest adding weight
             $durationDisplay = $this->formatDuration((int)$duration);
-            return "Try {$durationDisplay} +5 lbs × {$sets} sets";
+            $increment = $unitResolver->getWeightIncrement($user);
+            $formattedNext = $unitResolver->format($increment, $preferredUnit);
+            return "Try {$durationDisplay} +{$formattedNext} × {$sets} sets";
         } else {
             // Suggest adding more sets
             $newSets = $sets + 1;
             $durationDisplay = $this->formatDuration((int)$duration);
-            $weightFormatted = $weight == floor($weight) ? number_format($weight, 0) : number_format($weight, 1);
-            return "Try {$durationDisplay} +{$weightFormatted} lbs × {$newSets} sets";
+            $convertedExtra = $unitResolver->convert($weight, $loggedUnit, $preferredUnit);
+            $weightFormatted = $unitResolver->format($convertedExtra, $preferredUnit);
+            return "Try {$durationDisplay} +{$weightFormatted} × {$newSets} sets";
         }
     }
     
@@ -363,13 +373,14 @@ class StaticHoldExerciseType extends BaseExerciseType
         $duration = $liftLog->liftSets->first()?->time ?? 0;
         $weight = $liftLog->display_weight;
         $sets = $liftLog->display_rounds;
+        $loggedUnit = $liftLog->liftSets->first()->unit ?? 'lbs';
         
         $durationDisplay = $this->formatDuration($duration);
         
         // Add weight if present
         if (is_numeric($weight) && $weight > 0) {
-            $weightFormatted = $weight == floor($weight) ? number_format($weight, 0) : number_format($weight, 1);
-            $durationDisplay .= " +{$weightFormatted} lbs";
+            $weightFormatted = $this->unitResolver()->formatForUser($weight, $loggedUnit, $liftLog->user);
+            $durationDisplay .= " +{$weightFormatted}";
         }
         
         $setsText = "{$sets} " . ($sets == 1 ? 'set' : 'sets');
@@ -417,13 +428,14 @@ class StaticHoldExerciseType extends BaseExerciseType
         $duration = $liftLog->liftSets->first()?->time ?? 0;
         $weight = $liftLog->display_weight;
         $sets = $liftLog->display_rounds;
+        $loggedUnit = $liftLog->liftSets->first()->unit ?? 'lbs';
         
         $durationDisplay = $this->formatDuration($duration);
         
         // Add weight if present
         if (is_numeric($weight) && $weight > 0) {
-            $weightFormatted = $weight == floor($weight) ? number_format($weight, 0) : number_format($weight, 1);
-            $durationDisplay .= " +{$weightFormatted} lbs";
+            $weightFormatted = $this->unitResolver()->formatForUser($weight, $loggedUnit, $liftLog->user);
+            $durationDisplay .= " +{$weightFormatted}";
         }
         
         $setsText = "{$sets} " . ($sets == 1 ? 'set' : 'sets');
@@ -448,8 +460,9 @@ class StaticHoldExerciseType extends BaseExerciseType
         
         // Add weight if present
         if (is_numeric($weight) && $weight > 0) {
-            $weightFormatted = $weight == floor($weight) ? number_format($weight, 0) : number_format($weight, 1);
-            $durationDisplay .= " +{$weightFormatted} lbs";
+            $unit = $this->unitResolver()->getPreferredWeightUnit(auth()->user());
+            $weightFormatted = $this->unitResolver()->format($weight, $unit);
+            $durationDisplay .= " +{$weightFormatted}";
         }
         
         $setsText = $rounds == 1 ? 'set' : 'sets';
@@ -491,20 +504,27 @@ class StaticHoldExerciseType extends BaseExerciseType
         // For durations >= 60s: suggest adding weight or sets
         if (!is_numeric($lastWeight) || $lastWeight == 0) {
             // Suggest adding weight
+            $unitResolver = $this->unitResolver();
+            $increment = $unitResolver->getWeightIncrement($lastLog->user);
             return (object)[
                 'sets' => $lastSets,
                 'time' => $lastDuration,
-                'weight' => 5, // Start with 5 lbs
+                'weight' => $increment,
                 'band_color' => null,
             ];
         } else {
             // Suggest adding more sets
             $suggestedSets = min($lastSets + 1, 10);
             
+            $unitResolver = $this->unitResolver();
+            $preferredUnit = $unitResolver->getPreferredWeightUnit($lastLog->user);
+            $loggedUnit = $lastLog->liftSets->first()->unit ?? 'lbs';
+            $convertedWeight = $unitResolver->convert($lastWeight, $loggedUnit, $preferredUnit);
+            
             return (object)[
                 'sets' => $suggestedSets,
                 'time' => $lastDuration,
-                'weight' => $lastWeight,
+                'weight' => $convertedWeight,
                 'band_color' => null,
             ];
         }

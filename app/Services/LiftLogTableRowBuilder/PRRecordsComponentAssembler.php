@@ -215,7 +215,9 @@ class PRRecordsComponentAssembler
         switch ($pr->pr_type) {
             case 'one_rm':
                 if (!$isBodyweight && isset($currentMetrics['best_1rm'])) {
-                    return sprintf('%s lbs', self::formatWeight($currentMetrics['best_1rm']));
+                    $unitResolver = app(\App\Services\UnitResolver::class);
+                    $loggedUnit = $liftLog->liftSets->first()->unit ?? 'lbs';
+                    return $unitResolver->formatForUser($currentMetrics['best_1rm'], $loggedUnit, $liftLog->user);
                 }
                 return null;
                 
@@ -242,14 +244,18 @@ class PRRecordsComponentAssembler
                 }
                 // Weighted exercises: show weight × reps
                 elseif (isset($currentMetrics['total_volume'])) {
-                    return sprintf('%s lbs', number_format($currentMetrics['total_volume'], 0));
+                    $unitResolver = app(\App\Services\UnitResolver::class);
+                    $loggedUnit = $liftLog->liftSets->first()->unit ?? 'lbs';
+                    return $unitResolver->formatForUser($currentMetrics['total_volume'], $loggedUnit, $liftLog->user);
                 }
                 return null;
                 
             case 'rep_specific':
                 if (isset($currentMetrics['rep_weights'][$pr->rep_count])) {
                     $currentWeight = $currentMetrics['rep_weights'][$pr->rep_count];
-                    return sprintf('%s lbs', self::formatWeight($currentWeight));
+                    $unitResolver = app(\App\Services\UnitResolver::class);
+                    $loggedUnit = $liftLog->liftSets->first()->unit ?? 'lbs';
+                    return $unitResolver->formatForUser($currentWeight, $loggedUnit, $liftLog->user);
                 }
                 return null;
                 

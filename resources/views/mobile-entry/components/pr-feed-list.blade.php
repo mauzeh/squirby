@@ -279,6 +279,8 @@ document.addEventListener('DOMContentLoaded', function() {
                                     $weight = $liftLog->liftLog?->display_weight ?? 0;
                                     $reps = $liftLog->liftLog?->display_reps ?? 0;
                                     $sets = $liftLog->liftLog?->display_rounds ?? 0;
+                                    $unitResolver = app(\App\Services\UnitResolver::class);
+                                    $loggedUnit = $liftLog->liftLog?->liftSets->first()->unit ?? 'lbs';
                                 @endphp
                                 <div class="pr-lift-header">
                                     <div class="pr-lift-title-row">
@@ -327,7 +329,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                                     {{-- For static holds, weight contains duration --}}
                                                     <span class="pr-weight-pill{{ $isNew ? ' pr-weight-pill-new' : '' }}">{{ $displayData['weight'] }}</span>
                                                 @elseif($weight > 0)
-                                                    <span class="pr-weight-pill{{ $isNew ? ' pr-weight-pill-new' : '' }}">{{ number_format($weight, 0) }} lbs</span>
+                                                    <span class="pr-weight-pill{{ $isNew ? ' pr-weight-pill-new' : '' }}">{{ $unitResolver->formatForUser($weight, $loggedUnit, $user) }}</span>
                                                 @endif
                                                 @if(isset($displayData['repsSets']))
                                                     <span class="pr-reps-pill">{{ $displayData['repsSets'] }}</span>

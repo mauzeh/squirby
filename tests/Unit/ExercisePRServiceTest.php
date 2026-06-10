@@ -260,9 +260,9 @@ class ExercisePRServiceTest extends TestCase
         $this->assertCount(3, $result['columns']);
         
         // Check column labels
-        $this->assertEquals('1 × 1', $result['columns'][0]['label']);
-        $this->assertEquals('1 × 2', $result['columns'][1]['label']);
-        $this->assertEquals('1 × 3', $result['columns'][2]['label']);
+        $this->assertEquals('1 × 1 (lbs)', $result['columns'][0]['label']);
+        $this->assertEquals('1 × 2 (lbs)', $result['columns'][1]['label']);
+        $this->assertEquals('1 × 3 (lbs)', $result['columns'][2]['label']);
         
         // Check that each row has 3 weights
         foreach ($result['rows'] as $row) {
@@ -363,7 +363,7 @@ class ExercisePRServiceTest extends TestCase
         $this->assertNotNull($result);
         $this->assertTrue($result['is_estimated']);
         $this->assertCount(1, $result['columns']);
-        $this->assertEquals('Est. 1RM', $result['columns'][0]['label']);
+        $this->assertEquals('Est. 1RM (lbs)', $result['columns'][0]['label']);
         $this->assertEquals(225, $result['columns'][0]['one_rep_max']);
         $this->assertTrue($result['columns'][0]['is_estimated']);
         
@@ -403,7 +403,7 @@ class ExercisePRServiceTest extends TestCase
         $this->assertNotNull($result);
         $this->assertFalse($result['is_estimated']); // Should use actual PR, not estimated
         $this->assertCount(1, $result['columns']);
-        $this->assertEquals('1 × 1', $result['columns'][0]['label']);
+        $this->assertEquals('1 × 1 (lbs)', $result['columns'][0]['label']);
         $this->assertEquals(242, $result['columns'][0]['one_rep_max']);
     }
 

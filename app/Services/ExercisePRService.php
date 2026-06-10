@@ -53,12 +53,16 @@ class ExercisePRService
             return null;
         }
 
+        $unitResolver = app(\App\Services\UnitResolver::class);
+        $preferredUnit = $unitResolver->getPreferredWeightUnit($user);
+
         $prData = [];
 
         // Process each target rep range (1 through maxReps)
+        $hasData = false;
         for ($targetReps = 1; $targetReps <= $maxReps; $targetReps++) {
             $bestForReps = null;
-            $maxWeight = 0;
+            $maxWeightInPreferredUnit = 0;
 
             // Iterate through all lift logs and their sets
             foreach ($liftLogs as $log) {
@@ -68,15 +72,19 @@ class ExercisePRService
                         continue;
                     }
 
+                    $loggedUnit = $set->unit ?? 'lbs';
+                    $weightInPreferredUnit = $unitResolver->convert($set->weight, $loggedUnit, $preferredUnit);
+
                     // Track the highest weight for this rep range
-                    if ($set->weight > $maxWeight) {
-                        $maxWeight = $set->weight;
+                    if ($weightInPreferredUnit > $maxWeightInPreferredUnit) {
+                        $maxWeightInPreferredUnit = $weightInPreferredUnit;
                         $bestForReps = [
-                            'weight' => $set->weight,
+                            'weight' => $weightInPreferredUnit,
                             'lift_log_id' => $log->id,
                             'date' => $log->logged_at,
                             'is_estimated' => false,
                         ];
+                        $hasData = true;
                     }
                 }
             }
@@ -85,7 +93,7 @@ class ExercisePRService
         }
 
         // If no PR data was found for any rep range, return null
-        if (empty(array_filter($prData))) {
+        if (!$hasData) {
             return null;
         }
 
@@ -178,6 +186,9 @@ class ExercisePRService
             return null;
         }
 
+        $unitResolver = app(\App\Services\UnitResolver::class);
+        $preferredUnit = $unitResolver->getPreferredWeightUnit($user);
+
         $bestLift = null;
         $maxEstimated1RM = 0;
 
@@ -190,17 +201,23 @@ class ExercisePRService
                 }
 
                 try {
-                    $estimated1RM = $strategy->calculate1RM($set->weight, $set->reps, $log);
+                    $loggedUnit = $set->unit ?? 'lbs';
+                    $weightInPreferredUnit = $unitResolver->convert($set->weight, $loggedUnit, $preferredUnit);
+                    $estimated1RM = $strategy->calculate1RM($weightInPreferredUnit, $set->reps, $log);
 
                     if ($estimated1RM > $maxEstimated1RM) {
                         $maxEstimated1RM = $estimated1RM;
+                        $roundedEstimated1RM = (strtolower($preferredUnit) === 'kg') 
+                            ? (round($estimated1RM * 2) / 2) 
+                            : (float) round($estimated1RM);
+
                         $bestLift = [
-                            'weight' => round($estimated1RM),
+                            'weight' => $roundedEstimated1RM,
                             'lift_log_id' => $log->id,
                             'date' => $log->logged_at,
                             'is_estimated' => true,
                             'based_on_reps' => $set->reps,
-                            'based_on_weight' => $set->weight,
+                            'based_on_weight' => $weightInPreferredUnit,
                         ];
                     }
                 } catch (\Exception $e) {
@@ -220,11 +237,15 @@ class ExercisePRService
      * @param Exercise $exercise
      * @param array $prData PR data from getPRData()
      * @param array|null $estimated1RM Optional estimated 1RM data
+     * @param User|null $user Optional user context for preferred weight unit
      * @return array|null Returns null if no valid PR data
      */
-    public function getCalculatorGrid(Exercise $exercise, array $prData, ?array $estimated1RM = null): ?array
+    public function getCalculatorGrid(Exercise $exercise, array $prData, ?array $estimated1RM = null, ?User $user = null): ?array
     {
         $strategy = $exercise->getTypeStrategy();
+        
+        $unitResolver = app(\App\Services\UnitResolver::class);
+        $preferredUnit = $unitResolver->getPreferredWeightUnit($user ?? auth()->user());
         
         // Build columns from PR data
         $columns = [];
@@ -238,7 +259,7 @@ class ExercisePRService
                 $oneRepMax = ($reps === 1) ? $weight : $weight * (1 + (0.0333 * $reps));
                 
                 $columns[] = [
-                    'label' => "1 × {$reps}",
+                    'label' => "1 × {$reps} ({$preferredUnit})",
                     'one_rep_max' => $oneRepMax,
                     'is_estimated' => $prData[$key]['is_estimated'] ?? false,
                 ];
@@ -248,7 +269,7 @@ class ExercisePRService
         // If no columns from actual PRs, use estimated 1RM
         if (empty($columns) && $estimated1RM !== null) {
             $columns[] = [
-                'label' => 'Est. 1RM',
+                'label' => "Est. 1RM ({$preferredUnit})",
                 'one_rep_max' => $estimated1RM['weight'],
                 'is_estimated' => true,
             ];
@@ -270,7 +291,10 @@ class ExercisePRService
             
             foreach ($columns as $column) {
                 $calculatedWeight = ($column['one_rep_max'] * $percentage) / 100;
-                $weights[] = round($calculatedWeight);
+                $rounded = (strtolower($preferredUnit) === 'kg') 
+                    ? (round($calculatedWeight * 2) / 2) 
+                    : (float) round($calculatedWeight);
+                $weights[] = $rounded;
             }
             
             $rows[] = [

@@ -90,17 +90,14 @@ class RegularExerciseType extends BaseExerciseType
     public function formatWeightDisplay(LiftLog $liftLog): string
     {
         $weight = $liftLog->display_weight;
+        $loggedUnit = $liftLog->liftSets->first()->unit ?? 'lbs';
         
         if (!is_numeric($weight) || $weight <= 0) {
-            return '0 lbs';
+            $targetUnit = $this->unitResolver()->getPreferredWeightUnit($liftLog->user);
+            return '0 ' . $targetUnit;
         }
         
-        $unit = config('exercise_types.display.weight_unit', 'lbs');
-        
-        // Format as whole number if it's a whole number, otherwise show decimal
-        $formattedWeight = $weight == floor($weight) ? number_format($weight, 0) : number_format($weight, 1);
-        
-        return $formattedWeight . ' ' . $unit;
+        return $this->unitResolver()->formatForUser($weight, $loggedUnit, $liftLog->user);
     }
     
     // ========================================================================
@@ -333,29 +330,32 @@ class RegularExerciseType extends BaseExerciseType
             }
         }
         
+        $sourceUnit = $pr->unit ?? 'lbs';
+        $viewer = auth()->user() ?? $liftLog->user;
+        
         return match($pr->pr_type) {
             'one_rm' => [
                 'label' => 'Est 1RM',
-                'value' => $pr->previous_value ? $this->formatWeight($pr->previous_value) . ' lbs' : '—',
-                'comparison' => $this->formatWeight($pr->value) . ' lbs',
+                'value' => $pr->previous_value ? $this->unitResolver()->formatForUser($pr->previous_value, $sourceUnit, $viewer) : '—',
+                'comparison' => $this->unitResolver()->formatForUser($pr->value, $sourceUnit, $viewer),
             ],
             'volume' => [
                 'label' => 'Volume',
-                'value' => $pr->previous_value ? number_format($pr->previous_value, 0) . ' lbs' : '—',
-                'comparison' => number_format($pr->value, 0) . ' lbs',
+                'value' => $pr->previous_value ? $this->unitResolver()->formatForUser($pr->previous_value, $sourceUnit, $viewer) : '—',
+                'comparison' => $this->unitResolver()->formatForUser($pr->value, $sourceUnit, $viewer),
             ],
             'rep_specific' => [
                 'label' => $pr->rep_count . ' Rep' . ($pr->rep_count > 1 ? 's' : ''),
-                'value' => ($pr->previous_value && $pr->previous_value > 0) ? $this->formatWeight($pr->previous_value) . ' lbs' : '—',
-                'comparison' => $this->formatWeight($pr->value) . ' lbs',
+                'value' => ($pr->previous_value && $pr->previous_value > 0) ? $this->unitResolver()->formatForUser($pr->previous_value, $sourceUnit, $viewer) : '—',
+                'comparison' => $this->unitResolver()->formatForUser($pr->value, $sourceUnit, $viewer),
             ],
             'hypertrophy' => [
-                'label' => 'Best @ ' . $this->formatWeight($pr->weight) . ' lbs',
+                'label' => 'Best @ ' . $this->unitResolver()->formatForUser($pr->weight, $sourceUnit, $viewer),
                 'value' => $pr->previous_value ? (int)$pr->previous_value . ' reps' : '—',
                 'comparison' => (int)$pr->value . ' reps',
             ],
             'density' => [
-                'label' => 'Sets @ ' . $this->formatWeight($pr->weight) . ' lbs',
+                'label' => 'Sets @ ' . $this->unitResolver()->formatForUser($pr->weight, $sourceUnit, $viewer),
                 'value' => $pr->previous_value ? intval($pr->previous_value) . ' set' . (intval($pr->previous_value) > 1 ? 's' : '') : '—',
                 'comparison' => intval($pr->value) . ' set' . (intval($pr->value) > 1 ? 's' : ''),
             ],
@@ -372,29 +372,32 @@ class RegularExerciseType extends BaseExerciseType
      */
     public function formatCurrentPRDisplay(\App\Models\PersonalRecord $pr, LiftLog $liftLog, bool $isCurrent): array
     {
+        $sourceUnit = $pr->unit ?? 'lbs';
+        $viewer = auth()->user() ?? $liftLog->user;
+        
         return match($pr->pr_type) {
             'one_rm' => [
                 'label' => 'Est 1RM',
-                'value' => $this->formatWeight($pr->value) . ' lbs',
+                'value' => $this->unitResolver()->formatForUser($pr->value, $sourceUnit, $viewer),
                 'is_current' => $isCurrent,
             ],
             'volume' => [
                 'label' => 'Volume',
-                'value' => number_format($pr->value, 0) . ' lbs',
+                'value' => $this->unitResolver()->formatForUser($pr->value, $sourceUnit, $viewer),
                 'is_current' => $isCurrent,
             ],
             'rep_specific' => [
                 'label' => $pr->rep_count . ' Rep' . ($pr->rep_count > 1 ? 's' : ''),
-                'value' => $this->formatWeight($pr->value) . ' lbs',
+                'value' => $this->unitResolver()->formatForUser($pr->value, $sourceUnit, $viewer),
                 'is_current' => $isCurrent,
             ],
             'hypertrophy' => [
-                'label' => 'Best @ ' . $this->formatWeight($pr->weight) . ' lbs',
+                'label' => 'Best @ ' . $this->unitResolver()->formatForUser($pr->weight, $sourceUnit, $viewer),
                 'value' => (int)$pr->value . ' reps',
                 'is_current' => $isCurrent,
             ],
             'density' => [
-                'label' => 'Sets @ ' . $this->formatWeight($pr->weight) . ' lbs',
+                'label' => 'Sets @ ' . $this->unitResolver()->formatForUser($pr->weight, $sourceUnit, $viewer),
                 'value' => intval($pr->value) . ' set' . (intval($pr->value) > 1 ? 's' : ''),
                 'is_current' => $isCurrent,
             ],

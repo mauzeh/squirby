@@ -128,9 +128,17 @@ class LiftLogService extends MobileEntryBaseService
     private function prepareEditDefaults(LiftLog $liftLog): array
     {
         $firstSet = $liftLog->liftSets->first();
+        $weight = $firstSet->weight ?? 0;
+        
+        if ($firstSet) {
+            $unitResolver = app(\App\Services\UnitResolver::class);
+            $targetUnit = $unitResolver->getPreferredWeightUnit($liftLog->user);
+            $loggedUnit = $firstSet->unit ?? 'lbs';
+            $weight = $unitResolver->convert($weight, $loggedUnit, $targetUnit);
+        }
         
         return [
-            'weight' => $firstSet->weight ?? 0,
+            'weight' => $weight,
             'reps' => $firstSet->reps ?? 0,
             'time' => $firstSet->time ?? 0,
             'sets' => $liftLog->liftSets->count(),
@@ -293,7 +301,8 @@ class LiftLogService extends MobileEntryBaseService
                 (object)[
                     'weight' => $lastSession['weight'] ?? 0,
                     'reps' => $lastSession['reps'] ?? 0,
-                    'band_color' => $lastSession['band_color'] ?? null
+                    'band_color' => $lastSession['band_color'] ?? null,
+                    'unit' => $lastSession['unit'] ?? 'lbs'
                 ]
             ]));
             
@@ -342,10 +351,13 @@ class LiftLogService extends MobileEntryBaseService
                     ];
                 } elseif (isset($suggestion->suggestedWeight) && $strategy->getTypeName() !== 'bodyweight') {
                     // Weighted exercise suggestion
+                    $unitResolver = app(\App\Services\UnitResolver::class);
+                    $preferredUnit = $unitResolver->getPreferredWeightUnit($user);
+                    $formattedWeight = $unitResolver->format($suggestion->suggestedWeight, $preferredUnit);
                     $messages[] = [
                         'type' => 'tip',
                         'prefix' => config('mobile_entry_messages.form_guidance.try_this'),
-                        'text' => $suggestion->suggestedWeight . ' lbs × ' . $suggestion->reps . ' reps × ' . $sets . ' sets' . config('mobile_entry_messages.form_guidance.suggestion_suffix')
+                        'text' => $formattedWeight . ' × ' . $suggestion->reps . ' reps × ' . $sets . ' sets' . config('mobile_entry_messages.form_guidance.suggestion_suffix')
                     ];
                 } elseif ($strategy->getTypeName() === 'bodyweight' && isset($suggestion->reps)) {
                     // Bodyweight exercise suggestion
@@ -359,10 +371,20 @@ class LiftLogService extends MobileEntryBaseService
                 // Fallback to simple progression if service fails
                 $sets = $lastSession['sets'] ?? 3;
                 $reps = $lastSession['reps'] ?? 5;
+                
+                $unitResolver = app(\App\Services\UnitResolver::class);
+                $preferredUnit = $unitResolver->getPreferredWeightUnit($user);
+                $loggedUnit = $lastSession['unit'] ?? 'lbs';
+                
+                $convertedWeight = $unitResolver->convert($lastSession['weight'] ?? 0, $loggedUnit, $preferredUnit);
+                $increment = $unitResolver->getWeightIncrement($user);
+                $suggestedWeight = $convertedWeight + $increment;
+                $formattedWeight = $unitResolver->format($suggestedWeight, $preferredUnit);
+                
                 $messages[] = [
                     'type' => 'tip',
                     'prefix' => config('mobile_entry_messages.form_guidance.try_this'),
-                    'text' => ($lastSession['weight'] + 5) . ' lbs × ' . $reps . ' reps × ' . $sets . ' sets' . config('mobile_entry_messages.form_guidance.suggestion_suffix')
+                    'text' => $formattedWeight . ' × ' . $reps . ' reps × ' . $sets . ' sets' . config('mobile_entry_messages.form_guidance.suggestion_suffix')
                 ];
             }
         }
@@ -395,6 +417,7 @@ class LiftLogService extends MobileEntryBaseService
         
         return [
             'weight' => $firstSet->weight,
+            'unit' => $firstSet->unit ?? 'lbs',
             'reps' => $firstSet->reps,
             'time' => $firstSet->time,
             'sets' => $lastLog->liftSets->count(),

@@ -156,8 +156,8 @@ abstract class BaseExerciseType implements ExerciseTypeInterface
     public function getFormFieldDefinitions(array $defaults = [], ?User $user = null): array
     {
         $formFields = $this->getFormFields();
-        $labels = $this->getFieldLabels();
-        $increments = $this->getFieldIncrements();
+        $labels = $this->getFieldLabels($user);
+        $increments = $this->getFieldIncrements($user);
         $definitions = [];
         
         foreach ($formFields as $fieldName) {
@@ -173,6 +173,11 @@ abstract class BaseExerciseType implements ExerciseTypeInterface
                 $definition['increment'] = $increments[$fieldName] ?? 1;
                 $definition['min'] = $this->getFieldMin($fieldName);
                 $definition['max'] = $this->getFieldMax($fieldName);
+                if ($fieldName === 'weight') {
+                    $definition['step'] = $this->unitResolver()->getWeightStep($user);
+                } else {
+                    $definition['step'] = 1;
+                }
             }
             
             // Add select field properties
@@ -190,27 +195,40 @@ abstract class BaseExerciseType implements ExerciseTypeInterface
      * Get field labels for this exercise type
      * Default implementation uses standard labels
      */
-    public function getFieldLabels(): array
+    public function getFieldLabels(?User $user = null): array
     {
-        return $this->config['field_labels'] ?? [
+        $labels = $this->config['field_labels'] ?? [
             'weight' => 'Weight (lbs):',
             'reps' => 'Reps:',
             'sets' => 'Sets:',
             'band_color' => 'Band Color:',
         ];
+
+        $unit = $this->unitResolver()->getPreferredWeightUnit($user);
+        foreach ($labels as $key => $value) {
+            $labels[$key] = str_replace('(lbs)', "({$unit})", $value);
+        }
+
+        return $labels;
     }
     
     /**
      * Get increment values for numeric fields
      * Default implementation uses standard increments
      */
-    public function getFieldIncrements(): array
+    public function getFieldIncrements(?User $user = null): array
     {
-        return $this->config['field_increments'] ?? [
+        $increments = $this->config['field_increments'] ?? [
             'weight' => 5,
             'reps' => 1,
             'sets' => 1,
         ];
+
+        if (array_key_exists('weight', $increments)) {
+            $increments['weight'] = $this->unitResolver()->getWeightIncrement($user);
+        }
+
+        return $increments;
     }
     
     /**
@@ -723,4 +741,11 @@ abstract class BaseExerciseType implements ExerciseTypeInterface
         ];
     }
 
+    /**
+     * Get the UnitResolver service instance.
+     */
+    protected function unitResolver(): \App\Services\UnitResolver
+    {
+        return app(\App\Services\UnitResolver::class);
+    }
 }
