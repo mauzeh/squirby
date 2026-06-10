@@ -12,11 +12,19 @@ class OneRepMaxChartGenerator implements ChartGeneratorInterface
         $unitResolver = app(\App\Services\UnitResolver::class);
         $preferredUnit = $unitResolver->getPreferredWeightUnit(auth()->user());
 
+        $getLoggedUnit = function ($liftLog) {
+            if (isset($liftLog->liftSets) && ($liftLog->liftSets instanceof \Illuminate\Support\Collection || is_array($liftLog->liftSets)) && count($liftLog->liftSets) > 0) {
+                $firstSet = is_array($liftLog->liftSets) ? $liftLog->liftSets[0] : $liftLog->liftSets->first();
+                return $firstSet->unit ?? 'lbs';
+            }
+            return $liftLog->unit ?? 'lbs';
+        };
+
         $bestLiftLogsPerDay = $liftLogs->groupBy(function ($liftLog) {
             return $liftLog->logged_at->format('Y-m-d');
-        })->map(function ($logsOnDay) use ($unitResolver, $preferredUnit) {
-            return $logsOnDay->sortByDesc(function ($liftLog) use ($unitResolver, $preferredUnit) {
-                $loggedUnit = $liftLog->liftSets->first()->unit ?? 'lbs';
+        })->map(function ($logsOnDay) use ($unitResolver, $preferredUnit, $getLoggedUnit) {
+            return $logsOnDay->sortByDesc(function ($liftLog) use ($unitResolver, $preferredUnit, $getLoggedUnit) {
+                $loggedUnit = $getLoggedUnit($liftLog);
                 return $unitResolver->convert($liftLog->best_one_rep_max, $loggedUnit, $preferredUnit);
             })->first();
         });
@@ -26,8 +34,8 @@ class OneRepMaxChartGenerator implements ChartGeneratorInterface
                 // Exclude logs with 0 or null 1RM (e.g., high-rep sets only)
                 return $liftLog->best_one_rep_max > 0;
             })
-            ->map(function ($liftLog) use ($unitResolver, $preferredUnit) {
-                $loggedUnit = $liftLog->liftSets->first()->unit ?? 'lbs';
+            ->map(function ($liftLog) use ($unitResolver, $preferredUnit, $getLoggedUnit) {
+                $loggedUnit = $getLoggedUnit($liftLog);
                 $normalized1RM = $unitResolver->convert($liftLog->best_one_rep_max, $loggedUnit, $preferredUnit);
                 return [
                     'x' => $liftLog->logged_at->toIso8601String(),

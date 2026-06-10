@@ -82,27 +82,31 @@ class PRInformationService
             return [];
         }
         
+        $user = User::find($userId);
+        $unitResolver = app(\App\Services\UnitResolver::class);
+        $preferredUnit = $unitResolver->getPreferredWeightUnit($user);
+        
         $records = [];
         
         // Get 1RM PR
-        $oneRMResult = $this->getMax1RMWithLog($previousLogs);
+        $oneRMResult = $this->getMax1RMWithLog($previousLogs, $preferredUnit);
         if ($oneRMResult['value'] > 0) {
             $records[] = [
                 'type' => 'one_rm',
                 'label' => '1RM',
-                'value' => number_format($oneRMResult['value'], 1) . ' lbs',
+                'value' => $unitResolver->format($oneRMResult['value'], $preferredUnit),
                 'date' => $oneRMResult['date'],
                 'lift_log_id' => $oneRMResult['lift_log_id']
             ];
         }
         
         // Get Volume PR
-        $volumeResult = $this->getMaxVolumeWithLog($previousLogs);
+        $volumeResult = $this->getMaxVolumeWithLog($previousLogs, $preferredUnit);
         if ($volumeResult['value'] > 0) {
             $records[] = [
                 'type' => 'volume',
                 'label' => 'Volume',
-                'value' => number_format($volumeResult['value'], 0) . ' lbs',
+                'value' => $unitResolver->format($volumeResult['value'], $preferredUnit),
                 'date' => $volumeResult['date'],
                 'lift_log_id' => $volumeResult['lift_log_id']
             ];
@@ -110,12 +114,12 @@ class PRInformationService
         
         // Get rep-specific PRs (for reps 1-10)
         for ($reps = 1; $reps <= 10; $reps++) {
-            $repResult = $this->getMaxWeightForRepsWithLog($previousLogs, $reps);
+            $repResult = $this->getMaxWeightForRepsWithLog($previousLogs, $reps, $preferredUnit);
             if ($repResult['weight'] > 0) {
                 $records[] = [
                     'type' => 'rep_specific',
                     'label' => $reps . ' Rep' . ($reps > 1 ? 's' : ''),
-                    'value' => number_format($repResult['weight'], 1) . ' lbs',
+                    'value' => $unitResolver->format($repResult['weight'], $preferredUnit),
                     'date' => $repResult['date'],
                     'lift_log_id' => $repResult['lift_log_id']
                 ];
@@ -129,13 +133,15 @@ class PRInformationService
      * Get maximum 1RM from previous logs with lift log ID
      * 
      * @param \Illuminate\Database\Eloquent\Collection $previousLogs
+     * @param string $preferredUnit
      * @return array ['value' => float, 'date' => string, 'lift_log_id' => int]
      */
-    private function getMax1RMWithLog($previousLogs): array
+    private function getMax1RMWithLog($previousLogs, string $preferredUnit): array
     {
         $max1RM = 0;
         $maxDate = null;
         $maxLiftLogId = null;
+        $unitResolver = app(\App\Services\UnitResolver::class);
         
         foreach ($previousLogs as $log) {
             $strategy = $log->exercise->getTypeStrategy();
@@ -143,7 +149,9 @@ class PRInformationService
             foreach ($log->liftSets as $set) {
                 if ($set->weight > 0 && $set->reps > 0) {
                     try {
-                        $estimated1RM = $strategy->calculate1RM($set->weight, $set->reps, $log);
+                        $loggedUnit = $set->unit ?? 'lbs';
+                        $weightInPreferredUnit = $unitResolver->convert($set->weight, $loggedUnit, $preferredUnit);
+                        $estimated1RM = $strategy->calculate1RM($weightInPreferredUnit, $set->reps, $log);
                         if ($estimated1RM > $max1RM) {
                             $max1RM = $estimated1RM;
                             $maxDate = $log->logged_at->format('M j, Y');
@@ -167,20 +175,24 @@ class PRInformationService
      * Get maximum volume from previous logs with lift log ID
      * 
      * @param \Illuminate\Database\Eloquent\Collection $previousLogs
+     * @param string $preferredUnit
      * @return array ['value' => float, 'date' => string, 'lift_log_id' => int]
      */
-    private function getMaxVolumeWithLog($previousLogs): array
+    private function getMaxVolumeWithLog($previousLogs, string $preferredUnit): array
     {
         $maxVolume = 0;
         $maxDate = null;
         $maxLiftLogId = null;
+        $unitResolver = app(\App\Services\UnitResolver::class);
         
         foreach ($previousLogs as $log) {
             $totalVolume = 0;
             
             foreach ($log->liftSets as $set) {
                 if ($set->weight > 0 && $set->reps > 0) {
-                    $totalVolume += ($set->weight * $set->reps);
+                    $loggedUnit = $set->unit ?? 'lbs';
+                    $weightInPreferredUnit = $unitResolver->convert($set->weight, $loggedUnit, $preferredUnit);
+                    $totalVolume += ($weightInPreferredUnit * $set->reps);
                 }
             }
             
@@ -203,18 +215,22 @@ class PRInformationService
      * 
      * @param \Illuminate\Database\Eloquent\Collection $previousLogs
      * @param int $targetReps
+     * @param string $preferredUnit
      * @return array ['weight' => float, 'date' => string, 'lift_log_id' => int]
      */
-    private function getMaxWeightForRepsWithLog($previousLogs, int $targetReps): array
+    private function getMaxWeightForRepsWithLog($previousLogs, int $targetReps, string $preferredUnit): array
     {
         $maxWeight = 0;
         $maxDate = null;
         $maxLiftLogId = null;
+        $unitResolver = app(\App\Services\UnitResolver::class);
         
         foreach ($previousLogs as $log) {
             foreach ($log->liftSets as $set) {
-                if ($set->reps === $targetReps && $set->weight > $maxWeight) {
-                    $maxWeight = $set->weight;
+                $loggedUnit = $set->unit ?? 'lbs';
+                $weightInPreferredUnit = $unitResolver->convert($set->weight, $loggedUnit, $preferredUnit);
+                if ($set->reps === $targetReps && $weightInPreferredUnit > $maxWeight) {
+                    $maxWeight = $weightInPreferredUnit;
                     $maxDate = $log->logged_at->format('M j, Y');
                     $maxLiftLogId = $log->id;
                 }

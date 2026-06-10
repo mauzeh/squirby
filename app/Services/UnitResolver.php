@@ -43,7 +43,10 @@ class UnitResolver
         $unitLower = strtolower($unit);
 
         if ($unitLower === 'lbs') {
-            return number_format(round($value), 0) . ' lbs';
+            if (fmod($value, 1.0) == 0.0) {
+                return number_format($value, 0) . ' lbs';
+            }
+            return number_format($value, 1) . ' lbs';
         }
 
         if ($unitLower === 'kg') {

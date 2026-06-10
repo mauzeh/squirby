@@ -672,7 +672,10 @@ class FeedController extends Controller
                 })->first();
                 
                 if ($bestSet) {
-                    $weight = $bestSet->weight ? number_format($bestSet->weight) . ' lbs' : '';
+                    $unitResolver = app(\App\Services\UnitResolver::class);
+                    $loggedUnit = $bestSet->unit ?? 'lbs';
+                    $creator = $pr->user;
+                    $weight = $bestSet->weight ? $unitResolver->formatForUser($bestSet->weight, $loggedUnit, $creator) : '';
                     $reps = $bestSet->reps ? $bestSet->reps . ' reps' : '';
                     
                     if ($weight && $reps) {

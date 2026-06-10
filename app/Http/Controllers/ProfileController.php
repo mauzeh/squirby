@@ -103,14 +103,14 @@ class ProfileController extends Controller
             'show_global_exercises' => ['nullable', 'boolean'],
             'show_extra_weight' => ['nullable', 'boolean'],
             'prefill_suggested_values' => ['nullable', 'boolean'],
-            'weight_unit' => ['required', 'in:lbs,kg'],
+            'weight_unit' => ['sometimes', 'required', 'in:lbs,kg'],
         ]);
 
         $request->user()->update([
             'show_global_exercises' => $request->boolean('show_global_exercises'),
             'show_extra_weight' => $request->boolean('show_extra_weight'),
             'prefill_suggested_values' => $request->boolean('prefill_suggested_values'),
-            'weight_unit' => $request->input('weight_unit'),
+            'weight_unit' => $request->input('weight_unit', $request->user()->weight_unit),
         ]);
 
         return Redirect::route('profile.edit')->with('success', 'Preferences updated successfully.');

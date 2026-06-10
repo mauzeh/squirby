@@ -38,7 +38,8 @@ class BodyLogService extends MobileEntryBaseService
                 continue;
             }
 
-            $valueText = $log->value . ' ' . $log->measurementType->default_unit;
+            $unit = $log->unit ?: $log->measurementType->default_unit;
+            $valueText = $log->value . ' ' . $unit;
 
             $deleteParams = ['redirect_to' => 'mobile-entry-measurements'];
             // Only include date if we're NOT viewing today
@@ -223,7 +224,7 @@ class BodyLogService extends MobileEntryBaseService
         
         return [
             'value' => $lastLog->value,
-            'unit' => $lastLog->measurementType->default_unit,
+            'unit' => $lastLog->unit ?: $lastLog->measurementType->default_unit,
             'date' => $lastLog->logged_at->format('M j'),
             'comments' => $lastLog->comments
         ];
@@ -243,10 +244,11 @@ class BodyLogService extends MobileEntryBaseService
         
         // If already logged today, show current value
         if ($todayLog) {
+            $unit = $todayLog->unit ?: $measurementType->default_unit;
             $messages[] = [
                 'type' => 'success',
                 'prefix' => 'Today\'s value:',
-                'text' => $todayLog->value . ' ' . $measurementType->default_unit
+                'text' => $todayLog->value . ' ' . $unit
             ];
         }
         

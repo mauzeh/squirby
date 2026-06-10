@@ -209,44 +209,83 @@ class AnalyzeLiftLogs extends Command
         $this->info('4. EXERCISE VOLUME ANALYSIS (Top 10)');
         $this->line(str_repeat('-', 50));
 
-        $query = DB::table('lift_logs')
-            ->join('lift_sets', 'lift_logs.id', '=', 'lift_sets.lift_log_id')
-            ->join('exercises', 'lift_logs.exercise_id', '=', 'exercises.id')
-            ->join('users', 'lift_logs.user_id', '=', 'users.id')
-            ->select(
-                'users.name as user_name',
-                'exercises.title as exercise_title',
-                DB::raw('COUNT(lift_sets.id) as total_sets'),
-                DB::raw('SUM(lift_sets.reps) as total_reps'),
-                DB::raw('AVG(lift_sets.weight) as avg_weight'),
-                DB::raw('MAX(lift_sets.weight) as max_weight'),
-                DB::raw('SUM(lift_sets.weight * lift_sets.reps) as total_volume')
-            )
-            ->groupBy('users.id', 'users.name', 'exercises.id', 'exercises.title')
-            ->orderByDesc('total_volume')
-            ->limit(10);
-
+        $query = LiftLog::with(['liftSets', 'exercise', 'user']);
         if ($userId) {
-            $query->where('lift_logs.user_id', $userId);
+            $query->where('user_id', $userId);
         }
         if ($days) {
-            $query->where('lift_logs.logged_at', '>=', now()->subDays($days));
+            $query->where('logged_at', '>=', now()->subDays($days));
         }
 
-        $volumeByUser = $query->get();
+        $liftLogs = $query->get();
+        $unitResolver = app(\App\Services\UnitResolver::class);
 
-        $tableData = $volumeByUser->map(function ($record, $idx) {
-            return [
-                $idx + 1,
-                $record->user_name,
-                $record->exercise_title,
-                number_format($record->total_sets),
-                number_format($record->total_reps),
-                number_format($record->avg_weight, 1) . ' lbs',
-                number_format($record->max_weight, 1) . ' lbs',
-                number_format($record->total_volume, 0) . ' lbs',
+        // Group by user and exercise
+        $volumeData = [];
+        foreach ($liftLogs as $log) {
+            $user = $log->user;
+            if (!$user) {
+                continue;
+            }
+            
+            $exercise = $log->exercise;
+            if (!$exercise) {
+                continue;
+            }
+
+            $key = $user->id . '_' . $exercise->id;
+            
+            if (!isset($volumeData[$key])) {
+                $volumeData[$key] = [
+                    'user_name' => $user->name,
+                    'exercise_title' => $exercise->title,
+                    'user' => $user,
+                    'total_sets' => 0,
+                    'total_reps' => 0,
+                    'weights' => [],
+                    'total_volume' => 0.0,
+                ];
+            }
+
+            $preferredUnit = $unitResolver->getPreferredWeightUnit($user);
+
+            foreach ($log->liftSets as $set) {
+                if ($set->weight > 0 && $set->reps > 0) {
+                    $loggedUnit = $set->unit ?? 'lbs';
+                    $weightInPreferredUnit = $unitResolver->convert($set->weight, $loggedUnit, $preferredUnit);
+                    
+                    $volumeData[$key]['total_sets']++;
+                    $volumeData[$key]['total_reps'] += $set->reps;
+                    $volumeData[$key]['weights'][] = $weightInPreferredUnit;
+                    $volumeData[$key]['total_volume'] += ($weightInPreferredUnit * $set->reps);
+                }
+            }
+        }
+
+        // Sort by total volume descending and take 10
+        $topVolume = collect($volumeData)
+            ->filter(fn($data) => !empty($data['weights']))
+            ->sortByDesc('total_volume')
+            ->take(10);
+
+        $tableData = [];
+        $idx = 1;
+        foreach ($topVolume as $record) {
+            $preferredUnit = $unitResolver->getPreferredWeightUnit($record['user']);
+            $avgWeight = count($record['weights']) > 0 ? array_sum($record['weights']) / count($record['weights']) : 0;
+            $maxWeight = count($record['weights']) > 0 ? max($record['weights']) : 0;
+
+            $tableData[] = [
+                $idx++,
+                $record['user_name'],
+                $record['exercise_title'],
+                number_format($record['total_sets']),
+                number_format($record['total_reps']),
+                $unitResolver->format($avgWeight, $preferredUnit),
+                $unitResolver->format($maxWeight, $preferredUnit),
+                $unitResolver->format($record['total_volume'], $preferredUnit),
             ];
-        })->toArray();
+        }
 
         $this->table(
             ['#', 'User', 'Exercise', 'Sets', 'Reps', 'Avg Weight', 'Max Weight', 'Total Volume'],
@@ -317,39 +356,75 @@ class AnalyzeLiftLogs extends Command
         }
 
         $topExercises = $query->get();
+        $unitResolver = app(\App\Services\UnitResolver::class);
 
         foreach ($topExercises as $exercise) {
             $this->comment("Exercise: {$exercise->title}");
 
-            $progressionQuery = DB::table('lift_logs')
-                ->join('lift_sets', 'lift_logs.id', '=', 'lift_sets.lift_log_id')
-                ->join('users', 'lift_logs.user_id', '=', 'users.id')
-                ->where('lift_logs.exercise_id', $exercise->id)
-                ->select(
-                    'users.name',
-                    DB::raw('MIN(lift_sets.weight) as starting_weight'),
-                    DB::raw('MAX(lift_sets.weight) as current_weight'),
-                    DB::raw('MAX(lift_sets.weight) - MIN(lift_sets.weight) as weight_gain')
-                )
-                ->groupBy('users.id', 'users.name')
-                ->having('weight_gain', '>', 0)
-                ->orderByDesc('weight_gain');
-
+            // Fetch all logs for this exercise with sets and user
+            $logsQuery = LiftLog::where('exercise_id', $exercise->id)
+                ->with(['liftSets', 'user']);
+            
             if ($userId) {
-                $progressionQuery->where('users.id', $userId);
+                $logsQuery->where('user_id', $userId);
             }
             if ($days) {
-                $progressionQuery->where('lift_logs.logged_at', '>=', now()->subDays($days));
+                $logsQuery->where('logged_at', '>=', now()->subDays($days));
             }
 
-            $progression = $progressionQuery->get();
+            // Group by user to calculate progression per user
+            $userLogs = $logsQuery->get()->groupBy('user_id');
+
+            $progression = [];
+
+            foreach ($userLogs as $uId => $logs) {
+                $user = $logs->first()->user;
+                if (!$user) {
+                    continue;
+                }
+
+                $preferredUnit = $unitResolver->getPreferredWeightUnit($user);
+
+                // Collect all weights in chronological order
+                $chronologicalLogs = $logs->sortBy('logged_at');
+                
+                $weights = [];
+                foreach ($chronologicalLogs as $log) {
+                    foreach ($log->liftSets as $set) {
+                        if ($set->weight > 0) {
+                            $loggedUnit = $set->unit ?? 'lbs';
+                            $weights[] = $unitResolver->convert($set->weight, $loggedUnit, $preferredUnit);
+                        }
+                    }
+                }
+
+                if (count($weights) >= 2) {
+                    $startingWeight = $weights[0];
+                    $currentWeight = end($weights);
+                    $weightGain = $currentWeight - $startingWeight;
+
+                    if ($weightGain > 0) {
+                        $progression[] = [
+                            'name' => $user->name,
+                            'starting_weight' => $startingWeight,
+                            'current_weight' => $currentWeight,
+                            'weight_gain' => $weightGain,
+                            'unit' => $preferredUnit,
+                        ];
+                    }
+                }
+            }
+
+            // Sort progression by weight gain descending
+            $progression = collect($progression)->sortByDesc('weight_gain');
 
             if ($progression->count() > 0) {
                 foreach ($progression as $userProgress) {
-                    $this->line("  {$userProgress->name}: " .
-                        number_format($userProgress->starting_weight, 1) . " lbs → " .
-                        number_format($userProgress->current_weight, 1) . " lbs " .
-                        "(+" . number_format($userProgress->weight_gain, 1) . " lbs)");
+                    $unit = $userProgress['unit'];
+                    $this->line("  {$userProgress['name']}: " .
+                        $unitResolver->format($userProgress['starting_weight'], $unit) . " → " .
+                        $unitResolver->format($userProgress['current_weight'], $unit) . " " .
+                        "(+" . $unitResolver->format($userProgress['weight_gain'], $unit) . ")");
                 }
             } else {
                 $this->line("  No progression data available");
@@ -372,19 +447,29 @@ class AnalyzeLiftLogs extends Command
         }
 
         $recentWorkouts = $query->get();
+        $unitResolver = app(\App\Services\UnitResolver::class);
 
-        $tableData = $recentWorkouts->map(function ($log, $idx) {
+        $tableData = $recentWorkouts->map(function ($log, $idx) use ($unitResolver) {
             $firstSet = $log->liftSets->first();
-            $weight = $firstSet ? number_format($firstSet->weight, 1) . ' lbs' : 'N/A';
-            $reps = $firstSet ? $firstSet->reps : 'N/A';
+            $user = $log->user;
+            
+            if ($firstSet && $user) {
+                $preferredUnit = $unitResolver->getPreferredWeightUnit($user);
+                $loggedUnit = $firstSet->unit ?? 'lbs';
+                $weightFormatted = $unitResolver->formatForUser($firstSet->weight, $loggedUnit, $user);
+                $reps = $firstSet->reps;
+                $weightRepsDisplay = "{$weightFormatted} x {$reps}";
+            } else {
+                $weightRepsDisplay = 'N/A';
+            }
 
             return [
                 $idx + 1,
-                $log->user->name,
-                $log->exercise->title,
+                $log->user->name ?? 'N/A',
+                $log->exercise->title ?? 'N/A',
                 $log->logged_at->format('M d, Y H:i'),
                 $log->liftSets->count(),
-                "{$weight} x {$reps}",
+                $weightRepsDisplay,
             ];
         })->toArray();
 

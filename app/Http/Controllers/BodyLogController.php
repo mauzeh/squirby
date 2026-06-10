@@ -181,7 +181,8 @@ class BodyLogController extends Controller
             ->spacedRows();
         
         foreach ($bodyLogs as $bodyLog) {
-            $valueText = $bodyLog->value . ' ' . $bodyLog->measurementType->default_unit;
+            $unit = $bodyLog->unit ?: $bodyLog->measurementType->default_unit;
+            $valueText = $bodyLog->value . ' ' . $unit;
             
             $tableBuilder->row($bodyLog->id, $measurementType->name, null, $bodyLog->comments)
                 ->badge($valueText, 'info', true)

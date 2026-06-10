@@ -86,10 +86,10 @@ class UnitResolverTest extends TestCase
     #[Test]
     public function it_formats_lbs_and_kg_correctly(): void
     {
-        // lbs has 0 decimals
+        // lbs has 0 decimals for whole numbers, but shows decimals for fractional values
         $this->assertEquals('100 lbs', $this->resolver->format(100.0, 'lbs'));
-        $this->assertEquals('100 lbs', $this->resolver->format(100.4, 'lbs'));
-        $this->assertEquals('101 lbs', $this->resolver->format(100.5, 'lbs'));
+        $this->assertEquals('100.4 lbs', $this->resolver->format(100.4, 'lbs'));
+        $this->assertEquals('100.5 lbs', $this->resolver->format(100.5, 'lbs'));
 
         // kg has 0 decimals for whole numbers, 1 decimal for .5
         $this->assertEquals('60 kg', $this->resolver->format(60.0, 'kg'));
