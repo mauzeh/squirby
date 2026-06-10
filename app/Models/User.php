@@ -19,7 +19,7 @@ class User extends Authenticatable
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->logOnly(['name', 'email', 'show_global_exercises', 'show_extra_weight', 'prefill_suggested_values'])
+            ->logOnly(['name', 'email', 'show_global_exercises', 'show_extra_weight', 'prefill_suggested_values', 'weight_unit'])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }
@@ -37,6 +37,7 @@ class User extends Authenticatable
         'show_global_exercises',
         'show_extra_weight',
         'prefill_suggested_values',
+        'weight_unit',
         'profile_photo_path',
         'connection_token',
         'connection_token_expires_at',
@@ -65,6 +66,7 @@ class User extends Authenticatable
             'show_global_exercises' => 'boolean',
             'show_extra_weight' => 'boolean',
             'prefill_suggested_values' => 'boolean',
+            'weight_unit' => 'string',
             'deleted_at' => 'datetime',
             'connection_token_expires_at' => 'datetime',
         ];

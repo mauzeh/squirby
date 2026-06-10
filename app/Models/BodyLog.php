@@ -15,7 +15,7 @@ class BodyLog extends Model
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->logOnly(['measurement_type_id', 'value', 'logged_at', 'comments', 'user_id'])
+            ->logOnly(['measurement_type_id', 'value', 'unit', 'logged_at', 'comments', 'user_id'])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }
@@ -26,6 +26,7 @@ class BodyLog extends Model
     protected $fillable = [
         'measurement_type_id',
         'value',
+        'unit',
         'logged_at',
         'comments',
         'user_id',
@@ -33,6 +34,7 @@ class BodyLog extends Model
 
     protected $casts = [
         'logged_at' => 'datetime',
+        'unit' => 'string',
     ];
 
     public function measurementType()

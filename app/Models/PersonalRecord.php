@@ -17,6 +17,7 @@ class PersonalRecord extends Model
         'pr_type',
         'rep_count',
         'weight',
+        'unit',
         'value',
         'previous_pr_id',
         'previous_value',
@@ -27,6 +28,7 @@ class PersonalRecord extends Model
         'value' => 'decimal:2',
         'previous_value' => 'decimal:2',
         'weight' => 'decimal:2',
+        'unit' => 'string',
         'achieved_at' => 'datetime',
     ];
 
