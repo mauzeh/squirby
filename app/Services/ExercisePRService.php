@@ -242,9 +242,6 @@ class ExercisePRService
     {
         $strategy = $exercise->getTypeStrategy();
         
-        $unitResolver = app(\App\Services\UnitResolver::class);
-        $preferredUnit = $unitResolver->getPreferredWeightUnit($user ?? auth()->user());
-        
         // Build columns from PR data
         $columns = [];
         $isEstimated = false;
@@ -257,7 +254,7 @@ class ExercisePRService
                 $oneRepMax = ($reps === 1) ? $weight : $weight * (1 + (0.0333 * $reps));
                 
                 $columns[] = [
-                    'label' => "1 × {$reps} ({$preferredUnit})",
+                    'label' => "1 × {$reps}",
                     'one_rep_max' => $oneRepMax,
                     'is_estimated' => $prData[$key]['is_estimated'] ?? false,
                 ];
@@ -267,7 +264,7 @@ class ExercisePRService
         // If no columns from actual PRs, use estimated 1RM
         if (empty($columns) && $estimated1RM !== null) {
             $columns[] = [
-                'label' => "Est. 1RM ({$preferredUnit})",
+                'label' => "Est. 1RM",
                 'one_rep_max' => $estimated1RM['weight'],
                 'is_estimated' => true,
             ];
