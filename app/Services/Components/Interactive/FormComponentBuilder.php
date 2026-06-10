@@ -146,6 +146,33 @@ class FormComponentBuilder
         return $this;
     }
     
+    /**
+     * Add a segmented control field (horizontal switch)
+     */
+    public function segmentedField(string $name, string $label, array $options, mixed $defaultValue): self
+    {
+        $field = [
+            'id' => $this->data['id'] . '-' . $name,
+            'name' => $name,
+            'label' => $label,
+            'type' => 'segmented',
+            'defaultValue' => $defaultValue,
+            'options' => $options,
+            'ariaLabels' => [
+                'field' => 'Select ' . strtolower($label),
+            ],
+        ];
+
+        if ($this->currentSection !== null && !empty($this->data['sections'])) {
+            $lastSectionIndex = count($this->data['sections']) - 1;
+            $this->data['sections'][$lastSectionIndex]['fields'][] = $field;
+        } else {
+            $this->data['numericFields'][] = $field;
+        }
+
+        return $this;
+    }
+    
     public function textField(string $name, string $label, string $defaultValue = '', string $placeholder = ''): self
     {
         $field = [

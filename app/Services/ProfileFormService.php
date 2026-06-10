@@ -113,7 +113,7 @@ class ProfileFormService
                 old('prefill_suggested_values', $user->prefill_suggested_values ?? true),
                 'When enabled, the lift log form will prefill with AI-suggested weight, reps, and sets based on your training progression. When disabled, the form will prefill with values from your last workout only.'
             )
-            ->selectField(
+            ->segmentedField(
                 'weight_unit',
                 'Preferred Weight Unit',
                 [

@@ -60,8 +60,30 @@
     </div>
 @else
 <div class="form-mobile-group">
-    <label for="{{ $field['id'] }}" class="form-mobile-label">{{ $field['label'] }}</label>
-    @if(isset($field['type']) && $field['type'] === 'select')
+    @if(isset($field['type']) && $field['type'] === 'segmented')
+        <span class="form-mobile-label">{{ $field['label'] }}</span>
+    @else
+        <label for="{{ $field['id'] }}" class="form-mobile-label">{{ $field['label'] }}</label>
+    @endif
+
+    @if(isset($field['type']) && $field['type'] === 'segmented')
+        <div class="segmented-control" id="{{ $field['id'] }}">
+            @foreach($field['options'] as $option)
+                <input 
+                    type="radio" 
+                    name="{{ $field['name'] }}" 
+                    id="{{ $field['id'] }}-{{ $option['value'] }}" 
+                    value="{{ $option['value'] }}" 
+                    class="segmented-control-input"
+                    {{ old($field['name'], $field['defaultValue']) == $option['value'] ? 'checked' : '' }}
+                />
+                <label for="{{ $field['id'] }}-{{ $option['value'] }}" class="segmented-control-label">
+                    {{ $option['label'] }}
+                </label>
+            @endforeach
+            <div class="segmented-control-switch option-count-{{ count($field['options']) }}"></div>
+        </div>
+    @elseif(isset($field['type']) && $field['type'] === 'select')
         <select id="{{ $field['id'] }}" name="{{ $field['name'] }}" class="form-select" aria-label="{{ $field['ariaLabels']['field'] }}">
             @foreach($field['options'] as $option)
                 <option value="{{ $option['value'] }}" {{ old($field['name'], $field['defaultValue']) == $option['value'] ? 'selected' : '' }}>
