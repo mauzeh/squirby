@@ -9,10 +9,16 @@ class OneRepMaxChartGenerator implements ChartGeneratorInterface
     use HasTrendLine;
     public function generate(Collection $liftLogs): array
     {
+        $unitResolver = app(\App\Services\UnitResolver::class);
+        $preferredUnit = $unitResolver->getPreferredWeightUnit(auth()->user());
+
         $bestLiftLogsPerDay = $liftLogs->groupBy(function ($liftLog) {
             return $liftLog->logged_at->format('Y-m-d');
-        })->map(function ($logsOnDay) {
-            return $logsOnDay->sortByDesc('best_one_rep_max')->first();
+        })->map(function ($logsOnDay) use ($unitResolver, $preferredUnit) {
+            return $logsOnDay->sortByDesc(function ($liftLog) use ($unitResolver, $preferredUnit) {
+                $loggedUnit = $liftLog->liftSets->first()->unit ?? 'lbs';
+                return $unitResolver->convert($liftLog->best_one_rep_max, $loggedUnit, $preferredUnit);
+            })->first();
         });
 
         $dataPoints = $bestLiftLogsPerDay
@@ -20,10 +26,12 @@ class OneRepMaxChartGenerator implements ChartGeneratorInterface
                 // Exclude logs with 0 or null 1RM (e.g., high-rep sets only)
                 return $liftLog->best_one_rep_max > 0;
             })
-            ->map(function ($liftLog) {
+            ->map(function ($liftLog) use ($unitResolver, $preferredUnit) {
+                $loggedUnit = $liftLog->liftSets->first()->unit ?? 'lbs';
+                $normalized1RM = $unitResolver->convert($liftLog->best_one_rep_max, $loggedUnit, $preferredUnit);
                 return [
                     'x' => $liftLog->logged_at->toIso8601String(),
-                    'y' => $liftLog->best_one_rep_max,
+                    'y' => $normalized1RM,
                 ];
             })->values()->toArray();
 

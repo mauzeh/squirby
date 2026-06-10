@@ -38,7 +38,16 @@ class LinearProgression implements ProgressionModel
 
         $closestLog = $this->findClosestLiftLog($userId, $exerciseId, $recentLiftLogs);
 
-        $lastWeight = $closestLog ? $closestLog->display_weight : null;
+        $user = \App\Models\User::find($userId);
+        $unitResolver = app(\App\Services\UnitResolver::class);
+        $preferredUnit = $unitResolver->getPreferredWeightUnit($user);
+
+        $lastWeight = null;
+        if ($closestLog) {
+            $firstSet = $closestLog->liftSets->first();
+            $loggedUnit = $firstSet->unit ?? 'lbs';
+            $lastWeight = $unitResolver->convert($closestLog->display_weight, $loggedUnit, $preferredUnit);
+        }
         $targetReps = $closestLog ? $closestLog->display_reps : config('training.defaults.reps', 10);
 
         $suggestedWeight = $this->suggestNextWeight($userId, $exerciseId, $targetReps, $forDate, $recentLiftLogs);
@@ -73,16 +82,22 @@ class LinearProgression implements ProgressionModel
             return false;
         }
 
+        $user = \App\Models\User::find($userId);
+        $unitResolver = app(\App\Services\UnitResolver::class);
+        $preferredUnit = $unitResolver->getPreferredWeightUnit($user);
+
         $allEstimated1RMs = collect();
         $hasRecentHigherOrEqualReps = false;
 
         foreach ($recentLiftLogs as $liftLog) {
+            $loggedUnit = $liftLog->liftSets->first()->unit ?? 'lbs';
             foreach ($liftLog->liftSets as $liftSet) {
                 if ($liftSet->reps >= $targetReps) {
                     $hasRecentHigherOrEqualReps = true;
                 }
                 if ($liftSet->weight > 0 && $liftSet->reps > 0) {
-                    $estimated1RM = $this->oneRepMaxCalculatorService->calculateOneRepMax($liftSet->weight, $liftSet->reps);
+                    $weightInPreferredUnit = $unitResolver->convert($liftSet->weight, $loggedUnit, $preferredUnit);
+                    $estimated1RM = $this->oneRepMaxCalculatorService->calculateOneRepMax($weightInPreferredUnit, $liftSet->reps);
                     if ($estimated1RM !== null) {
                         $allEstimated1RMs->push($estimated1RM);
                     }
@@ -98,10 +113,13 @@ class LinearProgression implements ProgressionModel
         if ($current1RM !== null) {
             $predictedWeight = $this->oneRepMaxCalculatorService->getWeightFromOneRepMax($current1RM, $targetReps);
             $finalPredictedWeight = $predictedWeight;
+            
+            $resolution = $unitResolver->getWeightIncrement($user);
+            
             if ($hasRecentHigherOrEqualReps) {
-                $finalPredictedWeight += self::RESOLUTION;
+                $finalPredictedWeight += $resolution;
             }
-            return ceil($finalPredictedWeight / self::RESOLUTION) * self::RESOLUTION;
+            return ceil($finalPredictedWeight / $resolution) * $resolution;
         } else {
             return false;
         }

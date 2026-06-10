@@ -31,21 +31,25 @@ class DoubleProgression implements ProgressionModel
             return null;
         }
 
-        $lastWeight = $lastLog->display_weight;
+        $user = \App\Models\User::find($userId);
+        $unitResolver = app(\App\Services\UnitResolver::class);
+        $preferredUnit = $unitResolver->getPreferredWeightUnit($user);
+        $loggedUnit = $lastLog->liftSets->first()->unit ?? 'lbs';
+
+        $lastWeight = $unitResolver->convert($lastLog->display_weight, $loggedUnit, $preferredUnit);
         $lastReps = $lastLog->display_reps;
 
         $suggestedWeight = $lastWeight;
         $suggestedReps = $lastReps + 1;
+        
+        $resolution = $unitResolver->getWeightIncrement($user);
 
         // Handle bodyweight exercises differently
         if ($lastLog->exercise->isType('bodyweight')) {
-            // Get user to check their preference
-            $user = \App\Models\User::find($userId);
-            
             // For bodyweight exercises, only suggest added weight if user has show_extra_weight enabled
             // and they're at or above MAX_REPS
             if ($lastReps >= self::MAX_REPS && $user && $user->shouldShowExtraWeight()) {
-                $suggestedWeight = $lastWeight + self::RESOLUTION;
+                $suggestedWeight = $lastWeight + $resolution;
                 $suggestedReps = self::MIN_REPS;
             } else {
                 // For bodyweight exercises, always continue progressing reps upward
@@ -55,7 +59,7 @@ class DoubleProgression implements ProgressionModel
         } else {
             // Original logic for weighted exercises
             if ($lastReps >= self::MAX_REPS) {
-                $suggestedWeight = $lastWeight + self::RESOLUTION;
+                $suggestedWeight = $lastWeight + $resolution;
                 $suggestedReps = self::MIN_REPS;
             }
         }

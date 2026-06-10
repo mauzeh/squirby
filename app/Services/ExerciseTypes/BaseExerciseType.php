@@ -263,6 +263,7 @@ abstract class BaseExerciseType implements ExerciseTypeInterface
     {
         // Create a mock lift log for formatting
         $mockLiftLog = new \App\Models\LiftLog();
+        $mockLiftLog->user = auth()->user();
         
         // Create a mock exercise to avoid null pointer errors
         $mockExercise = new \App\Models\Exercise();
@@ -273,7 +274,8 @@ abstract class BaseExerciseType implements ExerciseTypeInterface
             (object)[
                 'weight' => $lastSession['weight'] ?? 0,
                 'reps' => $lastSession['reps'] ?? 0,
-                'band_color' => $lastSession['band_color'] ?? null
+                'band_color' => $lastSession['band_color'] ?? null,
+                'unit' => $lastSession['unit'] ?? 'lbs'
             ]
         ]));
         
@@ -425,6 +427,7 @@ abstract class BaseExerciseType implements ExerciseTypeInterface
     {
         $recentLogs = \App\Models\LiftLog::where('user_id', $userId)
             ->where('exercise_id', $exerciseId)
+            ->with(['liftSets'])
             ->orderBy('logged_at', 'desc')
             ->take(2)
             ->get();
@@ -436,7 +439,12 @@ abstract class BaseExerciseType implements ExerciseTypeInterface
         $newer = $recentLogs->first();
         $older = $recentLogs->last();
 
-        $weightChange = $newer->display_weight - $older->display_weight;
+        $unitResolver = app(\App\Services\UnitResolver::class);
+        $newerUnit = $newer->liftSets->first()->unit ?? 'lbs';
+        $olderUnit = $older->liftSets->first()->unit ?? 'lbs';
+        $olderWeightInNewerUnit = $unitResolver->convert($older->display_weight, $olderUnit, $newerUnit);
+
+        $weightChange = $newer->display_weight - $olderWeightInNewerUnit;
         $repsChange = $newer->display_reps - $older->display_reps;
 
         // DoubleProgression pattern: same weight, reps increased OR weight increased with reps reset to lower value
@@ -590,7 +598,8 @@ abstract class BaseExerciseType implements ExerciseTypeInterface
      */
     public function getDefaultWeightProgression(float $lastWeight): float
     {
-        return $lastWeight + 5;
+        $increment = $this->unitResolver()->getWeightIncrement(auth()->user());
+        return $lastWeight + $increment;
     }
     
     /**

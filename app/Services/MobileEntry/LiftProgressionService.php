@@ -59,6 +59,13 @@ class LiftProgressionService
      */
     public function prepareCreateDefaults(Exercise $exercise, ?array $lastSession, int $userId, User $user): array
     {
+        if ($lastSession) {
+            $unitResolver = app(\App\Services\UnitResolver::class);
+            $preferredUnit = $unitResolver->getPreferredWeightUnit($user);
+            $lastSession['weight'] = $unitResolver->convert($lastSession['weight'] ?? 0, $lastSession['unit'] ?? 'lbs', $preferredUnit);
+            $lastSession['unit'] = $preferredUnit;
+        }
+
         // Get progression suggestion
         $progressionSuggestion = null;
         if ($lastSession) {

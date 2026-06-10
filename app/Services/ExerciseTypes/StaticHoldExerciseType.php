@@ -355,8 +355,9 @@ class StaticHoldExerciseType extends BaseExerciseType
         
         // Add weight if present
         if (is_numeric($weight) && $weight > 0) {
-            $weightFormatted = $weight == floor($weight) ? number_format($weight, 0) : number_format($weight, 1);
-            $durationDisplay .= " +{$weightFormatted} lbs";
+            $loggedUnit = $lastSession['unit'] ?? 'lbs';
+            $weightFormatted = $this->unitResolver()->formatForUser($weight, $loggedUnit, auth()->user());
+            $durationDisplay .= " +{$weightFormatted}";
         }
         
         $setsText = $sets == 1 ? 'set' : 'sets';
