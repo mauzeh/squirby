@@ -236,4 +236,41 @@ class ProfileTest extends TestCase
 
         $response->assertSessionHasNoErrors();
     }
+
+    /** @test */
+    public function test_user_can_save_weight_unit_preference(): void
+    {
+        $user = User::factory()->create(['weight_unit' => 'lbs']);
+
+        $response = $this
+            ->actingAs($user)
+            ->patch(route('profile.update-preferences'), [
+                'weight_unit' => 'kg',
+            ]);
+
+        $response
+            ->assertSessionHasNoErrors()
+            ->assertRedirect(route('profile.edit'));
+
+        $this->assertEquals('kg', $user->fresh()->weight_unit);
+    }
+
+    /** @test */
+    public function test_user_cannot_save_invalid_weight_unit_preference(): void
+    {
+        $user = User::factory()->create(['weight_unit' => 'lbs']);
+
+        $response = $this
+            ->actingAs($user)
+            ->from(route('profile.edit'))
+            ->patch(route('profile.update-preferences'), [
+                'weight_unit' => 'invalid_unit',
+            ]);
+
+        $response
+            ->assertSessionHasErrors(['weight_unit'])
+            ->assertRedirect(route('profile.edit'));
+
+        $this->assertEquals('lbs', $user->fresh()->weight_unit);
+    }
 }
