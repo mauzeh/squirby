@@ -283,9 +283,12 @@ Track your ' . strtolower($displayName) . ' progress with this app.
         );
         
         if ($calculatorGrid) {
+            $unitResolver = app(\App\Services\UnitResolver::class);
+            $preferredUnit = $unitResolver->getPreferredWeightUnit(Auth::user());
+
             $gridTitle = $calculatorGrid['is_estimated'] 
-                ? '1-Rep Max Percentages (Estimated)' 
-                : '1-Rep Max Percentages';
+                ? "1-Rep Max Percentages (Estimated) ({$preferredUnit})" 
+                : "1-Rep Max Percentages ({$preferredUnit})";
             
             // Add info message if data is estimated
             if ($calculatorGrid['is_estimated']) {
