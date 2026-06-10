@@ -50,12 +50,15 @@ class BodyLogController extends Controller
             ->whereDate('logged_at', $date)
             ->first();
 
+        $measurementType = MeasurementType::findOrFail($request->measurement_type_id);
+
         if ($existingLog) {
             // Update existing entry
             $existingLog->update([
                 'value' => $request->value,
                 'logged_at' => $loggedAt,
                 'comments' => $request->comments,
+                'unit' => $measurementType->default_unit,
             ]);
             $successMessage = 'Measurement updated successfully.';
         } else {
@@ -66,6 +69,7 @@ class BodyLogController extends Controller
                 'logged_at' => $loggedAt,
                 'comments' => $request->comments,
                 'user_id' => auth()->id(),
+                'unit' => $measurementType->default_unit,
             ]);
             $successMessage = 'Measurement logged successfully.';
         }
@@ -103,11 +107,14 @@ class BodyLogController extends Controller
 
         $loggedAt = \Carbon\Carbon::parse($request->date)->setTimeFromTimeString($request->logged_at);
 
+        $measurementType = MeasurementType::findOrFail($request->measurement_type_id);
+
         $bodyLog->update([
             'measurement_type_id' => $request->measurement_type_id,
             'value' => $request->value,
             'logged_at' => $loggedAt,
             'comments' => $request->comments,
+            'unit' => $measurementType->default_unit,
         ]);
 
         return $this->redirectService->getRedirect(

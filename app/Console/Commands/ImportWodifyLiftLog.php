@@ -231,6 +231,7 @@ class ImportWodifyLiftLog extends Command
             LiftSet::create([
                 'lift_log_id' => $liftLog->id,
                 'weight' => $workout['weight'],
+                'unit' => 'lbs',
                 'reps' => $workout['reps']
             ]);
         }

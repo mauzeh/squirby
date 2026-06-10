@@ -159,9 +159,13 @@ class CreateLiftLogAction
             throw $e;
         }
 
+        $unitResolver = app(\App\Services\UnitResolver::class);
+        $userUnit = $unitResolver->getPreferredWeightUnit($liftLog->user);
+
         for ($i = 0; $i < $rounds; $i++) {
             $liftLog->liftSets()->create([
                 'weight' => $liftData['weight'] ?? 0,
+                'unit' => $userUnit,
                 'reps' => $liftData['reps'],
                 'time' => $liftData['time'] ?? null,
                 'notes' => $liftData['notes'],

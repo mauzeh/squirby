@@ -413,6 +413,7 @@ class ImportJsonLiftLog extends Command
                 $liftSetData = [
                     'lift_log_id' => $liftLog->id,
                     'weight' => $liftLogData['weight'],
+                    'unit' => 'lbs',
                     'reps' => $liftLogData['reps']
                 ];
 
