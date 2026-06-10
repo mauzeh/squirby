@@ -149,7 +149,7 @@ class FormComponentBuilder
     /**
      * Add a segmented control field (horizontal switch)
      */
-    public function segmentedField(string $name, string $label, array $options, mixed $defaultValue): self
+    public function segmentedField(string $name, string $label, array $options, mixed $defaultValue, ?string $description = null): self
     {
         $field = [
             'id' => $this->data['id'] . '-' . $name,
@@ -158,6 +158,7 @@ class FormComponentBuilder
             'type' => 'segmented',
             'defaultValue' => $defaultValue,
             'options' => $options,
+            'description' => $description,
             'ariaLabels' => [
                 'field' => 'Select ' . strtolower($label),
             ],

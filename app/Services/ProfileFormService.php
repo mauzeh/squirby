@@ -88,18 +88,50 @@ class ProfileFormService
     }
 
     /**
-     * Generate preferences form component
+     * Generate weight unit preference form component
      */
-    public function generatePreferencesForm(User $user): array
+    public function generateWeightUnitForm(User $user): array
     {
-        $form = C::form('preferences', 'Exercise Preferences')
+        $form = C::form('weight-unit-preferences', 'Display Units')
+            ->formAction(route('profile.update-preferences'))
+            ->hiddenField('_method', 'PATCH')
+            ->segmentedField(
+                'weight_unit',
+                false,
+                [
+                    ['value' => 'lbs', 'label' => 'Imperial (lbs)'],
+                    ['value' => 'kg', 'label' => 'Metric (kg)'],
+                ],
+                old('weight_unit', $user->weight_unit ?? 'lbs'),
+                'We will automatically convert your historical logs and personal records when displaying them, and you can switch back at any time.'
+            )
+            ->submitButton('Save Settings');
+
+        // Add error messages if validation failed
+        if ($errors = session('errors')) {
+            if ($errors->default) {
+                foreach ($errors->default->all() as $error) {
+                    $form->message('error', $error);
+                }
+            }
+        }
+
+        return $form->build();
+    }
+
+    /**
+     * Generate exercise preferences form component
+     */
+    public function generateExercisePreferencesForm(User $user): array
+    {
+        $form = C::form('exercise-preferences', 'Exercise Preferences')
             ->formAction(route('profile.update-preferences'))
             ->hiddenField('_method', 'PATCH')
             ->checkboxField(
                 'show_global_exercises',
-                'Show global exercises',
+                'Show default system exercises',
                 old('show_global_exercises', $user->show_global_exercises ?? true),
-                "When enabled, you'll see both your personal exercises and global exercises throughout the app. When disabled, only your personal exercises will be shown (except for global exercises you've already logged, which remain visible)."
+                'Includes standard built-in libraries of exercises in listings. Turn off if you only want to see your custom exercises.'
             )
             ->checkboxField(
                 'show_extra_weight',
@@ -112,15 +144,6 @@ class ProfileFormService
                 'Prefill suggested progression values',
                 old('prefill_suggested_values', $user->prefill_suggested_values ?? true),
                 'When enabled, the lift log form will prefill with AI-suggested weight, reps, and sets based on your training progression. When disabled, the form will prefill with values from your last workout only.'
-            )
-            ->segmentedField(
-                'weight_unit',
-                'Preferred Weight Unit',
-                [
-                    ['value' => 'lbs', 'label' => 'Pounds (lbs)'],
-                    ['value' => 'kg', 'label' => 'Kilograms (kg)'],
-                ],
-                old('weight_unit', $user->weight_unit ?? 'lbs')
             )
             ->submitButton('Save Preferences');
 

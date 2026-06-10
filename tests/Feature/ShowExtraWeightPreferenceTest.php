@@ -109,7 +109,7 @@ class ShowExtraWeightPreferenceTest extends TestCase
             'show_extra_weight' => true
         ]);
 
-        $response->assertRedirect(route('profile.edit'));
+        $response->assertRedirect(route('profile.edit-preferences'));
         $response->assertSessionHas('success', 'Preferences updated successfully.');
         
         $this->user->refresh();

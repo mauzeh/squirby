@@ -817,3 +817,17 @@ Login Form Mobile-Friendly Styling */
     margin: 0 0 20px 0;
     border-radius: 8px;
 }
+
+/* Mobile-only menu item adjustments (Option 3 - selective text hiding) */
+@media (max-width: 768px) {
+    .sub-navbar a.sub-nav-item.mobile-icon-only {
+        padding-left: 14px;
+        padding-right: 14px;
+    }
+    .sub-navbar a.sub-nav-item.mobile-icon-only i.menu-icon {
+        margin-right: 0 !important;
+    }
+    .sub-navbar a.sub-nav-item.mobile-icon-only .sub-nav-text {
+        display: none;
+    }
+}

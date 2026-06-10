@@ -51,7 +51,7 @@ class PrefillSuggestedValuesTest extends TestCase
             'show_extra_weight' => false,
         ]);
         
-        $response->assertRedirect(route('profile.edit'));
+        $response->assertRedirect(route('profile.edit-preferences'));
         $response->assertSessionHas('success', 'Preferences updated successfully.');
         
         $this->user->refresh();
@@ -63,7 +63,7 @@ class PrefillSuggestedValuesTest extends TestCase
     {
         $this->actingAs($this->user);
         
-        $response = $this->get(route('profile.edit'));
+        $response = $this->get(route('profile.edit-preferences'));
         
         $response->assertStatus(200);
         $response->assertSee('Prefill suggested progression values');

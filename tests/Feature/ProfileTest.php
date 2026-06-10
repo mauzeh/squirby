@@ -250,7 +250,7 @@ class ProfileTest extends TestCase
 
         $response
             ->assertSessionHasNoErrors()
-            ->assertRedirect(route('profile.edit'));
+            ->assertRedirect(route('profile.edit-preferences'));
 
         $this->assertEquals('kg', $user->fresh()->weight_unit);
     }
@@ -262,14 +262,14 @@ class ProfileTest extends TestCase
 
         $response = $this
             ->actingAs($user)
-            ->from(route('profile.edit'))
+            ->from(route('profile.edit-preferences'))
             ->patch(route('profile.update-preferences'), [
                 'weight_unit' => 'invalid_unit',
             ]);
 
         $response
             ->assertSessionHasErrors(['weight_unit'])
-            ->assertRedirect(route('profile.edit'));
+            ->assertRedirect(route('profile.edit-preferences'));
 
         $this->assertEquals('lbs', $user->fresh()->weight_unit);
     }

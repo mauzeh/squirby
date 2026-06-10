@@ -67,6 +67,11 @@
     @endif
 
     @if(isset($field['type']) && $field['type'] === 'segmented')
+        @if(isset($field['description']) && $field['description'])
+        <p style="color: var(--text-secondary); font-size: 0.9em; line-height: 1.5; margin: 0 0 12px 0;">
+            {{ $field['description'] }}
+        </p>
+        @endif
         <div class="segmented-control" id="{{ $field['id'] }}">
             @foreach($field['options'] as $option)
                 <input 

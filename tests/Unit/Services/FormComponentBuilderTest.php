@@ -18,7 +18,8 @@ class FormComponentBuilderTest extends TestCase
                     ['value' => 'opt1', 'label' => 'Option 1'],
                     ['value' => 'opt2', 'label' => 'Option 2'],
                 ],
-                'opt1'
+                'opt1',
+                'Test description'
             );
 
         $built = $form->build();
@@ -35,6 +36,7 @@ class FormComponentBuilderTest extends TestCase
         $this->assertEquals('Test Segmented Field', $field['label']);
         $this->assertEquals('segmented', $field['type']);
         $this->assertEquals('opt1', $field['defaultValue']);
+        $this->assertEquals('Test description', $field['description']);
         $this->assertCount(2, $field['options']);
     }
 }

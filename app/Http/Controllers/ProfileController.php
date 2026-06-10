@@ -40,7 +40,6 @@ class ProfileController extends Controller
         // Add form components
         $components[] = $this->profileFormService->generateProfilePhotoForm($user);
         $components[] = $this->profileFormService->generateProfileInformationForm($user);
-        $components[] = $this->profileFormService->generatePreferencesForm($user);
         $components[] = $this->profileFormService->generatePasswordForm();
         $components[] = $this->profileFormService->generateDeleteAccountForm();
 
@@ -50,6 +49,33 @@ class ProfileController extends Controller
             ]
         ]);
     }
+
+    /**
+     * Display the user's preferences form.
+     */
+    public function editPreferences(Request $request): View
+    {
+        $user = $request->user();
+        
+        $components = [
+            C::title('Preferences', 'Manage your exercise preferences and display options')->build(),
+        ];
+
+        $sessionMessages = C::messagesFromSession();
+        if ($sessionMessages) {
+            $components[] = $sessionMessages;
+        }
+
+        $components[] = $this->profileFormService->generateWeightUnitForm($user);
+        $components[] = $this->profileFormService->generateExercisePreferencesForm($user);
+
+        return view('mobile-entry.flexible', [
+            'data' => [
+                'components' => $components,
+            ]
+        ]);
+    }
+
 
     /**
      * Display the connections page.
@@ -106,14 +132,23 @@ class ProfileController extends Controller
             'weight_unit' => ['sometimes', 'required', 'in:lbs,kg'],
         ]);
 
-        $request->user()->update([
-            'show_global_exercises' => $request->boolean('show_global_exercises'),
-            'show_extra_weight' => $request->boolean('show_extra_weight'),
-            'prefill_suggested_values' => $request->boolean('prefill_suggested_values'),
-            'weight_unit' => $request->input('weight_unit', $request->user()->weight_unit),
-        ]);
+        $updateData = [];
 
-        return Redirect::route('profile.edit')->with('success', 'Preferences updated successfully.');
+        if ($request->has('weight_unit')) {
+            $updateData['weight_unit'] = $request->input('weight_unit');
+        }
+
+        if ($request->has('show_global_exercises') || $request->has('show_extra_weight') || $request->has('prefill_suggested_values')) {
+            $updateData['show_global_exercises'] = $request->boolean('show_global_exercises');
+            $updateData['show_extra_weight'] = $request->boolean('show_extra_weight');
+            $updateData['prefill_suggested_values'] = $request->boolean('prefill_suggested_values');
+        }
+
+        if (!empty($updateData)) {
+            $request->user()->update($updateData);
+        }
+
+        return Redirect::route('profile.edit-preferences')->with('success', 'Preferences updated successfully.');
     }
 
     /**

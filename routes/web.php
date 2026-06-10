@@ -32,6 +32,7 @@ Route::get('/', function () {
 Route::middleware('auth')->group(function () {
     // Breeze Profile Routes
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::get('/profile/preferences', [ProfileController::class, 'editPreferences'])->name('profile.edit-preferences');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::patch('/profile/preferences', [ProfileController::class, 'updatePreferences'])->name('profile.update-preferences');
     Route::post('/profile/photo', [ProfileController::class, 'updatePhoto'])->name('profile.update-photo');

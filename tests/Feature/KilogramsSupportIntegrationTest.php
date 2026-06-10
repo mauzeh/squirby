@@ -63,7 +63,7 @@ class KilogramsSupportIntegrationTest extends TestCase
             'weight_unit' => 'kg',
             'prefill_suggested_values' => true,
         ]);
-        $response->assertRedirect(route('profile.edit'));
+        $response->assertRedirect(route('profile.edit-preferences'));
         $this->user->refresh();
         $this->assertEquals('kg', $this->user->weight_unit);
         $this->actingAs($this->user);
