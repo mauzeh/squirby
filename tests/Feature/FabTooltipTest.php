@@ -11,12 +11,13 @@ class FabTooltipTest extends TestCase
     use RefreshDatabase;
 
     protected User $user;
+
     protected User $otherUser;
 
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         $this->user = User::factory()->create();
         $this->otherUser = User::factory()->create();
     }
@@ -24,6 +25,11 @@ class FabTooltipTest extends TestCase
     /** @test */
     public function it_shows_fab_tooltip_on_lifts_page_without_connections()
     {
+        \App\Models\PersonalRecord::factory()->create([
+            'user_id' => $this->user->id,
+            'achieved_at' => now(),
+        ]);
+
         $response = $this->actingAs($this->user)->get(route('mobile-entry.lifts'));
 
         $response->assertStatus(200);
@@ -33,6 +39,11 @@ class FabTooltipTest extends TestCase
     /** @test */
     public function it_hides_fab_tooltip_on_lifts_page_with_connections()
     {
+        \App\Models\PersonalRecord::factory()->create([
+            'user_id' => $this->user->id,
+            'achieved_at' => now(),
+        ]);
+
         $this->user->follow($this->otherUser);
 
         $response = $this->actingAs($this->user)->get(route('mobile-entry.lifts'));
@@ -84,6 +95,11 @@ class FabTooltipTest extends TestCase
     /** @test */
     public function it_hides_fab_tooltip_when_user_has_followers_but_not_following()
     {
+        \App\Models\PersonalRecord::factory()->create([
+            'user_id' => $this->user->id,
+            'achieved_at' => now(),
+        ]);
+
         // Someone follows the user, but user isn't following anyone
         $this->otherUser->follow($this->user);
 

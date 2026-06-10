@@ -14,14 +14,14 @@ class ComponentAssembler
     public function __construct(
         private FabService $fabService
     ) {}
-    
+
     /**
      * Assemble all components for a mobile entry page
-     * 
-     * @param string $entryType Type of entry page (lifts, foods, measurements)
-     * @param array $dateContext Date context with navigation dates and title
-     * @param array $serviceData Data from domain services (logged items, selection list, etc)
-     * @param array $config Configuration options
+     *
+     * @param  string  $entryType  Type of entry page (lifts, foods, measurements)
+     * @param  array  $dateContext  Date context with navigation dates and title
+     * @param  array  $serviceData  Data from domain services (logged items, selection list, etc)
+     * @param  array  $config  Configuration options
      * @return array Array of component data structures
      */
     public function assemble(
@@ -31,26 +31,26 @@ class ComponentAssembler
         array $config
     ): array {
         $components = [];
-        
+
         $components[] = $this->buildNavigation($entryType, $dateContext);
         $components[] = $this->buildTitle($dateContext['title']);
-        
+
         if ($config['isFirstTimeUser'] ?? false) {
             $components[] = $this->buildWelcomeOverlay();
         }
-        
+
         if ($serviceData['interfaceMessages']['hasMessages'] ?? false) {
             $components[] = $this->buildMessages($serviceData['interfaceMessages']);
         }
-        
+
         if ($serviceData['summary'] ?? null) {
             $components[] = $this->buildSummary($serviceData['summary']);
         }
-        
+
         if ($config['showAddButton'] ?? true) {
             $components[] = $this->buildLogNowButton($entryType);
         }
-        
+
         // For measurements, add forms instead of item list
         if ($entryType === 'measurements' && isset($serviceData['forms'])) {
             $components = array_merge($components, $serviceData['forms']);
@@ -60,33 +60,31 @@ class ComponentAssembler
                 $config['shouldExpandSelection'] ?? false
             );
         }
-        
+
         $components[] = $serviceData['loggedItems'];
-        
-        // Add FAB for quick connection (only on lifts page)
-        if ($entryType === 'lifts') {
-            $components[] = $this->fabService->createConnectionFab(auth()->user(), 'lifts');
-        }
-        
+
+        // Add FAB for quick connection
+        $components[] = $this->fabService->createConnectionFab(auth()->user(), $entryType);
+
         return $components;
     }
-    
+
     /**
      * Build navigation component
      */
     private function buildNavigation(string $entryType, array $dateContext): array
     {
         $routeName = "mobile-entry.{$entryType}";
-        
+
         return ComponentBuilder::navigation()
             ->prev('← Prev', route($routeName, ['date' => $dateContext['prevDay']->toDateString()]))
             ->center('Today', route($routeName, ['date' => $dateContext['today']->toDateString()]))
-            ->next('Next →', route($routeName, ['date' => $dateContext['nextDay']->toDateString()]), 
-                   $dateContext['selectedDate']->lt($dateContext['today']))
+            ->next('Next →', route($routeName, ['date' => $dateContext['nextDay']->toDateString()]),
+                $dateContext['selectedDate']->lt($dateContext['today']))
             ->ariaLabel('Date navigation')
             ->build();
     }
-    
+
     /**
      * Build title component
      */
@@ -97,7 +95,7 @@ class ComponentAssembler
             $titleData['subtitle'] ?? null
         )->build();
     }
-    
+
     /**
      * Build welcome overlay for first-time users
      */
@@ -111,11 +109,11 @@ class ComponentAssembler
                 'userName' => auth()->user()->name,
                 'title' => 'Let\'s Get Strong!',
                 'message' => 'Congratulations on signing up! This is where you\'ll track your workouts and watch your strength grow over time.',
-                'ctaText' => 'Start Logging Now!'
-            ]
+                'ctaText' => 'Start Logging Now!',
+            ],
         ];
     }
-    
+
     /**
      * Build messages component
      */
@@ -125,9 +123,10 @@ class ComponentAssembler
         foreach ($interfaceMessages['messages'] as $message) {
             $builder->add($message['type'], $message['text'], $message['prefix'] ?? null);
         }
+
         return $builder->build();
     }
-    
+
     /**
      * Build summary component
      */
@@ -137,20 +136,21 @@ class ComponentAssembler
         foreach ($summary['values'] as $key => $value) {
             $builder->item($key, $value, $summary['labels'][$key] ?? null);
         }
+
         return $builder->build();
     }
-    
+
     /**
      * Build "Log Now" button
      */
     private function buildLogNowButton(string $entryType): array
     {
-        $label = match($entryType) {
+        $label = match ($entryType) {
             'lifts' => 'Add new exercise',
             'foods' => 'Add new food item',
             default => 'Add new item'
         };
-        
+
         return ComponentBuilder::button('Log Now')
             ->ariaLabel($label)
             ->addClass('btn-add-item')
@@ -158,7 +158,7 @@ class ComponentAssembler
             ->icon('fa-plus')
             ->build();
     }
-    
+
     /**
      * Build item selection list component
      */
@@ -167,11 +167,11 @@ class ComponentAssembler
         $builder = ComponentBuilder::itemList()
             ->filterPlaceholder($itemSelectionList['filterPlaceholder'])
             ->noResultsMessage($itemSelectionList['noResultsMessage']);
-        
+
         if ($shouldExpand) {
             $builder->initialState('expanded')->showCancelButton(false);
         }
-        
+
         foreach ($itemSelectionList['items'] as $item) {
             $builder->item(
                 $item['id'],
@@ -182,7 +182,7 @@ class ComponentAssembler
                 $item['type']['priority']
             );
         }
-        
+
         if (isset($itemSelectionList['createForm'])) {
             $builder->createForm(
                 $itemSelectionList['createForm']['action'],
@@ -192,7 +192,7 @@ class ComponentAssembler
                 $itemSelectionList['createForm']['method'] ?? 'POST'
             );
         }
-        
+
         return $builder->build();
     }
 }
