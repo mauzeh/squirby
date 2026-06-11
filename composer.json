@@ -17,6 +17,7 @@
         "symfony/mailgun-mailer": "^7.3"
     },
     "require-dev": {
+        "brianium/paratest": "^7.8",
         "fakerphp/faker": "^1.23",
         "jcf/boost-for-kiro-ide": "^1.0",
         "laravel/breeze": "^2.3",
@@ -62,7 +63,7 @@
         ],
         "test": [
             "@php artisan config:clear --ansi",
-            "@php artisan test"
+            "@php artisan test --parallel"
         ]
     },
     "extra": {
