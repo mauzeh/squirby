@@ -236,7 +236,7 @@ All endpoints live under `/api/sync` and use Laravel Sanctum for per-user authen
 
 #### Acceptance Criteria
 
-1. A per-user throttle of 5 requests per minute SHALL be applied to all authenticated endpoints
+1. A per-user throttle of 30 requests per minute SHALL be applied to all authenticated endpoints
 2. A global application throttle of 60 requests per minute (across all users) SHALL be applied to all sync endpoints
 3. When a request is throttled, the API SHALL return HTTP 429 with { status: "error", message: "Too many requests. Try again in X seconds." }
 4. The 429 response SHALL include a `Retry-After` header with the number of seconds until the limit resets
@@ -277,20 +277,7 @@ All endpoints live under `/api/sync` and use Laravel Sanctum for per-user authen
 5. All existing `CardioPRDetectionTest` tests SHALL be updated to create sets with `distance` instead of `reps`
 6. A regression test SHALL verify that non-cardio exercises (regular, bodyweight, banded) are unaffected by the migration — their `reps` column remains intact
 
-### Requirement 22: Batch Endpoint
 
-**User Story:** As a client app, I want to submit multiple operations in a single request, so that I can stay within rate limits during active logging sessions.
-
-#### Acceptance Criteria
-
-1. A POST /api/sync/batch endpoint SHALL accept an array of operations in the request body
-2. Each operation SHALL contain: `type` (one of "log", "delete_log", "blueprint", "preferences") and `payload` (the same shape as the individual endpoint would receive)
-3. Each operation in the batch SHALL be processed independently — one failure does not roll back others
-4. The response SHALL include a `results` array with the status and data (e.g., log_id) for each operation, in the same order as the input
-5. The batch SHALL be limited to a maximum of 20 operations per request
-6. A batch counts as a single request against the per-user rate limit (not 20 separate requests)
-7. Log operations within a batch MAY include an `idempotency_key` for dedup
-8. Validation failure on one operation SHALL not prevent other operations from processing — each gets its own result entry
 
 ### Requirement 23: Exercise Auto-Creation Documentation
 

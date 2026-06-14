@@ -23,8 +23,7 @@ app/Sync/
 │   ├── LogController.php
 │   ├── BlueprintController.php
 │   ├── PreferencesController.php
-│   ├── RestoreController.php
-│   └── BatchController.php
+│   └── RestoreController.php
 ├── Actions/
 │   ├── StoreSyncLogAction.php
 │   └── DeleteSyncLogAction.php
@@ -216,9 +215,6 @@ All controllers live in `App\Sync\Controllers\` namespace.
 **RestoreController**
 - `index(Request $request): JsonResponse` — returns full user state
 
-**BatchController**
-- `store(Request $request): JsonResponse` — processes an array of operations (log, delete_log, blueprint, preferences) independently, returns per-operation results
-
 ### Actions
 
 Following the existing Actions pattern (see `CreateLiftLogAction`):
@@ -368,7 +364,6 @@ use App\Sync\Controllers\LogController;
 use App\Sync\Controllers\BlueprintController;
 use App\Sync\Controllers\PreferencesController;
 use App\Sync\Controllers\RestoreController;
-use App\Sync\Controllers\BatchController;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
@@ -378,7 +373,6 @@ Route::middleware(['auth:sanctum', 'throttle:sync-per-user', 'throttle:sync-glob
     Route::delete('/logs/{liftLog}', [LogController::class, 'destroy']);
     Route::post('/blueprint', [BlueprintController::class, 'store']);
     Route::post('/preferences', [PreferencesController::class, 'store']);
-    Route::post('/batch', [BatchController::class, 'store']);
     Route::get('/restore', [RestoreController::class, 'index']);
 });
 ```
@@ -386,7 +380,7 @@ Route::middleware(['auth:sanctum', 'throttle:sync-per-user', 'throttle:sync-glob
 Rate limiters are defined in `AppServiceProvider` (or `bootstrap/app.php`):
 ```php
 RateLimiter::for('sync-per-user', fn (Request $request) =>
-    Limit::perMinute(5)->by($request->user()->id)
+    Limit::perMinute(30)->by($request->user()->id)
 );
 
 RateLimiter::for('sync-global', fn (Request $request) =>

@@ -66,7 +66,7 @@ Build a REST API under `/api/sync` providing durable storage and restoration for
     - Register in RouteServiceProvider (or bootstrap/app.php) with prefix `api/sync`
     - Public routes: register, login
     - Authenticated group: auth:sanctum + device-id + log-sync-request middleware
-    - Apply two-tier throttle: per-user 5/min AND global 60/min
+    - Apply two-tier throttle: per-user 30/min AND global 60/min
     - _Requirements: 13.1, 13.2, 18.1, 18.2_
 
   - [ ] 2.4 Add `idempotency_key` column to `lift_logs` migration
@@ -179,15 +179,6 @@ Build a REST API under `/api/sync` providing durable storage and restoration for
     - PR history: current (non-superseded) records grouped by exercise canonical_name
     - _Requirements: 11.1, 11.2, 11.3, 11.4, 11.5, 11.6_
 
-  - [ ] 8.6 Create `BatchController`
-    - Location: `App\Sync\Controllers\BatchController`
-    - `store`: accept array of operations (max 20), each with `type` and `payload`
-    - Process each operation independently by delegating to the appropriate action/controller logic
-    - Return `results` array with per-operation status
-    - Counts as a single request against rate limits
-    - Support `idempotency_key` per log operation
-    - _Requirements: 22.1, 22.2, 22.3, 22.4, 22.5, 22.6, 22.7, 22.8_
-
 - [ ] 9. Checkpoint — Controllers wired
   - Ensure all routes respond, auth middleware blocks unauthenticated requests, and basic request/response cycles work. Ask the user if questions arise.
 
@@ -228,7 +219,7 @@ Build a REST API under `/api/sync` providing durable storage and restoration for
     - How to replay requests (`php artisan sync:replay-failed`)
     - How to purge old logs (`php artisan sync:purge-logs --days=30`)
     - Document exercise auto-creation behavior: when no match is found, a new Exercise is created. Explain how to audit auto-created exercises and merge duplicates (existing admin merge feature).
-    - Document rate limiting behavior: 5/user/min + 60/global/min, 429 response format, Retry-After header
+    - Document rate limiting behavior: 30/user/min + 60/global/min, 429 response format, Retry-After header
     - Document idempotency key usage: client sends X-Idempotency-Key header, duplicate suppression behavior
     - _Requirements: 17.8_
 
