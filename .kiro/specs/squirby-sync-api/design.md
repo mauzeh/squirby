@@ -23,7 +23,8 @@ app/Sync/
 │   ├── LogController.php
 │   ├── BlueprintController.php
 │   ├── PreferencesController.php
-│   └── RestoreController.php
+│   ├── RestoreController.php
+│   └── BatchController.php
 ├── Actions/
 │   ├── StoreSyncLogAction.php
 │   └── DeleteSyncLogAction.php
@@ -73,7 +74,8 @@ app/Services/ExerciseTypes/CardioExerciseType.php  (read distance column instead
 app/Services/Charts/CardioProgressionChartGenerator.php  (read distance column)
 app/Actions/LiftLogs/CreateLiftLogAction.php       (pass distance/calories to set creation)
 app/Actions/LiftLogs/UpdateLiftLogAction.php       (pass distance/calories to set creation)
-app/Providers/RouteServiceProvider.php (register routes/sync.php)
+app/Providers/AppServiceProvider.php  (register rate limiters: sync-per-user, sync-global)
+app/Providers/RouteServiceProvider.php (register routes/sync.php with api/sync prefix)
 config/cors.php                       (add api/sync/* to paths)
 config/logging.php                    (add sync_requests channel)
 composer.json                         (add laravel/sanctum)
@@ -213,6 +215,9 @@ All controllers live in `App\Sync\Controllers\` namespace.
 
 **RestoreController**
 - `index(Request $request): JsonResponse` — returns full user state
+
+**BatchController**
+- `store(Request $request): JsonResponse` — processes an array of operations (log, delete_log, blueprint, preferences) independently, returns per-operation results
 
 ### Actions
 
@@ -363,17 +368,30 @@ use App\Sync\Controllers\LogController;
 use App\Sync\Controllers\BlueprintController;
 use App\Sync\Controllers\PreferencesController;
 use App\Sync\Controllers\RestoreController;
+use App\Sync\Controllers\BatchController;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
-Route::middleware(['auth:sanctum', 'device-id', 'log-sync-request'])->group(function () {
+Route::middleware(['auth:sanctum', 'throttle:sync-per-user', 'throttle:sync-global', 'device-id', 'log-sync-request'])->group(function () {
     Route::post('/logs', [LogController::class, 'store']);
     Route::delete('/logs/{liftLog}', [LogController::class, 'destroy']);
     Route::post('/blueprint', [BlueprintController::class, 'store']);
     Route::post('/preferences', [PreferencesController::class, 'store']);
+    Route::post('/batch', [BatchController::class, 'store']);
     Route::get('/restore', [RestoreController::class, 'index']);
 });
+```
+
+Rate limiters are defined in `AppServiceProvider` (or `bootstrap/app.php`):
+```php
+RateLimiter::for('sync-per-user', fn (Request $request) =>
+    Limit::perMinute(5)->by($request->user()->id)
+);
+
+RateLimiter::for('sync-global', fn (Request $request) =>
+    Limit::perMinute(60)
+);
 ```
 
 Registered in the RouteServiceProvider (or `bootstrap/app.php`):
@@ -416,6 +434,7 @@ Route::prefix('api/sync')->group(base_path('routes/sync.php'));
 | log_type | VARCHAR(30) | NULLABLE |
 | device_id | VARCHAR(36) | NULLABLE |
 | source | VARCHAR(10) | NULLABLE, 'sync' or null |
+| idempotency_key | VARCHAR(36) | NULLABLE, indexed per user for dedup |
 
 No uniqueness constraints on track/block_index/movement_index — multiple logs for the same exercise on the same day are valid.
 

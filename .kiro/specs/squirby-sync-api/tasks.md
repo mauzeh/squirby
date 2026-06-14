@@ -16,9 +16,9 @@ Build a REST API under `/api/sync` providing durable storage and restoration for
     - _Requirements: 1.2_
 
   - [ ] 1.3 Create migration to add columns to `lift_logs` table
-    - Add: track (VARCHAR 20 nullable), block_index (TINYINT unsigned nullable), movement_index (TINYINT unsigned nullable), log_type (VARCHAR 30 nullable), device_id (VARCHAR 36 nullable), source (VARCHAR 10 nullable)
-    - No uniqueness constraints — track/block_index/movement_index are optional hint columns only
-    - _Requirements: 2.1, 2.2, 2.3, 2.4_
+    - Add: track (VARCHAR 20 nullable), block_index (TINYINT unsigned nullable), movement_index (TINYINT unsigned nullable), log_type (VARCHAR 30 nullable), device_id (VARCHAR 36 nullable), source (VARCHAR 10 nullable), idempotency_key (VARCHAR 36 nullable, indexed per user_id + idempotency_key)
+    - No uniqueness constraints on track/block_index/movement_index — optional hint columns only
+    - _Requirements: 2.1, 2.2, 2.3, 2.4, 19.5_
 
   - [ ] 1.4 Create migration to add columns to `lift_sets` table
     - Add: calories (SMALLINT unsigned nullable), distance (DECIMAL 8,2 nullable), distance_unit (VARCHAR 5 nullable)
@@ -39,8 +39,8 @@ Build a REST API under `/api/sync` providing durable storage and restoration for
     - _Requirements: 3.2_
 
   - [ ] 1.7 Update `LiftLog` model with new fillable fields
-    - Add to fillable: track, block_index, movement_index, log_type, device_id, source
-    - _Requirements: 2.1, 7.4_
+    - Add to fillable: track, block_index, movement_index, log_type, device_id, source, idempotency_key
+    - _Requirements: 2.1, 7.4, 19.5_
 
   - [ ] 1.8 Update `LiftSet` model with new fillable fields
     - Add to fillable: calories, distance, distance_unit
@@ -178,6 +178,15 @@ Build a REST API under `/api/sync` providing durable storage and restoration for
     - Return ALL user logs regardless of source
     - PR history: current (non-superseded) records grouped by exercise canonical_name
     - _Requirements: 11.1, 11.2, 11.3, 11.4, 11.5, 11.6_
+
+  - [ ] 8.6 Create `BatchController`
+    - Location: `App\Sync\Controllers\BatchController`
+    - `store`: accept array of operations (max 20), each with `type` and `payload`
+    - Process each operation independently by delegating to the appropriate action/controller logic
+    - Return `results` array with per-operation status
+    - Counts as a single request against rate limits
+    - Support `idempotency_key` per log operation
+    - _Requirements: 22.1, 22.2, 22.3, 22.4, 22.5, 22.6, 22.7, 22.8_
 
 - [ ] 9. Checkpoint — Controllers wired
   - Ensure all routes respond, auth middleware blocks unauthenticated requests, and basic request/response cycles work. Ask the user if questions arise.

@@ -276,3 +276,28 @@ All endpoints live under `/api/sync` and use Laravel Sanctum for per-user authen
 4. All existing `CardioExerciseTypeTest` tests SHALL be updated to use the `distance` column instead of `reps`
 5. All existing `CardioPRDetectionTest` tests SHALL be updated to create sets with `distance` instead of `reps`
 6. A regression test SHALL verify that non-cardio exercises (regular, bodyweight, banded) are unaffected by the migration — their `reps` column remains intact
+
+### Requirement 22: Batch Endpoint
+
+**User Story:** As a client app, I want to submit multiple operations in a single request, so that I can stay within rate limits during active logging sessions.
+
+#### Acceptance Criteria
+
+1. A POST /api/sync/batch endpoint SHALL accept an array of operations in the request body
+2. Each operation SHALL contain: `type` (one of "log", "delete_log", "blueprint", "preferences") and `payload` (the same shape as the individual endpoint would receive)
+3. Each operation in the batch SHALL be processed independently — one failure does not roll back others
+4. The response SHALL include a `results` array with the status and data (e.g., log_id) for each operation, in the same order as the input
+5. The batch SHALL be limited to a maximum of 20 operations per request
+6. A batch counts as a single request against the per-user rate limit (not 20 separate requests)
+7. Log operations within a batch MAY include an `idempotency_key` for dedup
+8. Validation failure on one operation SHALL not prevent other operations from processing — each gets its own result entry
+
+### Requirement 23: Exercise Auto-Creation Documentation
+
+**User Story:** As a developer/operator, I want documentation about exercise auto-creation behavior, so that I know how to audit and clean up auto-created exercises.
+
+#### Acceptance Criteria
+
+1. The `docs/sync-api-operations.md` file SHALL include a section explaining exercise auto-creation: when it happens, what fields are populated, how to identify auto-created exercises
+2. Auto-created exercises SHALL be identifiable by having `user_id = NULL` (global) and a `created_at` timestamp that matches a sync request (no explicit flag needed — the timestamp + lack of intelligence data is sufficient)
+3. The documentation SHALL explain how to merge duplicate/typo exercises using the existing admin merge feature
