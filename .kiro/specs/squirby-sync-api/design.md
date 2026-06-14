@@ -79,6 +79,37 @@ config/logging.php                    (add sync_requests channel)
 composer.json                         (add laravel/sanctum)
 ```
 
+## General Development Principles
+
+These principles govern how this feature should be built. Read and internalize before writing code.
+
+### Data Model
+
+- **Logs are standalone entities.** A log is identified by its database ID, not by its program position. Multiple logs for the same exercise on the same day are valid. `track`, `block_index`, and `movement_index` are optional hint columns — not identity, not indexed, not constrained.
+- **Single source of truth for set data.** Structured columns (`weight`, `reps`, `time`, `distance`, `calories`, `band_color`) are the truth. `log_type` is the mapping key for reconstructing the original field names on restore. Never store the same data in two representations.
+- **Don't repurpose columns.** If you need to store distance, use the `distance` column. Don't stuff values into `reps` and rely on context to interpret them.
+
+### Services
+
+- **SetFieldMapper is bidirectional.** `mapToColumns` on write, `mapFromColumns` on restore. The same service handles both directions using `log_type` as the key. If you change one direction, update the other.
+- **Exercise resolution is deterministic, not fuzzy.** The priority chain is: canonical_name → title → alias → auto-create. No scoring, no "best match." If step 1 matches, stop. The existing `ExerciseMatchingService` (fuzzy matching for WOD syntax) is NOT reused.
+- **Don't validate like the web UI.** The sync API has its own payload shape (sets array with per-log-type fields) and its own validation. Don't call into or reuse the ExerciseType strategy validation — those expect flat form inputs.
+
+### Request/Response
+
+- **Fire-and-forget means no response dependency.** The client doesn't read your response body beyond the status code and `log_id`. Don't put important information in responses that the client "needs to act on."
+- **Filesystem log is the safety net.** Log the full request (all headers, full body) to `storage/logs/sync/` BEFORE processing. If your code throws after the log write, the data is recoverable. Never skip or optimize away the pre-processing log.
+
+### Side Effects
+
+- **Dispatch events, don't implement side effects.** After storing a log, dispatch `LiftLogCompleted`. Don't inline PR detection or notification logic. The event system handles downstream consequences.
+- **Logging must never block.** If the filesystem log write fails, the request still proceeds. Wrap all logging in try/catch. Data persistence is more important than observability.
+
+### Migration Awareness
+
+- **Cardio migration changes read paths.** After migrating `reps` → `distance` for cardio exercises, update every place that reads `$set->reps` in a cardio context. Grep for: `display_reps`, `->reps`, `sum('reps')`, `liftSets->first()->reps` in anything related to cardio or `CardioExerciseType`.
+- **Existing web UI must keep working.** The web UI's `CreateLiftLogAction`, `UpdateLiftLogAction`, `CardioExerciseType`, and chart generators all interact with `lift_sets`. After schema changes, verify the existing test suite passes. Run `php artisan test` before considering a task complete.
+
 ## Architecture
 
 ```mermaid
