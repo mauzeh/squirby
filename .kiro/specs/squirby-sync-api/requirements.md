@@ -213,6 +213,7 @@ All endpoints live under `/api/sync` and use Laravel Sanctum for per-user authen
 2. Validation errors SHALL return HTTP 422 with { status: "error", message }
 3. Auth errors SHALL return HTTP 401 with { status: "error", message }
 4. Unexpected errors SHALL return HTTP 500 with { status: "error", message: "Internal server error" } — no internal details exposed
+5. Rate limit errors SHALL return HTTP 429 with { status: "error", message: "Too many requests. Try again in X seconds." } and include a `Retry-After` header
 
 ### Requirement 17: Request Logging
 
@@ -228,3 +229,50 @@ All endpoints live under `/api/sync` and use Laravel Sanctum for per-user authen
 6. A Laravel CLI command `sync:purge-logs` SHALL exist to delete log files older than a configurable number of days (default 30)
 7. A Laravel CLI command `sync:replay-failed` SHALL exist to parse the log file, identify requests that resulted in errors (by matching against response logs or by re-submitting and checking), and replay them through the controller logic
 8. A documentation file SHALL be created at `docs/sync-api-operations.md` explaining: the logging setup, where logs live, how to find failed requests, how to replay them, and how to purge old logs
+
+### Requirement 18: Rate Limiting
+
+**User Story:** As a developer, I want the API protected from excessive requests, so that a misbehaving client or retry loop can't overwhelm the server.
+
+#### Acceptance Criteria
+
+1. A per-user throttle of 5 requests per minute SHALL be applied to all authenticated endpoints
+2. A global application throttle of 60 requests per minute (across all users) SHALL be applied to all sync endpoints
+3. When a request is throttled, the API SHALL return HTTP 429 with { status: "error", message: "Too many requests. Try again in X seconds." }
+4. The 429 response SHALL include a `Retry-After` header with the number of seconds until the limit resets
+5. The per-user limit takes precedence — a single user can't consume more than 5/minute even if the global limit hasn't been reached
+
+### Requirement 19: Idempotency
+
+**User Story:** As a developer, I want the API to handle duplicate requests safely, so that retry logic in the client doesn't create duplicate data.
+
+#### Acceptance Criteria
+
+1. The client MAY include an `X-Idempotency-Key` header (UUID) on POST /logs requests
+2. If an idempotency key is provided and a log with that key already exists for the authenticated user, the API SHALL return the existing log's ID without creating a duplicate
+3. If no idempotency key is provided, the API SHALL always create a new log (backward compatible)
+4. Idempotency keys SHALL be scoped per user — two different users can use the same key without conflict
+5. Idempotency key lookups SHALL use a column on the `lift_logs` table (`idempotency_key`, VARCHAR 36 nullable, indexed)
+
+### Requirement 20: Request Size Validation
+
+**User Story:** As a developer, I want the API to reject unreasonably large payloads, so that a bug in the client can't create thousands of set rows.
+
+#### Acceptance Criteria
+
+1. The `sets` array on POST /logs SHALL be limited to a maximum of 100 items
+2. If the sets array exceeds 100 items, the API SHALL return HTTP 422 with a descriptive error
+3. The overall request body size SHALL be limited to 1MB (enforced at the web server or middleware level)
+
+### Requirement 21: Test Coverage for Cardio Migration
+
+**User Story:** As a developer, I want test coverage for areas affected by the cardio distance migration, so that the migration doesn't silently break existing functionality.
+
+#### Acceptance Criteria
+
+1. Before the migration runs, a test SHALL verify that the `CardioProgressionChartGenerator` correctly reads distance data and produces chart output
+2. A test SHALL verify end-to-end cardio logging through the web UI: create a cardio exercise, log via CreateLiftLogAction, verify the lift_set stores distance in the `distance` column (post-migration)
+3. A test SHALL verify that `VolumeProgressionChartGenerator` returns 0/empty for cardio exercises (since reps will be null after migration)
+4. All existing `CardioExerciseTypeTest` tests SHALL be updated to use the `distance` column instead of `reps`
+5. All existing `CardioPRDetectionTest` tests SHALL be updated to create sets with `distance` instead of `reps`
+6. A regression test SHALL verify that non-cardio exercises (regular, bodyweight, banded) are unaffected by the migration — their `reps` column remains intact

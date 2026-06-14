@@ -65,8 +65,14 @@ Build a REST API under `/api/sync` providing durable storage and restoration for
     - Create dedicated route file with all 7 endpoints
     - Register in RouteServiceProvider (or bootstrap/app.php) with prefix `api/sync`
     - Public routes: register, login
-    - Authenticated group: auth:sanctum + device-id middleware
-    - _Requirements: 13.1, 13.2_
+    - Authenticated group: auth:sanctum + device-id + log-sync-request middleware
+    - Apply two-tier throttle: per-user 5/min AND global 60/min
+    - _Requirements: 13.1, 13.2, 18.1, 18.2_
+
+  - [ ] 2.4 Add `idempotency_key` column to `lift_logs` migration
+    - Add: idempotency_key (VARCHAR 36 nullable, indexed)
+    - Add to LiftLog model $fillable
+    - _Requirements: 19.5_
 
 - [ ] 3. Data migration and upstream logic changes
   - [ ] 3.1 Create data migration for existing cardio logs
@@ -134,7 +140,8 @@ Build a REST API under `/api/sync` providing durable storage and restoration for
     - Inject ExerciseResolverService and SetFieldMapper
     - Implement `execute(User $user, array $validated, ?string $deviceId): LiftLog`
     - Create lift_log, create lift_sets via SetFieldMapper, dispatch event
-    - _Requirements: 7.1, 7.2, 7.3, 7.4, 7.5, 7.6_
+    - Handle idempotency: if `idempotency_key` is provided and already exists for this user, return existing log without creating
+    - _Requirements: 7.1, 7.2, 7.3, 7.4, 7.5, 7.6, 19.1–19.4_
 
   - [ ] 7.2 Create `DeleteSyncLogAction`
     - Location: `App\Sync\Actions\DeleteSyncLogAction`
@@ -151,9 +158,9 @@ Build a REST API under `/api/sync` providing durable storage and restoration for
 
   - [ ] 8.2 Create `LogController`
     - Location: `App\Sync\Controllers\LogController`
-    - `store`: validate payload, delegate to StoreSyncLogAction, return { status: "ok", log_id }
+    - `store`: validate payload (including max 100 sets), accept optional X-Idempotency-Key header, delegate to StoreSyncLogAction, return { status: "ok", log_id }
     - `destroy`: validate ownership, delegate to DeleteSyncLogAction, return { status: "ok" }
-    - _Requirements: 7.1, 7.6, 7.7, 8.1, 8.2, 8.3_
+    - _Requirements: 7.1, 7.6, 7.7, 8.1, 8.2, 8.3, 19.1, 20.1, 20.2_
 
   - [ ] 8.3 Create `BlueprintController`
     - Location: `App\Sync\Controllers\BlueprintController`
@@ -211,6 +218,9 @@ Build a REST API under `/api/sync` providing durable storage and restoration for
     - How to find failed requests (grep for specific status codes or errors in application logs)
     - How to replay requests (`php artisan sync:replay-failed`)
     - How to purge old logs (`php artisan sync:purge-logs --days=30`)
+    - Document exercise auto-creation behavior: when no match is found, a new Exercise is created. Explain how to audit auto-created exercises and merge duplicates (existing admin merge feature).
+    - Document rate limiting behavior: 5/user/min + 60/global/min, 429 response format, Retry-After header
+    - Document idempotency key usage: client sends X-Idempotency-Key header, duplicate suppression behavior
     - _Requirements: 17.8_
 
 - [ ] 11. Tests
@@ -228,19 +238,30 @@ Build a REST API under `/api/sync` providing durable storage and restoration for
 
   - [ ] 11.3 Write unit tests for StoreSyncLogAction
     - Test log + sets creation, event dispatch, exercise resolution integration
+    - Test idempotency key behavior (duplicate key returns existing, missing key always creates)
     - Location: `tests/Unit/Sync/StoreSyncLogActionTest.php`
-    - _Requirements: 7.1–7.9_
+    - _Requirements: 7.1–7.9, 19.1–19.5_
 
   - [ ] 11.4 Write unit tests for DeleteSyncLogAction
     - Test soft-delete cascading, ownership check
     - Location: `tests/Unit/Sync/DeleteSyncLogActionTest.php`
     - _Requirements: 8.1–8.3_
 
-  - [ ] 11.5 Write smoke tests (2 feature tests using Laravel's in-process test client)
-    - `test_full_write_and_restore_cycle`: register → store log → store blueprint → store preferences → restore → verify
-    - `test_auth_and_error_responses`: 401 on missing token, 422 on validation failure, 404 on wrong-user delete
+  - [ ] 11.5 Write smoke tests (feature tests using Laravel's in-process test client)
+    - `test_full_write_and_restore_cycle`: register → store log (with idempotency key) → store blueprint → store preferences → restore → verify → resend same log with same key → verify no duplicate
+    - `test_auth_and_error_responses`: 401 on missing token, 422 on validation failure, 422 on sets > 100, 404 on wrong-user delete, 429 on rate limit exceeded
     - Location: `tests/Feature/Sync/SyncApiSmokeTest.php`
-    - _Requirements: 5.1, 7.1, 8.1, 9.1, 10.1, 11.1, 13.1, 16.1_
+    - _Requirements: 5.1, 7.1, 8.1, 9.1, 10.1, 11.1, 13.1, 16.1–16.5, 18.1–18.5, 19.1–19.3, 20.1–20.2_
+
+  - [ ] 11.6 Write cardio migration regression tests
+    - Test CardioProgressionChartGenerator produces correct output after migration
+    - Test end-to-end cardio logging via CreateLiftLogAction stores in `distance` column
+    - Test VolumeProgressionChartGenerator handles null reps for cardio gracefully
+    - Test non-cardio exercises unaffected (reps still works)
+    - Update existing CardioExerciseTypeTest to use `distance` column
+    - Update existing CardioPRDetectionTest to use `distance` column
+    - Location: `tests/Feature/Sync/CardioMigrationRegressionTest.php` + updates to existing test files
+    - _Requirements: 21.1–21.6_
 
 - [ ] 12. Final checkpoint
   - Ensure all tests pass, ask the user if questions arise.

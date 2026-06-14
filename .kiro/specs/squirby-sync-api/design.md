@@ -66,7 +66,7 @@ tests/
 ### Existing files (modified)
 
 ```
-app/Models/LiftLog.php                (add fillable: track, block_index, movement_index, log_type, device_id, source)
+app/Models/LiftLog.php                (add fillable: track, block_index, movement_index, log_type, device_id, source, idempotency_key)
 app/Models/LiftSet.php                (add fillable: distance, distance_unit, calories)
 app/Models/User.php                   (add HasApiTokens trait for Sanctum)
 app/Services/ExerciseTypes/CardioExerciseType.php  (read distance column instead of reps)
