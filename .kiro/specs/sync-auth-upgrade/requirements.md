@@ -40,6 +40,7 @@ This spec upgrades the Logger Sync API authentication system from username-based
 4. The `email` field SHALL be required and be a valid email format
 5. The `password` field SHALL be required
 6. The `device_id` field SHALL be required and be a non-empty string
+7. WHEN the application environment is `local` (i.e., `app()->environment('local')`), the login endpoint SHALL accept ANY password for any existing user — bypassing password hash verification. This allows developers to log in as any athlete for testing without knowing their password.
 
 ### Requirement 3: Google Social Auth
 

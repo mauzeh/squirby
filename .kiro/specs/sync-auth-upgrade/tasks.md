@@ -46,9 +46,10 @@ Upgrade the Logger Sync API authentication from username-based to email-based re
   - [ ] 2.3 Rewrite `login()` method in `AuthController`
     - Validate `email` (required|email), `password` (required|string), `device_id` (required|string)
     - Look up user by `users.email`
-    - Verify password hash, throw `AuthenticationException('Invalid credentials.')` on failure
+    - If `app()->environment('local')`: skip password hash verification (accept any password for any existing user)
+    - Otherwise: verify password hash, throw `AuthenticationException('Invalid credentials.')` on failure
     - Return via `authResponse()` helper
-    - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 2.6_
+    - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7_
 
 - [ ] 3. Implement social auth methods
   - [ ] 3.1 Add `findOrCreateSocialUser()` private helper to `AuthController`

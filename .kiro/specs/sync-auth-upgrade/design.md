@@ -127,7 +127,12 @@ public function login(Request $request): JsonResponse
 
     $user = User::where('email', $validated['email'])->first();
 
-    if (!$user || !Hash::check($validated['password'], $user->password)) {
+    // In local environment, skip password verification (dev mode bypass)
+    $passwordValid = app()->environment('local')
+        ? true
+        : ($user && Hash::check($validated['password'], $user->password));
+
+    if (!$user || !$passwordValid) {
         throw new AuthenticationException('Invalid credentials.');
     }
 
