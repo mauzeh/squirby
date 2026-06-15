@@ -7,10 +7,10 @@ Upgrade the Logger Sync API authentication from username-based to email-based re
 ## Tasks
 
 - [ ] 1. Set up configuration and JWT verifier services
-  - [ ] 1.1 Add Apple service configuration to `config/services.php`
-    - Add `'apple' => ['client_id' => env('APPLE_CLIENT_ID')]` to the services config array
-    - Verify `services.google.client_id` config already exists (used by GoogleJwtVerifier)
-    - _Requirements: 4.1_
+  - [ ] 1.1 Add Google service configuration verification
+    - Verify `services.google.client_id` config exists in `config/services.php` (used by GoogleJwtVerifier)
+    - Add `GOOGLE_CLIENT_ID` to `.env.example` if not present
+    - _Requirements: 3.1_
 
   - [ ] 1.2 Create `app/Sync/Services/GoogleJwtVerifier.php`
     - Create class in `App\Sync\Services` namespace
@@ -51,12 +51,12 @@ Upgrade the Logger Sync API authentication from username-based to email-based re
     - Return via `authResponse()` helper
     - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7_
 
-- [ ] 3. Implement social auth methods
+- [ ] 3. Implement Google social auth method
   - [ ] 3.1 Add `findOrCreateSocialUser()` private helper to `AuthController`
     - Create `findOrCreateSocialUser(string $email, string $name, ?string $googleId): User`
     - Try `User::where('email', $email)->first()` — if found, update `google_id` if provided and not already set, return user
     - If not found, create new user with email, name, and google_id
-    - _Requirements: 3.3, 3.4, 3.9, 4.3, 4.4_
+    - _Requirements: 3.3, 3.4, 3.9_
 
   - [ ] 3.2 Add `googleAuth()` method to `AuthController`
     - Inject `GoogleJwtVerifier` via method injection
@@ -66,20 +66,11 @@ Upgrade the Logger Sync API authentication from username-based to email-based re
     - Return via `authResponse()`
     - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8, 3.9_
 
-  - [ ] 3.3 Add `appleAuth()` method to `AuthController`
-    - Inject `AppleJwtVerifier` via method injection
-    - Validate `identity_token` (required|string), `authorization_code` (required|string), `device_id` (required|string)
-    - Call `$verifier->verify()`, catch exceptions and return 401 with `{ status: "error", message: "Invalid Apple token." }`
-    - Call `findOrCreateSocialUser()` with extracted email, name (fallback to email prefix), and null googleId
-    - Return via `authResponse()`
-    - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8, 4.9_
-
 - [ ] 4. Add routes and email check endpoint
   - [ ] 4.1 Register new routes in `routes/sync.php`
     - Add `Route::post('/auth/google', [AuthController::class, 'googleAuth'])`
-    - Add `Route::post('/auth/apple', [AuthController::class, 'appleAuth'])`
     - Add `Route::post('/auth/check', [AuthController::class, 'checkEmail'])` (no auth middleware)
-    - _Requirements: 3.1, 4.1, 5.1, 5.5_
+    - _Requirements: 3.1, 4.1, 4.5_
 
   - [ ] 4.2 Implement `checkEmail()` method in `AuthController`
     - Validate `email` (required|email)
