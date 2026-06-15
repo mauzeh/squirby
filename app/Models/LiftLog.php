@@ -32,12 +32,21 @@ class LiftLog extends Model
         'workout_id',
         'is_pr',
         'pr_count',
+        'track',
+        'block_index',
+        'movement_index',
+        'log_type',
+        'device_id',
+        'source',
+        'idempotency_key',
     ];
 
     protected $casts = [
         'logged_at' => 'datetime',
         'is_pr' => 'boolean',
         'pr_count' => 'integer',
+        'block_index' => 'integer',
+        'movement_index' => 'integer',
     ];
 
     protected static function boot()
@@ -85,6 +94,15 @@ class LiftLog extends Model
         
         // Fallback to a single query if not loaded
         return $this->liftSets()->first()->reps ?? 0;
+    }
+
+    public function getDisplayDistanceAttribute(): float
+    {
+        $first = $this->relationLoaded('liftSets') 
+            ? $this->liftSets->first() 
+            : $this->liftSets()->first();
+
+        return (float) ($first?->distance ?? 0.0);
     }
 
     public function getDisplayRoundsAttribute()

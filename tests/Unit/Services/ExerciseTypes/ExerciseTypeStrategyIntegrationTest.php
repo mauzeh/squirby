@@ -317,7 +317,8 @@ class ExerciseTypeStrategyIntegrationTest extends TestCase
         LiftSet::factory()->create([
             'lift_log_id' => $cardioLiftLog->id,
             'weight' => 0,
-            'reps' => 500, // Distance in meters
+            'distance' => 500,
+            'distance_unit' => 'm',
         ]);
 
         $cardioStrategy = ExerciseTypeFactory::create($cardioExercise);
@@ -428,7 +429,8 @@ class ExerciseTypeStrategyIntegrationTest extends TestCase
         $cardioProcessed = $cardioStrategy->processLiftData($inputData);
         $this->assertEquals(0, $cardioProcessed['weight']);
         $this->assertNull($cardioProcessed['band_color']);
-        $this->assertEquals(500, $cardioProcessed['reps']); // Distance preserved
+        $this->assertNull($cardioProcessed['reps']);
+        $this->assertEquals(500, $cardioProcessed['distance']); // Distance preserved
     }
 
     /** @test */

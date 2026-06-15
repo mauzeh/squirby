@@ -55,10 +55,12 @@ class CardioExerciseTypeTest extends TestCase
         ];
 
         $expectedData = [
-            'reps' => 500,
+            'reps' => null,
             'sets' => 7,
             'weight' => 0,
             'band_color' => null,
+            'distance' => 500.0,
+            'distance_unit' => 'm',
         ];
 
         $result = $this->strategy->processLiftData($inputData);
@@ -127,7 +129,7 @@ class CardioExerciseTypeTest extends TestCase
             $inputData = ['reps' => $distance];
             $result = $this->strategy->processLiftData($inputData);
             
-            $this->assertEquals($distance, $result['reps']);
+            $this->assertEquals($distance, $result['distance']);
         }
     }
 
@@ -186,7 +188,8 @@ class CardioExerciseTypeTest extends TestCase
         $liftLog = LiftLog::factory()->create(['exercise_id' => $exercise->id]);
         LiftSet::factory()->create([
             'lift_log_id' => $liftLog->id,
-            'reps' => 500, // Distance in meters
+            'distance' => 500, // Distance in meters
+            'distance_unit' => 'm',
             'weight' => 0
         ]);
 
@@ -202,7 +205,8 @@ class CardioExerciseTypeTest extends TestCase
         $liftLog = LiftLog::factory()->create(['exercise_id' => $exercise->id]);
         LiftSet::factory()->create([
             'lift_log_id' => $liftLog->id,
-            'reps' => 0,
+            'distance' => 0,
+            'distance_unit' => 'm',
             'weight' => 0
         ]);
 
@@ -218,7 +222,8 @@ class CardioExerciseTypeTest extends TestCase
         $liftLog = LiftLog::factory()->create(['exercise_id' => $exercise->id]);
         LiftSet::factory()->create([
             'lift_log_id' => $liftLog->id,
-            'reps' => 'invalid',
+            'distance' => null,
+            'distance_unit' => 'm',
             'weight' => 0
         ]);
 
@@ -234,7 +239,8 @@ class CardioExerciseTypeTest extends TestCase
         $liftLog = LiftLog::factory()->create(['exercise_id' => $exercise->id]);
         LiftSet::factory()->create([
             'lift_log_id' => $liftLog->id,
-            'reps' => 15000, // 15km
+            'distance' => 15000, // 15km
+            'distance_unit' => 'm',
             'weight' => 0
         ]);
 
@@ -252,17 +258,20 @@ class CardioExerciseTypeTest extends TestCase
         // Create multiple sets to test rounds counting
         LiftSet::factory()->create([
             'lift_log_id' => $liftLog->id,
-            'reps' => 500,
+            'distance' => 500,
+            'distance_unit' => 'm',
             'weight' => 0
         ]);
         LiftSet::factory()->create([
             'lift_log_id' => $liftLog->id,
-            'reps' => 500,
+            'distance' => 500,
+            'distance_unit' => 'm',
             'weight' => 0
         ]);
         LiftSet::factory()->create([
             'lift_log_id' => $liftLog->id,
-            'reps' => 500,
+            'distance' => 500,
+            'distance_unit' => 'm',
             'weight' => 0
         ]);
 
@@ -278,7 +287,8 @@ class CardioExerciseTypeTest extends TestCase
         $liftLog = LiftLog::factory()->create(['exercise_id' => $exercise->id]);
         LiftSet::factory()->create([
             'lift_log_id' => $liftLog->id,
-            'reps' => 1000,
+            'distance' => 1000,
+            'distance_unit' => 'm',
             'weight' => 0
         ]);
 
@@ -293,14 +303,17 @@ class CardioExerciseTypeTest extends TestCase
         $exercise = Exercise::factory()->create(['exercise_type' => 'cardio']);
         $liftLog = LiftLog::factory()->create(['exercise_id' => $exercise->id]);
         
+        // Create multiple sets
         LiftSet::factory()->create([
             'lift_log_id' => $liftLog->id,
-            'reps' => 12000, // 12km
+            'distance' => 12000, // 12km
+            'distance_unit' => 'm',
             'weight' => 0
         ]);
         LiftSet::factory()->create([
             'lift_log_id' => $liftLog->id,
-            'reps' => 12000,
+            'distance' => 12000,
+            'distance_unit' => 'm',
             'weight' => 0
         ]);
 
@@ -318,7 +331,8 @@ class CardioExerciseTypeTest extends TestCase
         // Create 3 sets to simulate 3 rounds
         LiftSet::factory()->count(3)->create([
             'lift_log_id' => $liftLog->id,
-            'reps' => 500, // 500m distance
+            'distance' => 500, // 500m distance
+            'distance_unit' => 'm',
             'weight' => 0
         ]);
 
@@ -336,7 +350,8 @@ class CardioExerciseTypeTest extends TestCase
         // Create 2 sets to simulate 2 rounds
         LiftSet::factory()->count(2)->create([
             'lift_log_id' => $liftLog->id,
-            'reps' => 200, // 200m distance
+            'distance' => 200, // 200m distance
+            'distance_unit' => 'm',
             'weight' => 0
         ]);
 
@@ -354,7 +369,8 @@ class CardioExerciseTypeTest extends TestCase
         // Create 5 sets to simulate 5 rounds
         LiftSet::factory()->count(5)->create([
             'lift_log_id' => $liftLog->id,
-            'reps' => 2000, // 2000m distance
+            'distance' => 2000, // 2000m distance
+            'distance_unit' => 'm',
             'weight' => 0
         ]);
 
@@ -370,7 +386,8 @@ class CardioExerciseTypeTest extends TestCase
         $liftLog = LiftLog::factory()->create(['exercise_id' => $exercise->id]);
         LiftSet::factory()->create([
             'lift_log_id' => $liftLog->id,
-            'reps' => 'invalid',
+            'distance' => null,
+            'distance_unit' => 'm',
             'weight' => 0
         ]);
 
@@ -386,7 +403,8 @@ class CardioExerciseTypeTest extends TestCase
         $liftLog = LiftLog::factory()->create(['exercise_id' => $exercise->id]);
         LiftSet::factory()->create([
             'lift_log_id' => $liftLog->id,
-            'reps' => 0,
+            'distance' => 0,
+            'distance_unit' => 'm',
             'weight' => 0
         ]);
 

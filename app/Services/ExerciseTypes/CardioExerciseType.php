@@ -99,7 +99,9 @@ class CardioExerciseType extends BaseExerciseType
             throw InvalidExerciseDataException::forField('reps', $this->getTypeName(), 'distance cannot exceed ' . self::MAX_DISTANCE . ' meters');
         }
         
-        $processedData['reps'] = $distance;
+        $processedData['distance'] = (float) $distance;
+        $processedData['distance_unit'] = 'm';
+        $processedData['reps'] = null;
         
         return $processedData;
     }
@@ -124,11 +126,11 @@ class CardioExerciseType extends BaseExerciseType
      * Format weight display for cardio exercises
      * 
      * For cardio exercises, we display distance instead of weight.
-     * The distance is stored in the reps field.
+     * The distance is stored in the distance field.
      */
     public function formatWeightDisplay(LiftLog $liftLog): string
     {
-        $distance = $liftLog->display_reps;
+        $distance = $liftLog->display_distance;
         
         if (!is_numeric($distance) || $distance <= 0) {
             return '0m';
@@ -156,7 +158,7 @@ class CardioExerciseType extends BaseExerciseType
      */
     public function formatCompleteDisplay(LiftLog $liftLog): string
     {
-        $distance = $liftLog->display_reps;
+        $distance = $liftLog->display_distance;
         $rounds = $liftLog->display_rounds;
         
         if (!is_numeric($distance) || $distance <= 0) {
@@ -182,7 +184,7 @@ class CardioExerciseType extends BaseExerciseType
      */
     public function formatProgressionSuggestion(LiftLog $liftLog): ?string
     {
-        $distance = $liftLog->display_reps;
+        $distance = $liftLog->display_distance;
         $rounds = $liftLog->liftSets->count();
         
         if (!is_numeric($distance) || $distance <= 0) {
@@ -238,7 +240,7 @@ class CardioExerciseType extends BaseExerciseType
      */
     public function formatFormMessageDisplay(array $lastSession): string
     {
-        $distance = $lastSession['reps'] ?? 0;
+        $distance = $lastSession['distance'] ?? $lastSession['reps'] ?? 0;
         $rounds = $lastSession['sets'] ?? 1;
         
         // Format distance directly
@@ -341,7 +343,7 @@ class CardioExerciseType extends BaseExerciseType
      */
     public function getProgressionSuggestion(\App\Models\LiftLog $lastLog, int $userId, int $exerciseId, ?\Carbon\Carbon $forDate = null): ?object
     {
-        $lastDistance = $lastLog->display_reps; // reps field stores distance in meters
+        $lastDistance = $lastLog->display_distance; // distance in meters
         $lastRounds = $lastLog->liftSets->count();
         
         // Validate that we have valid cardio data
@@ -360,7 +362,9 @@ class CardioExerciseType extends BaseExerciseType
             
             return (object)[
                 'sets' => $lastRounds,
-                'reps' => $suggestedDistance, // distance stored in reps field
+                'distance' => (float) $suggestedDistance,
+                'distance_unit' => 'm',
+                'reps' => $suggestedDistance,
                 'weight' => 0, // always 0 for cardio
                 'band_color' => null, // not applicable for cardio
             ];
@@ -374,7 +378,9 @@ class CardioExerciseType extends BaseExerciseType
         
         return (object)[
             'sets' => $suggestedRounds,
-            'reps' => $lastDistance, // keep same distance
+            'distance' => (float) $lastDistance,
+            'distance_unit' => 'm',
+            'reps' => $lastDistance,
             'weight' => 0, // always 0 for cardio
             'band_color' => null, // not applicable for cardio
         ];
@@ -387,7 +393,9 @@ class CardioExerciseType extends BaseExerciseType
     {
         return (object)[
             'sets' => 1, // 1 round
-            'reps' => 500, // 500m distance
+            'distance' => 500.0, // 500m distance
+            'distance_unit' => 'm',
+            'reps' => 500,
             'weight' => 0, // always 0 for cardio
             'band_color' => null, // not applicable for cardio
         ];
@@ -429,8 +437,8 @@ class CardioExerciseType extends BaseExerciseType
         $roundCount = 0;
         
         foreach ($liftLog->liftSets as $set) {
-            if ($set->reps > 0) { // reps field stores distance in meters
-                $distance = $set->reps;
+            if ($set->distance > 0) { // read from distance column
+                $distance = (float) $set->distance;
                 
                 // Track best single distance (ENDURANCE)
                 $bestDistance = max($bestDistance, $distance);
@@ -616,8 +624,8 @@ class CardioExerciseType extends BaseExerciseType
         
         foreach ($logs as $log) {
             foreach ($log->liftSets as $set) {
-                if ($set->reps > $bestDistance) {
-                    $bestDistance = $set->reps;
+                if ($set->distance > $bestDistance) {
+                    $bestDistance = (float) $set->distance;
                     $liftLogId = $log->id;
                 }
             }
@@ -637,7 +645,7 @@ class CardioExerciseType extends BaseExerciseType
         foreach ($logs as $log) {
             $total = 0;
             foreach ($log->liftSets as $set) {
-                $total += $set->reps;
+                $total += (float) $set->distance;
             }
             
             if ($total > $bestTotal) {
@@ -664,7 +672,7 @@ class CardioExerciseType extends BaseExerciseType
             if ($roundCount === $targetRounds) {
                 $total = 0;
                 foreach ($log->liftSets as $set) {
-                    $total += $set->reps;
+                    $total += (float) $set->distance;
                 }
                 
                 if ($total > $bestDistance) {

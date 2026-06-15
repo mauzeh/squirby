@@ -32,22 +32,22 @@ class CardioProgressionChartGeneratorTest extends TestCase
     {
         // Create mock lift logs with cardio data and lift sets
         $liftSets1 = new Collection([
-            (object) ['reps' => 500, 'weight' => 0], // First round
-            (object) ['reps' => 500, 'weight' => 0], // Second round
+            (object) ['distance' => 500, 'weight' => 0], // First round
+            (object) ['distance' => 500, 'weight' => 0], // Second round
         ]);
         
         $liftLog1 = (object) [
-            'display_reps' => 500, // 500m per round
+            'display_distance' => 500, // 500m per round
             'logged_at' => Carbon::parse('2023-01-01'),
             'liftSets' => $liftSets1
         ];
 
         $liftSets2 = new Collection([
-            (object) ['reps' => 1000, 'weight' => 0], // Single round
+            (object) ['distance' => 1000, 'weight' => 0], // Single round
         ]);
         
         $liftLog2 = (object) [
-            'display_reps' => 1000, // 1000m per round
+            'display_distance' => 1000, // 1000m per round
             'logged_at' => Carbon::parse('2023-01-02'),
             'liftSets' => $liftSets2
         ];
