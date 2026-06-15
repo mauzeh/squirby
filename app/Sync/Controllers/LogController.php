@@ -22,6 +22,7 @@ class LogController
     {
         $validated = $request->validate([
             'exercise_name' => 'required|string',
+            'canonical_name' => 'nullable|string',
             'date' => 'required|date',
             'log_type' => 'required|string',
             'weight_unit' => 'required|string',

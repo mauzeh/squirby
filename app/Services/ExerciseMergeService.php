@@ -7,9 +7,9 @@ use App\Models\ExerciseMergeLog;
 use App\Models\LiftLog;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Database\QueryException;
 
 class ExerciseMergeService
 {
@@ -58,7 +58,7 @@ class ExerciseMergeService
         $warnings = [];
 
         // Target must be global
-        if (!$target->isGlobal()) {
+        if (! $target->isGlobal()) {
             $errors[] = 'Target exercise must be a global exercise.';
         }
 
@@ -68,23 +68,21 @@ class ExerciseMergeService
         }
 
         // Check exercise type compatibility using the model's method
-        if (!$source->isCompatibleForMerge($target)) {
+        if (! $source->isCompatibleForMerge($target)) {
             $errors[] = 'Exercises have incompatible types.';
         }
 
         // Check if source exercise owner has global visibility disabled
-        if ($source->user && !$source->user->shouldShowGlobalExercises()) {
+        if ($source->user && ! $source->user->shouldShowGlobalExercises()) {
             $warnings[] = 'The owner of this exercise has global exercise visibility disabled. They will lose access to their exercise data after the merge.';
         }
 
         return [
             'errors' => $errors,
             'warnings' => $warnings,
-            'can_merge' => empty($errors)
+            'can_merge' => empty($errors),
         ];
     }
-
-
 
     /**
      * Perform the exercise merge operation
@@ -93,8 +91,8 @@ class ExerciseMergeService
     {
         // Validate compatibility first
         $validation = $this->validateMergeCompatibility($source, $target);
-        if (!$validation['can_merge']) {
-            throw new \InvalidArgumentException('Exercises are not compatible for merging: ' . implode(', ', $validation['errors']));
+        if (! $validation['can_merge']) {
+            throw new \InvalidArgumentException('Exercises are not compatible for merging: '.implode(', ', $validation['errors']));
         }
 
         // Collect lift log IDs before transfer
@@ -111,6 +109,9 @@ class ExerciseMergeService
 
             // Create alias for the source exercise owner if requested
             $aliasCreated = $this->createAliasForOwner($source, $target, $createAlias);
+
+            // Create global canonical name alias if not redundant
+            $this->createCanonicalNameAlias($source, $target);
 
             // Delete the source exercise
             $source->delete();
@@ -141,6 +142,7 @@ class ExerciseMergeService
             ]);
 
             DB::commit();
+
             return true;
 
         } catch (\Exception $e) {
@@ -149,7 +151,7 @@ class ExerciseMergeService
                 'source_exercise_id' => $source->id,
                 'target_exercise_id' => $target->id,
                 'admin_user_id' => $admin->id,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
             throw $e;
         }
@@ -177,32 +179,27 @@ class ExerciseMergeService
         $targetIntelligence = $target->intelligence;
 
         // If source has intelligence and target doesn't, transfer it
-        if ($sourceIntelligence && !$targetIntelligence) {
+        if ($sourceIntelligence && ! $targetIntelligence) {
             $sourceIntelligence->update(['exercise_id' => $target->id]);
         }
         // If both have intelligence, keep target's intelligence (source will be deleted with exercise)
         // No action needed as source intelligence will be cascade deleted
     }
 
-
-
     /**
      * Create alias for the source exercise owner if requested
-     * 
-     * @param Exercise $source
-     * @param Exercise $target
-     * @param bool $createAlias
+     *
      * @return bool Whether an alias was created
      */
     private function createAliasForOwner(Exercise $source, Exercise $target, bool $createAlias): bool
     {
         // Don't create alias if not requested
-        if (!$createAlias) {
+        if (! $createAlias) {
             return false;
         }
 
         // Don't create alias if source has no owner (global exercise)
-        if (!$source->user) {
+        if (! $source->user) {
             return false;
         }
 
@@ -231,10 +228,11 @@ class ExerciseMergeService
                     'exercise_id' => $target->id,
                     'alias_name' => $source->title,
                 ]);
+
                 // Continue with merge - alias already exists
                 return false;
             }
-            
+
             // For other database errors, log and continue
             Log::error('Failed to create alias during merge', [
                 'user_id' => $source->user->id,
@@ -242,7 +240,7 @@ class ExerciseMergeService
                 'alias_name' => $source->title,
                 'error' => $e->getMessage(),
             ]);
-            
+
             // Don't fail the merge due to alias creation failure
             return false;
         } catch (\Exception $e) {
@@ -253,9 +251,57 @@ class ExerciseMergeService
                 'alias_name' => $source->title,
                 'error' => $e->getMessage(),
             ]);
-            
+
             // Don't fail the merge due to alias creation failure
             return false;
+        }
+    }
+
+    /**
+     * Create a global alias for the target exercise using the source exercise's canonical name if not redundant.
+     */
+    private function createCanonicalNameAlias(Exercise $source, Exercise $target): void
+    {
+        $canonical = $source->canonical_name;
+        $titleSnake = \Illuminate\Support\Str::snake($source->title);
+        $titleSlug = \Illuminate\Support\Str::slug($source->title, '_');
+
+        // Skip if canonical_name is identical to snake_case or slug of title
+        if ($canonical === $titleSnake || $canonical === $titleSlug) {
+            return;
+        }
+
+        // Check if alias already exists for the target exercise
+        $exists = \App\Models\ExerciseAlias::query()
+            ->where('exercise_id', $target->id)
+            ->where('alias_name', $canonical)
+            ->exists();
+
+        if ($exists) {
+            return;
+        }
+
+        try {
+            \App\Models\ExerciseAlias::create([
+                'user_id' => null, // Global alias
+                'exercise_id' => $target->id,
+                'alias_name' => $canonical,
+            ]);
+
+            Log::info('Global canonical name alias created during merge', [
+                'target_exercise_id' => $target->id,
+                'alias_name' => $canonical,
+            ]);
+        } catch (\Illuminate\Database\QueryException $e) {
+            // Check if it's a duplicate entry error
+            if ($e->getCode() === '23000') {
+                Log::warning('Duplicate canonical alias during merge - alias already exists', [
+                    'exercise_id' => $target->id,
+                    'alias_name' => $canonical,
+                ]);
+            } else {
+                throw $e;
+            }
         }
     }
 
@@ -267,7 +313,7 @@ class ExerciseMergeService
         return [
             'lift_logs_count' => $exercise->liftLogs()->count(),
             'has_intelligence' => $exercise->hasIntelligence(),
-            'users_count' => $exercise->liftLogs()->distinct('user_id')->count('user_id')
+            'users_count' => $exercise->liftLogs()->distinct('user_id')->count('user_id'),
         ];
     }
 }

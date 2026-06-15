@@ -12,53 +12,70 @@ class ExerciseResolverService
     /**
      * Resolve an exercise name to an Exercise model.
      */
-    public function resolve(string $exerciseName, User $user, ?string $logType = null): Exercise
+    public function resolve(string $exerciseName, User $user, ?string $logType = null, ?string $canonicalName = null): Exercise
     {
-        $canonical = Str::snake($exerciseName);
+        $canonical = $canonicalName ?: Str::snake($exerciseName);
 
-        // 1. Exact match on exercises.canonical_name (scoped to global and user-owned)
+        // 1. Exact match on exercises.canonical_name (scoped to global only)
         $exercise = Exercise::query()
-            ->where(function ($query) use ($user) {
-                $query->whereNull('user_id')
-                    ->orWhere('user_id', $user->id);
-            })
+            ->whereNull('user_id')
             ->where('canonical_name', $canonical)
             ->first();
 
         if ($exercise) {
+            if ($exercise->title !== $exerciseName) {
+                $exercise->update(['title' => $exerciseName]);
+            }
+
             return $exercise;
         }
 
-        // 2. Case-insensitive match on exercises.title (scoped to global and user-owned)
+        // 2. Case-insensitive match on exercises.title (scoped to global only)
         $exercise = Exercise::query()
-            ->where(function ($query) use ($user) {
-                $query->whereNull('user_id')
-                    ->orWhere('user_id', $user->id);
-            })
+            ->whereNull('user_id')
             ->whereRaw('LOWER(title) = ?', [strtolower($exerciseName)])
             ->first();
 
         if ($exercise) {
+            if ($exercise->title !== $exerciseName) {
+                $exercise->update(['title' => $exerciseName]);
+            }
+
             return $exercise;
         }
 
-        // 3. Case-insensitive match on exercise_aliases.alias_name (scoped to global and user-owned)
+        // 3. Case-insensitive match on exercise_aliases.alias_name (scoped to global only)
         $alias = ExerciseAlias::query()
-            ->where(function ($query) use ($user) {
-                $query->whereNull('user_id')
-                    ->orWhere('user_id', $user->id);
-            })
+            ->whereNull('user_id')
             ->whereRaw('LOWER(alias_name) = ?', [strtolower($exerciseName)])
             ->first();
 
         if ($alias) {
             $exercise = $alias->exercise;
-            if ($exercise && ($exercise->user_id === null || $exercise->user_id === $user->id)) {
+            if ($exercise && $exercise->user_id === null) {
+                if ($exercise->title !== $exerciseName) {
+                    $exercise->update(['title' => $exerciseName]);
+                }
+
                 return $exercise;
             }
         }
 
-        // 4. Auto-create new exercise
+        // 4. Auto-create new exercise or promote user-owned if canonical_name conflict exists
+        $existingUserOwned = Exercise::query()
+            ->whereNotNull('user_id')
+            ->where('canonical_name', $canonical)
+            ->first();
+
+        if ($existingUserOwned) {
+            $existingUserOwned->update(['user_id' => null]);
+            if ($existingUserOwned->title !== $exerciseName) {
+                $existingUserOwned->update(['title' => $exerciseName]);
+            }
+
+            return $existingUserOwned;
+        }
+
         $derivedType = $this->deriveExerciseType($logType);
 
         return Exercise::create([
@@ -75,7 +92,7 @@ class ExerciseResolverService
      */
     private function deriveExerciseType(?string $logType): string
     {
-        if (!$logType) {
+        if (! $logType) {
             return 'regular';
         }
 

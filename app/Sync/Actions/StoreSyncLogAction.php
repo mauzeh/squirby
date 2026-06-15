@@ -22,7 +22,7 @@ class StoreSyncLogAction
     public function execute(User $user, array $validated, ?string $deviceId): LiftLog
     {
         // Handle idempotency
-        if (!empty($validated['idempotency_key'])) {
+        if (! empty($validated['idempotency_key'])) {
             $existing = LiftLog::where('user_id', $user->id)
                 ->where('idempotency_key', $validated['idempotency_key'])
                 ->first();
@@ -36,7 +36,8 @@ class StoreSyncLogAction
         $exercise = $this->exerciseResolver->resolve(
             $validated['exercise_name'],
             $user,
-            $validated['log_type']
+            $validated['log_type'],
+            $validated['canonical_name'] ?? null
         );
 
         // Parse logged_at date at 12:00:00

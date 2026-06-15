@@ -1,14 +1,17 @@
 <?php
 
 use App\Sync\Controllers\AuthController;
-use App\Sync\Controllers\LogController;
 use App\Sync\Controllers\BlueprintController;
+use App\Sync\Controllers\LogController;
 use App\Sync\Controllers\PreferencesController;
 use App\Sync\Controllers\RestoreController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
+Route::post('/auth/google', [AuthController::class, 'googleAuth']);
+Route::post('/auth/apple', [AuthController::class, 'appleAuth']);
+Route::post('/auth/check', [AuthController::class, 'checkEmail']);
 
 Route::middleware(['auth:sanctum', 'throttle:sync-per-user', 'throttle:sync-global', 'device-id', 'log-sync-request'])->group(function () {
     Route::post('/logs', [LogController::class, 'store']);

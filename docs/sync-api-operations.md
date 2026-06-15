@@ -94,13 +94,16 @@ php artisan sync:purge-logs --days=14
 
 ## Exercise Auto-Creation
 
-When a client submits a completion log with an exercise name that does not exist in the database, the API's **Exercise Resolver** will automatically create a new Exercise.
+When a client submits a completion log, the API's **Exercise Resolver** will resolve it to a global exercise. If the exercise does not exist, a new global exercise is automatically created.
+
+### Optional canonical_name Field
+Clients can send an optional `canonical_name` field (e.g. direct client slug) alongside the required `exercise_name` field in `POST /api/sync/logs`. When provided, this slug is used directly for the canonical name lookup.
 
 ### Matching Priority
-1. Exact match on `exercises.canonical_name` using `Str::snake(name)`.
-2. Case-insensitive match on `exercises.title`.
-3. Case-insensitive match on `exercise_aliases.alias_name`.
-4. Auto-creation.
+1. Exact match on `exercises.canonical_name` (using `canonical_name` if provided, otherwise falling back to `Str::snake(exercise_name)`).
+2. Case-insensitive match on `exercises.title` (using `exercise_name`).
+3. Case-insensitive match on global `exercise_aliases.alias_name` (using `exercise_name`, restricted to global aliases with `user_id = NULL`).
+4. Auto-creation (using `canonical_name` for the canonical name and `exercise_name` for the title).
 
 ### Identification
 Auto-created exercises are created as global exercises:
@@ -109,7 +112,15 @@ Auto-created exercises are created as global exercises:
 - They have a `created_at` timestamp corresponding to a sync request and lack metadata in the `exercise_intelligence` table.
 
 ### Merging Duplicates
-If a user syncs an exercise with a typo or slight variation, it may result in a duplicate exercise. Administrators can resolve this by using the existing admin exercise merge feature to merge the auto-created exercise into the canonical global exercise.
+If a user syncs an exercise with a typo or slight variation, it may result in a duplicate exercise. Administrators can resolve this by using the admin exercise merge feature to merge the auto-created exercise into the canonical global exercise.
+
+When a merge is performed, the system automatically creates a global alias (`user_id = NULL`) on the target exercise with the source exercise's `canonical_name` (unless it is redundant with the title or already exists). This prevents future duplicate creation from the same client slug.
+
+**Workflow**:
+1. **Duplicate Auto-Created**: Client sends a sync request with `canonical_name` = `'benchpress'` and `exercise_name` = `'Benchpress'`, creating a duplicate exercise.
+2. **Admin Merge**: An administrator merges `'Benchpress'` into the canonical global exercise `'Barbell Bench Press'`.
+3. **Alias Created**: A global alias with `alias_name` = `'benchpress'` is automatically created on `'Barbell Bench Press'`.
+4. **Future Resolution**: Future sync requests with `canonical_name` = `'benchpress'` resolve directly to `'Barbell Bench Press'` without creating duplicates.
 
 ---
 

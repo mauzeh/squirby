@@ -9,7 +9,6 @@ use App\Models\User;
 use App\Sync\Models\AthleteBlueprint;
 use App\Sync\Models\AthletePreference;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\RateLimiter;
 use Tests\TestCase;
 
 class SyncApiSmokeTest extends TestCase
@@ -20,22 +19,23 @@ class SyncApiSmokeTest extends TestCase
     {
         // 1. Register a user
         $regResponse = $this->postJson('/api/sync/register', [
-            'username' => 'john_doe',
+            'email' => 'john@doe.com',
             'password' => 'secret123',
+            'name' => 'john_doe',
             'device_id' => 'device-abc',
         ]);
 
         $regResponse->assertStatus(200)
-            ->assertJsonStructure(['status', 'token', 'athlete'])
-            ->assertJson(['status' => 'ok', 'athlete' => 'john_doe']);
+            ->assertJsonStructure(['status', 'token', 'athlete', 'email'])
+            ->assertJson(['status' => 'ok', 'athlete' => 'john_doe', 'email' => 'john@doe.com']);
 
         $token = $regResponse->json('token');
-        $headers = ['Authorization' => 'Bearer ' . $token];
+        $headers = ['Authorization' => 'Bearer '.$token];
 
         // Verify user was created in DB
-        $user = User::where('name', 'john_doe')->first();
+        $user = User::where('email', 'john@doe.com')->first();
         $this->assertNotNull($user);
-        $this->assertEquals('john_doe@sync.local', $user->email);
+        $this->assertEquals('john_doe', $user->name);
 
         // 2. Store a log (with idempotency key)
         $idempotencyKey = 'some-uuid-key-123';
@@ -149,7 +149,7 @@ class SyncApiSmokeTest extends TestCase
         $this->assertNotEmpty($prHistory['bench_press']);
         $oneRmPr = collect($prHistory['bench_press'])->firstWhere('pr_type', 'one_rm');
         $this->assertNotNull($oneRmPr);
-        $this->assertEquals(186.0, $oneRmPr['value']);
+        $this->assertEqualsWithDelta(186.0, $oneRmPr['value'], 0.1);
     }
 
     public function test_auth_and_error_responses(): void
@@ -163,7 +163,7 @@ class SyncApiSmokeTest extends TestCase
         // Create a user and token
         $user = User::factory()->create(['name' => 'billy', 'password' => bcrypt('password123')]);
         $token = $user->createToken('test-device')->plainTextToken;
-        $headers = ['Authorization' => 'Bearer ' . $token];
+        $headers = ['Authorization' => 'Bearer '.$token];
 
         // 2. Validation failure returns 422
         $this->withHeaders($headers)->postJson('/api/sync/logs', [

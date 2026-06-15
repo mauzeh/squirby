@@ -14,12 +14,13 @@ class ExerciseResolverServiceTest extends TestCase
     use RefreshDatabase;
 
     private ExerciseResolverService $resolver;
+
     private User $user;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->resolver = new ExerciseResolverService();
+        $this->resolver = new ExerciseResolverService;
         $this->user = User::factory()->create();
     }
 
@@ -64,7 +65,7 @@ class ExerciseResolverServiceTest extends TestCase
         ExerciseAlias::create([
             'exercise_id' => $exercise->id,
             'alias_name' => 'Squats',
-            'user_id' => $this->user->id,
+            'user_id' => null, // Sync aliases must be global
         ]);
 
         $resolved = $this->resolver->resolve('squats', $this->user);
@@ -74,7 +75,7 @@ class ExerciseResolverServiceTest extends TestCase
         $this->assertEquals($exercise->id, $resolvedCaps->id);
     }
 
-    public function test_scoping_to_user_and_global(): void
+    public function test_scoping_to_user_and_global_promotion(): void
     {
         // 1. User specific exercise
         $userExercise = Exercise::create([
@@ -93,15 +94,42 @@ class ExerciseResolverServiceTest extends TestCase
             'user_id' => $otherUser->id,
         ]);
 
-        // Resolving user's own exercise should succeed
+        // Resolving user's own user-owned exercise doesn't match global, but promotes it to global
         $resolved = $this->resolver->resolve('user_push_up', $this->user);
         $this->assertEquals($userExercise->id, $resolved->id);
+        $this->assertNull($resolved->fresh()->user_id); // Promoted to global
 
-        // Resolving other user's exercise should NOT match, and instead auto-create a new one
+        // Resolving other user's user-owned exercise doesn't match global, but promotes it to global
         $resolvedOther = $this->resolver->resolve('other_push_up', $this->user);
-        $this->assertNotEquals($otherExercise->id, $resolvedOther->id);
-        $this->assertEquals('other_push_up', $resolvedOther->canonical_name);
-        $this->assertNull($resolvedOther->user_id); // Auto-created exercises are global (user_id = NULL)
+        $this->assertEquals($otherExercise->id, $resolvedOther->id);
+        $this->assertNull($resolvedOther->fresh()->user_id); // Promoted to global
+    }
+
+    public function test_resolve_with_canonical_name_param(): void
+    {
+        $exercise = Exercise::create([
+            'title' => 'Barbell Bench Press',
+            'canonical_name' => 'bb_bench_press',
+            'exercise_type' => 'regular',
+        ]);
+
+        // Should resolve using exact canonical name parameter
+        $resolved = $this->resolver->resolve('Mismatched Title', $this->user, 'barbell', 'bb_bench_press');
+        $this->assertEquals($exercise->id, $resolved->id);
+        $this->assertEquals('Mismatched Title', $resolved->fresh()->title); // Title updated because it differed
+    }
+
+    public function test_resolve_updates_mismatched_title(): void
+    {
+        $exercise = Exercise::create([
+            'title' => 'Old Title',
+            'canonical_name' => 'bench_press',
+            'exercise_type' => 'regular',
+        ]);
+
+        $resolved = $this->resolver->resolve('New Title', $this->user, null, 'bench_press');
+        $this->assertEquals($exercise->id, $resolved->id);
+        $this->assertEquals('New Title', $resolved->fresh()->title);
     }
 
     public function test_soft_deleted_exclusion(): void
