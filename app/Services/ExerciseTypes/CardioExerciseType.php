@@ -125,11 +125,21 @@ class CardioExerciseType extends BaseExerciseType
     /**
      * Format weight display for cardio exercises
      * 
-     * For cardio exercises, we display distance instead of weight.
-     * The distance is stored in the distance field.
+     * For cardio exercises, we display distance or calories depending on log_type.
+     * The distance is stored in the distance field, calories in the calories field.
      */
     public function formatWeightDisplay(LiftLog $liftLog): string
     {
+        // Check if this is a calories-based cardio exercise
+        $logType = $liftLog->log_type ?: ($liftLog->exercise->log_type ?? null);
+        if ($logType === 'cardio-calories') {
+            $firstSet = $liftLog->relationLoaded('liftSets')
+                ? $liftLog->liftSets->first()
+                : $liftLog->liftSets()->first();
+            $calories = $firstSet?->calories ?? 0;
+            return $calories . ' cal';
+        }
+
         $distance = $liftLog->display_distance;
         
         if (!is_numeric($distance) || $distance <= 0) {
@@ -151,13 +161,28 @@ class CardioExerciseType extends BaseExerciseType
     }
     
     /**
-     * Format complete cardio display showing distance and rounds
+     * Format complete cardio display showing distance/calories and rounds
      * 
-     * Returns a formatted string like "500m × 7 rounds" for cardio exercises.
-     * This provides cardio-appropriate terminology instead of weight/reps/sets.
+     * Returns a formatted string like "500m × 7 rounds" for distance-based cardio,
+     * or "6 cal × 2 rounds" for calories-based cardio.
      */
     public function formatCompleteDisplay(LiftLog $liftLog): string
     {
+        // Check if this is a calories-based cardio exercise
+        $logType = $liftLog->log_type ?: ($liftLog->exercise->log_type ?? null);
+        if ($logType === 'cardio-calories') {
+            $rounds = $liftLog->display_rounds;
+            if (!is_numeric($rounds) || $rounds <= 0) {
+                $rounds = 1;
+            }
+            $firstSet = $liftLog->relationLoaded('liftSets')
+                ? $liftLog->liftSets->first()
+                : $liftLog->liftSets()->first();
+            $calories = $firstSet?->calories ?? 0;
+            $roundsText = $rounds == 1 ? 'round' : 'rounds';
+            return "{$calories} cal × {$rounds} {$roundsText}";
+        }
+
         $distance = $liftLog->display_distance;
         $rounds = $liftLog->display_rounds;
         
