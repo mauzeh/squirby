@@ -43,6 +43,43 @@ class StoreSyncLogAction
         // Parse logged_at date at 12:00:00
         $loggedAt = Carbon::parse($validated['date'])->setTime(12, 0, 0);
 
+        // Upsert: check if a log already exists for this slot (same exercise + date + position)
+        $existingBySlot = LiftLog::where('user_id', $user->id)
+            ->where('exercise_id', $exercise->id)
+            ->whereDate('logged_at', $validated['date'])
+            ->where('track', $validated['track'] ?? null)
+            ->where('block_index', $validated['block_index'] ?? null)
+            ->where('movement_index', $validated['movement_index'] ?? null)
+            ->first();
+
+        if ($existingBySlot) {
+            // Update existing log
+            $existingBySlot->update([
+                'comments' => $validated['note'] ?? null,
+                'log_type' => $validated['log_type'],
+                'device_id' => $deviceId,
+                'idempotency_key' => $validated['idempotency_key'] ?? null,
+            ]);
+
+            // Replace sets: delete old, create new
+            $existingBySlot->liftSets()->forceDelete();
+            foreach ($validated['sets'] as $setData) {
+                $mapped = $this->setFieldMapper->mapToColumns(
+                    $validated['log_type'],
+                    $setData,
+                    $validated['weight_unit']
+                );
+                $existingBySlot->liftSets()->create($mapped);
+            }
+
+            // Touch updated_at so pull sync picks up the change
+            $existingBySlot->touch();
+
+            LiftLogCompleted::dispatch($existingBySlot, false);
+
+            return $existingBySlot;
+        }
+
         // Create the lift log
         $liftLog = LiftLog::create([
             'exercise_id' => $exercise->id,
