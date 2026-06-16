@@ -23,8 +23,16 @@ class ExerciseResolverService
             ->first();
 
         if ($exercise) {
+            $updates = [];
             if ($exercise->title !== $exerciseName) {
-                $exercise->update(['title' => $exerciseName]);
+                $updates['title'] = $exerciseName;
+            }
+            // Populate log_type if not already set and we have one from the sync payload
+            if ($logType && !$exercise->log_type) {
+                $updates['log_type'] = $logType;
+            }
+            if (!empty($updates)) {
+                $exercise->update($updates);
             }
 
             return $exercise;
@@ -37,8 +45,15 @@ class ExerciseResolverService
             ->first();
 
         if ($exercise) {
+            $updates = [];
             if ($exercise->title !== $exerciseName) {
-                $exercise->update(['title' => $exerciseName]);
+                $updates['title'] = $exerciseName;
+            }
+            if ($logType && !$exercise->log_type) {
+                $updates['log_type'] = $logType;
+            }
+            if (!empty($updates)) {
+                $exercise->update($updates);
             }
 
             return $exercise;
@@ -53,8 +68,15 @@ class ExerciseResolverService
         if ($alias) {
             $exercise = $alias->exercise;
             if ($exercise && $exercise->user_id === null) {
+                $updates = [];
                 if ($exercise->title !== $exerciseName) {
-                    $exercise->update(['title' => $exerciseName]);
+                    $updates['title'] = $exerciseName;
+                }
+                if ($logType && !$exercise->log_type) {
+                    $updates['log_type'] = $logType;
+                }
+                if (!empty($updates)) {
+                    $exercise->update($updates);
                 }
 
                 return $exercise;
@@ -68,10 +90,14 @@ class ExerciseResolverService
             ->first();
 
         if ($existingUserOwned) {
-            $existingUserOwned->update(['user_id' => null]);
+            $updates = ['user_id' => null];
             if ($existingUserOwned->title !== $exerciseName) {
-                $existingUserOwned->update(['title' => $exerciseName]);
+                $updates['title'] = $exerciseName;
             }
+            if ($logType && !$existingUserOwned->log_type) {
+                $updates['log_type'] = $logType;
+            }
+            $existingUserOwned->update($updates);
 
             return $existingUserOwned;
         }
@@ -82,7 +108,8 @@ class ExerciseResolverService
             'title' => $exerciseName,
             'canonical_name' => $canonical,
             'exercise_type' => $derivedType,
-            'user_id' => null, // Auto-created exercises are global (NULL user_id)
+            'log_type' => $logType,
+            'user_id' => null,
             'show_in_feed' => true,
         ]);
     }

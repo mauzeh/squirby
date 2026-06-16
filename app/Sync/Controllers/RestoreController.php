@@ -43,6 +43,11 @@ class RestoreController
             // Determine log type
             $logType = $liftLog->log_type;
             if (!$logType) {
+                // Prefer the exercise's canonical log_type from Athlete sync
+                $logType = $liftLog->exercise->log_type;
+            }
+            if (!$logType) {
+                // Final fallback: derive from coarse exercise_type
                 $exerciseType = $liftLog->exercise->exercise_type ?? 'regular';
                 $logType = match ($exerciseType) {
                     'cardio' => 'cardio',
