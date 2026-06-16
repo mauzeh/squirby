@@ -23,7 +23,7 @@ return [
 
     'allowed_origins_patterns' => [],
 
-    'allowed_headers' => ['Authorization', 'Content-Type', 'X-Device-Id'],
+    'allowed_headers' => ['Authorization', 'Content-Type', 'X-Device-Id', 'X-Idempotency-Key'],
 
     'exposed_headers' => [],
 
