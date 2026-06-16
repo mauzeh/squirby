@@ -25,7 +25,7 @@ class SetFieldMapper
 
             case 'bodyweight':
             case 'added-weight':
-                $columns['weight'] = $setData['addedWeight'] ?? null;
+                $columns['weight'] = $setData['addedWeight'] ?? 0;
                 $columns['reps'] = $setData['reps'] ?? null;
                 break;
 

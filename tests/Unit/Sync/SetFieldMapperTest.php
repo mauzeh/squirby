@@ -86,6 +86,56 @@ class SetFieldMapperTest extends TestCase
         $this->assertEquals(15, $mapped['reps']);
     }
 
+    public function test_map_to_columns_missing_optional_fields(): void
+    {
+        // bodyweight/added-weight without addedWeight should default to 0
+        foreach (['bodyweight', 'added-weight'] as $type) {
+            $mapped = $this->mapper->mapToColumns($type, ['reps' => 10], 'lbs');
+            $this->assertEquals(0, $mapped['weight'], "$type: missing addedWeight should default to 0");
+            $this->assertEquals(10, $mapped['reps']);
+        }
+
+        // barbell without weight should be null (caller must validate)
+        $mapped = $this->mapper->mapToColumns('barbell', ['reps' => 5], 'lbs');
+        $this->assertNull($mapped['weight']);
+        $this->assertEquals(5, $mapped['reps']);
+
+        // kettlebell without kbWeight
+        $mapped = $this->mapper->mapToColumns('kettlebell', ['reps' => 8], 'lbs');
+        $this->assertNull($mapped['weight']);
+        $this->assertEquals(8, $mapped['reps']);
+
+        // ball without ballWeight
+        $mapped = $this->mapper->mapToColumns('ball', ['reps' => 12], 'lbs');
+        $this->assertNull($mapped['weight']);
+        $this->assertEquals(12, $mapped['reps']);
+
+        // bodyweight-reps without reps
+        $mapped = $this->mapper->mapToColumns('bodyweight-reps', [], 'lbs');
+        $this->assertNull($mapped['reps']);
+
+        // static-hold without duration
+        $mapped = $this->mapper->mapToColumns('static-hold', [], 'lbs');
+        $this->assertNull($mapped['time']);
+
+        // weighted-carry without weight or duration
+        $mapped = $this->mapper->mapToColumns('weighted-carry', [], 'lbs');
+        $this->assertNull($mapped['weight']);
+        $this->assertNull($mapped['time']);
+
+        // cardio with partial data
+        $mapped = $this->mapper->mapToColumns('cardio', ['distance' => 5000], 'lbs');
+        $this->assertEquals(5000, $mapped['distance']);
+        $this->assertNull($mapped['distance_unit']);
+        $this->assertNull($mapped['time']);
+        $this->assertNull($mapped['calories']);
+
+        // banded without bandColor
+        $mapped = $this->mapper->mapToColumns('banded', ['reps' => 15], 'lbs');
+        $this->assertNull($mapped['band_color']);
+        $this->assertEquals(15, $mapped['reps']);
+    }
+
     public function test_map_from_columns_all_types(): void
     {
         // 1. barbell

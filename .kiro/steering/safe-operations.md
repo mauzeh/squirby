@@ -22,6 +22,10 @@ inclusion: always
 4. **Existing migrations** — never modify a migration that has already been run in production. Create a new migration instead.
 5. **Existing tests** — do not delete or significantly alter existing tests without approval. Add new tests freely.
 
+## Commands you must NEVER run
+
+- **`vendor/bin/pint`** — never run Pint (the code formatter) in any form. No `pint`, `pint --dirty`, `pint --test`, or any variation.
+
 ## Bash safety
 
 - **Never use heredocs or `echo` with multi-line content** to write files. Use file-writing tools instead.
