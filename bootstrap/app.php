@@ -12,6 +12,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
         then: function () {
             Illuminate\Support\Facades\Route::prefix('api/sync')
+                ->middleware('api')
                 ->group(base_path('routes/sync.php'));
         }
     )
