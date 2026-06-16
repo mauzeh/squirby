@@ -45,6 +45,7 @@ class LogController
         return response()->json([
             'status' => 'ok',
             'log_id' => $liftLog->id,
+            'updated_at' => $liftLog->updated_at->toIso8601String(),
         ]);
     }
 

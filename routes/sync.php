@@ -2,6 +2,7 @@
 
 use App\Sync\Controllers\AuthController;
 use App\Sync\Controllers\BlueprintController;
+use App\Sync\Controllers\ChangesController;
 use App\Sync\Controllers\LogController;
 use App\Sync\Controllers\PreferencesController;
 use App\Sync\Controllers\RestoreController;
@@ -19,4 +20,5 @@ Route::middleware(['auth:sanctum', 'throttle:sync-per-user', 'throttle:sync-glob
     Route::post('/blueprint', [BlueprintController::class, 'store']);
     Route::post('/preferences', [PreferencesController::class, 'store']);
     Route::get('/restore', [RestoreController::class, 'index']);
+    Route::get('/changes', [ChangesController::class, 'index']);
 });
