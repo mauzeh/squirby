@@ -218,4 +218,35 @@ class SyncApiSmokeTest extends TestCase
             ])
             ->assertHeader('Retry-After');
     }
+
+    public function test_delete_own_log_succeeds(): void
+    {
+        $user = User::factory()->create();
+        $token = $user->createToken('test-device')->plainTextToken;
+        $headers = ['Authorization' => 'Bearer '.$token, 'X-Device-Id' => 'device-123'];
+
+        // Create a log
+        $response = $this->withHeaders($headers)->postJson('/api/sync/logs', [
+            'exercise_name' => 'Pull Up',
+            'date' => '2026-06-15',
+            'log_type' => 'bodyweight',
+            'weight_unit' => 'lbs',
+            'sets' => [
+                ['reps' => 10],
+                ['reps' => 8],
+            ],
+        ]);
+
+        $response->assertStatus(200);
+        $logId = $response->json('log_id');
+
+        // Delete own log via route model binding
+        $this->withHeaders($headers)
+            ->deleteJson("/api/sync/logs/{$logId}")
+            ->assertStatus(200)
+            ->assertJson(['status' => 'ok']);
+
+        // Verify soft deleted
+        $this->assertSoftDeleted('lift_logs', ['id' => $logId]);
+    }
 }
