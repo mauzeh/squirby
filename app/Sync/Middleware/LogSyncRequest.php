@@ -16,20 +16,26 @@ class LogSyncRequest
      */
     public function handle(Request $request, Closure $next): Response
     {
+        $start = microtime(true);
+
+        $response = $next($request);
+
+        $durationMs = round((microtime(true) - $start) * 1000);
+
         try {
             Log::channel('sync_requests')->info(json_encode([
                 'ts' => now()->toIso8601String(),
                 'ip' => $request->ip(),
                 'method' => $request->method(),
                 'path' => $request->path(),
+                'status' => $response->getStatusCode(),
+                'duration_ms' => $durationMs,
                 'query' => $request->query(),
-                'headers' => $request->headers->all(),
-                'body' => $request->all(),
             ]));
         } catch (\Throwable $e) {
             // Don't block the request
         }
 
-        return $next($request);
+        return $response;
     }
 }
