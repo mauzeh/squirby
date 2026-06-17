@@ -51,6 +51,20 @@ return Application::configure(basePath: dirname(__DIR__))
             }
         });
 
+        $exceptions->render(function (\Illuminate\Database\QueryException $e, \Illuminate\Http\Request $request) {
+            if ($request->is('api/sync/*')) {
+                // If Sanctum's token table is missing or the token lookup fails due to
+                // a database reset, treat it as an auth failure rather than a 500.
+                $msg = $e->getMessage();
+                if (str_contains($msg, 'personal_access_tokens')) {
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => 'Unauthenticated.',
+                    ], 401);
+                }
+            }
+        });
+
         $exceptions->render(function (\Throwable $e, \Illuminate\Http\Request $request) {
             if ($request->is('api/sync/*')) {
                 if ($e instanceof \Symfony\Component\HttpKernel\Exception\HttpExceptionInterface) {

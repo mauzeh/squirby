@@ -27,9 +27,9 @@ class LogController
             'log_type' => 'required|string',
             'weight_unit' => 'required|string',
             'sets' => 'required|array|max:100',
-            'track' => 'nullable|string',
-            'block_index' => 'nullable|integer',
-            'movement_index' => 'nullable|integer',
+            'track' => 'nullable|string|max:20',
+            'block_index' => 'nullable|integer|min:0|max:65535',
+            'movement_index' => 'nullable|integer|min:0|max:65535',
             'note' => 'nullable|string',
             'idempotency_key' => 'nullable|string',
         ]);
