@@ -3,6 +3,7 @@
 namespace App\Services\ExerciseTypes;
 
 use App\Models\LiftLog;
+use App\Models\LiftSet;
 use App\Models\User;
 use App\Services\ExerciseTypes\Exceptions\InvalidExerciseDataException;
 
@@ -326,18 +327,65 @@ class CardioExerciseType extends BaseExerciseType
     }
     
     /**
-     * Format mobile summary display for cardio exercises
-     * Cardio exercises don't show weight and use cardio-specific formatting
+     * Format a single set badge for cardio exercises.
+     * Shows distance (e.g. "500m") or calories (e.g. "6 cal").
      */
-    public function formatMobileSummaryDisplay(LiftLog $liftLog): array
+    public function formatSingleSetBadge(LiftSet $set, ?User $user = null): string
     {
-        return [
-            'weight' => '',
-            'repsSets' => $this->formatCompleteDisplay($liftLog),
-            'showWeight' => false
-        ];
+        // Calories-based cardio
+        if ($set->calories && $set->calories > 0) {
+            return $set->calories . ' cal';
+        }
+
+        // Distance-based cardio
+        $distance = (float) ($set->distance ?? 0);
+
+        if ($distance <= 0) {
+            return '0m';
+        }
+
+        if ($distance < 100) {
+            return number_format($distance, 0) . 'm';
+        } elseif ($distance >= 10000) {
+            return number_format($distance / 1000, 1) . 'km';
+        }
+
+        return number_format($distance, 0) . 'm';
     }
-    
+
+    /**
+     * For cardio, effort is "1 round" per set — not reps.
+     * The grouping badge shows count of rounds, e.g. "3× @ 500m".
+     * Override effort label to empty since distance IS the badge.
+     */
+    protected function getSetEffortValue(LiftSet $set): string
+    {
+        return '1';
+    }
+
+    /**
+     * Format badge group label for cardio.
+     * Renders as "{count} × {badge}" (e.g. "3 × 500m") instead of standard "{count}×{effort} @ {badge}".
+     */
+    protected function formatBadgeGroupLabel(int $count, string $effort, string $badgeLabel): string
+    {
+        $roundsText = $count == 1 ? '1 round' : $count . ' rounds';
+
+        if ($badgeLabel === '') {
+            return $roundsText;
+        }
+
+        return "<strong>{$badgeLabel}</strong> -&nbsp;{$roundsText}";
+    }
+
+    /**
+     * For cardio, uniform reps/sets displays as "{count} rounds".
+     */
+    protected function formatUniformRepsSets(int $count, string $effort): string
+    {
+        return $count == 1 ? '1 round' : $count . ' rounds';
+    }
+
     /**
      * Format success message description for cardio exercises
      * Uses distance and rounds terminology instead of weight/reps/sets

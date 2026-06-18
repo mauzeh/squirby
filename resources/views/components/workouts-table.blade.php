@@ -40,7 +40,9 @@
                 <td class="hide-on-mobile" style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ $liftLog->comments }}">{{ $liftLog->comments }}</td>
                 <td class="actions-column">
                     <div style="display: flex; gap: 5px;">
-                        <a href="{{ route('lift-logs.edit', $liftLog->id) }}" class="button edit"><i class="fa-solid fa-pencil"></a>
+                        @if($liftLog->hasUniformSets())
+                            <a href="{{ route('lift-logs.edit', $liftLog->id) }}" class="button edit"><i class="fa-solid fa-pencil"></a>
+                        @endif
                         <form action="{{ route('lift-logs.destroy', $liftLog->id) }}" method="POST" style="display:inline;">
                             @csrf
                             @method('DELETE')

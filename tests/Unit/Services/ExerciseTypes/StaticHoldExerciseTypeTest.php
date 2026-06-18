@@ -326,14 +326,19 @@ class StaticHoldExerciseTypeTest extends TestCase
         $mockExercise->exercise_type = 'static_hold';
         $liftLog->setRelation('exercise', $mockExercise);
         
-        // Create mock lift sets collection
+        // Set a mock user for unit resolution
+        $mockUser = new \App\Models\User();
+        $liftLog->setRelation('user', $mockUser);
+        
+        // Create mock lift sets using LiftSet model instances
         $liftSets = collect();
         for ($i = 0; $i < $sets; $i++) {
-            $liftSets->push((object)[
-                'reps' => 1,
-                'time' => $duration,
-                'weight' => $weight,
-            ]);
+            $set = new \App\Models\LiftSet();
+            $set->reps = 1;
+            $set->time = $duration;
+            $set->weight = $weight;
+            $set->unit = 'lbs';
+            $liftSets->push($set);
         }
         $liftLog->setRelation('liftSets', $liftSets);
         

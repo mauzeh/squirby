@@ -3,6 +3,7 @@
 namespace App\Services\ExerciseTypes;
 
 use App\Models\LiftLog;
+use App\Models\LiftSet;
 use App\Models\User;
 use App\Services\ExerciseTypes\Exceptions\UnsupportedOperationException;
 
@@ -237,6 +238,11 @@ abstract class BaseExerciseType implements ExerciseTypeInterface
      */
     public function formatLoggedItemDisplay(LiftLog $liftLog): string
     {
+        // For non-uniform sets, show the full multi-set summary
+        if (!$liftLog->hasUniformSets()) {
+            return $liftLog->formatSetsSummary();
+        }
+
         $weightText = $this->formatWeightDisplay($liftLog);
         $setCount = $liftLog->liftSets->count();
         $firstSet = $liftLog->liftSets->first();
@@ -334,25 +340,122 @@ abstract class BaseExerciseType implements ExerciseTypeInterface
     }
     
     /**
-     * Format mobile summary display for exercise summary component
-     * Default implementation provides standard weight and reps/sets formatting
+     * Format mobile summary display for exercise summary component.
+     *
+     * Template Method: orchestrates display for both uniform and non-uniform sets.
+     * Subclasses customize behavior by implementing formatSingleSetBadge().
+     *
+     * Returns:
+     * - Uniform sets: ['weight' => ..., 'repsSets' => ..., 'showWeight' => bool]
+     * - Non-uniform:  ['weight' => null, 'repsSets' => null, 'showWeight' => false, 'multiSetBadges' => [...]]
      */
     public function formatMobileSummaryDisplay(LiftLog $liftLog): array
     {
-        $weight = $this->formatWeightDisplay($liftLog);
-        $repsSets = $liftLog->display_rounds . ' x ' . $liftLog->display_reps;
-        
-        // For bodyweight exercises, don't show weight if it's zero
-        $showWeight = true;
-        if ($this->getTypeName() === 'bodyweight' && $liftLog->display_weight == 0) {
-            $showWeight = false;
+        $sets = $liftLog->relationLoaded('liftSets')
+            ? $liftLog->liftSets
+            : $liftLog->liftSets()->get();
+
+        if ($sets->isEmpty()) {
+            return ['weight' => '', 'repsSets' => '', 'showWeight' => false];
         }
-        
+
+        $user = $liftLog->relationLoaded('user') ? $liftLog->user : $liftLog->user()->first();
+
+        // Non-uniform path: group consecutive identical sets into badges
+        if (!$liftLog->hasUniformSets()) {
+            $badges = $this->buildGroupedSetBadges($sets, $user);
+
+            return [
+                'weight' => null,
+                'repsSets' => null,
+                'showWeight' => false,
+                'multiSetBadges' => $badges,
+            ];
+        }
+
+        // Uniform path: single weight badge + reps×sets badge
+        $firstSet = $sets->first();
+        $badgeLabel = $this->formatSingleSetBadge($firstSet, $user);
+        $count = $sets->count();
+        $effort = $this->getSetEffortValue($firstSet);
+        $repsSets = $this->formatUniformRepsSets($count, $effort);
+        $showWeight = $badgeLabel !== '';
+
         return [
-            'weight' => $weight,
+            'weight' => $badgeLabel,
             'repsSets' => $repsSets,
-            'showWeight' => $showWeight
+            'showWeight' => $showWeight,
         ];
+    }
+
+    /**
+     * Format the reps/sets label for uniform sets.
+     * Default: "{count} x {effort}" (e.g. "3 x 8").
+     * Override for types where effort isn't reps (static holds, cardio).
+     */
+    protected function formatUniformRepsSets(int $count, string $effort): string
+    {
+        return $count . ' x ' . $effort;
+    }
+
+    /**
+     * Build grouped set badges for non-uniform sets.
+     *
+     * Groups consecutive sets that share the same badge label AND effort value,
+     * then formats each group as "{count}×{effort} @ {badge}" or "{count}×{effort}"
+     * when the badge is empty (pure bodyweight).
+     */
+    protected function buildGroupedSetBadges($sets, ?User $user): array
+    {
+        $groups = [];
+        $currentBadge = null;
+        $currentEffort = null;
+        $currentCount = 0;
+
+        foreach ($sets as $set) {
+            $badge = $this->formatSingleSetBadge($set, $user);
+            $effort = $this->getSetEffortValue($set);
+
+            if ($badge === $currentBadge && $effort === $currentEffort) {
+                $currentCount++;
+            } else {
+                if ($currentCount > 0) {
+                    $groups[] = $this->formatBadgeGroupLabel($currentCount, $currentEffort, $currentBadge);
+                }
+                $currentBadge = $badge;
+                $currentEffort = $effort;
+                $currentCount = 1;
+            }
+        }
+
+        // Push last group
+        if ($currentCount > 0) {
+            $groups[] = $this->formatBadgeGroupLabel($currentCount, $currentEffort, $currentBadge);
+        }
+
+        return $groups;
+    }
+
+    /**
+     * Get the "effort" value for a set — the dimension that's not the load.
+     * Default: reps. Override for exercise types where effort is something else (e.g. duration).
+     */
+    protected function getSetEffortValue(LiftSet $set): string
+    {
+        return (string) ((int) $set->reps);
+    }
+
+    /**
+     * Format a single badge group label.
+     * e.g. "5×8 - <strong>185 lbs</strong>" or "2×10" (no load label for pure bodyweight)
+     */
+    protected function formatBadgeGroupLabel(int $count, string $effort, string $badgeLabel): string
+    {
+        if ($badgeLabel === '') {
+            return "{$count} × {$effort}";
+        }
+
+        return "{$count} × {$effort} -&nbsp;<strong>{$badgeLabel}</strong>";
     }
     
     /**
@@ -639,6 +742,25 @@ abstract class BaseExerciseType implements ExerciseTypeInterface
      */
     abstract public function formatWeightDisplay(LiftLog $liftLog): string;
     
+    /**
+     * Format a single set as a badge label.
+     *
+     * Default implementation: formats weight with unit via UnitResolver.
+     * Returns empty string when weight is zero (e.g. pure bodyweight).
+     * Subclasses override for type-specific display (bands, duration, distance).
+     */
+    public function formatSingleSetBadge(LiftSet $set, ?User $user = null): string
+    {
+        $weight = (float) $set->weight;
+        $unit = $set->unit ?? 'lbs';
+
+        if ($weight <= 0) {
+            return '';
+        }
+
+        return $this->unitResolver()->formatForUser($weight, $unit, $user);
+    }
+
     // ========================================================================
     // PR DETECTION METHODS (Default Implementations)
     // ========================================================================

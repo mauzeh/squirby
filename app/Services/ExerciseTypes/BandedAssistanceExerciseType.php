@@ -3,6 +3,8 @@
 namespace App\Services\ExerciseTypes;
 
 use App\Models\LiftLog;
+use App\Models\LiftSet;
+use App\Models\User;
 use App\Services\ExerciseTypes\Exceptions\InvalidExerciseDataException;
 
 /**
@@ -170,21 +172,20 @@ class BandedAssistanceExerciseType extends BaseExerciseType
     }
     
     /**
-     * Format mobile summary display for banded assistance exercises
-     * Shows band color with assistance indicator instead of weight
+     * Format a single set badge for banded assistance exercises.
+     * Shows band color with assist context, e.g. "Green band".
      */
-    public function formatMobileSummaryDisplay(LiftLog $liftLog): array
+    public function formatSingleSetBadge(LiftSet $set, ?User $user = null): string
     {
-        $weight = $this->formatWeightDisplay($liftLog);
-        $repsSets = $liftLog->display_rounds . ' x ' . $liftLog->display_reps;
-        
-        return [
-            'weight' => $weight,
-            'repsSets' => $repsSets,
-            'showWeight' => true
-        ];
+        $bandColor = $set->band_color ?? '';
+
+        if (empty($bandColor)) {
+            return 'Band: N/A';
+        }
+
+        return ucfirst($bandColor) . ' band';
     }
-    
+
     /**
      * Format success message description for banded assistance exercises
      * Shows band color with assistance indicator instead of weight
