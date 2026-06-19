@@ -98,7 +98,7 @@ class StoreSyncLogActionTest extends TestCase
         $this->assertEquals(1, LiftLog::where('user_id', $this->user->id)->count());
     }
 
-    public function test_missing_idempotency_key_always_creates(): void
+    public function test_missing_idempotency_key_upserts_same_slot(): void
     {
         $payload = [
             'exercise_name' => 'Squat',
@@ -112,6 +112,42 @@ class StoreSyncLogActionTest extends TestCase
 
         $log1 = $this->action->execute($this->user, $payload, 'device-123');
         $log2 = $this->action->execute($this->user, $payload, 'device-123');
+
+        // Same slot (exercise+date+null position) → upsert, not duplicate
+        $this->assertEquals($log1->id, $log2->id);
+        $this->assertEquals(1, LiftLog::where('user_id', $this->user->id)->count());
+    }
+
+    public function test_different_slots_create_separate_logs(): void
+    {
+        $payload1 = [
+            'exercise_name' => 'Squat',
+            'date' => '2026-06-15',
+            'log_type' => 'barbell',
+            'weight_unit' => 'lbs',
+            'track' => 'peak',
+            'block_index' => 0,
+            'movement_index' => 0,
+            'sets' => [
+                ['weight' => 225, 'reps' => 5],
+            ],
+        ];
+
+        $payload2 = [
+            'exercise_name' => 'Squat',
+            'date' => '2026-06-15',
+            'log_type' => 'barbell',
+            'weight_unit' => 'lbs',
+            'track' => 'peak',
+            'block_index' => 2,
+            'movement_index' => 0,
+            'sets' => [
+                ['weight' => 275, 'reps' => 3],
+            ],
+        ];
+
+        $log1 = $this->action->execute($this->user, $payload1, 'device-123');
+        $log2 = $this->action->execute($this->user, $payload2, 'device-123');
 
         $this->assertNotEquals($log1->id, $log2->id);
         $this->assertEquals(2, LiftLog::where('user_id', $this->user->id)->count());
