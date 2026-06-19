@@ -25,17 +25,17 @@ class SetFieldMapper
 
             case 'bodyweight':
             case 'added-weight':
-                $columns['weight'] = $setData['addedWeight'] ?? 0;
+                $columns['weight'] = $setData['addedWeight'] ?? $setData['weight'] ?? 0;
                 $columns['reps'] = $setData['reps'] ?? null;
                 break;
 
             case 'kettlebell':
-                $columns['weight'] = $setData['kbWeight'] ?? null;
+                $columns['weight'] = $setData['kbWeight'] ?? $setData['weight'] ?? null;
                 $columns['reps'] = $setData['reps'] ?? null;
                 break;
 
             case 'ball':
-                $columns['weight'] = $setData['ballWeight'] ?? null;
+                $columns['weight'] = $setData['ballWeight'] ?? $setData['weight'] ?? null;
                 $columns['reps'] = $setData['reps'] ?? null;
                 break;
 
@@ -55,13 +55,13 @@ class SetFieldMapper
                 break;
 
             case 'dual-kettlebell':
-                $columns['weight'] = $setData['kbWeight'] ?? null;
+                $columns['weight'] = $setData['kbWeight'] ?? $setData['weight'] ?? null;
                 $columns['time'] = $setData['duration'] ?? null;
                 break;
 
             case 'cardio':
                 $columns['distance'] = $setData['distance'] ?? null;
-                $columns['distance_unit'] = $setData['distanceUnit'] ?? null;
+                $columns['distance_unit'] = $setData['distanceUnit'] ?? $setData['distance_unit'] ?? null;
                 $columns['time'] = $setData['time'] ?? null;
                 $columns['calories'] = $setData['calories'] ?? null;
                 break;
@@ -73,13 +73,13 @@ class SetFieldMapper
 
             case 'cardio-distance':
                 $columns['distance'] = $setData['distance'] ?? null;
-                $columns['distance_unit'] = $setData['distanceUnit'] ?? null;
+                $columns['distance_unit'] = $setData['distanceUnit'] ?? $setData['distance_unit'] ?? null;
                 $columns['time'] = $setData['time'] ?? null;
                 $columns['weight'] = 0;
                 break;
 
             case 'banded':
-                $columns['band_color'] = $setData['bandColor'] ?? null;
+                $columns['band_color'] = $setData['bandColor'] ?? $setData['band_color'] ?? null;
                 $columns['reps'] = $setData['reps'] ?? null;
                 $columns['weight'] = 0;
                 break;
