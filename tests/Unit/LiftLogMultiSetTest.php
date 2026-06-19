@@ -238,9 +238,9 @@ class LiftLogMultiSetTest extends TestCase
 
         $this->assertArrayHasKey('multiSetBadges', $display);
         $this->assertCount(2, $display['multiSetBadges']);
-        $this->assertStringContainsString('5×8', $display['multiSetBadges'][0]);
+        $this->assertStringContainsString('5 × 8', $display['multiSetBadges'][0]);
         $this->assertStringContainsString('45', $display['multiSetBadges'][0]);
-        $this->assertStringContainsString('1×8', $display['multiSetBadges'][1]);
+        $this->assertStringContainsString('1 × 8', $display['multiSetBadges'][1]);
         $this->assertStringContainsString('65', $display['multiSetBadges'][1]);
     }
 
@@ -259,10 +259,10 @@ class LiftLogMultiSetTest extends TestCase
 
         $this->assertArrayHasKey('multiSetBadges', $display);
         $this->assertCount(3, $display['multiSetBadges']);
-        $this->assertStringContainsString('1×5', $display['multiSetBadges'][0]);
+        $this->assertStringContainsString('1 × 5', $display['multiSetBadges'][0]);
         $this->assertStringContainsString('185', $display['multiSetBadges'][0]);
-        $this->assertStringContainsString('1×3', $display['multiSetBadges'][1]);
-        $this->assertStringContainsString('1×1', $display['multiSetBadges'][2]);
+        $this->assertStringContainsString('1 × 3', $display['multiSetBadges'][1]);
+        $this->assertStringContainsString('1 × 1', $display['multiSetBadges'][2]);
     }
 
     /** @test */
@@ -285,8 +285,8 @@ class LiftLogMultiSetTest extends TestCase
 
         $this->assertArrayHasKey('multiSetBadges', $display);
         $this->assertCount(2, $display['multiSetBadges']);
-        $this->assertEquals('2×10', $display['multiSetBadges'][0]);
-        $this->assertEquals('1×8', $display['multiSetBadges'][1]);
+        $this->assertEquals('2 × 10', $display['multiSetBadges'][0]);
+        $this->assertEquals('1 × 8', $display['multiSetBadges'][1]);
     }
 
     // ─── Edit guard (controller-level) ──────────────────────────────────
