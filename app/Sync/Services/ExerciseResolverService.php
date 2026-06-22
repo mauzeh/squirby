@@ -124,10 +124,10 @@ class ExerciseResolverService
         }
 
         return match ($logType) {
-            'barbell', 'single-dumbbell', 'dual-dumbbell', 'kettlebell', 'dual-kettlebell', 'ball', 'weighted-carry' => 'regular',
+            'barbell', 'single-dumbbell', 'dual-dumbbell', 'kettlebell', 'ball' => 'regular',
+            'weighted-carry', 'dual-kettlebell', 'static-hold' => 'static_hold',
             'bodyweight', 'bodyweight-reps', 'added-weight' => 'bodyweight',
             'banded' => 'banded_resistance',
-            'static-hold' => 'static_hold',
             'cardio', 'cardio-calories', 'cardio-distance' => 'cardio',
             default => 'regular',
         };

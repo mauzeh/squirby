@@ -162,5 +162,17 @@ class ExerciseResolverServiceTest extends TestCase
         // barbell log type should derive regular exercise type
         $regular = $this->resolver->resolve('Super Press', $this->user, 'barbell');
         $this->assertEquals('regular', $regular->exercise_type);
+
+        // weighted-carry should derive static_hold exercise type
+        $carry = $this->resolver->resolve("Farmer's Carry March", $this->user, 'weighted-carry');
+        $this->assertEquals('static_hold', $carry->exercise_type);
+
+        // dual-kettlebell should derive static_hold exercise type
+        $dualKb = $this->resolver->resolve('Double KB Front Rack Carry', $this->user, 'dual-kettlebell');
+        $this->assertEquals('static_hold', $dualKb->exercise_type);
+
+        // static-hold should derive static_hold exercise type
+        $hold = $this->resolver->resolve('L-Sit Hold', $this->user, 'static-hold');
+        $this->assertEquals('static_hold', $hold->exercise_type);
     }
 }
