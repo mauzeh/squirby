@@ -6,9 +6,12 @@ use App\Models\User;
 use App\Sync\Services\AppleJwtVerifier;
 use App\Sync\Services\GoogleJwtVerifier;
 use Illuminate\Auth\AuthenticationException;
+use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Str;
 use UnexpectedValueException;
 
 class AuthController
@@ -20,7 +23,7 @@ class AuthController
     {
         $validated = $request->validate([
             'email' => 'required|email|unique:users,email',
-            'password' => 'required|string|min:6',
+            'password' => 'required|string|min:8',
             'name' => 'required|string',
             'device_id' => 'required|string',
         ]);
@@ -139,6 +142,62 @@ class AuthController
             'status' => 'ok',
             'exists' => false,
         ]);
+    }
+
+    /**
+     * Send a password reset link to the given email.
+     */
+    public function forgotPassword(Request $request): JsonResponse
+    {
+        $request->validate([
+            'email' => 'required|email',
+        ]);
+
+        $status = Password::sendResetLink(
+            $request->only('email')
+        );
+
+        // Always return success to prevent email enumeration
+        return response()->json([
+            'status' => 'ok',
+            'message' => 'If an account exists with that email, a reset link has been sent.',
+        ]);
+    }
+
+    /**
+     * Reset the user's password using a valid token.
+     */
+    public function resetPassword(Request $request): JsonResponse
+    {
+        $request->validate([
+            'token' => 'required|string',
+            'email' => 'required|email',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        $status = Password::reset(
+            $request->only('email', 'password', 'password_confirmation', 'token'),
+            function (User $user) use ($request) {
+                $user->forceFill([
+                    'password' => Hash::make($request->password),
+                    'remember_token' => Str::random(60),
+                ])->save();
+
+                event(new PasswordReset($user));
+            }
+        );
+
+        if ($status === Password::PASSWORD_RESET) {
+            return response()->json([
+                'status' => 'ok',
+                'message' => 'Password has been reset successfully.',
+            ]);
+        }
+
+        return response()->json([
+            'status' => 'error',
+            'message' => __($status),
+        ], 422);
     }
 
     /**

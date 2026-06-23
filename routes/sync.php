@@ -13,6 +13,8 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::post('/auth/google', [AuthController::class, 'googleAuth']);
 Route::post('/auth/apple', [AuthController::class, 'appleAuth']);
 Route::post('/auth/check', [AuthController::class, 'checkEmail']);
+Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
+Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 
 Route::middleware(['auth:sanctum', 'throttle:sync-per-user', 'throttle:sync-global', 'device-id', 'log-sync-request'])->group(function () {
     Route::post('/logs', [LogController::class, 'store']);
@@ -21,4 +23,8 @@ Route::middleware(['auth:sanctum', 'throttle:sync-per-user', 'throttle:sync-glob
     Route::post('/preferences', [PreferencesController::class, 'store']);
     Route::get('/restore', [RestoreController::class, 'index']);
     Route::get('/changes', [ChangesController::class, 'index']);
+});
+
+Route::middleware(['auth:sanctum', 'throttle:sync-batch', 'device-id', 'log-sync-request'])->group(function () {
+    Route::post('/logs/batch', [LogController::class, 'batch']);
 });

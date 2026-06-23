@@ -60,4 +60,54 @@ class LogController
             'status' => 'ok',
         ]);
     }
+
+    /**
+     * Store multiple synced completion logs in a single request.
+     * Accepts up to 500 logs per batch. Each log is processed independently —
+     * individual failures don't roll back others.
+     */
+    public function batch(Request $request): JsonResponse
+    {
+        $request->validate([
+            'logs' => 'required|array|max:500',
+            'logs.*.exercise_name' => 'required|string',
+            'logs.*.canonical_name' => 'nullable|string',
+            'logs.*.date' => 'required|date',
+            'logs.*.log_type' => 'required|string',
+            'logs.*.weight_unit' => 'required|string',
+            'logs.*.sets' => 'required|array|max:100',
+            'logs.*.track' => 'nullable|string|max:20',
+            'logs.*.block_index' => 'nullable|integer|min:0|max:65535',
+            'logs.*.movement_index' => 'nullable|integer|min:0|max:65535',
+            'logs.*.note' => 'nullable|string',
+            'logs.*.idempotency_key' => 'nullable|string',
+        ]);
+
+        $deviceId = $request->attributes->get('device_id');
+        $user = $request->user();
+        $results = [];
+
+        foreach ($request->input('logs') as $index => $logData) {
+            try {
+                $liftLog = $this->storeSyncLogAction->execute($user, $logData, $deviceId);
+                $results[] = [
+                    'index' => $index,
+                    'status' => 'ok',
+                    'log_id' => $liftLog->id,
+                    'updated_at' => $liftLog->updated_at->toIso8601String(),
+                ];
+            } catch (\Throwable $e) {
+                $results[] = [
+                    'index' => $index,
+                    'status' => 'error',
+                    'message' => $e->getMessage(),
+                ];
+            }
+        }
+
+        return response()->json([
+            'status' => 'ok',
+            'results' => $results,
+        ]);
+    }
 }

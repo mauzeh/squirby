@@ -12,6 +12,7 @@ use App\Models\PRComment;
 use App\Models\PRHighFive;
 use App\Observers\PRCommentObserver;
 use App\Observers\PRHighFiveObserver;
+use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
@@ -36,13 +37,23 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Override password reset link to point to the Athlete PWA
+        ResetPassword::createUrlUsing(function ($user, string $token) {
+            $athleteUrl = config('services.athlete.url', 'https://squirby.app');
+            return $athleteUrl . '/reset-password?token=' . $token . '&email=' . urlencode($user->email);
+        });
+
         // Register rate limiters for the Sync API
         RateLimiter::for('sync-per-user', function (Request $request) {
-            return Limit::perMinute(30)->by($request->user()?->id ?: $request->ip());
+            return Limit::perMinute(10)->by($request->user()?->id ?: $request->ip());
         });
 
         RateLimiter::for('sync-global', function (Request $request) {
             return Limit::perMinute(60);
+        });
+
+        RateLimiter::for('sync-batch', function (Request $request) {
+            return Limit::perMinute(5)->by($request->user()?->id ?: $request->ip());
         });
 
         // Register observers

@@ -51,4 +51,8 @@ return [
         'client_id' => env('APPLE_CLIENT_ID'),
     ],
 
+    'athlete' => [
+        'url' => env('ATHLETE_APP_URL', 'https://squirby.app'),
+    ],
+
 ];
