@@ -29,9 +29,10 @@ class RestoreController
         // 2. Fetch preferences
         $preference = AthletePreference::where('user_id', $user->id)->first();
 
-        // 3. Fetch logs
+        // 3. Fetch logs (newest first so today's logs arrive in early batches)
         $liftLogs = LiftLog::with(['exercise', 'liftSets'])
             ->where('user_id', $user->id)
+            ->orderBy('logged_at', 'desc')
             ->get();
 
         $logsData = [];
