@@ -89,7 +89,9 @@ class LogController
 
         foreach ($request->input('logs') as $index => $logData) {
             try {
-                $liftLog = $this->storeSyncLogAction->execute($user, $logData, $deviceId);
+                $liftLog = \Illuminate\Support\Facades\DB::transaction(function () use ($user, $logData, $deviceId) {
+                    return $this->storeSyncLogAction->execute($user, $logData, $deviceId);
+                });
                 $results[] = [
                     'index' => $index,
                     'status' => 'ok',
