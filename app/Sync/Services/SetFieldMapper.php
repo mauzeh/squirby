@@ -60,6 +60,7 @@ class SetFieldMapper
                 break;
 
             case 'cardio':
+                $columns['weight'] = 0;
                 $columns['distance'] = $setData['distance'] ?? null;
                 $columns['distance_unit'] = $setData['distanceUnit'] ?? $setData['distance_unit'] ?? null;
                 $columns['time'] = $setData['time'] ?? null;
