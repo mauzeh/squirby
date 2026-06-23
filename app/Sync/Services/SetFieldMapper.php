@@ -13,6 +13,7 @@ class SetFieldMapper
     {
         $columns = [
             'unit' => $weightUnit,
+            'weight' => 0,
         ];
 
         switch ($logType) {
@@ -41,12 +42,10 @@ class SetFieldMapper
 
             case 'bodyweight-reps':
                 $columns['reps'] = $setData['reps'] ?? null;
-                $columns['weight'] = 0;
                 break;
 
             case 'static-hold':
                 $columns['time'] = $setData['duration'] ?? null;
-                $columns['weight'] = 0;
                 break;
 
             case 'weighted-carry':
@@ -60,7 +59,6 @@ class SetFieldMapper
                 break;
 
             case 'cardio':
-                $columns['weight'] = 0;
                 $columns['distance'] = $setData['distance'] ?? null;
                 $columns['distance_unit'] = $setData['distanceUnit'] ?? $setData['distance_unit'] ?? null;
                 $columns['time'] = $setData['time'] ?? null;
@@ -69,20 +67,17 @@ class SetFieldMapper
 
             case 'cardio-calories':
                 $columns['calories'] = $setData['calories'] ?? null;
-                $columns['weight'] = 0;
                 break;
 
             case 'cardio-distance':
                 $columns['distance'] = $setData['distance'] ?? null;
                 $columns['distance_unit'] = $setData['distanceUnit'] ?? $setData['distance_unit'] ?? null;
                 $columns['time'] = $setData['time'] ?? null;
-                $columns['weight'] = 0;
                 break;
 
             case 'banded':
                 $columns['band_color'] = $setData['bandColor'] ?? $setData['band_color'] ?? null;
                 $columns['reps'] = $setData['reps'] ?? null;
-                $columns['weight'] = 0;
                 break;
         }
 
