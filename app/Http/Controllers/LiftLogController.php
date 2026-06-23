@@ -85,6 +85,24 @@ class LiftLogController extends Controller
         // Load necessary relationships
         $liftLog->load(['exercise', 'liftSets']);
         
+        // Block editing if sets are non-uniform (different weight/reps across sets)
+        if (!$liftLog->hasUniformSets()) {
+            $data = [
+                'components' => [
+                    ComponentBuilder::title(
+                        $liftLog->exercise->title,
+                        'This log has variable sets and cannot be edited here'
+                    )->build(),
+                    ComponentBuilder::messages()
+                        ->add('info', $liftLog->formatSetsSummary())
+                        ->build(),
+                ],
+                'autoscroll' => false,
+            ];
+
+            return view('mobile-entry.flexible', compact('data'));
+        }
+        
         // Capture redirect parameters from the request
         $redirectParams = [];
         if ($request->has('redirect_to')) {

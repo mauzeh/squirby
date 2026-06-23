@@ -55,6 +55,11 @@ class LiftLogService extends MobileEntryBaseService
     ) {
         $isEditMode = $existingLiftLog !== null;
         
+        // Block editing logs with non-uniform sets
+        if ($isEditMode && !$existingLiftLog->hasUniformSets()) {
+            throw new \Exception('Cannot edit a lift log with non-uniform sets.');
+        }
+        
         // Get the exercise
         if ($isEditMode) {
             $exercise = $existingLiftLog->exercise;

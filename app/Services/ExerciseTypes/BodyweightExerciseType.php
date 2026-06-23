@@ -3,6 +3,7 @@
 namespace App\Services\ExerciseTypes;
 
 use App\Models\LiftLog;
+use App\Models\LiftSet;
 use App\Services\ExerciseTypes\Exceptions\InvalidExerciseDataException;
 use App\Models\User;
 
@@ -297,24 +298,21 @@ class BodyweightExerciseType extends BaseExerciseType
     }
     
     /**
-     * Format mobile summary display for bodyweight exercises
-     * Shows weight only if extra weight is added
+     * Format a single set badge for bodyweight exercises.
+     * Shows "+{weight} {unit}" when extra weight is added, empty string for pure bodyweight.
      */
-    public function formatMobileSummaryDisplay(LiftLog $liftLog): array
+    public function formatSingleSetBadge(LiftSet $set, ?User $user = null): string
     {
-        $weight = $this->formatWeightDisplay($liftLog);
-        $repsSets = $liftLog->display_rounds . ' x ' . $liftLog->display_reps;
-        
-        // Only show weight if there's extra weight added
-        $showWeight = $liftLog->display_weight > 0;
-        
-        return [
-            'weight' => $weight,
-            'repsSets' => $repsSets,
-            'showWeight' => $showWeight
-        ];
+        $weight = (float) $set->weight;
+        $unit = $set->unit ?? 'lbs';
+
+        if ($weight <= 0) {
+            return '';
+        }
+
+        return '+' . $this->unitResolver()->formatForUser($weight, $unit, $user);
     }
-    
+
     /**
      * Format success message description for bodyweight exercises
      * Shows extra weight if added, otherwise just reps and sets

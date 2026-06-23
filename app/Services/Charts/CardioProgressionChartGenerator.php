@@ -11,14 +11,12 @@ class CardioProgressionChartGenerator implements ChartGeneratorInterface
     public function generate(Collection $liftLogs): array
     {
         $distanceData = $liftLogs->map(function ($liftLog) {
-            // For cardio exercises, calculate total distance (distance per round × number of rounds)
-            $distancePerRound = $liftLog->display_reps;
-            $rounds = $liftLog->liftSets->count();
-            $totalDistance = $distancePerRound * $rounds;
+            // For cardio exercises, calculate total distance
+            $totalDistance = $liftLog->liftSets->sum('distance');
             
             return [
                 'x' => $liftLog->logged_at->toIso8601String(),
-                'y' => $totalDistance,
+                'y' => (float) $totalDistance,
             ];
         })->values()->toArray();
 

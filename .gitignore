@@ -33,3 +33,4 @@ pull_mysql_db.sh
 quantifiedathletics_prod.*.sql
 debug_local
 debug_production
+PROMPTS

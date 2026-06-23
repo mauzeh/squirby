@@ -12,6 +12,9 @@ use App\Models\PRComment;
 use App\Models\PRHighFive;
 use App\Observers\PRCommentObserver;
 use App\Observers\PRHighFiveObserver;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\RateLimiter;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -33,6 +36,15 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Register rate limiters for the Sync API
+        RateLimiter::for('sync-per-user', function (Request $request) {
+            return Limit::perMinute(30)->by($request->user()?->id ?: $request->ip());
+        });
+
+        RateLimiter::for('sync-global', function (Request $request) {
+            return Limit::perMinute(60);
+        });
+
         // Register observers
         PRComment::observe(PRCommentObserver::class);
         PRHighFive::observe(PRHighFiveObserver::class);

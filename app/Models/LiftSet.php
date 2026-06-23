@@ -32,6 +32,9 @@ class LiftSet extends Model
         'time',
         'notes',
         'band_color',
+        'calories',
+        'distance',
+        'distance_unit',
     ];
 
     protected $casts = [
@@ -40,6 +43,9 @@ class LiftSet extends Model
         'reps' => 'integer',
         'time' => 'integer',
         'band_color' => 'string',
+        'calories' => 'integer',
+        'distance' => 'float',
+        'distance_unit' => 'string',
     ];
 
     public function liftLog()

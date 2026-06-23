@@ -83,7 +83,9 @@ class WodLoggingService
             $formattedMessage = $strategy->formatLoggedItemDisplay($liftLog);
             
             $subItem->message('success', $formattedMessage, 'Completed:');
-            $subItem->linkAction('fa-pencil', route('lift-logs.edit', ['lift_log' => $liftLog->id]), 'Edit lift log', 'btn-transparent');
+            if ($liftLog->hasUniformSets()) {
+                $subItem->linkAction('fa-pencil', route('lift-logs.edit', ['lift_log' => $liftLog->id]), 'Edit lift log', 'btn-transparent');
+            }
             $subItem->formAction('fa-trash', route('lift-logs.destroy', ['lift_log' => $liftLog->id]), 'DELETE', ['redirect_to' => 'workouts', 'workout_id' => $workout->id], 'Delete lift log', 'btn-danger', true);
         } else {
             // Not logged yet

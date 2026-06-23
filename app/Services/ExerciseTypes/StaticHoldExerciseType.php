@@ -3,6 +3,7 @@
 namespace App\Services\ExerciseTypes;
 
 use App\Models\LiftLog;
+use App\Models\LiftSet;
 use App\Models\User;
 use App\Services\ExerciseTypes\Exceptions\InvalidExerciseDataException;
 
@@ -421,33 +422,61 @@ class StaticHoldExerciseType extends BaseExerciseType
     }
     
     /**
-     * Format mobile summary display for static hold exercises
-     * Static hold exercises show duration and sets
+     * Format a single set badge for static hold exercises.
+     * Shows duration with optional added weight, e.g. "30s hold" or "30s hold +25 lbs".
      */
-    public function formatMobileSummaryDisplay(LiftLog $liftLog): array
+    public function formatSingleSetBadge(LiftSet $set, ?User $user = null): string
     {
-        $duration = $liftLog->liftSets->first()?->time ?? 0;
-        $weight = $liftLog->display_weight;
-        $sets = $liftLog->display_rounds;
-        $loggedUnit = $liftLog->liftSets->first()->unit ?? 'lbs';
-        
-        $durationDisplay = $this->formatDuration($duration);
-        
-        // Add weight if present
-        if (is_numeric($weight) && $weight > 0) {
-            $weightFormatted = $this->unitResolver()->formatForUser($weight, $loggedUnit, $liftLog->user);
-            $durationDisplay .= " +{$weightFormatted}";
+        $duration = (int) ($set->time ?? 0);
+        $weight = (float) $set->weight;
+        $unit = $set->unit ?? 'lbs';
+
+        if ($duration <= 0) {
+            return '0s hold';
         }
-        
-        $setsText = "{$sets} " . ($sets == 1 ? 'set' : 'sets');
-        
-        return [
-            'weight' => $durationDisplay,
-            'repsSets' => $setsText,
-            'showWeight' => true
-        ];
+
+        $durationDisplay = $this->formatDuration($duration);
+
+        if ($weight > 0) {
+            $weightFormatted = $this->unitResolver()->formatForUser($weight, $unit, $user);
+            return "{$durationDisplay} +{$weightFormatted}";
+        }
+
+        return $durationDisplay;
     }
-    
+
+    /**
+     * For static holds, effort is always "1" (one hold per set).
+     * The badge itself already contains the duration.
+     */
+    protected function getSetEffortValue(LiftSet $set): string
+    {
+        return '1';
+    }
+
+    /**
+     * Format badge group label for static holds.
+     * Renders as "{count} × {badge}" (e.g. "3 × 30s hold") instead of the default.
+     */
+    protected function formatBadgeGroupLabel(int $count, string $effort, string $badgeLabel): string
+    {
+        $setsText = $count == 1 ? '1 set' : $count . ' sets';
+
+        if ($badgeLabel === '') {
+            return $setsText;
+        }
+
+        return "<strong>{$badgeLabel}</strong> -&nbsp;{$setsText}";
+    }
+
+    /**
+     * For static holds, uniform reps/sets displays as "{count} sets".
+     */
+    protected function formatUniformRepsSets(int $count, string $effort): string
+    {
+        return $count == 1 ? '1 set' : $count . ' sets';
+    }
+
     /**
      * Format success message description for static hold exercises
      * Uses duration and sets terminology instead of weight/reps/sets

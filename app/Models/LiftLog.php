@@ -32,12 +32,21 @@ class LiftLog extends Model
         'workout_id',
         'is_pr',
         'pr_count',
+        'track',
+        'block_index',
+        'movement_index',
+        'log_type',
+        'device_id',
+        'source',
+        'idempotency_key',
     ];
 
     protected $casts = [
         'logged_at' => 'datetime',
         'is_pr' => 'boolean',
         'pr_count' => 'integer',
+        'block_index' => 'integer',
+        'movement_index' => 'integer',
     ];
 
     protected static function boot()
@@ -85,6 +94,15 @@ class LiftLog extends Model
         
         // Fallback to a single query if not loaded
         return $this->liftSets()->first()->reps ?? 0;
+    }
+
+    public function getDisplayDistanceAttribute(): float
+    {
+        $first = $this->relationLoaded('liftSets') 
+            ? $this->liftSets->first() 
+            : $this->liftSets()->first();
+
+        return (float) ($first?->distance ?? 0.0);
     }
 
     public function getDisplayRoundsAttribute()
@@ -161,5 +179,81 @@ class LiftLog extends Model
     public function getPRCount(): int
     {
         return $this->pr_count;
+    }
+
+    /**
+     * Determine if all sets in this log have the same weight and reps.
+     * A log with 0 or 1 sets is always considered uniform.
+     */
+    public function hasUniformSets(): bool
+    {
+        $sets = $this->relationLoaded('liftSets')
+            ? $this->liftSets
+            : $this->liftSets()->get();
+
+        if ($sets->count() <= 1) {
+            return true;
+        }
+
+        $firstSet = $sets->first();
+
+        return $sets->every(fn($set) =>
+            (float) $set->weight === (float) $firstSet->weight &&
+            (int) $set->reps === (int) $firstSet->reps
+        );
+    }
+
+    /**
+     * Format a human-readable summary of all sets.
+     *
+     * Uniform sets:   "3×5 @ 185 lbs"
+     * Non-uniform:    "185×5 / 205×3 / 225×1"
+     *
+     * @param string|null $unit  Override unit label (e.g. after conversion). If null, uses first set's unit.
+     */
+    public function formatSetsSummary(?string $unit = null): string
+    {
+        $sets = $this->relationLoaded('liftSets')
+            ? $this->liftSets
+            : $this->liftSets()->get();
+
+        if ($sets->isEmpty()) {
+            return '';
+        }
+
+        $firstSet = $sets->first();
+        $unitLabel = $unit ?? ($firstSet->unit ?? 'lbs');
+
+        if ($this->hasUniformSets()) {
+            $count = $sets->count();
+            $reps = (int) $firstSet->reps;
+            $weight = $this->formatWeight((float) $firstSet->weight);
+
+            if ($weight > 0) {
+                return "{$count}×{$reps} @ {$weight} {$unitLabel}";
+            }
+
+            return "{$count}×{$reps}";
+        }
+
+        // Non-uniform: show each set
+        return $sets->map(function ($set) use ($unitLabel) {
+            $weight = $this->formatWeight((float) $set->weight);
+            $reps = (int) $set->reps;
+
+            if ($weight > 0) {
+                return "{$weight}×{$reps}";
+            }
+
+            return "{$reps} reps";
+        })->implode(' / ') . " {$unitLabel}";
+    }
+
+    /**
+     * Format a weight value, removing unnecessary decimals.
+     */
+    private function formatWeight(float $weight): string
+    {
+        return $weight == (int) $weight ? (string) (int) $weight : (string) $weight;
     }
 }

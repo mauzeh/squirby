@@ -170,6 +170,9 @@ class CreateLiftLogAction
                 'time' => $liftData['time'] ?? null,
                 'notes' => $liftData['notes'],
                 'band_color' => $liftData['band_color'],
+                'distance' => $liftData['distance'] ?? null,
+                'distance_unit' => $liftData['distance_unit'] ?? null,
+                'calories' => $liftData['calories'] ?? null,
             ]);
         }
     }

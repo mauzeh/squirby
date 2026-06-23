@@ -451,7 +451,8 @@ class TrainingProgressionServiceTest extends TestCase
         ]);
         LiftSet::factory()->create([
             'lift_log_id' => $liftLog->id,
-            'reps' => 400, // Distance in meters (stored in reps field)
+            'distance' => 400,
+            'distance_unit' => 'm',
             'weight' => 0,
         ]);
 
@@ -479,7 +480,8 @@ class TrainingProgressionServiceTest extends TestCase
         ]);
         LiftSet::factory()->create([
             'lift_log_id' => $liftLog->id,
-            'reps' => 800, // Distance in meters
+            'distance' => 800,
+            'distance_unit' => 'm',
             'weight' => 0,
         ]);
 
@@ -507,7 +509,8 @@ class TrainingProgressionServiceTest extends TestCase
         ]);
         LiftSet::factory()->create([
             'lift_log_id' => $liftLog->id,
-            'reps' => 1500, // Distance in meters
+            'distance' => 1500,
+            'distance_unit' => 'm',
             'weight' => 0,
         ]);
 
@@ -536,17 +539,20 @@ class TrainingProgressionServiceTest extends TestCase
         // Create 3 sets to represent 3 rounds
         LiftSet::factory()->create([
             'lift_log_id' => $liftLog->id,
-            'reps' => 2000,
+            'distance' => 2000,
+            'distance_unit' => 'm',
             'weight' => 0,
         ]);
         LiftSet::factory()->create([
             'lift_log_id' => $liftLog->id,
-            'reps' => 2000,
+            'distance' => 2000,
+            'distance_unit' => 'm',
             'weight' => 0,
         ]);
         LiftSet::factory()->create([
             'lift_log_id' => $liftLog->id,
-            'reps' => 2000,
+            'distance' => 2000,
+            'distance_unit' => 'm',
             'weight' => 0,
         ]);
 
@@ -574,7 +580,8 @@ class TrainingProgressionServiceTest extends TestCase
         ]);
         LiftSet::factory()->create([
             'lift_log_id' => $liftLog->id,
-            'reps' => 950, // Distance < 1000m, so will increase distance by 100m
+            'distance' => 950,
+            'distance_unit' => 'm',
             'weight' => 0,
         ]);
 
@@ -604,7 +611,8 @@ class TrainingProgressionServiceTest extends TestCase
         for ($i = 0; $i < 9; $i++) {
             LiftSet::factory()->create([
                 'lift_log_id' => $liftLog->id,
-                'reps' => 2000,
+                'distance' => 2000,
+                'distance_unit' => 'm',
                 'weight' => 0,
             ]);
         }
@@ -645,7 +653,8 @@ class TrainingProgressionServiceTest extends TestCase
         ]);
         LiftSet::factory()->create([
             'lift_log_id' => $liftLog->id,
-            'reps' => 0, // Invalid distance
+            'distance' => 0,
+            'distance_unit' => 'm',
             'weight' => 0,
         ]);
 

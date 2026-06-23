@@ -3,6 +3,8 @@
 namespace App\Services\ExerciseTypes;
 
 use App\Models\LiftLog;
+use App\Models\LiftSet;
+use App\Models\User;
 use App\Services\ExerciseTypes\Exceptions\InvalidExerciseDataException;
 
 /**
@@ -103,6 +105,21 @@ class BandedExerciseType extends BaseExerciseType
         return 'Band: ' . ucfirst($bandColor);
     }
     
+    /**
+     * Format a single set badge for banded exercises.
+     * Shows band color, e.g. "Red band".
+     */
+    public function formatSingleSetBadge(LiftSet $set, ?User $user = null): string
+    {
+        $bandColor = $set->band_color ?? '';
+
+        if (empty($bandColor)) {
+            return 'Band: N/A';
+        }
+
+        return ucfirst($bandColor) . ' band';
+    }
+
     /**
      * Format progression suggestion for banded exercises
      */

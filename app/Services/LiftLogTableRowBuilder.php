@@ -115,10 +115,17 @@ class LiftLogTableRowBuilder
             $builder->addPRBadge();
         }
         
-        $builder->addRepsBadge($displayData['repsSets']);
-        
-        if ($displayData['showWeight']) {
-            $builder->addWeightBadge($displayData['weight']);
+        // Multi-set badges: one pill per group of identical sets
+        if (!empty($displayData['multiSetBadges'])) {
+            foreach ($displayData['multiSetBadges'] as $badgeText) {
+                $builder->addRepsBadge($badgeText);
+            }
+        } else {
+            $builder->addRepsBadge($displayData['repsSets']);
+            
+            if ($displayData['showWeight']) {
+                $builder->addWeightBadge($displayData['weight']);
+            }
         }
         
         return $builder->build();
@@ -135,7 +142,10 @@ class LiftLogTableRowBuilder
             $builder->addViewLogsAction();
         }
         
-        $builder->addEditAction();
+        // Only show edit button for logs with uniform sets
+        if ($liftLog->hasUniformSets()) {
+            $builder->addEditAction();
+        }
         
         if ($config->showDeleteAction) {
             $builder->addDeleteAction();

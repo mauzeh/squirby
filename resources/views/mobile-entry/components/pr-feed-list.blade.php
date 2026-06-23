@@ -281,6 +281,10 @@ document.addEventListener('DOMContentLoaded', function() {
                                     $sets = $liftLog->liftLog?->display_rounds ?? 0;
                                     $unitResolver = app(\App\Services\UnitResolver::class);
                                     $loggedUnit = $liftLog->liftLog?->liftSets->first()->unit ?? 'lbs';
+                                    
+                                    // Multi-set display: detect non-uniform and get badges from strategy
+                                    $hasNonUniformSets = $liftLog->liftLog && !$liftLog->liftLog->hasUniformSets();
+                                    $multiSetBadges = isset($displayData['multiSetBadges']) ? $displayData['multiSetBadges'] : [];
                                 @endphp
                                 <div class="pr-lift-header">
                                     <div class="pr-lift-title-row">
@@ -323,7 +327,13 @@ document.addEventListener('DOMContentLoaded', function() {
                                             @endif
                                         </div>
                                         
-                                        @if($weight > 0 || $reps > 0 || isset($displayData['repsSets']))
+                                        @if($hasNonUniformSets && !empty($multiSetBadges))
+                                            <div class="pr-lift-pills">
+                                                @foreach($multiSetBadges as $badge)
+                                                    <span class="pr-reps-pill">{!! $badge !!}</span>
+                                                @endforeach
+                                            </div>
+                                        @elseif($weight > 0 || $reps > 0 || isset($displayData['repsSets']))
                                             <div class="pr-lift-pills">
                                                 @if(isset($displayData['weight']) && $displayData['showWeight'])
                                                     {{-- For static holds, weight contains duration --}}

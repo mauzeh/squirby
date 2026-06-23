@@ -3,6 +3,7 @@
 namespace App\Services\ExerciseTypes;
 
 use App\Models\LiftLog;
+use App\Models\LiftSet;
 use App\Models\User;
 
 /**
@@ -491,6 +492,26 @@ interface ExerciseTypeInterface
      */
     public function getChartTitle(): string;
     
+    /**
+     * Format a single set as a badge label for mobile summary display.
+     *
+     * Each exercise type defines what "one set" looks like in badge form:
+     * - Regular:           "185 lbs"
+     * - Bodyweight:        "+25 lbs" or "" (pure bodyweight)
+     * - Cardio:            "500m" or "6 cal"
+     * - Static Hold:       "30s hold" or "30s hold +25 lbs"
+     * - Banded Resistance: "Red band"
+     * - Banded Assistance: "Green band"
+     *
+     * The base orchestrator in formatMobileSummaryDisplay groups identical
+     * consecutive sets and prefixes each badge with the group count and rep info.
+     *
+     * @param LiftSet $set The individual set to format
+     * @param User|null $user The user for unit preference resolution
+     * @return string The badge label for this set
+     */
+    public function formatSingleSetBadge(LiftSet $set, ?User $user = null): string;
+
     /**
      * Format mobile summary display for exercise summary component
      * 

@@ -40,7 +40,8 @@ class CardioPRDetectionTest extends TestCase
         
         $liftLog->liftSets()->create([
             'weight' => 0,
-            'reps' => 500, // 500m distance
+            'distance' => 500, // 500m distance
+            'distance_unit' => 'm',
             'notes' => 'First run',
         ]);
 
@@ -65,7 +66,7 @@ class CardioPRDetectionTest extends TestCase
             'exercise_id' => $this->exercise->id,
             'logged_at' => now()->subDay(),
         ]);
-        $firstLog->liftSets()->create(['weight' => 0, 'reps' => 500, 'notes' => '']);
+        $firstLog->liftSets()->create(['weight' => 0, 'distance' => 500, 'distance_unit' => 'm', 'notes' => '']);
         $this->triggerPRDetection($firstLog);
 
         // Second run: 800m (longer = PR)
@@ -74,7 +75,7 @@ class CardioPRDetectionTest extends TestCase
             'exercise_id' => $this->exercise->id,
             'logged_at' => now(),
         ]);
-        $secondLog->liftSets()->create(['weight' => 0, 'reps' => 800, 'notes' => '']);
+        $secondLog->liftSets()->create(['weight' => 0, 'distance' => 800, 'distance_unit' => 'm', 'notes' => '']);
         $this->triggerPRDetection($secondLog);
 
         // Should create new ENDURANCE PR
@@ -96,7 +97,7 @@ class CardioPRDetectionTest extends TestCase
             'exercise_id' => $this->exercise->id,
             'logged_at' => now()->subDay(),
         ]);
-        $firstLog->liftSets()->create(['weight' => 0, 'reps' => 800, 'notes' => '']);
+        $firstLog->liftSets()->create(['weight' => 0, 'distance' => 800, 'distance_unit' => 'm', 'notes' => '']);
         $this->triggerPRDetection($firstLog);
 
         // Second run: 500m (shorter = not a PR)
@@ -105,7 +106,7 @@ class CardioPRDetectionTest extends TestCase
             'exercise_id' => $this->exercise->id,
             'logged_at' => now(),
         ]);
-        $secondLog->liftSets()->create(['weight' => 0, 'reps' => 500, 'notes' => '']);
+        $secondLog->liftSets()->create(['weight' => 0, 'distance' => 500, 'distance_unit' => 'm', 'notes' => '']);
         $this->triggerPRDetection($secondLog);
 
         // Should NOT create ENDURANCE PR
@@ -127,9 +128,9 @@ class CardioPRDetectionTest extends TestCase
         
         // 3 rounds of 500m = 1500m total
         $liftLog->liftSets()->createMany([
-            ['weight' => 0, 'reps' => 500, 'notes' => ''],
-            ['weight' => 0, 'reps' => 500, 'notes' => ''],
-            ['weight' => 0, 'reps' => 500, 'notes' => ''],
+            ['weight' => 0, 'distance' => 500, 'distance_unit' => 'm', 'notes' => ''],
+            ['weight' => 0, 'distance' => 500, 'distance_unit' => 'm', 'notes' => ''],
+            ['weight' => 0, 'distance' => 500, 'distance_unit' => 'm', 'notes' => ''],
         ]);
 
         $this->triggerPRDetection($liftLog);
@@ -154,9 +155,9 @@ class CardioPRDetectionTest extends TestCase
             'logged_at' => now()->subDay(),
         ]);
         $firstLog->liftSets()->createMany([
-            ['weight' => 0, 'reps' => 500, 'notes' => ''],
-            ['weight' => 0, 'reps' => 500, 'notes' => ''],
-            ['weight' => 0, 'reps' => 500, 'notes' => ''],
+            ['weight' => 0, 'distance' => 500, 'distance_unit' => 'm', 'notes' => ''],
+            ['weight' => 0, 'distance' => 500, 'distance_unit' => 'm', 'notes' => ''],
+            ['weight' => 0, 'distance' => 500, 'distance_unit' => 'm', 'notes' => ''],
         ]);
         $this->triggerPRDetection($firstLog);
 
@@ -167,10 +168,10 @@ class CardioPRDetectionTest extends TestCase
             'logged_at' => now(),
         ]);
         $secondLog->liftSets()->createMany([
-            ['weight' => 0, 'reps' => 500, 'notes' => ''],
-            ['weight' => 0, 'reps' => 500, 'notes' => ''],
-            ['weight' => 0, 'reps' => 500, 'notes' => ''],
-            ['weight' => 0, 'reps' => 500, 'notes' => ''],
+            ['weight' => 0, 'distance' => 500, 'distance_unit' => 'm', 'notes' => ''],
+            ['weight' => 0, 'distance' => 500, 'distance_unit' => 'm', 'notes' => ''],
+            ['weight' => 0, 'distance' => 500, 'distance_unit' => 'm', 'notes' => ''],
+            ['weight' => 0, 'distance' => 500, 'distance_unit' => 'm', 'notes' => ''],
         ]);
         $this->triggerPRDetection($secondLog);
 
@@ -194,10 +195,10 @@ class CardioPRDetectionTest extends TestCase
             'logged_at' => now()->subDay(),
         ]);
         $firstLog->liftSets()->createMany([
-            ['weight' => 0, 'reps' => 500, 'notes' => ''],
-            ['weight' => 0, 'reps' => 500, 'notes' => ''],
-            ['weight' => 0, 'reps' => 500, 'notes' => ''],
-            ['weight' => 0, 'reps' => 500, 'notes' => ''],
+            ['weight' => 0, 'distance' => 500, 'distance_unit' => 'm', 'notes' => ''],
+            ['weight' => 0, 'distance' => 500, 'distance_unit' => 'm', 'notes' => ''],
+            ['weight' => 0, 'distance' => 500, 'distance_unit' => 'm', 'notes' => ''],
+            ['weight' => 0, 'distance' => 500, 'distance_unit' => 'm', 'notes' => ''],
         ]);
         $this->triggerPRDetection($firstLog);
 
@@ -208,9 +209,9 @@ class CardioPRDetectionTest extends TestCase
             'logged_at' => now(),
         ]);
         $secondLog->liftSets()->createMany([
-            ['weight' => 0, 'reps' => 500, 'notes' => ''],
-            ['weight' => 0, 'reps' => 500, 'notes' => ''],
-            ['weight' => 0, 'reps' => 500, 'notes' => ''],
+            ['weight' => 0, 'distance' => 500, 'distance_unit' => 'm', 'notes' => ''],
+            ['weight' => 0, 'distance' => 500, 'distance_unit' => 'm', 'notes' => ''],
+            ['weight' => 0, 'distance' => 500, 'distance_unit' => 'm', 'notes' => ''],
         ]);
         $this->triggerPRDetection($secondLog);
 
@@ -233,11 +234,11 @@ class CardioPRDetectionTest extends TestCase
         
         // 5 rounds of 400m = 2000m total
         $liftLog->liftSets()->createMany([
-            ['weight' => 0, 'reps' => 400, 'notes' => ''],
-            ['weight' => 0, 'reps' => 400, 'notes' => ''],
-            ['weight' => 0, 'reps' => 400, 'notes' => ''],
-            ['weight' => 0, 'reps' => 400, 'notes' => ''],
-            ['weight' => 0, 'reps' => 400, 'notes' => ''],
+            ['weight' => 0, 'distance' => 400, 'distance_unit' => 'm', 'notes' => ''],
+            ['weight' => 0, 'distance' => 400, 'distance_unit' => 'm', 'notes' => ''],
+            ['weight' => 0, 'distance' => 400, 'distance_unit' => 'm', 'notes' => ''],
+            ['weight' => 0, 'distance' => 400, 'distance_unit' => 'm', 'notes' => ''],
+            ['weight' => 0, 'distance' => 400, 'distance_unit' => 'm', 'notes' => ''],
         ]);
 
         $this->triggerPRDetection($liftLog);
@@ -263,11 +264,11 @@ class CardioPRDetectionTest extends TestCase
             'logged_at' => now()->subDay(),
         ]);
         $firstLog->liftSets()->createMany([
-            ['weight' => 0, 'reps' => 400, 'notes' => ''],
-            ['weight' => 0, 'reps' => 400, 'notes' => ''],
-            ['weight' => 0, 'reps' => 400, 'notes' => ''],
-            ['weight' => 0, 'reps' => 400, 'notes' => ''],
-            ['weight' => 0, 'reps' => 400, 'notes' => ''],
+            ['weight' => 0, 'distance' => 400, 'distance_unit' => 'm', 'notes' => ''],
+            ['weight' => 0, 'distance' => 400, 'distance_unit' => 'm', 'notes' => ''],
+            ['weight' => 0, 'distance' => 400, 'distance_unit' => 'm', 'notes' => ''],
+            ['weight' => 0, 'distance' => 400, 'distance_unit' => 'm', 'notes' => ''],
+            ['weight' => 0, 'distance' => 400, 'distance_unit' => 'm', 'notes' => ''],
         ]);
         $this->triggerPRDetection($firstLog);
 
@@ -278,11 +279,11 @@ class CardioPRDetectionTest extends TestCase
             'logged_at' => now(),
         ]);
         $secondLog->liftSets()->createMany([
-            ['weight' => 0, 'reps' => 500, 'notes' => ''],
-            ['weight' => 0, 'reps' => 500, 'notes' => ''],
-            ['weight' => 0, 'reps' => 500, 'notes' => ''],
-            ['weight' => 0, 'reps' => 500, 'notes' => ''],
-            ['weight' => 0, 'reps' => 500, 'notes' => ''],
+            ['weight' => 0, 'distance' => 500, 'distance_unit' => 'm', 'notes' => ''],
+            ['weight' => 0, 'distance' => 500, 'distance_unit' => 'm', 'notes' => ''],
+            ['weight' => 0, 'distance' => 500, 'distance_unit' => 'm', 'notes' => ''],
+            ['weight' => 0, 'distance' => 500, 'distance_unit' => 'm', 'notes' => ''],
+            ['weight' => 0, 'distance' => 500, 'distance_unit' => 'm', 'notes' => ''],
         ]);
         $this->triggerPRDetection($secondLog);
 
@@ -307,9 +308,9 @@ class CardioPRDetectionTest extends TestCase
             'logged_at' => now()->subDay(),
         ]);
         $firstLog->liftSets()->createMany([
-            ['weight' => 0, 'reps' => 500, 'notes' => ''],
-            ['weight' => 0, 'reps' => 500, 'notes' => ''],
-            ['weight' => 0, 'reps' => 500, 'notes' => ''],
+            ['weight' => 0, 'distance' => 500, 'distance_unit' => 'm', 'notes' => ''],
+            ['weight' => 0, 'distance' => 500, 'distance_unit' => 'm', 'notes' => ''],
+            ['weight' => 0, 'distance' => 500, 'distance_unit' => 'm', 'notes' => ''],
         ]);
         $this->triggerPRDetection($firstLog);
 
@@ -320,11 +321,11 @@ class CardioPRDetectionTest extends TestCase
             'logged_at' => now(),
         ]);
         $secondLog->liftSets()->createMany([
-            ['weight' => 0, 'reps' => 400, 'notes' => ''],
-            ['weight' => 0, 'reps' => 400, 'notes' => ''],
-            ['weight' => 0, 'reps' => 400, 'notes' => ''],
-            ['weight' => 0, 'reps' => 400, 'notes' => ''],
-            ['weight' => 0, 'reps' => 400, 'notes' => ''],
+            ['weight' => 0, 'distance' => 400, 'distance_unit' => 'm', 'notes' => ''],
+            ['weight' => 0, 'distance' => 400, 'distance_unit' => 'm', 'notes' => ''],
+            ['weight' => 0, 'distance' => 400, 'distance_unit' => 'm', 'notes' => ''],
+            ['weight' => 0, 'distance' => 400, 'distance_unit' => 'm', 'notes' => ''],
+            ['weight' => 0, 'distance' => 400, 'distance_unit' => 'm', 'notes' => ''],
         ]);
         $this->triggerPRDetection($secondLog);
 
@@ -354,9 +355,9 @@ class CardioPRDetectionTest extends TestCase
             'logged_at' => now()->subDay(),
         ]);
         $firstLog->liftSets()->createMany([
-            ['weight' => 0, 'reps' => 400, 'notes' => ''],
-            ['weight' => 0, 'reps' => 400, 'notes' => ''],
-            ['weight' => 0, 'reps' => 400, 'notes' => ''],
+            ['weight' => 0, 'distance' => 400, 'distance_unit' => 'm', 'notes' => ''],
+            ['weight' => 0, 'distance' => 400, 'distance_unit' => 'm', 'notes' => ''],
+            ['weight' => 0, 'distance' => 400, 'distance_unit' => 'm', 'notes' => ''],
         ]);
         $this->triggerPRDetection($firstLog);
 
@@ -368,9 +369,9 @@ class CardioPRDetectionTest extends TestCase
             'logged_at' => now(),
         ]);
         $secondLog->liftSets()->createMany([
-            ['weight' => 0, 'reps' => 600, 'notes' => ''],
-            ['weight' => 0, 'reps' => 600, 'notes' => ''],
-            ['weight' => 0, 'reps' => 600, 'notes' => ''],
+            ['weight' => 0, 'distance' => 600, 'distance_unit' => 'm', 'notes' => ''],
+            ['weight' => 0, 'distance' => 600, 'distance_unit' => 'm', 'notes' => ''],
+            ['weight' => 0, 'distance' => 600, 'distance_unit' => 'm', 'notes' => ''],
         ]);
         $this->triggerPRDetection($secondLog);
 
@@ -394,9 +395,9 @@ class CardioPRDetectionTest extends TestCase
         
         // Multiple rounds with varying distances - should track the best (800m)
         $liftLog->liftSets()->createMany([
-            ['weight' => 0, 'reps' => 500, 'notes' => ''],
-            ['weight' => 0, 'reps' => 800, 'notes' => ''], // Best
-            ['weight' => 0, 'reps' => 600, 'notes' => ''],
+            ['weight' => 0, 'distance' => 500, 'distance_unit' => 'm', 'notes' => ''],
+            ['weight' => 0, 'distance' => 800, 'distance_unit' => 'm', 'notes' => ''], // Best
+            ['weight' => 0, 'distance' => 600, 'distance_unit' => 'm', 'notes' => ''],
         ]);
 
         $this->triggerPRDetection($liftLog);
@@ -420,7 +421,8 @@ class CardioPRDetectionTest extends TestCase
         
         $liftLog->liftSets()->create([
             'weight' => 0,
-            'reps' => 500,
+            'distance' => 500,
+            'distance_unit' => 'm',
             'notes' => '',
         ]);
 
@@ -443,9 +445,9 @@ class CardioPRDetectionTest extends TestCase
         ]);
         
         $liftLog->liftSets()->createMany([
-            ['weight' => 0, 'reps' => 500, 'notes' => ''],
-            ['weight' => 0, 'reps' => 500, 'notes' => ''],
-            ['weight' => 0, 'reps' => 500, 'notes' => ''],
+            ['weight' => 0, 'distance' => 500, 'distance_unit' => 'm', 'notes' => ''],
+            ['weight' => 0, 'distance' => 500, 'distance_unit' => 'm', 'notes' => ''],
+            ['weight' => 0, 'distance' => 500, 'distance_unit' => 'm', 'notes' => ''],
         ]);
 
         $this->triggerPRDetection($liftLog);
@@ -468,9 +470,9 @@ class CardioPRDetectionTest extends TestCase
         ]);
         
         $liftLog->liftSets()->createMany([
-            ['weight' => 0, 'reps' => 500, 'notes' => ''],
-            ['weight' => 0, 'reps' => 500, 'notes' => ''],
-            ['weight' => 0, 'reps' => 500, 'notes' => ''],
+            ['weight' => 0, 'distance' => 500, 'distance_unit' => 'm', 'notes' => ''],
+            ['weight' => 0, 'distance' => 500, 'distance_unit' => 'm', 'notes' => ''],
+            ['weight' => 0, 'distance' => 500, 'distance_unit' => 'm', 'notes' => ''],
         ]);
 
         $this->triggerPRDetection($liftLog);

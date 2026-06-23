@@ -204,7 +204,8 @@ class ExerciseTypeControllerIntegrationTest extends TestCase
         $processedData = $strategy->processLiftData($inputData);
 
         $this->assertEquals(0, $processedData['weight']);
-        $this->assertEquals(500, $processedData['reps']);
+        $this->assertNull($processedData['reps']);
+        $this->assertEquals(500, $processedData['distance']);
         $this->assertNull($processedData['band_color']);
     }
 

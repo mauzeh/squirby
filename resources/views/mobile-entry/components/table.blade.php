@@ -110,7 +110,7 @@
                         $emphasizedClass = (isset($badge['emphasized']) && $badge['emphasized']) ? 'table-badge--emphasized' : '';
                         $customStyle = isset($badge['customColor']) ? 'background-color: ' . $badge['customColor'] . ';' : '';
                     @endphp
-                    <span class="table-badge {{ $colorClass }} {{ $emphasizedClass }}" @if($customStyle) style="{{ $customStyle }}" @endif>{{ $badge['text'] }}</span>
+                    <span class="table-badge {{ $colorClass }} {{ $emphasizedClass }}" @if($customStyle) style="{{ $customStyle }}" @endif>{!! $badge['text'] !!}</span>
                 @endforeach
             </div>
             @endif

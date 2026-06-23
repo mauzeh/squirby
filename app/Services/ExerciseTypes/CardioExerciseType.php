@@ -3,6 +3,7 @@
 namespace App\Services\ExerciseTypes;
 
 use App\Models\LiftLog;
+use App\Models\LiftSet;
 use App\Models\User;
 use App\Services\ExerciseTypes\Exceptions\InvalidExerciseDataException;
 
@@ -99,7 +100,9 @@ class CardioExerciseType extends BaseExerciseType
             throw InvalidExerciseDataException::forField('reps', $this->getTypeName(), 'distance cannot exceed ' . self::MAX_DISTANCE . ' meters');
         }
         
-        $processedData['reps'] = $distance;
+        $processedData['distance'] = (float) $distance;
+        $processedData['distance_unit'] = 'm';
+        $processedData['reps'] = null;
         
         return $processedData;
     }
@@ -123,12 +126,22 @@ class CardioExerciseType extends BaseExerciseType
     /**
      * Format weight display for cardio exercises
      * 
-     * For cardio exercises, we display distance instead of weight.
-     * The distance is stored in the reps field.
+     * For cardio exercises, we display distance or calories depending on log_type.
+     * The distance is stored in the distance field, calories in the calories field.
      */
     public function formatWeightDisplay(LiftLog $liftLog): string
     {
-        $distance = $liftLog->display_reps;
+        // Check if this is a calories-based cardio exercise
+        $logType = $liftLog->log_type ?: ($liftLog->exercise->log_type ?? null);
+        if ($logType === 'cardio-calories') {
+            $firstSet = $liftLog->relationLoaded('liftSets')
+                ? $liftLog->liftSets->first()
+                : $liftLog->liftSets()->first();
+            $calories = $firstSet?->calories ?? 0;
+            return $calories . ' cal';
+        }
+
+        $distance = $liftLog->display_distance;
         
         if (!is_numeric($distance) || $distance <= 0) {
             return '0m';
@@ -149,14 +162,29 @@ class CardioExerciseType extends BaseExerciseType
     }
     
     /**
-     * Format complete cardio display showing distance and rounds
+     * Format complete cardio display showing distance/calories and rounds
      * 
-     * Returns a formatted string like "500m × 7 rounds" for cardio exercises.
-     * This provides cardio-appropriate terminology instead of weight/reps/sets.
+     * Returns a formatted string like "500m × 7 rounds" for distance-based cardio,
+     * or "6 cal × 2 rounds" for calories-based cardio.
      */
     public function formatCompleteDisplay(LiftLog $liftLog): string
     {
-        $distance = $liftLog->display_reps;
+        // Check if this is a calories-based cardio exercise
+        $logType = $liftLog->log_type ?: ($liftLog->exercise->log_type ?? null);
+        if ($logType === 'cardio-calories') {
+            $rounds = $liftLog->display_rounds;
+            if (!is_numeric($rounds) || $rounds <= 0) {
+                $rounds = 1;
+            }
+            $firstSet = $liftLog->relationLoaded('liftSets')
+                ? $liftLog->liftSets->first()
+                : $liftLog->liftSets()->first();
+            $calories = $firstSet?->calories ?? 0;
+            $roundsText = $rounds == 1 ? 'round' : 'rounds';
+            return "{$calories} cal × {$rounds} {$roundsText}";
+        }
+
+        $distance = $liftLog->display_distance;
         $rounds = $liftLog->display_rounds;
         
         if (!is_numeric($distance) || $distance <= 0) {
@@ -182,7 +210,7 @@ class CardioExerciseType extends BaseExerciseType
      */
     public function formatProgressionSuggestion(LiftLog $liftLog): ?string
     {
-        $distance = $liftLog->display_reps;
+        $distance = $liftLog->display_distance;
         $rounds = $liftLog->liftSets->count();
         
         if (!is_numeric($distance) || $distance <= 0) {
@@ -238,7 +266,7 @@ class CardioExerciseType extends BaseExerciseType
      */
     public function formatFormMessageDisplay(array $lastSession): string
     {
-        $distance = $lastSession['reps'] ?? 0;
+        $distance = $lastSession['distance'] ?? $lastSession['reps'] ?? 0;
         $rounds = $lastSession['sets'] ?? 1;
         
         // Format distance directly
@@ -299,18 +327,65 @@ class CardioExerciseType extends BaseExerciseType
     }
     
     /**
-     * Format mobile summary display for cardio exercises
-     * Cardio exercises don't show weight and use cardio-specific formatting
+     * Format a single set badge for cardio exercises.
+     * Shows distance (e.g. "500m") or calories (e.g. "6 cal").
      */
-    public function formatMobileSummaryDisplay(LiftLog $liftLog): array
+    public function formatSingleSetBadge(LiftSet $set, ?User $user = null): string
     {
-        return [
-            'weight' => '',
-            'repsSets' => $this->formatCompleteDisplay($liftLog),
-            'showWeight' => false
-        ];
+        // Calories-based cardio
+        if ($set->calories && $set->calories > 0) {
+            return $set->calories . ' cal';
+        }
+
+        // Distance-based cardio
+        $distance = (float) ($set->distance ?? 0);
+
+        if ($distance <= 0) {
+            return '0m';
+        }
+
+        if ($distance < 100) {
+            return number_format($distance, 0) . 'm';
+        } elseif ($distance >= 10000) {
+            return number_format($distance / 1000, 1) . 'km';
+        }
+
+        return number_format($distance, 0) . 'm';
     }
-    
+
+    /**
+     * For cardio, effort is "1 round" per set — not reps.
+     * The grouping badge shows count of rounds, e.g. "3× @ 500m".
+     * Override effort label to empty since distance IS the badge.
+     */
+    protected function getSetEffortValue(LiftSet $set): string
+    {
+        return '1';
+    }
+
+    /**
+     * Format badge group label for cardio.
+     * Renders as "{count} × {badge}" (e.g. "3 × 500m") instead of standard "{count}×{effort} @ {badge}".
+     */
+    protected function formatBadgeGroupLabel(int $count, string $effort, string $badgeLabel): string
+    {
+        $roundsText = $count == 1 ? '1 round' : $count . ' rounds';
+
+        if ($badgeLabel === '') {
+            return $roundsText;
+        }
+
+        return "<strong>{$badgeLabel}</strong> -&nbsp;{$roundsText}";
+    }
+
+    /**
+     * For cardio, uniform reps/sets displays as "{count} rounds".
+     */
+    protected function formatUniformRepsSets(int $count, string $effort): string
+    {
+        return $count == 1 ? '1 round' : $count . ' rounds';
+    }
+
     /**
      * Format success message description for cardio exercises
      * Uses distance and rounds terminology instead of weight/reps/sets
@@ -341,7 +416,7 @@ class CardioExerciseType extends BaseExerciseType
      */
     public function getProgressionSuggestion(\App\Models\LiftLog $lastLog, int $userId, int $exerciseId, ?\Carbon\Carbon $forDate = null): ?object
     {
-        $lastDistance = $lastLog->display_reps; // reps field stores distance in meters
+        $lastDistance = $lastLog->display_distance; // distance in meters
         $lastRounds = $lastLog->liftSets->count();
         
         // Validate that we have valid cardio data
@@ -360,7 +435,9 @@ class CardioExerciseType extends BaseExerciseType
             
             return (object)[
                 'sets' => $lastRounds,
-                'reps' => $suggestedDistance, // distance stored in reps field
+                'distance' => (float) $suggestedDistance,
+                'distance_unit' => 'm',
+                'reps' => $suggestedDistance,
                 'weight' => 0, // always 0 for cardio
                 'band_color' => null, // not applicable for cardio
             ];
@@ -374,7 +451,9 @@ class CardioExerciseType extends BaseExerciseType
         
         return (object)[
             'sets' => $suggestedRounds,
-            'reps' => $lastDistance, // keep same distance
+            'distance' => (float) $lastDistance,
+            'distance_unit' => 'm',
+            'reps' => $lastDistance,
             'weight' => 0, // always 0 for cardio
             'band_color' => null, // not applicable for cardio
         ];
@@ -387,7 +466,9 @@ class CardioExerciseType extends BaseExerciseType
     {
         return (object)[
             'sets' => 1, // 1 round
-            'reps' => 500, // 500m distance
+            'distance' => 500.0, // 500m distance
+            'distance_unit' => 'm',
+            'reps' => 500,
             'weight' => 0, // always 0 for cardio
             'band_color' => null, // not applicable for cardio
         ];
@@ -429,8 +510,8 @@ class CardioExerciseType extends BaseExerciseType
         $roundCount = 0;
         
         foreach ($liftLog->liftSets as $set) {
-            if ($set->reps > 0) { // reps field stores distance in meters
-                $distance = $set->reps;
+            if ($set->distance > 0) { // read from distance column
+                $distance = (float) $set->distance;
                 
                 // Track best single distance (ENDURANCE)
                 $bestDistance = max($bestDistance, $distance);
@@ -616,8 +697,8 @@ class CardioExerciseType extends BaseExerciseType
         
         foreach ($logs as $log) {
             foreach ($log->liftSets as $set) {
-                if ($set->reps > $bestDistance) {
-                    $bestDistance = $set->reps;
+                if ($set->distance > $bestDistance) {
+                    $bestDistance = (float) $set->distance;
                     $liftLogId = $log->id;
                 }
             }
@@ -637,7 +718,7 @@ class CardioExerciseType extends BaseExerciseType
         foreach ($logs as $log) {
             $total = 0;
             foreach ($log->liftSets as $set) {
-                $total += $set->reps;
+                $total += (float) $set->distance;
             }
             
             if ($total > $bestTotal) {
@@ -664,7 +745,7 @@ class CardioExerciseType extends BaseExerciseType
             if ($roundCount === $targetRounds) {
                 $total = 0;
                 foreach ($log->liftSets as $set) {
-                    $total += $set->reps;
+                    $total += (float) $set->distance;
                 }
                 
                 if ($total > $bestDistance) {
