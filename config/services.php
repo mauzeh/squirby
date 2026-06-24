@@ -58,7 +58,7 @@ return [
     ],
 
     'athlete' => [
-        'url' => env('ATHLETE_APP_URL', 'https://squirby.app'),
+        'url' => env('ATHLETE_APP_URL', 'https://flagship.squirby.ai'),
     ],
 
 ];
