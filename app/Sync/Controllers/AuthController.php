@@ -79,6 +79,7 @@ class AuthController
 
         return Socialite::driver('google')
             ->stateless()
+            ->redirectUrl(url('/api/sync/auth/google/callback'))
             ->with(['prompt' => 'select_account', 'state' => $state])
             ->redirect();
     }
@@ -94,7 +95,10 @@ class AuthController
         $deviceId = $state['device_id'] ?? 'athlete-pwa';
 
         try {
-            $googleUser = Socialite::driver('google')->stateless()->user();
+            $googleUser = Socialite::driver('google')
+                ->stateless()
+                ->redirectUrl(url('/api/sync/auth/google/callback'))
+                ->user();
         } catch (\Exception $e) {
             return redirect($athleteUrl . '/auth/callback?error=google_auth_failed');
         }

@@ -41,10 +41,16 @@ return [
         ],
     ],
 
+    // Google OAuth credentials for Socialite.
+    // Note: The 'redirect' URI is intentionally left unused here. Multiple controllers
+    // use Socialite with different callback paths (web login uses /auth/google/callback,
+    // the athlete sync API uses /api/sync/auth/google/callback). Each controller passes
+    // ->redirectUrl(url('/path/to/callback')) explicitly so that a single set of
+    // credentials can serve both flows without needing a per-route env variable.
     'google' => [
         'client_id' => env('GOOGLE_CLIENT_ID'),
         'client_secret' => env('GOOGLE_CLIENT_SECRET'),
-        'redirect' => env('GOOGLE_REDIRECT_URI'),
+        'redirect' => null,
     ],
 
     'apple' => [
