@@ -4,7 +4,6 @@ namespace Tests\Feature\Sync;
 
 use App\Models\User;
 use App\Sync\Services\AppleJwtVerifier;
-use App\Sync\Services\GoogleJwtVerifier;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
@@ -179,107 +178,6 @@ class AuthUpgradeTest extends TestCase
         $response->assertStatus(422)
             ->assertJson([
                 'status' => 'error',
-            ]);
-    }
-
-    /**
-     * Real Google auth test.
-     */
-    public function test_google_auth_success(): void
-    {
-        $this->mock(GoogleJwtVerifier::class, function ($mock) {
-            $mock->shouldReceive('verify')
-                ->with('valid-google-token')
-                ->once()
-                ->andReturn([
-                    'email' => 'google@example.com',
-                    'name' => 'Google User',
-                    'sub' => 'google-sub-123',
-                ]);
-        });
-
-        $response = $this->postJson('/api/sync/auth/google', [
-            'id_token' => 'valid-google-token',
-            'device_id' => 'device-google',
-        ]);
-
-        $response->assertStatus(200)
-            ->assertJsonStructure(['status', 'token', 'athlete', 'email'])
-            ->assertJson([
-                'status' => 'ok',
-                'athlete' => 'Google User',
-                'email' => 'google@example.com',
-            ]);
-
-        $this->assertDatabaseHas('users', [
-            'email' => 'google@example.com',
-            'google_id' => 'google-sub-123',
-            'name' => 'Google User',
-        ]);
-    }
-
-    /**
-     * Test Google auth existing user.
-     */
-    public function test_google_auth_existing_user(): void
-    {
-        $user = User::factory()->create([
-            'email' => 'google@example.com',
-            'name' => 'Original Name',
-            'google_id' => null,
-        ]);
-
-        $this->mock(GoogleJwtVerifier::class, function ($mock) {
-            $mock->shouldReceive('verify')
-                ->with('valid-google-token')
-                ->once()
-                ->andReturn([
-                    'email' => 'google@example.com',
-                    'name' => 'Google Name',
-                    'sub' => 'google-sub-123',
-                ]);
-        });
-
-        $response = $this->postJson('/api/sync/auth/google', [
-            'id_token' => 'valid-google-token',
-            'device_id' => 'device-google',
-        ]);
-
-        $response->assertStatus(200)
-            ->assertJson([
-                'status' => 'ok',
-                'athlete' => 'Original Name', // Existing user name should not be overwritten
-                'email' => 'google@example.com',
-            ]);
-
-        $this->assertDatabaseHas('users', [
-            'email' => 'google@example.com',
-            'google_id' => 'google-sub-123',
-            'name' => 'Original Name',
-        ]);
-    }
-
-    /**
-     * Test Google auth invalid token.
-     */
-    public function test_google_auth_invalid_token(): void
-    {
-        $this->mock(GoogleJwtVerifier::class, function ($mock) {
-            $mock->shouldReceive('verify')
-                ->with('invalid-token')
-                ->once()
-                ->andThrow(new \UnexpectedValueException('Invalid token.'));
-        });
-
-        $response = $this->postJson('/api/sync/auth/google', [
-            'id_token' => 'invalid-token',
-            'device_id' => 'device-google',
-        ]);
-
-        $response->assertStatus(401)
-            ->assertJson([
-                'status' => 'error',
-                'message' => 'Invalid Google token.',
             ]);
     }
 

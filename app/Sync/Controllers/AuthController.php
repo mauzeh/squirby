@@ -4,14 +4,15 @@ namespace App\Sync\Controllers;
 
 use App\Models\User;
 use App\Sync\Services\AppleJwtVerifier;
-use App\Sync\Services\GoogleJwtVerifier;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
+use Laravel\Socialite\Facades\Socialite;
 use UnexpectedValueException;
 
 class AuthController
@@ -63,28 +64,57 @@ class AuthController
     }
 
     /**
-     * Authenticate via Google social sign-in.
+     * Redirect to Google OAuth consent screen (server-side flow for athlete PWA).
      */
-    public function googleAuth(Request $request, GoogleJwtVerifier $verifier): JsonResponse
+    public function googleRedirect(Request $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'id_token' => 'required|string',
-            'device_id' => 'required|string',
-        ]);
+        $deviceId = $request->query('device_id', 'athlete-pwa');
+        $athleteUrl = config('services.athlete.url', 'https://squirby.app');
+
+        // Encode state as base64 JSON to survive the OAuth round-trip without sessions
+        $state = base64_encode(json_encode([
+            'device_id' => $deviceId,
+            'athlete_url' => $athleteUrl,
+        ]));
+
+        return Socialite::driver('google')
+            ->stateless()
+            ->with(['prompt' => 'select_account', 'state' => $state])
+            ->redirect();
+    }
+
+    /**
+     * Handle Google OAuth callback — issue Sanctum token and redirect to athlete app.
+     */
+    public function googleCallback(Request $request)
+    {
+        // Decode state passed through the OAuth flow
+        $state = json_decode(base64_decode($request->query('state', '')), true) ?? [];
+        $athleteUrl = $state['athlete_url'] ?? config('services.athlete.url', 'https://squirby.app');
+        $deviceId = $state['device_id'] ?? 'athlete-pwa';
 
         try {
-            $payload = $verifier->verify($validated['id_token']);
-        } catch (UnexpectedValueException $e) {
-            throw new AuthenticationException('Invalid Google token.');
+            $googleUser = Socialite::driver('google')->stateless()->user();
+        } catch (\Exception $e) {
+            return redirect($athleteUrl . '/auth/callback?error=google_auth_failed');
         }
 
         $user = $this->findOrCreateSocialUser(
-            email: $payload['email'],
-            name: $payload['name'] ?? $payload['email'],
-            googleId: $payload['sub']
+            email: $googleUser->getEmail(),
+            name: $googleUser->getName() ?? $googleUser->getEmail(),
+            googleId: $googleUser->getId()
         );
 
-        return $this->authResponse($user, $validated['device_id']);
+        $token = $user->createToken($deviceId)->plainTextToken;
+
+        // Redirect back to athlete app with token and user info
+        $params = http_build_query([
+            'token' => $token,
+            'athlete' => $user->name,
+            'email' => $user->email,
+        ]);
+
+        return redirect($athleteUrl . '/auth/callback?' . $params);
     }
 
     /**
