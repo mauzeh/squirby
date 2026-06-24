@@ -26,3 +26,15 @@ You may commit at your own discretion — after completing a logical unit of wor
 - Imperative mood: "Add migration for lift_sets columns" not "Added migration"
 - No prefix conventions required (no "feat:", "fix:", etc. unless the user asks)
 - Keep the first line under 72 characters
+
+## Rewriting History
+
+- **NEVER amend a commit that has already been pushed.** Once a commit is on the remote, it is immutable. Make a new commit on top instead.
+- Amending after push causes divergent branches on the production server (Forge) and breaks auto-deploy.
+
+## Deployment
+
+- Pushes to `main` trigger automatic production deploy via Laravel Forge. There is no staging gate — broken pushes break production immediately.
+- Production domain: `squirby.ai`
+- Athlete app domain: `flagship.squirby.ai`
+- After config changes, the user may need to run `php artisan config:clear` on the server if config caching is active.
