@@ -10,7 +10,7 @@ Repomix (formerly Repopack) is a tool designed to pack an entire code repository
 
 ### 2. Token Optimization and Compaction
 * **Tree-sitter Code Compression**: Using the `--compress` option parses source code files with Tree-sitter, extracting structural metadata (class, interface, and function signatures) while removing their implementation bodies. This retains complete architectural context while reducing size by 70–80%.
-* **Empty Line and Comment Removal**: Stripping code comments, docstrings, and empty lines removes boilerplate tokens that are unnecessary for structural understanding.
+* **Empty Line Removal**: Stripping empty lines removes boilerplate tokens that are unnecessary for structural understanding, while code comments are preserved to keep implementation context and developer explanations.
 * **Targeted Exclusions**: Specifying custom pattern ignores prevents large assets, database seeders, binary assets, and package manager lock files (e.g., `composer.lock`, `package-lock.json`) from bloating the context.
 
 ### 3. Git-Aware Context Collection
