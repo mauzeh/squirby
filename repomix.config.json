@@ -1,0 +1,37 @@
+{
+  "$schema": "https://repomix.com/schemas/latest/schema.json",
+  "output": {
+    "filePath": "logger-source-code.txt",
+    "style": "xml",
+    "headerText": "This file contains the repository codebase for AI analysis. It is optimized for NotebookLM context limits.",
+    "fileSummary": true,
+    "directoryStructure": true,
+    "removeComments": false,
+    "compress": true,
+    "topFilesLength": 10
+  },
+  "ignore": {
+    "useGitignore": true,
+    "useDefaultPatterns": true,
+    "customPatterns": [
+      "**/composer.lock",
+      "**/package-lock.json",
+      "**/*.sql",
+      "**/*.sqlite",
+      "storage/**",
+      ".gemini/**",
+      ".kiro/**",
+      "bootstrap/cache/**",
+      "public/build/**",
+      "public/storage/**",
+      "**/.phpunit.result.cache",
+      "database/seeders/**/*.csv",
+      "database/seeders/**/*.json",
+      "database/imports/**",
+      "tests/**"
+    ]
+  },
+  "security": {
+    "enableSecurityCheck": true
+  }
+}

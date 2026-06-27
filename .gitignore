@@ -34,3 +34,4 @@ quantifiedathletics_prod.*.sql
 debug_local
 debug_production
 PROMPTS
+/logger-source-code*
