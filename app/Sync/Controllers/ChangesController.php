@@ -94,6 +94,28 @@ class ChangesController
             'status' => 'ok',
             'logs' => $logsData,
             'deleted_ids' => $deletedLogs,
+            'userExercises' => $this->getUserExercises($user),
         ]);
+    }
+
+    /**
+     * Get user-scoped exercises for the changes payload.
+     * Returns exercises the user created (user_id = current user, not deleted).
+     */
+    private function getUserExercises($user): array
+    {
+        $exercises = \App\Models\Exercise::where('user_id', $user->id)
+            ->whereNull('deleted_at')
+            ->orderBy('title', 'asc')
+            ->get();
+
+        return $exercises->map(function ($exercise) {
+            return [
+                'id' => 'user_' . $exercise->id,
+                'name' => $exercise->title,
+                'logType' => $exercise->log_type ?? 'barbell',
+                'exerciseType' => $exercise->exercise_type ?? 'regular',
+            ];
+        })->values()->toArray();
     }
 }
