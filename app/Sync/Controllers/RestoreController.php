@@ -122,6 +122,28 @@ class RestoreController
             'preferences' => $preference ? $preference->preferences_data : null,
             'logs' => $logsData,
             'prHistory' => (object) $prHistory,
+            'userExercises' => $this->getUserExercises($user),
         ]);
+    }
+
+    /**
+     * Get user-scoped exercises for the restore payload.
+     * Returns exercises the user created (user_id = current user).
+     */
+    private function getUserExercises($user): array
+    {
+        $exercises = \App\Models\Exercise::where('user_id', $user->id)
+            ->whereNull('deleted_at')
+            ->orderBy('title', 'asc')
+            ->get();
+
+        return $exercises->map(function ($exercise) {
+            return [
+                'id' => 'user_' . $exercise->id,
+                'name' => $exercise->title,
+                'logType' => $exercise->log_type ?? 'barbell',
+                'exerciseType' => $exercise->exercise_type ?? 'regular',
+            ];
+        })->values()->toArray();
     }
 }
