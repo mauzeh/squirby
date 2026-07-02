@@ -111,7 +111,7 @@ class ChangesController
 
         return $exercises->map(function ($exercise) {
             return [
-                'id' => 'user_' . $exercise->id,
+                'id' => $exercise->canonical_name,
                 'name' => $exercise->title,
                 'logType' => $exercise->log_type ?? 'barbell',
                 'exerciseType' => $exercise->exercise_type ?? 'regular',

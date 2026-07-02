@@ -18,6 +18,7 @@ class ExerciseController
     {
         $request->validate([
             'title' => 'required|string|max:255',
+            'canonical_name' => 'nullable|string|max:255',
             'exercise_type' => 'nullable|string|max:50',
             'log_type' => 'nullable|string|max:50',
             'show_in_feed' => 'nullable|boolean',
@@ -25,7 +26,7 @@ class ExerciseController
 
         $user = $request->user();
         $title = $request->input('title');
-        $canonicalName = Str::snake(Str::lower($title));
+        $canonicalName = $request->input('canonical_name') ?: Str::snake(Str::lower($title));
 
         // Check if user already has an exercise with this canonical name
         $existing = Exercise::where('user_id', $user->id)
