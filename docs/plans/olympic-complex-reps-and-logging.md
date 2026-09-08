@@ -111,10 +111,12 @@ Checkpoints use `php artisan test --parallel`.
 - **Checkpoint.**
 
 ### Phase 2 — Sync feature test (accept + persist + round-trip)
-- Feature test: POST `/api/squirby/logs` for a `barbell-complex` exercise with `{weight, reps}` → persists
-  `weight`+`reps` (NOT dropped to `weight:0`), auto-creates `exercise_type = regular`.
-- Feature test: `GET /restore` returns `weight` + `reps` for the `barbell-complex` set; a simulated Logger
-  reps edit round-trips (the `mapFromColumns` barbell arm).
+- Feature test: POST `/api/squirby/logs` for a `barbell-complex` exercise **weight-only** (`{weight}`, reps
+  absent/null — the real v1 shape) → persists `weight`, `reps` stays null (NOT dropped to a no-op
+  `{unit, weight:0}` set), auto-creates `exercise_type = regular`.
+- Feature test: `GET /restore` returns `weight` (reps null) for the `barbell-complex` set; and a set WITH a
+  reps value (simulating a Logger-side edit) round-trips `weight`+`reps` via the `mapFromColumns` barbell
+  arm — proving the alias handles both the null and non-null reps case identically to `barbell`.
 - **Checkpoint.**
 
 ### Phase 3 — Verification + cleanup sweep

@@ -74,10 +74,12 @@ php artisan test --parallel > .test-output.txt 2>&1; tail -40 .test-output.txt
 ```
 
 ## Milestone 2 — Sync feature test (accept + persist + round-trip)
-- Feature test: POST `/api/squirby/logs` for a `barbell-complex` exercise with `{weight, reps}` → the lift
-  set persists `weight`+`reps` (assert NOT dropped to `weight:0`), and the auto-created exercise has
-  `exercise_type = regular`.
-- Feature test: `GET /restore` returns `weight`+`reps` for that set (round-trip intact).
+- Feature test: POST `/api/squirby/logs` for a `barbell-complex` exercise **weight-only** (`{weight}`, reps
+  absent — the real v1 shape) → the lift set persists `weight` with `reps` null (assert NOT dropped to a
+  no-op `{unit, weight:0}` set), and the auto-created exercise has `exercise_type = regular`.
+- Feature test: `GET /restore` returns `weight` (reps null); AND a set with a reps value (simulated
+  Logger-side edit) round-trips `weight`+`reps` — proving the alias handles null and non-null reps like
+  `barbell`.
 ### Checkpoint
 ```bash
 php artisan test --parallel > .test-output.txt 2>&1; tail -40 .test-output.txt
