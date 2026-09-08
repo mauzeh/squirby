@@ -118,6 +118,93 @@ class StoreSyncLogActionTest extends TestCase
         $this->assertEquals(1, LiftLog::where('user_id', $this->user->id)->count());
     }
 
+    public function test_create_persists_meta_verbatim(): void
+    {
+        $meta = ['v' => 1, 'complex' => ['id' => 'clean_complex_1']];
+
+        $payload = [
+            'exercise_name' => 'Clean Complex',
+            'date' => '2026-06-15',
+            'log_type' => 'barbell',
+            'weight_unit' => 'lbs',
+            'meta' => $meta,
+            'sets' => [
+                ['weight' => 135, 'reps' => 3],
+            ],
+        ];
+
+        $log = $this->action->execute($this->user, $payload, 'device-123');
+
+        $this->assertSame($meta, $log->fresh()->meta);
+    }
+
+    public function test_non_complex_log_stores_null_meta(): void
+    {
+        $payload = [
+            'exercise_name' => 'Bench Press',
+            'date' => '2026-06-15',
+            'log_type' => 'barbell',
+            'weight_unit' => 'lbs',
+            'sets' => [
+                ['weight' => 135, 'reps' => 5],
+            ],
+        ];
+
+        $log = $this->action->execute($this->user, $payload, 'device-123');
+
+        $this->assertNull($log->fresh()->meta);
+    }
+
+    public function test_update_existing_slot_overwrites_meta(): void
+    {
+        $base = [
+            'exercise_name' => 'Clean Complex',
+            'date' => '2026-06-15',
+            'log_type' => 'barbell',
+            'weight_unit' => 'lbs',
+            'sets' => [
+                ['weight' => 135, 'reps' => 3],
+            ],
+        ];
+
+        $first = $this->action->execute(
+            $this->user,
+            $base + ['meta' => ['v' => 1, 'complex' => ['id' => 'clean_complex_1']]],
+            'device-123'
+        );
+
+        $newMeta = ['v' => 1, 'complex' => ['id' => 'clean_complex_2']];
+        $second = $this->action->execute($this->user, $base + ['meta' => $newMeta], 'device-123');
+
+        $this->assertEquals($first->id, $second->id);
+        $this->assertSame($newMeta, $second->fresh()->meta);
+    }
+
+    public function test_update_omitting_meta_nulls_prior_meta_whole_log_lww(): void
+    {
+        $base = [
+            'exercise_name' => 'Clean Complex',
+            'date' => '2026-06-15',
+            'log_type' => 'barbell',
+            'weight_unit' => 'lbs',
+            'sets' => [
+                ['weight' => 135, 'reps' => 3],
+            ],
+        ];
+
+        $first = $this->action->execute(
+            $this->user,
+            $base + ['meta' => ['v' => 1, 'complex' => ['id' => 'clean_complex_1']]],
+            'device-123'
+        );
+
+        // Update the same slot with a payload that omits meta entirely.
+        $second = $this->action->execute($this->user, $base, 'device-123');
+
+        $this->assertEquals($first->id, $second->id);
+        $this->assertNull($second->fresh()->meta);
+    }
+
     public function test_different_slots_create_separate_logs(): void
     {
         $payload1 = [

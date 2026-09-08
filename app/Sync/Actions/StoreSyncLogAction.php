@@ -64,6 +64,7 @@ class StoreSyncLogAction
                 'log_type' => $validated['log_type'],
                 'device_id' => $deviceId,
                 'idempotency_key' => $validated['idempotency_key'] ?? null,
+                'meta' => $validated['meta'] ?? null,
             ]);
 
             // Replace sets: delete old, create new
@@ -98,6 +99,7 @@ class StoreSyncLogAction
             'block_index' => $validated['block_index'] ?? null,
             'movement_index' => $validated['movement_index'] ?? null,
             'idempotency_key' => $validated['idempotency_key'] ?? null,
+            'meta' => $validated['meta'] ?? null,
         ]);
 
         // Create lift sets

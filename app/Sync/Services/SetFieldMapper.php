@@ -18,6 +18,7 @@ class SetFieldMapper
 
         switch ($logType) {
             case 'barbell':
+            case 'barbell-complex':
             case 'single-dumbbell':
             case 'dual-dumbbell':
             case 'machine':
@@ -111,6 +112,7 @@ class SetFieldMapper
 
         switch ($logType) {
             case 'barbell':
+            case 'barbell-complex':
             case 'single-dumbbell':
             case 'dual-dumbbell':
             case 'machine':
