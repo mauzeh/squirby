@@ -39,6 +39,7 @@ class LiftLog extends Model
         'device_id',
         'source',
         'idempotency_key',
+        'meta',
     ];
 
     protected $casts = [
@@ -47,6 +48,7 @@ class LiftLog extends Model
         'pr_count' => 'integer',
         'block_index' => 'integer',
         'movement_index' => 'integer',
+        'meta' => 'array',
     ];
 
     protected static function boot()

@@ -88,6 +88,7 @@ class ChangesController
                 'note' => $liftLog->comments,
                 'weightUnit' => $firstSet->unit,
                 'updated_at' => $liftLog->updated_at->toIso8601String(),
+                'meta' => $liftLog->meta,
             ];
 
             if ($liftLog->track !== null) {

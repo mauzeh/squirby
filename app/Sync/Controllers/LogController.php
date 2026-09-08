@@ -32,6 +32,7 @@ class LogController
             'movement_index' => 'nullable|integer|min:0|max:65535',
             'note' => 'nullable|string',
             'idempotency_key' => 'nullable|string',
+            'meta' => 'nullable|array',
         ]);
 
         $idempotencyKey = $request->header('X-Idempotency-Key') ?? $request->input('idempotency_key');
@@ -81,6 +82,7 @@ class LogController
             'logs.*.movement_index' => 'nullable|integer|min:0|max:65535',
             'logs.*.note' => 'nullable|string',
             'logs.*.idempotency_key' => 'nullable|string',
+            'logs.*.meta' => 'nullable|array',
         ]);
 
         $deviceId = $request->attributes->get('device_id');

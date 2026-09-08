@@ -81,6 +81,7 @@ class RestoreController
                 'sets' => $sets,
                 'note' => $liftLog->comments,
                 'weightUnit' => $firstSet->unit,
+                'meta' => $liftLog->meta,
             ];
 
             if ($liftLog->track !== null) {
