@@ -18,8 +18,8 @@ class SetFieldMapperTest extends TestCase
 
     public function test_map_to_columns_all_types(): void
     {
-        // 1. barbell, single-dumbbell, dual-dumbbell
-        foreach (['barbell', 'single-dumbbell', 'dual-dumbbell'] as $type) {
+        // 1. barbell, barbell-complex, single-dumbbell, dual-dumbbell
+        foreach (['barbell', 'barbell-complex', 'single-dumbbell', 'dual-dumbbell'] as $type) {
             $mapped = $this->mapper->mapToColumns($type, ['weight' => 100, 'reps' => 5], 'lbs');
             $this->assertEquals(100, $mapped['weight']);
             $this->assertEquals(5, $mapped['reps']);
@@ -146,11 +146,13 @@ class SetFieldMapperTest extends TestCase
 
     public function test_map_from_columns_all_types(): void
     {
-        // 1. barbell
-        $set = new LiftSet(['weight' => 100, 'reps' => 5]);
-        $mapped = $this->mapper->mapFromColumns('barbell', $set);
-        $this->assertEquals(100, $mapped['weight']);
-        $this->assertEquals(5, $mapped['reps']);
+        // 1. barbell, barbell-complex
+        foreach (['barbell', 'barbell-complex'] as $type) {
+            $set = new LiftSet(['weight' => 100, 'reps' => 5]);
+            $mapped = $this->mapper->mapFromColumns($type, $set);
+            $this->assertEquals(100, $mapped['weight']);
+            $this->assertEquals(5, $mapped['reps']);
+        }
 
         // 2. bodyweight — returns 'weight' (Athlete handles rename to addedWeight)
         $set = new LiftSet(['weight' => 20, 'reps' => 8]);
@@ -246,5 +248,18 @@ class SetFieldMapperTest extends TestCase
         $fromColsDur = $this->mapper->mapFromColumns('timed-reps', $setDur);
         $this->assertEquals(40, $fromColsDur['duration']);
         $this->assertNull($fromColsDur['reps']);
+    }
+
+    public function test_barbell_complex_mapping_round_trip(): void
+    {
+        $mapped = $this->mapper->mapToColumns('barbell-complex', ['weight' => 135, 'reps' => 3], 'lbs');
+        $this->assertEquals(135, $mapped['weight']);
+        $this->assertEquals(3, $mapped['reps']);
+        $this->assertEquals('lbs', $mapped['unit']);
+
+        $set = new LiftSet(['weight' => 135, 'reps' => 3]);
+        $fromCols = $this->mapper->mapFromColumns('barbell-complex', $set);
+        $this->assertEquals(135, $fromCols['weight']);
+        $this->assertEquals(3, $fromCols['reps']);
     }
 }

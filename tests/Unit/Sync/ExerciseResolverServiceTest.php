@@ -159,9 +159,12 @@ class ExerciseResolverServiceTest extends TestCase
         $bodyweight = $this->resolver->resolve('Super Push', $this->user, 'bodyweight');
         $this->assertEquals('bodyweight', $bodyweight->exercise_type);
 
-        // barbell log type should derive regular exercise type
+        // barbell and barbell-complex log types should derive regular exercise type
         $regular = $this->resolver->resolve('Super Press', $this->user, 'barbell');
         $this->assertEquals('regular', $regular->exercise_type);
+
+        $barbellComplex = $this->resolver->resolve('Bear Complex', $this->user, 'barbell-complex');
+        $this->assertEquals('regular', $barbellComplex->exercise_type);
 
         // weighted-carry 5 logTypes should derive load_output exercise type
         foreach (['weighted-carry-1-kb', 'weighted-carry-2-kb', 'weighted-carry-1-db', 'weighted-carry-2-db', 'weighted-carry-ball'] as $logType) {
