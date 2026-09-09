@@ -176,6 +176,10 @@ require __DIR__.'/auth.php';
 Route::middleware(['auth', 'verified', 'admin'])->group(function () {
     Route::resource('users', UserController::class);
     Route::get('users/{user}/impersonate', [UserController::class, 'impersonate'])->name('users.impersonate');
+
+    Route::get('telemetry', [\App\Telemetry\Controllers\TelemetryDashboardController::class, 'index'])->name('telemetry');
+    Route::get('api/telemetry/summary', [\App\Telemetry\Controllers\TelemetryApiController::class, 'summary'])->name('telemetry.summary');
+    Route::get('api/telemetry/trail', [\App\Telemetry\Controllers\TelemetryApiController::class, 'trail'])->name('telemetry.trail');
 });
 
 Route::get('users/impersonate/leave', [UserController::class, 'leaveImpersonate'])->name('users.leave-impersonate');
