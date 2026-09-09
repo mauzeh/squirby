@@ -61,6 +61,12 @@ return [
         'per_hour' => null,
     ],
 
+    // Keyed on device id — shared gym WiFi would collapse ~800 members into one IP bucket
+    'telemetry' => [
+        'per_minute' => 30,
+        'per_hour' => null,
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Breeze Login Failure Lockout

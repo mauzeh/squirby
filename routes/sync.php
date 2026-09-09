@@ -14,6 +14,8 @@ Route::get('/auth/google/redirect', [AuthController::class, 'googleRedirect']);
 Route::get('/auth/google/callback', [AuthController::class, 'googleCallback']);
 Route::post('/auth/apple', [AuthController::class, 'appleAuth']);
 Route::post('/auth/check', [AuthController::class, 'checkEmail'])->middleware('throttle:email-check');
+Route::post('/telemetry', [\App\Sync\Controllers\TelemetryController::class, 'store'])
+    ->middleware(['device-id', 'throttle:telemetry', 'log-sync-request']);
 Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
 Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 
