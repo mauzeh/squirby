@@ -59,6 +59,10 @@ class AppServiceProvider extends ServiceProvider
             return $this->buildLimits('sync_batch', $request->user()?->id ?: $request->ip());
         });
 
+        RateLimiter::for('telemetry', function (Request $request) {
+            return $this->buildLimits('telemetry', $request->header('X-Device-Id') ?: $request->ip());
+        });
+
         // Connection-token redemption. Keyed per authenticated user.
         RateLimiter::for('connection-attempts', function (Request $request) {
             return $this->buildLimits('connection_attempts', $request->user()?->id ?: $request->ip());
