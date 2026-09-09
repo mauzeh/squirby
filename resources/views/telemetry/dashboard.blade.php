@@ -217,6 +217,8 @@
     </div>
 
     <script>
+        let telemetryChart = null;
+
         function telemetryDashboard() {
             return {
                 since: 'since_launch',
@@ -235,7 +237,6 @@
                 selectedDeviceId: undefined,
                 expandedDeviceIds: [],
                 trailEvents: [],
-                chart: null,
 
                 chips: [
                     { id: 'since_launch', label: 'Since launch' },
@@ -295,15 +296,15 @@
                 },
 
                 updateChart() {
-                    const labels = this.summaryData.series.labels || [];
+                    const labels = (this.summaryData.series && this.summaryData.series.labels) || [];
                     const seriesData = this.getMetricData();
                     const labelName = this.getMetricLabel();
 
-                    if (!this.chart) {
+                    if (!telemetryChart) {
                         const ctx = document.getElementById('telemetryChart');
                         if (!ctx) return;
                         
-                        this.chart = new Chart(ctx.getContext('2d'), {
+                        telemetryChart = new Chart(ctx.getContext('2d'), {
                             type: 'bar',
                             data: {
                                 labels: labels,
@@ -341,10 +342,10 @@
                             }
                         });
                     } else {
-                        this.chart.data.labels = labels;
-                        this.chart.data.datasets[0].label = labelName;
-                        this.chart.data.datasets[0].data = seriesData;
-                        this.chart.update();
+                        telemetryChart.data.labels = labels;
+                        telemetryChart.data.datasets[0].label = labelName;
+                        telemetryChart.data.datasets[0].data = seriesData;
+                        telemetryChart.update();
                     }
                 },
 
