@@ -50,7 +50,7 @@ class TelemetryApiController extends Controller
     protected function parseSince(?string $since): Carbon
     {
         if (empty($since) || $since === 'since_launch') {
-            return Carbon::parse('2026-09-01 00:00:00');
+            return Carbon::parse('2026-09-09 00:00:00');
         }
 
         return match ($since) {
@@ -64,7 +64,7 @@ class TelemetryApiController extends Controller
             'all' => Carbon::parse('2020-01-01 00:00:00'),
             default => rescue(
                 fn () => Carbon::parse($since)->startOfDay(),
-                Carbon::parse('2026-09-01 00:00:00'),
+                Carbon::parse('2026-09-09 00:00:00'),
                 false
             ),
         };
