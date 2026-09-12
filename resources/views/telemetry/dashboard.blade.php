@@ -98,8 +98,24 @@
             </div>
         </section>
 
+        <!-- Tab Bar: Devices / Trail -->
+        <div class="flex bg-slate-950 p-1 rounded-lg border border-slate-800 text-xs">
+            <button
+                @click="activeTab = 'devices'"
+                :class="activeTab === 'devices' ? 'bg-blue-600 text-white font-semibold shadow' : 'text-slate-400 hover:text-slate-200'"
+                class="flex-1 py-1.5 text-center rounded-md transition-all">
+                Devices
+            </button>
+            <button
+                @click="activeTab = 'trail'"
+                :class="activeTab === 'trail' ? 'bg-blue-600 text-white font-semibold shadow' : 'text-slate-400 hover:text-slate-200'"
+                class="flex-1 py-1.5 text-center rounded-md transition-all">
+                Trail
+            </button>
+        </div>
+
         <!-- Section B: Paginated Device List -->
-        <section class="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-3 shadow-lg">
+        <section x-show="activeTab === 'devices'" class="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-3 shadow-lg">
             <div class="flex items-center justify-between border-b border-slate-800 pb-2">
                 <h2 class="text-xs font-semibold uppercase tracking-wider text-slate-300">Device List</h2>
                 <div class="text-xs text-slate-400">
@@ -169,11 +185,18 @@
         </section>
 
         <!-- Section C: Selected Device Navigation Trail -->
-        <section class="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-3 shadow-lg mb-8">
+        <section x-show="activeTab === 'trail'" class="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-3 shadow-lg mb-8">
             <div class="border-b border-slate-800 pb-2">
-                <h2 class="text-xs font-semibold uppercase tracking-wider text-slate-300">Device Navigation Trail</h2>
+                <div class="flex items-center justify-between">
+                    <h2 class="text-xs font-semibold uppercase tracking-wider text-slate-300">Device Navigation Trail</h2>
+                    <button
+                        @click="activeTab = 'devices'"
+                        class="text-2xs text-blue-400 hover:underline whitespace-nowrap">
+                        &larr; Devices
+                    </button>
+                </div>
                 <p class="text-xs font-mono text-slate-400 truncate mt-0.5">
-                    <span x-text="selectedDeviceId === null ? (selectedDeviceId === undefined ? 'Select a device above' : 'no value') : selectedDeviceId"></span>
+                    <span x-text="selectedDeviceId === undefined ? 'Select a device' : (selectedDeviceId === null ? 'no value' : selectedDeviceId)"></span>
                 </p>
             </div>
 
@@ -186,32 +209,33 @@
             </div>
 
             <div x-show="!trailLoading">
-                <template x-if="selectedDeviceId === undefined">
-                    <div class="text-center py-6 text-xs text-slate-500">Tap any device in Section B to inspect its screen navigation history.</div>
-                </template>
+                <!-- No device selected yet -->
+                <div x-show="selectedDeviceId === undefined" class="text-center py-6 text-xs text-slate-500">
+                    Tap "View trail" on any device to inspect its screen navigation history.
+                </div>
 
-                <template x-if="selectedDeviceId !== undefined && trailEvents.length === 0">
-                    <div class="text-center py-6 text-xs text-slate-500">No navigation events recorded for this device.</div>
-                </template>
+                <!-- Device selected but no events -->
+                <div x-show="selectedDeviceId !== undefined && trailEvents.length === 0" class="text-center py-6 text-xs text-slate-500">
+                    No navigation events recorded for this device.
+                </div>
 
-                <template x-if="selectedDeviceId !== undefined && trailEvents.length > 0">
-                    <div class="relative pl-4 border-l-2 border-slate-800 space-y-3 my-2">
-                        <template x-for="(evt, idx) in trailEvents" :key="idx">
-                            <div class="relative group">
-                                <!-- Timeline dot -->
-                                <div class="absolute -left-[21px] top-1 h-2.5 w-2.5 rounded-full bg-blue-500 border-2 border-slate-900"></div>
-                                
-                                <div class="bg-slate-950 p-2 rounded-md border border-slate-800 flex items-center justify-between">
-                                    <div>
-                                        <div class="text-xs font-semibold text-slate-200" x-text="evt.screen"></div>
-                                        <div class="text-2xs text-slate-400 font-mono" x-text="formatDate(evt.ts)"></div>
-                                    </div>
-                                    <span class="text-2xs font-mono text-slate-500" x-text="'#' + (idx + 1)"></span>
+                <!-- Device selected with events -->
+                <div x-show="selectedDeviceId !== undefined && trailEvents.length > 0" class="relative pl-4 border-l-2 border-slate-800 space-y-3 my-2">
+                    <template x-for="(evt, idx) in trailEvents" :key="idx">
+                        <div class="relative group">
+                            <!-- Timeline dot -->
+                            <div class="absolute -left-[21px] top-1 h-2.5 w-2.5 rounded-full bg-blue-500 border-2 border-slate-900"></div>
+
+                            <div class="bg-slate-950 p-2 rounded-md border border-slate-800 flex items-center justify-between">
+                                <div>
+                                    <div class="text-xs font-semibold text-slate-200" x-text="evt.screen"></div>
+                                    <div class="text-2xs text-slate-400 font-mono" x-text="formatDate(evt.ts)"></div>
                                 </div>
+                                <span class="text-2xs font-mono text-slate-500" x-text="'#' + (idx + 1)"></span>
                             </div>
-                        </template>
-                    </div>
-                </template>
+                        </div>
+                    </template>
+                </div>
             </div>
         </section>
     </div>
@@ -226,6 +250,7 @@
                 activeChip: 'since_launch',
                 metric: 'new',
                 page: 1,
+                activeTab: 'devices',
                 loading: false,
                 trailLoading: false,
                 summaryData: {
@@ -382,6 +407,7 @@
 
                 selectDevice(deviceId) {
                     this.selectedDeviceId = deviceId;
+                    this.activeTab = 'trail';
                     this.loadTrail(deviceId);
                 },
 

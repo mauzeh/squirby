@@ -118,9 +118,9 @@ class TelemetryReportService
             }
         }
 
-        // Sort ascending by timestamp
+        // Sort descending by timestamp (most recent first)
         usort($flattenedEvents, function (array $a, array $b) {
-            return strcmp($a['ts'], $b['ts']);
+            return strcmp($b['ts'], $a['ts']);
         });
 
         return array_values($flattenedEvents);
