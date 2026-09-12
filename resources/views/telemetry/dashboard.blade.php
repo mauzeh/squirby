@@ -98,7 +98,7 @@
             </div>
         </section>
 
-        <!-- Tab Bar: Devices / Trail -->
+        <!-- Tab Bar: Devices / Trail / Blueprint -->
         <div class="flex bg-slate-950 p-1 rounded-lg border border-slate-800 text-xs">
             <button
                 @click="activeTab = 'devices'"
@@ -111,6 +111,12 @@
                 :class="activeTab === 'trail' ? 'bg-blue-600 text-white font-semibold shadow' : 'text-slate-400 hover:text-slate-200'"
                 class="flex-1 py-1.5 text-center rounded-md transition-all">
                 Trail
+            </button>
+            <button
+                @click="activeTab = 'blueprint'; loadBlueprintOnce()"
+                :class="activeTab === 'blueprint' ? 'bg-blue-600 text-white font-semibold shadow' : 'text-slate-400 hover:text-slate-200'"
+                class="flex-1 py-1.5 text-center rounded-md transition-all">
+                Blueprint
             </button>
         </div>
 
@@ -238,6 +244,54 @@
                 </div>
             </div>
         </section>
+
+        <!-- Section D: Blueprint Choices Distribution -->
+        <section x-show="activeTab === 'blueprint'" class="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-4 shadow-lg mb-8">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+                <div>
+                    <h2 class="text-xs font-semibold uppercase tracking-wider text-slate-300">Blueprint Choices</h2>
+                    <p class="text-2xs text-slate-400">Onboarding snapshot selections (latest per device)</p>
+                </div>
+                <span class="text-2xs bg-slate-800 text-slate-300 font-semibold px-2 py-0.5 rounded-full" x-text="blueprintData.total + ' devices'"></span>
+            </div>
+
+            <div x-show="blueprintLoading" class="py-6 text-center text-xs text-blue-400 space-x-2">
+                <svg class="animate-spin inline h-4 w-4 text-blue-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span>Loading blueprint choices...</span>
+            </div>
+
+            <div x-show="!blueprintLoading">
+                <template x-if="blueprintData.total === 0">
+                    <div class="text-center py-6 text-xs text-slate-500">No blueprint snapshots in selected range.</div>
+                </template>
+
+                <div x-show="blueprintData.total > 0" class="space-y-4">
+                    <!-- Distribution Cards -->
+                    <template x-for="(values, field) in blueprintData.distribution" :key="field">
+                        <div class="bg-slate-950 p-3 rounded-lg border border-slate-800 space-y-2">
+                            <div class="text-xs font-semibold text-slate-300 capitalize" x-text="field.replace(/_/g, ' ')"></div>
+                            
+                            <div class="space-y-1.5">
+                                <template x-for="(count, val) in values" :key="val">
+                                    <div class="flex items-center justify-between text-xs">
+                                        <span class="text-slate-400 font-mono" x-text="val"></span>
+                                        <div class="flex items-center space-x-2">
+                                            <div class="bg-slate-800 h-2 rounded-full overflow-hidden w-24">
+                                                <div class="bg-blue-500 h-full rounded-full" :style="'width: ' + (blueprintData.total > 0 ? Math.round((count / blueprintData.total) * 100) : 0) + '%'"></div>
+                                            </div>
+                                            <span class="text-slate-200 font-semibold w-8 text-right font-mono" x-text="count"></span>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </section>
     </div>
 
     <script>
@@ -253,6 +307,13 @@
                 activeTab: 'devices',
                 loading: false,
                 trailLoading: false,
+                blueprintLoading: false,
+                blueprintLoaded: false,
+                blueprintData: {
+                    total: 0,
+                    distribution: {},
+                    devices: []
+                },
                 summaryData: {
                     total: 0,
                     series: { labels: [], new: [], cumulative: [], active: [] },
@@ -284,7 +345,11 @@
                     this.since = chipId;
                     this.customDate = '';
                     this.page = 1;
+                    this.blueprintLoaded = false;
                     this.loadSummary();
+                    if (this.activeTab === 'blueprint') {
+                        this.loadBlueprint();
+                    }
                 },
 
                 onDateInput() {
@@ -292,7 +357,11 @@
                         this.since = this.customDate;
                         this.activeChip = 'custom';
                         this.page = 1;
+                        this.blueprintLoaded = false;
                         this.loadSummary();
+                        if (this.activeTab === 'blueprint') {
+                            this.loadBlueprint();
+                        }
                     }
                 },
 
@@ -427,6 +496,31 @@
                     .catch(err => {
                         console.error('Failed to load trail:', err);
                         this.trailLoading = false;
+                    });
+                },
+
+                loadBlueprintOnce() {
+                    if (!this.blueprintLoaded) {
+                        this.loadBlueprint();
+                    }
+                },
+
+                loadBlueprint() {
+                    this.blueprintLoading = true;
+                    const url = "{{ route('telemetry.blueprint') }}?since=" + encodeURIComponent(this.since);
+
+                    fetch(url, {
+                        headers: { 'Accept': 'application/json' }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        this.blueprintData = data;
+                        this.blueprintLoaded = true;
+                        this.blueprintLoading = false;
+                    })
+                    .catch(err => {
+                        console.error('Failed to load blueprint:', err);
+                        this.blueprintLoading = false;
                     });
                 },
 

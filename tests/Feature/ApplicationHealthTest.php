@@ -151,6 +151,7 @@ class ApplicationHealthTest extends TestCase
             'users.impersonate',
             'workouts.create', // Advanced WOD syntax - admin only
             'exercises.index', // Exercise management - admin only
+            'telemetry*', // Telemetry admin dashboard - admin only
             
             // Impersonation leave (requires active impersonation)
             'users.leave-impersonate',

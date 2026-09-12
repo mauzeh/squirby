@@ -180,6 +180,7 @@ Route::middleware(['auth', 'verified', 'admin'])->group(function () {
     Route::get('telemetry', [\App\Telemetry\Controllers\TelemetryDashboardController::class, 'index'])->name('telemetry');
     Route::get('api/telemetry/summary', [\App\Telemetry\Controllers\TelemetryApiController::class, 'summary'])->name('telemetry.summary');
     Route::get('api/telemetry/trail', [\App\Telemetry\Controllers\TelemetryApiController::class, 'trail'])->name('telemetry.trail');
+    Route::get('api/telemetry/blueprint', [\App\Telemetry\Controllers\TelemetryApiController::class, 'blueprint'])->name('telemetry.blueprint');
 });
 
 Route::get('users/impersonate/leave', [UserController::class, 'leaveImpersonate'])->name('users.leave-impersonate');

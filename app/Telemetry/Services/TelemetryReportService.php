@@ -4,9 +4,147 @@ namespace App\Telemetry\Services;
 
 use App\Sync\Models\AthleteEvent;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class TelemetryReportService
 {
+    /**
+     * Unroll latest blueprint_state snapshots per device and compute per-field value distribution.
+     *
+     * @return array{
+     *     total: int,
+     *     distribution: array<string, array<string, int>>,
+     *     devices: array<int, array{device_id: ?string, selections: array<string, mixed>, ts: string}>
+     * }
+     */
+    public function blueprint(Carbon $since): array
+    {
+        $driver = DB::getDriverName();
+
+        if ($driver === 'sqlite') {
+            $rows = AthleteEvent::query()
+                ->where('created_at', '>=', $since)
+                ->get();
+
+            $latestPerDevice = [];
+            foreach ($rows as $row) {
+                $eventData = $row->event_data;
+                if (!is_array($eventData) || !isset($eventData['events']) || !is_array($eventData['events'])) {
+                    continue;
+                }
+
+                foreach ($eventData['events'] as $evt) {
+                    if (!is_array($evt) || ($evt['type'] ?? null) !== 'blueprint_state') {
+                        continue;
+                    }
+
+                    $devId = $row->device_id;
+                    $ts = (string) ($evt['ts'] ?? Carbon::parse($row->created_at)->toIso8601String());
+                    $selections = $evt['selections'] ?? [];
+                    if (!is_array($selections)) {
+                        $selections = [];
+                    }
+
+                    $devKey = $devId ?? '__NULL__';
+                    if (!isset($latestPerDevice[$devKey]) || strcmp($ts, $latestPerDevice[$devKey]['ts']) > 0) {
+                        $latestPerDevice[$devKey] = [
+                            'device_id' => $devId,
+                            'ts' => $ts,
+                            'selections' => $selections,
+                        ];
+                    }
+                }
+            }
+
+            $deviceSnapshots = array_values($latestPerDevice);
+        } else {
+            $sql = <<<'SQL'
+                SELECT device_id, ts, selections
+                FROM (
+                    SELECT 
+                        ae.device_id,
+                        ev.ts,
+                        ev.selections,
+                        ROW_NUMBER() OVER (PARTITION BY ae.device_id ORDER BY ev.ts DESC) as rn
+                    FROM athlete_events ae
+                    JOIN JSON_TABLE(
+                        ae.event_data, '$.events[*]'
+                        COLUMNS (
+                            etype VARCHAR(32) PATH '$.type',
+                            ts VARCHAR(40) PATH '$.ts',
+                            selections JSON PATH '$.selections'
+                        )
+                    ) ev
+                    WHERE ae.created_at >= ?
+                      AND ev.etype = 'blueprint_state'
+                ) sub
+                WHERE rn = 1
+            SQL;
+
+            $rawResults = DB::select($sql, [$since->toDateTimeString()]);
+
+            $deviceSnapshots = [];
+            foreach ($rawResults as $row) {
+                $selections = is_string($row->selections)
+                    ? json_decode($row->selections, true)
+                    : (array) $row->selections;
+
+                $deviceSnapshots[] = [
+                    'device_id' => $row->device_id,
+                    'ts' => (string) $row->ts,
+                    'selections' => is_array($selections) ? $selections : [],
+                ];
+            }
+        }
+
+        // Bounded PHP reduce over latest-per-device snapshots
+        $distribution = [];
+
+        foreach ($deviceSnapshots as $snap) {
+            $selections = $snap['selections'];
+
+            foreach ($selections as $field => $val) {
+                if ($val === null) {
+                    continue;
+                }
+
+                if (!isset($distribution[$field])) {
+                    $distribution[$field] = [];
+                }
+
+                if (is_array($val)) {
+                    if (array_is_list($val)) {
+                        foreach ($val as $item) {
+                            if ($item === null) {
+                                continue;
+                            }
+                            $itemKey = is_bool($item) ? ($item ? 'true' : 'false') : (string) $item;
+                            $distribution[$field][$itemKey] = ($distribution[$field][$itemKey] ?? 0) + 1;
+                        }
+                    } else {
+                        foreach ($val as $k => $v) {
+                            if ($v === true || $v === 1 || $v === 'true' || $v === '1') {
+                                $kStr = (string) $k;
+                                $distribution[$field][$kStr] = ($distribution[$field][$kStr] ?? 0) + 1;
+                            } elseif (is_string($v) && $v !== '') {
+                                $kStr = "$k: $v";
+                                $distribution[$field][$kStr] = ($distribution[$field][$kStr] ?? 0) + 1;
+                            }
+                        }
+                    }
+                } else {
+                    $valStr = is_bool($val) ? ($val ? 'true' : 'false') : (string) $val;
+                    $distribution[$field][$valStr] = ($distribution[$field][$valStr] ?? 0) + 1;
+                }
+            }
+        }
+
+        return [
+            'total' => count($deviceSnapshots),
+            'distribution' => $distribution,
+            'devices' => $deviceSnapshots,
+        ];
+    }
     /**
      * Build summary metrics including total distinct devices, bucketed chart series,
      * and paginated device list for the active date floor.
@@ -104,6 +242,10 @@ class TelemetryReportService
 
             foreach ($eventData['events'] as $evt) {
                 if (!is_array($evt)) {
+                    continue;
+                }
+
+                if (($evt['type'] ?? null) === 'blueprint_state') {
                     continue;
                 }
 
