@@ -45,6 +45,18 @@ class TelemetryApiController extends Controller
     }
 
     /**
+     * Return blueprint state value distribution and latest per-device selections as JSON.
+     */
+    public function blueprint(Request $request): JsonResponse
+    {
+        $since = $this->parseSince($request->query('since'));
+
+        $data = $this->reportService->blueprint($since);
+
+        return response()->json($data);
+    }
+
+    /**
      * Parse date floor from request input, defaulting to 2026-09-01 (since launch).
      */
     protected function parseSince(?string $since): Carbon

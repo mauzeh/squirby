@@ -98,7 +98,7 @@
             </div>
         </section>
 
-        <!-- Tab Bar: Devices / Trail -->
+        <!-- Tab Bar: Devices / Trail / Blueprint -->
         <div class="flex bg-slate-950 p-1 rounded-lg border border-slate-800 text-xs">
             <button
                 @click="activeTab = 'devices'"
@@ -111,6 +111,12 @@
                 :class="activeTab === 'trail' ? 'bg-blue-600 text-white font-semibold shadow' : 'text-slate-400 hover:text-slate-200'"
                 class="flex-1 py-1.5 text-center rounded-md transition-all">
                 Trail
+            </button>
+            <button
+                @click="activeTab = 'blueprint'; loadBlueprintOnce()"
+                :class="activeTab === 'blueprint' ? 'bg-blue-600 text-white font-semibold shadow' : 'text-slate-400 hover:text-slate-200'"
+                class="flex-1 py-1.5 text-center rounded-md transition-all">
+                Blueprint
             </button>
         </div>
 
@@ -200,6 +206,16 @@
                 </p>
             </div>
 
+            <!-- Selected device's latest blueprint choices -->
+            <div x-show="selectedDeviceId !== undefined && selectedDeviceBlueprint()" class="bg-slate-950 p-2.5 rounded-lg border border-slate-800 space-y-1.5">
+                <div class="text-2xs font-semibold uppercase tracking-wider text-slate-400">Blueprint choices (latest)</div>
+                <div class="flex flex-wrap gap-1">
+                    <template x-for="chip in selectionsToChips(selectedDeviceBlueprint()?.selections || {})" :key="chip">
+                        <span class="text-2xs bg-slate-800 text-slate-300 px-1.5 py-0.5 rounded font-mono" x-text="chip"></span>
+                    </template>
+                </div>
+            </div>
+
             <div x-show="trailLoading" class="py-6 text-center text-xs text-blue-400 space-x-2">
                 <svg class="animate-spin inline h-4 w-4 text-blue-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -238,6 +254,79 @@
                 </div>
             </div>
         </section>
+
+        <!-- Section D: Blueprint Choices Distribution -->
+        <section x-show="activeTab === 'blueprint'" class="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-4 shadow-lg mb-8">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+                <div>
+                    <h2 class="text-xs font-semibold uppercase tracking-wider text-slate-300">Blueprint Choices</h2>
+                    <p class="text-2xs text-slate-400">Onboarding snapshot selections (latest per device)</p>
+                </div>
+                <span class="text-2xs bg-slate-800 text-slate-300 font-semibold px-2 py-0.5 rounded-full" x-text="blueprintData.total + ' devices'"></span>
+            </div>
+
+            <div x-show="blueprintLoading" class="py-6 text-center text-xs text-blue-400 space-x-2">
+                <svg class="animate-spin inline h-4 w-4 text-blue-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span>Loading blueprint choices...</span>
+            </div>
+
+            <div x-show="!blueprintLoading">
+                <template x-if="blueprintData.total === 0">
+                    <div class="text-center py-6 text-xs text-slate-500">No blueprint snapshots in selected range.</div>
+                </template>
+
+                <div x-show="blueprintData.total > 0" class="space-y-4">
+                    <!-- Distribution Cards -->
+                    <template x-for="(values, field) in blueprintData.distribution" :key="field">
+                        <div class="bg-slate-950 p-3 rounded-lg border border-slate-800 space-y-2">
+                            <div class="text-xs font-semibold text-slate-300 capitalize" x-text="field.replace(/_/g, ' ')"></div>
+                            
+                            <div class="space-y-1.5">
+                                <template x-for="(count, val) in values" :key="val">
+                                    <div class="flex items-center justify-between text-xs">
+                                        <span class="text-slate-400 font-mono" x-text="val"></span>
+                                        <div class="flex items-center space-x-2">
+                                            <div class="bg-slate-800 h-2 rounded-full overflow-hidden w-24">
+                                                <div class="bg-blue-500 h-full rounded-full" :style="'width: ' + (blueprintData.total > 0 ? Math.round((count / blueprintData.total) * 100) : 0) + '%'"></div>
+                                            </div>
+                                            <span class="text-slate-200 font-semibold w-8 text-right font-mono" x-text="count"></span>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- Per-device latest selections -->
+                    <div class="pt-2 border-t border-slate-800 space-y-2">
+                        <div class="text-2xs font-semibold uppercase tracking-wider text-slate-400">Per device (latest)</div>
+                        <template x-for="dev in blueprintData.devices" :key="dev.device_id ?? 'null_device'">
+                            <div
+                                @click="selectDevice(dev.device_id)"
+                                class="bg-slate-950 p-2.5 rounded-lg border border-slate-800 hover:border-slate-700 cursor-pointer space-y-1">
+                                <div class="flex items-center justify-between">
+                                    <template x-if="dev.device_id === null">
+                                        <span class="text-2xs font-mono font-semibold text-amber-400 bg-amber-950/50 border border-amber-800/50 px-1.5 py-0.5 rounded">no value</span>
+                                    </template>
+                                    <template x-if="dev.device_id !== null">
+                                        <span class="text-xs font-mono text-slate-200 truncate" x-text="dev.device_id.substring(0, 8) + '...'"></span>
+                                    </template>
+                                    <span class="text-2xs text-slate-500 font-mono" x-text="formatDate(dev.ts)"></span>
+                                </div>
+                                <div class="flex flex-wrap gap-1">
+                                    <template x-for="chip in selectionsToChips(dev.selections)" :key="chip">
+                                        <span class="text-2xs bg-slate-800 text-slate-300 px-1.5 py-0.5 rounded font-mono" x-text="chip"></span>
+                                    </template>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </div>
+        </section>
     </div>
 
     <script>
@@ -253,6 +342,13 @@
                 activeTab: 'devices',
                 loading: false,
                 trailLoading: false,
+                blueprintLoading: false,
+                blueprintLoaded: false,
+                blueprintData: {
+                    total: 0,
+                    distribution: {},
+                    devices: []
+                },
                 summaryData: {
                     total: 0,
                     series: { labels: [], new: [], cumulative: [], active: [] },
@@ -284,7 +380,11 @@
                     this.since = chipId;
                     this.customDate = '';
                     this.page = 1;
+                    this.blueprintLoaded = false;
                     this.loadSummary();
+                    if (this.activeTab === 'blueprint') {
+                        this.loadBlueprint();
+                    }
                 },
 
                 onDateInput() {
@@ -292,7 +392,11 @@
                         this.since = this.customDate;
                         this.activeChip = 'custom';
                         this.page = 1;
+                        this.blueprintLoaded = false;
                         this.loadSummary();
+                        if (this.activeTab === 'blueprint') {
+                            this.loadBlueprint();
+                        }
                     }
                 },
 
@@ -409,6 +513,34 @@
                     this.selectedDeviceId = deviceId;
                     this.activeTab = 'trail';
                     this.loadTrail(deviceId);
+                    // Ensure blueprint data is available so the trail tab can show this device's choices
+                    this.loadBlueprintOnce();
+                },
+
+                // Look up the selected device's latest blueprint snapshot (from blueprintData.devices)
+                selectedDeviceBlueprint() {
+                    if (this.selectedDeviceId === undefined) return null;
+                    return (this.blueprintData.devices || []).find(d => d.device_id === this.selectedDeviceId) || null;
+                },
+
+                // Flatten a selections object into short readable chips (field: value)
+                selectionsToChips(selections) {
+                    const chips = [];
+                    if (!selections || typeof selections !== 'object') return chips;
+                    for (const [field, val] of Object.entries(selections)) {
+                        if (val === null || val === undefined) continue;
+                        if (Array.isArray(val)) {
+                            val.forEach(item => { if (item !== null && item !== undefined) chips.push(field + ': ' + item); });
+                        } else if (typeof val === 'object') {
+                            for (const [k, v] of Object.entries(val)) {
+                                if (v === true || v === 1 || v === 'true' || v === '1') chips.push(field + ': ' + k);
+                                else if (typeof v === 'string' && v !== '') chips.push(field + ': ' + k + '=' + v);
+                            }
+                        } else {
+                            chips.push(field + ': ' + val);
+                        }
+                    }
+                    return chips;
                 },
 
                 loadTrail(deviceId) {
@@ -427,6 +559,31 @@
                     .catch(err => {
                         console.error('Failed to load trail:', err);
                         this.trailLoading = false;
+                    });
+                },
+
+                loadBlueprintOnce() {
+                    if (!this.blueprintLoaded) {
+                        this.loadBlueprint();
+                    }
+                },
+
+                loadBlueprint() {
+                    this.blueprintLoading = true;
+                    const url = "{{ route('telemetry.blueprint') }}?since=" + encodeURIComponent(this.since);
+
+                    fetch(url, {
+                        headers: { 'Accept': 'application/json' }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        this.blueprintData = data;
+                        this.blueprintLoaded = true;
+                        this.blueprintLoading = false;
+                    })
+                    .catch(err => {
+                        console.error('Failed to load blueprint:', err);
+                        this.blueprintLoading = false;
                     });
                 },
 
