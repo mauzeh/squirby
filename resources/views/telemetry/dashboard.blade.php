@@ -206,6 +206,16 @@
                 </p>
             </div>
 
+            <!-- Selected device's latest blueprint choices -->
+            <div x-show="selectedDeviceId !== undefined && selectedDeviceBlueprint()" class="bg-slate-950 p-2.5 rounded-lg border border-slate-800 space-y-1.5">
+                <div class="text-2xs font-semibold uppercase tracking-wider text-slate-400">Blueprint choices (latest)</div>
+                <div class="flex flex-wrap gap-1">
+                    <template x-for="chip in selectionsToChips(selectedDeviceBlueprint()?.selections || {})" :key="chip">
+                        <span class="text-2xs bg-slate-800 text-slate-300 px-1.5 py-0.5 rounded font-mono" x-text="chip"></span>
+                    </template>
+                </div>
+            </div>
+
             <div x-show="trailLoading" class="py-6 text-center text-xs text-blue-400 space-x-2">
                 <svg class="animate-spin inline h-4 w-4 text-blue-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -289,6 +299,31 @@
                             </div>
                         </div>
                     </template>
+
+                    <!-- Per-device latest selections -->
+                    <div class="pt-2 border-t border-slate-800 space-y-2">
+                        <div class="text-2xs font-semibold uppercase tracking-wider text-slate-400">Per device (latest)</div>
+                        <template x-for="dev in blueprintData.devices" :key="dev.device_id ?? 'null_device'">
+                            <div
+                                @click="selectDevice(dev.device_id)"
+                                class="bg-slate-950 p-2.5 rounded-lg border border-slate-800 hover:border-slate-700 cursor-pointer space-y-1">
+                                <div class="flex items-center justify-between">
+                                    <template x-if="dev.device_id === null">
+                                        <span class="text-2xs font-mono font-semibold text-amber-400 bg-amber-950/50 border border-amber-800/50 px-1.5 py-0.5 rounded">no value</span>
+                                    </template>
+                                    <template x-if="dev.device_id !== null">
+                                        <span class="text-xs font-mono text-slate-200 truncate" x-text="dev.device_id.substring(0, 8) + '...'"></span>
+                                    </template>
+                                    <span class="text-2xs text-slate-500 font-mono" x-text="formatDate(dev.ts)"></span>
+                                </div>
+                                <div class="flex flex-wrap gap-1">
+                                    <template x-for="chip in selectionsToChips(dev.selections)" :key="chip">
+                                        <span class="text-2xs bg-slate-800 text-slate-300 px-1.5 py-0.5 rounded font-mono" x-text="chip"></span>
+                                    </template>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
                 </div>
             </div>
         </section>
@@ -478,6 +513,34 @@
                     this.selectedDeviceId = deviceId;
                     this.activeTab = 'trail';
                     this.loadTrail(deviceId);
+                    // Ensure blueprint data is available so the trail tab can show this device's choices
+                    this.loadBlueprintOnce();
+                },
+
+                // Look up the selected device's latest blueprint snapshot (from blueprintData.devices)
+                selectedDeviceBlueprint() {
+                    if (this.selectedDeviceId === undefined) return null;
+                    return (this.blueprintData.devices || []).find(d => d.device_id === this.selectedDeviceId) || null;
+                },
+
+                // Flatten a selections object into short readable chips (field: value)
+                selectionsToChips(selections) {
+                    const chips = [];
+                    if (!selections || typeof selections !== 'object') return chips;
+                    for (const [field, val] of Object.entries(selections)) {
+                        if (val === null || val === undefined) continue;
+                        if (Array.isArray(val)) {
+                            val.forEach(item => { if (item !== null && item !== undefined) chips.push(field + ': ' + item); });
+                        } else if (typeof val === 'object') {
+                            for (const [k, v] of Object.entries(val)) {
+                                if (v === true || v === 1 || v === 'true' || v === '1') chips.push(field + ': ' + k);
+                                else if (typeof v === 'string' && v !== '') chips.push(field + ': ' + k + '=' + v);
+                            }
+                        } else {
+                            chips.push(field + ': ' + val);
+                        }
+                    }
+                    return chips;
                 },
 
                 loadTrail(deviceId) {
