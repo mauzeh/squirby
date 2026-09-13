@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Telemetry Dashboard — Mock (dwell redesign)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .text-2xs { font-size: 0.65rem; line-height: 0.9rem; }
+    /* grid-template-rows collapse for session blocks (iOS-safe, per feature-workflow) */
+    .collapsible { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 200ms ease; }
+    .collapsible.open { grid-template-rows: 1fr; }
+    .collapsible > div { overflow: hidden; }
+  </style>
+</head>
+<!--
+  DESIGN MOCK — NOT production. Plain HTML + Tailwind + vanilla JS with fake data.
+  Purpose: freeze the layout + interaction contract for the redesigned telemetry dashboard before
+  implementing it in Alpine/Blade (logger/resources/views/telemetry/dashboard.blade.php).
+
+  Structure:
+    Screen 1 — OVERVIEW: date filter + 3 total cards (Devices, Blueprint, Dwell) + device list.
+    Screen 2 — DEVICE DEEP-DIVE: opened by tapping a device; back arrow returns.
+
+  Decisions locked with product:
+    - Dwell = MEDIAN per screen; Dwell card also shows a TOTAL ENGAGEMENT TIME headline.
+    - Keep the New / Cumulative / Active toggle (all three) on the Devices card.
+    - Show ALL blueprint fields on the Overview blueprint card.
+    - Dwell metrics only exist post-instrumentation-cutover — labelled "since instrumentation".
+-->
+<body class="bg-slate-950 text-slate-100 font-sans min-h-screen antialiased">
+  <div class="max-w-md mx-auto min-h-screen flex flex-col">
+
+    <!-- ============================= SCREEN 1: OVERVIEW ============================= -->
+    <div id="overview" class="flex flex-col p-4 space-y-5">
+
+      <!-- Header -->
+      <header class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div>
+          <h1 class="text-xl font-bold tracking-tight">Telemetry</h1>
+          <p class="text-xs text-slate-400">Anonymous analytics</p>
+        </div>
+        <span class="text-2xs uppercase tracking-wider bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full">Overview</span>
+      </header>
+
+      <!-- Date filter (trimmed to 5 presets + custom) -->
+      <section class="space-y-2">
+        <div class="text-2xs font-semibold uppercase tracking-wider text-slate-500">Date range</div>
+        <div class="flex flex-wrap gap-1.5">
+          <button class="chip px-3 py-1 text-xs rounded-full bg-blue-600 text-white font-medium">Since launch</button>
+          <button class="chip px-3 py-1 text-xs rounded-full bg-slate-800 text-slate-300">7d</button>
+          <button class="chip px-3 py-1 text-xs rounded-full bg-slate-800 text-slate-300">24h</button>
+          <button class="chip px-3 py-1 text-xs rounded-full bg-slate-800 text-slate-300">1h</button>
+          <button class="chip px-3 py-1 text-xs rounded-full bg-slate-800 text-slate-300">All</button>
+          <button onclick="toggleCustom()" class="px-3 py-1 text-xs rounded-full bg-slate-800 text-slate-400">Custom…</button>
+        </div>
+        <input id="customDate" type="date" class="hidden bg-slate-900 border border-slate-800 text-slate-200 text-xs rounded px-2 py-1 w-full">
+      </section>
+
+      <!-- ===== TOTAL CARD 1: DEVICES ===== -->
+      <section class="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-4 shadow-lg">
+        <div class="flex items-baseline justify-between">
+          <div>
+            <div class="text-2xs font-medium text-slate-400 uppercase tracking-wider">Distinct devices</div>
+            <div class="text-3xl font-extrabold text-white mt-0.5">312</div>
+          </div>
+          <div class="text-right">
+            <div class="text-2xs text-slate-500 uppercase tracking-wider">New today</div>
+            <div class="text-lg font-bold text-emerald-400">+18</div>
+          </div>
+        </div>
+
+        <!-- 3-way metric toggle (kept) -->
+        <div class="flex bg-slate-950 p-1 rounded-lg border border-slate-800 text-xs">
+          <button onclick="setMetric(this,'new')" class="metric-btn flex-1 py-1 rounded-md bg-blue-600 text-white font-semibold">New</button>
+          <button onclick="setMetric(this,'cumulative')" class="metric-btn flex-1 py-1 rounded-md text-slate-400">Cumulative</button>
+          <button onclick="setMetric(this,'active')" class="metric-btn flex-1 py-1 rounded-md text-slate-400">Active</button>
+        </div>
+
+        <!-- Faux bar chart (real impl uses Chart.js) -->
+        <div class="h-32 flex items-end gap-1">
+          <div class="flex-1 bg-blue-500/70 rounded-t" style="height:30%"></div>
+          <div class="flex-1 bg-blue-500/70 rounded-t" style="height:55%"></div>
+          <div class="flex-1 bg-blue-500/70 rounded-t" style="height:40%"></div>
+          <div class="flex-1 bg-blue-500/70 rounded-t" style="height:70%"></div>
+          <div class="flex-1 bg-blue-500/70 rounded-t" style="height:85%"></div>
+          <div class="flex-1 bg-blue-500/70 rounded-t" style="height:60%"></div>
+          <div class="flex-1 bg-blue-500/70 rounded-t" style="height:95%"></div>
+        </div>
+        <div class="text-2xs text-slate-500 text-center">Daily buckets · <span id="metricLabel">New devices</span></div>
+      </section>
+
+      <!-- ===== TOTAL CARD 2: BLUEPRINT (all fields) ===== -->
+      <section class="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-4 shadow-lg">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+          <div>
+            <div class="text-xs font-semibold uppercase tracking-wider text-slate-300">Blueprint choices</div>
+            <div class="text-2xs text-slate-400">Latest per device · all fields</div>
+          </div>
+          <span class="text-2xs bg-slate-800 text-slate-300 font-semibold px-2 py-0.5 rounded-full">247 devices</span>
+        </div>
+
+        <!-- One block per field; bars = share of devices -->
+        <div class="space-y-3">
+          <div class="space-y-1.5">
+            <div class="text-xs font-semibold text-slate-300 capitalize">intensity</div>
+            <div class="dist-row" data-label="high" data-count="121" data-total="247"></div>
+            <div class="dist-row" data-label="moderate" data-count="89" data-total="247"></div>
+            <div class="dist-row" data-label="low" data-count="37" data-total="247"></div>
+          </div>
+          <div class="space-y-1.5">
+            <div class="text-xs font-semibold text-slate-300 capitalize">goals</div>
+            <div class="dist-row" data-label="strength" data-count="140" data-total="247"></div>
+            <div class="dist-row" data-label="muscle" data-count="98" data-total="247"></div>
+            <div class="dist-row" data-label="endurance" data-count="52" data-total="247"></div>
+          </div>
+          <div class="space-y-1.5">
+            <div class="text-xs font-semibold text-slate-300 capitalize">themes</div>
+            <div class="dist-row" data-label="hypertrophy" data-count="110" data-total="247"></div>
+            <div class="dist-row" data-label="conditioning" data-count="71" data-total="247"></div>
+          </div>
+          <div class="space-y-1.5">
+            <div class="text-xs font-semibold text-slate-300 capitalize">availability</div>
+            <div class="dist-row" data-label="mon" data-count="180" data-total="247"></div>
+            <div class="dist-row" data-label="wed" data-count="165" data-total="247"></div>
+            <div class="dist-row" data-label="fri" data-count="150" data-total="247"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== TOTAL CARD 3: DWELL ===== -->
+      <section class="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-4 shadow-lg">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+          <div>
+            <div class="text-xs font-semibold uppercase tracking-wider text-slate-300">Dwell time</div>
+            <div class="text-2xs text-slate-400">Median per screen · since instrumentation</div>
+          </div>
+          <span class="text-2xs bg-amber-950/50 border border-amber-800/50 text-amber-400 px-2 py-0.5 rounded-full">42 unknown</span>
+        </div>
+
+        <!-- Total engagement headline -->
+        <div class="bg-slate-950 rounded-lg border border-slate-800 p-3 flex items-baseline justify-between">
+          <div>
+            <div class="text-2xs text-slate-500 uppercase tracking-wider">Total engagement</div>
+            <div class="text-2xl font-extrabold text-white mt-0.5">18h 42m</div>
+          </div>
+          <div class="text-2xs text-slate-500 text-right">measured active<br>screen time</div>
+        </div>
+
+        <!-- Ranked screens by median dwell -->
+        <div class="space-y-2">
+          <div class="text-2xs font-semibold uppercase tracking-wider text-slate-500">By screen (median)</div>
+          <div class="dwell-row" data-screen="/plan" data-median="1m 12s" data-pct="100"></div>
+          <div class="dwell-row" data-screen="/history" data-median="48s" data-pct="66"></div>
+          <div class="dwell-row" data-screen="/express?step=summary" data-median="41s" data-pct="57"></div>
+          <div class="dwell-row" data-screen="/profile" data-median="22s" data-pct="30"></div>
+          <div class="dwell-row" data-screen="/welcome" data-median="14s" data-pct="19"></div>
+        </div>
+      </section>
+
+      <!-- ===== DEVICE LIST (bridge to deep-dive) ===== -->
+      <section class="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-3 shadow-lg mb-8">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+          <h2 class="text-xs font-semibold uppercase tracking-wider text-slate-300">Devices</h2>
+          <div class="text-2xs text-slate-400">Page 1 of 16</div>
+        </div>
+        <div class="space-y-2" id="deviceList"></div>
+        <div class="flex items-center justify-between pt-2 border-t border-slate-800">
+          <button class="px-3 py-1 text-xs rounded bg-slate-800 text-slate-500 opacity-40">&larr; Prev</button>
+          <span class="text-2xs text-slate-400">312 total devices</span>
+          <button class="px-3 py-1 text-xs rounded bg-slate-800 text-slate-200">Next &rarr;</button>
+        </div>
+      </section>
+    </div>
+
+    <!-- ============================= SCREEN 2: DEVICE DEEP-DIVE ============================= -->
+    <div id="deepdive" class="hidden flex-col p-4 space-y-5">
+
+      <!-- Sticky back header -->
+      <header class="sticky top-0 -mx-4 px-4 py-3 bg-slate-950/95 backdrop-blur border-b border-slate-800 flex items-center justify-between z-10">
+        <button onclick="showOverview()" class="text-sm text-blue-400 hover:underline flex items-center gap-1">&larr; Overview</button>
+        <span class="text-2xs uppercase tracking-wider bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full">Device deep-dive</span>
+      </header>
+
+      <!-- Device header -->
+      <section class="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-3 shadow-lg">
+        <div class="font-mono text-sm text-slate-200 break-all" id="ddDeviceId">a3f9c1e2-…</div>
+        <div class="grid grid-cols-3 gap-2 text-center">
+          <div class="bg-slate-950 rounded-lg border border-slate-800 p-2">
+            <div class="text-lg font-bold text-white">4</div>
+            <div class="text-2xs text-slate-500 uppercase tracking-wider">Sessions</div>
+          </div>
+          <div class="bg-slate-950 rounded-lg border border-slate-800 p-2">
+            <div class="text-lg font-bold text-white">63</div>
+            <div class="text-2xs text-slate-500 uppercase tracking-wider">Events</div>
+          </div>
+          <div class="bg-slate-950 rounded-lg border border-slate-800 p-2">
+            <div class="text-lg font-bold text-white">7m 20s</div>
+            <div class="text-2xs text-slate-500 uppercase tracking-wider">Engaged</div>
+          </div>
+        </div>
+        <div class="flex justify-between text-2xs text-slate-500">
+          <span>First seen: Sep 9, 09:14</span>
+          <span>Last seen: Sep 12, 18:03</span>
+        </div>
+      </section>
+
+      <!-- This device's blueprint choices -->
+      <section class="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-2 shadow-lg">
+        <div class="text-xs font-semibold uppercase tracking-wider text-slate-300">Blueprint choices (latest)</div>
+        <div class="flex flex-wrap gap-1">
+          <span class="text-2xs bg-slate-800 text-slate-300 px-1.5 py-0.5 rounded font-mono">intensity: high</span>
+          <span class="text-2xs bg-slate-800 text-slate-300 px-1.5 py-0.5 rounded font-mono">goals: strength</span>
+          <span class="text-2xs bg-slate-800 text-slate-300 px-1.5 py-0.5 rounded font-mono">themes: hypertrophy</span>
+          <span class="text-2xs bg-slate-800 text-slate-300 px-1.5 py-0.5 rounded font-mono">availability: mon</span>
+        </div>
+      </section>
+
+      <!-- Per-device dwell -->
+      <section class="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-2 shadow-lg">
+        <div class="text-xs font-semibold uppercase tracking-wider text-slate-300">Dwell by screen (this device)</div>
+        <div class="dwell-row" data-screen="/plan" data-median="2m 04s" data-pct="100"></div>
+        <div class="dwell-row" data-screen="/history" data-median="1m 10s" data-pct="56"></div>
+        <div class="dwell-row" data-screen="/profile" data-median="18s" data-pct="14"></div>
+      </section>
+
+      <!-- Session-grouped trail -->
+      <section class="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-3 shadow-lg mb-8">
+        <div class="text-xs font-semibold uppercase tracking-wider text-slate-300">Navigation trail (by session)</div>
+        <div id="sessionList" class="space-y-2"></div>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    // ---- fake data ----
+    const devices = [
+      { id: 'a3f9c1e2-7b44-4c81-9f10-2de5a1b6c033', events: 63, last: 'Sep 12, 18:03' },
+      { id: 'b7c2d9f1-1a22-4e55-8c71-6fa4b2e9d100', events: 41, last: 'Sep 12, 16:20' },
+      { id: 'c1e8a4b6-9c33-4d12-a880-7be1c5f3a222', events: 28, last: 'Sep 12, 11:47' },
+      { id: null, events: 9, last: 'Sep 11, 22:10' },
+    ];
+    const sessions = [
+      { n: 1, when: 'Sep 9, 09:14', dur: '3m 02s', screens: [
+        { s: '/welcome', d: '14s' }, { s: '/express?step=1', d: '52s' }, { s: '/express?step=summary', d: '41s' }, { s: '/plan', d: '1m 15s' } ] },
+      { n: 2, when: 'Sep 10, 07:40', dur: '2m 18s', screens: [
+        { s: '/plan', d: '1m 40s' }, { s: '/history', d: '38s' } ] },
+      { n: 3, when: 'Sep 11, 19:02', dur: '1m 05s', screens: [
+        { s: '/plan', d: '48s' }, { s: '/profile', d: '17s' }, { s: '/plan', d: 'unknown' } ] },
+      { n: 4, when: 'Sep 12, 18:00', dur: '55s', screens: [
+        { s: '/plan', d: '55s' } ] },
+    ];
+    // Pre-instrumentation events: no session_id, no durations. Flat chronological trail.
+    const preInstrumentation = [
+      { s: '/plan', ts: 'Aug 2, 08:11' },
+      { s: '/history', ts: 'Aug 2, 08:14' },
+      { s: '/plan', ts: 'Jul 28, 19:40' },
+      { s: '/welcome', ts: 'Jul 14, 10:02' },
+    ];
+
+    // ---- render device list ----
+    document.getElementById('deviceList').innerHTML = devices.map(d => {
+      const idHtml = d.id === null
+        ? '<span class="text-xs font-mono font-semibold text-amber-400 bg-amber-950/50 border border-amber-800/50 px-1.5 py-0.5 rounded">no value</span>'
+        : '<span class="text-xs font-mono text-slate-200 truncate">' + d.id.substring(0,8) + '…</span>';
+      return `<div onclick="showDeepDive('${d.id ?? ''}')" class="p-2.5 rounded-lg border border-slate-800 hover:border-slate-700 bg-slate-950 cursor-pointer flex flex-col space-y-1">
+        <div class="flex items-center justify-between">${idHtml}
+          <span class="text-2xs bg-slate-800 text-slate-300 font-semibold px-2 py-0.5 rounded-full">${d.events} events</span></div>
+        <div class="flex items-center justify-between text-2xs text-slate-400 pt-0.5">
+          <span>Last active: ${d.last}</span><span class="text-blue-400">Deep dive &rarr;</span></div></div>`;
+    }).join('');
+
+    // ---- render distribution bars ----
+    document.querySelectorAll('.dist-row').forEach(el => {
+      const pct = Math.round((el.dataset.count / el.dataset.total) * 100);
+      el.outerHTML = `<div class="flex items-center justify-between text-xs">
+        <span class="text-slate-400 font-mono">${el.dataset.label}</span>
+        <div class="flex items-center space-x-2">
+          <div class="bg-slate-800 h-2 rounded-full overflow-hidden w-24"><div class="bg-blue-500 h-full" style="width:${pct}%"></div></div>
+          <span class="text-slate-200 font-semibold w-8 text-right font-mono">${el.dataset.count}</span></div></div>`;
+    });
+
+    // ---- render dwell rows ----
+    document.querySelectorAll('.dwell-row').forEach(el => {
+      el.outerHTML = `<div class="flex items-center justify-between text-xs gap-2">
+        <span class="text-slate-300 font-mono truncate flex-1">${el.dataset.screen}</span>
+        <div class="flex items-center space-x-2">
+          <div class="bg-slate-800 h-2 rounded-full overflow-hidden w-16"><div class="bg-emerald-500 h-full" style="width:${el.dataset.pct}%"></div></div>
+          <span class="text-slate-100 font-semibold w-14 text-right font-mono">${el.dataset.median}</span></div></div>`;
+    });
+
+    // ---- render session-grouped trail (collapsible) ----
+    // Newest session first; most-recent expanded by default.
+    const sessionsNewestFirst = [...sessions].reverse();
+    document.getElementById('sessionList').innerHTML = sessionsNewestFirst.map((sess, i) => {
+      const rows = sess.screens.map((sc, idx) => {
+        const durClass = sc.d === 'unknown' ? 'text-slate-600 italic' : 'text-slate-400';
+        return `<div class="flex items-center justify-between bg-slate-950 border border-slate-800 rounded-md p-2">
+          <span class="text-xs text-slate-200 font-mono">${sc.s}</span>
+          <span class="text-2xs font-mono ${durClass}">${sc.d}</span></div>`;
+      }).join('');
+      return `<div class="border border-slate-800 rounded-lg overflow-hidden">
+        <button onclick="toggleSession(${i})" class="w-full flex items-center justify-between p-2.5 bg-slate-950">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-semibold text-slate-200">Session ${sess.n}</span>
+            <span class="text-2xs text-slate-500">${sess.when}</span></div>
+          <div class="flex items-center gap-2">
+            <span class="text-2xs bg-slate-800 text-slate-300 px-1.5 py-0.5 rounded-full font-mono">${sess.dur}</span>
+            <span id="chev-${i}" class="text-slate-500 text-xs transition-transform">▾</span></div>
+        </button>
+        <div id="sess-${i}" class="collapsible ${i===0?'open':''}"><div class="p-2 space-y-1.5">${rows}</div></div></div>`;
+    }).join('');
+
+    // ---- render pre-instrumentation bucket (sessionless historic events) ----
+    // Appended AFTER sessions (oldest data), collapsed by default. Flat trail, no durations.
+    (function renderPreInstrumentation() {
+      if (!preInstrumentation.length) return;
+      const bi = sessionsNewestFirst.length; // unique index for toggle after session blocks
+      const rows = preInstrumentation.map(e => `
+        <div class="flex items-center justify-between bg-slate-950 border border-slate-800 rounded-md p-2">
+          <span class="text-xs text-slate-300 font-mono">${e.s}</span>
+          <span class="text-2xs font-mono text-slate-500">${e.ts} · <span class="text-slate-600">—</span></span></div>`).join('');
+      const block = `<div class="border border-dashed border-slate-700 rounded-lg overflow-hidden">
+        <button onclick="toggleSession(${bi})" class="w-full flex items-center justify-between p-2.5 bg-slate-950/60">
+          <div class="flex flex-col items-start">
+            <span class="text-xs font-semibold text-slate-400">Before session tracking</span>
+            <span class="text-2xs text-slate-500">${preInstrumentation.length} screen views · durations not available</span></div>
+          <span id="chev-${bi}" class="text-slate-500 text-xs transition-transform" style="transform:rotate(-90deg)">▾</span>
+        </button>
+        <div id="sess-${bi}" class="collapsible"><div class="p-2 space-y-1.5">${rows}</div></div></div>`;
+      document.getElementById('sessionList').insertAdjacentHTML('beforeend', block);
+    })();
+
+    // ---- interactions ----
+    function showDeepDive(id) {
+      document.getElementById('ddDeviceId').textContent = id || 'no value';
+      document.getElementById('overview').classList.add('hidden');
+      document.getElementById('deepdive').classList.remove('hidden');
+      document.getElementById('deepdive').classList.add('flex');
+      window.scrollTo(0,0);
+    }
+    function showOverview() {
+      document.getElementById('deepdive').classList.add('hidden');
+      document.getElementById('deepdive').classList.remove('flex');
+      document.getElementById('overview').classList.remove('hidden');
+      window.scrollTo(0,0);
+    }
+    function toggleSession(i) {
+      const el = document.getElementById('sess-'+i);
+      const chev = document.getElementById('chev-'+i);
+      el.classList.toggle('open');
+      chev.style.transform = el.classList.contains('open') ? 'rotate(0deg)' : 'rotate(-90deg)';
+    }
+    function setMetric(btn, m) {
+      document.querySelectorAll('.metric-btn').forEach(b => { b.className = 'metric-btn flex-1 py-1 rounded-md text-slate-400'; });
+      btn.className = 'metric-btn flex-1 py-1 rounded-md bg-blue-600 text-white font-semibold';
+      document.getElementById('metricLabel').textContent = { new:'New devices', cumulative:'Cumulative devices', active:'Active devices' }[m];
+    }
+    function toggleCustom() { document.getElementById('customDate').classList.toggle('hidden'); }
+  </script>
+</body>
+</html>
