@@ -1,8 +1,34 @@
 # Telemetry Dashboard Dwell — Logger Slice (Plan)
 
 Reference architecture for the Logger reporting/dashboard changes that consume the richer telemetry
-payload. WHY and WHAT — execution steps are in `telemetry-dashboard-dwell-prompt.md`. The shared cross-app
-shape is duplicated **inline** below; this repo does not reach up to the root at author time.
+payload. WHY and WHAT. The shared cross-app shape is duplicated **inline** below; this repo does not reach
+up to the root at author time.
+
+## Execution: TWO prompts (data, then UI)
+
+This slice is delivered as two sequential prompts:
+
+1. **`telemetry-dashboard-dwell-prompt.md`** — REPORTING only: `TelemetryReportService` dwell aggregation
+   + API + PHPUnit tests. No Blade.
+2. **`telemetry-dashboard-ui-prompt.md`** — the Blade/Alpine dashboard rebuild against the FROZEN design
+   mock `designs/telemetry-dashboard.html`. Runs AFTER the reporting prompt (it consumes the new API).
+
+The Athlete client slice (`../../athlete/docs/plans/telemetry-dwell.md`, executed from the Athlete repo)
+can run in parallel with the reporting prompt.
+
+## Finalized design decisions (locked with product)
+
+- Dwell metric is **MEDIAN** — per screen AND one overall median across all measured visits. NOT average,
+  NOT a total/sum.
+- **No "unknown" count is surfaced anywhere.** Visits with no measurable dwell are silently excluded from
+  the median.
+- Dashboard is a **two-screen mobile UI**: Overview (date filter + Devices / Blueprint / Dwell cards +
+  device list) → Device deep-dive (opened by tapping a device).
+- Deep-dive trail is **session-grouped, newest session first, most-recent expanded**.
+- **No inference, no backfill migration.** Sessionless historic events (no `session_id`) render in a
+  labeled **"Before session tracking"** bucket at the bottom of the deep-dive — full navigation history
+  preserved without inventing sessions or durations.
+- New/Cumulative/Active toggle KEPT; ALL blueprint fields shown on Overview.
 
 ## What we're building
 
@@ -50,11 +76,13 @@ Reporting rules (frozen):
   `session_id`. Duration analysis considers only events WITH a `session_id`.
 - **`duration_ms` is WALL-CLOCK** (includes idle/backgrounded time). Trim idle time using `session_id`
   boundaries, not a separate field.
-- **Per-screen dwell**, per `(device_id, session_id, screen-open)`:
+- **Per-screen dwell (MEDIAN)**, per `(device_id, session_id, screen-open)`:
   - Preferred: `duration_ms` from the matching `leave`.
-  - Fallback (no leave): `duration_ms` from the LAST `heartbeat` for that screen-open (undercounts by ≤15s).
-  - No leave and no heartbeat: dwell UNKNOWN — do NOT infer from the gap to the next arrival. Count the
-    view; report dwell as unknown/excluded from dwell averages.
+  - Fallback (no leave): the MAX `duration_ms` among that screen-open's `heartbeat`s (undercounts by ≤15s).
+  - No leave and no heartbeat: **EXCLUDED** from dwell — do NOT infer from the gap to the next arrival, do
+    NOT count it as unknown. It is silently dropped from the median.
+  - Report the **median** per screen and one **overall median** across all resolved opens. No average, no
+    total, no unknown count.
 - Existing arrival-count / screen-popularity / device reports keep working unchanged across full history.
 
 ## Key behaviors / decisions
@@ -65,14 +93,17 @@ Reporting rules (frozen):
   by `blueprint()`/`trail()`. (A pure PHP-loop reduce over rows is acceptable if the dual SQL path is not
   worth the complexity for dwell — match whatever the existing service leans on; do not invent a third
   pattern.)
-- **`trail()` enrichment.** Extend the per-event trail objects to include `event` and `session_id` (and
-  `duration_ms` when present) so the per-device trail view can show session grouping and leave/heartbeat
-  markers. Keep `screen`/`ts` as-is (additive to the returned shape).
-- **Dashboard surface.** Add a per-screen dwell view (avg/median dwell per screen, plus a count of
-  views with unknown dwell) and, in the device trail, visually group by `session_id`. Keep existing
-  panels intact.
-- **Cutover honesty.** Dwell metrics are computed only over `session_id`-bearing events; the UI should make
-  clear dwell is available "since instrumentation," not for the full historic range.
+- **`trail()` enrichment.** Extend the per-event trail objects to include `event`, `session_id`, and
+  `duration_ms` (when present) so the deep-dive can group by session and mark durations. Keep `screen`/`ts`.
+  CRITICAL: keep returning sessionless (historic, no `session_id`) events — the UI needs them for the
+  "Before session tracking" bucket. Additive to the returned shape.
+- **Dashboard surface (see `designs/telemetry-dashboard.html`).** Two-screen UI: Overview (Devices /
+  Blueprint / Dwell cards + device list) → Device deep-dive. Dwell card shows overall MEDIAN + per-screen
+  MEDIAN list (no total, no unknown). Deep-dive groups the trail by `session_id` (newest first,
+  most-recent open) and puts sessionless events in a labeled "Before session tracking" bucket at the
+  bottom. Built in the UI prompt, not the reporting prompt.
+- **Cutover honesty.** Dwell is computed only over `session_id`-bearing events; the UI labels it "since
+  instrumentation." Historic navigation history stays visible via the bucket — NO inference, NO backfill.
 
 ## Risks
 
@@ -80,23 +111,30 @@ Reporting rules (frozen):
   unroll MUST have the SQLite fallback like the existing methods, or use a PHP-loop reduce that works on
   both. Verify both paths.
 - **Sessionless historic rows.** Must not crash or miscount when events lack `session_id`/`duration_ms` —
-  treat missing `session_id` as historic (exclude from dwell), missing `duration_ms` as unknown dwell.
-- **Heartbeat volume.** Many heartbeats per screen-open; the "last heartbeat" fallback must pick the max
-  `duration_ms` (or latest `ts`) for that open, not sum them.
+  missing `session_id` = historic (excluded from dwell, but STILL returned by `trail()` for the bucket).
+- **Heartbeat volume.** Many heartbeats per screen-open; the fallback must pick the MAX `duration_ms` for
+  that open, not sum them.
 - **Ordering within a session.** Screen-opens are ordered by `ts`; a repeated screen in the same session is
   a distinct open (new `view` after an intervening leave). Group by open, not just by screen.
+- **Median math on both drivers.** Median must be computed identically on SQLite and MySQL (PHP-side
+  median over collected durations is the safe choice).
 
 ## Test strategy
 
-Extend the Logger telemetry feature/unit tests (`php artisan test --parallel`, PHPUnit/Paratest):
-- Dwell from `leave.duration_ms` preferred; fallback to last `heartbeat`; unknown when neither.
-- Historic sessionless events excluded from dwell but still counted as views.
-- Trail returns `event`/`session_id` additively; `blueprint_state` still skipped from the trail.
+Reporting prompt — Logger telemetry unit/feature tests (`php artisan test --parallel`, PHPUnit/Paratest):
+- Dwell from `leave.duration_ms` preferred; fallback to last-heartbeat MAX; EXCLUDED when neither.
+- Median math (odd/even counts); overall median across opens.
+- Historic sessionless events excluded from dwell but STILL returned by `trail()`.
+- Trail returns `event`/`session_id`/`duration_ms` additively; `blueprint_state` still skipped.
 - Both DB drivers (or the PHP-loop path) produce identical dwell results.
 - Existing summary/blueprint/trail tests still pass unchanged.
+
+UI prompt — verified by matching the frozen mock + manual viewport checks at 375px; existing feature tests
+stay green.
 
 ## Scope boundary
 
 Everything stays inside `logger/`. No `../`, no root workspace, no sibling app. Do not read or author root
 `contracts/` — the cross-app fixture is reconciled later from the root, after this slice lands. Do NOT
-touch ingest, the migration, or the `event_data` column shape.
+touch ingest, the migration, or the `event_data` column shape. The reporting prompt does NOT touch Blade;
+the UI prompt does NOT touch the service/API.
