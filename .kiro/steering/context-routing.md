@@ -32,3 +32,13 @@ When the user's request matches one of these patterns, immediately activate the 
 - `architect-workflow.md` — prompt precision rules, readiness checklist, post-execution review protocol, cross-repo work
 - Read `docs/plans/template-prompt.md` — the prompt template format
 - Read `docs/antigravity-steering.md` — the permanent executor contract antigravity reads (esp. §9 plan format, §13 consumer trace, §15 decomposition)
+
+
+## Telemetry / Dashboard Work
+
+**Trigger patterns:** User asks to modify or extend the telemetry admin dashboard, the telemetry reporting layer, dwell/session/screen analytics, mentions `TelemetryReportService`, `TelemetryApiController`, `telemetry:rollup`, `resources/views/telemetry/`, dashboard performance/cost, rollup/caching of aggregates, screen dwell, session grouping, or works on anything under `app/Telemetry/`.
+
+**Activate:**
+- `telemetry-dashboard.md` — performance model (hourly rollup cache + live paginated deep-dive), median/no-unknown dwell rules, `_v` screen normalization, opaque-blob discipline, UI file structure, design/plan references
+- Read `../../.kiro/steering/principles.md` (root) — principle #35 (Logger's request path is scarce) is the WHY
+- Read the plans: `docs/plans/telemetry-dashboard-dwell.md` (+ `-prompt.md`), `docs/plans/telemetry-dashboard-ui-prompt.md`, and the root spine `../../docs/plans/telemetry-dwell-cross-repo.md`
