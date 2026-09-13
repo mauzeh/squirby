@@ -74,6 +74,20 @@ by open, not just by screen.
 Return: per-screen MEDIAN dwell (`ms`), sorted descending, AND one overall MEDIAN across all resolved
 opens. Do NOT return counts of excluded/unknown visits.
 
+### Step 1a: Normalize the screen key for per-screen grouping (avoid an infinite list)
+The Athlete auto-update cycle appends a cache-bust query param **`_v`** (from `cacheBustReload`), so raw
+screens look like `/plan?_v=k3f9x2`. Without normalization the per-screen list grows unbounded — a new row
+every deploy cycle for the same logical page. Add a single normalization helper (one authoritative place,
+reused by every screen aggregate) that:
+- strips the `_v` query param from the screen string,
+- KEEPS all other params (so `/express?step=1` and `/express?step=summary` stay DISTINCT — onboarding
+  steps must remain individually visible),
+- returns the path unchanged when there is no query string.
+Group per-screen dwell by this NORMALIZED key. Implementation note: this is a denylist-of-one (`_v`),
+easily extended if future volatile params appear. Do NOT strip the whole query string (that would merge the
+onboarding steps). Store nothing normalized — normalization is a query-time concern only; `trail()` and
+storage keep the RAW screen.
+
 ### Step 2: Match the existing dual-path pattern
 Mirror how `blueprint()`/`trail()` handle drivers: either a MySQL `JSON_TABLE` unroll with a SQLite
 PHP-loop fallback, OR a pure PHP-loop reduce over rows if simpler and correct on both drivers. Do NOT
@@ -85,8 +99,9 @@ PHP: sort the durations, pick middle / average the two middles.)
 php artisan test --parallel tests/Feature/Telemetry 2>&1 > .test-output.txt; tail -40 .test-output.txt
 ```
 (Adjust path to where telemetry tests live.) Add unit tests: leave preferred; last-heartbeat MAX fallback
-(not sum); excluded when neither; median math (odd/even counts); sessionless events excluded from dwell.
-Read `.test-output.txt`; delete when green.
+(not sum); excluded when neither; median math (odd/even counts); sessionless events excluded from dwell;
+**screen normalization** — `/plan?_v=a` and `/plan?_v=b` roll up under one `/plan` screen, while
+`/express?step=1` and `/express?step=summary` stay separate. Read `.test-output.txt`; delete when green.
 
 ---
 
@@ -136,6 +151,7 @@ AGY_COMPLETE: All milestones passed.
 ## Success Criteria
 
 - [ ] `TelemetryReportService` computes per-screen MEDIAN dwell + one overall MEDIAN, grouped by `(device_id, session_id, screen-open)`.
+- [ ] Per-screen grouping uses a NORMALIZED screen key that strips `_v` but keeps other params (e.g. `step`), via one shared helper; raw screen kept in storage and `trail()`.
 - [ ] Dwell resolution: leave preferred → last-heartbeat MAX fallback → excluded. No unknown count computed or returned.
 - [ ] `trail()` returns `event`/`session_id`/`duration_ms` additively AND still returns sessionless historic events; `blueprint_state` still skipped.
 - [ ] Dwell surfaced through the API (block in `summary` or a dedicated `dwell` endpoint), additive only.
@@ -149,6 +165,8 @@ AGY_COMPLETE: All milestones passed.
 - Do NOT touch `resources/views/telemetry/dashboard.blade.php` — that's the UI prompt's job.
 - Do NOT change ingest (`TelemetryController`), the `athlete_events` migration, or the `event_data` shape.
 - Do NOT compute average/total dwell or an unknown count — median only, excluded visits are silent.
+- Do NOT strip the whole query string when normalizing — strip only `_v`; keep `step` and other params so onboarding steps stay distinct.
+- Do NOT persist the normalized screen — normalization is query-time only; storage and `trail()` keep the raw screen.
 - Do NOT filter out sessionless events from `trail()`.
 - Do NOT change or remove existing API response keys — additive only.
 - Do NOT read/reference/write the root workspace, root `contracts/`, or any sibling app.

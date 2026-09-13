@@ -29,6 +29,12 @@ can run in parallel with the reporting prompt.
   labeled **"Before session tracking"** bucket at the bottom of the deep-dive — full navigation history
   preserved without inventing sessions or durations.
 - New/Cumulative/Active toggle KEPT; ALL blueprint fields shown on Overview.
+- **Screen normalization:** the auto-update cycle appends a cache-bust param **`_v`** (Athlete
+  `cacheBustReload`). Per-screen dwell groups by a NORMALIZED key that strips `_v` but KEEPS other params
+  (so onboarding `step` values stay distinct). Query-time only — storage and `trail()` keep the raw screen.
+  Per-screen list capped to top-N (~15) + "show all" so it stays bounded on mobile.
+- **Dashboard file structure:** the UI slice must NOT reproduce one ~600-line Blade file — extract the
+  Alpine component to a JS file and split markup into Blade partials (thin shell + `partials/_*`).
 
 ## What we're building
 

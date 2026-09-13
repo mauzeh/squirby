@@ -40,6 +40,26 @@ Rebuild the telemetry dashboard as a **two-screen mobile UI** matching the froze
 The mock is the CONTRACT. Read it at implementation time and extract exact structure/classes — do not code
 from memory (per `feature-workflow.md` Phase 4).
 
+## File structure (MANDATORY — do NOT reproduce one 600-line Blade file)
+
+The current single ~600-line `dashboard.blade.php` (markup + ~330 lines of inline Alpine JS + styles) is
+the anti-pattern to avoid. Decompose into:
+
+1. **Extract the Alpine component to its own JS file.** Move the `telemetryDashboard()` component out of the
+   inline `<script>` into a standalone file (e.g. `resources/js/telemetry/dashboard.js` or a co-located
+   view asset). The Blade view includes it; it is no longer inline. Keep loading Alpine as it is loaded
+   today (CDN) and load this file after it — do NOT introduce a new build step or framework just for this.
+2. **Split the markup into Blade partials.** A thin shell (`telemetry/dashboard.blade.php`) that
+   `@include`s small single-purpose partials, e.g. `telemetry/partials/_date-filter`,
+   `_devices-card`, `_blueprint-card`, `_dwell-card`, `_device-list`, `_deep-dive`, `_session-block`.
+   Each partial is small and readable; the shell wires them together.
+3. **One authoritative Alpine component** still owns state + fetches (don't scatter fetch logic across
+   partials); partials are mechanical renderers reading that state. This mirrors the project's
+   config-driven / dumb-renderer principle.
+
+Result: no single file dominates; markup, behavior, and styles are separated. This is a structure
+requirement, not optional cleanup.
+
 ## The design mock (FROZEN — implement faithfully)
 
 ```
@@ -58,9 +78,21 @@ designs/telemetry-dashboard.html   → the frozen two-screen design. Structure, 
   the deep-dive).
 - **Dwell card:** an **overall MEDIAN dwell** headline ("across all measured screen visits") + a per-screen
   MEDIAN ranked list with relative bars. Label "median per screen · since instrumentation". **NO total/sum
-  headline. NO "unknown" count anywhere.**
+  headline. NO "unknown" count anywhere.** The per-screen rows use the NORMALIZED screen key (the reporting
+  slice strips the `_v` cache-bust param — see below), so `/plan?_v=…` visits roll up under one `/plan` row
+  instead of fragmenting per auto-update cycle. Cap the list to a **top-N (~15)** by median, with the
+  remainder behind a "show all" toggle so the list stays bounded on mobile.
 - Device list at the bottom — reuse the existing paginated list; each row is the entry point to the
   deep-dive.
+
+### Screen key: normalized vs raw (display rule)
+
+The auto-update cycle appends a cache-bust query param **`_v`** (from Athlete `cacheBustReload`), so raw
+screen strings look like `/plan?_v=k3f9x2`. The reporting slice normalizes by stripping `_v` (keeping
+meaningful params like `step`, so `/express?step=1` stays distinct). In the UI:
+- **Aggregate per-screen dwell list (Overview):** use the NORMALIZED key — one `/plan` row.
+- **Device deep-dive trail:** show the RAW screen as stored (it may still carry `_v`) — the trail is the
+  literal navigation history, so keep it faithful. Only the aggregate rolls up.
 
 **Device deep-dive:**
 - Sticky "← Overview" back header.
@@ -89,17 +121,21 @@ Do NOT read anything outside `logger/`.
 
 ## Milestone 1: Overview screen
 
-### Step 1: Restructure into two Alpine view-states
-Introduce a `view` state (`'overview'` | `'device'`) in the `telemetryDashboard()` Alpine component. The
-existing Devices/Trail/Blueprint TAB bar is REMOVED — its content is redistributed (aggregates → Overview
-cards, per-device → deep-dive). Keep the existing `loadSummary`/`loadBlueprint`/`loadTrail`/chart wiring;
-re-lay-out, don't rewrite the fetch logic.
+### Step 1: Decompose the file + restructure into two Alpine view-states
+FIRST apply the File structure section: extract the Alpine component to a standalone JS file and split the
+markup into Blade partials (thin shell + `telemetry/partials/_*`). Do NOT carry over the monolithic inline
+`<script>`. THEN introduce a `view` state (`'overview'` | `'device'`) in the (now extracted)
+`telemetryDashboard()` component. The existing Devices/Trail/Blueprint TAB bar is REMOVED — its content is
+redistributed (aggregates → Overview cards, per-device → deep-dive). Keep the existing
+`loadSummary`/`loadBlueprint`/`loadTrail`/chart fetch logic; re-lay-out and relocate it into the extracted
+component, don't rewrite it.
 
 ### Step 2: Build the Overview cards
-Port the three cards from the mock: Devices (keep chart + 3-way toggle), Blueprint (all fields aggregate),
-Dwell (overall median headline + per-screen median list, fed by the new dwell API). Trim the date filter to
-the 5 presets + `Custom…` toggle. Put the reused paginated device list at the bottom; tapping a row sets
-`view='device'` and loads that device.
+Port the three cards from the mock as partials: Devices (keep chart + 3-way toggle), Blueprint (all fields
+aggregate), Dwell (overall median headline + per-screen median list using the NORMALIZED screen key, capped
+to top-N ~15 with "show all", fed by the new dwell API). Trim the date filter to the 5 presets + `Custom…`
+toggle. Put the reused paginated device list at the bottom; tapping a row sets `view='device'` and loads
+that device.
 
 ### Milestone 1 Checkpoint
 ```bash
@@ -156,7 +192,8 @@ AGY_COMPLETE: All milestones passed.
 ## Success Criteria
 
 - [ ] Dashboard is a two-screen UI (Overview + device deep-dive) matching `designs/telemetry-dashboard.html`.
-- [ ] Overview: trimmed date filter (5 presets + Custom…), Devices card (chart + New/Cumulative/Active kept), Blueprint card (all fields), Dwell card (overall median + per-screen median list, NO total, NO unknown), device list.
+- [ ] File decomposed: Alpine component extracted to its own JS file + markup split into Blade partials (no single dominating ~600-line file, no monolithic inline `<script>`).
+- [ ] Overview: trimmed date filter (5 presets + Custom…), Devices card (chart + New/Cumulative/Active kept), Blueprint card (all fields), Dwell card (overall median + per-screen median list on NORMALIZED screen key, top-N ~15 + "show all", NO total, NO unknown), device list.
 - [ ] Deep-dive: back header, device stat tiles, per-device blueprint + dwell, session-grouped trail (newest first, most-recent open), "Before session tracking" bucket for sessionless events.
 - [ ] Collapse uses `grid-template-rows`, not max-height.
 - [ ] Implemented in Blade + Alpine (NOT React, NOT the mock's vanilla JS). Chart.js reused.
@@ -171,6 +208,8 @@ AGY_COMPLETE: All milestones passed.
 - Do NOT drop sessionless historic events — they render in the "Before session tracking" bucket.
 - Do NOT use max-height for collapse (iOS-fails); use `grid-template-rows`.
 - Do NOT introduce React or a build step; stay Blade + Alpine + Tailwind + Chart.js.
+- Do NOT reproduce one monolithic Blade file — extract the JS and split markup into partials.
+- Do NOT normalize the screen in the deep-dive trail — the trail shows the raw stored screen; only the aggregate list rolls up the `_v` param.
 - Do NOT read/reference/write the root workspace, root `contracts/`, or any sibling app.
 - Do NOT add composer/npm dependencies. Do NOT commit or push.
 - Do NOT run `php artisan test` without `--parallel`. Do NOT re-run tests just to see missed output; redirect to a workspace file. Never use `/tmp/`.
