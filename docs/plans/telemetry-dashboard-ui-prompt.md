@@ -82,8 +82,19 @@ designs/telemetry-dashboard.html   → the frozen two-screen design. Structure, 
   slice strips the `_v` cache-bust param — see below), so `/plan?_v=…` visits roll up under one `/plan` row
   instead of fragmenting per auto-update cycle. Cap the list to a **top-N (~15)** by median, with the
   remainder behind a "show all" toggle so the list stays bounded on mobile.
+- **Data-age label on the aggregate cards.** The Overview aggregates (Devices / Blueprint / Dwell) are
+  served from an **hourly rollup cache** (see performance model), so they can be up to ~1h stale. Show the
+  rollup's age from the API's `generated_at`, e.g. "Data as of 14:00 · updated 42m ago", near the top of
+  the aggregate area. This is a required honesty affordance, not optional.
 - Device list at the bottom — reuse the existing paginated list; each row is the entry point to the
   deep-dive.
+
+### Performance model (why the UI reads two different ways)
+
+- **Aggregate cards read the hourly rollup cache** (cheap, up-to-~1h stale, `generated_at` shown). They do
+  NOT trigger live all-device computation.
+- **The device deep-dive is LIVE** but scoped to one device and **paginated by session** (see below).
+This split keeps the shared Hobby server cheap. Do not make the aggregate cards query live.
 
 ### Screen key: normalized vs raw (display rule)
 
@@ -99,12 +110,15 @@ meaningful params like `step`, so `/express?step=1` stays distinct). In the UI:
 - Device header: id (full/less expand) + stat tiles (Sessions / Events / Engaged) + first/last seen.
 - This device's blueprint choices (chips).
 - Per-device dwell by screen (median).
-- **Session-grouped trail:** collapsible session blocks, **newest session first, most-recent expanded by
-  default**; each screen row shows screen + `duration_ms` (dimmed "—"/"unknown" when absent).
+- **Session-grouped trail (paginated by session):** collapsible session blocks, **newest session first,
+  most-recent expanded by default**; each screen row shows screen + `duration_ms` (dimmed "—"/"unknown"
+  when absent). Show up to **10 sessions per page** with a "load older sessions" affordance — the API
+  paginates by session (never splitting a session across pages).
 - **"Before session tracking" bucket:** sessionless historic events (no `session_id`) collapse into ONE
   dashed-border block at the BOTTOM, collapsed by default, labeled "N screen views · durations not
-  available", showing a flat chronological trail with no durations. This preserves historic navigation
-  history without inference.
+  available", showing a flat chronological trail with no durations. This list is **capped** to the most
+  recent N with a "load more" (it can be long for an old device) — separate from the session pagination.
+  This preserves historic navigation history without inference.
 
 ## Read These Files (in order, before writing any code)
 
@@ -133,9 +147,11 @@ component, don't rewrite it.
 ### Step 2: Build the Overview cards
 Port the three cards from the mock as partials: Devices (keep chart + 3-way toggle), Blueprint (all fields
 aggregate), Dwell (overall median headline + per-screen median list using the NORMALIZED screen key, capped
-to top-N ~15 with "show all", fed by the new dwell API). Trim the date filter to the 5 presets + `Custom…`
-toggle. Put the reused paginated device list at the bottom; tapping a row sets `view='device'` and loads
-that device.
+to top-N ~15 with "show all"). The aggregate cards read the **hourly rollup cache** via the API and display
+the **data-age label** from `generated_at` ("Data as of HH:MM · updated Nm ago") — do NOT trigger live
+all-device computation from the cards. Trim the date filter to the 5 presets + `Custom…` toggle. Put the
+reused paginated device list at the bottom; tapping a row sets `view='device'` and loads that device
+(live).
 
 ### Milestone 1 Checkpoint
 ```bash
@@ -152,13 +168,16 @@ matches the mock at 375px width. Delete `.test-output.txt`.
 Build the `view==='device'` screen from the mock: sticky back header, device header + stat tiles
 (Sessions/Events/Engaged), per-device blueprint chips, per-device dwell-by-screen.
 
-### Step 4: Session-grouped trail + historic bucket
-From the enriched `trail()` data, partition the device's events client-side:
-- Events WITH `session_id` → group by `session_id` into collapsible session blocks, **newest first**,
-  most-recent expanded; each screen row shows `duration_ms` (dimmed when absent).
-- Events WITHOUT `session_id` → ONE dashed "Before session tracking" block at the bottom, collapsed, flat
-  chronological trail, no durations.
-Use `grid-template-rows` for the collapse animation (NOT max-height — iOS-safe, per `feature-workflow.md`).
+### Step 4: Session-grouped trail + historic bucket (session-paginated)
+Consume the live per-device endpoint (session-paginated, ≤10 sessions/page, newest first) plus its
+separate capped sessionless list:
+- Sessions → collapsible blocks, **newest first**, most-recent expanded; each screen row shows
+  `duration_ms` (dimmed when absent). Add a "load older sessions" control that fetches the next page.
+- Sessionless events → ONE dashed "Before session tracking" block at the bottom, collapsed, flat
+  chronological trail, no durations, capped with "load more" (separate from session pagination).
+The server already groups/paginates by session; the client renders — do NOT ask the server for all of a
+device's events at once. Use `grid-template-rows` for the collapse animation (NOT max-height — iOS-safe,
+per `feature-workflow.md`).
 
 ### Milestone 2 Checkpoint
 ```bash
@@ -194,7 +213,8 @@ AGY_COMPLETE: All milestones passed.
 - [ ] Dashboard is a two-screen UI (Overview + device deep-dive) matching `designs/telemetry-dashboard.html`.
 - [ ] File decomposed: Alpine component extracted to its own JS file + markup split into Blade partials (no single dominating ~600-line file, no monolithic inline `<script>`).
 - [ ] Overview: trimmed date filter (5 presets + Custom…), Devices card (chart + New/Cumulative/Active kept), Blueprint card (all fields), Dwell card (overall median + per-screen median list on NORMALIZED screen key, top-N ~15 + "show all", NO total, NO unknown), device list.
-- [ ] Deep-dive: back header, device stat tiles, per-device blueprint + dwell, session-grouped trail (newest first, most-recent open), "Before session tracking" bucket for sessionless events.
+- [ ] Aggregate cards read the hourly rollup cache and show a data-age label from `generated_at`; they never trigger live all-device computation.
+- [ ] Deep-dive: back header, device stat tiles, per-device blueprint + dwell, session-grouped trail (newest first, most-recent open), **paginated ≤10 sessions/page with "load older"**, "Before session tracking" bucket capped with "load more".
 - [ ] Collapse uses `grid-template-rows`, not max-height.
 - [ ] Implemented in Blade + Alpine (NOT React, NOT the mock's vanilla JS). Chart.js reused.
 - [ ] `php artisan test --parallel` green, zero regressions.
@@ -210,6 +230,8 @@ AGY_COMPLETE: All milestones passed.
 - Do NOT introduce React or a build step; stay Blade + Alpine + Tailwind + Chart.js.
 - Do NOT reproduce one monolithic Blade file — extract the JS and split markup into partials.
 - Do NOT normalize the screen in the deep-dive trail — the trail shows the raw stored screen; only the aggregate list rolls up the `_v` param.
+- Do NOT make the aggregate cards compute live — they read the hourly rollup cache and show its age.
+- Do NOT load a device's entire event history at once — the deep-dive is session-paginated (≤10/page); the historic bucket is separately capped.
 - Do NOT read/reference/write the root workspace, root `contracts/`, or any sibling app.
 - Do NOT add composer/npm dependencies. Do NOT commit or push.
 - Do NOT run `php artisan test` without `--parallel`. Do NOT re-run tests just to see missed output; redirect to a workspace file. Never use `/tmp/`.

@@ -35,6 +35,18 @@ can run in parallel with the reporting prompt.
   Per-screen list capped to top-N (~15) + "show all" so it stays bounded on mobile.
 - **Dashboard file structure:** the UI slice must NOT reproduce one ~600-line Blade file — extract the
   Alpine component to a JS file and split markup into Blade partials (thin shell + `partials/_*`).
+- **Performance model (Forge Hobby, shared with prod backend — keep it cheap):**
+  - **Overview aggregates** (device counts, blueprint distribution, median dwell) are computed by an
+    **hourly `telemetry:rollup` Artisan command** (scheduled `->hourly()`) that does the expensive MySQL
+    unroll ONCE per hour, off the request path, and caches the result with a `generated_at` timestamp. The
+    dashboard READS the cache and displays the data age ("as of HH:MM · Nm ago"). It never triggers the
+    all-device unroll on a page view. Cold-start: compute-once-and-cache if the cache is empty.
+  - **Device deep-dive is LIVE** but scoped to one device and **paginated by SESSION** (≤10 sessions/page,
+    newest first, never splitting a session across pages); the sessionless "Before session tracking" bucket
+    is a SEPARATELY capped list. One device's data is tiny, so live is cheap.
+  - **One additive migration:** a `created_at` INDEX on `athlete_events` (keeps the hourly scan and the
+    live per-device query bounded). NOT a data-rewrite/backfill — just an index. No other schema change;
+    ingest and the `event_data` blob are untouched.
 
 ## What we're building
 
