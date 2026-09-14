@@ -247,8 +247,8 @@ function telemetryDashboard() {
                     this.deviceSessions = [...this.deviceSessions, ...newSessions];
                 }
 
-                if (data.sessionless) {
-                    this.deviceSessionless = data.sessionless;
+                if (data.sessionless && Array.isArray(data.sessionless.data)) {
+                    this.deviceSessionless = data.sessionless.data;
                 }
                 this.deviceLoading = false;
             })

@@ -151,6 +151,7 @@ class TelemetryReportService
                 $screensResult[] = [
                     'screen' => $screenKey,
                     'median_ms' => $median,
+                    'median_formatted' => $this->formatDuration($median),
                     'count' => count($dwellList),
                 ];
             }
@@ -160,8 +161,33 @@ class TelemetryReportService
 
         return [
             'overall_median_ms' => $overallMedian,
+            'overall_median_formatted' => $this->formatDuration($overallMedian),
             'screens' => $screensResult,
         ];
+    }
+
+    /**
+     * Format a duration in milliseconds to a compact human string (e.g. "1m 12s", "45s", "2h 3m").
+     * Null → "0s". Sub-second → "0s".
+     */
+    public function formatDuration(?int $ms): string
+    {
+        if ($ms === null || $ms < 1000) {
+            return '0s';
+        }
+
+        $totalSeconds = (int) floor($ms / 1000);
+        $hours = (int) floor($totalSeconds / 3600);
+        $minutes = (int) floor(($totalSeconds % 3600) / 60);
+        $seconds = $totalSeconds % 60;
+
+        if ($hours > 0) {
+            return "{$hours}h {$minutes}m";
+        }
+        if ($minutes > 0) {
+            return "{$minutes}m {$seconds}s";
+        }
+        return "{$seconds}s";
     }
 
     protected function resolveOpenDwell(array $open): ?int
@@ -355,14 +381,47 @@ class TelemetryReportService
 
         $totalDistinctDevices = $nonNullCount + ($hasNullDevice ? 1 : 0);
 
-        // 2. Paginated device list ordered by MAX(created_at) DESC
-        $devicesQuery = AthleteEvent::query()
+        // 2. Paginated device list (delegated — reusable for page navigation without recomputing series)
+        $devicesPayload = $this->devicesPage($since, $page, $perPage, $totalDistinctDevices);
+
+        // 3. Compute bucketed series for Chart (New, Cumulative, Active)
+        [$bucketLabel, $seriesData] = $this->buildChartSeries($since);
+
+        return [
+            'total' => $totalDistinctDevices,
+            'series' => $seriesData,
+            'bucket' => $bucketLabel,
+            'devices' => $devicesPayload,
+        ];
+    }
+
+    /**
+     * Paginated device list (device_id, last_seen, event_rows) ordered by recency. This is a cheap
+     * GROUP BY device_id query — safe to run live for page navigation without touching the rollup cache
+     * or the expensive per-event JSON unroll.
+     *
+     * @return array{data: array<int, array{device_id: ?string, last_seen: string, event_rows: int}>, current_page: int, last_page: int, per_page: int, total: int}
+     */
+    public function devicesPage(Carbon $since, int $page = 1, int $perPage = 20, ?int $totalDistinctDevices = null): array
+    {
+        if ($totalDistinctDevices === null) {
+            $nonNullCount = AthleteEvent::query()
+                ->where('created_at', '>=', $since)
+                ->whereNotNull('device_id')
+                ->distinct('device_id')
+                ->count('device_id');
+            $hasNullDevice = AthleteEvent::query()
+                ->where('created_at', '>=', $since)
+                ->whereNull('device_id')
+                ->exists();
+            $totalDistinctDevices = $nonNullCount + ($hasNullDevice ? 1 : 0);
+        }
+
+        $deviceRows = AthleteEvent::query()
             ->where('created_at', '>=', $since)
             ->selectRaw('device_id, MAX(created_at) as last_seen, COUNT(*) as event_rows')
             ->groupBy('device_id')
-            ->orderByDesc('last_seen');
-
-        $deviceRows = (clone $devicesQuery)
+            ->orderByDesc('last_seen')
             ->offset(($page - 1) * $perPage)
             ->limit($perPage)
             ->get();
@@ -380,22 +439,12 @@ class TelemetryReportService
             $lastPage = 1;
         }
 
-        $devicesPayload = [
+        return [
             'data' => $devicesData,
             'current_page' => $page,
             'last_page' => $lastPage,
             'per_page' => $perPage,
             'total' => $totalDistinctDevices,
-        ];
-
-        // 3. Compute bucketed series for Chart (New, Cumulative, Active)
-        [$bucketLabel, $seriesData] = $this->buildChartSeries($since);
-
-        return [
-            'total' => $totalDistinctDevices,
-            'series' => $seriesData,
-            'bucket' => $bucketLabel,
-            'devices' => $devicesPayload,
         ];
     }
 
@@ -482,9 +531,15 @@ class TelemetryReportService
             }
         }
 
-        // Sort events within each session by ts asc
+        // Sort events within each session by ts asc, and format each event's duration
         foreach ($sessionsMap as $sessId => &$eventsList) {
             usort($eventsList, fn ($a, $b) => strcmp($a['ts'], $b['ts']));
+            foreach ($eventsList as &$evt) {
+                $evt['duration_formatted'] = $evt['duration_ms'] !== null
+                    ? $this->formatDuration($evt['duration_ms'])
+                    : null;
+            }
+            unset($evt);
         }
         unset($eventsList);
 
@@ -500,10 +555,18 @@ class TelemetryReportService
 
         $sessionsData = [];
         foreach ($pagedKeys as $sessId) {
+            // Session wall-clock span = last ts - first ts across its events
+            $evts = $sessionsMap[$sessId];
+            $firstTs = $evts[0]['ts'];
+            $lastTs = end($evts)['ts'];
+            $spanMs = max(0, (int) round((Carbon::parse($lastTs)->getPreciseTimestamp(3) - Carbon::parse($firstTs)->getPreciseTimestamp(3)) / 1000));
+
             $sessionsData[] = [
                 'session_id' => $sessId,
-                'started_at' => $sessionStartTs[$sessId],
-                'events' => $sessionsMap[$sessId],
+                'start_time' => $sessionStartTs[$sessId],
+                'duration_ms' => $spanMs,
+                'duration_formatted' => $this->formatDuration($spanMs),
+                'events' => $evts,
             ];
         }
 
@@ -513,6 +576,9 @@ class TelemetryReportService
 
         return [
             'device_id' => $deviceId,
+            'stats' => $this->deviceStats($deviceId, $since),
+            'blueprint' => $this->deviceBlueprint($deviceId, $since),
+            'dwell' => $this->deviceDwell($deviceId, $since),
             'sessions' => [
                 'data' => $sessionsData,
                 'current_page' => $page,
@@ -520,11 +586,203 @@ class TelemetryReportService
                 'per_page' => $perPage,
                 'total' => $totalSessions,
             ],
-            'sessionless_events' => [
+            'sessionless' => [
                 'data' => $cappedSessionless,
                 'total' => count($sessionlessEvents),
             ],
         ];
+    }
+
+    /**
+     * Per-device header stats: session count, event count, engaged (sum of resolved dwell), first/last seen.
+     *
+     * @return array{session_count: int, event_count: int, engaged_ms: int, engaged_formatted: string, first_seen: ?string, last_seen: ?string}
+     */
+    protected function deviceStats(?string $deviceId, Carbon $since): array
+    {
+        $rows = $this->deviceRows($deviceId, $since);
+
+        $sessionIds = [];
+        $eventCount = 0;
+        $firstSeen = null;
+        $lastSeen = null;
+
+        foreach ($rows as $row) {
+            $eventData = $row->event_data;
+            if (!is_array($eventData) || !isset($eventData['events']) || !is_array($eventData['events'])) {
+                continue;
+            }
+            foreach ($eventData['events'] as $evt) {
+                if (!is_array($evt) || ($evt['type'] ?? null) === 'blueprint_state') {
+                    continue;
+                }
+                $eventCount++;
+                $sid = $evt['session_id'] ?? null;
+                if (is_string($sid) && $sid !== '') {
+                    $sessionIds[$sid] = true;
+                }
+                $ts = isset($evt['ts']) ? (string) $evt['ts'] : null;
+                if ($ts !== null) {
+                    if ($firstSeen === null || strcmp($ts, $firstSeen) < 0) {
+                        $firstSeen = $ts;
+                    }
+                    if ($lastSeen === null || strcmp($ts, $lastSeen) > 0) {
+                        $lastSeen = $ts;
+                    }
+                }
+            }
+        }
+
+        // Engaged = sum of resolved per-open dwell for this device (reuse deviceDwell's opens)
+        $engagedMs = 0;
+        foreach ($this->deviceDwell($deviceId, $since) as $screenDwell) {
+            $engagedMs += (int) ($screenDwell['total_ms'] ?? 0);
+        }
+
+        return [
+            'session_count' => count($sessionIds),
+            'event_count' => $eventCount,
+            'engaged_ms' => $engagedMs,
+            'engaged_formatted' => $this->formatDuration($engagedMs),
+            'first_seen' => $firstSeen,
+            'last_seen' => $lastSeen,
+        ];
+    }
+
+    /**
+     * Latest blueprint_state selections for a single device.
+     *
+     * @return array{selections: array<string, mixed>, ts: ?string}
+     */
+    protected function deviceBlueprint(?string $deviceId, Carbon $since): array
+    {
+        $rows = $this->deviceRows($deviceId, $since);
+
+        $latest = null;
+        $latestTs = null;
+        foreach ($rows as $row) {
+            $eventData = $row->event_data;
+            if (!is_array($eventData) || !isset($eventData['events']) || !is_array($eventData['events'])) {
+                continue;
+            }
+            foreach ($eventData['events'] as $evt) {
+                if (!is_array($evt) || ($evt['type'] ?? null) !== 'blueprint_state') {
+                    continue;
+                }
+                $ts = (string) ($evt['ts'] ?? Carbon::parse($row->created_at)->toIso8601String());
+                if ($latestTs === null || strcmp($ts, $latestTs) > 0) {
+                    $latestTs = $ts;
+                    $sel = $evt['selections'] ?? [];
+                    $latest = is_array($sel) ? $sel : [];
+                }
+            }
+        }
+
+        return [
+            'selections' => $latest ?? [],
+            'ts' => $latestTs,
+        ];
+    }
+
+    /**
+     * Per-device per-screen dwell (median + total), grouped by normalized screen key.
+     *
+     * @return array<int, array{screen: string, median_ms: int, median_formatted: string, total_ms: int, count: int}>
+     */
+    protected function deviceDwell(?string $deviceId, Carbon $since): array
+    {
+        $rows = $this->deviceRows($deviceId, $since);
+
+        // Collect this device's session events (reuse the same open-resolution logic as dwell()).
+        $eventsBySession = [];
+        foreach ($rows as $row) {
+            $eventData = $row->event_data;
+            if (!is_array($eventData) || !isset($eventData['events']) || !is_array($eventData['events'])) {
+                continue;
+            }
+            foreach ($eventData['events'] as $evt) {
+                if (!is_array($evt)) {
+                    continue;
+                }
+                $sid = $evt['session_id'] ?? null;
+                if (!is_string($sid) || $sid === '') {
+                    continue;
+                }
+                if (($evt['type'] ?? null) === 'blueprint_state') {
+                    continue;
+                }
+                $eventsBySession[$sid][] = [
+                    'screen' => (string) ($evt['screen'] ?? 'Unknown'),
+                    'event' => (string) ($evt['event'] ?? 'view'),
+                    'duration_ms' => isset($evt['duration_ms']) ? (int) $evt['duration_ms'] : null,
+                    'ts' => isset($evt['ts']) ? (string) $evt['ts'] : Carbon::parse($row->created_at)->toIso8601String(),
+                ];
+            }
+        }
+
+        $screenDwells = [];
+        foreach ($eventsBySession as $events) {
+            usort($events, fn ($a, $b) => strcmp($a['ts'], $b['ts']));
+            $currentOpen = null;
+            $flush = function () use (&$currentOpen, &$screenDwells) {
+                if ($currentOpen === null) {
+                    return;
+                }
+                $resolved = $this->resolveOpenDwell($currentOpen);
+                if ($resolved !== null) {
+                    $screenDwells[$currentOpen['screen']][] = $resolved;
+                }
+                $currentOpen = null;
+            };
+            foreach ($events as $evt) {
+                $normScreen = $this->normalizeScreen($evt['screen']);
+                if ($evt['event'] === 'view') {
+                    $flush();
+                    $currentOpen = ['screen' => $normScreen, 'leave_duration' => null, 'max_heartbeat' => null];
+                } elseif ($currentOpen !== null && $evt['event'] === 'heartbeat') {
+                    if ($evt['duration_ms'] !== null && ($currentOpen['max_heartbeat'] === null || $evt['duration_ms'] > $currentOpen['max_heartbeat'])) {
+                        $currentOpen['max_heartbeat'] = $evt['duration_ms'];
+                    }
+                } elseif ($currentOpen !== null && $evt['event'] === 'leave') {
+                    if ($evt['duration_ms'] !== null) {
+                        $currentOpen['leave_duration'] = $evt['duration_ms'];
+                    }
+                    $flush();
+                }
+            }
+            $flush();
+        }
+
+        $result = [];
+        foreach ($screenDwells as $screen => $list) {
+            $median = $this->calculateMedian($list);
+            if ($median !== null) {
+                $result[] = [
+                    'screen' => $screen,
+                    'median_ms' => $median,
+                    'median_formatted' => $this->formatDuration($median),
+                    'total_ms' => array_sum($list),
+                    'count' => count($list),
+                ];
+            }
+        }
+        usort($result, fn ($a, $b) => $b['median_ms'] <=> $a['median_ms']);
+
+        return $result;
+    }
+
+    /**
+     * Shared device-scoped row query (matches the deep-dive device_id resolution).
+     */
+    protected function deviceRows(?string $deviceId, Carbon $since)
+    {
+        $query = AthleteEvent::query()->where('created_at', '>=', $since);
+        if ($deviceId === null || $deviceId === '' || $deviceId === 'null' || $deviceId === 'no value') {
+            $query->whereNull('device_id');
+        } else {
+            $query->where('device_id', $deviceId);
+        }
+        return $query->get();
     }
 
     /**

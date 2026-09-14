@@ -27,10 +27,13 @@ class TelemetryApiController extends Controller
 
         $summary = $rollup['summary'];
 
-        // Handle page offset if page > 1 (re-paginate devices array if requested)
+        // Page > 1: only the DEVICE LIST needs re-paginating (a cheap GROUP BY device_id
+        // count query, NOT the expensive all-device JSON unroll). Keep the cached headline
+        // count, chart series, and dwell — swap in just the requested device-list page.
         if ($page > 1) {
             $since = $this->parseSince($sinceParam);
-            $summary = $this->reportService->summary($since, $page);
+            $devicesPage = $this->reportService->devicesPage($since, $page);
+            $summary['devices'] = $devicesPage;
         }
 
         return response()->json(array_merge($summary, [

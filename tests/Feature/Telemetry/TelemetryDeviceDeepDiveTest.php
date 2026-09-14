@@ -93,15 +93,55 @@ class TelemetryDeviceDeepDiveTest extends TestCase
         $this->assertEquals('sess_new', $res['sessions']['data'][0]['session_id']);
         $this->assertEquals('/home?_v=456', $res['sessions']['data'][0]['events'][0]['screen']); // Raw screen preserved with _v
 
-        // Second session is sess_old
-        $this->assertEquals('sess_old', $res['sessions']['data'][1]['session_id']);
+        // Session carries the UI-consumed keys: start_time + formatted span
+        $this->assertArrayHasKey('start_time', $res['sessions']['data'][0]);
+        $this->assertArrayHasKey('duration_formatted', $res['sessions']['data'][0]);
 
-        // Sessionless events bucket
-        $this->assertEquals(1, $res['sessionless_events']['total']);
-        $this->assertEquals('/old_view?_v=999', $res['sessionless_events']['data'][0]['screen']);
+        // Second session is sess_old; its 15s leave formats as "15s"
+        $this->assertEquals('sess_old', $res['sessions']['data'][1]['session_id']);
+        $leaveEvent = collect($res['sessions']['data'][1]['events'])->firstWhere('event', 'leave');
+        $this->assertEquals('15s', $leaveEvent['duration_formatted']);
+
+        // Sessionless events bucket (renamed to `sessionless`)
+        $this->assertEquals(1, $res['sessionless']['total']);
+        $this->assertEquals('/old_view?_v=999', $res['sessionless']['data'][0]['screen']);
     }
 
-    public function test_device_api_endpoint(): void
+    public function test_device_deep_dive_returns_stats_blueprint_and_dwell_for_the_ui(): void
+    {
+        $since = Carbon::parse('2026-09-01 00:00:00');
+
+        AthleteEvent::query()->create([
+            'device_id' => 'dev_full',
+            'created_at' => Carbon::parse('2026-09-10 10:00:00'),
+            'event_data' => [
+                'events' => [
+                    ['event' => 'view', 'screen' => '/plan?_v=1', 'session_id' => 's1', 'ts' => '2026-09-10T10:00:00Z'],
+                    ['event' => 'leave', 'screen' => '/plan?_v=1', 'session_id' => 's1', 'duration_ms' => 60000, 'ts' => '2026-09-10T10:01:00Z'],
+                    ['type' => 'blueprint_state', 'selections' => ['intensity' => 'high'], 'session_id' => 's1', 'ts' => '2026-09-10T10:00:05Z'],
+                ],
+            ],
+        ]);
+
+        $service = app(TelemetryReportService::class);
+        $res = $service->deviceDeepDive('dev_full', $since, 1, 10);
+
+        // stats block (UI reads session_count/event_count/engaged_formatted/first_seen/last_seen)
+        $this->assertEquals(1, $res['stats']['session_count']);
+        $this->assertEquals('1m 0s', $res['stats']['engaged_formatted']);
+        $this->assertArrayHasKey('first_seen', $res['stats']);
+        $this->assertArrayHasKey('last_seen', $res['stats']);
+
+        // blueprint block (UI reads selections)
+        $this->assertEquals(['intensity' => 'high'], $res['blueprint']['selections']);
+
+        // per-device dwell (UI reads screen/median_ms/median_formatted); normalized (_v stripped)
+        $this->assertEquals('/plan', $res['dwell'][0]['screen']);
+        $this->assertEquals(60000, $res['dwell'][0]['median_ms']);
+        $this->assertEquals('1m 0s', $res['dwell'][0]['median_formatted']);
+    }
+
+    public function test_device_api_endpoint_returns_the_full_ui_shape(): void
     {
         AthleteEvent::query()->create([
             'device_id' => 'dev_api',
@@ -120,10 +160,40 @@ class TelemetryDeviceDeepDiveTest extends TestCase
 
         $response = $this->actingAs($this->admin)->getJson(route('telemetry.device', ['device_id' => 'dev_api']));
         $response->assertOk();
+        // Assert the EXACT shape the dashboard JS/Blade consumes (guards against slice drift).
         $response->assertJsonStructure([
             'device_id',
+            'stats' => ['session_count', 'event_count', 'engaged_ms', 'engaged_formatted', 'first_seen', 'last_seen'],
+            'blueprint' => ['selections', 'ts'],
+            'dwell',
             'sessions' => ['data', 'current_page', 'last_page', 'per_page', 'total'],
-            'sessionless_events' => ['data', 'total'],
+            'sessionless' => ['data', 'total'],
         ]);
+    }
+
+    public function test_summary_api_exposes_formatted_dwell_the_ui_reads(): void
+    {
+        AthleteEvent::query()->create([
+            'device_id' => 'dev_sum',
+            'created_at' => Carbon::parse('2026-09-10 10:00:00'),
+            'event_data' => [
+                'events' => [
+                    ['event' => 'view', 'screen' => '/plan?_v=1', 'session_id' => 's1', 'ts' => '2026-09-10T10:00:00Z'],
+                    ['event' => 'leave', 'screen' => '/plan?_v=1', 'session_id' => 's1', 'duration_ms' => 45000, 'ts' => '2026-09-10T10:00:45Z'],
+                ],
+            ],
+        ]);
+
+        $response = $this->actingAs($this->admin)->getJson(route('telemetry.summary', ['since' => 'all']));
+        $response->assertOk();
+        $response->assertJsonStructure([
+            'total', 'series', 'bucket', 'devices',
+            'generated_at',
+            'dwell' => ['overall_median_ms', 'overall_median_formatted', 'screens'],
+        ]);
+        // Per-screen entries carry median_formatted + normalized screen key
+        $json = $response->json();
+        $this->assertEquals('/plan', $json['dwell']['screens'][0]['screen']);
+        $this->assertEquals('45s', $json['dwell']['screens'][0]['median_formatted']);
     }
 }
