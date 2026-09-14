@@ -30,6 +30,7 @@ function telemetryDashboard() {
 
         // Deep dive state
         selectedDevice: null,
+        selectedDeviceId: null,
         deviceLoading: false,
         devicePage: 1,
         deviceLastPage: 1,
