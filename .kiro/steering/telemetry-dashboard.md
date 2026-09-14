@@ -52,6 +52,10 @@ a new cross-entity aggregate, it goes in the rollup, not a live query.
 - **File structure:** do NOT reproduce one ~600-line Blade file. Extract the Alpine component to its own
   JS file; split markup into Blade partials (thin shell + `partials/_*`). One authoritative component owns
   state/fetches; partials are dumb renderers.
+- **JS location (NO build step in this repo):** there is no Vite here — plain JS is served from
+  `public/js/` via `asset('js/...')` (see existing `public/js/*.js`). The extracted component MUST live at
+  `public/js/telemetry/dashboard.js` and load via `<script src="{{ asset('js/telemetry/dashboard.js') }}">`.
+  Putting it in `resources/js/` will 404 (that dir is not web-served without a build).
 - Collapse animations use `grid-template-rows`, not max-height (iOS-safe).
 - Aggregate cards show a **data-age label** from the rollup's `generated_at`. Per-screen dwell list is
   capped to top-N (~15) with "show all".
