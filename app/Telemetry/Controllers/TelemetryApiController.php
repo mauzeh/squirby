@@ -19,12 +19,24 @@ class TelemetryApiController extends Controller
      */
     public function summary(Request $request): JsonResponse
     {
-        $since = $this->parseSince($request->query('since'));
+        $sinceParam = $request->query('since', 'since_launch');
+        $rangeKey = $this->normalizeRangeKey($sinceParam);
         $page = max(1, (int) $request->query('page', 1));
 
-        $data = $this->reportService->summary($since, $page);
+        $rollup = $this->getOrGenerateRollup($rangeKey);
 
-        return response()->json($data);
+        $summary = $rollup['summary'];
+
+        // Handle page offset if page > 1 (re-paginate devices array if requested)
+        if ($page > 1) {
+            $since = $this->parseSince($sinceParam);
+            $summary = $this->reportService->summary($since, $page);
+        }
+
+        return response()->json(array_merge($summary, [
+            'dwell' => $rollup['dwell'],
+            'generated_at' => $rollup['generated_at'],
+        ]));
     }
 
     /**
@@ -45,19 +57,76 @@ class TelemetryApiController extends Controller
     }
 
     /**
-     * Return blueprint state value distribution and latest per-device selections as JSON.
+     * Return live per-device session-paginated deep dive report as JSON.
      */
-    public function blueprint(Request $request): JsonResponse
+    public function device(Request $request): JsonResponse
     {
         $since = $this->parseSince($request->query('since'));
+        $deviceId = $request->query('device_id');
+        $page = max(1, (int) $request->query('page', 1));
+        $perPage = min(50, max(1, (int) $request->query('per_page', 10)));
 
-        $data = $this->reportService->blueprint($since);
+        if ($deviceId === 'null' || $deviceId === 'no value' || $deviceId === '') {
+            $deviceId = null;
+        }
+
+        $data = $this->reportService->deviceDeepDive($deviceId, $since, $page, $perPage);
 
         return response()->json($data);
     }
 
     /**
-     * Parse date floor from request input, defaulting to 2026-09-01 (since launch).
+     * Return blueprint state value distribution and latest per-device selections as JSON.
+     */
+    public function blueprint(Request $request): JsonResponse
+    {
+        $sinceParam = $request->query('since', 'since_launch');
+        $rangeKey = $this->normalizeRangeKey($sinceParam);
+
+        $rollup = $this->getOrGenerateRollup($rangeKey);
+
+        return response()->json(array_merge($rollup['blueprint'], [
+            'generated_at' => $rollup['generated_at'],
+        ]));
+    }
+
+    /**
+     * Get cached rollup or generate cold-start fallback payload.
+     */
+    protected function getOrGenerateRollup(string $rangeKey): array
+    {
+        $cached = \Illuminate\Support\Facades\Cache::get("telemetry:rollup:{$rangeKey}");
+        if ($cached && is_array($cached) && isset($cached['generated_at'])) {
+            return $cached;
+        }
+
+        $since = $this->parseSince($rangeKey);
+        $generatedAt = Carbon::now()->toIso8601String();
+
+        $payload = [
+            'generated_at' => $generatedAt,
+            'range' => $rangeKey,
+            'summary' => $this->reportService->summary($since),
+            'blueprint' => $this->reportService->blueprint($since),
+            'dwell' => $this->reportService->dwell($since),
+        ];
+
+        \Illuminate\Support\Facades\Cache::put("telemetry:rollup:{$rangeKey}", $payload, now()->addHours(24));
+
+        return $payload;
+    }
+
+    protected function normalizeRangeKey(?string $since): string
+    {
+        if (empty($since) || $since === 'since_launch') {
+            return 'since_launch';
+        }
+
+        return in_array($since, ['30d', '7d', '24h', '12h', '6h', '3h', '1h', 'all']) ? $since : 'custom';
+    }
+
+    /**
+     * Parse date floor from request input, defaulting to 2026-09-09 (since launch).
      */
     protected function parseSince(?string $since): Carbon
     {
@@ -81,4 +150,5 @@ class TelemetryApiController extends Controller
             ),
         };
     }
+
 }
