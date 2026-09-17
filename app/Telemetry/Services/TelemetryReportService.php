@@ -360,7 +360,7 @@ class TelemetryReportService
      *
      * @return array{
      *     total: int,
-     *     series: array{labels: array<int, string>, new: array<int, int>, cumulative: array<int, int>, active: array<int, int>},
+     *     series: array{labels: array<int, string>, new: array<int, int>, cumulative: array<int, int>, active: array<int, int>, returning: array<int, int>},
      *     bucket: string,
      *     devices: array{data: array<int, array{device_id: ?string, last_seen: string, event_rows: int}>, current_page: int, last_page: int, per_page: int, total: int}
      * }
@@ -384,7 +384,7 @@ class TelemetryReportService
         // 2. Paginated device list (delegated — reusable for page navigation without recomputing series)
         $devicesPayload = $this->devicesPage($since, $page, $perPage, $totalDistinctDevices);
 
-        // 3. Compute bucketed series for Chart (New, Cumulative, Active)
+        // 3. Compute bucketed series for Chart (New, Cumulative, Active, Returning)
         [$bucketLabel, $seriesData] = $this->buildChartSeries($since);
 
         return [
@@ -841,9 +841,12 @@ class TelemetryReportService
     }
 
     /**
-     * Generate mobile-friendly time buckets and calculate New, Cumulative, and Active metrics.
+     * Generate mobile-friendly time buckets and calculate New, Cumulative, Active, and Returning metrics.
      *
-     * @return array{0: string, 1: array{labels: array<int, string>, new: array<int, int>, cumulative: array<int, int>, active: array<int, int>}}
+     * "Returning" per bucket = active devices in that bucket that were NOT first seen in that same
+     * bucket (i.e. active minus new) — devices coming back after their first-in-range appearance.
+     *
+     * @return array{0: string, 1: array{labels: array<int, string>, new: array<int, int>, cumulative: array<int, int>, active: array<int, int>, returning: array<int, int>}}
      */
     protected function buildChartSeries(Carbon $since): array
     {
@@ -961,6 +964,7 @@ class TelemetryReportService
         $newSeries = [];
         $cumSeries = [];
         $activeSeries = [];
+        $returningSeries = [];
         $runningCumulative = 0;
 
         foreach ($buckets as $b) {
@@ -968,10 +972,18 @@ class TelemetryReportService
             $activeCount = count($b['active_devices']);
             $runningCumulative += $newCount;
 
+            // Returning = active devices in this bucket that are not first-seen in this bucket.
+            // Every new device is also active in its first bucket, so returning = active - new.
+            $returningCount = $activeCount - $newCount;
+            if ($returningCount < 0) {
+                $returningCount = 0;
+            }
+
             $labels[] = $b['label'];
             $newSeries[] = $newCount;
             $cumSeries[] = $runningCumulative;
             $activeSeries[] = $activeCount;
+            $returningSeries[] = $returningCount;
         }
 
         return [
@@ -981,6 +993,7 @@ class TelemetryReportService
                 'new' => $newSeries,
                 'cumulative' => $cumSeries,
                 'active' => $activeSeries,
+                'returning' => $returningSeries,
             ],
         ];
     }

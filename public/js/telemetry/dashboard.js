@@ -11,7 +11,7 @@ function telemetryDashboard() {
         loading: false,
         summaryData: {
             total: 0,
-            series: { labels: [], new: [], cumulative: [], active: [] },
+            series: { labels: [], new: [], cumulative: [], active: [], returning: [] },
             bucket: '',
             devices: { data: [], current_page: 1, last_page: 1, total: 0 }
         },
@@ -183,6 +183,7 @@ function telemetryDashboard() {
             if (this.metric === 'new') return 'New Devices';
             if (this.metric === 'cumulative') return 'Cumulative Devices';
             if (this.metric === 'active') return 'Active Devices';
+            if (this.metric === 'returning') return 'Returning Devices';
             return 'Devices';
         },
 

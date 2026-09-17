@@ -11,7 +11,7 @@
         </div>
     </div>
 
-    <!-- 3-way metric toggle -->
+    <!-- 4-way metric toggle -->
     <div class="flex bg-slate-950 p-1 rounded-lg border border-slate-800 text-xs">
         <button 
             @click="toggleMetric('new')" 
@@ -30,6 +30,12 @@
             :class="metric === 'active' ? 'bg-blue-600 text-white font-semibold shadow' : 'text-slate-400 hover:text-slate-200'"
             class="metric-btn flex-1 py-1 rounded-md text-center transition-all">
             Active
+        </button>
+        <button 
+            @click="toggleMetric('returning')" 
+            :class="metric === 'returning' ? 'bg-blue-600 text-white font-semibold shadow' : 'text-slate-400 hover:text-slate-200'"
+            class="metric-btn flex-1 py-1 rounded-md text-center transition-all">
+            Returning
         </button>
     </div>
 
