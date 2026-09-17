@@ -310,15 +310,27 @@ class AuthController
                 $user->update(['google_id' => $googleId]);
             }
 
+            // Social sign-in proves ownership of the email address, so mark any
+            // previously-unverified account as verified now that we trust it.
+            if (! $user->hasVerifiedEmail()) {
+                $user->markEmailAsVerified();
+            }
+
             return $user;
         }
 
-        return User::create([
+        $user = User::create([
             'name' => $name,
             'email' => $email,
             'google_id' => $googleId,
             'password' => 'social-auth-placeholder-value',
         ]);
+
+        // The provider (Google/Apple) has already verified this email, so stamp
+        // email_verified_at rather than leaving the account as unverified.
+        $user->markEmailAsVerified();
+
+        return $user;
     }
 
     /**

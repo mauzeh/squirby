@@ -173,11 +173,17 @@ class GoogleOAuthRedirectTest extends TestCase
             'name' => 'Test Athlete',
             'google_id' => 'google-sub-789',
         ]);
+
+        // Google verified the email, so the new account must be marked verified
+        // (not left as unverified).
+        $this->assertTrue(
+            User::where('email', 'athlete@example.com')->first()->hasVerifiedEmail()
+        );
     }
 
     public function test_google_callback_existing_user_links_google_id(): void
     {
-        $user = User::factory()->create([
+        $user = User::factory()->unverified()->create([
             'email' => 'existing@example.com',
             'name' => 'Existing Athlete',
             'google_id' => null,
@@ -220,6 +226,10 @@ class GoogleOAuthRedirectTest extends TestCase
             'google_id' => 'google-sub-456',
             'name' => 'Existing Athlete', // Name should not be overwritten
         ]);
+
+        // Linking a previously-unverified account to Google should verify it,
+        // since Google has confirmed ownership of the email.
+        $this->assertTrue($user->refresh()->hasVerifiedEmail());
     }
 
     // ─── googleCallback — error ───────────────────────────────────
