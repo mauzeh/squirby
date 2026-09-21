@@ -19,7 +19,23 @@ return [
 
     'allowed_methods' => ['GET', 'POST', 'DELETE', 'OPTIONS'],
 
-    'allowed_origins' => ['*'],
+    /*
+    | Explicit web origins. A wildcard ('*') cannot be used here because the
+    | web client flushes telemetry via navigator.sendBeacon, which the browser
+    | always sends with credentials mode 'include'. Per the CORS spec a
+    | credentialed request may not receive 'Access-Control-Allow-Origin: *' —
+    | the response must echo the concrete request origin. Listing origins
+    | explicitly makes Laravel's CORS handler reflect the matched origin and
+    | (with supports_credentials below) emit 'Access-Control-Allow-Credentials'.
+    | Override via the CORS_ALLOWED_ORIGINS env var (comma-separated).
+    */
+    'allowed_origins' => array_values(array_filter(array_map(
+        'trim',
+        explode(',', (string) env(
+            'CORS_ALLOWED_ORIGINS',
+            'https://flagship.squirby.ai,https://app.squirby.ai,http://localhost:5173'
+        ))
+    ))),
 
     'allowed_origins_patterns' => [],
 
@@ -29,6 +45,6 @@ return [
 
     'max_age' => 0,
 
-    'supports_credentials' => false,
+    'supports_credentials' => true,
 
 ];
