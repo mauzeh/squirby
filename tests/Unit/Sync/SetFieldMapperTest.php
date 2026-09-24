@@ -211,7 +211,7 @@ class SetFieldMapperTest extends TestCase
         $this->assertEquals(1500, $mapped['time']);
 
         // 12. banded — returns snake_case
-        $set = new LiftSet(['band_color' => 'Blue', 'reps' => 10]);
+        $set = new LiftSet(['band_color' => 'blue', 'reps' => 10]);
         $mapped = $this->mapper->mapFromColumns('banded', $set);
         $this->assertEquals('blue', $mapped['band_color']);
         $this->assertEquals(10, $mapped['reps']);

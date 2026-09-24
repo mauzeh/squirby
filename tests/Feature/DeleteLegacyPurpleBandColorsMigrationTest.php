@@ -24,8 +24,12 @@ class DeleteLegacyPurpleBandColorsMigrationTest extends TestCase
 
         $purpleSet2 = LiftSet::factory()->create([
             'lift_log_id' => $liftLog->id,
-            'band_color' => 'Purple',
+            'band_color' => 'purple',
         ]);
+        \Illuminate\Support\Facades\DB::table('lift_sets')
+            ->where('id', $purpleSet2->id)
+            ->update(['band_color' => 'Purple']);
+        $this->assertEquals('Purple', \Illuminate\Support\Facades\DB::table('lift_sets')->where('id', $purpleSet2->id)->value('band_color'));
 
         $greenSet = LiftSet::factory()->create([
             'lift_log_id' => $liftLog->id,
