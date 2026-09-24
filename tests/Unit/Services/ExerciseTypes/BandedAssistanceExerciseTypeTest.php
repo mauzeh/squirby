@@ -32,7 +32,7 @@ class BandedAssistanceExerciseTypeTest extends TestCase
     public function it_returns_validation_rules_from_config()
     {
         $expectedRules = [
-            'band_color' => 'required|string|in:red,blue,green',
+            'band_color' => 'required|string|in:orange,red,blue,green,black',
             'reps' => 'required|integer|min:1|max:100',
             'weight' => 'nullable|numeric|in:0',
         ];
@@ -184,7 +184,7 @@ class BandedAssistanceExerciseTypeTest extends TestCase
         $liftLog = LiftLog::factory()->create(['exercise_id' => $exercise->id]);
         LiftSet::factory()->create([
             'lift_log_id' => $liftLog->id,
-            'band_color' => 'red', // Lightest assistance band
+            'band_color' => 'orange', // Lightest assistance band
             'weight' => 0,
             'reps' => 15
         ]);

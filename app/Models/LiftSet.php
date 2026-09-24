@@ -48,6 +48,11 @@ class LiftSet extends Model
         'distance_unit' => 'string',
     ];
 
+    public function setBandColorAttribute($value): void
+    {
+        $this->attributes['band_color'] = $value !== null ? strtolower($value) : null;
+    }
+
     public function liftLog()
     {
         return $this->belongsTo(LiftLog::class);

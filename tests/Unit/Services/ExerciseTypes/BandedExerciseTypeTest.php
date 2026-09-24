@@ -32,7 +32,7 @@ class BandedExerciseTypeTest extends TestCase
     public function it_returns_validation_rules_from_config()
     {
         $expectedRules = [
-            'band_color' => 'required|string|in:red,blue,green',
+            'band_color' => 'required|string|in:orange,red,blue,green,black',
             'reps' => 'required|integer|min:1|max:100',
         ];
 
@@ -266,7 +266,7 @@ class BandedExerciseTypeTest extends TestCase
         $liftLog = LiftLog::factory()->create(['exercise_id' => $exercise->id]);
         LiftSet::factory()->create([
             'lift_log_id' => $liftLog->id,
-            'band_color' => 'green', // Assuming green is the highest band
+            'band_color' => 'black', // Assuming black is the highest band
             'weight' => 0,
             'reps' => 15
         ]);

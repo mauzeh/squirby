@@ -2,9 +2,11 @@
 
 return [
     'colors' => [
-        'red' => ['resistance' => 10, 'order' => 1],
-        'blue' => ['resistance' => 20, 'order' => 2],
-        'green' => ['resistance' => 30, 'order' => 3],
+        'orange' => ['order' => 1],
+        'red' => ['order' => 2],
+        'blue' => ['order' => 3],
+        'green' => ['order' => 4],
+        'black' => ['order' => 5],
     ],
     'default_reps_on_band_change' => 8,
     'max_reps_before_band_change' => 15,

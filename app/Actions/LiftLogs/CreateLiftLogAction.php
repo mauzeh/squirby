@@ -84,6 +84,10 @@ class CreateLiftLogAction
             $rules = array_merge($rules, $typeSpecificRules);
         }
 
+        if ($request->has('band_color') && is_string($request->input('band_color'))) {
+            $request->merge(['band_color' => strtolower($request->input('band_color'))]);
+        }
+
         $request->validate($rules);
     }
     

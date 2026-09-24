@@ -9,14 +9,10 @@ class BandService
         return config('bands.colors', []);
     }
 
-    public function getBandResistance(string $color): ?int
-    {
-        return config('bands.colors.' . $color . '.resistance');
-    }
-
     public function getNextHarderBand(string $currentColor, string $bandType): ?string
     {
         $bands = $this->getBands();
+        $currentColor = strtolower($currentColor);
         $currentOrder = $bands[$currentColor]['order'] ?? null;
 
         if ($currentOrder === null) {
@@ -48,6 +44,7 @@ class BandService
     public function getPreviousEasierBand(string $currentColor, string $bandType): ?string
     {
         $bands = $this->getBands();
+        $currentColor = strtolower($currentColor);
         $currentOrder = $bands[$currentColor]['order'] ?? null;
 
         if ($currentOrder === null) {

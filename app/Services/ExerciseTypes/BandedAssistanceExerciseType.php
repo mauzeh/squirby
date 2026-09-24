@@ -62,7 +62,9 @@ class BandedAssistanceExerciseType extends BaseExerciseType
         if (!isset($processedData['band_color']) || empty($processedData['band_color'])) {
             throw InvalidExerciseDataException::missingField('band_color', $this->getTypeName());
         }
-        
+
+        $processedData['band_color'] = strtolower($processedData['band_color']);
+
         // Validate band_color is valid
         $availableBands = array_keys(config('bands.colors', []));
         if (!in_array($processedData['band_color'], $availableBands)) {
@@ -104,7 +106,7 @@ class BandedAssistanceExerciseType extends BaseExerciseType
     {
         $bandColor = $liftLog->display_weight; // For banded exercises, display_weight returns band_color
         
-        if (empty($bandColor) || $bandColor === 'N/A') {
+        if (empty($bandColor) || strtolower($bandColor) === 'n/a') {
             return 'Band: N/A';
         }
         
@@ -243,6 +245,7 @@ class BandedAssistanceExerciseType extends BaseExerciseType
      */
     private function getNextBand(string $currentBand): ?string
     {
+        $currentBand = strtolower($currentBand);
         $bandConfig = config('bands.colors', []);
         $currentOrder = $bandConfig[$currentBand]['order'] ?? 0;
         

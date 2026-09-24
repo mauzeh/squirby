@@ -22,13 +22,6 @@ class BandedLiftLoggingTest extends TestCase
     {
         parent::setUp();
         $this->user = User::factory()->create();
-
-        // Mock the config helper for testing purposes
-        config(['bands.colors' => [
-            'red' => ['resistance' => 10, 'order' => 1],
-            'blue' => ['resistance' => 20, 'order' => 2],
-            'green' => ['resistance' => 30, 'order' => 3],
-        ]]);
     }
 
     #[\PHPUnit\Framework\Attributes\Test]
@@ -243,5 +236,78 @@ class BandedLiftLoggingTest extends TestCase
         $response->assertDontSee('1RM chart not available for banded exercises.');
         $response->assertSee('progressChart'); // Ensure the canvas element is present
         $response->assertSee('1RM Progress');
+    }
+
+    #[\PHPUnit\Framework\Attributes\Test]
+    public function orange_and_black_band_colors_validate_and_persist_successfully()
+    {
+        $this->actingAs($this->user);
+        $exercise = Exercise::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_type' => 'banded_resistance',
+        ]);
+
+        // Orange band
+        $response1 = $this->post(route('lift-logs.store'), [
+            'exercise_id' => $exercise->id,
+            'date' => Carbon::today()->toDateString(),
+            'reps' => 10,
+            'rounds' => 3,
+            'band_color' => 'orange',
+        ]);
+        $response1->assertSessionHasNoErrors();
+        $this->assertDatabaseHas('lift_sets', ['band_color' => 'orange']);
+
+        // Black band
+        $response2 = $this->post(route('lift-logs.store'), [
+            'exercise_id' => $exercise->id,
+            'date' => Carbon::today()->toDateString(),
+            'reps' => 10,
+            'rounds' => 3,
+            'band_color' => 'black',
+        ]);
+        $response2->assertSessionHasNoErrors();
+        $this->assertDatabaseHas('lift_sets', ['band_color' => 'black']);
+    }
+
+    #[\PHPUnit\Framework\Attributes\Test]
+    public function mixed_case_band_color_is_accepted_case_insensitively()
+    {
+        $this->actingAs($this->user);
+        $exercise = Exercise::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_type' => 'banded_resistance',
+        ]);
+
+        $response = $this->post(route('lift-logs.store'), [
+            'exercise_id' => $exercise->id,
+            'date' => Carbon::today()->toDateString(),
+            'reps' => 8,
+            'rounds' => 2,
+            'band_color' => 'Black',
+        ]);
+
+        $response->assertSessionHasNoErrors();
+        $this->assertDatabaseHas('lift_sets', ['band_color' => 'black']);
+    }
+
+    #[\PHPUnit\Framework\Attributes\Test]
+    public function unknown_band_color_purple_is_rejected()
+    {
+        $this->actingAs($this->user);
+        $exercise = Exercise::factory()->create([
+            'user_id' => $this->user->id,
+            'exercise_type' => 'banded_resistance',
+        ]);
+
+        $response = $this->post(route('lift-logs.store'), [
+            'exercise_id' => $exercise->id,
+            'date' => Carbon::today()->toDateString(),
+            'reps' => 10,
+            'rounds' => 3,
+            'band_color' => 'purple',
+        ]);
+
+        $response->assertSessionHasErrors('band_color');
     }
 }
