@@ -217,6 +217,16 @@ Each plan doc in `docs/plans/` follows this structure. Read all sections before 
 
 **IMPORTANT:** The plan/spec is reference architecture — NOT execution instructions. The `-prompt.md` file (from `docs/plans/template-prompt.md`) provides the execution steps. Read the plan for context, execute from the prompt.
 
+### File naming (plans & prompts)
+
+- A plan is `{plan-topic}-plan.md`.
+- When a plan is executed via multiple prompts, each prompt is
+  `{plan-topic}-p{N}-{prompt-topic-slug}-prompt.md` — the plan's topic, the prompt's sequence number
+  within that plan (`p1`, `p2`, …), and a short slug of that prompt's own topic.
+- A single-prompt plan may use `{plan-topic}-prompt.md`.
+- Do NOT include the app/repo name in the filename — the repository already scopes the app, so a prefix
+  like `logger-` is redundant. `{plan-topic}` is the subject of the work, not the app.
+
 ---
 
 ## 10. General Implementation Principles
