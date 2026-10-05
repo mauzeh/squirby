@@ -37,3 +37,9 @@ When adding columns to existing tables (`lift_logs`, `lift_sets`, `users`, `exer
 3. Add appropriate casts if needed
 4. Verify existing functionality still works (tests pass, web UI unaffected)
 5. If the column changes how existing data is interpreted (like moving cardio distance from `reps` to `distance`), update all upstream readers in the same PR
+
+## Local Environment & Dev Server
+
+- **Local dev loads `.env.local`, not `.env`.** This box has a complete, self-contained `.env.local` (its own `APP_KEY`, DB config, and `APP_URL=http://dev.quantifiedathletics.com:8000`). When adding or changing a dev-only setting, edit **`.env.local`** — editing `.env` alone will appear to work on the CLI (e.g. `php artisan config:show`, `tinker`) while the running HTTP server, which booted from `.env.local`, ignores it. To be safe, keep the key in both files. (Learned chasing a CORS failure where `.env` had the right value and `tinker` confirmed it, but the server kept using the hardcoded config fallback because `.env.local` lacked the key.)
+- **CORS allowed origins live in `CORS_ALLOWED_ORIGINS`** (comma-separated), read by `config/cors.php`. The Athlete app's dev server must be in this list or its sync/telemetry calls get blocked by CORS. When the Athlete dev server runs on a non-default port (e.g. `5500` instead of Vite's `5173`), add that `http://localhost:<port>` origin to `CORS_ALLOWED_ORIGINS` in `.env.local`. Wildcards are not usable here: telemetry is flushed with credentialed requests, so the response must echo a concrete origin.
+- **`artisan serve` reads env only at boot.** It does NOT hot-reload `.env`/`.env.local` changes. After editing env, you must restart the server process for it to take effect — a frontend (Vite) reload does nothing for the backend. If multiple `artisan serve` instances race for port 8000, the first to bind wins and the others fail silently, so make sure only one is running.
