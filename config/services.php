@@ -65,10 +65,15 @@ return [
         // (the configured 'url' host above is always allowed); otherwise the
         // configured 'url' is used. This prevents an attacker from crafting the
         // (unsigned) OAuth state to exfiltrate the issued token to their own host.
-        // Defaults cover the known athlete origins; override via env (comma-separated).
+        // Allowlist = the registered client apps of the sync backend. Defaults cover
+        // the known client origins (Athlete at squirby.app/flagship.squirby.ai, Prism
+        // at prism.squirby.ai, and localhost for local dev of any client); override
+        // via env (comma-separated). Note: production boxes set this via env, so the
+        // prod allowlist must ALSO include prism.squirby.ai there (see the OAuth
+        // multi-client plan) — this default is the fallback when env is unset.
         'allowed_redirect_hosts' => array_values(array_filter(array_map(
             'trim',
-            explode(',', (string) env('ATHLETE_ALLOWED_REDIRECT_HOSTS', 'squirby.app,flagship.squirby.ai,localhost'))
+            explode(',', (string) env('ATHLETE_ALLOWED_REDIRECT_HOSTS', 'squirby.app,flagship.squirby.ai,prism.squirby.ai,localhost'))
         ))),
     ],
 

@@ -64,17 +64,34 @@ class AuthController
     }
 
     /**
-     * Redirect to Google OAuth consent screen (server-side flow for athlete PWA).
+     * Redirect to Google OAuth consent screen (server-side flow for sync clients).
+     *
+     * Multi-client: the return origin is derived from the REQUESTING client, not
+     * hardcoded to one app. A client may supply ?redirect_origin=<its-origin>; it
+     * is allowlist-checked immediately via resolveSafeRedirectUrl() before being
+     * carried through the OAuth state, so an unsigned/attacker-supplied origin can
+     * never receive the minted token (it falls back to the configured default).
+     *
+     * Backward-compatible with the live Athlete flow: Athlete sends only device_id
+     * (no redirect_origin), so resolveSafeRedirectUrl(null) returns the configured
+     * default — byte-for-byte the previous behavior. The absent-param path is the
+     * existing single-client flow, unchanged.
      */
     public function googleRedirect(Request $request): RedirectResponse
     {
         $deviceId = $request->query('device_id', 'athlete-pwa');
-        $athleteUrl = config('services.athlete.url', 'https://squirby.app');
 
-        // Encode state as base64 JSON to survive the OAuth round-trip without sessions
+        // Allowlist-check the (optional, untrusted) client-supplied return origin.
+        // Absent → resolveSafeRedirectUrl(null) returns the configured default,
+        // preserving the existing Athlete behavior exactly.
+        $returnUrl = $this->resolveSafeRedirectUrl($request->query('redirect_origin'));
+
+        // Encode state as base64 JSON to survive the OAuth round-trip without sessions.
+        // The 'athlete_url' key is a FROZEN wire field (the clients + callback read it);
+        // it now carries the resolved per-client return origin, not a single config value.
         $state = base64_encode(json_encode([
             'device_id' => $deviceId,
-            'athlete_url' => $athleteUrl,
+            'athlete_url' => $returnUrl,
         ]));
 
         return Socialite::driver('google')

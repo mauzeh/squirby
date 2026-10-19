@@ -2,8 +2,11 @@
 
 **Status:** proposed (not yet applied). **Repo:** `logger` only. **Driver:** Prism (`prism.squirby.ai`) is
 joining the sync auth flow as a second first-class client of the `/api/sync` auth endpoints, alongside the
-live Athlete PWA. **Hard constraint:** **Athlete is live in production with real users — its auth flow must
-not be disrupted.** Every change below is additive/backward-compatible for Athlete.
+live Athlete PWA. **Hard constraint (user-stated, non-negotiable):** **Athlete is live in production with
+real users and must continue to work with ZERO changes — no Athlete-repo edits, no Athlete redeploy, no
+change to Athlete's behavior.** The safe scope of this change is §2a + §2b only (Logger-side, additive);
+the rename (§3) and the latent debt (§5) are deferred to separate later changes. See §0a for the full
+safety guarantee and §7/§7a for sequencing + the regression-lock tests.
 
 > This is a code + ops note for Logger. It explains the real modeling error (not just "add a host to an
 > allowlist"), WHAT to change, WHY, the exact blast radius, and the safety rules that protect the live
@@ -14,6 +17,11 @@ not be disrupted.** Every change below is additive/backward-compatible for Athle
 
 ## 0. TL;DR
 
+0. **Non-negotiable safety guarantee: Athlete is NOT changed, at all.** No file in the Athlete repo is
+   edited, and Athlete is not redeployed. Athlete keeps sending exactly the request it sends today (only
+   `device_id`, no return origin), and Logger keeps responding to that request byte-for-byte as it does
+   today. The new behavior is OPT-IN and only Prism opts into it. This is the acceptance bar for the whole
+   change: if any step would alter Athlete's behavior, that step is wrong. (§0a)
 1. **The real problem is a single-client assumption baked into the design, not a missing allowlist entry.**
    The auth backend was modeled as if it serves exactly one app (Athlete). The return-origin for a minted
    token is read from Logger's OWN config, and the initiating client is ignored. Prism doesn't add a
@@ -31,6 +39,42 @@ not be disrupted.** Every change below is additive/backward-compatible for Athle
 5. **Latent debt the OAuth fix does NOT reach (§5):** the same single-client assumption is duplicated in the
    password-reset link and the `'athlete'` response key. Flagged, scoped out, not forgotten.
 6. **Nothing to do on Google (§6).** Prism is never a redirect target Google sees.
+
+---
+
+## 0a. The safety guarantee — Athlete is untouched (read this before anything else)
+
+The user's hard requirement: **Athlete must continue to work with zero changes.** This section states
+exactly why the plan satisfies that and what keeps it true. Every later section is subordinate to this one.
+
+**What makes it safe (the mechanism, not a promise).** The change adds an OPTIONAL return-origin input to
+`googleRedirect`. Athlete does not send it and will not start sending it. When the input is absent,
+`resolveSafeRedirectUrl(null)` returns the configured default — which is Athlete — so Logger's response to
+Athlete's request is byte-for-byte identical to today. The live Athlete flow is a strict SUBSET of the new
+flow; the new code path is only reachable when a client (Prism) actively supplies an origin.
+
+**Blast radius is Logger-only.**
+- **Zero Athlete-repo edits.** No file in the Athlete codebase is opened, modified, committed, or
+  redeployed as part of this work. If a step calls for touching Athlete, the step is wrong.
+- The entire change is in the **Logger** repo: one behavior change in `AuthController::googleRedirect`, one
+  production env line (`allowed_redirect_hosts` gains `prism.squirby.ai`), and tests.
+
+**Hard rules that keep Athlete safe (binding on implementation):**
+1. **Additive only.** `googleRedirect` gains the ability to READ a new optional `redirect_origin`. It does
+   NOT change what happens when that param is absent. The absent-param branch must remain the existing
+   behavior, unchanged.
+2. **No frozen wire names change in this PR.** The `athlete_url` state field, the `'athlete'` response key,
+   and the route paths stay exactly as they are (§4). Athlete parses these; touching them is a flag-day.
+3. **The rename (§3) is OUT of this change.** The `ATHLETE_*` → `SYNC_*` rename touches live Forge env vars —
+   the one realistic way to break the live box — and is cosmetic. It is deferred to its own separate change
+   (§7). This safety-first PR does not rename anything.
+4. **An automated test locks Athlete's path.** A test asserting "no `redirect_origin` → redirect goes to the
+   Athlete default" ships WITH the change and must pass. That test is the regression lock on this guarantee
+   (§7a).
+
+**How we prove it before shipping:** the test suite in §7a (absent → default, allowlisted → honored,
+non-allowlisted → falls back) plus a re-run of the full existing sync-auth suite (which already asserts
+Athlete's `athlete_url` state behavior, `GoogleOAuthRedirectTest.php`). Green on both = Athlete unchanged.
 
 ---
 
@@ -92,11 +136,13 @@ This is the security-sensitive hop: the client origin is **unsigned and attacker
 be allowlist-checked — never redirect a freshly-minted token to an arbitrary host. `resolveSafeRedirectUrl`
 already does exactly this; it has simply never been fed a real candidate.
 
-**Backward-compat (the live-Athlete safety guarantee):** Athlete keeps sending only `device_id`. With no
-`redirect_origin`, `resolveSafeRedirectUrl(null)` returns the config default — byte-for-byte today's
-behavior. The live flow is a strict subset of the new flow; Athlete cannot be disrupted by this change.
+**Backward-compat (the live-Athlete safety guarantee — see §0a):** Athlete keeps sending only `device_id`.
+With no `redirect_origin`, `resolveSafeRedirectUrl(null)` returns the config default — byte-for-byte today's
+behavior. **Implementation rule: do not alter the absent-param branch.** The new code only READS the param
+when present; when it is absent, `googleRedirect` must behave exactly as it does today (default origin into
+`state`). The live flow is a strict subset of the new flow; Athlete cannot be disrupted by this change.
 Prism's side (already built) sends only `device_id` today and adds `redirect_origin=window.location.origin`
-once this Logger change exists — the two land together.
+once this Logger change exists — the two land together. Nothing in the Athlete repo is edited.
 
 ### 2b. Allowlist entries — the client registry (required alongside §2a)
 
@@ -118,7 +164,11 @@ been **promoted from a safety net to a first-class concept**: the registered cli
 
 ---
 
-## 3. Recommended rename — `ATHLETE_*` → client-neutral
+## 3. Recommended rename — `ATHLETE_*` → client-neutral  *(DEFERRED — NOT part of the safe change; see §7)*
+
+> **Scope note:** This rename is cosmetic and touches live Forge env vars — the one realistic way to break
+> the live box. It is explicitly OUT of the safety-first change (§0a rule 3, §7 step 2) and is written here
+> only so the follow-up is planned. Do not do this as part of the Prism-unblocking PR.
 
 **Why.** `ATHLETE_APP_URL`, `ATHLETE_ALLOWED_REDIRECT_HOSTS`, `services.athlete.*`, and `$athleteUrl` all
 assert "there is one client and it's Athlete." That assertion is now FALSE. A client-neutral name stops a
@@ -241,14 +291,36 @@ launch. Existing test users and the dev account are unaffected.
 
 ## 7. Sequencing (keeps the risky-sounding diff away from the behavior fix)
 
-Recommended order, so the live-Athlete constraint is easy to reason about:
+Ordered so the live-Athlete constraint (§0a) is trivial to reason about. **Only step 1 is part of this
+safety-first change.** Steps 2 and 3 are explicitly deferred to their own later, separate changes — they are
+NOT bundled here, because bundling them is what would put Athlete at risk.
 
-1. **§2a + §2b — behavior fix Prism actually needs.** Small, additive, backward-compatible. Add a test that
-   (a) absent `redirect_origin` → falls back to default (Athlete's path, unchanged) and (b) an allowlisted
-   `redirect_origin` is honored and (c) a non-allowlisted one falls back.
-2. **§3 — purely-cosmetic rename**, as a SEPARATE change, with new-with-old env fallback and the inline-default
-   consolidation. Run the full sync auth test suite after.
-3. **§5 — multi-client reset + response-key** questions, deferred, each its own deliberate change.
+1. **§2a + §2b — the behavior fix Prism actually needs (THIS change).** Small, additive, backward-compatible,
+   Logger-only. Ships with the §7a test suite and a green re-run of the existing sync-auth suite. Athlete
+   untouched. **This is the whole scope of the safe PR.**
+2. **§3 — the cosmetic `ATHLETE_*` → `SYNC_*` rename — DEFERRED, separate change (not now).** It touches live
+   Forge env vars (the one realistic way to break the live box) and buys no functionality. When it is done
+   later, it uses new-with-old env fallback + the inline-default consolidation, and re-runs the full sync
+   auth suite. Keeping it out of the launch-unblocking change is a deliberate safety decision.
+3. **§5 — multi-client reset + response-key — DEFERRED, separate changes (not now).** Harmless to Prism's
+   pilot (Google-only, no password reset). Each gets its own deliberate change if/when needed.
+
+### 7a. The required tests (ship WITH step 1; the regression lock on §0a)
+
+Add to the Google-OAuth-redirect feature test (`tests/Feature/Sync/GoogleOAuthRedirectTest.php`):
+
+1. **Athlete path unchanged (the invariant lock).** A redirect request with NO `redirect_origin` (exactly
+   what Athlete sends — only `device_id`) produces a `state` carrying the Athlete default origin, and the
+   eventual callback redirects to the Athlete default. This test failing = the safety guarantee is broken;
+   it must be green before merge.
+2. **Prism path honored.** A request with `redirect_origin` set to an allowlisted host (e.g. local Prism, or
+   `prism.squirby.ai`) carries that origin through and the callback redirects there.
+3. **Untrusted origin rejected.** A request with a `redirect_origin` whose host is NOT allowlisted falls back
+   to the Athlete default (never redirects a minted token to an arbitrary host).
+
+Then re-run the FULL existing sync-auth suite (it already asserts Athlete's `athlete_url` state behavior at
+`GoogleOAuthRedirectTest.php` lines 108/149/216/258). Green on the new cases + green on the existing suite =
+proof Athlete is unchanged.
 
 ---
 

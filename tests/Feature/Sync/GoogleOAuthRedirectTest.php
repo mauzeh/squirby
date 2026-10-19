@@ -118,6 +118,102 @@ class GoogleOAuthRedirectTest extends TestCase
         $response->assertRedirect();
     }
 
+    // ─── googleRedirect — multi-client return origin (§2a) ────────
+    //
+    // These lock the safety guarantee of the single→multi-client change: the live
+    // Athlete flow (no redirect_origin) is byte-for-byte unchanged, a registered
+    // client's origin is honored, and an untrusted origin can never receive the
+    // token. See docs/plans/sync-oauth-redirect-allowlist-multi-client.md §0a/§7a.
+
+    public function test_google_redirect_without_origin_falls_back_to_athlete_default(): void
+    {
+        // Exactly what live Athlete sends today: only device_id, no redirect_origin.
+        // The resolved state origin MUST be the configured default (Athlete). This is
+        // the regression lock on "Athlete is not changed".
+        Socialite::shouldReceive('driver')->with('google')->once()->andReturnSelf();
+        Socialite::shouldReceive('stateless')->once()->andReturnSelf();
+        Socialite::shouldReceive('redirectUrl')->once()->andReturnSelf();
+
+        Socialite::shouldReceive('with')
+            ->once()
+            ->withArgs(function ($args) {
+                $state = json_decode(base64_decode($args['state']), true);
+
+                return $state['athlete_url'] === config('services.athlete.url');
+            })
+            ->andReturnSelf();
+
+        Socialite::shouldReceive('redirect')
+            ->once()
+            ->andReturn(redirect('https://accounts.google.com'));
+
+        $response = $this->get('/api/sync/auth/google/redirect?device_id=athlete-device');
+
+        $response->assertRedirect();
+    }
+
+    public function test_google_redirect_honors_allowlisted_client_origin(): void
+    {
+        // A registered client (Prism) supplies its origin; it must be carried through
+        // state verbatim so the token is returned to that client.
+        config(['services.athlete.allowed_redirect_hosts' => ['prism.squirby.ai']]);
+
+        Socialite::shouldReceive('driver')->with('google')->once()->andReturnSelf();
+        Socialite::shouldReceive('stateless')->once()->andReturnSelf();
+        Socialite::shouldReceive('redirectUrl')->once()->andReturnSelf();
+
+        Socialite::shouldReceive('with')
+            ->once()
+            ->withArgs(function ($args) {
+                $state = json_decode(base64_decode($args['state']), true);
+
+                return $state['athlete_url'] === 'https://prism.squirby.ai';
+            })
+            ->andReturnSelf();
+
+        Socialite::shouldReceive('redirect')
+            ->once()
+            ->andReturn(redirect('https://accounts.google.com'));
+
+        $response = $this->get(
+            '/api/sync/auth/google/redirect?device_id=prism-device&redirect_origin=' .
+            urlencode('https://prism.squirby.ai')
+        );
+
+        $response->assertRedirect();
+    }
+
+    public function test_google_redirect_rejects_untrusted_origin_and_falls_back_to_default(): void
+    {
+        // An attacker-supplied origin that is NOT on the allowlist must never make it
+        // into state; it falls back to the configured default so the minted token can
+        // only ever return to a trusted client.
+        Socialite::shouldReceive('driver')->with('google')->once()->andReturnSelf();
+        Socialite::shouldReceive('stateless')->once()->andReturnSelf();
+        Socialite::shouldReceive('redirectUrl')->once()->andReturnSelf();
+
+        Socialite::shouldReceive('with')
+            ->once()
+            ->withArgs(function ($args) {
+                $state = json_decode(base64_decode($args['state']), true);
+
+                return $state['athlete_url'] === config('services.athlete.url')
+                    && $state['athlete_url'] !== 'https://evil.example.com';
+            })
+            ->andReturnSelf();
+
+        Socialite::shouldReceive('redirect')
+            ->once()
+            ->andReturn(redirect('https://accounts.google.com'));
+
+        $response = $this->get(
+            '/api/sync/auth/google/redirect?device_id=test-device&redirect_origin=' .
+            urlencode('https://evil.example.com')
+        );
+
+        $response->assertRedirect();
+    }
+
     // ─── googleCallback — success ─────────────────────────────────
 
     public function test_google_callback_creates_user_and_redirects_with_token(): void
