@@ -400,4 +400,97 @@ class PrismChangesTest extends TestCase
                 'status' => 'error',
             ]);
     }
+
+    public function test_changes_query_count_is_flat_under_growing_data(): void
+    {
+        $user = User::factory()->create();
+        Sanctum::actingAs($user);
+
+        // 1. Seed small dataset: 1 program, 2 cells, 2 exercise overlays, 1 preferences row
+        PrismProgram::create([
+            'gym_id' => 'the-cove',
+            'program_uuid' => 'prog-small-1',
+            'name' => 'Small Program',
+            'week_count' => 1,
+            'metadata' => ['note' => 'small'],
+            'device_id' => 'dev-1',
+        ]);
+
+        for ($i = 1; $i <= 2; $i++) {
+            PrismProgramCell::create([
+                'gym_id' => 'the-cove',
+                'program_uuid' => 'prog-small-1',
+                'cell_id' => "w1d{$i}",
+                'text' => "Exercise {$i}",
+                'device_id' => 'dev-1',
+            ]);
+        }
+
+        for ($i = 1; $i <= 2; $i++) {
+            PrismExerciseOverlayRecord::create([
+                'gym_id' => 'the-cove',
+                'exercise_id' => "exercise-small-{$i}",
+                'record' => ['name' => "Custom {$i}"],
+                'device_id' => 'dev-1',
+                'deleted_at' => null,
+            ]);
+        }
+
+        PrismPreference::create([
+            'gym_id' => 'the-cove',
+            'data' => ['color' => 'blue'],
+            'device_id' => 'dev-1',
+        ]);
+
+        \Illuminate\Support\Facades\DB::flushQueryLog();
+        $responseSmall = $this->withHeaders(['X-Device-Id' => 'dev-1'])
+            ->getJson('/api/sync/prism/the-cove/changes');
+        $smallCount = count(\Illuminate\Support\Facades\DB::getQueryLog());
+
+        $responseSmall->assertStatus(200);
+
+        // 2. Seed large dataset into the same gym: 10 programs, 50 cells, 30 overlays
+        for ($p = 1; $p <= 10; $p++) {
+            PrismProgram::create([
+                'gym_id' => 'the-cove',
+                'program_uuid' => "prog-large-{$p}",
+                'name' => "Large Program {$p}",
+                'week_count' => 5,
+                'metadata' => ['note' => "large-{$p}"],
+                'device_id' => 'dev-1',
+            ]);
+        }
+
+        for ($c = 1; $c <= 50; $c++) {
+            $progIndex = ($c % 10) + 1;
+            PrismProgramCell::create([
+                'gym_id' => 'the-cove',
+                'program_uuid' => "prog-large-{$progIndex}",
+                'cell_id' => "w1d{$c}",
+                'text' => "Cell text {$c}",
+                'device_id' => 'dev-1',
+            ]);
+        }
+
+        for ($e = 1; $e <= 30; $e++) {
+            PrismExerciseOverlayRecord::create([
+                'gym_id' => 'the-cove',
+                'exercise_id' => "exercise-large-{$e}",
+                'record' => ['name' => "Custom Overlay {$e}"],
+                'device_id' => 'dev-1',
+                'deleted_at' => ($e % 5 === 0) ? now() : null,
+            ]);
+        }
+
+        \Illuminate\Support\Facades\DB::flushQueryLog();
+        $responseLarge = $this->withHeaders(['X-Device-Id' => 'dev-1'])
+            ->getJson('/api/sync/prism/the-cove/changes');
+        $largeCount = count(\Illuminate\Support\Facades\DB::getQueryLog());
+
+        $responseLarge->assertStatus(200);
+
+        // 3. Assert counts are equal and small (<= 12)
+        $this->assertSame($smallCount, $largeCount);
+        $this->assertLessThanOrEqual(12, $smallCount);
+    }
 }
