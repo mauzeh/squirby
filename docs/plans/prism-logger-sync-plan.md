@@ -67,6 +67,14 @@ live in migrations under `database/migrations/`; models in `app/Sync/Models/`.
 | `prism_exercise_overlay` | `(gym_id, exercise_id)` | `record` (json), `device_id`, `deleted_at` | **soft-delete** — exercises can be removed |
 | `prism_preferences` | `(gym_id)` | `data` (json), `device_id` | whole-value upsert |
 
+**Timestamp precision (cursor-critical).** Every data table's `updated_at` is the delta-pull cursor basis,
+so it MUST be **microsecond precision and server-stamped** — NOT the default second-resolution
+`timestamps()`. Use `$table->timestamps(6)` (MySQL `TIMESTAMP(6)` / `DATETIME(6)`), and the write path
+stamps `updated_at` server-side (Eloquent's automatic timestamping, which is server-clock, is correct —
+do not accept a client-supplied `updated_at`). Second-resolution timestamps would let two edits in the
+same wall-clock second share an instant, and a strict `>` cursor would then silently skip the second one.
+See the `/changes` inclusive-boundary rule below.
+
 Notes:
 - `cell_id` is Prism's `w{week}d{day}` string. `program_uuid` is Prism's immutable program identity (a
   UUID string). `exercise_id` is Prism's stable exercise slug/id.
@@ -81,24 +89,33 @@ Notes:
 
 ### Endpoints
 
-All under the existing `/api/sync` group (registered in `routes/sync.php`), inside the authenticated
-middleware stack `['auth:sanctum', 'throttle:sync-per-user', 'throttle:sync-global', 'device-id',
-'log-sync-request']`. Controllers in `app/Sync/Controllers/`, business logic in `app/Sync/Actions/`.
+All under the existing `/api/sync` group (registered in `routes/sync.php`), with `auth:sanctum`,
+`device-id`, and `log-sync-request`, plus **Prism-dedicated throttles** (see below — the existing
+`sync-per-user` 10/min bucket is too small for a 5-second poll and must NOT be reused for the poll).
+Controllers in `app/Sync/Controllers/`, business logic in `app/Sync/Actions/`.
 
-| Method + path | Controller@action | Does |
-|---------------|-------------------|------|
-| `POST /prism/{gym}/programs/{program_uuid}` | `PrismProgramController@storeProgram` | upsert one `prism_programs` row (metadata) |
-| `POST /prism/{gym}/programs/{program_uuid}/cells` | `PrismProgramController@storeCells` | upsert N `prism_program_cells` rows (a small batch of changed cells for one program) |
-| `POST /prism/{gym}/exercises` | `PrismExerciseController@store` | upsert / tombstone N `prism_exercise_overlay` rows |
-| `POST /prism/{gym}/preferences` | `PrismPreferencesController@store` | whole-value upsert of the `prism_preferences` row |
-| `GET  /prism/{gym}/changes?since=<cursor>` | `PrismChangesController@index` | delta pull: all rows for the gym with `updated_at > since`; `since` absent ⇒ full gym state (cold start) |
+| Method + path | Controller@action | Throttle | Does |
+|---------------|-------------------|----------|------|
+| `POST /prism/{gym}/programs/{program_uuid}` | `PrismProgramController@storeProgram` | `prism-write` | upsert one `prism_programs` row (metadata) |
+| `POST /prism/{gym}/programs/{program_uuid}/cells` | `PrismProgramController@storeCells` | `prism-write` | upsert N `prism_program_cells` rows (small batch of changed cells for one program) |
+| `POST /prism/{gym}/exercises` | `PrismExerciseController@store` | `prism-write` | upsert / tombstone N `prism_exercise_overlay` rows |
+| `POST /prism/{gym}/preferences` | `PrismPreferencesController@store` | `prism-write` | whole-value upsert of the `prism_preferences` row |
+| `GET  /prism/{gym}/changes?since=<cursor>` | `PrismChangesController@index` | `prism-poll` | delta pull: all gym rows with `updated_at >= since`; `since` absent ⇒ full gym state (cold start) |
 
 - `{gym}` is the gym id in the path; the controller validates it exists in `gyms` (404 if not) — the only
   gym check in Phase 1 (trust-on-login otherwise).
-- **Cursor:** one per gym. The `/changes` response returns a fresh `cursor` = the max `updated_at` (and
-  max `deleted_at` on the overlay) across the gym's rows, following the Athlete `ChangesController`
-  high-water-mark pattern (never rewind behind the incoming `since`). Cold start = `since` absent ⇒
-  `updated_at > '0'` effectively returns everything.
+- **Rate limits (cursor- and poll-aware).** Prism polls every ~5s = ~12 req/min per tab, so the poll must
+  not share Athlete's 10/min `sync-per-user` bucket (it would 429 within a minute). Add dedicated limiters
+  in `config/rate_limits.php` + `AppServiceProvider`: `prism-poll` keyed per user at **≥ 60/min** (headroom
+  for multiple tabs/windows) and `prism-write` keyed per user at a generous write ceiling (e.g. 120/min).
+  These are read-mostly/cheap-write endpoints, so the ceilings protect the box without starving a normal
+  session.
+- **Cursor:** one per gym, with an **inclusive boundary**. The `/changes` query is `updated_at >= since`
+  (NOT strict `>`), and the response `cursor` is the max `updated_at`/`deleted_at` across the returned
+  rows, following the Athlete `ChangesController` high-water-mark pattern (never rewind behind the incoming
+  `since`). The inclusive boundary re-sends the row exactly at the cursor instant; that is harmless because
+  the client de-duplicates by value (per-cell text diff), and it is what prevents a same-microsecond second
+  write from being skipped. Cold start = `since` absent ⇒ return everything for the gym.
 - **Push batches are small and bounded** (a handful of changed cells / records per request — the surgical
   model), NOT 500-row bulk like Athlete's log batch. Each is a single `upsert()` call on the model.
 
@@ -147,14 +164,19 @@ fresh code.
   tables (migrations + `app/Sync/Models/` models), `$fillable`/`casts()`, forward-only + reversible
   `down()`. No endpoints yet. Checkpoint: migration runs; a model unit test round-trips each table.
   **(Detailed below.)**
-- **M2 — Push endpoints + actions.** `PrismProgramController` (program + cells), `PrismExerciseController`,
-  `PrismPreferencesController`; `app/Sync/Actions/` upsert actions; routes in `routes/sync.php` inside the
-  authed group; gym-exists validation. Feature tests per endpoint (upsert creates, re-upsert updates,
-  tombstone sets `deleted_at`, unknown gym → 404, unauthenticated → 401).
+- **M2 — Push endpoints + actions + Prism throttles.** `PrismProgramController` (program + cells),
+  `PrismExerciseController`, `PrismPreferencesController`; `app/Sync/Actions/` upsert actions; routes in
+  `routes/sync.php` with the new `prism-write` / `prism-poll` throttles (registered in
+  `config/rate_limits.php` + `AppServiceProvider`, sized per the rate-limit note above); gym-exists
+  validation. Feature tests per endpoint (upsert creates, re-upsert updates, tombstone sets `deleted_at`,
+  unknown gym → 404, unauthenticated → 401) plus a throttle test proving a sustained 5s-poll cadence does
+  NOT get 429'd under `prism-poll`.
 - **M3 — The `/changes` delta pull.** `PrismChangesController` with the one-cursor-per-gym high-water-mark
-  (mirroring Athlete's `ChangesController`), cold-start (absent `since`) = full dump, tombstones included.
-  Feature tests: delta returns only `updated_at > since`; cold start returns all; cursor never rewinds;
-  removed overlay rows appear as tombstones.
+  (mirroring Athlete's `ChangesController`), an **inclusive `updated_at >= since` boundary**, cold-start
+  (absent `since`) = full dump, tombstones included. Feature tests: delta returns rows at-or-after `since`;
+  **two cells written in the same microsecond-second are BOTH delivered** (the inclusive-boundary
+  regression test — microsecond precision + `>=`); cold start returns all; cursor never rewinds; removed
+  overlay rows appear as tombstones.
 - **M4 — Cost + hardening pass.** Confirm every write is a single-row upsert and every read is indexed
   (add the `(gym_id, updated_at)` indexes); confirm no N+1 in `/changes`; dead-code sweep; full suite.
 
@@ -191,20 +213,24 @@ New models in `app/Sync/Models/` (mirroring `AthleteBlueprint` — `$fillable`, 
 
 ### Schema detail (exact)
 
+All data tables use **`timestamps(6)`** (microsecond precision) — NOT the default second-resolution
+`timestamps()` — because `updated_at` is the delta cursor basis (see the cursor rule). Timestamps are
+server-stamped (Eloquent automatic timestamping); never accept a client `updated_at`.
+
 ```
-gyms:                      id (string, PK), name (string), timestamps
+gyms:                      id (string, PK), name (string), timestamps          -- (precision moot; no cursor)
 prism_programs:            id, gym_id (string, FK gyms.id, cascade), program_uuid (string),
                            name (string), week_count (unsignedSmallInt), metadata (json nullable),
-                           device_id (string 36 nullable), timestamps
+                           device_id (string 36 nullable), timestamps(6)
                            UNIQUE (gym_id, program_uuid); INDEX (gym_id, updated_at)
 prism_program_cells:       id, gym_id (string, FK), program_uuid (string), cell_id (string 16),
-                           text (longText), device_id (string 36 nullable), timestamps
+                           text (longText), device_id (string 36 nullable), timestamps(6)
                            UNIQUE (gym_id, program_uuid, cell_id); INDEX (gym_id, updated_at)
 prism_exercise_overlay:    id, gym_id (string, FK), exercise_id (string), record (json nullable),
-                           device_id (string 36 nullable), deleted_at (timestamp nullable), timestamps
+                           device_id (string 36 nullable), deleted_at (timestamp(6) nullable), timestamps(6)
                            UNIQUE (gym_id, exercise_id); INDEX (gym_id, updated_at)
 prism_preferences:         id, gym_id (string, FK, UNIQUE), data (json), device_id (string 36 nullable),
-                           timestamps
+                           timestamps(6)
 ```
 
 ### Checkpoint
@@ -253,8 +279,11 @@ real against the dev DB (per `project-conventions.md` — a migration is not don
 - [ ] `gyms` seeded with exactly `the-cove` and `flagship`.
 - [ ] Push endpoints upsert single rows keyed by the composite keys; re-push updates in place (no dupes).
 - [ ] Exercise removal writes a `deleted_at` tombstone that the delta pull returns.
-- [ ] `/changes?since=` returns only `updated_at > since`; absent `since` returns full gym state; the
-      cursor is a non-rewinding high-water mark.
+- [ ] `updated_at` is `timestamps(6)` microsecond precision, server-stamped; `/changes` uses an inclusive
+      `>= since` boundary; two same-second writes are both delivered (regression test); absent `since`
+      returns full gym state; the cursor is a non-rewinding high-water mark.
+- [ ] Dedicated `prism-poll` (≥60/min) and `prism-write` throttles exist; a sustained 5s poll cadence does
+      not 429.
 - [ ] Unknown gym → 404; unauthenticated → 401; validation failure → 422 — all via the centralized shaping.
 - [ ] Full suite green (`php artisan test --parallel`); existing web UI + Athlete sync unaffected.
 - [ ] No git commits by the executor; no Pint; no destructive DB commands.
