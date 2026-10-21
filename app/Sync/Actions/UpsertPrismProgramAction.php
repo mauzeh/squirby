@@ -21,6 +21,7 @@ class UpsertPrismProgramAction
                 'name' => $attributes['name'],
                 'week_count' => $attributes['week_count'],
                 'metadata' => $attributes['metadata'] ?? null,
+                'archived_at' => $attributes['archived_at'] ?? null,
                 'device_id' => $attributes['device_id'] ?? null,
             ]
         );

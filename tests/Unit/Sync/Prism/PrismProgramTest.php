@@ -59,6 +59,7 @@ class PrismProgramTest extends TestCase
             'name' => 'Hypertrophy Block B',
             'week_count' => 8,
             'metadata' => ['tags' => ['full-body']],
+            'archived_at' => '2026-10-21T10:00:00Z',
         ]);
 
         $this->assertSame(1, PrismProgram::where('gym_id', 'the-cove')->where('program_uuid', 'prog-uuid-1')->count());
@@ -66,6 +67,8 @@ class PrismProgramTest extends TestCase
         $this->assertSame('Hypertrophy Block B', $fresh->name);
         $this->assertSame(8, $fresh->week_count);
         $this->assertSame(['tags' => ['full-body']], $fresh->metadata);
+        $this->assertInstanceOf(\Illuminate\Support\Carbon::class, $fresh->archived_at);
+        $this->assertSame('2026-10-21 10:00:00', $fresh->archived_at->format('Y-m-d H:i:s'));
 
         // 4. Upsert on composite unique key [gym_id, program_uuid] updates in place rather than inserting duplicate
         PrismProgram::upsert(

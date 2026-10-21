@@ -91,6 +91,7 @@ class PrismChangesTest extends TestCase
             'name' => 'Strength Cycle',
             'week_count' => 4,
             'metadata' => ['author' => 'Coach'],
+            'archived_at' => null,
             'updated_at' => $t->toIso8601String(),
         ], $programs[0]);
 
@@ -492,5 +493,55 @@ class PrismChangesTest extends TestCase
         // 3. Assert counts are equal and small (<= 12)
         $this->assertSame($smallCount, $largeCount);
         $this->assertLessThanOrEqual(12, $smallCount);
+    }
+
+    public function test_changes_programs_carry_archived_at_and_archive_appears_in_since_delta(): void
+    {
+        $user = User::factory()->create();
+        Sanctum::actingAs($user);
+
+        $tz = config('app.timezone');
+        $t1 = Carbon::parse('2026-09-01 10:00:00', $tz);
+        $tSince = Carbon::parse('2026-09-01 12:00:00', $tz);
+        $tArchive = Carbon::parse('2026-09-01 14:00:00', $tz);
+
+        $program = PrismProgram::create([
+            'gym_id' => 'the-cove',
+            'program_uuid' => 'prog-archived',
+            'name' => 'To Be Archived',
+            'week_count' => 4,
+            'metadata' => null,
+            'archived_at' => null,
+        ]);
+        PrismProgram::where('id', $program->id)->update(['updated_at' => $t1]);
+
+        // Cold start shows program with archived_at = null
+        $responseCold = $this->withHeaders(['X-Device-Id' => 'dev-1'])
+            ->getJson('/api/sync/prism/the-cove/changes');
+        $responseCold->assertStatus(200);
+        $this->assertCount(1, $responseCold->json('programs'));
+        $this->assertNull($responseCold->json('programs.0.archived_at'));
+
+        // Query with since: program updated at t1 is excluded
+        $responseSinceBefore = $this->withHeaders(['X-Device-Id' => 'dev-1'])
+            ->getJson('/api/sync/prism/the-cove/changes?since=' . urlencode($tSince->toIso8601String()));
+        $responseSinceBefore->assertStatus(200);
+        $this->assertCount(0, $responseSinceBefore->json('programs'));
+
+        // Archive the program (simulating upsert action or update) bumping updated_at to tArchive
+        $program->update([
+            'archived_at' => $tArchive,
+        ]);
+        PrismProgram::where('id', $program->id)->update(['updated_at' => $tArchive]);
+
+        // Now query with since: program appears in delta with ISO-8601 archived_at
+        $responseSinceAfter = $this->withHeaders(['X-Device-Id' => 'dev-1'])
+            ->getJson('/api/sync/prism/the-cove/changes?since=' . urlencode($tSince->toIso8601String()));
+        $responseSinceAfter->assertStatus(200);
+        $programs = $responseSinceAfter->json('programs');
+        $this->assertCount(1, $programs);
+        $this->assertSame('prog-archived', $programs[0]['program_uuid']);
+        $this->assertSame($tArchive->toIso8601String(), $programs[0]['archived_at']);
+        $this->assertSame($tArchive->toIso8601String(), $programs[0]['updated_at']);
     }
 }

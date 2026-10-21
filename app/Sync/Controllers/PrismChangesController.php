@@ -43,6 +43,7 @@ class PrismChangesController
                 'name' => $program->name,
                 'week_count' => (int) $program->week_count,
                 'metadata' => $program->metadata,
+                'archived_at' => $program->archived_at?->toIso8601String(),
                 'updated_at' => $program->updated_at->toIso8601String(),
             ];
         })->values()->all();

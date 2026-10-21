@@ -15,6 +15,7 @@ class PrismProgram extends Model
         'name',
         'week_count',
         'metadata',
+        'archived_at',
         'device_id',
     ];
 
@@ -22,6 +23,7 @@ class PrismProgram extends Model
     {
         return [
             'metadata' => 'array',
+            'archived_at' => 'datetime',
         ];
     }
 

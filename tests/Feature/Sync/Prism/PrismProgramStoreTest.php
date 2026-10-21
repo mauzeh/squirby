@@ -83,6 +83,40 @@ class PrismProgramStoreTest extends TestCase
         $this->assertEquals('dev-uuid-2', $program->device_id);
     }
 
+    public function test_program_upsert_sets_and_clears_archived_at(): void
+    {
+        $user = User::factory()->create();
+        Sanctum::actingAs($user);
+
+        // Store with archived_at
+        $response = $this->withHeaders(['X-Device-Id' => 'dev-uuid-1'])
+            ->postJson('/api/sync/prism/the-cove/programs/prog-uuid-archive', [
+                'name' => 'Archived Program',
+                'week_count' => 4,
+                'archived_at' => '2026-10-21T10:00:00Z',
+            ]);
+
+        $response->assertStatus(200)->assertJson(['status' => 'ok']);
+
+        $program = PrismProgram::where('program_uuid', 'prog-uuid-archive')->first();
+        $this->assertNotNull($program);
+        $this->assertNotNull($program->archived_at);
+        $this->assertSame('2026-10-21 10:00:00', $program->archived_at->format('Y-m-d H:i:s'));
+
+        // Store again with archived_at: null to unarchive
+        $response2 = $this->withHeaders(['X-Device-Id' => 'dev-uuid-1'])
+            ->postJson('/api/sync/prism/the-cove/programs/prog-uuid-archive', [
+                'name' => 'Archived Program',
+                'week_count' => 4,
+                'archived_at' => null,
+            ]);
+
+        $response2->assertStatus(200)->assertJson(['status' => 'ok']);
+
+        $program->refresh();
+        $this->assertNull($program->archived_at);
+    }
+
     public function test_unknown_gym_returns_404(): void
     {
         $user = User::factory()->create();

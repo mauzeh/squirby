@@ -25,6 +25,7 @@ class StorePrismProgramRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'week_count' => ['required', 'integer', 'min:0', 'max:65535'],
             'metadata' => ['nullable', 'array'],
+            'archived_at' => ['nullable', 'date'],
             'device_id' => ['nullable', 'string', 'max:36'],
         ];
     }
