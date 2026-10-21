@@ -25,6 +25,7 @@ class DatabaseSeeder extends Seeder
             LiftLogSeeder::class,
             MeasurementSeeder::class,
             ProgramSeeder::class,
+            GymSeeder::class,
         ]);
     }
 }
