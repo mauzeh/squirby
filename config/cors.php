@@ -33,7 +33,7 @@ return [
         'trim',
         explode(',', (string) env(
             'CORS_ALLOWED_ORIGINS',
-            'https://flagship.squirby.ai,https://app.squirby.ai,http://localhost:5173'
+            'https://flagship.squirby.ai,https://app.squirby.ai,https://prism.squirby.ai,http://localhost:5173'
         ))
     ))),
 
