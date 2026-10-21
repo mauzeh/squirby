@@ -250,7 +250,7 @@ equality that the new key would break, update it to accommodate the new key.)
 > human reviewer reconstructs this section at archive time and moves both plan + prompt to `completed/`.
 > See `.kiro/steering/architect-workflow.md` → Post-Execution Review Protocol.
 
-- **Attempts:** {1 (clean) / N (root cause of failures)}
-- **Tests added:** {count}
-- **Prompt improvements for next time:** {what to add/change}
-- **Steering updates needed:** {yes/no, what}
+- **Attempts:** 1 (clean). All phases landed as specified with no follow-up fixes needed. Full suite green (2229 passing), the three targeted Prism classes green (18 tests), and the migration confirmed **Ran** against the real DB (batch 46) with `archived_at` present on `prism_programs` after `metadata`.
+- **Tests added:** 2 new test methods (no new files — the three existing tests were extended per the Consumer Impact Trace). `PrismProgramStoreTest::test_program_upsert_sets_and_clears_archived_at` (set + unarchive round-trip) and `PrismChangesTest::test_changes_programs_carry_archived_at_and_archive_appears_in_since_delta` (serialization + since-delta bump). `PrismProgramTest::test_program_create_read_update_and_upsert` was extended in place to assert the `datetime` cast and persistence of `archived_at`.
+- **Prompt improvements for next time:** The prompt told the executor to run tests as `php artisan test --parallel tests/Unit/.../X.php tests/Feature/.../Y.php` with multiple paths; the parallel (ParaTest) runner rejects multiple path arguments ("Too many arguments, expected arguments 'path'"). Future prompts should say to run one path per invocation, or use `--filter='ClassA|ClassB'` when checkpointing several classes at once. Did not affect the outcome.
+- **Steering updates needed:** No. No new failure mode surfaced; the existing steering (forward-only migration, no Pint, no commits, cursor discipline, exact-array-equality caution) was sufficient and was followed. The one friction point (multi-path `--parallel`) is a prompt-authoring note, not a steering gap.
