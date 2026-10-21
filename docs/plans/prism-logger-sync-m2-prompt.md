@@ -205,7 +205,7 @@ Create under `tests/Feature/Sync/Prism/` (namespace `Tests\Feature\Sync\Prism`),
 
 > The executor must NOT fill this in — leave the `{placeholder}` values untouched. After the run, the human reviewer reconstructs this section from the commit trail at archive time and moves both plan + prompt to `completed/`. See `.kiro/steering/architect-workflow.md` → Post-Execution Review Protocol.
 
-- **Attempts:** {1 (clean) / N (root cause of failures)}
-- **Tests added:** {count}
-- **Prompt improvements for next time:** {what to add/change}
-- **Steering updates needed:** {yes/no, what}
+- **Attempts:** 1 (clean) — four Form Requests, four actions, three controllers + `ValidatesGym` concern, five routes, two throttles, and five feature-test files all landed to spec on the first pass. Executor made no commits and ran no Pint.
+- **Tests added:** 24 feature tests across `tests/Feature/Sync/Prism/` (126 assertions): one file per endpoint (create/re-upsert/tombstone/unknown-gym-404/unauth-401/validation-422) plus a deterministic throttle file (config-headroom assertion + a bounded 20-write burst proving the write path is not on the 10/min Athlete bucket). Full suite 2193 → 2217, zero regressions.
+- **Prompt improvements for next time:** None material. Reuse landed exactly as directed — gym 404 via `abort()` + centralized shaping (no hand-rolled error bodies), device-id from `$request->attributes` (no duplicate header parsing), keyed `upsert()` + re-query for the server `updated_at`, `buildLimits()` for the new limiters, no `DB::`. Citing `StoreSyncLogAction` as the multi-row action precedent (added after the first commit) paid off: the cells/exercises actions mirror its batch shape. The `prism-poll`-declared-but-unused deferral was honored (no `/changes` route). Carry the same density into M3.
+- **Steering updates needed:** No. No new failure mode surfaced; existing sync conventions and the centralized error shaping were sufficient.

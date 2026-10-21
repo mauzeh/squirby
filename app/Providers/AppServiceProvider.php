@@ -63,6 +63,15 @@ class AppServiceProvider extends ServiceProvider
             return $this->buildLimits('telemetry', $request->header('X-Device-Id') ?: $request->ip());
         });
 
+        // Prism sync throttles. Keyed per authenticated user.
+        RateLimiter::for('prism-write', function (Request $request) {
+            return $this->buildLimits('prism_write', $request->user()?->id ?: $request->ip());
+        });
+
+        RateLimiter::for('prism-poll', function (Request $request) {
+            return $this->buildLimits('prism_poll', $request->user()?->id ?: $request->ip());
+        });
+
         // Connection-token redemption. Keyed per authenticated user.
         RateLimiter::for('connection-attempts', function (Request $request) {
             return $this->buildLimits('connection_attempts', $request->user()?->id ?: $request->ip());
