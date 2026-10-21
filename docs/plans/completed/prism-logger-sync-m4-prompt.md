@@ -137,8 +137,8 @@ Confirm the M1 migrations have run against the dev DB (per `project-conventions.
 
 > The executor must NOT fill this in — leave the `{placeholder}` values untouched. After the run, the human reviewer reconstructs this section from the commit trail at archive time and moves both plan + prompt to `completed/`. See `.kiro/steering/architect-workflow.md` → Post-Execution Review Protocol. NOTE: M4 is the final milestone — once its retro is filled, archive ALL of M1–M4's plan + prompt files to `docs/plans/completed/`.
 
-- **Attempts:** {1 (clean) / N (root cause of failures)}
-- **Tests added:** {count}
-- **Code changes beyond the test (if any):** {none / what N+1 or read-modify-write was fixed}
-- **Prompt improvements for next time:** {what to add/change}
-- **Steering updates needed:** {yes/no, what}
+- **Attempts:** 1 (clean) — executor correctly treated this as a verification pass, found no defect, and added only the guarding test. No commits, no Pint.
+- **Tests added:** 1 (`test_changes_query_count_is_flat_under_growing_data`): seeds a small then a large dataset into the same gym, flushes the query log before each measured `/changes` request, and asserts the counts are equal and <= 12. Verified passing — proving the read path issues a constant query count (no N+1) as data grows. Full suite 2226 → 2227.
+- **Code changes beyond the test:** None. Phase 1/2 audit confirmed the read path is already flat (4 collection queries + 5 cursor aggregates, nothing in map closures, no lazy relationships) and every write action is a single keyed upsert/updateOrCreate (+ one bounded timestamp re-query for cells/exercises). The `(gym_id, updated_at)` indexes were already present from M1; `prism_preferences` is correctly a single-row point lookup. Dead-code sweep found nothing; `prism-poll` is consumed by M3's route. Migrations confirmed Ran.
+- **Prompt improvements for next time:** None material. The key framing that made this milestone substantive rather than a no-op was stating up front that the indexes/upserts already landed in M1/M2 and directing the executor to ADD the guarding query-count test rather than re-add infrastructure — plus the explicit `DB::flushQueryLog()` technique (there was no existing query-count test precedent in the suite to copy). Both worked. For future hardening milestones, pre-identifying "what's already done vs. what's genuinely new" prevents a hollow pass.
+- **Steering updates needed:** No. The query-count-regression pattern is now in the suite as a reusable precedent; no steering change required.
