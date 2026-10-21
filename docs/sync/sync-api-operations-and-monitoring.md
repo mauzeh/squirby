@@ -275,3 +275,80 @@ When a `POST /api/sync/logs` request is received, the store action:
 4. If no match: creates a new LiftLog + LiftSets
 
 This ensures that editing and re-saving a log on the Athlete side updates the existing record rather than creating duplicates.
+---
+
+## Deployment: Migrations vs. Seeding (and the Prism gym seed)
+
+**TL;DR:** The deploy runs **migrations only — it does NOT seed.** Database seeders are a
+manual, approval-gated operation. Consequently, the two Prism gym rows (`the-cove`, `flagship`)
+that Prism sync depends on will **not** appear automatically on a production deploy — they must be
+seeded once, by hand, with the targeted `GymSeeder`.
+
+### What the deploy actually does
+
+- The only automated DB step is `php artisan migrate --graceful` (see `composer.json` post-install
+  hook). On Forge, pushing to `main` triggers the deploy and migrations run forward against the
+  production MySQL automatically (per `project-conventions.md`).
+- **No seeding runs on deploy.** There is no `db:seed`, no `migrate --seed`, and no
+  `migrate:fresh` in any deploy/CI config. Every reference to seeding in the repo is in
+  READMEs/docs/local-dev instructions only.
+- Repo convention already treats seeding as manual + approval-gated:
+  `safe-operations.md` → "`php artisan db:seed` — ask first (may duplicate data)";
+  `antigravity-steering.md` → `db:seed` requires approval.
+
+### Why you must NOT run `db:seed` generically on production
+
+`DatabaseSeeder` calls 13 seeders, and **only `GymSeeder` is idempotent** (`updateOrCreate`). The
+rest use bare `create()` and are **local-dev fixtures**, not production data. Running the full
+`db:seed` against a populated DB would:
+
+- **Duplicate reference data** — `RoleSeeder`, `UnitSeeder`, the 26 hardcoded exercises in
+  `GlobalExercisesSeeder`, `ExerciseIntelligenceSeeder`, `IngredientSeeder`, `MealSeeder`,
+  `ProgramSeeder`, and the CSV importers (`LiftLogSeeder`, `DailyLogSeeder`, `MeasurementSeeder`)
+  all insert new rows on every run.
+- **Likely abort partway** — `UserSeeder` does `User::create('admin@example.com', …)` and
+  `users.email` is `unique` (`0001_01_01_000000_create_users_table.php`), so a second run throws on
+  the unique constraint. Because `GymSeeder` is **last** in `DatabaseSeeder`, an abort here means the
+  gyms are never created even though the run "did something."
+- **Plant known-credential demo accounts** — `UserSeeder` sets password `'password'` on
+  `admin@example.com` / `another@example.com`. Local fixtures only; must never land in production.
+
+Seeder idempotency audit (as of 2026-10):
+
+| Seeder | Idempotent? | Notes |
+|--------|-------------|-------|
+| `GymSeeder` | ✅ `updateOrCreate` | Safe to re-run; the only prod-safe one. |
+| `GlobalExercisesSeeder` | ⚠️ partial | carry-splits use `firstOrCreate`; 26 hardcoded exercises use bare `create`. |
+| `MeasurementSeeder` | ⚠️ partial | type via `firstOrCreate`; `BodyLog` rows bare `create` from CSV. |
+| `RoleSeeder`, `UnitSeeder`, `UserSeeder`, `ExerciseIntelligenceSeeder`, `IngredientSeeder`, `MealSeeder`, `ProgramSeeder`, `LiftLogSeeder`, `DailyLogSeeder` | ❌ | Bare `create` / CSV import; duplicate or crash on re-run. |
+
+### Required one-time manual step: seed the Prism gyms in production
+
+Because the deploy doesn't seed, after the Prism-sync Logger branch deploys to production you MUST
+run the **targeted** gym seeder once, or every Prism sync call returns `404 "Gym not found."`
+(`findGymOrFail`):
+
+```bash
+php artisan db:seed --class=GymSeeder --force
+```
+
+- `--class=GymSeeder` runs **only** the idempotent gym seeder — never the full `DatabaseSeeder`.
+- `--force` is required to run in production (bypasses the interactive confirm); safe here because
+  `GymSeeder` is `updateOrCreate`.
+- Prerequisite: the Prism-sync migrations (which create the `gyms` table) must have deployed first.
+- The gym ids `the-cove` / `flagship` are a cross-app join key and MUST match Prism's
+  `src/constants/accessControl.js` (`GYM_DOMAINS`) byte-for-byte. The root contract
+  (`squirby/contracts/`) is the place that reconciles this.
+
+### Local dev
+
+For local development the same targeted command (no `--force` needed outside production) seeds the
+gyms so the Prism round-trip works:
+
+```bash
+php artisan db:seed --class=GymSeeder
+```
+
+A full `php artisan migrate:fresh --seed` is fine **locally** (it's a disposable DB) and is the
+documented local bootstrap, but is NEVER acceptable against production (it drops all tables — see
+`safe-operations.md`).

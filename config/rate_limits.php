@@ -67,6 +67,18 @@ return [
         'per_hour' => null,
     ],
 
+    // Prism write endpoints. Generous write ceiling; cheap keyed upserts. Keyed per user.
+    'prism_write' => [
+        'per_minute' => 120,
+        'per_hour' => null,
+    ],
+
+    // Prism delta-pull poll (~5s poll = ~12/min per tab; 60 gives headroom for multiple tabs). Keyed per user. Used by M3 /changes.
+    'prism_poll' => [
+        'per_minute' => 60,
+        'per_hour' => null,
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Breeze Login Failure Lockout
