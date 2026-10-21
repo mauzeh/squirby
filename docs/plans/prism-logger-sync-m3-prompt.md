@@ -192,7 +192,7 @@ GET /api/sync/prism/{gym}/changes?since=<iso8601|absent>  — 200 response:
 
 > The executor must NOT fill this in — leave the `{placeholder}` values untouched. After the run, the human reviewer reconstructs this section from the commit trail at archive time and moves both plan + prompt to `completed/`. See `.kiro/steering/architect-workflow.md` → Post-Execution Review Protocol.
 
-- **Attempts:** {1 (clean) / N (root cause of failures)}
-- **Tests added:** {count}
-- **Prompt improvements for next time:** {what to add/change}
-- **Steering updates needed:** {yes/no, what}
+- **Attempts:** 1 (clean) — `PrismChangesController` + the `/changes` route + the test file landed to spec on the first pass. Executor made no commits and ran no Pint.
+- **Tests added:** 9 feature tests in `PrismChangesTest.php` (175 assertions total in the Prism dir; full suite 2217 → 2226). Covers cold-start full dump, `since` filtering across all four collections, the inclusive-boundary microsecond regression (two cells stamped at `.000001Z`, `since` == that instant, both returned — would fail under strict `>`), tombstone delivery (non-null `deleted_at`, null `record`, not scope-hidden), non-rewinding high-water-mark cursor, empty gym, and 404/401/422.
+- **Prompt improvements for next time:** None material. The most valuable instruction was mandating the explicit-timestamp-stamping technique (`->update(['updated_at' => $t])`) and warning that a real-wall-clock test passes on SQLite for the wrong reason — the executor used it throughout, making the microsecond assertion genuinely meaningful rather than coincidental. Cursor algorithm mirrors `ChangesController` faithfully; `ValidatesGym` reused (no duplicate gym check); `prism-poll` referenced not redeclared; no `DB::`.
+- **Steering updates needed:** No. Existing conventions + the M1/M2 primitives were sufficient.
