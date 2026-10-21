@@ -34,6 +34,7 @@ bootstrap/app.php                                → the centralized api/sync/* 
 
 ### 4. Reference (already implemented — don't rebuild, just understand)
 ```
+app/Sync/Actions/StoreSyncLogAction.php          → the canonical app/Sync Action shape to mirror: constructor-promoted deps, single execute(User, array, ?string) method, returns the persisted model; shows the existing multi-row write pattern (loop creating child rows) and a server-timestamp touch() to advance the pull cursor. Your multi-row actions (cells, exercises) follow this shape but use keyed upsert() + re-query instead of per-row create().
 tests/Feature/Sync/TelemetryTest.php             → feature-test pattern: withHeaders(['X-Device-Id'=>...])->postJson('/api/sync/...'), Sanctum::actingAs, assertDatabaseCount, 422 assertion
 tests/Feature/Sync/AuthUpgradeTest.php §test_email_check_rate_limited  → throttle test pattern using $this->travel(N)->seconds() to drive a paced cadence and assert 200s then 429
 ```
