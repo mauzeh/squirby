@@ -58,6 +58,7 @@ class PrismChangesController
                 'program_uuid' => $cell->program_uuid,
                 'cell_id' => $cell->cell_id,
                 'text' => $cell->text,
+                'deleted_at' => $cell->deleted_at?->toIso8601String(),
                 'updated_at' => $cell->updated_at->toIso8601String(),
             ];
         })->values()->all();
@@ -107,10 +108,24 @@ class PrismChangesController
             }
         }
 
-        $rawMaxDeleted = PrismExerciseOverlayRecord::where('gym_id', $gym)
+        $rawMaxExerciseDeleted = PrismExerciseOverlayRecord::where('gym_id', $gym)
             ->whereNotNull('deleted_at')
             ->max('deleted_at');
-        $maxDeleted = $rawMaxDeleted ? Carbon::parse($rawMaxDeleted) : null;
+        $rawMaxCellDeleted = PrismProgramCell::where('gym_id', $gym)
+            ->whereNotNull('deleted_at')
+            ->max('deleted_at');
+
+        $deletedInstants = array_filter([
+            $rawMaxExerciseDeleted ? Carbon::parse($rawMaxExerciseDeleted) : null,
+            $rawMaxCellDeleted ? Carbon::parse($rawMaxCellDeleted) : null,
+        ]);
+
+        $maxDeleted = null;
+        foreach ($deletedInstants as $instant) {
+            if ($maxDeleted === null || $instant->gt($maxDeleted)) {
+                $maxDeleted = $instant;
+            }
+        }
 
         $maxInstant = null;
         if ($maxUpdated && $maxDeleted) {

@@ -544,4 +544,103 @@ class PrismChangesTest extends TestCase
         $this->assertSame($tArchive->toIso8601String(), $programs[0]['archived_at']);
         $this->assertSame($tArchive->toIso8601String(), $programs[0]['updated_at']);
     }
+
+    public function test_cell_tombstone_is_delivered_in_delta(): void
+    {
+        $user = User::factory()->create();
+        Sanctum::actingAs($user);
+
+        $tz = config('app.timezone');
+        $tSince = Carbon::parse('2026-09-01 12:00:00', $tz);
+        $tTombstone = Carbon::parse('2026-09-01 14:00:00', $tz);
+
+        $cell = PrismProgramCell::create([
+            'gym_id' => 'the-cove',
+            'program_uuid' => 'prog-del',
+            'cell_id' => 'w1d1',
+            'text' => '',
+            'device_id' => 'dev-tombstone',
+            'deleted_at' => $tTombstone,
+        ]);
+        PrismProgramCell::where('id', $cell->id)->update([
+            'updated_at' => $tTombstone,
+            'deleted_at' => $tTombstone,
+        ]);
+
+        $response = $this->withHeaders(['X-Device-Id' => 'dev-1'])
+            ->getJson('/api/sync/prism/the-cove/changes?since=' . urlencode($tSince->toIso8601String()));
+
+        $response->assertStatus(200);
+
+        $cells = $response->json('cells');
+        $this->assertCount(1, $cells);
+        $this->assertEquals('w1d1', $cells[0]['cell_id']);
+        $this->assertEquals('prog-del', $cells[0]['program_uuid']);
+        $this->assertEquals($tTombstone->toIso8601String(), $cells[0]['deleted_at']);
+        $this->assertEquals($tTombstone->toIso8601String(), $cells[0]['updated_at']);
+    }
+
+    public function test_live_cell_carries_null_deleted_at(): void
+    {
+        $user = User::factory()->create();
+        Sanctum::actingAs($user);
+
+        PrismProgramCell::create([
+            'gym_id' => 'the-cove',
+            'program_uuid' => 'prog-live',
+            'cell_id' => 'w1d1',
+            'text' => 'Back Squat 3x5',
+            'device_id' => 'dev-1',
+        ]);
+
+        $response = $this->withHeaders(['X-Device-Id' => 'dev-1'])
+            ->getJson('/api/sync/prism/the-cove/changes');
+
+        $response->assertStatus(200);
+        $cells = $response->json('cells');
+        $this->assertCount(1, $cells);
+        $this->assertArrayHasKey('deleted_at', $cells[0]);
+        $this->assertNull($cells[0]['deleted_at']);
+    }
+
+    public function test_cursor_advances_on_cell_removal(): void
+    {
+        $user = User::factory()->create();
+        Sanctum::actingAs($user);
+
+        $tz = config('app.timezone');
+        $t1 = Carbon::parse('2026-09-01 10:00:00', $tz);
+        $tTombstone = Carbon::parse('2026-09-01 15:00:00', $tz);
+
+        // A live cell updated at t1
+        $liveCell = PrismProgramCell::create([
+            'gym_id' => 'the-cove',
+            'program_uuid' => 'prog-1',
+            'cell_id' => 'w1d1',
+            'text' => 'Content',
+            'device_id' => 'dev-1',
+        ]);
+        PrismProgramCell::where('id', $liveCell->id)->update(['updated_at' => $t1]);
+
+        // A tombstoned cell whose deleted_at is the latest instant in the gym
+        $deadCell = PrismProgramCell::create([
+            'gym_id' => 'the-cove',
+            'program_uuid' => 'prog-1',
+            'cell_id' => 'w1d2',
+            'text' => '',
+            'device_id' => 'dev-1',
+            'deleted_at' => $tTombstone,
+        ]);
+        PrismProgramCell::where('id', $deadCell->id)->update([
+            'updated_at' => $t1,
+            'deleted_at' => $tTombstone,
+        ]);
+
+        // Cold start: cursor = max(updated_at, deleted_at) = the tombstone instant
+        $response = $this->withHeaders(['X-Device-Id' => 'dev-1'])
+            ->getJson('/api/sync/prism/the-cove/changes');
+
+        $response->assertStatus(200);
+        $this->assertEquals($tTombstone->toIso8601String(), $response->json('cursor'));
+    }
 }

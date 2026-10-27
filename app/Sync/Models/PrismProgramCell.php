@@ -15,7 +15,15 @@ class PrismProgramCell extends Model
         'cell_id',
         'text',
         'device_id',
+        'deleted_at',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'deleted_at' => 'datetime',
+        ];
+    }
 
     public function gym(): BelongsTo
     {

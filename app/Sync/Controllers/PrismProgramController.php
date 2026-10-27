@@ -48,9 +48,10 @@ class PrismProgramController
         $this->findGymOrFail($gym);
 
         $deviceId = $request->attributes->get('device_id');
-        $cells = $request->validated('cells');
+        $cells = $request->validated('cells', []);
+        $removals = $request->validated('removals', []);
 
-        $updatedAt = $this->upsertCellsAction->execute($gym, $program_uuid, $cells, $deviceId);
+        $updatedAt = $this->upsertCellsAction->execute($gym, $program_uuid, $cells, $removals, $deviceId);
 
         return response()->json([
             'status' => 'ok',
