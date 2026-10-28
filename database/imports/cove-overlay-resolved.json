@@ -1,0 +1,5680 @@
+{
+  "gym": "the-cove",
+  "generatedAt": "2026-10-28T03:56:42.349Z",
+  "exercises": [
+    {
+      "exercise_id": "3d_mtn_climbers",
+      "record": {
+        "id": "3d_mtn_climbers",
+        "name": "3D Mtn Climbers",
+        "aliases": [],
+        "primaryMovements": [],
+        "coreMovements": [
+          "anti_ext",
+          "rotational"
+        ],
+        "primaryMuscles": [],
+        "coreMuscles": [
+          "rectus_abdominis",
+          "obliques"
+        ],
+        "equipment": [],
+        "modalities": [
+          "strength",
+          "conditioning"
+        ]
+      }
+    },
+    {
+      "exercise_id": "alt_mb_lunges_with_twist",
+      "record": {
+        "id": "alt_mb_lunges_with_twist",
+        "name": "Alt MB Lunges with Twist",
+        "aliases": [],
+        "primaryMovements": [
+          "squat"
+        ],
+        "coreMovements": [
+          "rotational"
+        ],
+        "primaryMuscles": [
+          "quads",
+          "glutes"
+        ],
+        "coreMuscles": [
+          "obliques"
+        ],
+        "equipment": [
+          "slam-ball"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "banded_clam_shell",
+      "record": {
+        "id": "banded_clam_shell",
+        "name": "Banded Clam Shell",
+        "aliases": [
+          "Banded Clamshell",
+          "Banded Clam Shell w/ Hip Lift"
+        ],
+        "primaryMovements": [
+          "hinge"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "glutes"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "band"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "banded_core_rotation",
+      "record": {
+        "id": "banded_core_rotation",
+        "name": "Banded Core Rotation",
+        "aliases": [],
+        "primaryMovements": [],
+        "coreMovements": [
+          "rotational"
+        ],
+        "primaryMuscles": [],
+        "coreMuscles": [
+          "obliques",
+          "rectus_abdominis"
+        ],
+        "equipment": [
+          "band"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "banded_db_glute_bridge",
+      "record": {
+        "id": "banded_db_glute_bridge",
+        "name": "Banded DB Glute Bridge",
+        "aliases": [],
+        "primaryMovements": [
+          "hinge"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "glutes",
+          "hamstrings"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "band",
+          "dumbbells"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "banded_diag_hip_abduction",
+      "record": {
+        "id": "banded_diag_hip_abduction",
+        "name": "Banded Diag. Hip Abduction",
+        "aliases": [],
+        "primaryMovements": [
+          "hinge"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "glutes"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "band"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "banded_fire_hydrants",
+      "record": {
+        "id": "banded_fire_hydrants",
+        "name": "Banded Fire Hydrants",
+        "aliases": [],
+        "primaryMovements": [
+          "hinge"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "glutes"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "band"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "banded_hip_bridges",
+      "record": {
+        "id": "banded_hip_bridges",
+        "name": "Banded Hip Bridges",
+        "aliases": [],
+        "primaryMovements": [
+          "hinge"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "glutes",
+          "hamstrings"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "band"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "banded_jack_knife",
+      "record": {
+        "id": "banded_jack_knife",
+        "name": "Banded Jack Knife",
+        "aliases": [],
+        "primaryMovements": [],
+        "coreMovements": [
+          "flexion"
+        ],
+        "primaryMuscles": [],
+        "coreMuscles": [
+          "rectus_abdominis"
+        ],
+        "equipment": [
+          "band"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "banded_squat_jumps",
+      "record": {
+        "id": "banded_squat_jumps",
+        "name": "Banded Squat Jumps",
+        "aliases": [],
+        "primaryMovements": [
+          "squat"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "quads",
+          "glutes"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "band"
+        ],
+        "modalities": [
+          "strength",
+          "conditioning"
+        ]
+      }
+    },
+    {
+      "exercise_id": "banded_standing_hip_abduction",
+      "record": {
+        "id": "banded_standing_hip_abduction",
+        "name": "Banded Standing Hip Abduction",
+        "aliases": [],
+        "primaryMovements": [
+          "hinge"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "glutes"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "band"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "bike_intervals",
+      "record": {
+        "id": "bike_intervals",
+        "name": "Bike Intervals",
+        "aliases": [],
+        "primaryMovements": [
+          "squat",
+          "hinge"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "quads",
+          "hamstrings",
+          "calves"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "bike"
+        ],
+        "modalities": [
+          "conditioning"
+        ]
+      }
+    },
+    {
+      "exercise_id": "birddog_ys_to_ws",
+      "record": {
+        "id": "birddog_ys_to_ws",
+        "name": "Birddog Ys to Ws",
+        "aliases": [],
+        "primaryMovements": [],
+        "coreMovements": [
+          "extension",
+          "anti_rot"
+        ],
+        "primaryMuscles": [
+          "upper_back"
+        ],
+        "coreMuscles": [
+          "lower_back"
+        ],
+        "equipment": [],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "bl_db_supinated_row",
+      "record": {
+        "id": "bl_db_supinated_row",
+        "name": "BL DB Supinated Row",
+        "aliases": [],
+        "primaryMovements": [
+          "pull_h"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "upper_back",
+          "lats",
+          "biceps"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "dumbbells"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "bodyweight_lateral_lunges",
+      "record": {
+        "id": "bodyweight_lateral_lunges",
+        "name": "Bodyweight Lateral Lunges",
+        "aliases": [
+          "Side Lunges",
+          "Tempo Lt Leg Lateral Lunges",
+          "Tempo Rt Leg Lateral Lunges"
+        ],
+        "primaryMovements": [
+          "squat"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "quads",
+          "glutes"
+        ],
+        "coreMuscles": [],
+        "equipment": [],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "burpee_sprawl",
+      "record": {
+        "id": "burpee_sprawl",
+        "name": "Burpee Sprawl",
+        "aliases": [],
+        "primaryMovements": [
+          "squat",
+          "push_h"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "quads",
+          "glutes",
+          "chest"
+        ],
+        "coreMuscles": [],
+        "equipment": [],
+        "modalities": [
+          "conditioning"
+        ]
+      }
+    },
+    {
+      "exercise_id": "ceiling_reaching_crunch",
+      "record": {
+        "id": "ceiling_reaching_crunch",
+        "name": "Ceiling Reaching Crunch",
+        "aliases": [],
+        "primaryMovements": [],
+        "coreMovements": [
+          "flexion"
+        ],
+        "primaryMuscles": [],
+        "coreMuscles": [
+          "rectus_abdominis"
+        ],
+        "equipment": [],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "crossover_box_step_ups",
+      "record": {
+        "id": "crossover_box_step_ups",
+        "name": "Crossover Box Step Ups",
+        "aliases": [],
+        "primaryMovements": [
+          "squat"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "quads",
+          "glutes"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "box"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "cuban_press",
+      "record": {
+        "id": "cuban_press",
+        "name": "Cuban Press",
+        "aliases": [],
+        "primaryMovements": [
+          "push_v",
+          "pull_h"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "shoulders",
+          "upper_back"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "dumbbells"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "curtsy_lunges",
+      "record": {
+        "id": "curtsy_lunges",
+        "name": "Curtsy Lunges",
+        "aliases": [],
+        "primaryMovements": [
+          "squat"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "quads",
+          "glutes"
+        ],
+        "coreMuscles": [],
+        "equipment": [],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "db_bicep_21s",
+      "record": {
+        "id": "db_bicep_21s",
+        "name": "DB Bicep 21s",
+        "aliases": [],
+        "primaryMovements": [
+          "pull_v"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "biceps"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "dumbbells"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "db_cleans",
+      "record": {
+        "id": "db_cleans",
+        "name": "DB Cleans",
+        "aliases": [],
+        "primaryMovements": [
+          "hinge",
+          "squat"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "glutes",
+          "hamstrings",
+          "quads"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "dumbbells"
+        ],
+        "modalities": [
+          "strength",
+          "conditioning"
+        ]
+      }
+    },
+    {
+      "exercise_id": "db_death_march",
+      "record": {
+        "id": "db_death_march",
+        "name": "DB Death March",
+        "aliases": [],
+        "primaryMovements": [
+          "hinge",
+          "squat"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "hamstrings",
+          "glutes"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "dumbbells"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "db_goblet_box_step_up",
+      "record": {
+        "id": "db_goblet_box_step_up",
+        "name": "DB Goblet Box Step Up",
+        "aliases": [],
+        "primaryMovements": [
+          "squat"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "quads",
+          "glutes"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "dumbbells",
+          "box"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "db_sa_swing",
+      "record": {
+        "id": "db_sa_swing",
+        "name": "DB SA Swing",
+        "aliases": [],
+        "primaryMovements": [
+          "hinge"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "glutes",
+          "hamstrings"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "dumbbells"
+        ],
+        "modalities": [
+          "strength",
+          "conditioning"
+        ]
+      }
+    },
+    {
+      "exercise_id": "db_shoulder_ext_rotations",
+      "record": {
+        "id": "db_shoulder_ext_rotations",
+        "name": "DB Shoulder Ext Rotations",
+        "aliases": [],
+        "primaryMovements": [
+          "pull_h"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "shoulders",
+          "upper_back"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "dumbbells"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "db_side_plank",
+      "record": {
+        "id": "db_side_plank",
+        "name": "DB Side Plank",
+        "aliases": [],
+        "primaryMovements": [],
+        "coreMovements": [
+          "anti_lat"
+        ],
+        "primaryMuscles": [],
+        "coreMuscles": [
+          "obliques"
+        ],
+        "equipment": [
+          "dumbbells"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "dball_gd_to_oh_dead_hang",
+      "record": {
+        "id": "dball_gd_to_oh_dead_hang",
+        "name": "DBall GD to OH Dead Hang",
+        "aliases": [],
+        "primaryMovements": [
+          "hinge",
+          "push_v"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "glutes",
+          "hamstrings",
+          "shoulders"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "d-ball"
+        ],
+        "modalities": [
+          "strength",
+          "conditioning"
+        ]
+      }
+    },
+    {
+      "exercise_id": "firehydrants",
+      "record": {
+        "id": "firehydrants",
+        "name": "Firehydrants",
+        "aliases": [],
+        "primaryMovements": [
+          "hinge"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "glutes"
+        ],
+        "coreMuscles": [],
+        "equipment": [],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "flagpole_left",
+      "record": {
+        "id": "flagpole_left",
+        "name": "Flagpole Left",
+        "aliases": [
+          "Flagpole Right"
+        ],
+        "primaryMovements": [
+          "hinge"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "glutes"
+        ],
+        "coreMuscles": [],
+        "equipment": [],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "frog_pumps",
+      "record": {
+        "id": "frog_pumps",
+        "name": "Frog Pumps",
+        "aliases": [],
+        "primaryMovements": [
+          "hinge"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "glutes"
+        ],
+        "coreMuscles": [],
+        "equipment": [],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "glute_flag",
+      "record": {
+        "id": "glute_flag",
+        "name": "Glute Flag",
+        "aliases": [],
+        "primaryMovements": [
+          "hinge"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "glutes"
+        ],
+        "coreMuscles": [],
+        "equipment": [],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "half_kneeling_rotational_dball_slams",
+      "record": {
+        "id": "half_kneeling_rotational_dball_slams",
+        "name": "Half Kneeling Rotational DBall Slams",
+        "aliases": [],
+        "primaryMovements": [],
+        "coreMovements": [
+          "rotational",
+          "flexion"
+        ],
+        "primaryMuscles": [],
+        "coreMuscles": [
+          "obliques",
+          "rectus_abdominis"
+        ],
+        "equipment": [
+          "d-ball"
+        ],
+        "modalities": [
+          "strength",
+          "conditioning"
+        ]
+      }
+    },
+    {
+      "exercise_id": "hand_supported_ipsilateral_suitcase_step_down",
+      "record": {
+        "id": "hand_supported_ipsilateral_suitcase_step_down",
+        "name": "Hand Supported Ipsilateral Suitcase Step Down",
+        "aliases": [],
+        "primaryMovements": [
+          "squat"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "quads",
+          "glutes"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "dumbbells",
+          "box"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "hang_mb_clean",
+      "record": {
+        "id": "hang_mb_clean",
+        "name": "Hang MB Clean",
+        "aliases": [],
+        "primaryMovements": [
+          "hinge",
+          "squat"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "glutes",
+          "hamstrings",
+          "quads"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "slam-ball"
+        ],
+        "modalities": [
+          "strength",
+          "conditioning"
+        ]
+      }
+    },
+    {
+      "exercise_id": "hanging_knees_to_chest",
+      "record": {
+        "id": "hanging_knees_to_chest",
+        "name": "Hanging Knees to Chest",
+        "aliases": [
+          "Hanging Knees to CH"
+        ],
+        "primaryMovements": [],
+        "coreMovements": [
+          "flexion"
+        ],
+        "primaryMuscles": [
+          "lats"
+        ],
+        "coreMuscles": [
+          "rectus_abdominis"
+        ],
+        "equipment": [
+          "pull-up-bar"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "hanging_knees_to_eb",
+      "record": {
+        "id": "hanging_knees_to_eb",
+        "name": "Hanging Knees to EB",
+        "aliases": [
+          "Hanging KN to EB"
+        ],
+        "primaryMovements": [],
+        "coreMovements": [
+          "flexion"
+        ],
+        "primaryMuscles": [
+          "lats"
+        ],
+        "coreMuscles": [
+          "rectus_abdominis"
+        ],
+        "equipment": [
+          "pull-up-bar"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "high_boat_to_low_boat",
+      "record": {
+        "id": "high_boat_to_low_boat",
+        "name": "High Boat to Low Boat",
+        "aliases": [],
+        "primaryMovements": [],
+        "coreMovements": [
+          "flexion",
+          "anti_ext"
+        ],
+        "primaryMuscles": [],
+        "coreMuscles": [
+          "rectus_abdominis"
+        ],
+        "equipment": [],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "high_jumps",
+      "record": {
+        "id": "high_jumps",
+        "name": "High Jumps",
+        "aliases": [],
+        "primaryMovements": [
+          "squat"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "quads",
+          "calves"
+        ],
+        "coreMuscles": [],
+        "equipment": [],
+        "modalities": [
+          "conditioning"
+        ]
+      }
+    },
+    {
+      "exercise_id": "high_knees",
+      "record": {
+        "id": "high_knees",
+        "name": "High Knees",
+        "aliases": [],
+        "primaryMovements": [
+          "squat"
+        ],
+        "coreMovements": [
+          "flexion"
+        ],
+        "primaryMuscles": [
+          "quads",
+          "calves"
+        ],
+        "coreMuscles": [
+          "rectus_abdominis"
+        ],
+        "equipment": [],
+        "modalities": [
+          "conditioning"
+        ]
+      }
+    },
+    {
+      "exercise_id": "hollow_body_plate_pull_overs",
+      "record": {
+        "id": "hollow_body_plate_pull_overs",
+        "name": "Hollow Body Plate Pull Overs",
+        "aliases": [],
+        "primaryMovements": [
+          "pull_h"
+        ],
+        "coreMovements": [
+          "anti_ext"
+        ],
+        "primaryMuscles": [
+          "lats"
+        ],
+        "coreMuscles": [
+          "rectus_abdominis"
+        ],
+        "equipment": [
+          "plate"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "human_maker",
+      "record": {
+        "id": "human_maker",
+        "name": "Human Maker",
+        "aliases": [],
+        "primaryMovements": [
+          "squat",
+          "push_h",
+          "pull_h",
+          "push_v"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "quads",
+          "chest",
+          "upper_back",
+          "shoulders"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "dumbbells"
+        ],
+        "modalities": [
+          "strength",
+          "conditioning"
+        ]
+      }
+    },
+    {
+      "exercise_id": "jog",
+      "record": {
+        "id": "jog",
+        "name": "Jog",
+        "aliases": [],
+        "primaryMovements": [
+          "squat"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "quads",
+          "calves"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "open-space"
+        ],
+        "modalities": [
+          "conditioning"
+        ]
+      }
+    },
+    {
+      "exercise_id": "jump_rope",
+      "record": {
+        "id": "jump_rope",
+        "name": "Jump Rope",
+        "aliases": [],
+        "primaryMovements": [
+          "squat"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "calves"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "jump-rope"
+        ],
+        "modalities": [
+          "conditioning"
+        ]
+      }
+    },
+    {
+      "exercise_id": "jump_to_target",
+      "record": {
+        "id": "jump_to_target",
+        "name": "Jump to Target",
+        "aliases": [],
+        "primaryMovements": [
+          "squat"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "quads",
+          "calves"
+        ],
+        "coreMuscles": [],
+        "equipment": [],
+        "modalities": [
+          "conditioning"
+        ]
+      }
+    },
+    {
+      "exercise_id": "kb_bicep_curls",
+      "record": {
+        "id": "kb_bicep_curls",
+        "name": "KB Bicep Curls",
+        "aliases": [],
+        "primaryMovements": [
+          "pull_v"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "biceps"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "kettlebell"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "kb_box_step_overs",
+      "record": {
+        "id": "kb_box_step_overs",
+        "name": "KB Box Step Overs",
+        "aliases": [],
+        "primaryMovements": [
+          "squat"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "quads",
+          "glutes"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "kettlebell",
+          "box"
+        ],
+        "modalities": [
+          "strength",
+          "conditioning"
+        ]
+      }
+    },
+    {
+      "exercise_id": "kb_cleans",
+      "record": {
+        "id": "kb_cleans",
+        "name": "KB Cleans",
+        "aliases": [],
+        "primaryMovements": [
+          "hinge"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "glutes",
+          "hamstrings"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "kettlebell"
+        ],
+        "modalities": [
+          "strength",
+          "conditioning"
+        ]
+      }
+    },
+    {
+      "exercise_id": "kb_deadbug",
+      "record": {
+        "id": "kb_deadbug",
+        "name": "KB Deadbug",
+        "aliases": [],
+        "primaryMovements": [],
+        "coreMovements": [
+          "anti_ext"
+        ],
+        "primaryMuscles": [],
+        "coreMuscles": [
+          "rectus_abdominis"
+        ],
+        "equipment": [
+          "kettlebell"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "kb_front_rack_march",
+      "record": {
+        "id": "kb_front_rack_march",
+        "name": "KB Front Rack March",
+        "aliases": [],
+        "primaryMovements": [],
+        "coreMovements": [
+          "anti_ext",
+          "anti_lat"
+        ],
+        "primaryMuscles": [
+          "quads"
+        ],
+        "coreMuscles": [
+          "rectus_abdominis",
+          "obliques"
+        ],
+        "equipment": [
+          "kettlebell"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "kb_front_raise",
+      "record": {
+        "id": "kb_front_raise",
+        "name": "KB Front Raise",
+        "aliases": [],
+        "primaryMovements": [
+          "push_v"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "shoulders"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "kettlebell"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "kb_goblet_cyclist_squat",
+      "record": {
+        "id": "kb_goblet_cyclist_squat",
+        "name": "KB Goblet Cyclist Squat",
+        "aliases": [],
+        "primaryMovements": [
+          "squat"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "quads",
+          "glutes"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "kettlebell"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "kb_halos",
+      "record": {
+        "id": "kb_halos",
+        "name": "KB Halos",
+        "aliases": [],
+        "primaryMovements": [],
+        "coreMovements": [
+          "anti_ext",
+          "rotational"
+        ],
+        "primaryMuscles": [
+          "shoulders",
+          "upper_back"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "kettlebell"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "kb_pike_lift_overs",
+      "record": {
+        "id": "kb_pike_lift_overs",
+        "name": "KB Pike Lift Overs",
+        "aliases": [
+          "L Sit Leg Raise Over KB"
+        ],
+        "primaryMovements": [],
+        "coreMovements": [
+          "flexion"
+        ],
+        "primaryMuscles": [
+          "quads"
+        ],
+        "coreMuscles": [
+          "rectus_abdominis"
+        ],
+        "equipment": [
+          "kettlebell"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "kb_plank_pull_thru",
+      "record": {
+        "id": "kb_plank_pull_thru",
+        "name": "KB Plank Pull Thru",
+        "aliases": [],
+        "primaryMovements": [],
+        "coreMovements": [
+          "anti_rot",
+          "anti_ext"
+        ],
+        "primaryMuscles": [],
+        "coreMuscles": [
+          "transverse",
+          "rectus_abdominis",
+          "obliques"
+        ],
+        "equipment": [
+          "kettlebell"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "kneeling_dball_rainbow_slams",
+      "record": {
+        "id": "kneeling_dball_rainbow_slams",
+        "name": "Kneeling DBall Rainbow Slams",
+        "aliases": [],
+        "primaryMovements": [],
+        "coreMovements": [
+          "rotational",
+          "flexion"
+        ],
+        "primaryMuscles": [],
+        "coreMuscles": [
+          "obliques",
+          "rectus_abdominis"
+        ],
+        "equipment": [
+          "d-ball"
+        ],
+        "modalities": [
+          "conditioning",
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "landmine_curtsy_lunges",
+      "record": {
+        "id": "landmine_curtsy_lunges",
+        "name": "Landmine Curtsy Lunges",
+        "aliases": [],
+        "primaryMovements": [
+          "squat"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "quads",
+          "glutes"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "barbell",
+          "landmine"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "landmine_low_cossack",
+      "record": {
+        "id": "landmine_low_cossack",
+        "name": "Landmine Low Cossack",
+        "aliases": [],
+        "primaryMovements": [
+          "squat"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "quads",
+          "glutes"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "barbell",
+          "landmine"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "landmine_rdl",
+      "record": {
+        "id": "landmine_rdl",
+        "name": "Landmine RDL",
+        "aliases": [],
+        "primaryMovements": [
+          "hinge"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "glutes",
+          "hamstrings"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "barbell",
+          "landmine"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "landmine_row_to_press",
+      "record": {
+        "id": "landmine_row_to_press",
+        "name": "Landmine Row to Press",
+        "aliases": [],
+        "primaryMovements": [
+          "pull_h",
+          "push_v"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "upper_back",
+          "shoulders"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "barbell",
+          "landmine"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "landmine_russian_twists",
+      "record": {
+        "id": "landmine_russian_twists",
+        "name": "Landmine Russian Twists",
+        "aliases": [],
+        "primaryMovements": [],
+        "coreMovements": [
+          "rotational"
+        ],
+        "primaryMuscles": [],
+        "coreMuscles": [
+          "obliques",
+          "rectus_abdominis"
+        ],
+        "equipment": [
+          "barbell",
+          "landmine"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "lateral_jumps",
+      "record": {
+        "id": "lateral_jumps",
+        "name": "Lateral Jumps",
+        "aliases": [],
+        "primaryMovements": [
+          "squat"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "quads",
+          "glutes",
+          "calves"
+        ],
+        "coreMuscles": [],
+        "equipment": [],
+        "modalities": [
+          "conditioning"
+        ]
+      }
+    },
+    {
+      "exercise_id": "lateral_quick_feet_thru_ladder",
+      "record": {
+        "id": "lateral_quick_feet_thru_ladder",
+        "name": "Lateral Quick Feet Thru Ladder",
+        "aliases": [],
+        "primaryMovements": [
+          "squat"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "calves",
+          "quads"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "open-space"
+        ],
+        "modalities": [
+          "conditioning"
+        ]
+      }
+    },
+    {
+      "exercise_id": "leg_lowers",
+      "record": {
+        "id": "leg_lowers",
+        "name": "Leg Lowers",
+        "aliases": [
+          "Supine Leg Drops",
+          "Supine Leg Lowers"
+        ],
+        "primaryMovements": [],
+        "coreMovements": [
+          "anti_ext",
+          "flexion"
+        ],
+        "primaryMuscles": [],
+        "coreMuscles": [
+          "rectus_abdominis"
+        ],
+        "equipment": [],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "lunge_and_reaches",
+      "record": {
+        "id": "lunge_and_reaches",
+        "name": "Lunge and Reaches",
+        "aliases": [],
+        "primaryMovements": [
+          "squat"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "quads",
+          "glutes"
+        ],
+        "coreMuscles": [],
+        "equipment": [],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "lunge_with_tricep_ext",
+      "record": {
+        "id": "lunge_with_tricep_ext",
+        "name": "Lunge with Tricep Ext",
+        "aliases": [],
+        "primaryMovements": [
+          "squat",
+          "push_v"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "quads",
+          "glutes",
+          "triceps"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "dumbbells"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "mb_burpee_sprawl",
+      "record": {
+        "id": "mb_burpee_sprawl",
+        "name": "MB Burpee Sprawl",
+        "aliases": [],
+        "primaryMovements": [
+          "squat",
+          "push_h"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "quads",
+          "glutes",
+          "chest"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "slam-ball"
+        ],
+        "modalities": [
+          "conditioning"
+        ]
+      }
+    },
+    {
+      "exercise_id": "mb_clean",
+      "record": {
+        "id": "mb_clean",
+        "name": "MB Clean",
+        "aliases": [],
+        "primaryMovements": [
+          "hinge",
+          "squat"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "glutes",
+          "hamstrings",
+          "quads"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "wall-ball"
+        ],
+        "modalities": [
+          "strength",
+          "conditioning"
+        ]
+      }
+    },
+    {
+      "exercise_id": "mb_plank_weight_shifts",
+      "record": {
+        "id": "mb_plank_weight_shifts",
+        "name": "MB Plank Weight Shifts",
+        "aliases": [],
+        "primaryMovements": [],
+        "coreMovements": [
+          "anti_ext",
+          "anti_lat"
+        ],
+        "primaryMuscles": [],
+        "coreMuscles": [
+          "rectus_abdominis",
+          "transverse",
+          "obliques"
+        ],
+        "equipment": [
+          "wall-ball"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "mb_saw_plank",
+      "record": {
+        "id": "mb_saw_plank",
+        "name": "MB Saw Plank",
+        "aliases": [],
+        "primaryMovements": [],
+        "coreMovements": [
+          "anti_ext"
+        ],
+        "primaryMuscles": [],
+        "coreMuscles": [
+          "rectus_abdominis",
+          "transverse"
+        ],
+        "equipment": [
+          "wall-ball"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "mountain_climbers_on_rings",
+      "record": {
+        "id": "mountain_climbers_on_rings",
+        "name": "Mountain Climbers on Rings",
+        "aliases": [
+          "Slow Ring Mtn Climbers"
+        ],
+        "primaryMovements": [],
+        "coreMovements": [
+          "flexion",
+          "anti_ext"
+        ],
+        "primaryMuscles": [
+          "shoulders"
+        ],
+        "coreMuscles": [
+          "rectus_abdominis"
+        ],
+        "equipment": [
+          "rings"
+        ],
+        "modalities": [
+          "strength",
+          "conditioning"
+        ]
+      }
+    },
+    {
+      "exercise_id": "odd_object_carry",
+      "record": {
+        "id": "odd_object_carry",
+        "name": "Odd Object Carry",
+        "aliases": [],
+        "primaryMovements": [],
+        "coreMovements": [
+          "anti_ext",
+          "anti_lat"
+        ],
+        "primaryMuscles": [
+          "upper_back"
+        ],
+        "coreMuscles": [
+          "transverse",
+          "rectus_abdominis"
+        ],
+        "equipment": [
+          "d-ball"
+        ],
+        "modalities": [
+          "strength",
+          "conditioning"
+        ]
+      }
+    },
+    {
+      "exercise_id": "partner_mb_plank_pass",
+      "record": {
+        "id": "partner_mb_plank_pass",
+        "name": "Partner MB Plank Pass",
+        "aliases": [
+          "Plank MB Pass",
+          "Plank Med Ball Pass",
+          "Plank Pass"
+        ],
+        "primaryMovements": [],
+        "coreMovements": [
+          "anti_ext",
+          "anti_rot"
+        ],
+        "primaryMuscles": [],
+        "coreMuscles": [
+          "rectus_abdominis",
+          "obliques",
+          "transverse"
+        ],
+        "equipment": [
+          "wall-ball"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "plank_lateral_jumps",
+      "record": {
+        "id": "plank_lateral_jumps",
+        "name": "Plank Lateral Jumps",
+        "aliases": [],
+        "primaryMovements": [],
+        "coreMovements": [
+          "anti_ext",
+          "rotational"
+        ],
+        "primaryMuscles": [],
+        "coreMuscles": [
+          "rectus_abdominis",
+          "obliques"
+        ],
+        "equipment": [],
+        "modalities": [
+          "conditioning",
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "plank_open_row",
+      "record": {
+        "id": "plank_open_row",
+        "name": "Plank Open Row",
+        "aliases": [],
+        "primaryMovements": [
+          "pull_h"
+        ],
+        "coreMovements": [
+          "anti_rot"
+        ],
+        "primaryMuscles": [
+          "upper_back",
+          "lats"
+        ],
+        "coreMuscles": [
+          "obliques"
+        ],
+        "equipment": [
+          "dumbbells"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "plank_saw",
+      "record": {
+        "id": "plank_saw",
+        "name": "Plank Saw",
+        "aliases": [],
+        "primaryMovements": [],
+        "coreMovements": [
+          "anti_ext"
+        ],
+        "primaryMuscles": [],
+        "coreMuscles": [
+          "rectus_abdominis",
+          "transverse"
+        ],
+        "equipment": [],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "plank_to_down_dog",
+      "record": {
+        "id": "plank_to_down_dog",
+        "name": "Plank to Down Dog",
+        "aliases": [],
+        "primaryMovements": [
+          "push_v"
+        ],
+        "coreMovements": [
+          "anti_ext"
+        ],
+        "primaryMuscles": [
+          "shoulders"
+        ],
+        "coreMuscles": [
+          "rectus_abdominis"
+        ],
+        "equipment": [],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "plank_to_pike",
+      "record": {
+        "id": "plank_to_pike",
+        "name": "Plank to Pike",
+        "aliases": [],
+        "primaryMovements": [],
+        "coreMovements": [
+          "flexion",
+          "anti_ext"
+        ],
+        "primaryMuscles": [],
+        "coreMuscles": [
+          "rectus_abdominis"
+        ],
+        "equipment": [],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "plank_w_band_at_arms_walk",
+      "record": {
+        "id": "plank_w_band_at_arms_walk",
+        "name": "Plank w/ Band at Arms Walk",
+        "aliases": [],
+        "primaryMovements": [],
+        "coreMovements": [
+          "anti_ext",
+          "anti_rot"
+        ],
+        "primaryMuscles": [
+          "shoulders"
+        ],
+        "coreMuscles": [
+          "rectus_abdominis"
+        ],
+        "equipment": [
+          "band"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "plank_w_forward_reach",
+      "record": {
+        "id": "plank_w_forward_reach",
+        "name": "Plank w/ Forward Reach",
+        "aliases": [],
+        "primaryMovements": [],
+        "coreMovements": [
+          "anti_ext",
+          "anti_rot"
+        ],
+        "primaryMuscles": [
+          "shoulders"
+        ],
+        "coreMuscles": [
+          "transverse",
+          "rectus_abdominis"
+        ],
+        "equipment": [],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "plate_deadbugs",
+      "record": {
+        "id": "plate_deadbugs",
+        "name": "Plate Deadbugs",
+        "aliases": [],
+        "primaryMovements": [],
+        "coreMovements": [
+          "anti_ext"
+        ],
+        "primaryMuscles": [],
+        "coreMuscles": [
+          "rectus_abdominis"
+        ],
+        "equipment": [
+          "plate"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "plate_switchouts",
+      "record": {
+        "id": "plate_switchouts",
+        "name": "Plate Switchouts",
+        "aliases": [],
+        "primaryMovements": [
+          "squat"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "calves",
+          "quads"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "plate"
+        ],
+        "modalities": [
+          "conditioning"
+        ]
+      }
+    },
+    {
+      "exercise_id": "plate_v_up",
+      "record": {
+        "id": "plate_v_up",
+        "name": "Plate V-Up",
+        "aliases": [],
+        "primaryMovements": [],
+        "coreMovements": [
+          "flexion"
+        ],
+        "primaryMuscles": [],
+        "coreMuscles": [
+          "rectus_abdominis"
+        ],
+        "equipment": [
+          "plate"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "pogo_jumps",
+      "record": {
+        "id": "pogo_jumps",
+        "name": "Pogo Jumps",
+        "aliases": [],
+        "primaryMovements": [
+          "squat"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "calves"
+        ],
+        "coreMuscles": [],
+        "equipment": [],
+        "modalities": [
+          "conditioning",
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "power_walk",
+      "record": {
+        "id": "power_walk",
+        "name": "Power Walk",
+        "aliases": [],
+        "primaryMovements": [
+          "squat"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "calves",
+          "quads"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "open-space"
+        ],
+        "modalities": [
+          "conditioning"
+        ]
+      }
+    },
+    {
+      "exercise_id": "quadruped_donkey_kick_left",
+      "record": {
+        "id": "quadruped_donkey_kick_left",
+        "name": "Quadruped Donkey Kick Left",
+        "aliases": [
+          "Quadruped Donkey Kick Right"
+        ],
+        "primaryMovements": [
+          "hinge"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "glutes",
+          "hamstrings"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "dumbbells"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "quadruped_hold",
+      "record": {
+        "id": "quadruped_hold",
+        "name": "Quadruped Hold",
+        "aliases": [],
+        "primaryMovements": [],
+        "coreMovements": [
+          "anti_ext"
+        ],
+        "primaryMuscles": [
+          "quads"
+        ],
+        "coreMuscles": [
+          "transverse",
+          "rectus_abdominis"
+        ],
+        "equipment": [],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "quadruped_kb_pull_through",
+      "record": {
+        "id": "quadruped_kb_pull_through",
+        "name": "Quadruped KB Pull Through",
+        "aliases": [],
+        "primaryMovements": [],
+        "coreMovements": [
+          "anti_rot",
+          "anti_ext"
+        ],
+        "primaryMuscles": [],
+        "coreMuscles": [
+          "transverse",
+          "rectus_abdominis",
+          "obliques"
+        ],
+        "equipment": [
+          "kettlebell"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "quadruped_kick_thrus",
+      "record": {
+        "id": "quadruped_kick_thrus",
+        "name": "Quadruped Kick Thrus",
+        "aliases": [],
+        "primaryMovements": [],
+        "coreMovements": [
+          "rotational",
+          "anti_ext"
+        ],
+        "primaryMuscles": [
+          "shoulders",
+          "quads"
+        ],
+        "coreMuscles": [
+          "obliques"
+        ],
+        "equipment": [],
+        "modalities": [
+          "strength",
+          "conditioning"
+        ]
+      }
+    },
+    {
+      "exercise_id": "rope_throws",
+      "record": {
+        "id": "rope_throws",
+        "name": "Rope Throws",
+        "aliases": [],
+        "primaryMovements": [
+          "pull_v"
+        ],
+        "coreMovements": [
+          "anti_ext"
+        ],
+        "primaryMuscles": [
+          "shoulders",
+          "upper_back"
+        ],
+        "coreMuscles": [
+          "rectus_abdominis"
+        ],
+        "equipment": [
+          "rope"
+        ],
+        "modalities": [
+          "conditioning"
+        ]
+      }
+    },
+    {
+      "exercise_id": "rot_mb_slams_to_wall",
+      "record": {
+        "id": "rot_mb_slams_to_wall",
+        "name": "Rot. MB Slams to Wall",
+        "aliases": [],
+        "primaryMovements": [],
+        "coreMovements": [
+          "rotational",
+          "flexion"
+        ],
+        "primaryMuscles": [],
+        "coreMuscles": [
+          "obliques",
+          "rectus_abdominis"
+        ],
+        "equipment": [
+          "wall-ball"
+        ],
+        "modalities": [
+          "conditioning",
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "row_intervals",
+      "record": {
+        "id": "row_intervals",
+        "name": "Row Intervals",
+        "aliases": [],
+        "primaryMovements": [
+          "pull_h",
+          "squat"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "lats",
+          "upper_back",
+          "quads",
+          "hamstrings"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "rower"
+        ],
+        "modalities": [
+          "conditioning"
+        ]
+      }
+    },
+    {
+      "exercise_id": "sa_banded_row",
+      "record": {
+        "id": "sa_banded_row",
+        "name": "SA Banded Row",
+        "aliases": [],
+        "primaryMovements": [
+          "pull_h"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "lats",
+          "upper_back"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "band"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "sa_chest_fly",
+      "record": {
+        "id": "sa_chest_fly",
+        "name": "SA Chest Fly",
+        "aliases": [],
+        "primaryMovements": [
+          "push_h"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "chest"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "dumbbells"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "sa_db_bench_press",
+      "record": {
+        "id": "sa_db_bench_press",
+        "name": "SA DB Bench Press",
+        "aliases": [],
+        "primaryMovements": [
+          "push_h"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "chest",
+          "shoulders",
+          "triceps"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "dumbbells",
+          "bench"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "sa_db_front_rack_squat",
+      "record": {
+        "id": "sa_db_front_rack_squat",
+        "name": "SA DB Front Rack Squat",
+        "aliases": [],
+        "primaryMovements": [
+          "squat"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "quads",
+          "glutes"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "dumbbells"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "sa_db_snatch",
+      "record": {
+        "id": "sa_db_snatch",
+        "name": "SA DB Snatch",
+        "aliases": [],
+        "primaryMovements": [
+          "hinge",
+          "push_v"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "glutes",
+          "hamstrings",
+          "shoulders"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "dumbbells"
+        ],
+        "modalities": [
+          "strength",
+          "conditioning"
+        ]
+      }
+    },
+    {
+      "exercise_id": "sa_med_ball_chest_press_to_wall",
+      "record": {
+        "id": "sa_med_ball_chest_press_to_wall",
+        "name": "SA Med Ball Chest Press to Wall",
+        "aliases": [],
+        "primaryMovements": [
+          "push_h"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "chest",
+          "triceps"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "wall-ball"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "sa_seated_arnold_press",
+      "record": {
+        "id": "sa_seated_arnold_press",
+        "name": "SA Seated Arnold Press",
+        "aliases": [],
+        "primaryMovements": [
+          "push_v"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "shoulders",
+          "triceps"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "dumbbells",
+          "bench"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "single_leg_kickbacks",
+      "record": {
+        "id": "single_leg_kickbacks",
+        "name": "Single Leg Kickbacks",
+        "aliases": [],
+        "primaryMovements": [
+          "hinge"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "glutes",
+          "hamstrings"
+        ],
+        "coreMuscles": [],
+        "equipment": [],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "sl_decel_squats",
+      "record": {
+        "id": "sl_decel_squats",
+        "name": "SL Decel Squats",
+        "aliases": [],
+        "primaryMovements": [
+          "squat"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "quads",
+          "glutes"
+        ],
+        "coreMuscles": [],
+        "equipment": [],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "sl_explosive_hip_thrusts",
+      "record": {
+        "id": "sl_explosive_hip_thrusts",
+        "name": "SL Explosive Hip Thrusts",
+        "aliases": [],
+        "primaryMovements": [
+          "hinge"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "glutes",
+          "hamstrings"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "bench"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "sl_lateral_box_plate_jump",
+      "record": {
+        "id": "sl_lateral_box_plate_jump",
+        "name": "SL Lateral Box/Plate Jump",
+        "aliases": [],
+        "primaryMovements": [
+          "squat"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "quads",
+          "glutes",
+          "calves"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "box"
+        ],
+        "modalities": [
+          "conditioning",
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "sl_stance_mb_throw",
+      "record": {
+        "id": "sl_stance_mb_throw",
+        "name": "SL Stance MB Throw",
+        "aliases": [],
+        "primaryMovements": [],
+        "coreMovements": [
+          "rotational"
+        ],
+        "primaryMuscles": [],
+        "coreMuscles": [
+          "obliques"
+        ],
+        "equipment": [
+          "wall-ball"
+        ],
+        "modalities": [
+          "conditioning",
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "standing_band_to_rig_hip_adduction",
+      "record": {
+        "id": "standing_band_to_rig_hip_adduction",
+        "name": "Standing Band to Rig Hip Adduction",
+        "aliases": [],
+        "primaryMovements": [
+          "hinge"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "glutes"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "band"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "standing_banded_hip_abduction",
+      "record": {
+        "id": "standing_banded_hip_abduction",
+        "name": "Standing Banded Hip Abduction",
+        "aliases": [
+          "Standing Banded Hip Lateral Abduction"
+        ],
+        "primaryMovements": [
+          "hinge"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "glutes"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "band"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "standing_banded_hip_diagonal_abduction",
+      "record": {
+        "id": "standing_banded_hip_diagonal_abduction",
+        "name": "Standing Banded Hip Diagonal Abduction",
+        "aliases": [],
+        "primaryMovements": [
+          "hinge"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "glutes"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "band"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "standing_db_chop",
+      "record": {
+        "id": "standing_db_chop",
+        "name": "Standing DB Chop",
+        "aliases": [],
+        "primaryMovements": [],
+        "coreMovements": [
+          "rotational"
+        ],
+        "primaryMuscles": [],
+        "coreMuscles": [
+          "obliques",
+          "rectus_abdominis"
+        ],
+        "equipment": [
+          "dumbbells"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "tp_mb_slam_to_wall",
+      "record": {
+        "id": "tp_mb_slam_to_wall",
+        "name": "TP MB Slam to Wall",
+        "aliases": [],
+        "primaryMovements": [],
+        "coreMovements": [
+          "rotational",
+          "flexion"
+        ],
+        "primaryMuscles": [],
+        "coreMuscles": [
+          "obliques",
+          "rectus_abdominis"
+        ],
+        "equipment": [
+          "wall-ball"
+        ],
+        "modalities": [
+          "conditioning",
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "walk",
+      "record": {
+        "id": "walk",
+        "name": "Walk",
+        "aliases": [],
+        "primaryMovements": [
+          "squat"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "quads",
+          "calves"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "open-space"
+        ],
+        "modalities": [
+          "conditioning"
+        ]
+      }
+    },
+    {
+      "exercise_id": "walking_side_lunges",
+      "record": {
+        "id": "walking_side_lunges",
+        "name": "Walking Side Lunges",
+        "aliases": [],
+        "primaryMovements": [
+          "squat"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "quads",
+          "glutes"
+        ],
+        "coreMuscles": [],
+        "equipment": [],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "wall_sit_hammer_curl",
+      "record": {
+        "id": "wall_sit_hammer_curl",
+        "name": "Wall Sit Hammer Curl",
+        "aliases": [],
+        "primaryMovements": [
+          "squat",
+          "pull_v"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "quads",
+          "glutes",
+          "biceps"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "wall",
+          "dumbbells"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "warrior_ropes",
+      "record": {
+        "id": "warrior_ropes",
+        "name": "Warrior Ropes",
+        "aliases": [],
+        "primaryMovements": [
+          "pull_v"
+        ],
+        "coreMovements": [
+          "anti_ext"
+        ],
+        "primaryMuscles": [
+          "shoulders",
+          "upper_back"
+        ],
+        "coreMuscles": [
+          "rectus_abdominis"
+        ],
+        "equipment": [
+          "rope"
+        ],
+        "modalities": [
+          "conditioning"
+        ]
+      }
+    },
+    {
+      "exercise_id": "tripod_row_db_kb",
+      "record": {
+        "id": "tripod_row_db_kb",
+        "name": "Tripod Row (DB/KB)",
+        "aliases": [
+          "DB/KB Tripod Row",
+          "3 Point DB Row",
+          "3 Pt Row",
+          "DB 3-Point Row",
+          "SA Tripod Row"
+        ],
+        "primaryMovements": [
+          "pull_h"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "lats",
+          "upper_back"
+        ],
+        "coreMuscles": [],
+        "equipment": [],
+        "modalities": []
+      }
+    },
+    {
+      "exercise_id": "air_squat",
+      "record": {
+        "id": "air_squat",
+        "name": "Air Squats",
+        "aliases": [
+          "Air Squat",
+          "Jumping Air Squat",
+          "Jumping Air Squats",
+          "Airsquats"
+        ],
+        "primaryMovements": [
+          "squat"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "quads",
+          "glutes"
+        ],
+        "coreMuscles": [],
+        "equipment": [],
+        "modalities": [
+          "strength",
+          "conditioning"
+        ]
+      }
+    },
+    {
+      "exercise_id": "db_snatch",
+      "record": {
+        "id": "db_snatch",
+        "name": "Alt. DB Snatch",
+        "aliases": [
+          "alt. DB Snatch",
+          "Alternating DB Snatch",
+          "Alt. DB Snatches",
+          "Alt SA Snatch"
+        ],
+        "primaryMovements": [
+          "hinge",
+          "push_v"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "glutes",
+          "hamstrings",
+          "shoulders",
+          "upper_back"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "dumbbells"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "kb_push_press",
+      "record": {
+        "id": "kb_push_press",
+        "name": "Push Press (KB)",
+        "aliases": [
+          "Alternating SA KB Push Press"
+        ],
+        "primaryMovements": [
+          "push_v"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "shoulders",
+          "triceps"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "kettlebell"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "inverted_row",
+      "record": {
+        "id": "inverted_row",
+        "name": "Inverted Row",
+        "aliases": [
+          "Aussie Rows"
+        ],
+        "primaryMovements": [
+          "pull_h"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "upper_back"
+        ],
+        "coreMuscles": [],
+        "equipment": [],
+        "modalities": []
+      }
+    },
+    {
+      "exercise_id": "back_rack_lunge",
+      "record": {
+        "id": "back_rack_lunge",
+        "name": "Back Rack Lunge",
+        "aliases": [
+          "Back Rack Rev Lunges",
+          "Back Rack Reverse Lunges"
+        ],
+        "primaryMovements": [
+          "squat"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "quads",
+          "glutes"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "barbell",
+          "squat-rack"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "banded_lateral_walk",
+      "record": {
+        "id": "banded_lateral_walk",
+        "name": "Lateral Walk (Banded)",
+        "aliases": [
+          "Banded Lateral Monster Walk",
+          "Banded Lateral Walks"
+        ],
+        "primaryMovements": [],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "glutes"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "band"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "banded_hamstring_curls",
+      "record": {
+        "id": "banded_hamstring_curls",
+        "name": "Hamstring Curls (Banded)",
+        "aliases": [
+          "Banded Hamstring Curls",
+          "Banded Single Leg Hamstring Curls",
+          "Banded Single Leg Hamstrings Left"
+        ],
+        "primaryMovements": [],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "hamstrings"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "band"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "banded_squat",
+      "record": {
+        "id": "banded_squat",
+        "name": "Squat (Banded)",
+        "aliases": [
+          "Banded Squat with Pulse",
+          "Banded Squats"
+        ],
+        "primaryMovements": [
+          "squat"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "quads",
+          "glutes"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "band"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "banded_tricep_pressdown",
+      "record": {
+        "id": "banded_tricep_pressdown",
+        "name": "Tricep Pressdown (Banded or Cable)",
+        "aliases": [
+          "Banded Tricep Pressdowns",
+          "Band Tricep Pressdowns",
+          "Banded Or Cable Tricep Pressdown",
+          "Cable Tricep Pressdown",
+          "Cable Tricep Pushdown",
+          "Banded Tricep Pushdown",
+          "Tricep Extension Banded",
+          "Banded Tricep Extension",
+          "Banded Tricep Press Downs"
+        ],
+        "primaryMovements": [],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "triceps"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          [
+            "band",
+            "cable-machine"
+          ]
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "clean",
+      "record": {
+        "id": "clean",
+        "name": "Clean",
+        "aliases": [
+          "Barbell Clean"
+        ],
+        "primaryMovements": [
+          "hinge",
+          "squat"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "glutes",
+          "hamstrings",
+          "quads",
+          "upper_back"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "barbell"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "thruster",
+      "record": {
+        "id": "thruster",
+        "name": "Thrusters",
+        "aliases": [
+          "Barbell Thruster"
+        ],
+        "primaryMovements": [
+          "squat",
+          "push_v"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "quads",
+          "shoulders"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "barbell",
+          "squat-rack"
+        ],
+        "modalities": [
+          "strength",
+          "conditioning"
+        ]
+      }
+    },
+    {
+      "exercise_id": "barbell_row",
+      "record": {
+        "id": "barbell_row",
+        "name": "Barbell Bent Over Row",
+        "aliases": [
+          "BB Bent Row",
+          "Bent Over Row",
+          "Bent Row",
+          "Bent-Over Row",
+          "Bent Over Barbell Row",
+          "BB Bent Over Row"
+        ],
+        "primaryMovements": [
+          "pull_h"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "lats",
+          "upper_back"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "barbell"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "hip_thrusts",
+      "record": {
+        "id": "hip_thrusts",
+        "name": "Hip Thrust",
+        "aliases": [
+          "Hip Thrusts",
+          "Barbell Hip Thrust",
+          "BB Hip Thrusts"
+        ],
+        "primaryMovements": [
+          "hinge"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "glutes",
+          "hamstrings"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "barbell"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "push_press",
+      "record": {
+        "id": "push_press",
+        "name": "Push Press",
+        "aliases": [
+          "Barbell Push Press",
+          "BB Push Press"
+        ],
+        "primaryMovements": [
+          "push_v"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "shoulders",
+          "quads",
+          "triceps"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "barbell",
+          "squat-rack"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "strict_press",
+      "record": {
+        "id": "strict_press",
+        "name": "Strict Press",
+        "aliases": [
+          "Barbell Strict Press",
+          "BB Strict Press"
+        ],
+        "primaryMovements": [
+          "push_v"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "shoulders",
+          "triceps"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "barbell",
+          "squat-rack"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "rear_delt_fly",
+      "record": {
+        "id": "rear_delt_fly",
+        "name": "Rear Delt Flyes",
+        "aliases": [
+          "Db Rear Delt Fly",
+          "Two Db Rear Delt Fly",
+          "Db Reverse Fly",
+          "Bent Over Flys"
+        ],
+        "primaryMovements": [],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "upper_back"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "dumbbells"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "bird_dog_row",
+      "record": {
+        "id": "bird_dog_row",
+        "name": "Bird Dog Row",
+        "aliases": [
+          "Bird Dog Rows",
+          "Birddog Rows"
+        ],
+        "primaryMovements": [
+          "pull_h"
+        ],
+        "coreMovements": [
+          "anti_rot"
+        ],
+        "primaryMuscles": [
+          "upper_back"
+        ],
+        "coreMuscles": [
+          "rectus_abdominis"
+        ],
+        "equipment": [
+          "dumbbells"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "farmers_carry",
+      "record": {
+        "id": "farmers_carry",
+        "name": "KB Farmer Carry",
+        "aliases": [
+          "Farmer Carry",
+          "Farmers Carry",
+          "BL Farmers Carry",
+          "BL KB Carry"
+        ],
+        "primaryMovements": [],
+        "coreMovements": [
+          "anti_lat",
+          "anti_rot"
+        ],
+        "primaryMuscles": [],
+        "coreMuscles": [
+          "rectus_abdominis"
+        ],
+        "equipment": [
+          "kettlebell"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "broad_jump",
+      "record": {
+        "id": "broad_jump",
+        "name": "Broad Jump",
+        "aliases": [
+          "Broad Jumps",
+          "Standing Broad Jump",
+          "Broad Jumps/Leaps"
+        ],
+        "primaryMovements": [
+          "squat",
+          "hinge"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "quads",
+          "glutes",
+          "hamstrings"
+        ],
+        "coreMuscles": [],
+        "equipment": [],
+        "modalities": [
+          "strength",
+          "conditioning"
+        ]
+      }
+    },
+    {
+      "exercise_id": "burpees_over_the_bar",
+      "record": {
+        "id": "burpees_over_the_bar",
+        "name": "Burpees Over the Bar",
+        "aliases": [
+          "Burpees Over Bar"
+        ],
+        "primaryMovements": [
+          "hinge",
+          "push_h"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "chest",
+          "quads",
+          "shoulders"
+        ],
+        "coreMuscles": [],
+        "equipment": [],
+        "modalities": [
+          "conditioning"
+        ]
+      }
+    },
+    {
+      "exercise_id": "cal_row",
+      "record": {
+        "id": "cal_row",
+        "name": "Cal Row",
+        "aliases": [
+          "Cal Row Cardio Sprint"
+        ],
+        "primaryMovements": [],
+        "coreMovements": [],
+        "primaryMuscles": [],
+        "coreMuscles": [],
+        "equipment": [
+          "rower"
+        ],
+        "modalities": [
+          "conditioning"
+        ]
+      }
+    },
+    {
+      "exercise_id": "calf_raises",
+      "record": {
+        "id": "calf_raises",
+        "name": "Calf Raises",
+        "aliases": [
+          "Calf Raise"
+        ],
+        "primaryMovements": [],
+        "coreMovements": [
+          "extension"
+        ],
+        "primaryMuscles": [
+          "calves"
+        ],
+        "coreMuscles": [],
+        "equipment": [],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "pull_up_iso_hold",
+      "record": {
+        "id": "pull_up_iso_hold",
+        "name": "Chin Over Bar Hold",
+        "aliases": [
+          "Chin-Up Hold"
+        ],
+        "primaryMovements": [
+          "pull_v"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "lats",
+          "biceps",
+          "upper_back"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "pull-up-bar"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "clamshells",
+      "record": {
+        "id": "clamshells",
+        "name": "Clamshells",
+        "aliases": [
+          "Clamshell",
+          "Clam Shell with HP Lift",
+          "Clam Shells",
+          "Clamshell w/ Hip Lift"
+        ],
+        "primaryMovements": [],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "glutes"
+        ],
+        "coreMuscles": [],
+        "equipment": [],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "rower_seat_hamstring_curl",
+      "record": {
+        "id": "rower_seat_hamstring_curl",
+        "name": "Rower Seat Hamstring Curl",
+        "aliases": [
+          "Rower Seat Hamstring Curls",
+          "Rower Hamstring Curl",
+          "Curls on Rower"
+        ],
+        "primaryMovements": [
+          "hinge"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "hamstrings"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "rower"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "cyclist_squat",
+      "record": {
+        "id": "cyclist_squat",
+        "name": "Goblet Cyclist Squat",
+        "aliases": [
+          "Cyclist Squats",
+          "Cyclist Squat",
+          "Cylist Squat",
+          "Heels Elevated Cyclist Squat",
+          "Cyclist Goblet Squats",
+          "Tempo Cyclist Squat"
+        ],
+        "primaryMovements": [
+          "squat"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "quads",
+          "glutes"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "dumbbells"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "two_db_chest_fly",
+      "record": {
+        "id": "two_db_chest_fly",
+        "name": "2-DB Chest Fly",
+        "aliases": [
+          "DB Chest Fly",
+          "DB Fly",
+          "DB Supine Fly"
+        ],
+        "primaryMovements": [
+          "push_h"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "chest"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "dumbbells"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "goblet_squat",
+      "record": {
+        "id": "goblet_squat",
+        "name": "Goblet Squat",
+        "aliases": [
+          "Goblet Squats",
+          "Goblet Front Squats",
+          "DB Goblet Squat"
+        ],
+        "primaryMovements": [
+          "squat"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "quads",
+          "glutes"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "dumbbells"
+        ],
+        "modalities": [
+          "strength",
+          "conditioning"
+        ]
+      }
+    },
+    {
+      "exercise_id": "2_db_hang_clean",
+      "record": {
+        "id": "2_db_hang_clean",
+        "name": "2-DB Hang Clean",
+        "aliases": [
+          "Dual DB Hang Clean",
+          "Two DB Hang Clean",
+          "DB Hang Cleans"
+        ],
+        "primaryMovements": [
+          "hinge",
+          "squat"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "glutes",
+          "hamstrings",
+          "quads",
+          "upper_back"
+        ],
+        "coreMuscles": [],
+        "equipment": [],
+        "modalities": []
+      }
+    },
+    {
+      "exercise_id": "half_kneeling_windmill",
+      "record": {
+        "id": "half_kneeling_windmill",
+        "name": "Half-Kneeling Windmill",
+        "aliases": [
+          "Half Kneeling Windmill",
+          "DB Kneeling Windmill",
+          "KB Kneeling Windmill"
+        ],
+        "primaryMovements": [],
+        "coreMovements": [
+          "rotational"
+        ],
+        "primaryMuscles": [
+          "shoulders"
+        ],
+        "coreMuscles": [
+          "rectus_abdominis"
+        ],
+        "equipment": [
+          "kettlebell"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "plank_pull_through_db",
+      "record": {
+        "id": "plank_pull_through_db",
+        "name": "Plank Pull Through (DB)",
+        "aliases": [
+          "DB Plank Pull Through",
+          "DB Plank Pull Thru",
+          "Plank DB Pull Thru"
+        ],
+        "primaryMovements": [],
+        "coreMovements": [
+          "anti_ext"
+        ],
+        "primaryMuscles": [],
+        "coreMuscles": [
+          "rectus_abdominis"
+        ],
+        "equipment": [],
+        "modalities": []
+      }
+    },
+    {
+      "exercise_id": "db_plank_row",
+      "record": {
+        "id": "db_plank_row",
+        "name": "Plank Rows (2-DB)",
+        "aliases": [
+          "Plank Rows",
+          "DB Plank Row",
+          "SA Plank Row"
+        ],
+        "primaryMovements": [
+          "pull_h"
+        ],
+        "coreMovements": [
+          "anti_ext"
+        ],
+        "primaryMuscles": [
+          "upper_back"
+        ],
+        "coreMuscles": [
+          "rectus_abdominis"
+        ],
+        "equipment": [
+          "dumbbells"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "db_pullover",
+      "record": {
+        "id": "db_pullover",
+        "name": "Pullovers (DB)",
+        "aliases": [
+          "Dumbbell Pullover",
+          "Pullovers",
+          "Db Bench Pullover",
+          "Dumbbell Bench Pull Over",
+          "Bench Pull Over",
+          "Bench Pullover",
+          "Pullover Db",
+          "Pullover",
+          "DB Pull Overs"
+        ],
+        "primaryMovements": [],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "chest",
+          "lats"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "dumbbells"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "two_db_rdl",
+      "record": {
+        "id": "two_db_rdl",
+        "name": "DB Romanian Deadlift",
+        "aliases": [
+          "2-DB RDL",
+          "DB RDLs",
+          "Tempo RDLs"
+        ],
+        "primaryMovements": [
+          "hinge"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "glutes",
+          "hamstrings"
+        ],
+        "coreMuscles": [
+          "lower_back"
+        ],
+        "equipment": [
+          "dumbbells"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "db_single_leg_glute_bridge",
+      "record": {
+        "id": "db_single_leg_glute_bridge",
+        "name": "Single Leg Glute Bridge (DB)",
+        "aliases": [
+          "Single Leg Db Glute Bridge",
+          "DB SL Glute Bridge"
+        ],
+        "primaryMovements": [
+          "hinge"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "glutes",
+          "hamstrings"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "dumbbells"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "db_tricep_extension",
+      "record": {
+        "id": "db_tricep_extension",
+        "name": "Tricep Extension (DB)",
+        "aliases": [
+          "Db Tricep Extensions",
+          "Dumbbell Tricep Extension",
+          "DB Tricep Ext"
+        ],
+        "primaryMovements": [],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "triceps"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "dumbbells"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "dball_to_shoulder",
+      "record": {
+        "id": "dball_to_shoulder",
+        "name": "D-Ball to Shoulder",
+        "aliases": [
+          "DBall to Shoulder",
+          "D Ball to Shoulder",
+          "DBall to SH"
+        ],
+        "primaryMovements": [
+          "hinge"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "glutes",
+          "hamstrings",
+          "upper_back"
+        ],
+        "coreMuscles": [
+          "rectus_abdominis"
+        ],
+        "equipment": [
+          "slam-ball"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "double_under",
+      "record": {
+        "id": "double_under",
+        "name": "Double Unders",
+        "aliases": [
+          "Double Under",
+          "DU",
+          "Dubz"
+        ],
+        "primaryMovements": [],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "calves"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "jump-rope"
+        ],
+        "modalities": [
+          "conditioning"
+        ]
+      }
+    },
+    {
+      "exercise_id": "db_kb_box_step_ups",
+      "record": {
+        "id": "db_kb_box_step_ups",
+        "name": "Box Step-Ups (2-DB)",
+        "aliases": [
+          "Box Step-Up (2-DB)",
+          "DB Box Step Up",
+          "Weighted Box Step Up",
+          "DB Box Step Ups",
+          "Dumbbell Box Step Ups"
+        ],
+        "primaryMovements": [
+          "squat"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "quads",
+          "glutes"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "dumbbells",
+          [
+            "box",
+            "chair"
+          ]
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "db_plank_pull_through",
+      "record": {
+        "id": "db_plank_pull_through",
+        "name": "Plank Pull Throughs",
+        "aliases": [
+          "Plank Pull Through",
+          "Plank Pull-Throughs",
+          "Plank Pull-Through",
+          "Dumbbell Plank Pull Throughs"
+        ],
+        "primaryMovements": [],
+        "coreMovements": [
+          "anti_rot"
+        ],
+        "primaryMuscles": [],
+        "coreMuscles": [
+          "rectus_abdominis"
+        ],
+        "equipment": [
+          "dumbbells"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "db_suitcase_lunge",
+      "record": {
+        "id": "db_suitcase_lunge",
+        "name": "Suitcase Lunges (DB)",
+        "aliases": [
+          "DB Suitcase Lunge",
+          "Dumbbell Suitcase Lunges"
+        ],
+        "primaryMovements": [
+          "squat"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "quads",
+          "glutes"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "dumbbells"
+        ],
+        "modalities": [
+          "strength",
+          "conditioning"
+        ]
+      }
+    },
+    {
+      "exercise_id": "face_pull",
+      "record": {
+        "id": "face_pull",
+        "name": "Face Pull",
+        "aliases": [
+          "Face Pulls",
+          "Facepulls"
+        ],
+        "primaryMovements": [
+          "pull_h"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "upper_back"
+        ],
+        "coreMuscles": [],
+        "equipment": [],
+        "modalities": []
+      }
+    },
+    {
+      "exercise_id": "filly_kb_carry",
+      "record": {
+        "id": "filly_kb_carry",
+        "name": "Filly Carry (KB)",
+        "aliases": [
+          "Filly KB Carry",
+          "Filly Carry"
+        ],
+        "primaryMovements": [],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "shoulders"
+        ],
+        "coreMuscles": [
+          "rectus_abdominis"
+        ],
+        "equipment": [
+          "kettlebell"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "goblet_reverse_lunge",
+      "record": {
+        "id": "goblet_reverse_lunge",
+        "name": "Goblet Reverse Lunge",
+        "aliases": [
+          "Goblet Hold Reverse Lunges"
+        ],
+        "primaryMovements": [
+          "squat"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "quads",
+          "glutes"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "kettlebell"
+        ],
+        "modalities": [
+          "strength",
+          "conditioning"
+        ]
+      }
+    },
+    {
+      "exercise_id": "goblet_box_step_up",
+      "record": {
+        "id": "goblet_box_step_up",
+        "name": "Goblet Box Step Up",
+        "aliases": [
+          "Goblet Box Step Ups",
+          "Goblet Box Step-Ups",
+          "Goblet Step-Ups"
+        ],
+        "primaryMovements": [
+          "squat"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "quads",
+          "glutes"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "kettlebell",
+          [
+            "box",
+            "chair"
+          ]
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "half_kneeling_plate_or_db_chop",
+      "record": {
+        "id": "half_kneeling_plate_or_db_chop",
+        "name": "Half Kneeling Chop (Plate/DB)",
+        "aliases": [
+          "Half Kneeling Chops",
+          "Half Kneeling Plate Chops",
+          "Half Kneeling DB Chop"
+        ],
+        "primaryMovements": [],
+        "coreMovements": [
+          "rotational"
+        ],
+        "primaryMuscles": [],
+        "coreMuscles": [
+          "rectus_abdominis"
+        ],
+        "equipment": [
+          "dumbbells",
+          "plate"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "kb_half_kneeling_press",
+      "record": {
+        "id": "kb_half_kneeling_press",
+        "name": "Half Kneeling Press (KB)",
+        "aliases": [
+          "Half Kneeling Db Press",
+          "Half Kneeling Single Arm KB Press"
+        ],
+        "primaryMovements": [
+          "push_v"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "shoulders"
+        ],
+        "coreMuscles": [
+          "rectus_abdominis"
+        ],
+        "equipment": [
+          "kettlebell"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "half_kneeling_ball_slam",
+      "record": {
+        "id": "half_kneeling_ball_slam",
+        "name": "Half Kneeling Ball Slam",
+        "aliases": [
+          "Half Kneeling Slams"
+        ],
+        "primaryMovements": [],
+        "coreMovements": [
+          "flexion"
+        ],
+        "primaryMuscles": [
+          "shoulders"
+        ],
+        "coreMuscles": [
+          "rectus_abdominis"
+        ],
+        "equipment": [
+          "slam-ball"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "double_under_practice",
+      "record": {
+        "id": "double_under_practice",
+        "name": "Double Under Practice",
+        "aliases": [
+          "Du Practice",
+          "Du Practice Lc",
+          "Jump Rope Skill Work"
+        ],
+        "primaryMovements": [],
+        "coreMovements": [],
+        "primaryMuscles": [],
+        "coreMuscles": [],
+        "equipment": [
+          "jump-rope"
+        ],
+        "modalities": [
+          "conditioning"
+        ]
+      }
+    },
+    {
+      "exercise_id": "hip_to_halo",
+      "record": {
+        "id": "hip_to_halo",
+        "name": "Hip to Halo",
+        "aliases": [
+          "KB Hip to Halo"
+        ],
+        "primaryMovements": [],
+        "coreMovements": [
+          "rotational"
+        ],
+        "primaryMuscles": [
+          "shoulders"
+        ],
+        "coreMuscles": [
+          "rectus_abdominis"
+        ],
+        "equipment": [
+          "dumbbells",
+          "plate",
+          "kettlebells"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "two_kb_rdl",
+      "record": {
+        "id": "two_kb_rdl",
+        "name": "Dual Kettlebell RDL",
+        "aliases": [
+          "KB RDLs"
+        ],
+        "primaryMovements": [
+          "hinge"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "glutes",
+          "hamstrings"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "kettlebell"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "one_kb_suitcase_deadlift",
+      "record": {
+        "id": "one_kb_suitcase_deadlift",
+        "name": "Suitcase Deadlift (1-KB)",
+        "aliases": [
+          "1 Kb Suitcase Deadlift",
+          "1-KB Suitcase Deadlift",
+          "KB Suitcase Deadlifts",
+          "SA Suitcase KB DL"
+        ],
+        "primaryMovements": [
+          "hinge"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "hamstrings",
+          "glutes"
+        ],
+        "coreMuscles": [
+          "rectus_abdominis"
+        ],
+        "equipment": [
+          "kettlebell"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "kb_sumo_deadlift",
+      "record": {
+        "id": "kb_sumo_deadlift",
+        "name": "Sumo Deadlift (KB)",
+        "aliases": [
+          "Sumo Kb Deadlift",
+          "KB Sumo Deadlifts"
+        ],
+        "primaryMovements": [
+          "hinge"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "hamstrings",
+          "glutes",
+          "quads"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "kettlebell"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "plank_knee_to_elbow",
+      "record": {
+        "id": "plank_knee_to_elbow",
+        "name": "Plank Knee to Elbow",
+        "aliases": [
+          "Elbow Plank Knee To Elbow",
+          "Low Plank Knee To Elbow",
+          "Straight Arm Plank Knee To Elbow",
+          "Plank Cross Body Knee To Elbow",
+          "Plank Cross Body K2e",
+          "Plank K2e",
+          "Elbow Plank Knee-to-Elbow",
+          "KN to SS Elbow",
+          "Plank KN to EB",
+          "Plank KN to OS EB",
+          "Plank Knee to OS EB",
+          "Slow KN to SS Elbow"
+        ],
+        "primaryMovements": [],
+        "coreMovements": [
+          "rotational",
+          "anti_ext"
+        ],
+        "primaryMuscles": [],
+        "coreMuscles": [
+          "rectus_abdominis"
+        ],
+        "equipment": [],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "kneeling_rotational_ball_slam",
+      "record": {
+        "id": "kneeling_rotational_ball_slam",
+        "name": "Kneeling Rotational Ball Slam",
+        "aliases": [
+          "Kneeling Rotational Ball Slams",
+          "Tall Kneeling Rotational Ball Slams",
+          "Kneeling Rotational DBall Slams"
+        ],
+        "primaryMovements": [],
+        "coreMovements": [
+          "rotational"
+        ],
+        "primaryMuscles": [
+          "shoulders"
+        ],
+        "coreMuscles": [
+          "rectus_abdominis"
+        ],
+        "equipment": [
+          "slam-ball"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "sl_landmine_rdl",
+      "record": {
+        "id": "sl_landmine_rdl",
+        "name": "Single Leg Landmine Romanian Deadlift",
+        "aliases": [
+          "Landmine SL RDL"
+        ],
+        "primaryMovements": [
+          "hinge"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "hamstrings",
+          "glutes"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "barbell",
+          "landmine"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "single_arm_oh_carry_kb",
+      "record": {
+        "id": "single_arm_oh_carry_kb",
+        "name": "Single Arm OH Carry",
+        "aliases": [
+          "Lap Single Arm OH Carry"
+        ],
+        "primaryMovements": [],
+        "coreMovements": [
+          "anti_rot",
+          "anti_lat"
+        ],
+        "primaryMuscles": [
+          "shoulders",
+          "upper_back"
+        ],
+        "coreMuscles": [
+          "obliques",
+          "transverse",
+          "rectus_abdominis"
+        ],
+        "equipment": [
+          "kettlebell"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "lateral_box_pushoffs",
+      "record": {
+        "id": "lateral_box_pushoffs",
+        "name": "Lateral Box Pushoffs",
+        "aliases": [
+          "Lateral Box Push Offs"
+        ],
+        "primaryMovements": [
+          "hinge"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "quads",
+          "glutes"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          [
+            "box",
+            "chair"
+          ]
+        ],
+        "modalities": [
+          "strength",
+          "conditioning"
+        ]
+      }
+    },
+    {
+      "exercise_id": "dumbbell_lateral_raises",
+      "record": {
+        "id": "dumbbell_lateral_raises",
+        "name": "DB Lateral Raise",
+        "aliases": [
+          "Lateral Raise",
+          "DB Lateral Raises",
+          "Lateral Raises"
+        ],
+        "primaryMovements": [],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "shoulders"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "dumbbells"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "side_v_up",
+      "record": {
+        "id": "side_v_up",
+        "name": "Side V-Ups",
+        "aliases": [
+          "Side V-Up",
+          "Lateral V-Up"
+        ],
+        "primaryMovements": [],
+        "coreMovements": [
+          "anti_lat"
+        ],
+        "primaryMuscles": [],
+        "coreMuscles": [
+          "rectus_abdominis"
+        ],
+        "equipment": [],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "pike_leg_lift_overs",
+      "record": {
+        "id": "pike_leg_lift_overs",
+        "name": "Pike Leg Lift Overs",
+        "aliases": [
+          "Pike Leg Lift-Overs",
+          "Pike Leg Lift-Over",
+          "Pike Leg Lift",
+          "Leg Lifts Over Cone"
+        ],
+        "primaryMovements": [],
+        "coreMovements": [
+          "flexion"
+        ],
+        "primaryMuscles": [],
+        "coreMuscles": [
+          "rectus_abdominis",
+          "obliques"
+        ],
+        "equipment": [],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "cossack_squat",
+      "record": {
+        "id": "cossack_squat",
+        "name": "Cossack Squat",
+        "aliases": [
+          "Cossack Squats",
+          "Low Hold Cossack Squats"
+        ],
+        "primaryMovements": [
+          "squat"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "quads",
+          "glutes"
+        ],
+        "coreMuscles": [],
+        "equipment": [],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "medball_hamstring_curl",
+      "record": {
+        "id": "medball_hamstring_curl",
+        "name": "Medball Hamstring Curls",
+        "aliases": [
+          "Medball Hamstring Curl",
+          "MB Hamstring Curl"
+        ],
+        "primaryMovements": [
+          "hinge"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "hamstrings",
+          "glutes"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "wall-ball"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "med_ball_sit_up_throw",
+      "record": {
+        "id": "med_ball_sit_up_throw",
+        "name": "Ball Sit-Up Throw",
+        "aliases": [
+          "MB Sit Up Pass",
+          "MB Sit Up to Partner Toss",
+          "MB Situp Toss",
+          "Partner MB Sit Ups",
+          "Synchro Med Ball Sit Up Tosses"
+        ],
+        "primaryMovements": [],
+        "coreMovements": [
+          "flexion"
+        ],
+        "primaryMuscles": [],
+        "coreMuscles": [
+          "rectus_abdominis"
+        ],
+        "equipment": [
+          "wall-ball"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "medball_stir_the_pot",
+      "record": {
+        "id": "medball_stir_the_pot",
+        "name": "Ball Stir the Pot",
+        "aliases": [
+          "MB Stir the Pot Plank"
+        ],
+        "primaryMovements": [],
+        "coreMovements": [
+          "anti_rot"
+        ],
+        "primaryMuscles": [],
+        "coreMuscles": [
+          "rectus_abdominis"
+        ],
+        "equipment": [
+          [
+            "wall-ball",
+            "slam-ball"
+          ]
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "med_ball_wall_throw",
+      "record": {
+        "id": "med_ball_wall_throw",
+        "name": "Ball Wall Throw",
+        "aliases": [
+          "MB Toss to Wall",
+          "Medball Chest Press to Wall",
+          "Wall Facing MB Toss"
+        ],
+        "primaryMovements": [],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "chest"
+        ],
+        "coreMuscles": [
+          "rectus_abdominis"
+        ],
+        "equipment": [
+          "wall",
+          "wall-ball"
+        ],
+        "modalities": [
+          "strength",
+          "conditioning"
+        ]
+      }
+    },
+    {
+      "exercise_id": "lateral_medball_toss_to_wall",
+      "record": {
+        "id": "lateral_medball_toss_to_wall",
+        "name": "Lateral Ball Toss to Wall",
+        "aliases": [
+          "Med Ball Rotational Toss"
+        ],
+        "primaryMovements": [],
+        "coreMovements": [
+          "rotational"
+        ],
+        "primaryMuscles": [],
+        "coreMuscles": [
+          "rectus_abdominis"
+        ],
+        "equipment": [
+          "wall",
+          "wall-ball"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "wall_walk",
+      "record": {
+        "id": "wall_walk",
+        "name": "Wall Walk",
+        "aliases": [
+          "Wall Walks",
+          "Modified Wall Walks"
+        ],
+        "primaryMovements": [
+          "push_v"
+        ],
+        "coreMovements": [
+          "anti_ext"
+        ],
+        "primaryMuscles": [
+          "shoulders"
+        ],
+        "coreMuscles": [
+          "rectus_abdominis"
+        ],
+        "equipment": [
+          "wall"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "mountain_climbers",
+      "record": {
+        "id": "mountain_climbers",
+        "name": "Mountain Climber",
+        "aliases": [
+          "Mountain Climbers",
+          "Mtn Climbers"
+        ],
+        "primaryMovements": [],
+        "coreMovements": [
+          "anti_ext"
+        ],
+        "primaryMuscles": [
+          "quads"
+        ],
+        "coreMuscles": [
+          "rectus_abdominis"
+        ],
+        "equipment": [],
+        "modalities": [
+          "conditioning"
+        ]
+      }
+    },
+    {
+      "exercise_id": "db_overhead_tricep_extension",
+      "record": {
+        "id": "db_overhead_tricep_extension",
+        "name": "Overhead Tricep Extension (2-DB)",
+        "aliases": [
+          "Dumbbell Overhead Tricep Extension",
+          "Overhead Db Tricep Extension",
+          "Oh Tricep Extensions",
+          "OH DB Tricep Ext",
+          "Single DB OH Tricep Ext"
+        ],
+        "primaryMovements": [],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "triceps"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "dumbbells"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "wall_ball",
+      "record": {
+        "id": "wall_ball",
+        "name": "Wall Balls",
+        "aliases": [
+          "Partner Wall Balls"
+        ],
+        "primaryMovements": [
+          "squat"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "quads",
+          "shoulders"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "wall-ball",
+          "wall-ball-target"
+        ],
+        "modalities": [
+          "conditioning"
+        ]
+      }
+    },
+    {
+      "exercise_id": "rower_pike_ups",
+      "record": {
+        "id": "rower_pike_ups",
+        "name": "Rower Pike Ups",
+        "aliases": [
+          "Pike Ab",
+          "Rower Pikes"
+        ],
+        "primaryMovements": [],
+        "coreMovements": [
+          "flexion"
+        ],
+        "primaryMuscles": [],
+        "coreMuscles": [
+          "rectus_abdominis"
+        ],
+        "equipment": [
+          "rower"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "pistols",
+      "record": {
+        "id": "pistols",
+        "name": "Pistol Squats",
+        "aliases": [
+          "Pistols"
+        ],
+        "primaryMovements": [
+          "squat"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "quads",
+          "glutes"
+        ],
+        "coreMuscles": [],
+        "equipment": [],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "elbow_plank_hip_dip",
+      "record": {
+        "id": "elbow_plank_hip_dip",
+        "name": "Elbow Plank Hip Dip",
+        "aliases": [
+          "Plank Hip Dips"
+        ],
+        "primaryMovements": [],
+        "coreMovements": [
+          "flexion",
+          "anti_ext"
+        ],
+        "primaryMuscles": [],
+        "coreMuscles": [
+          "rectus_abdominis"
+        ],
+        "equipment": [],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "plank_jacks",
+      "record": {
+        "id": "plank_jacks",
+        "name": "Plank Jacks",
+        "aliases": [
+          "Plank Jacks/Taps"
+        ],
+        "primaryMovements": [],
+        "coreMovements": [
+          "anti_ext"
+        ],
+        "primaryMuscles": [],
+        "coreMuscles": [
+          "rectus_abdominis"
+        ],
+        "equipment": [],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "plank_shoulder_taps_1",
+      "record": {
+        "id": "plank_shoulder_taps_1",
+        "name": "Plank Shoulder Taps",
+        "aliases": [
+          "Plank Hold Shoulder Taps",
+          "Plank SH Taps",
+          "Slow Plank Sh Taps"
+        ],
+        "primaryMovements": [],
+        "coreMovements": [
+          "anti_ext"
+        ],
+        "primaryMuscles": [
+          "shoulders"
+        ],
+        "coreMuscles": [
+          "rectus_abdominis"
+        ],
+        "equipment": [],
+        "modalities": []
+      }
+    },
+    {
+      "exercise_id": "plate_ground_to_overhead",
+      "record": {
+        "id": "plate_ground_to_overhead",
+        "name": "Plate Ground to Overhead",
+        "aliases": [
+          "Plate GD to OH"
+        ],
+        "primaryMovements": [
+          "hinge",
+          "push_v"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "shoulders",
+          "glutes",
+          "upper_back"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "plate"
+        ],
+        "modalities": [
+          "conditioning"
+        ]
+      }
+    },
+    {
+      "exercise_id": "back_extension",
+      "record": {
+        "id": "back_extension",
+        "name": "Back Extension",
+        "aliases": [
+          "Back Extensions",
+          "Hyperextension",
+          "Hyperextensions",
+          "Prone Back Ext"
+        ],
+        "primaryMovements": [],
+        "coreMovements": [
+          "extension"
+        ],
+        "primaryMuscles": [],
+        "coreMuscles": [
+          "lower_back"
+        ],
+        "equipment": [],
+        "modalities": []
+      }
+    },
+    {
+      "exercise_id": "feet_elevated_push_up",
+      "record": {
+        "id": "feet_elevated_push_up",
+        "name": "Feet Elevated Push-Ups",
+        "aliases": [
+          "Push Ups Feet on Box"
+        ],
+        "primaryMovements": [
+          "push_h"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "chest",
+          "shoulders",
+          "triceps"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          [
+            "chair",
+            "box",
+            "bench"
+          ]
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "plank_quadruped_shoulder_taps",
+      "record": {
+        "id": "plank_quadruped_shoulder_taps",
+        "name": "Plank Quadruped Shoulder Taps",
+        "aliases": [
+          "Quadruped Plank Shoulder Taps",
+          "Quadruped Shoulder Taps"
+        ],
+        "primaryMovements": [],
+        "coreMovements": [
+          "anti_ext"
+        ],
+        "primaryMuscles": [
+          "shoulders"
+        ],
+        "coreMuscles": [
+          "rectus_abdominis"
+        ],
+        "equipment": [],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "reverse_fly_2_db",
+      "record": {
+        "id": "reverse_fly_2_db",
+        "name": "Reverse Fly (2-DB)",
+        "aliases": [
+          "Rear Deltoid Fly",
+          "Reverse Fly"
+        ],
+        "primaryMovements": [
+          "pull_h"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "upper_back"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "dumbbells"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "row",
+      "record": {
+        "id": "row",
+        "name": "Row",
+        "aliases": [
+          "Rows",
+          "Barbell Row",
+          "Barbell Rows",
+          "Row Machine"
+        ],
+        "primaryMovements": [
+          "pull_h"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "upper_back",
+          "lats"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "rower"
+        ],
+        "modalities": [
+          "conditioning"
+        ]
+      }
+    },
+    {
+      "exercise_id": "run",
+      "record": {
+        "id": "run",
+        "name": "Run",
+        "aliases": [
+          "running",
+          "run",
+          "Runs",
+          "Mile Run",
+          "PARTNER Run",
+          "Run Cardio Sprint"
+        ],
+        "primaryMovements": [],
+        "coreMovements": [],
+        "primaryMuscles": [],
+        "coreMuscles": [],
+        "equipment": [
+          "open-space"
+        ],
+        "modalities": [
+          "conditioning"
+        ]
+      }
+    },
+    {
+      "exercise_id": "russian_twist",
+      "record": {
+        "id": "russian_twist",
+        "name": "Russian Twists",
+        "aliases": [
+          "Russian Twist",
+          "Russian Twist Pass",
+          "Synchronized Russian Twists"
+        ],
+        "primaryMovements": [],
+        "coreMovements": [
+          "rotational"
+        ],
+        "primaryMuscles": [],
+        "coreMuscles": [
+          "rectus_abdominis"
+        ],
+        "equipment": [],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "db_arnold_press",
+      "record": {
+        "id": "db_arnold_press",
+        "name": "Arnold Press",
+        "aliases": [
+          "SA Arnold Press"
+        ],
+        "primaryMovements": [
+          "push_v"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "shoulders",
+          "triceps"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "dumbbells"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "banded_sa_lat_pulldown",
+      "record": {
+        "id": "banded_sa_lat_pulldown",
+        "name": "Lat Pulldown (Banded, SA)",
+        "aliases": [
+          "Banded SA Lat Pulldown",
+          "SA Banded Lat Pull Down"
+        ],
+        "primaryMovements": [
+          "pull_v"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "lats",
+          "biceps"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "band"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "single_arm_bent_over_db_kb_row",
+      "record": {
+        "id": "single_arm_bent_over_db_kb_row",
+        "name": "Single Arm Bent Over DB/KB Row",
+        "aliases": [
+          "SA DB Bent Over Row"
+        ],
+        "primaryMovements": [
+          "pull_h"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "upper_back"
+        ],
+        "coreMuscles": [],
+        "equipment": [],
+        "modalities": []
+      }
+    },
+    {
+      "exercise_id": "db_clean_and_jerk_1",
+      "record": {
+        "id": "db_clean_and_jerk_1",
+        "name": "DB Clean and Jerk",
+        "aliases": [
+          "DB Clean & Jerk",
+          "Dumbbell Clean and Jerk",
+          "SA DB Clean and Jerk",
+          "SA DB Clean and Jerk/Press"
+        ],
+        "primaryMovements": [
+          "hinge",
+          "squat",
+          "push_v"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "glutes",
+          "quads",
+          "hamstrings",
+          "shoulders"
+        ],
+        "coreMuscles": [],
+        "equipment": [],
+        "modalities": []
+      }
+    },
+    {
+      "exercise_id": "single_arm_oh_carry_db",
+      "record": {
+        "id": "single_arm_oh_carry_db",
+        "name": "Single Arm OH Carry (1-DB)",
+        "aliases": [
+          "SA DB OH Walk/March"
+        ],
+        "primaryMovements": [],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "shoulders"
+        ],
+        "coreMuscles": [
+          "rectus_abdominis"
+        ],
+        "equipment": [
+          "dumbbells"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "db_single_arm_oh_lunge",
+      "record": {
+        "id": "db_single_arm_oh_lunge",
+        "name": "Single Arm Overhead Lunge",
+        "aliases": [
+          "SA OH Lunge",
+          "Single Arm OH Lunge",
+          "SA DB OH Walking Lunge"
+        ],
+        "primaryMovements": [
+          "squat",
+          "push_v"
+        ],
+        "coreMovements": [
+          "anti_lat"
+        ],
+        "primaryMuscles": [
+          "quads",
+          "glutes",
+          "shoulders"
+        ],
+        "coreMuscles": [
+          "obliques"
+        ],
+        "equipment": [
+          "dumbbells"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "sa_db_strict_press",
+      "record": {
+        "id": "sa_db_strict_press",
+        "name": "Strict Press (DB)",
+        "aliases": [
+          "Single Arm Db Strict Press",
+          "DB Strict Press",
+          "SA DB Press",
+          "SA Strict Press (DB)"
+        ],
+        "primaryMovements": [
+          "push_v"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "shoulders",
+          "triceps"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "dumbbells"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "single_arm_overhead_sit_up",
+      "record": {
+        "id": "single_arm_overhead_sit_up",
+        "name": "Single-Arm Overhead Sit-Up",
+        "aliases": [
+          "SA DB Sit Up"
+        ],
+        "primaryMovements": [],
+        "coreMovements": [
+          "flexion"
+        ],
+        "primaryMuscles": [],
+        "coreMuscles": [
+          "rectus_abdominis"
+        ],
+        "equipment": [
+          "dumbbells"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "sa_db_thruster",
+      "record": {
+        "id": "sa_db_thruster",
+        "name": "Thrusters (DB)",
+        "aliases": [
+          "One Db Thruster",
+          "1 Db Thruster",
+          "Dumbbell Thruster",
+          "Db Thrusters",
+          "Dumbbell Thrusters",
+          "SA DB Thruster"
+        ],
+        "primaryMovements": [
+          "squat"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "quads",
+          "shoulders"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "dumbbells"
+        ],
+        "modalities": [
+          "strength",
+          "conditioning"
+        ]
+      }
+    },
+    {
+      "exercise_id": "kb_single_arm_front_squat",
+      "record": {
+        "id": "kb_single_arm_front_squat",
+        "name": "Single Arm Front Squat (KB)",
+        "aliases": [
+          "Single Arm Kb Front Squat",
+          "Sa Fr Kb Squat",
+          "KB Single Arm Front Squat",
+          "SA KB Front Rack Squat",
+          "SA KB Squat"
+        ],
+        "primaryMovements": [
+          "squat"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "quads",
+          "glutes"
+        ],
+        "coreMuscles": [
+          "rectus_abdominis"
+        ],
+        "equipment": [
+          "kettlebell"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "db_row_from_lunge",
+      "record": {
+        "id": "db_row_from_lunge",
+        "name": "Rows from Lunge (DB)",
+        "aliases": [
+          "Db Kb Row From Lunge",
+          "SA KB Lunge Row"
+        ],
+        "primaryMovements": [
+          "pull_h"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "lats",
+          "quads",
+          "upper_back"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "dumbbells"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "db_seesaw_press",
+      "record": {
+        "id": "db_seesaw_press",
+        "name": "Seesaw Press (2-DB)",
+        "aliases": [
+          "Seesaw Press",
+          "Bench Press 2 Db Seesaw",
+          "Seesaw Press Seated 2 Db",
+          "Strict Press 2 Db Seesaw",
+          "Seesaw DB Bench Press"
+        ],
+        "primaryMovements": [
+          "push_v"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "shoulders",
+          "triceps"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "dumbbells"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "shoulder_to_overhead",
+      "record": {
+        "id": "shoulder_to_overhead",
+        "name": "Shoulder-to-Overhead",
+        "aliases": [
+          "S2OH",
+          "Shoulder to Overhead",
+          "Shoulder to OH",
+          "Sh to OH"
+        ],
+        "primaryMovements": [
+          "push_v"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "shoulders",
+          "triceps"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "barbell"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "dumbbell_shoulder_press",
+      "record": {
+        "id": "dumbbell_shoulder_press",
+        "name": "Dumbbell Shoulder Press",
+        "aliases": [
+          "Shoulder Press"
+        ],
+        "primaryMovements": [
+          "push_v"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "shoulders"
+        ],
+        "coreMuscles": [],
+        "equipment": [],
+        "modalities": []
+      }
+    },
+    {
+      "exercise_id": "side_plank_rainbow_taps",
+      "record": {
+        "id": "side_plank_rainbow_taps",
+        "name": "Side Plank Rainbow Taps",
+        "aliases": [
+          "Side Plank Rainbows"
+        ],
+        "primaryMovements": [],
+        "coreMovements": [
+          "rotational",
+          "anti_ext"
+        ],
+        "primaryMuscles": [],
+        "coreMuscles": [
+          "rectus_abdominis"
+        ],
+        "equipment": [],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "side_plank_reach_through",
+      "record": {
+        "id": "side_plank_reach_through",
+        "name": "Side Plank Reach-Through",
+        "aliases": [
+          "Side Plank Reach Thru"
+        ],
+        "primaryMovements": [],
+        "coreMovements": [
+          "rotational",
+          "anti_ext"
+        ],
+        "primaryMuscles": [],
+        "coreMuscles": [
+          "rectus_abdominis"
+        ],
+        "equipment": [],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "db_curtsy_lunge",
+      "record": {
+        "id": "db_curtsy_lunge",
+        "name": "Curtsy Lunge (DB)",
+        "aliases": [
+          "DB Curtsy Lunge",
+          "Single DB Curtsy Lunge"
+        ],
+        "primaryMovements": [
+          "squat"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "quads",
+          "glutes"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "dumbbells"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "deficit_calf_raise",
+      "record": {
+        "id": "deficit_calf_raise",
+        "name": "Deficit Calf Raise",
+        "aliases": [
+          "SL Deficit Calf Raise"
+        ],
+        "primaryMovements": [],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "calves"
+        ],
+        "coreMuscles": [],
+        "equipment": [],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "single_leg_kb_rdl",
+      "record": {
+        "id": "single_leg_kb_rdl",
+        "name": "Single Leg Romanian Deadlift (KB)",
+        "aliases": [
+          "Single Leg Deadlift",
+          "SL KB RDL"
+        ],
+        "primaryMovements": [
+          "hinge"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "hamstrings",
+          "glutes"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "kettlebell"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "jumping_air_squat",
+      "record": {
+        "id": "jumping_air_squat",
+        "name": "Jump Squats",
+        "aliases": [
+          "Squat Jumps"
+        ],
+        "primaryMovements": [
+          "squat"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "quads",
+          "glutes"
+        ],
+        "coreMuscles": [],
+        "equipment": [],
+        "modalities": [
+          "strength",
+          "conditioning"
+        ]
+      }
+    },
+    {
+      "exercise_id": "kb_goblet_split_squat",
+      "record": {
+        "id": "kb_goblet_split_squat",
+        "name": "Goblet Split Squat (KB)",
+        "aliases": [
+          "Staggered Stance KB Goblet Squats"
+        ],
+        "primaryMovements": [
+          "squat"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "quads",
+          "glutes"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "kettlebell"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "strict_toes_to_bar",
+      "record": {
+        "id": "strict_toes_to_bar",
+        "name": "Strict Toes-To-Bar",
+        "aliases": [
+          "Strict Toes To Bar",
+          "Strict T2B",
+          "Strict TTB"
+        ],
+        "primaryMovements": [],
+        "coreMovements": [
+          "flexion"
+        ],
+        "primaryMuscles": [],
+        "coreMuscles": [
+          "rectus_abdominis"
+        ],
+        "equipment": [
+          "pull-up-bar"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "suitcase_march_kb",
+      "record": {
+        "id": "suitcase_march_kb",
+        "name": "Suitcase March (1-KB)",
+        "aliases": [
+          "Suitcase March",
+          "Suitcase Hold/March"
+        ],
+        "primaryMovements": [],
+        "coreMovements": [],
+        "primaryMuscles": [],
+        "coreMuscles": [
+          "rectus_abdominis"
+        ],
+        "equipment": [
+          "kettlebell"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "band_pull_aparts",
+      "record": {
+        "id": "band_pull_aparts",
+        "name": "Pull-Aparts (Banded)",
+        "aliases": [
+          "Pull Aparts",
+          "Banded Pull Aparts",
+          "Supinated Banded Pull Apart",
+          "Banded Pull-Aparts",
+          "Supinated Band Pull Aparts",
+          "Supine Banded Pull Aparts"
+        ],
+        "primaryMovements": [
+          "pull_h"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "upper_back"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "band"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "windshield_wipers",
+      "record": {
+        "id": "windshield_wipers",
+        "name": "Windshield Wipers",
+        "aliases": [
+          "Supine Windshield Wipers"
+        ],
+        "primaryMovements": [],
+        "coreMovements": [
+          "rotational"
+        ],
+        "primaryMuscles": [],
+        "coreMuscles": [
+          "rectus_abdominis"
+        ],
+        "equipment": [],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "ball_slam",
+      "record": {
+        "id": "ball_slam",
+        "name": "Ball Slams",
+        "aliases": [
+          "Ball Slam",
+          "Slam Balls",
+          "Slams",
+          "Tall Ball Slams"
+        ],
+        "primaryMovements": [
+          "hinge"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "shoulders",
+          "upper_back"
+        ],
+        "coreMuscles": [
+          "rectus_abdominis"
+        ],
+        "equipment": [
+          "slam-ball"
+        ],
+        "modalities": [
+          "strength",
+          "conditioning"
+        ]
+      }
+    },
+    {
+      "exercise_id": "db_bicep_curl",
+      "record": {
+        "id": "db_bicep_curl",
+        "name": "DB Bicep Curl",
+        "aliases": [
+          "DB Bicep Curls",
+          "Tempo Bicep Curls"
+        ],
+        "primaryMovements": [],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "biceps"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "dumbbells"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "turkish_get_up",
+      "record": {
+        "id": "turkish_get_up",
+        "name": "Turkish Get-Ups",
+        "aliases": [
+          "TGU Skill Work",
+          "TGUs"
+        ],
+        "primaryMovements": [],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "shoulders",
+          "glutes"
+        ],
+        "coreMuscles": [
+          "rectus_abdominis"
+        ],
+        "equipment": [
+          "kettlebell"
+        ],
+        "modalities": [
+          "strength"
+        ]
+      }
+    },
+    {
+      "exercise_id": "db_reverse_lunge",
+      "record": {
+        "id": "db_reverse_lunge",
+        "name": "Reverse Lunges (2-DB)",
+        "aliases": [
+          "Two Db Reverse Lunge",
+          "2 Db Reverse Lunge",
+          "Weighted Reverse Lunges"
+        ],
+        "primaryMovements": [
+          "squat"
+        ],
+        "coreMovements": [],
+        "primaryMuscles": [
+          "quads",
+          "glutes"
+        ],
+        "coreMuscles": [],
+        "equipment": [
+          "dumbbells"
+        ],
+        "modalities": [
+          "strength",
+          "conditioning"
+        ]
+      }
+    }
+  ]
+}
