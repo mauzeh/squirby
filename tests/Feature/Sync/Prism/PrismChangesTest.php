@@ -79,7 +79,7 @@ class PrismChangesTest extends TestCase
             ->getJson('/api/sync/prism/the-cove/changes');
 
         $response->assertStatus(200)
-            ->assertJsonStructure(['status', 'cursor', 'programs', 'cells', 'exercises', 'preferences']);
+            ->assertJsonStructure(['status', 'cursor', 'programs', 'cells', 'exercises', 'preferences', 'dismissals']);
 
         $this->assertEquals('ok', $response->json('status'));
         $this->assertEquals($t->toIso8601String(), $response->json('cursor'));
@@ -490,9 +490,9 @@ class PrismChangesTest extends TestCase
 
         $responseLarge->assertStatus(200);
 
-        // 3. Assert counts are equal and small (<= 12)
+        // 3. Assert counts are equal and small (<= 15)
         $this->assertSame($smallCount, $largeCount);
-        $this->assertLessThanOrEqual(12, $smallCount);
+        $this->assertLessThanOrEqual(15, $smallCount);
     }
 
     public function test_changes_programs_carry_archived_at_and_archive_appears_in_since_delta(): void

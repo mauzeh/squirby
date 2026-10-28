@@ -4,6 +4,7 @@ namespace App\Sync\Controllers;
 
 use App\Sync\Controllers\Concerns\ValidatesGym;
 use App\Sync\Models\PrismExerciseOverlayRecord;
+use App\Sync\Models\PrismInterferenceDismissal;
 use App\Sync\Models\PrismPreference;
 use App\Sync\Models\PrismProgram;
 use App\Sync\Models\PrismProgramCell;
@@ -88,17 +89,32 @@ class PrismChangesController
             'updated_at' => $pref->updated_at->toIso8601String(),
         ] : null;
 
-        // 5. Compute cursor high-water-mark across all gym rows
+        // 5. Dismissals (interference dismissals + tombstones)
+        $dismissalsQuery = PrismInterferenceDismissal::where('gym_id', $gym);
+        if ($since !== null) {
+            $dismissalsQuery->where('updated_at', '>=', $since);
+        }
+        $dismissals = $dismissalsQuery->get()->map(function (PrismInterferenceDismissal $dismissal) {
+            return [
+                'resolution_key' => $dismissal->resolution_key,
+                'deleted_at' => $dismissal->deleted_at?->toIso8601String(),
+                'updated_at' => $dismissal->updated_at->toIso8601String(),
+            ];
+        })->values()->all();
+
+        // 6. Compute cursor high-water-mark across all gym rows
         $maxProgramUpdated = PrismProgram::where('gym_id', $gym)->max('updated_at');
         $maxCellUpdated = PrismProgramCell::where('gym_id', $gym)->max('updated_at');
         $maxExerciseUpdated = PrismExerciseOverlayRecord::where('gym_id', $gym)->max('updated_at');
         $maxPreferenceUpdated = PrismPreference::where('gym_id', $gym)->max('updated_at');
+        $maxDismissalUpdated = PrismInterferenceDismissal::where('gym_id', $gym)->max('updated_at');
 
         $updatedInstants = array_filter([
             $maxProgramUpdated ? Carbon::parse($maxProgramUpdated) : null,
             $maxCellUpdated ? Carbon::parse($maxCellUpdated) : null,
             $maxExerciseUpdated ? Carbon::parse($maxExerciseUpdated) : null,
             $maxPreferenceUpdated ? Carbon::parse($maxPreferenceUpdated) : null,
+            $maxDismissalUpdated ? Carbon::parse($maxDismissalUpdated) : null,
         ]);
 
         $maxUpdated = null;
@@ -114,10 +130,14 @@ class PrismChangesController
         $rawMaxCellDeleted = PrismProgramCell::where('gym_id', $gym)
             ->whereNotNull('deleted_at')
             ->max('deleted_at');
+        $rawMaxDismissalDeleted = PrismInterferenceDismissal::where('gym_id', $gym)
+            ->whereNotNull('deleted_at')
+            ->max('deleted_at');
 
         $deletedInstants = array_filter([
             $rawMaxExerciseDeleted ? Carbon::parse($rawMaxExerciseDeleted) : null,
             $rawMaxCellDeleted ? Carbon::parse($rawMaxCellDeleted) : null,
+            $rawMaxDismissalDeleted ? Carbon::parse($rawMaxDismissalDeleted) : null,
         ]);
 
         $maxDeleted = null;
@@ -151,6 +171,7 @@ class PrismChangesController
             'cells' => $cells,
             'exercises' => $exercises,
             'preferences' => $preferences,
+            'dismissals' => $dismissals,
         ]);
     }
 }
